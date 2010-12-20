@@ -1,0 +1,1 @@
+(!E ?x:org#Dog # ?y !E ?z:org#Cat -org#star=4+(?y*7/2) ^ org#A(b(a,b,?x,1,2.3,?x*?y+3))) | #?x:org#Animal ?x*?y+3 > org#star+-?y

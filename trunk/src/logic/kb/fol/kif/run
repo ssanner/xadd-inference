@@ -1,0 +1,16 @@
+#! /bin/sh
+
+Home=../../../..
+libDir=${Home}/lib
+
+for i in ${libDir}/*.jar ; do
+    if [ "$CP" != "" ]; then
+	CP=${CP}:$i
+    else
+	CP=$i
+    fi
+done
+
+CP=${CP}
+
+java -Xms128M -Xmx512M -classpath ../..:$CP $1 $2 $3 $4 $5 $6 $7 $8 $9

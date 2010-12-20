@@ -1,0 +1,31 @@
+cvariables ( q1   q2  q3  )
+min-values ( 0   0   0   )
+max-values ( 100 100 100 ) 
+bvariables ( )
+ivariables ( )
+
+action noop
+	q1' ( [q1 + c_1 * q2 <= C]
+            ( [q1 + q2] )
+            ( [q1] ) )
+    q2' ( [q1 + q2 <= C]
+            ( [0] )
+            ( [q2] ) )
+    q3' ( [q3] )
+endaction
+
+action advance
+	q1' ( [q1 + q3 <= C]
+            ( [q1 + q3] )
+            ( [q1] ) )
+    q3' ( [q1 + q3 <= C]
+            ( [0] )
+            ( [q3] ) )
+    q2' ( [q2] )
+endaction
+
+reward 
+   ( [q1 + q2 + q3] ) 
+
+discount 1.000000
+iterations 2
