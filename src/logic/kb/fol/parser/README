@@ -1,0 +1,9 @@
+
+The lexer specification is in: 'fopc.lex'
+
+The parser specification is in: 'fopc.cup'
+
+To compile and build the parser, just use 'make'.  This
+has subcommands for the lexer and parser generation as
+well as compilation of all the class files.  -Scott
+
