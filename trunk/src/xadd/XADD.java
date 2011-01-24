@@ -1019,8 +1019,33 @@ public class XADD  {
 	/////////////////////////////////////////////////////////////////////
 	
 	public static abstract class Expr implements Comparable<Expr> {	
+		
+		public static final Class DOUBLE_CLASS = DoubleExpr.class;
+		public static final Class VAR_CLASS    = VarExpr.class;
+		public static final Class ARITH_CLASS  = ArithExpr.class;
+		public static final Class OPER_CLASS   = OperExpr.class;
+		public static final Class COMP_CLASS   = CompExpr.class;
+		
+		public static HashMap<Class,Integer> _class2order = new HashMap<Class,Integer>();
+		static {
+			_class2order.put(DOUBLE_CLASS, 0);
+			_class2order.put(VAR_CLASS, 1);
+			_class2order.put(ARITH_CLASS, 2);
+			_class2order.put(OPER_CLASS, 3);
+			_class2order.put(COMP_CLASS, 4);
+		}
+		
 		public int compareTo(Expr o) {
-			return this.hashCode() - o.hashCode();
+			// Var, Double, Arith, Oper, Comp
+			Class this_class  = this.getClass();
+			Class other_class = o.getClass();
+			
+			if (!this_class.equals(other_class)) {
+				Integer rank_this  = _class2order.get(this_class);
+				Integer rank_other = _class2order.get(other_class);
+				return rank_this - rank_other;
+			} else
+				return this.hashCode() - o.hashCode();
 		}
 	}
 	
