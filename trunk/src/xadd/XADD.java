@@ -94,9 +94,9 @@ public class XADD  {
 	public int getVarIndex(Decision d, boolean create) {
 		
 		if (USE_CANONICAL_NODES) {
-			//System.out.println(">> Before canonical: " + d);
+			System.out.println(">> Before canonical: " + d);
 			d = d.makeCanonical();
-			//System.out.println(">> After canonical: " + d);
+			System.out.println(">> After canonical: " + d);
 		}
 		
 		int index = _alOrder.indexOf(d);
@@ -112,9 +112,9 @@ public class XADD  {
 	public int getTermNode(ArithExpr e) {
 		
 		if (USE_CANONICAL_NODES) {
-			//System.out.println(">> Before canonical: " + e);
+			System.out.println(">> TNode: Before canonical: " + e);
 			e = (ArithExpr)e.makeCanonical();
-			//System.out.println(">> After canonical: " + e);
+			System.out.println(">> TNode: After canonical: " + e);
 		}
 		
 		_tempTNode.set(e);
@@ -1095,9 +1095,41 @@ public class XADD  {
 			_lhs = lhs;
 			_rhs = rhs;
 		}
+		
 		public Expr makeCanonical() {
-			ArithExpr lhs = ArithExpr.op(_lhs, _rhs, MINUS);
-			return new CompExpr(_type, (ArithExpr)lhs.makeCanonical(), ZERO);
+			
+			// 1. Expressions all zero on RHS of comparisons and restrict symbols:
+			//      a > b  : a <= b and swap branches 
+			//      a < b  : a >= b and swap branches
+			//      a != b : a == b and swap branches
+			CompExpr new_expr = new CompExpr(_type, _lhs, _rhs);
+			switch (new_expr._type) {
+				case GT:    
+					new_expr._type = LT_EQ;
+					// Swap lhs and rhs
+					new_expr._lhs = _rhs; 
+					new_expr._rhs = _lhs;
+					break;
+				case LT:    
+					new_expr._type = GT_EQ;
+					// Swap lhs and rhs
+					new_expr._lhs = _rhs; 
+					new_expr._rhs = _lhs;
+					break;
+				case NEQ:   
+					new_expr._type = EQ;
+					// Swap lhs and rhs
+					new_expr._lhs = _rhs; 
+					new_expr._rhs = _lhs;
+					break;
+			}
+			
+			//System.out.println(">> CompExpr: makeCanonical: " + _lhs + " - " + _rhs);
+			ArithExpr new_lhs = ArithExpr.op(new_expr._lhs, new_expr._rhs, MINUS);
+			new_lhs = (ArithExpr)new_lhs.makeCanonical();
+			new_expr = new CompExpr(new_expr._type, new_lhs, ZERO);
+			//System.out.println(">> CompExpr: makeCanonical: " + new_expr);
+			return new_expr;
 		}
 		public boolean equals(Object o) {
 			if (o instanceof CompExpr) {
@@ -1214,7 +1246,7 @@ public class XADD  {
 					&& ((OperExpr)f1)._type == op
 					&& (op == SUM || op == PROD)) {
 				// Exploit associativity
-				ArrayList<ArithExpr> terms = (ArrayList<ArithExpr>)((OperExpr)f1)._terms.clone();
+				ArrayList<ArithExpr> terms = new ArrayList<ArithExpr>(((OperExpr)f1)._terms);
 				terms.addAll(((OperExpr)f2)._terms);
 				return new OperExpr(op, terms);
 			} else {
@@ -1244,13 +1276,13 @@ public class XADD  {
 			} else if (f1 instanceof OperExpr
 					&& ((OperExpr)f1)._type == op
 					&& (op == SUM || op == PROD)) {
-				ArrayList<ArithExpr> terms = (ArrayList<ArithExpr>)((OperExpr)f1)._terms.clone();
+				ArrayList<ArithExpr> terms = new ArrayList<ArithExpr>(((OperExpr)f1)._terms);
 				terms.add(new DoubleExpr(d));
 				return new OperExpr(op, terms);
 			} else {
 				ArrayList<ArithExpr> terms = new ArrayList<ArithExpr>();
-				terms.add(new DoubleExpr(d));
 				terms.add(f1);
+				terms.add(new DoubleExpr(d));
 				return new OperExpr(op, terms);
 			}
 		}
@@ -1279,8 +1311,10 @@ public class XADD  {
 			}
 			
 			_terms = new ArrayList<ArithExpr>(terms);
-			Collections.sort(_terms);
+			if (_type == SUM || _type == PROD)
+				Collections.sort(_terms);
 		}
+		
 		public boolean equals(Object o) {
 			if (o instanceof OperExpr) {
 				OperExpr e = (OperExpr)o;
@@ -1379,7 +1413,10 @@ public class XADD  {
 
 		// Canonicity for arithmetic expressions:
 		//
-		// 1. Expressions all zero on RHS of comparisons.
+		// 1. Expressions all zero on RHS of comparisons and restrict symbols:
+		//      a > b  : a <= b and swap branches 
+		//      a < b  : a >= b and swap branches
+		//      a != b : a == b and swap branches
 		// 2. Multiple layers of + / * collapsed: (X + Y) + Z -> X + Y + Z
 		// 3. Distribute * over +: X * (A + B) -> X * A + X * B
 		// 4. All subtraction: X - Y -> X + -Y
@@ -1398,6 +1435,7 @@ public class XADD  {
 			if (new_type == MINUS) {
 				ArithExpr term2 = new_terms.get(1);
 				term2 = ArithExpr.op(term2, NEG_ONE, PROD);
+				new_terms.set(1, term2);
 				new_type = SUM;
 			}
 						
@@ -1414,29 +1452,39 @@ public class XADD  {
 					reduced_terms.add(e);					
 			}
 			new_terms = reduced_terms;
+			//System.out.println(">> Flattened terms: " + reduced_terms);
 
 			// 3. Distribute * over +: X * (A + B) -> X * A + X * B
 			// X * (1/Y) * (W + Z) * (U + V)
 			// Maintain sum list... 
 			//   if division, multiply in 1/x
 			if (new_type == PROD) {
-				ArrayList<ArithExpr> sum_terms = new ArrayList<ArithExpr>(
-						Arrays.asList(new ArithExpr[] { new_terms.get(0) }));
+
+				ArrayList<ArithExpr> sum_terms = new ArrayList<ArithExpr>();
+				ArithExpr first_term = new_terms.get(0);
+				if ((first_term instanceof OperExpr) && ((OperExpr)first_term)._type == SUM)
+					sum_terms.addAll(((OperExpr)first_term)._terms);
+				else
+					sum_terms.add(first_term);
 				
 				for (int i = 1; i < new_terms.size(); i++) {
 					ArithExpr e = new_terms.get(i);
 					if ((e instanceof OperExpr) && ((OperExpr)e)._type == SUM) {
 						// e2 : {A + B} * e3 : {C + D}
+						System.out.println(">>>> Mult 1 " + e + " * " + sum_terms);
 						ArrayList<ArithExpr> new_sum_terms = new ArrayList<ArithExpr>();
 						for (ArithExpr e2 : sum_terms) {
 							for (ArithExpr e3 : ((OperExpr)e)._terms) {
+								System.out.println(">>>> Multiplying " + e2 + " * " + e3);
 								new_sum_terms.add(ArithExpr.op(e2, e3, PROD));
 							}
 						}
+						System.out.println(">>>> Mult 1 Out " + new_sum_terms);
 						sum_terms = new_sum_terms;
 					} else {
 						// e2 : {A + B} * e
-						for (int j = 0; j < sum_terms.size() - 1; j++) {
+						System.out.println(">>>> Mult 2 " + e + " * " + sum_terms);
+						for (int j = 0; j < sum_terms.size(); j++) {
 							ArithExpr e2 = sum_terms.get(j);
 							sum_terms.set(j, new OperExpr(PROD, e, e2));
 						}
@@ -1469,19 +1517,30 @@ public class XADD  {
 				// Hash all terms to a coefficient
 				HashMap<ArrayList<ArithExpr>, Double> term2coef = new HashMap<ArrayList<ArithExpr>, Double>();
 				for (ArithExpr e : new_terms) {
-					if (e instanceof OperExpr && ((OperExpr)e)._type == PROD) {
-						OperExpr o = ((OperExpr)e);
-						DoubleExpr d = (DoubleExpr)o._terms.get(0);
-						ArrayList<ArithExpr> index = new ArrayList<ArithExpr>();
-						for (int j = 1; j < o._terms.size(); j++)
-							index.add(o._terms.get(j));
+					if ((e instanceof OperExpr && ((OperExpr)e)._type == PROD)
+						|| (e instanceof VarExpr)) {
 						
+						// Determine the terms and coefficient
+						ArrayList<ArithExpr> index = new ArrayList<ArithExpr>();						
+						DoubleExpr d = null;
+						if (e instanceof VarExpr) {
+							index.add(e);
+							d = new DoubleExpr(1d);
+						} else {
+							OperExpr o = (OperExpr)e;
+							d = (DoubleExpr)o._terms.get(0);
+							for (int j = 1; j < o._terms.size(); j++)
+								index.add(o._terms.get(j));
+						}
+						
+						// Hash to the correct coefficient
 						Double dval = null;
 						if ((dval = term2coef.get(index)) != null)
 							dval += d._dConstVal;
 						else
 							dval = d._dConstVal;
-						term2coef.put(index, d._dConstVal);
+						term2coef.put(index, dval);
+						
 					} else if (e instanceof DoubleExpr) {
 						const_sum += ((DoubleExpr)e)._dConstVal;
 					} else
@@ -1503,6 +1562,10 @@ public class XADD  {
 					term.add(0, dcoef);
 					new_terms.add(new OperExpr(PROD, term));
 				}
+				
+				// An empty sum is zero
+				if (new_terms.size() == 0)
+					return new DoubleExpr(0d);
 			}
 			
 			// 8. Make all products start with a single Double coefficient
@@ -1609,9 +1672,8 @@ public class XADD  {
 	
 	public static void main(String[] args) {
 		
-		TestPolyOps();
-		if (0 <= 1)
-			return;
+		//TestPolyOps();
+		//if (0 <= 1) return;
 		
 		System.out.println(Double.MAX_VALUE + " , " + (-Double.MAX_VALUE));
 		TestParse("[a]");
@@ -1691,10 +1753,10 @@ public class XADD  {
 		ArrayList l = HierarchicalParser.ParseFile(filename);
 		System.out.println("Parsed file contents for '" + filename + "': " + l.get(0) + "\n");
 		int dd1 = xadd_context.buildCanonicalXADD((ArrayList)l.get(0));
-		int dd2 = xadd_context.apply(dd1, dd1, XADD.SUM);
-		int dd3 = xadd_context.apply(dd1, dd1, XADD.PROD);
 		Graph g1 = xadd_context.getGraph(dd1); g1.launchViewer();
+		//int dd2 = xadd_context.apply(dd1, dd1, XADD.SUM);
 		//Graph g2 = xadd_context.getGraph(dd2); g2.launchViewer();
+		//int dd3 = xadd_context.apply(dd1, dd1, XADD.PROD);
 		//Graph g3 = xadd_context.getGraph(dd3); g3.launchViewer();
 		return dd1;
 	}
@@ -1708,6 +1770,8 @@ public class XADD  {
 		xadd_context.getGraph(xaddr2).launchViewer();
 		int xaddr3 = xadd_context.apply(xadd1, xadd1, XADD.PROD);
 		xadd_context.getGraph(xaddr3).launchViewer();
+		int xaddr4 = xadd_context.apply(xaddr3, xaddr3, XADD.PROD);
+		xadd_context.getGraph(xaddr4).launchViewer();
 
 	}
 }
