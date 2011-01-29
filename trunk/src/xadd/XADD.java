@@ -32,10 +32,10 @@ public class XADD  {
 	public final static boolean GRAPH_USE_COLOR = true;
 
 	// Flags
-	public final static boolean CHECK_MIN_MAX  = true;  // Will be buggy if min/max of expr 
+	public final static boolean USE_CANONICAL_NODES = true;  // Store nodes in canonical format?
+	public final static boolean CHECK_MIN_MAX   = false; // Will be buggy if min/max of expr 
 														// not at extrema of domain
 	public final static boolean USE_MINUS_COMP = false; // Error, all max/min comps reduce to false!
-	public final static boolean SIMPLIFY_MINUS = false; // Not working, remove both sides
 	
 	// Operators
 	public final static int UND   = 0;
@@ -62,8 +62,9 @@ public class XADD  {
 	public final static String STRING_TAB = "   ";
 	public final static DecimalFormat _df = new DecimalFormat("#.##");
 	
-	public final static ArithExpr ZERO = new DoubleExpr(0d); 
-	public final static ArithExpr ONE  = new DoubleExpr(1d);
+	public final static ArithExpr ZERO     = new DoubleExpr(0d); 
+	public final static ArithExpr ONE      = new DoubleExpr(1d);
+	public final static ArithExpr NEG_ONE  = new DoubleExpr(-1d);
 	
 	// Variable Maintenance
 	public ArrayList<Decision> _alOrder = new ArrayList<Decision>();
@@ -92,81 +93,10 @@ public class XADD  {
 
 	public int getVarIndex(Decision d, boolean create) {
 		
-		// Check for tautology (or inconsistency)
-		if (d instanceof ExprDec) {
-			ExprDec e = (ExprDec)d;
-			if (   e._expr._lhs instanceof DoubleExpr
-				&& e._expr._rhs instanceof DoubleExpr) {
-				// Directly evaluate the inequality
-				double dval_lhs = ((DoubleExpr)e._expr._lhs)._dConstVal;
-				double dval_rhs = ((DoubleExpr)e._expr._rhs)._dConstVal;
-				TautDec tdec = null;
-				switch (e._expr._type) {
-					case EQ:    tdec = new TautDec(dval_lhs == dval_rhs); break;
-					case NEQ:   tdec = new TautDec(dval_lhs != dval_rhs); break;
-					case GT:    tdec = new TautDec(dval_lhs >  dval_rhs); break;
-					case GT_EQ: tdec = new TautDec(dval_lhs >= dval_rhs); break;
-					case LT:    tdec = new TautDec(dval_lhs <  dval_rhs); break;
-					case LT_EQ: tdec = new TautDec(dval_lhs <= dval_rhs); break;
-				}							
-				if (tdec != null)
-					d = tdec;
-			} else if (CHECK_MIN_MAX) {
-				// Check for evaluations based on minimum and maximum values
-				TautDec tdec = null;
-				Double lhs_max = e._expr._lhs.evaluate(_hmMaxVal);
-				Double lhs_min = e._expr._lhs.evaluate(_hmMinVal);
-				Double rhs_max = e._expr._rhs.evaluate(_hmMaxVal);
-				Double rhs_min = e._expr._rhs.evaluate(_hmMinVal);
-				if (lhs_max == null)
-					lhs_max = Double.MAX_VALUE;
-				if (rhs_max == null)
-					rhs_max = Double.MAX_VALUE;
-				if (lhs_min == null)
-					lhs_min = -Double.MAX_VALUE;
-				if (rhs_min == null)
-					rhs_min = -Double.MAX_VALUE;
-				switch (e._expr._type) {
-					case EQ:    
-					case NEQ:   
-						if ((lhs_min > rhs_max || rhs_min > lhs_max)
-							|| ((lhs_max == lhs_min) && (rhs_max == rhs_min) && (lhs_min != rhs_min))) {
-							// Indicates they cannot possibly be equal
-							tdec = new TautDec((e._expr._type == EQ) ? false : true);
-						}
-						break;
-					case GT:    
-						// lhs > rhs
-						if (lhs_min > rhs_max)
-							tdec = new TautDec(true); 
-						else if (lhs_max <= rhs_min)
-							tdec = new TautDec(false); 
-						break;
-					case GT_EQ: 
-						// lhs >= rhs
-						if (lhs_min >= rhs_max)
-							tdec = new TautDec(true); 
-						else if (lhs_max < rhs_min)
-							tdec = new TautDec(false); 
-						break;
-					case LT:    
-						// lhs < rhs
-						if (lhs_max < rhs_min)
-							tdec = new TautDec(true); 
-						else if (lhs_min >= rhs_max)
-							tdec = new TautDec(false); 
-						break;
-					case LT_EQ: 
-						// lhs <= rhs
-						if (lhs_max <= rhs_min)
-							tdec = new TautDec(true); 
-						else if (lhs_min > rhs_max)
-							tdec = new TautDec(false); 
-						break;
-				}
-				if (tdec != null)
-					d = tdec;
-			}
+		if (USE_CANONICAL_NODES) {
+			//System.out.println(">> Before canonical: " + d);
+			d = d.makeCanonical();
+			//System.out.println(">> After canonical: " + d);
 		}
 		
 		int index = _alOrder.indexOf(d);
@@ -180,6 +110,13 @@ public class XADD  {
 
 	public XADDTNode _tempTNode = new XADDTNode(null);
 	public int getTermNode(ArithExpr e) {
+		
+		if (USE_CANONICAL_NODES) {
+			//System.out.println(">> Before canonical: " + e);
+			e = (ArithExpr)e.makeCanonical();
+			//System.out.println(">> After canonical: " + e);
+		}
+		
 		_tempTNode.set(e);
 		Integer id = _hmNode2Int.get(_tempTNode);
 		if (id == null) {
@@ -946,12 +883,13 @@ public class XADD  {
 	
 	////////////////////////////////////////////////////////////////
 	
-	public static abstract class Decision { 
+	public abstract class Decision { 
 		public abstract void collectVars(HashSet<String> vars);
+		public abstract Decision makeCanonical();
 	}
 
 	// Represents a tautology or its negation (inconsistency)
-	public static class TautDec extends Decision {
+	public class TautDec extends Decision {
 		public boolean _bTautology;
 		public TautDec(boolean isTaut) {
 			_bTautology = isTaut;
@@ -969,9 +907,12 @@ public class XADD  {
 		public String toString() {
 			return Boolean.toString(_bTautology);
 		}
+		public Decision makeCanonical() {
+			return this;
+		}
 	}
 
-	public static class BoolDec extends Decision {
+	public class BoolDec extends Decision {
 		public String _sVarName = null;
 		public BoolDec(String var_name) {
 			_sVarName = var_name.intern();
@@ -991,9 +932,12 @@ public class XADD  {
 		public String toString() {
 			return _sVarName;
 		}
+		public Decision makeCanonical() {
+			return this;
+		}
 	}
 
-	public static class ExprDec extends Decision {
+	public class ExprDec extends Decision {
 		public CompExpr _expr = null;
 		public ExprDec(CompExpr expr) {
 			_expr = expr;
@@ -1014,6 +958,95 @@ public class XADD  {
 		public String toString() {
 			return _expr.toString();
 		}
+		public Decision makeCanonical() {
+			
+			// Make canonical
+			Decision d = this;
+			if (d instanceof ExprDec) {
+				ExprDec e = (ExprDec)d;
+				CompExpr new_comp = (CompExpr)e._expr.makeCanonical();
+				d = new ExprDec(new_comp);
+			}
+			
+			// Check for tautology (or inconsistency)
+			if (d instanceof ExprDec 
+				&& ((ExprDec)d)._expr._lhs instanceof DoubleExpr 
+				&& ((ExprDec)d)._expr._rhs instanceof DoubleExpr) {
+				// Directly evaluate the inequality
+				double dval_lhs = ((DoubleExpr)((ExprDec)d)._expr._lhs)._dConstVal;
+				double dval_rhs = ((DoubleExpr)((ExprDec)d)._expr._rhs)._dConstVal;
+				TautDec tdec = null;
+				switch (((ExprDec)d)._expr._type) {
+					case EQ:    tdec = new TautDec(dval_lhs == dval_rhs); break;
+					case NEQ:   tdec = new TautDec(dval_lhs != dval_rhs); break;
+					case GT:    tdec = new TautDec(dval_lhs >  dval_rhs); break;
+					case GT_EQ: tdec = new TautDec(dval_lhs >= dval_rhs); break;
+					case LT:    tdec = new TautDec(dval_lhs <  dval_rhs); break;
+					case LT_EQ: tdec = new TautDec(dval_lhs <= dval_rhs); break;
+				}							
+				if (tdec != null)
+					d = tdec;
+			} else if (d instanceof ExprDec 
+						&& CHECK_MIN_MAX) {
+				// Check for evaluations based on minimum and maximum values
+				TautDec tdec = null;
+				Double lhs_max = ((ExprDec)d)._expr._lhs.evaluate(_hmMaxVal);
+				Double lhs_min = ((ExprDec)d)._expr._lhs.evaluate(_hmMinVal);
+				Double rhs_max = ((ExprDec)d)._expr._rhs.evaluate(_hmMaxVal);
+				Double rhs_min = ((ExprDec)d)._expr._rhs.evaluate(_hmMinVal);
+				if (lhs_max == null)
+					lhs_max = Double.MAX_VALUE;
+				if (rhs_max == null)
+					rhs_max = Double.MAX_VALUE;
+				if (lhs_min == null)
+					lhs_min = -Double.MAX_VALUE;
+				if (rhs_min == null)
+					rhs_min = -Double.MAX_VALUE;
+				switch (((ExprDec)d)._expr._type) {
+					case EQ:    
+					case NEQ:   
+						if ((lhs_min > rhs_max || rhs_min > lhs_max)
+							|| ((lhs_max == lhs_min) && (rhs_max == rhs_min) && (lhs_min != rhs_min))) {
+							// Indicates they cannot possibly be equal
+							tdec = new TautDec((((ExprDec)d)._expr._type == EQ) ? false : true);
+						}
+						break;
+					case GT:    
+						// lhs > rhs
+						if (lhs_min > rhs_max)
+							tdec = new TautDec(true); 
+						else if (lhs_max <= rhs_min)
+							tdec = new TautDec(false); 
+						break;
+					case GT_EQ: 
+						// lhs >= rhs
+						if (lhs_min >= rhs_max)
+							tdec = new TautDec(true); 
+						else if (lhs_max < rhs_min)
+							tdec = new TautDec(false); 
+						break;
+					case LT:    
+						// lhs < rhs
+						if (lhs_max < rhs_min)
+							tdec = new TautDec(true); 
+						else if (lhs_min >= rhs_max)
+							tdec = new TautDec(false); 
+						break;
+					case LT_EQ: 
+						// lhs <= rhs
+						if (lhs_max <= rhs_min)
+							tdec = new TautDec(true); 
+						else if (lhs_min > rhs_max)
+							tdec = new TautDec(false); 
+						break;
+				}
+				if (tdec != null)
+					d = tdec;
+			}
+			
+			return d;
+		}
+
 	}
 	
 	/////////////////////////////////////////////////////////////////////
@@ -1035,6 +1068,8 @@ public class XADD  {
 			_class2order.put(COMP_CLASS, 4);
 		}
 		
+		public abstract Expr makeCanonical();
+
 		public int compareTo(Expr o) {
 			// Var, Double, Arith, Oper, Comp
 			Class this_class  = this.getClass();
@@ -1059,6 +1094,10 @@ public class XADD  {
 			_type = type;
 			_lhs = lhs;
 			_rhs = rhs;
+		}
+		public Expr makeCanonical() {
+			ArithExpr lhs = ArithExpr.op(_lhs, _rhs, MINUS);
+			return new CompExpr(_type, (ArithExpr)lhs.makeCanonical(), ZERO);
 		}
 		public boolean equals(Object o) {
 			if (o instanceof CompExpr) {
@@ -1138,7 +1177,7 @@ public class XADD  {
 	}
 	
 	public abstract static class ArithExpr extends Expr {
-		
+				
 		public static ArithExpr parse(String s) {
 			try {
 				FOPC.Node res = FOPC.parse(s + " = 0");
@@ -1168,11 +1207,13 @@ public class XADD  {
 				// operands reordered
 				return op(f2, ((DoubleExpr)f1)._dConstVal, op);
 			} else if (f2 instanceof DoubleExpr) {
+				// Can handle MINUS and DIV here
 				return op(f1, ((DoubleExpr)f2)._dConstVal, op);
 			} else if (f1 instanceof OperExpr && f2 instanceof OperExpr
 					&& ((OperExpr)f1)._type == ((OperExpr)f2)._type
 					&& ((OperExpr)f1)._type == op
 					&& (op == SUM || op == PROD)) {
+				// Exploit associativity
 				ArrayList<ArithExpr> terms = (ArrayList<ArithExpr>)((OperExpr)f1)._terms.clone();
 				terms.addAll(((OperExpr)f2)._terms);
 				return new OperExpr(op, terms);
@@ -1230,93 +1271,14 @@ public class XADD  {
 		
 		public OperExpr(int type, List<ArithExpr> terms) {
 			_type = type;
-			// For now allowing all operators
-			// if (_type < SUM || _type > DIV)
-			//   return;
 			
 			// Ensure subtraction and division are binary operators
 			if ((_type == MINUS || _type == DIV) && terms.size() != 2) {
 				_type = ERROR;
 				return;
 			}
-			_terms = new ArrayList<ArithExpr>();
 			
-			// Remove common terms during a minus
-			if (_type == MINUS && SIMPLIFY_MINUS) {
-				// TODO: NEEDS TO SIMPLIFY BOTH SIDES OF MINUS!!!
-				ArithExpr t1 = terms.get(0);
-				ArithExpr t2 = terms.get(1);
-				if (t1 instanceof OperExpr && ((OperExpr)t1)._type == SUM) {
-					for (ArithExpr t11 : ((OperExpr)t1)._terms) {
-						if (t2 != null && t2 instanceof OperExpr && ((OperExpr)t2)._type == SUM) {
-							int index = ((OperExpr)t2)._terms.indexOf(t11);
-							if (index >= 0)
-								((OperExpr)t2)._terms.remove(index);
-						} else if (t2 != null) {
-							if (t11.equals(t2))
-								t2 = null;
-						}
-					}	
-				} else if (t2 instanceof OperExpr && ((OperExpr)t2)._type == SUM) {
-					for (ArithExpr t22 : ((OperExpr)t2)._terms) {
-						if (t1 != null && t1 instanceof OperExpr && ((OperExpr)t1)._type == SUM) {
-							int index = ((OperExpr)t1)._terms.indexOf(t22);
-							if (index >= 0)
-								((OperExpr)t1)._terms.remove(index);
-						} else if (t1 != null) {
-							if (t22.equals(t1))
-								t1 = null;
-						}
-					}	
-				} else if (t1.equals(t2)) {
-					t1 = null;
-					t2 = null;
-				}
-				
-				if (t1 == null && t2 == null) {
-					_type = SUM;
-					_terms.add(new DoubleExpr(0));
-					return;
-				} else if (t1 == null) {
-					// Would have to negate t2 to return immediately
-					terms.set(0, new DoubleExpr(0));
-				} else if (t2 == null) {
-					if (t1 instanceof OperExpr) {
-						_type = ((OperExpr)t1)._type;
-						_terms.addAll(((OperExpr)t1)._terms);
-						return;
-					} else {
-						_type = SUM;
-						_terms.add(t1);
-						return;
-					}
-				} // else just fall through and process as normal
-			}
-			
-			if ((_type == SUM) || (_type == PROD)) {
-				double accum = (_type == SUM) ? 0d : 1d;
-				for (int i = 0; i < terms.size(); i++) {
-					ArithExpr e = terms.get(i);
-					if (e instanceof DoubleExpr) {
-						if (_type == SUM)
-							accum += ((DoubleExpr)e)._dConstVal;
-						else 
-							accum *= ((DoubleExpr)e)._dConstVal;
-					} else if (e instanceof OperExpr
-							   && ((OperExpr)e)._type == type) {
-						_terms.addAll(((OperExpr)e)._terms);
-					} else
-						_terms.add(e);
-				}
-				if (accum == 0d && _type == PROD) {
-					// Anything times zero is zero
-					_terms.clear();
-					_terms.add(new DoubleExpr(0d));
-				} else if (accum != ((_type == SUM) ? 0d : 1d)) 
-					_terms.add(new DoubleExpr(accum));
-			} else {
-				_terms.addAll(terms);
-			}
+			_terms = new ArrayList<ArithExpr>(terms);
 			Collections.sort(_terms);
 		}
 		public boolean equals(Object o) {
@@ -1414,6 +1376,161 @@ public class XADD  {
 			}
 			return accum;
 		}
+
+		// Canonicity for arithmetic expressions:
+		//
+		// 1. Expressions all zero on RHS of comparisons.
+		// 2. Multiple layers of + / * collapsed: (X + Y) + Z -> X + Y + Z
+		// 3. Distribute * over +: X * (A + B) -> X * A + X * B
+		// 4. All subtraction: X - Y -> X + -Y
+		// ??? 5. Division -> multiplication
+		// ??? 6. Multiple multipled divisions -> numerator and denominator
+		// 7. Sorting of OperExpr terms with TreeSet?
+		// 8. Make all products start with a single Double coefficient
+		// 9. Compress / remove common polynomial terms
+		// 10. Prevent singleton operator expressions
+		public Expr makeCanonical() {
+			
+			int new_type = _type;
+			ArrayList<ArithExpr> new_terms = new ArrayList<ArithExpr>(_terms);	
+			
+			// 4. All subtraction: X - Y -> X + -Y
+			if (new_type == MINUS) {
+				ArithExpr term2 = new_terms.get(1);
+				term2 = ArithExpr.op(term2, NEG_ONE, PROD);
+				new_type = SUM;
+			}
+						
+			// Recursively ensure all subterms in canonical form, and then
+			// 2. Multiple layers of + / * collapsed: (X + Y) + Z -> X + Y + Z
+			ArrayList<ArithExpr> reduced_terms = new ArrayList<ArithExpr>();
+			for (ArithExpr e : new_terms) {
+				e = (ArithExpr)e.makeCanonical();
+				// If same type, add all subterms directly to reduced terms
+				if ((e instanceof OperExpr) && ((OperExpr)e)._type == new_type &&
+					(new_type == SUM || new_type == PROD))
+					reduced_terms.addAll(((OperExpr)e)._terms);
+				else
+					reduced_terms.add(e);					
+			}
+			new_terms = reduced_terms;
+
+			// 3. Distribute * over +: X * (A + B) -> X * A + X * B
+			// X * (1/Y) * (W + Z) * (U + V)
+			// Maintain sum list... 
+			//   if division, multiply in 1/x
+			if (new_type == PROD) {
+				ArrayList<ArithExpr> sum_terms = new ArrayList<ArithExpr>(
+						Arrays.asList(new ArithExpr[] { new_terms.get(0) }));
+				
+				for (int i = 1; i < new_terms.size(); i++) {
+					ArithExpr e = new_terms.get(i);
+					if ((e instanceof OperExpr) && ((OperExpr)e)._type == SUM) {
+						// e2 : {A + B} * e3 : {C + D}
+						ArrayList<ArithExpr> new_sum_terms = new ArrayList<ArithExpr>();
+						for (ArithExpr e2 : sum_terms) {
+							for (ArithExpr e3 : ((OperExpr)e)._terms) {
+								new_sum_terms.add(ArithExpr.op(e2, e3, PROD));
+							}
+						}
+						sum_terms = new_sum_terms;
+					} else {
+						// e2 : {A + B} * e
+						for (int j = 0; j < sum_terms.size() - 1; j++) {
+							ArithExpr e2 = sum_terms.get(j);
+							sum_terms.set(j, new OperExpr(PROD, e, e2));
+						}
+					}
+				}
+				
+				// If sum_terms are singular no need to modify, otherwise
+				if (sum_terms.size() > 1) {
+					
+					new_type = SUM; 
+
+					// Again make canonical and collapse terms where possible
+					new_terms.clear();
+					for (ArithExpr e : sum_terms) {
+						e = (ArithExpr)e.makeCanonical();
+						// If same type, add all subterms directly to reduced terms
+						if ((e instanceof OperExpr) && ((OperExpr)e)._type == SUM)
+							new_terms.addAll(((OperExpr)e)._terms);
+						else
+							new_terms.add(e);					
+					}
+				}
+			}
+			
+			// 9. Merge (and remove) all polynomial terms in a sum
+			if (new_type == SUM) {
+				ArrayList<ArithExpr> non_terms = new ArrayList<ArithExpr>();
+				double const_sum = 0d;
+				
+				// Hash all terms to a coefficient
+				HashMap<ArrayList<ArithExpr>, Double> term2coef = new HashMap<ArrayList<ArithExpr>, Double>();
+				for (ArithExpr e : new_terms) {
+					if (e instanceof OperExpr && ((OperExpr)e)._type == PROD) {
+						OperExpr o = ((OperExpr)e);
+						DoubleExpr d = (DoubleExpr)o._terms.get(0);
+						ArrayList<ArithExpr> index = new ArrayList<ArithExpr>();
+						for (int j = 1; j < o._terms.size(); j++)
+							index.add(o._terms.get(j));
+						
+						Double dval = null;
+						if ((dval = term2coef.get(index)) != null)
+							dval += d._dConstVal;
+						else
+							dval = d._dConstVal;
+						term2coef.put(index, d._dConstVal);
+					} else if (e instanceof DoubleExpr) {
+						const_sum += ((DoubleExpr)e)._dConstVal;
+					} else
+						non_terms.add(e);
+				}
+				
+				// Convert back to an ArrayList
+				new_terms = non_terms;
+				if (const_sum != 0d)
+					new_terms.add(0, new DoubleExpr(const_sum));
+				
+				for (Map.Entry<ArrayList<ArithExpr>, Double> t : term2coef.entrySet()) {
+					double val = t.getValue();
+					if (val == 0d)
+						continue;
+						
+					ArrayList<ArithExpr> term = t.getKey();
+					DoubleExpr dcoef = new DoubleExpr(val);
+					term.add(0, dcoef);
+					new_terms.add(new OperExpr(PROD, term));
+				}
+			}
+			
+			// 8. Make all products start with a single Double coefficient
+			if (new_type == PROD) {
+				double coef = 1d;
+				ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
+				for (ArithExpr e : new_terms) {
+					if (e instanceof DoubleExpr)
+						coef *= ((DoubleExpr)e)._dConstVal;
+					else
+						factors.add(e);
+				}
+				if (coef != 0d) {
+					factors.add(0, new DoubleExpr(coef));
+					new_terms = factors; // Will be sorted on new OperExpr
+				} else {
+					return new DoubleExpr(0d);
+				}
+			}
+			
+			// 10. Prevent singleton operator expressions
+			if (new_terms.size() == 1) {
+				return new_terms.get(0);
+			}
+			
+			// Ensure canonical order
+			return new OperExpr(new_type, new_terms);
+		}
 	}
 	
 	public static class DoubleExpr extends ArithExpr {
@@ -1441,6 +1558,10 @@ public class XADD  {
 			return _dConstVal;
 		}
 		public void collectVars(HashSet<String> vars) { }
+		
+		public Expr makeCanonical() {
+			return this;
+		}
 
 	}
 	
@@ -1472,6 +1593,9 @@ public class XADD  {
 		public void collectVars(HashSet<String> vars) {
 			vars.add(_sVarName);
 		}
+		public Expr makeCanonical() {
+			return this;
+		}
  	}
 	
     public static String indent(int depth) {
@@ -1484,6 +1608,11 @@ public class XADD  {
 	////////////////////////////////////////////////////////////////
 	
 	public static void main(String[] args) {
+		
+		TestPolyOps();
+		if (0 <= 1)
+			return;
+		
 		System.out.println(Double.MAX_VALUE + " , " + (-Double.MAX_VALUE));
 		TestParse("[a]");
 		TestParse("[a + b]");
@@ -1496,9 +1625,9 @@ public class XADD  {
 		// Build and display an XADD
 		XADD xadd_context = new XADD();
 		// Put all boolean variables first to avoid reordering clashes
-		xadd_context.getVarIndex(new XADD.BoolDec("f"), true);
-		xadd_context.getVarIndex(new XADD.BoolDec("g"), true);
-		xadd_context.getVarIndex(new XADD.BoolDec("h"), true);
+		xadd_context.getVarIndex(xadd_context.new BoolDec("f"), true);
+		xadd_context.getVarIndex(xadd_context.new BoolDec("g"), true);
+		xadd_context.getVarIndex(xadd_context.new BoolDec("h"), true);
 		int xadd1 = TestBuild(xadd_context, "src/xadd/test1.xadd");
 		int xadd2 = TestBuild(xadd_context, "src/xadd/test2.xadd");
 		int xaddr1 = xadd_context.apply(xadd1, xadd2, XADD.PROD);
@@ -1568,5 +1697,17 @@ public class XADD  {
 		//Graph g2 = xadd_context.getGraph(dd2); g2.launchViewer();
 		//Graph g3 = xadd_context.getGraph(dd3); g3.launchViewer();
 		return dd1;
+	}
+	
+	public static void TestPolyOps() {
+		XADD xadd_context = new XADD();
+		int xadd1 = TestBuild(xadd_context, "src/xadd/test3.xadd");
+		int xaddr1 = xadd_context.apply(xadd1, xadd1, XADD.SUM);
+		xadd_context.getGraph(xaddr1).launchViewer();
+		int xaddr2 = xadd_context.apply(xadd1, xadd1, XADD.MINUS);
+		xadd_context.getGraph(xaddr2).launchViewer();
+		int xaddr3 = xadd_context.apply(xadd1, xadd1, XADD.PROD);
+		xadd_context.getGraph(xaddr3).launchViewer();
+
 	}
 }
