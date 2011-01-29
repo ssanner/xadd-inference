@@ -470,8 +470,8 @@ public class CMDP {
 		//System.out.println(o);
 		_alBVars = (ArrayList<String>) ((ArrayList) o).clone();
 		for (String var : _alBVars) {
-			_context.getVarIndex(new XADD.BoolDec(var), true);
-			_context.getVarIndex(new XADD.BoolDec(var + "'"), true);
+			_context.getVarIndex(_context.new BoolDec(var), true);
+			_context.getVarIndex(_context.new BoolDec(var + "'"), true);
 		}
 		// TODO: Add all intermediate boolean vars to XADD
 		o = i.next();
