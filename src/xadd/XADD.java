@@ -37,6 +37,9 @@ public class XADD  {
 														// not at extrema of domain
 	public final static boolean USE_MINUS_COMP = false; // Error, all max/min comps reduce to false!
 	
+	// Debug
+	public final static boolean CHECK_LOCAL_ORDERING = true;
+	
 	// Operators
 	public final static int UND   = 0;
 	public final static int SUM   = 1;
@@ -94,9 +97,9 @@ public class XADD  {
 	public int getVarIndex(Decision d, boolean create) {
 		
 		if (USE_CANONICAL_NODES) {
-			System.out.println(">> Before canonical: " + d);
+			//System.out.println(">> Before canonical: " + d);
 			d = d.makeCanonical();
-			System.out.println(">> After canonical: " + d);
+			//System.out.println(">> After canonical: " + d);
 		}
 		
 		int index = _alOrder.indexOf(d);
@@ -112,9 +115,9 @@ public class XADD  {
 	public int getTermNode(ArithExpr e) {
 		
 		if (USE_CANONICAL_NODES) {
-			System.out.println(">> TNode: Before canonical: " + e);
+			//System.out.println(">> TNode: Before canonical: " + e);
 			e = (ArithExpr)e.makeCanonical();
-			System.out.println(">> TNode: After canonical: " + e);
+			//System.out.println(">> TNode: After canonical: " + e);
 		}
 		
 		_tempTNode.set(e);
@@ -358,31 +361,51 @@ public class XADD  {
 			d = new ExprDec(comp);
 			var = getVarIndex(d, true);
 		}
-					
-		// Check ordering
-		ret = getINode(var, low, high);
-		XADDNode low_n  = _hmInt2Node.get(low);
-		if (low_n instanceof XADDINode) {
-			XADDINode low_ni = (XADDINode)low_n;
-			if (var > low_ni._var) {
-				System.out.println("Reordering problem: " + var + " > " + low_ni._var);
-				System.out.println(_alOrder.get(var));
-				System.out.println(_alOrder.get(low_ni._var));
-				new Exception().printStackTrace(System.out);
-				//System.exit(1);
+		
+		// Getting an Inode directly can be unsafe due to the fact that a
+		// substitution could have affected a variable reordering...
+		// uglier and more computationally costly, but the better solution 
+		// is via apply.
+		//
+		// ret = getINode(var, low, high);
+		int T_ZERO = getTermNode(ZERO);
+		int T_ONE  = getTermNode(ONE);
+		int ind_true  = getINode(var, /*low*/T_ZERO, /*high*/T_ONE);
+		int ind_false = getINode(var, /*low*/T_ONE,  /*high*/T_ZERO);
+		int true_half  = apply(ind_true,  high, PROD);
+		int false_half = apply(ind_false, low,  PROD);
+		ret = apply(true_half, false_half, SUM);
+		
+		if (CHECK_LOCAL_ORDERING) {
+			// Check ordering
+			XADDNode new_node = _hmInt2Node.get(ret);
+			if (new_node instanceof XADDINode) {
+				XADDINode new_inode = (XADDINode)new_node;
+				int var_id = new_inode._var;
+				XADDNode low_n  = _hmInt2Node.get(new_inode._low);
+				if (low_n instanceof XADDINode) {
+					XADDINode low_ni = (XADDINode)low_n;
+					if (var_id > low_ni._var) {
+						System.out.println("Reordering problem: " + var_id + " > " + low_ni._var);
+						System.out.println(var_id + ": " + _alOrder.get(var_id));
+						System.out.println(low_ni._var + ": " + _alOrder.get(low_ni._var));
+						new Exception().printStackTrace(System.out);
+						//System.exit(1);
+					}
+				}
+				XADDNode high_n = _hmInt2Node.get(new_inode._high);
+				if (high_n instanceof XADDINode) {
+					XADDINode high_ni = (XADDINode)high_n;
+					if (var_id > high_ni._var) {
+						System.out.println("Reordering problem: " + var_id + " > " + high_ni._var);
+						System.out.println(var_id + ": " + _alOrder.get(var_id));
+						System.out.println(high_ni._var + ": " + _alOrder.get(high_ni._var));
+						new Exception().printStackTrace(System.out);
+						//System.exit(1);
+					}
+				}
 			}
 		}
-		XADDNode high_n = _hmInt2Node.get(high);
-		if (high_n instanceof XADDINode) {
-			XADDINode high_ni = (XADDINode)high_n;
-			if (var > high_ni._var) {
-				System.out.println("Reordering problem: " + var + " > " + high_ni._var);
-				System.out.println(_alOrder.get(var));
-				System.out.println(_alOrder.get(high_ni._var));
-				new Exception().printStackTrace(System.out);
-				//System.exit(1);
-			}
-		}		
 		
 		// Put return value in cache and return
 		subst_cache.put(node_id, ret);
@@ -1471,19 +1494,19 @@ public class XADD  {
 					ArithExpr e = new_terms.get(i);
 					if ((e instanceof OperExpr) && ((OperExpr)e)._type == SUM) {
 						// e2 : {A + B} * e3 : {C + D}
-						System.out.println(">>>> Mult 1 " + e + " * " + sum_terms);
+						//System.out.println(">>>> Mult 1 " + e + " * " + sum_terms);
 						ArrayList<ArithExpr> new_sum_terms = new ArrayList<ArithExpr>();
 						for (ArithExpr e2 : sum_terms) {
 							for (ArithExpr e3 : ((OperExpr)e)._terms) {
-								System.out.println(">>>> Multiplying " + e2 + " * " + e3);
+								//System.out.println(">>>> Multiplying " + e2 + " * " + e3);
 								new_sum_terms.add(ArithExpr.op(e2, e3, PROD));
 							}
 						}
-						System.out.println(">>>> Mult 1 Out " + new_sum_terms);
+						//System.out.println(">>>> Mult 1 Out " + new_sum_terms);
 						sum_terms = new_sum_terms;
 					} else {
 						// e2 : {A + B} * e
-						System.out.println(">>>> Mult 2 " + e + " * " + sum_terms);
+						//System.out.println(">>>> Mult 2 " + e + " * " + sum_terms);
 						for (int j = 0; j < sum_terms.size(); j++) {
 							ArithExpr e2 = sum_terms.get(j);
 							sum_terms.set(j, new OperExpr(PROD, e, e2));
@@ -1692,12 +1715,17 @@ public class XADD  {
 		xadd_context.getVarIndex(xadd_context.new BoolDec("h"), true);
 		int xadd1 = TestBuild(xadd_context, "src/xadd/test1.xadd");
 		int xadd2 = TestBuild(xadd_context, "src/xadd/test2.xadd");
+
+		System.out.println(">> PROD Operations");
 		int xaddr1 = xadd_context.apply(xadd1, xadd2, XADD.PROD);
 		Graph g1 = xadd_context.getGraph(xaddr1); g1.launchViewer();
 		int xaddr2 = xadd_context.opOut(xaddr1, 2, PROD);
 		Graph g2 = xadd_context.getGraph(xaddr2); g2.launchViewer();
+		System.out.println(">> MAX Operation");
 		int xaddr3 = xadd_context.apply(xadd1, xadd2, XADD.MAX);
 		Graph g3 = xadd_context.getGraph(xaddr3); g3.launchViewer();
+		
+		System.out.println(">> Substitutions");
 		HashMap<String, ArithExpr> subst = new HashMap<String, ArithExpr>();
 		subst.put("k", new DoubleExpr(10d));
 		int xaddr4 = xadd_context.substitute(xaddr3, subst);
@@ -1715,13 +1743,14 @@ public class XADD  {
 		cont_assign.put("k",  0d);
 		cont_assign.put("x1", -5d);
 		
-		System.out.println("Eval: [" + bool_assign + "], [" + cont_assign + "]"
+		System.out.println(">> Evaluations");
+		System.out.println("1 Eval: [" + bool_assign + "], [" + cont_assign + "]"
 						   + ": " + xadd_context.evaluate(xaddr3, bool_assign, cont_assign));		
 		cont_assign.put("x1", 10d);
-		System.out.println("Eval: [" + bool_assign + "], [" + cont_assign + "]"
+		System.out.println("2 Eval: [" + bool_assign + "], [" + cont_assign + "]"
 				   + ": " + xadd_context.evaluate(xaddr3, bool_assign, cont_assign));		
 		cont_assign.put("x2", 7d);
-		System.out.println("Eval: [" + bool_assign + "], [" + cont_assign + "]"
+		System.out.println("3 Eval: [" + bool_assign + "], [" + cont_assign + "]"
 				   + ": " + xadd_context.evaluate(xaddr3, bool_assign, cont_assign));		
 	}
 	
