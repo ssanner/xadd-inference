@@ -87,7 +87,7 @@ public class CMDP {
 	public Integer    _nIter; // Tolerance (gamma) for CMDP
 	
 	public HashMap<String,Action> _hmName2Action;
-
+	public HashMap<String,Integer> _hmNameAction2RewardDD;
 	////////////////////////////////////////////////////////////////////////////
 	// Constructors
 	////////////////////////////////////////////////////////////////////////////
@@ -494,22 +494,28 @@ public class CMDP {
 			HashMap<String,ArrayList> cpt_map = new HashMap<String,ArrayList>();
 
 			o = i.next();
-			while (!((String) o).equalsIgnoreCase("endaction")) {
+			while (!((String) o).equalsIgnoreCase("reward")) {//endaction
 				cpt_map.put((String) o, (ArrayList) i.next());
 				o = i.next();
 			}
 
 			_hmName2Action.put(aname, new Action(this, aname, cpt_map));
+			//TODO: parse reward
+
+			// Set up reward
+			if (!(o instanceof String) || !((String) o).equalsIgnoreCase("reward")) {
+				System.out.println("Missing reward declaration for action: "+aname +" "+ o);
+				System.exit(1);
+			}
+			o=i.next();
+			ArrayList reward = (ArrayList) o;
+
+			_rewardDD = _context.buildCanonicalXADD(reward);
+
+			_hmNameAction2RewardDD.put(aname,_rewardDD);
+			
 		}
 
-		// Set up reward
-		if (!(o instanceof String) || !((String) o).equalsIgnoreCase("reward")) {
-			System.out.println("Missing reward declaration: " + o);
-			System.exit(1);
-		}
-		ArrayList reward = (ArrayList) i.next();
-
-		_rewardDD = _context.buildCanonicalXADD(reward);
 
 		// Read discount and tolerance
 		o = i.next();
