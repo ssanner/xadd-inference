@@ -27,6 +27,7 @@ import java.util.*;
 
 import xadd.XADD;
 import xadd.XADD.ArithExpr;
+import xadd.XADD.DoubleExpr;
 import xadd.XADD.XADDINode;
 
 // DD & FBR interfaces
@@ -60,11 +61,12 @@ public class CMDP {
 	// TODO: Integrate LP-Solve
 	
 	/* Constants */
-	public final static boolean DISPLAY_Q = true;
+	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = true;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
-
+	public final static boolean ONLYONEREWARD=false;
+	public final static ArrayList<String> ZERO  =  new ArrayList<String> (Arrays.asList("[0]"));  
 	/* For printing */
 	public static DecimalFormat _df = new DecimalFormat("#.###");
 
@@ -108,6 +110,7 @@ public class CMDP {
 		_bdDiscount = new BigDecimal("" + (-1));
 		_nIter = null;
 		_hmName2Action = new HashMap<String,Action>();
+		_hmNameAction2RewardDD=new HashMap<String,Integer>();
 
 		buildCMDP(input);
 	}
@@ -124,7 +127,17 @@ public class CMDP {
 		// ////////////////////////////////////////////////////////////
 		// Set value function equal to reward
 		// ////////////////////////////////////////////////////////////
-		_valueDD = _rewardDD;
+		if(ONLYONEREWARD){
+			_valueDD = _rewardDD;
+		}
+		else{
+			_valueDD = _context.buildCanonicalXADD(ZERO);
+		}
+			
+		
+		Graph gr = _context.getGraph(_valueDD);
+		gr.launchViewer(1300, 770);
+		
 		
 		// Other initialization
 		int iter = 0;
@@ -182,9 +195,15 @@ public class CMDP {
 			// ////////////////////////////////////////////////////////////
 			// Discount the max'ed value function backup and add in reward
 			// ////////////////////////////////////////////////////////////
-			_valueDD = _context.apply(_rewardDD, 
+			
+			if(ONLYONEREWARD){
+				_valueDD = _context.apply(_rewardDD, 
 							_context.scalarOp(_maxDD, _bdDiscount.doubleValue(), XADD.PROD), 
 							XADD.SUM);
+			}
+			else{
+				_valueDD = 	_context.scalarOp(_maxDD, _bdDiscount.doubleValue(), XADD.PROD);
+			}
 
 			if (DISPLAY_V) {
 				Graph g = _context.getGraph(_valueDD);
@@ -207,7 +226,10 @@ public class CMDP {
 	 * Regress a DD through an action
 	 **/
 	public int regress(int vfun, Action a) {
-
+        if (!ONLYONEREWARD){
+        	_rewardDD=_hmNameAction2RewardDD.get(a._sName);
+        	vfun = _context.apply(_rewardDD,vfun,XADD.SUM);
+        }
 		XADD.XADDNode n = _context.getNode(vfun);
 		HashSet<String> vars = n.collectVars();
 		ArrayList<String> var_names = new ArrayList<String>();
@@ -222,7 +244,7 @@ public class CMDP {
 			Integer dd = a._hmVar2DD.get(var_name);
 			if (dd != null) {
 				var_names.add(var);
-				node_list.add(_context.getNode(dd));
+				node_list.add(_context.getNode(dd)); //node_list has all XADDs from action a that are related with valueDD variables
 				subst.add(null);
 			}
 		}
@@ -491,6 +513,7 @@ public class CMDP {
 
 			// o == "action"
 			String aname = (String) i.next();
+			System.out.println("action: "+aname);
 			HashMap<String,ArrayList> cpt_map = new HashMap<String,ArrayList>();
 
 			o = i.next();
@@ -511,14 +534,18 @@ public class CMDP {
 			ArrayList reward = (ArrayList) o;
 
 			_rewardDD = _context.buildCanonicalXADD(reward);
+			//Graph g = _context.getGraph(_rewardDD);
+			//g.launchViewer(1300, 770);
+
 
 			_hmNameAction2RewardDD.put(aname,_rewardDD);
+			o=i.next();
 			
 		}
 
 
 		// Read discount and tolerance
-		o = i.next();
+		//o = i.next();
 		if (!(o instanceof String)
 				|| !((String) o).equalsIgnoreCase("discount")) {
 			System.out.println("Missing discount declaration: " + o);
