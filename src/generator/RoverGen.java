@@ -23,7 +23,7 @@ public class RoverGen {
 	private String maxTime="57600";
 	private String minEnergy="0";
 	private String maxEnergy="20";
-	private int secondPerMeter=60;
+	private int secondPerMeter=1;//60;
 	private double energyPerMeter=0.2;
 		
 	public final static String  PATH_FILES="/home/karina/XADD/xadd-inference/src/cmdp/ex/";
@@ -46,9 +46,9 @@ public class RoverGen {
 		ArrayList X= new ArrayList();
 		ArrayList Y= new ArrayList();
 		generatePairXY(X,Y,size);
-		
-		
-		
+		System.out.println("X:"+X.toString());
+		System.out.println("Y:"+Y.toString());
+				
 		String filename =PATH_FILES+"rover" + size + ".cmdp";
 		PrintWriter os = null;
 		try {
@@ -116,15 +116,19 @@ public class RoverGen {
 							else{
 								
 								if (idVar4.equals(idVar2)==true) {
-									os.println(idVar4+"' ([energy>0.6 &" +idVar4+ "== 1]");
-									os.println("([0])");
-									os.println( "(["+idVar4+"])" );
+									os.println(idVar4+"' ([energy>0.6]");
+									os.println(" ("+idVar4);
+									os.println("   ([0])");
+									os.println( "   (["+idVar4+"]))" );
+									os.println( " (["+idVar4+"])" );
 									os.println( ")" );
 								}
 								else{
-									os.println(idVar4+"' ([energy>0.6 &" +idVar2+ "== 1]");
-									os.println("([1])");
-									os.println( "(["+idVar4+"])" );
+									os.println(idVar4+"' ([energy>0.6]");
+									os.println(" ("+idVar2);
+									os.println("   ([1])");
+									os.println( "   (["+idVar4+"]))" );
+									os.println( " (["+idVar4+"])" );
 									os.println( ")" );
 								}
 							}
@@ -138,16 +142,20 @@ public class RoverGen {
                  
 						}
 						//print time and energy
-						os.println("time' ([energy>0.6 &" +idVar2+ "== 1]");
+						os.println("time' ([energy>0.6]");
+						os.println(" ("+idVar2);
 						double distancepipj=computeDistanceXY(idVar2,idVar3,X,Y,size);
 						double totaltime=distancepipj*secondPerMeter;
-						os.println("([time + "+totaltime+"])");
-						os.println("([time]) ");
+						os.println("   ([time + "+totaltime+"])");
+						os.println("   ([time])) ");
+						os.println(" ([time]) ");
 						os.println( ")" );
-						os.println("energy' ([energy>0.6 &" +idVar2+ "== 1]");
+						os.println("energy' ([energy>0.6]" );
+						os.println(" ("+idVar2);
 						double totalenergy=distancepipj*energyPerMeter; 
-						os.println("([energy - "+ totalenergy+"])");
-						os.println("([energy])");
+						os.println("   ([energy - "+ totalenergy+"])");
+						os.println("   ([energy]))");
+						os.println(" ([energy])");
 						os.println( ")" );
 						os.println("reward ([0])");
 						os.println("endaction");						
@@ -177,33 +185,62 @@ public class RoverGen {
 						os.println(idVar8+"' ( ["+idVar8+"] )");
 					}
 					else{
-							os.println(idVar8+"'([energy>3 & "+idVar6 +"== 1 & time > 36000 & time < 50400 & "+idVar8+" == 0] ");
-							os.println("([1])");
-							os.println( "(["+idVar8+"])" );
+							os.println(idVar8+"'([energy>3]");
+							os.println( " ("+idVar6);
+							os.println( "   ([time > 36000]");
+							os.println( "     ([time < 50400]");
+							os.println( "       ("+idVar8);
+							os.println( "          (["+idVar8+"])" );
+							os.println( "          ([1]))");
+							os.println( "     (["+idVar8+"]))" );
+							os.println( "   (["+idVar8+"]))" );
+							os.println( "  (["+idVar8+"]))" );
+							os.println( " (["+idVar8+"])" );
 							os.println( ")" );
 					}
 				}
 				//TODO:
 				//print time and energy
-				os.println("time' ([energy>3 &" +idVar6+ "== 1& time > 36000 & time < 50400 & taken"+ idVar6 +"== 0]");
-				os.println("([time + 600])");
-				os.println("([time]) ");
+				os.println("time' ([energy>3]"); 
+				os.println( " ("+idVar6);
+				os.println( "   ([time > 36000]");
+				os.println( "     ([time < 50400]");
+				os.println( "       (taken"+ idVar6);
+				os.println( "           ([time]) ");
+				os.println( "           ([time + 600]))");
+				os.println( "       ([time])) ");
+				os.println( "     ([time])) ");
+				os.println( "   ([time])) ");
+				os.println( " ([time]) ");
 				os.println( ")" );
-				os.println("energy' ([energy>3 &" +idVar6+ "== 1& time > 36000 & time < 50400 & taken"+ idVar6 +"== 0]");
-				os.println("([energy - 2])");
-				os.println("([energy])");
+				os.println("energy' ([energy>3]"); 
+				os.println( " ("+idVar6);
+				os.println( "   ([time > 36000]");
+				os.println( "     ([time < 50400]");
+				os.println( "       (taken"+ idVar6);
+				os.println("             ([energy])");
+				os.println("             ([energy - 2]))");
+				os.println("        ([energy]))");
+				os.println("      ([energy]))");
+				os.println("    ([energy]))");
+				os.println("  ([energy])");
 				os.println( ")" );
-				os.println("reward ([energy>3 &" +idVar6+ "== 1& time > 36000 & time < 50400 & taken"+ idVar6 +"== 0]");
-				os.println("([100])");
-				os.println("([0])");
+				os.println("reward ([energy>3]"); 
+				os.println( " ("+idVar6);
+				os.println( "   ([time > 36000]");
+				os.println( "     ([time < 50400]");
+				os.println( "       (taken"+ idVar6);
+				os.println( "           ([0])");
+				os.println( "           ([100]))");
+				os.println( "       ([0]))");
+				os.println( "     ([0]))");
+				os.println( "   ([0]))");
+				os.println( " ([0])");
 				os.println( ")" );
 				os.println("endaction");						
 			}
-			
-					
-
 			// Generate discount and iterations
-			os.println("\n\ndiscount 1.0000000");
+			os.println("discount 1.0000000");
 			os.println("iterations 10");
 
 			// Close file
@@ -261,8 +298,8 @@ public class RoverGen {
 	public static void main(String[] args) {
 		RoverGen tg=new RoverGen();
 		tg.GenRoverFile(3);
-		tg.GenRoverFile(4);
 		/*tg.GenRoverFile(4);
+		tg.GenRoverFile(4);
 		tg.GenRoverFile(5);
 		tg.GenRoverFile(6);
 		tg.GenRoverFile(7);
