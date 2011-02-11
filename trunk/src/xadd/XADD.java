@@ -809,7 +809,7 @@ public class XADD  {
 	    public void toGraph(Graph g, int id) {
 	    	String this_node = Integer.toString(id);
 	    	g.addNode(this_node);
-			g.addNodeLabel(this_node, _expr.toString());
+			g.addNodeLabel(this_node, _expr.toString()+" id:"+id);
 			if (GRAPH_USE_COLOR)
 				g.addNodeColor(this_node, "lightsalmon"); // red, darkred, lightsalmon
 			g.addNodeShape(this_node, "box");
@@ -863,7 +863,7 @@ public class XADD  {
 			//System.out.println("var: " + _var);
 			//System.out.println(_alOrder);
 			g.addNode(this_node);
-			g.addNodeLabel(this_node, _alOrder.get(_var).toString());
+			g.addNodeLabel(this_node, _alOrder.get(_var).toString()+" id: "+getVarIndex(_alOrder.get(_var),true));
 			if (GRAPH_USE_COLOR)
 				g.addNodeColor(this_node, "lightblue"); // green, lightblue
 			g.addNodeShape(this_node, "ellipse");
@@ -1699,6 +1699,7 @@ public class XADD  {
 		//if (0 <= 1) return;
 		
 		System.out.println(Double.MAX_VALUE + " , " + (-Double.MAX_VALUE));
+		/*
 		TestParse("[a]");
 		TestParse("[a + b]");
 		TestParse("[a + b + 3 + 4]");
@@ -1708,14 +1709,23 @@ public class XADD  {
 		TestParse("[(a + b) * (3 * 4)]");
 		
 		// Build and display an XADD
+		 */
 		XADD xadd_context = new XADD();
+		
 		// Put all boolean variables first to avoid reordering clashes
 		xadd_context.getVarIndex(xadd_context.new BoolDec("f"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("g"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("h"), true);
-		int xadd1 = TestBuild(xadd_context, "src/xadd/test1.xadd");
-		int xadd2 = TestBuild(xadd_context, "src/xadd/test2.xadd");
-
+		int xadd1 = TestBuild(xadd_context, "/home/karina/XADD/xadd-inference/src/xadd/test1.xadd");
+		int xadd2 = TestBuild(xadd_context, "/home/karina/XADD/xadd-inference/src/xadd/test2.xadd");
+		
+		//*****************TESTING MAX***********
+		int xadd4 = TestBuild(xadd_context, "/home/karina/XADD/xadd-inference/src/xadd/test4.xadd");
+		int xadd5 = TestBuild(xadd_context, "/home/karina/XADD/xadd-inference/src/xadd/test5.xadd");
+		int xaddrRes = xadd_context.apply(xadd4, xadd5, XADD.MAX);
+		Graph gRes = xadd_context.getGraph(xaddrRes); gRes.launchViewer();
+		
+        //**************************************
 		System.out.println(">> PROD Operations");
 		int xaddr1 = xadd_context.apply(xadd1, xadd2, XADD.PROD);
 		Graph g1 = xadd_context.getGraph(xaddr1); g1.launchViewer();

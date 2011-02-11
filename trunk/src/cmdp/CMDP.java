@@ -61,7 +61,7 @@ public class CMDP {
 	// TODO: Integrate LP-Solve
 	
 	/* Constants */
-	public final static boolean DISPLAY_Q = false;
+	public final static boolean DISPLAY_Q = true;
 	public final static boolean DISPLAY_V = true;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
@@ -135,8 +135,8 @@ public class CMDP {
 		}
 			
 		
-		Graph gr = _context.getGraph(_valueDD);
-		gr.launchViewer(1300, 770);
+		//Graph gr = _context.getGraph(_valueDD);
+		//gr.launchViewer(1300, 770);
 		
 		
 		// Other initialization
@@ -172,7 +172,6 @@ public class CMDP {
 				// Regress the current value function through each action
 				//////////////////////////////////////////////////////////////
 				int regr = regress(_valueDD, me.getValue());
-
 				if (DISPLAY_Q) {
 					Graph g = _context.getGraph(regr);
 					g.addNode("_temp_");
@@ -188,8 +187,11 @@ public class CMDP {
 				// ////////////////////////////////////////////////////////////
 				// Take the max over this action and the previous action
 				// ////////////////////////////////////////////////////////////
-				_maxDD = ((_maxDD == null) ? regr : 
+				_maxDD = ((_maxDD == null) ? regr :
 					_context.apply(_maxDD, regr, XADD.MAX));
+				Graph gr = _context.getGraph(_maxDD);
+				gr.launchViewer(1300, 770);
+
 			}
 
 			// ////////////////////////////////////////////////////////////
@@ -201,9 +203,11 @@ public class CMDP {
 							_context.scalarOp(_maxDD, _bdDiscount.doubleValue(), XADD.PROD), 
 							XADD.SUM);
 			}
-			else{
-				_valueDD = 	_context.scalarOp(_maxDD, _bdDiscount.doubleValue(), XADD.PROD);
+			else
+			{
+				_valueDD=_maxDD;
 			}
+			
 
 			if (DISPLAY_V) {
 				Graph g = _context.getGraph(_valueDD);
@@ -226,10 +230,7 @@ public class CMDP {
 	 * Regress a DD through an action
 	 **/
 	public int regress(int vfun, Action a) {
-        if (!ONLYONEREWARD){
-        	_rewardDD=_hmNameAction2RewardDD.get(a._sName);
-        	vfun = _context.apply(_rewardDD,vfun,XADD.SUM);
-        }
+      
 		XADD.XADDNode n = _context.getNode(vfun);
 		HashSet<String> vars = n.collectVars();
 		ArrayList<String> var_names = new ArrayList<String>();
@@ -255,8 +256,22 @@ public class CMDP {
 		System.out.println("Subst: " + subst);
 		
 		// TODO: Deal with non-canonical XADD result (call reduce)
-		return regress(node_list, var_names, subst, 0, vfun);//regress(_valueDD, a);
-
+		int q=regress(node_list, var_names, subst, 0, vfun);//regress(_valueDD, a);
+		if (!ONLYONEREWARD){
+        	_rewardDD=_hmNameAction2RewardDD.get(a._sName);
+        	//Graph gr1 = _context.getGraph(_rewardDD);
+			//gr1.launchViewer(1300, 770);
+        	
+        	q = _context.apply(_rewardDD, 
+					_context.scalarOp(q, _bdDiscount.doubleValue(), XADD.PROD), 
+					XADD.SUM);
+        	
+        	//Graph gr = _context.getGraph(q);
+			//gr.launchViewer(1300, 770);
+        	
+        	
+        } 
+        return q;
 		/*
 		// For every next-state var in Action, multiply by DD and sumOut var
 		long max = -1;
@@ -330,13 +345,16 @@ public class CMDP {
 		
 		// Check if at terminal
 		if (index >= node_list.size()) {
-		
+		    //make substitution
 			HashMap<String,ArithExpr> leaf_subs = new HashMap<String,ArithExpr>();
 			for (int i = 0; i < var_names.size(); i++) 
 				leaf_subs.put(var_names.get(i), subst.get(i));
 			System.out.println("Substituting: " + leaf_subs + 
 					"\ninto:" + _context.getString(vfun));
-			return _context.substitute(vfun, leaf_subs);
+			int temporal=_context.substitute(vfun, leaf_subs);
+			//Graph gr = _context.getGraph(temporal);
+			//gr.launchViewer(1300, 770);
+			return temporal;
 		}
 		
 		// Must be nonterminal so continue to recurse
