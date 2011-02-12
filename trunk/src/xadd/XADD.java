@@ -1680,7 +1680,7 @@ public class XADD  {
 			vars.add(_sVarName);
 		}
 		public Expr makeCanonical() {
-			return this;
+			return new OperExpr(PROD, new DoubleExpr(1d), this);
 		}
  	}
 	
