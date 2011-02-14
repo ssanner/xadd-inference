@@ -1716,14 +1716,15 @@ public class XADD  {
 		xadd_context.getVarIndex(xadd_context.new BoolDec("f"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("g"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("h"), true);
-		int xadd1 = TestBuild(xadd_context, "/home/karina/XADD/xadd-inference/src/xadd/test1.xadd");
-		int xadd2 = TestBuild(xadd_context, "/home/karina/XADD/xadd-inference/src/xadd/test2.xadd");
+		int xadd1 = TestBuild(xadd_context, "./src/xadd/test1.xadd");
+		int xadd2 = TestBuild(xadd_context, "./src/xadd/test2.xadd");
 		
 		//*****************TESTING MAX***********
-		int xadd4 = TestBuild(xadd_context, "/home/karina/XADD/xadd-inference/src/xadd/test4.xadd");
-		int xadd5 = TestBuild(xadd_context, "/home/karina/XADD/xadd-inference/src/xadd/test5.xadd");
+		int xadd4 = TestBuild(xadd_context, "./src/xadd/test4.xadd");
+		int xadd5 = TestBuild(xadd_context, "./src/xadd/test5.xadd");
 		int xaddrRes = xadd_context.apply(xadd4, xadd5, XADD.MAX);
 		Graph gRes = xadd_context.getGraph(xaddrRes); gRes.launchViewer();
+		if (true) return;
 		
         //**************************************
 		System.out.println(">> PROD Operations");
