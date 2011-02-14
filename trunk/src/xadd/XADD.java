@@ -252,10 +252,17 @@ public class XADD  {
 	}
 	
 	public int opOut(int node_id, int var_id, int op) {
-		return reduceOp(node_id, var_id, op);
+		int ret = reduceOp(node_id, var_id, op);
+		
+		// operations like sum and product may get decisions out of order
+		// (reduce low / high should not do this)
+		if (op == SUM || op == PROD)
+			return reduceSub(ret, new HashMap<String,ArithExpr>(), new HashMap<Integer,Integer>());
+		else
+			return ret;
 	}
 	
-	public int reduceOp(int node_id, int var_id, int op) {
+	private int reduceOp(int node_id, int var_id, int op) {
 
 		Integer ret = null;
 		XADDNode n = _hmInt2Node.get(node_id);
@@ -290,21 +297,22 @@ public class XADD  {
 		}
 		
 		if (op != -1 && var_id != -1 && var_id == inode._var) {
+			// ReduceOp
 			if (op == RESTRICT_LOW) {
 				ret = low;
 			} else if (op == RESTRICT_HIGH) {
 				ret = high;
 			} else if (op == SUM || op == PROD) { // op \in {MINUS, DIV} not commutative
 				                                  // not obvious if low or high comes first
-				ret = apply(low, high, op);
+				ret = apply(low, high, op); // may not be canonical, but will be fixed
 			} else {
 				System.out.println("ERROR: id:" + op + "/ name:" + _aOpNames[op] + 
-						" expected in node cache, but not found!");
+						" expected in node cache, but not found!  (Or illegal op.)");
 				new Exception().printStackTrace();
 				System.exit(1);		
 			}
 		} else {
-			// GetInode will handle the case of low == high
+			// Standard Reduce: getInode will handle the case of low == high
 			ret = getINode(inode._var, low, high);
 		}
 		
@@ -372,9 +380,9 @@ public class XADD  {
 		int T_ONE  = getTermNode(ONE);
 		int ind_true  = getINode(var, /*low*/T_ZERO, /*high*/T_ONE);
 		int ind_false = getINode(var, /*low*/T_ONE,  /*high*/T_ZERO);
-		int true_half  = apply(ind_true,  high, PROD);
-		int false_half = apply(ind_false, low,  PROD);
-		ret = apply(true_half, false_half, SUM);
+		int true_half  = applyInt(ind_true,  high, PROD); // Note: this enforces canonicity so
+		int false_half = applyInt(ind_false, low,  PROD); // can use applyInt rather than apply
+		ret = applyInt(true_half, false_half, SUM);
 		
 		if (CHECK_LOCAL_ORDERING) {
 			// Check ordering
@@ -446,12 +454,18 @@ public class XADD  {
 	
 	public int scalarOp(int dd, double val, int op) {
 		int dd_val = getTermNode(new DoubleExpr(val));
-		return apply(dd, dd_val, op);
+		return apply(dd, dd_val, op); // could make non-canonical so have to use apply
 	}
 	
 	public IntTriple _tempApplyKey = new IntTriple(-1,-1,-1);
 
 	public int apply(int a1, int a2, int op) {
+		int ret = applyInt(a1, a2, op);
+		// TODO: should maintain a reusable reduce cache here
+		return reduceSub(ret, new HashMap<String,ArithExpr>(), new HashMap<Integer,Integer>()); 
+	}
+	
+	public int applyInt(int a1, int a2, int op) {
 		
 		_tempApplyKey.set(a1, a2, op);
 		Integer ret = _hmApplyCache.get(_tempApplyKey);
@@ -504,8 +518,8 @@ public class XADD  {
 			}
 
 			// Perform in-line reduction and set min/max for subnodes if needed
-			int low = apply(v1low, v2low, op);
-			int high = apply(v1high, v2high, op);
+			int low = applyInt(v1low, v2low, op);
+			int high = applyInt(v1high, v2high, op);
 
 			// getINode will take care of 'low==high'
 			ret = getINode(var, low, high);
