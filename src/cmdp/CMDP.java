@@ -61,15 +61,23 @@ public class CMDP {
 	// TODO: Integrate LP-Solve
 	
 	/* Constants */
-	public final static boolean DISPLAY_Q = true;
-	public final static boolean DISPLAY_V = true;
+	public final static boolean DISPLAY_Q = false;
+	public final static boolean DISPLAY_V = false;
+	public final static boolean DISPLAY_SUBST = false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
 	public final static boolean ONLYONEREWARD=false;
+	public final static boolean PRINT3DFILE=true;
+	public final static String varX="x1";
+	public final static String varY="x2";
+	public final static boolean rover= false;
+	
+	public final static double size3D = 4d; // Won't flush until < amt
 	public final static ArrayList<String> ZERO  =  new ArrayList<String> (Arrays.asList("[0]"));  
 	/* For printing */
 	public static DecimalFormat _df = new DecimalFormat("#.###");
-
+	public final static String  NAME_FILE_3D="./src/cmdp/ex/File3D.dat";
+	
 	/* Static variables */
 	public static long _lTime; // For timing purposes
 	public static Runtime RUNTIME = Runtime.getRuntime();
@@ -189,8 +197,8 @@ public class CMDP {
 				// ////////////////////////////////////////////////////////////
 				_maxDD = ((_maxDD == null) ? regr :
 					_context.apply(_maxDD, regr, XADD.MAX));
-				Graph gr = _context.getGraph(_maxDD);
-				gr.launchViewer(1300, 770);
+				//Graph gr = _context.getGraph(_maxDD);
+				//gr.launchViewer(1300, 770);
 
 			}
 
@@ -221,7 +229,11 @@ public class CMDP {
 				g.launchViewer(1300, 770);
 			}
 		}
-
+        if(PRINT3DFILE){
+        	create3DDataFile(_valueDD,varX,varY); 
+        }
+		
+		
 		// Flush caches and return number of iterations
 		return iter;
 	}
@@ -349,8 +361,10 @@ public class CMDP {
 			HashMap<String,ArithExpr> leaf_subs = new HashMap<String,ArithExpr>();
 			for (int i = 0; i < var_names.size(); i++) 
 				leaf_subs.put(var_names.get(i), subst.get(i));
-			System.out.println("Substituting: " + leaf_subs + 
+			if(DISPLAY_SUBST){ 
+							System.out.println("Substituting: " + leaf_subs + 
 					"\ninto:" + _context.getString(vfun));
+			}
 			int temporal=_context.substitute(vfun, leaf_subs);
 			//Graph gr = _context.getGraph(temporal);
 			//gr.launchViewer(1300, 770);
@@ -589,6 +603,92 @@ public class CMDP {
 	// Miscellaneous
 	////////////////////////////////////////////////////////////////////////////
 
+	/*
+	 * Set the value of the other continous variables with the maxValue, without boolean assigments 
+	 */
+	
+	public void create3DDataFile(Integer XDD, String xVar, String yVar) {
+		try {
+     		
+            BufferedWriter out = new BufferedWriter(new FileWriter(NAME_FILE_3D));
+            
+            HashMap<String,Boolean> bool_assign = new HashMap<String,Boolean>();
+            	
+            for (String var : _alBVars) {
+       		   bool_assign.put(var, false);	
+       		}
+            if (rover){
+            	bool_assign.put("p1", true);
+            }
+             
+             Double minX= _context._hmMinVal.get(xVar);
+             Double maxX= _context._hmMaxVal.get(xVar);
+             Double incX= (maxX-minX)/(size3D-1);
+             
+             Double minY= _context._hmMinVal.get(yVar);
+             Double maxY= _context._hmMaxVal.get(yVar);
+             Double incY= (maxY-minY)/(size3D-1);
+             
+             
+            ArrayList<Double> X = new ArrayList<Double>();
+            ArrayList<Double> Y = new ArrayList<Double>();
+            
+
+             Double xval=minX;
+             Double yval=minY;
+             for(int i=0;i<size3D;i++){
+            	 X.add(xval);
+            	 Y.add(yval);
+            	 xval=xval+incX;
+            	 yval=yval+incY;
+             }
+             System.out.println(">> Evaluations");
+             for(int i=0;i<size3D;i++){
+                 out.append(X.get(i).toString()+" ");
+                 out.append(Y.get(i).toString()+" ");
+                 for(int j=0;j<size3D;j++){
+                	 
+             
+  		     		HashMap<String,Double> cont_assign = new HashMap<String,Double>();
+  		     		
+  		     		for (Map.Entry<String,Double> me : _context._hmMaxVal.entrySet()) {
+  		     			cont_assign.put(me.getKey(),  me.getValue());
+  		     		}
+  		     			     		
+              		cont_assign.put(xVar,  X.get(j));
+              		cont_assign.put(yVar,  Y.get(i));
+              		
+              		Double z=_context.evaluate(XDD, bool_assign, cont_assign);
+             		System.out.println("Eval: [" + bool_assign + "], [" + cont_assign + "]"
+             						   + ": " + z);		
+
+             		out.append(z.toString()+" ");
+                   /*
+             		cont_assign.put(xVar,  200.0d/3.0d);
+              		cont_assign.put(yVar,  100.0d/3.0d);
+              		z=_context.evaluate(XDD, bool_assign, cont_assign);
+             		System.out.println("Eval: [" + bool_assign + "], [" + cont_assign + "]"
+             						   + ": " + z);		
+
+             		out.append(z.toString()+" ");
+              		*/
+              		
+             		
+                 }
+                 out.newLine();
+             }
+            //out.append(System.getProperty("line.separator"));
+             out.close();
+             
+             
+             
+         } catch (IOException e) {
+         	System.out.println("Problem with the creation 3D file");
+         	System.exit(0);
+         }
+	}
+	
+	
 	public String toString() {
 		return toString(false, false);
 	}
