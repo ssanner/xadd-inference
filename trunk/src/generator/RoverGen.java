@@ -297,8 +297,8 @@ public class RoverGen {
 	/** Main **/
 	public static void main(String[] args) {
 		RoverGen tg=new RoverGen();
-		tg.GenRoverFile(3);
-		/*tg.GenRoverFile(4);
+		tg.GenRoverFile(2);
+		/*tg.GenRoverFile(3);
 		tg.GenRoverFile(4);
 		tg.GenRoverFile(5);
 		tg.GenRoverFile(6);
