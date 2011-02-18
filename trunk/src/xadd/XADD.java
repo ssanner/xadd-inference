@@ -39,6 +39,7 @@ public class XADD  {
 	
 	// Debug
 	public final static boolean CHECK_LOCAL_ORDERING = true;
+	public final static boolean SHOW_DECISION_EVAL = false;
 	
 	// Operators
 	public final static int UND   = 0;
@@ -436,8 +437,12 @@ public class XADD  {
 				branch_high = ((TautDec)d)._bTautology;
 			else if (d instanceof BoolDec)
 				branch_high = bool_assign.get(((BoolDec)d)._sVarName);
-			else if (d instanceof ExprDec)
+			else if (d instanceof ExprDec) {
 				branch_high = ((ExprDec)d)._expr.evaluate(cont_assign);
+				if (SHOW_DECISION_EVAL) {
+					System.out.println(" - " + ((ExprDec)d)._expr + ": " + branch_high);
+				}
+			}
 			
 			// Not all required variables were assigned
 			if (branch_high == null)
