@@ -62,17 +62,17 @@ public class CMDP {
 	
 	/* Constants */
 	public final static boolean DISPLAY_Q = false;
-	public final static boolean DISPLAY_V = false;
+	public final static boolean DISPLAY_V = true;
 	public final static boolean DISPLAY_SUBST = false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
 	public final static boolean ONLYONEREWARD=false;
-	public final static boolean PRINT3DFILE=true;
-	public final static String varX="x1";
-	public final static String varY="x2";
-	public final static boolean rover= false;
+	public static boolean PRINT3DFILE;
+	public static String varX;
+	public static String varY;
+	public static boolean rover;
 	
-	public final static double size3D = 4d; // Won't flush until < amt
+	public static double size3D = 10d; // Won't flush until < amt
 	public final static ArrayList<String> ZERO  =  new ArrayList<String> (Arrays.asList("[0]"));  
 	/* For printing */
 	public static DecimalFormat _df = new DecimalFormat("#.###");
@@ -747,8 +747,11 @@ public class CMDP {
 	 * Basic testing interface.
 	 **/
 	public static void main(String args[]) {
-		if (args.length < 1 || args.length > 2) {
-			System.out.println("\nMust enter: MDP-filename [iterations]");
+		if (args.length < 1 || args.length > 7) {
+			System.out.println("\nMust enter: MDP-filename");
+			System.out.println("\nMust enter: number of iterations");
+			System.out.println("\nMust enter: print 3D file?");
+			
 			System.exit(1);
 		}
 
@@ -757,13 +760,36 @@ public class CMDP {
 
 		// Parse iterations
 		int iter = -1;
-		if (args.length == 2) try {
+		try {
 			iter = Integer.parseInt(args[1]);
 		} catch (NumberFormatException nfe) {
 			System.out.println("\nIllegal iteration value\n");
 			System.exit(1);
 		}
-
+		
+		try {
+			PRINT3DFILE = Boolean.parseBoolean(args[2]);
+		} catch (NumberFormatException nfe) {
+			System.out.println("\nIllegal print3DFile value\n");
+			System.exit(1);
+		}
+		
+		if (PRINT3DFILE & args.length==7){ 
+			  rover = Boolean.parseBoolean(args[3]);
+			  varX = args[4];
+			  varY = args[5];
+			  size3D= Double.parseDouble(args[6]);
+		}
+		else{
+			if (PRINT3DFILE){
+				System.out.println("\nMust enter: is it a rover problem?");
+				System.out.println("\nMust enter: X var");
+				System.out.println("\nMust enter: Y var");
+				System.out.println("\nMust enter: size 3D");
+				System.exit(1);
+			}
+		}
+			
 		// Build a CMDP, display, solve
 		CMDP mdp1 = new CMDP(filename);
 		System.out.println(mdp1.toString(false, false));
