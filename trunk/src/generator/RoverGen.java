@@ -17,8 +17,8 @@ import java.util.*;
  * @language Java (JDK 1.3)
  **/
 public class RoverGen {
-	private int maxX=3;
-	private int maxY=4;
+	private int maxX=100;
+	private int maxY=200;
 	private String minTime="0";
 	private String maxTime="57600";
 	private String minEnergy="0";
@@ -245,6 +245,7 @@ public class RoverGen {
 
 			// Close file
 			os.close();
+			System.out.println(filename+" created");
 
 		} catch (IOException ioe) {
 			System.out.println(ioe);
@@ -298,10 +299,14 @@ public class RoverGen {
 	public static void main(String[] args) {
 		RoverGen tg=new RoverGen();
 		tg.GenRoverFile(2);
-		/*tg.GenRoverFile(3);
+		
+		tg.GenRoverFile(3);
+		
 		tg.GenRoverFile(4);
+		
 		tg.GenRoverFile(5);
-		tg.GenRoverFile(6);
+		
+		/*tg.GenRoverFile(6);
 		tg.GenRoverFile(7);
 		tg.GenRoverFile(8);
 		tg.GenRoverFile(9);
