@@ -270,8 +270,8 @@ public class CMDP {
 		
 		// TODO: Deal with non-canonical XADD result (call reduce)
 		int q=regress(node_list, var_names, subst, 0, vfun);//regress(_valueDD, a);
-		Graph gr1 = _context.getGraph(q);
-		gr1.launchViewer(1300, 770);
+		//Graph gr1 = _context.getGraph(q);
+		//gr1.launchViewer(1300, 770);
     
 		
 		if (!ONLYONEREWARD){
