@@ -61,7 +61,7 @@ public class CMDP {
 	// TODO: Integrate LP-Solve
 	
 	/* Constants */
-	public final static boolean DISPLAY_Q = false;
+	public final static boolean DISPLAY_Q = true;
 	public final static boolean DISPLAY_V = true;
 	public final static boolean DISPLAY_SUBST = false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
@@ -174,6 +174,7 @@ public class CMDP {
 			//////////////////////////////////////////////////////////////
 			// Iterate over each action
 			//////////////////////////////////////////////////////////////
+			_maxDD=null;
 			for (Map.Entry<String,Action> me : _hmName2Action.entrySet()) {
 
 				//////////////////////////////////////////////////////////////
@@ -269,6 +270,10 @@ public class CMDP {
 		
 		// TODO: Deal with non-canonical XADD result (call reduce)
 		int q=regress(node_list, var_names, subst, 0, vfun);//regress(_valueDD, a);
+		Graph gr1 = _context.getGraph(q);
+		gr1.launchViewer(1300, 770);
+    
+		
 		if (!ONLYONEREWARD){
         	_rewardDD=_hmNameAction2RewardDD.get(a._sName);
         	//Graph gr1 = _context.getGraph(_rewardDD);
