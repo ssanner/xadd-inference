@@ -257,8 +257,9 @@ public class XADD  {
 		
 		// operations like sum and product may get decisions out of order
 		// (reduce low / high should not do this)
+		// TODO: is this right?
 		if (op == SUM || op == PROD)
-			return reduceSub(ret, new HashMap<String,ArithExpr>(), new HashMap<Integer,Integer>());
+			return makeCanonical(ret);
 		else
 			return ret;
 	}
@@ -322,6 +323,10 @@ public class XADD  {
 		return ret;
 	}
 
+	public int makeCanonical(int node_id) {
+		return reduceSub(node_id, new HashMap<String,ArithExpr>(), new HashMap<Integer,Integer>()); 
+	}
+	
 	// Not worrying about reusing cache across class
 	// TODO: substitution has to enforce order if it is violated
 	public int substitute(int node_id, HashMap<String,ArithExpr> subst) {
@@ -369,6 +374,13 @@ public class XADD  {
 			comp = comp.substitute(subst);
 			d = new ExprDec(comp);
 			var = getVarIndex(d, true);
+		} else if (d instanceof BoolDec) {
+			//System.out.println(((BoolDec)d)._sVarName + ": " + subst);
+			VarExpr sub = (VarExpr)subst.get(((BoolDec)d)._sVarName);
+			if (sub != null) {
+				// There is a substitution for this BoolDec... get new var index
+				var = getVarIndex( new BoolDec(sub._sVarName), false);
+			}
 		}
 		
 		// Getting an Inode directly can be unsafe due to the fact that a
@@ -457,6 +469,9 @@ public class XADD  {
 		return t._expr.evaluate(cont_assign);
 	}
 	
+	// TODO: could an op other than max/min lead to a non-canonical diagram???
+	//       only ops that can change inodes can affect ordering and the only
+	//       ops that can do this should be max/min.
 	public int scalarOp(int dd, double val, int op) {
 		int dd_val = getTermNode(new DoubleExpr(val));
 		return apply(dd, dd_val, op); // could make non-canonical so have to use apply
@@ -464,10 +479,13 @@ public class XADD  {
 	
 	public IntTriple _tempApplyKey = new IntTriple(-1,-1,-1);
 
+	// TODO: could an op other than max/min lead to a non-canonical diagram???
+	//       only ops that can change inodes can affect ordering and the only
+	//       ops that can do this should be max/min.
 	public int apply(int a1, int a2, int op) {
 		int ret = applyInt(a1, a2, op);
 		// TODO: should maintain a reusable reduce cache here
-		return reduceSub(ret, new HashMap<String,ArithExpr>(), new HashMap<Integer,Integer>()); 
+		return makeCanonical(ret); 
 	}
 	
 	public int applyInt(int a1, int a2, int op) {

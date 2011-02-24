@@ -92,5 +92,16 @@ reward (p2
        ([0.0])
 )
 endaction
+
+constraint
+(p1 
+  (p2
+    ([0.0])
+    ([1.0]))
+  (p2
+    ([1.0])
+    ([0.0])))
+endconstraint
+
 discount 1.0000000
 iterations 10

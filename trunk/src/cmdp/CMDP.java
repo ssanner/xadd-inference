@@ -27,6 +27,7 @@ import java.util.*;
 
 import xadd.XADD;
 import xadd.XADD.ArithExpr;
+import xadd.XADD.BoolDec;
 import xadd.XADD.DoubleExpr;
 import xadd.XADD.XADDINode;
 
@@ -66,7 +67,6 @@ public class CMDP {
 	public final static boolean DISPLAY_SUBST = false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
-	public final static boolean ONLYONEREWARD=false;
 	public static boolean PRINT3DFILE;
 	public static String varX;
 	public static String varY;
@@ -88,7 +88,6 @@ public class CMDP {
 	public ArrayList<String> _alBVars; 
 	public ArrayList<String> _alIVars; 
 
-	public Integer _rewardDD; // The reward for this CMDP
 	public Integer _valueDD; // The resulting value function once this CMDP has
 							// been solved
 	public Integer _maxDD;
@@ -97,7 +96,7 @@ public class CMDP {
 	public Integer    _nIter; // Tolerance (gamma) for CMDP
 	
 	public HashMap<String,Action> _hmName2Action;
-	public HashMap<String,Integer> _hmNameAction2RewardDD;
+	public ArrayList<Integer> _alConstraints;
 	////////////////////////////////////////////////////////////////////////////
 	// Constructors
 	////////////////////////////////////////////////////////////////////////////
@@ -114,11 +113,10 @@ public class CMDP {
 	 **/
 	public CMDP(ArrayList input) {
 		_context = new XADD();
-		_prevDD = _maxDD = _rewardDD = _valueDD = null;
+		_prevDD = _maxDD = _valueDD = null;
 		_bdDiscount = new BigDecimal("" + (-1));
 		_nIter = null;
 		_hmName2Action = new HashMap<String,Action>();
-		_hmNameAction2RewardDD=new HashMap<String,Integer>();
 
 		buildCMDP(input);
 	}
@@ -135,13 +133,7 @@ public class CMDP {
 		// ////////////////////////////////////////////////////////////
 		// Set value function equal to reward
 		// ////////////////////////////////////////////////////////////
-		if(ONLYONEREWARD){
-			_valueDD = _rewardDD;
-		}
-		else{
-			_valueDD = _context.buildCanonicalXADD(ZERO);
-		}
-			
+		_valueDD = _context.buildCanonicalXADD(ZERO);
 		
 		//Graph gr = _context.getGraph(_valueDD);
 		//gr.launchViewer(1300, 770);
@@ -207,16 +199,10 @@ public class CMDP {
 			// Discount the max'ed value function backup and add in reward
 			// ////////////////////////////////////////////////////////////
 			
-			if(ONLYONEREWARD){
-				_valueDD = _context.apply(_rewardDD, 
-							_context.scalarOp(_maxDD, _bdDiscount.doubleValue(), XADD.PROD), 
-							XADD.SUM);
-			}
-			else
-			{
-				_valueDD=_maxDD;
-			}
-			
+			//_valueDD = _context.apply(_rewardDD, 
+			//			_context.scalarOp(_maxDD, _bdDiscount.doubleValue(), XADD.PROD), 
+			//			XADD.SUM);
+			_valueDD = _maxDD;
 
 			if (DISPLAY_V) {
 				Graph g = _context.getGraph(_valueDD);
@@ -246,7 +232,9 @@ public class CMDP {
       
 		XADD.XADDNode n = _context.getNode(vfun);
 		HashSet<String> vars = n.collectVars();
-		ArrayList<String> var_names = new ArrayList<String>();
+		ArrayList<String> cvar_names = new ArrayList<String>();
+		HashMap<String,Integer> bvar_dds = new HashMap<String,Integer>();
+		HashMap<String,ArithExpr> prime_subs = new HashMap<String,ArithExpr>();
 		ArrayList<XADD.XADDNode> node_list = new ArrayList<XADD.XADDNode>();
 		ArrayList<XADD.ArithExpr> subst = new ArrayList<XADD.ArithExpr>();
 		
@@ -254,107 +242,80 @@ public class CMDP {
 		// defined and that there are no name clashes between continuous vars
 		// and boolean vars.
 		for (String var : vars) {
-			String var_name = var + "'";
-			Integer dd = a._hmVar2DD.get(var_name);
-			if (dd != null) {
-				var_names.add(var);
+			String var_prime = var + "'";
+			Integer dd = a._hmVar2DD.get(var_prime);
+			if (_alBVars.contains(var)) {
+				bvar_dds.put(var_prime, dd); // Note: var is unprimed
+				prime_subs.put(var, new XADD.VarExpr(var_prime));
+			} else {
+				cvar_names.add(var);
 				node_list.add(_context.getNode(dd)); //node_list has all XADDs from action a that are related with valueDD variables
 				subst.add(null);
 			}
 		}
 
 		System.out.println("\n" + a._sName);
-		System.out.println("Vars:  " + var_names);
+		System.out.println("BVars: " + bvar_dds.keySet());
+		System.out.println("CVars: " + cvar_names);
 		System.out.println("Node:  " + node_list);
 		System.out.println("Subst: " + subst);
 		
-		// TODO: Deal with non-canonical XADD result (call reduce)
-		int q=regress(node_list, var_names, subst, 0, vfun);//regress(_valueDD, a);
+		// Do the regression for the continuous variables
+		System.out.println("- Starting V before continuous regression through " + a._sName + ":\n" + _context.getString(vfun));
+
+		int q = regress(node_list, cvar_names, subst, 0, vfun);//regress(_valueDD, a);
+
+		// Prime the remaining *boolean* decisions in the value function (v -> v')
+		// Note that BoolDec substitution in XADD is a bit of a hack since
+		//      the substitution framework expects to see expressions... here
+		//      we just use VarExpr as a wrapper for a boolean decision var name
+		//      ... substitute knows how to handle this if it matches a BoolDec
+		System.out.println("- Before prime substitution:\n" + _context.getString(q));
+		q = _context.substitute(q, prime_subs); 
+		System.out.println("- After prime substitution:\n" + _context.getString(q));
+
+		
+		// Do the decision-theoretic regression for the binary variables
+		// - multiply in CPT for v'
+		// - marginalize out v'
+		for (Map.Entry<String, Integer> e : bvar_dds.entrySet()) {
+			String var_prime = e.getKey();
+			int var_id = _context.getVarIndex( _context.new BoolDec(var_prime), false);
+			Integer dd_mult = e.getValue();
+			System.out.println("- Summing out: " + var_prime + "/" + 
+					           var_id + " in\n" + _context.getString(dd_mult));
+			q = _context.apply(q, dd_mult, XADD.PROD);
+			q = _context.opOut(q, var_id, XADD.SUM);
+		}
+		System.out.println("- After regression:\n" + _context.getString(q));
+		
 		//Graph gr1 = _context.getGraph(q);
 		//gr1.launchViewer(1300, 770);
     
-		
-		if (!ONLYONEREWARD){
-        	_rewardDD=_hmNameAction2RewardDD.get(a._sName);
-        	//Graph gr1 = _context.getGraph(_rewardDD);
-			//gr1.launchViewer(1300, 770);
-        	
-        	q = _context.apply(_rewardDD, 
-					_context.scalarOp(q, _bdDiscount.doubleValue(), XADD.PROD), 
-					XADD.SUM);
-        	
-        	//Graph gr = _context.getGraph(q);
-			//gr.launchViewer(1300, 770);
-        	
-        	
-        } 
-        return q;
-		/*
-		// For every next-state var in Action, multiply by DD and sumOut var
-		long max = -1;
-		Iterator i = a._tmID2DD.entrySet().iterator();
-		Object dd_ret = vfun;
-
-		// Find what gids are currently in vfun (probs cannot introduce new
-		// primed gids)
-		Set gids = _context.getGIDs(vfun);
-		if (VERBOSE_LEVEL >= 1) {
-			System.out.println("Regressing action: " + a._sName + "\nGIDs: "
-					+ gids);
+       	//Graph gr1 = _context.getGraph(a._reward);
+		//gr1.launchViewer(1300, 770);
+    	
+		// Multiply in discount and add reward
+    	q = _context.apply(a._reward, 
+				_context.scalarOp(q, _bdDiscount.doubleValue(), XADD.PROD), 
+				XADD.SUM);
+    	
+		// Multiply in all constraints
+		// Note: constraints are 1.0 in legal states and 0.0 in illegal states
+		for (Integer constraint : _alConstraints) {
+			q = _context.apply(q, constraint, XADD.PROD);
 		}
+		 
+		System.out.println("- Final Q(" + a._sName + "):\n" + _context.getString(q));
 
-		// ////////////////////////////////////////////////////////////
-		// For each next state variable in DBN for action 'a'
-		// ////////////////////////////////////////////////////////////
-		while (i.hasNext()) {
+    	//Graph gr = _context.getGraph(q);
+		//gr.launchViewer(1300, 770);
 
-			Map.Entry me = (Map.Entry) i.next();
-			Integer head_id = (Integer) me.getKey();
-
-			// No use in multiplying by a gid that does not exist (and will sum
-			// to 1)
-			if (!gids.contains(head_id)) {
-				if (VERBOSE_LEVEL >= 1) {
-					System.out.println("Skipping " + head_id);
-				}
-				continue;
-			}
-
-			// Get the dd for this action
-			Object dd = me.getValue();
-
-			// Screen output
-			if (VERBOSE_LEVEL >= 2) {
-				System.out.println("  - Summing out: " + head_id);
-			}
-
-			// /////////////////////////////////////////////////////////////////
-			// Multiply next state variable DBN into current value function
-			// /////////////////////////////////////////////////////////////////
-			dd_ret = _context.applyInt(dd_ret, dd, DD.ARITH_PROD);
-			int regr_sz = _context.getGIDs(dd_ret).size();
-			if (regr_sz > _nMaxRegrSz) {
-				_nMaxRegrSz = regr_sz;
-			}
-
-			// /////////////////////////////////////////////////////////////////
-			// Sum out next state variable
-			// /////////////////////////////////////////////////////////////////
-			dd_ret = _context.opOut(dd_ret, head_id.intValue(), DD.ARITH_SUM);
-			// Cache maintenance
-			if (flush_caches) {
-				clearSaveNodes();
-				saveNode(dd_ret);
-				flushCaches();
-			}
-		}
-
-		// Return regressed value function (which is now in terms of prev state
-		// vars)
-		return dd_ret;
-		*/
+    	return q;
 	}
 	
+	// entry point for descending on branches of next variable
+	// or simply making substitutions if all variables to branch on are exhausted
 	// TODO: Deal with non-canonical XADD result (call reduce)
 	public int regress(ArrayList<XADD.XADDNode> node_list, 
 		ArrayList<String> var_names, ArrayList<XADD.ArithExpr> subst, 
@@ -362,7 +323,18 @@ public class CMDP {
 		
 		// Check if at terminal
 		if (index >= node_list.size()) {
-		    //make substitution
+		    // Make substitution
+			// TODO: This approach may lead to problems... ideally need to
+			//       prime vfun and then make substitutions for prime variables...
+			//       here the current state variable is directly substituted
+			//       with the regression expression... just need to make sure
+			//       all substitutions are simultaneous and don't lead to 
+			//       resubstitutions x' = x + y, y' = z gets messed up
+			//       if x' gets replaced with x + z because variables were
+			//       not primed.
+			//
+			//       Update: I believe this will be OK here because each
+			//       variable in an expression is only substituted once.
 			HashMap<String,ArithExpr> leaf_subs = new HashMap<String,ArithExpr>();
 			for (int i = 0; i < var_names.size(); i++) 
 				leaf_subs.put(var_names.get(i), subst.get(i));
@@ -370,19 +342,22 @@ public class CMDP {
 							System.out.println("Substituting: " + leaf_subs + 
 					"\ninto:" + _context.getString(vfun));
 			}
-			int temporal=_context.substitute(vfun, leaf_subs);
+			int temporal = _context.substitute(vfun, leaf_subs);
 			//Graph gr = _context.getGraph(temporal);
 			//gr.launchViewer(1300, 770);
 			return temporal;
 		}
 		
 		// Must be nonterminal so continue to recurse
-		return regress(node_list.get(index), node_list, var_names, subst, index, vfun);
+		return regress2(node_list.get(index), node_list, var_names, subst, index, vfun);
 	}
 	
 	// TODO: Deal with non-canonical XADD result (call reduce)
-	// Recurses to leaves and returns substituted XADD
-	public int regress(XADD.XADDNode cur, ArrayList<XADD.XADDNode> node_list, 
+	// Recurses to leaves and returns substituted XADD... branches on
+	// current diagram for current node until a leaf is reached indicating
+	// a substitution... subst recorded then regress called with advance
+	// to next variable transition
+	public int regress2(XADD.XADDNode cur, ArrayList<XADD.XADDNode> node_list, 
 			ArrayList<String> var_names, ArrayList<XADD.ArithExpr> subst, 
 			int index, int vfun) {
 		
@@ -390,9 +365,9 @@ public class CMDP {
 			// Branch each way and recombine in new result
 			XADD.XADDINode inode = (XADD.XADDINode)cur;
 			XADD.XADDNode low = _context.getNode(inode._low);
-			int new_low = regress(low, node_list, var_names, subst, index, vfun);
+			int new_low = regress2(low, node_list, var_names, subst, index, vfun);
 			XADD.XADDNode high = _context.getNode(inode._high);
-			int new_high = regress(high, node_list, var_names, subst, index, vfun);
+			int new_high = regress2(high, node_list, var_names, subst, index, vfun);
 			
 			// TODO: Deal with non-canonical XADD (ordering could change due to subst)
 			return _context.getINode(inode._var, new_low, new_high);
@@ -559,9 +534,6 @@ public class CMDP {
 				o = i.next();
 			}
 
-			_hmName2Action.put(aname, new Action(this, aname, cpt_map));
-			//TODO: parse reward
-
 			// Set up reward
 			if (!(o instanceof String) || !((String) o).equalsIgnoreCase("reward")) {
 				System.out.println("Missing reward declaration for action: "+aname +" "+ o);
@@ -570,17 +542,32 @@ public class CMDP {
 			o=i.next();
 			ArrayList reward = (ArrayList) o;
 
-			_rewardDD = _context.buildCanonicalXADD(reward);
+			int reward_dd = _context.buildCanonicalXADD(reward);
 			//Graph g = _context.getGraph(_rewardDD);
 			//g.launchViewer(1300, 770);
 
-
-			_hmNameAction2RewardDD.put(aname,_rewardDD);
-			o=i.next();
+			_hmName2Action.put(aname, new Action(this, aname, cpt_map, reward_dd));
+			o=i.next(); // endaction
 			
 		}
 
+		// Check for constraints declaration (can be multiple)
+		_alConstraints = new ArrayList<Integer>();
+		while (true) {
+			if (!(o instanceof String)
+					|| !((String) o).equalsIgnoreCase("constraint")) {
+				break;
+			}
 
+			o=i.next(); // get dd
+			ArrayList next_constraint = (ArrayList) o;
+			int next_constraint_dd = _context.buildCanonicalXADD(next_constraint);
+			_alConstraints.add(next_constraint_dd);
+			
+			o = i.next(); // get endconstraint
+			o = i.next(); // get constraint or discount
+		}
+		
 		// Read discount and tolerance
 		//o = i.next();
 		if (!(o instanceof String)
@@ -709,16 +696,15 @@ public class CMDP {
 		sb.append("Order:       " + _context._alOrder + "\n");
 		sb.append("Discount:    " + _bdDiscount + "\n");
 		sb.append("Iterations:  " + _nIter + "\n");
+		sb.append("Constraints (" + _alConstraints.size() + "):\n");
+		for (Integer cons : _alConstraints) {
+			sb.append("- " + _context.getString(cons) + "\n");
+		}
 		sb.append("Actions (" + _hmName2Action.size() + "):\n");
 		for (Action a : _hmName2Action.values()) {
 			sb.append("\n==> " + a);
 		}
 		sb.append("\n");
-
-		if (display_reward) {
-			Graph g = _context.getGraph(_rewardDD);
-			g.launchViewer(1300, 770);
-		}
 
 		if (display_value) {
 			Graph g = _context.getGraph(_valueDD);
