@@ -50,8 +50,11 @@ p2' ( p2
 
 takenp1'(p1
         ([1.0])
-        ([0.0])
+        (takenp1      
+          ([1.0]) 
+          ([0.0])
        )
+)
 takenp2' (takenp2
        ([1.0])
        ([0.0])
@@ -83,8 +86,12 @@ takenp1' ( takenp1
 
 takenp2'(p2
        ([1.0])
+       (takenp2
+       ([1.0])
        ([0.0])
        )
+  
+)
 reward (p2
        (takenp2
            ([0.0])
