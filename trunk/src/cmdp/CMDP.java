@@ -62,7 +62,7 @@ public class CMDP {
 	// TODO: Integrate LP-Solve
 	
 	/* Constants */
-	public final static boolean DISPLAY_Q = true;
+	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = true;
 	public final static boolean DISPLAY_SUBST = false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?

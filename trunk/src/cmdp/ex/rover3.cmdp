@@ -96,6 +96,7 @@ energy' ([energy>0.6]
 )
 reward ([0])
 endaction
+
 action movep2p3
 p1' ( [p1] )
 p2' ([energy>0.6]
@@ -158,6 +159,7 @@ energy' ([energy>0.6]
 )
 reward ([0])
 endaction
+
 action movep3p2
 p1' ( [p1] )
 p2' ([energy>0.6]

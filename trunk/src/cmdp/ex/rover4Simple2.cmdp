@@ -1,0 +1,599 @@
+cvariables ()
+min-values ()
+max-values ()
+bvariables (p4 p3 p2 p1 takenp4 takenp3 takenp2 takenp1 )
+ivariables()
+action movep1p2
+p1' ([0.0])
+p2' (p1
+   ([1.0])
+   (p2
+       ([1.0])
+       ([0.0])
+  )
+)
+p3' (p3
+       ([1.0])
+       ([0.0])
+  )
+p4' (p4
+       ([1.0])
+       ([0.0])
+  )
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action movep1p3
+p1' ([0.0])
+p2' (p2
+       ([1.0])
+       ([0.0])
+  )
+p3' (p1
+   ([1.0])
+   (p3
+       ([1.0])
+       ([0.0])
+  )
+)
+p4' (p4
+       ([1.0])
+       ([0.0])
+  )
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action movep1p4
+p1' ([0.0])
+p2' (p2
+       ([1.0])
+       ([0.0])
+  )
+p3' (p3
+       ([1.0])
+       ([0.0])
+  )
+p4' (p1
+   ([1.0])
+   (p4
+       ([1.0])
+       ([0.0])
+  )
+)
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action movep2p1
+p1' (p2
+   ([1.0])
+   (p1
+       ([1.0])
+       ([0.0])
+  )
+)
+p2' ([0.0])
+p3' (p3
+       ([1.0])
+       ([0.0])
+  )
+p4' (p4
+       ([1.0])
+       ([0.0])
+  )
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action movep2p3
+p1' (p1
+       ([1.0])
+       ([0.0])
+  )
+p2' ([0.0])
+p3' (p2
+   ([1.0])
+   (p3
+       ([1.0])
+       ([0.0])
+  )
+)
+p4' (p4
+       ([1.0])
+       ([0.0])
+  )
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action movep2p4
+p1' (p1
+       ([1.0])
+       ([0.0])
+  )
+p2' ([0.0])
+p3' (p3
+       ([1.0])
+       ([0.0])
+  )
+p4' (p2
+   ([1.0])
+   (p4
+       ([1.0])
+       ([0.0])
+  )
+)
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action movep3p1
+p1' (p3
+   ([1.0])
+   (p1
+       ([1.0])
+       ([0.0])
+  )
+)
+p2' (p2
+       ([1.0])
+       ([0.0])
+  )
+p3' ([0.0])
+p4' (p4
+       ([1.0])
+       ([0.0])
+  )
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action movep3p2
+p1' (p1
+       ([1.0])
+       ([0.0])
+  )
+p2' (p3
+   ([1.0])
+   (p2
+       ([1.0])
+       ([0.0])
+  )
+)
+p3' ([0.0])
+p4' (p4
+       ([1.0])
+       ([0.0])
+  )
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action movep3p4
+p1' (p1
+       ([1.0])
+       ([0.0])
+  )
+p2' (p2
+       ([1.0])
+       ([0.0])
+  )
+p3' ([0.0])
+p4' (p3
+   ([1.0])
+   (p4
+       ([1.0])
+       ([0.0])
+  )
+)
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action movep4p1
+p1' (p4
+   ([1.0])
+   (p1
+       ([1.0])
+       ([0.0])
+  )
+)
+p2' (p2
+       ([1.0])
+       ([0.0])
+  )
+p3' (p3
+       ([1.0])
+       ([0.0])
+  )
+p4' ([0.0])
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action movep4p2
+p1' (p1
+       ([1.0])
+       ([0.0])
+  )
+p2' (p4
+   ([1.0])
+   (p2
+       ([1.0])
+       ([0.0])
+  )
+)
+p3' (p3
+       ([1.0])
+       ([0.0])
+  )
+p4' ([0.0])
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action movep4p3
+p1' (p1
+       ([1.0])
+       ([0.0])
+  )
+p2' (p2
+       ([1.0])
+       ([0.0])
+  )
+p3' (p4
+   ([1.0])
+   (p3
+       ([1.0])
+       ([0.0])
+  )
+)
+p4' ([0.0])
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+  )
+takenp4' ( takenp4
+   ([1.0])
+   ([0.0])
+  )
+reward ([0.0])
+endaction
+action takepicturep1
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+p3' (p3
+   ([1.0])
+   ([0.0])
+  )
+p4' (p4
+   ([1.0])
+   ([0.0])
+  )
+takenp1' (p1
+     ([1.0])
+     (takenp1
+        ([1.0])
+        ([0.0])
+     )
+)
+takenp2' (takenp2
+     ([1.0])
+     ([0.0])
+    )
+takenp3' (takenp3
+     ([1.0])
+     ([0.0])
+    )
+takenp4' (takenp4
+     ([1.0])
+     ([0.0])
+    )
+reward (p1
+       (takenp1
+           ([0.0])
+           ([100.0]))
+       ([0.0])
+)
+endaction
+action takepicturep2
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+p3' (p3
+   ([1.0])
+   ([0.0])
+  )
+p4' (p4
+   ([1.0])
+   ([0.0])
+  )
+takenp1' (takenp1
+     ([1.0])
+     ([0.0])
+    )
+takenp2' (p2
+     ([1.0])
+     (takenp2
+        ([1.0])
+        ([0.0])
+     )
+)
+takenp3' (takenp3
+     ([1.0])
+     ([0.0])
+    )
+takenp4' (takenp4
+     ([1.0])
+     ([0.0])
+    )
+reward (p2
+       (takenp2
+           ([0.0])
+           ([101.0]))
+       ([0.0])
+)
+endaction
+action takepicturep3
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+p3' (p3
+   ([1.0])
+   ([0.0])
+  )
+p4' (p4
+   ([1.0])
+   ([0.0])
+  )
+takenp1' (takenp1
+     ([1.0])
+     ([0.0])
+    )
+takenp2' (takenp2
+     ([1.0])
+     ([0.0])
+    )
+takenp3' (p3
+     ([1.0])
+     (takenp3
+        ([1.0])
+        ([0.0])
+     )
+)
+takenp4' (takenp4
+     ([1.0])
+     ([0.0])
+    )
+reward (p3
+       (takenp3
+           ([0.0])
+           ([102.0]))
+       ([0.0])
+)
+endaction
+action takepicturep4
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+p3' (p3
+   ([1.0])
+   ([0.0])
+  )
+p4' (p4
+   ([1.0])
+   ([0.0])
+  )
+takenp1' (takenp1
+     ([1.0])
+     ([0.0])
+    )
+takenp2' (takenp2
+     ([1.0])
+     ([0.0])
+    )
+takenp3' (takenp3
+     ([1.0])
+     ([0.0])
+    )
+takenp4' (p4
+     ([1.0])
+     (takenp4
+        ([1.0])
+        ([0.0])
+     )
+)
+reward (p4
+       (takenp4
+           ([0.0])
+           ([103.0]))
+       ([0.0])
+)
+endaction
+discount 1.0000000
+iterations 10
