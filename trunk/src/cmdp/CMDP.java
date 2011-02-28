@@ -234,7 +234,7 @@ public class CMDP {
 		HashSet<String> vars = n.collectVars();
 		ArrayList<String> cvar_names = new ArrayList<String>();
 		HashMap<String,Integer> bvar_dds = new HashMap<String,Integer>();
-		HashMap<String,ArithExpr> prime_subs = new HashMap<String,ArithExpr>();
+		HashMap<String,ArithExpr> bool_prime_subs = new HashMap<String,ArithExpr>();
 		ArrayList<XADD.XADDNode> node_list = new ArrayList<XADD.XADDNode>();
 		ArrayList<XADD.ArithExpr> subst = new ArrayList<XADD.ArithExpr>();
 		
@@ -246,7 +246,7 @@ public class CMDP {
 			Integer dd = a._hmVar2DD.get(var_prime);
 			if (_alBVars.contains(var)) {
 				bvar_dds.put(var_prime, dd); // Note: var is unprimed
-				prime_subs.put(var, new XADD.VarExpr(var_prime));
+				bool_prime_subs.put(var, new XADD.VarExpr(var_prime));
 			} else {
 				cvar_names.add(var);
 				node_list.add(_context.getNode(dd)); //node_list has all XADDs from action a that are related with valueDD variables
@@ -260,22 +260,36 @@ public class CMDP {
 		System.out.println("Node:  " + node_list);
 		System.out.println("Subst: " + subst);
 		
-		// Do the regression for the continuous variables
-		System.out.println("- Starting V before continuous regression through " + a._sName + ":\n" + _context.getString(vfun));
-
-		int q = regress(node_list, cvar_names, subst, 0, vfun);//regress(_valueDD, a);
-
+		// Note: following is the regression procedure
+		//
+		// (1) we substitute boolean variable primes: b -> b'
+		// (2) we regress the continuous variable diagram all at once
+		//     building the tree of regression decisions then doing all
+		//     substitutions of continuous vars on the vfun below each
+		//     branch
+		// (3) we multiply in and sum out the CPTs for each b'
+		//
+		// The trick is to avoid a mix-up of current and next-state variables
+		// ... this is enforced in the above procedure because priming boolean
+		// variables keeps them from being mixed up and the continuous regressions,
+		// the continuous regressions can only introduce previous state variables
+		// as does multiplying in and summing out the boolean variable CPTs.
+		
 		// Prime the remaining *boolean* decisions in the value function (v -> v')
 		// Note that BoolDec substitution in XADD is a bit of a hack since
 		//      the substitution framework expects to see expressions... here
 		//      we just use VarExpr as a wrapper for a boolean decision var name
 		//      ... substitute knows how to handle this if it matches a BoolDec
-		System.out.println("- Before prime substitution:\n" + _context.getString(q));
-		q = _context.substitute(q, prime_subs); 
-		System.out.println("- After prime substitution:\n" + _context.getString(q));
-
+		//System.out.println("- Before boolean prime substitution:\n" + _context.getString(vfun));
+		int q = _context.substitute(vfun, bool_prime_subs); 
+		//System.out.println("- After boolean prime substitution:\n" + _context.getString(q));
 		
-		// Do the decision-theoretic regression for the binary variables
+		// Do the *deterministic regression* for the continuous variables
+		// -- may drop in previous state boolean variables
+		//System.out.println("- Starting V before continuous regression through " + a._sName + ":\n" + _context.getString(vfun));
+		q = regress(node_list, cvar_names, subst, 0, q);//regress(_valueDD, a);
+
+		// Do the *decision-theoretic regression* for the primed boolean variables
 		// - multiply in CPT for v'
 		// - marginalize out v'
 		for (Map.Entry<String, Integer> e : bvar_dds.entrySet()) {
@@ -287,7 +301,7 @@ public class CMDP {
 			q = _context.apply(q, dd_mult, XADD.PROD);
 			q = _context.opOut(q, var_id, XADD.SUM);
 		}
-		System.out.println("- After regression:\n" + _context.getString(q));
+		//System.out.println("- After regression:\n" + _context.getString(q));
 		
 		//Graph gr1 = _context.getGraph(q);
 		//gr1.launchViewer(1300, 770);
