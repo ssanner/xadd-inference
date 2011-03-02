@@ -771,6 +771,10 @@ public class CMDP {
 			System.out.println("\nIllegal iteration value\n");
 			System.exit(1);
 		}
+		catch(ArrayIndexOutOfBoundsException aiobe){
+			System.out.println("\nIMissing argument\n");
+			System.exit(1);
+		}
 		
 		try {
 			PRINT3DFILE = Boolean.parseBoolean(args[2]);

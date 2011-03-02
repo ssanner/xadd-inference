@@ -5,78 +5,128 @@ bvariables (p2 p1 takenp2 takenp1 )
 ivariables()
 action movep1p2
 p1' ([energy>0.6]
- (p1
-   ([0])
-   ([p1]))
- ([p1])
+   ([0.0])
+   (p1
+       ([1.0])
+       ([0.0])
+   )
 )
 p2' ([energy>0.6]
  (p1
-   ([1])
-   ([p2]))
- ([p2])
+   ([1.0])
+   (p2
+       ([1.0])
+       ([0.0])
+   )
+  )
+  (p2
+    ([1.0])
+    ([0.0])
+  )
 )
-takenp1' ( [takenp1] )
-takenp2' ( [takenp2] )
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
 time' ([energy>0.6]
  (p1
-   ([time + 178.63930138690085])
+   ([time + 16.97056274847714])
    ([time])) 
  ([time]) 
 )
 energy' ([energy>0.6]
  (p1
-   ([energy - 35.727860277380174])
+   ([energy - 3.394112549695428])
    ([energy]))
  ([energy])
 )
-reward ([0])
+reward ([0.0])
 endaction
 action movep2p1
 p1' ([energy>0.6]
  (p2
-   ([1])
-   ([p1]))
- ([p1])
+   ([1.0])
+   (p1
+       ([1.0])
+       ([0.0])
+   )
+  )
+  (p1
+    ([1.0])
+    ([0.0])
+  )
 )
 p2' ([energy>0.6]
- (p2
-   ([0])
-   ([p2]))
- ([p2])
+   ([0.0])
+   (p2
+       ([1.0])
+       ([0.0])
+   )
 )
-takenp1' ( [takenp1] )
-takenp2' ( [takenp2] )
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
 time' ([energy>0.6]
  (p2
-   ([time + 178.63930138690085])
+   ([time + 16.97056274847714])
    ([time])) 
  ([time]) 
 )
 energy' ([energy>0.6]
  (p2
-   ([energy - 35.727860277380174])
+   ([energy - 3.394112549695428])
    ([energy]))
  ([energy])
 )
-reward ([0])
+reward ([0.0])
 endaction
 action takepicturep1
-p1' ( [p1] )
-p2' ( [p2] )
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
 takenp1'([energy>3]
  (p1
    ([time > 36000]
      ([time < 50400]
-       (takenp1
-          ([takenp1])
-          ([1]))
-     ([takenp1]))
-   ([takenp1]))
-  ([takenp1]))
- ([takenp1])
+        ([1.0])
+        (takenp1
+            ([1.0])
+            ([0.0])
+        )
+     )
+     (takenp1
+        ([1.0])
+        ([0.0])
+     )
+   )
+   (takenp1
+      ([1.0])
+      ([0.0])
+   )
+ )
+ (takenp1
+    ([1.0])
+    ([0.0])
+ )
 )
-takenp2' ( [takenp2] )
+takenp2' (takenp2
+     ([1.0])
+     ([0.0])
+     )
 time' ([energy>3]
  (p1
    ([time > 36000]
@@ -96,39 +146,61 @@ energy' ([energy>3]
        (takenp1
              ([energy])
              ([energy - 2]))
-        ([energy]))
-      ([energy]))
-    ([energy]))
-  ([energy])
+       ([energy]))
+     ([energy]))
+   ([energy]))
+ ([energy])
 )
 reward ([energy>3]
  (p1
    ([time > 36000]
      ([time < 50400]
        (takenp1
-           ([0])
-           ([100]))
-       ([0]))
-     ([0]))
-   ([0]))
- ([0])
+           ([0.0])
+           ([100.0]))
+       ([0.0]))
+     ([0.0]))
+   ([0.0]))
+ ([0.0])
 )
 endaction
 action takepicturep2
-p1' ( [p1] )
-p2' ( [p2] )
-takenp1' ( [takenp1] )
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+takenp1' (takenp1
+     ([1.0])
+     ([0.0])
+     )
 takenp2'([energy>3]
  (p2
    ([time > 36000]
      ([time < 50400]
-       (takenp2
-          ([takenp2])
-          ([1]))
-     ([takenp2]))
-   ([takenp2]))
-  ([takenp2]))
- ([takenp2])
+        ([1.0])
+        (takenp2
+            ([1.0])
+            ([0.0])
+        )
+     )
+     (takenp2
+        ([1.0])
+        ([0.0])
+     )
+   )
+   (takenp2
+      ([1.0])
+      ([0.0])
+   )
+ )
+ (takenp2
+    ([1.0])
+    ([0.0])
+ )
 )
 time' ([energy>3]
  (p2
@@ -149,22 +221,22 @@ energy' ([energy>3]
        (takenp2
              ([energy])
              ([energy - 2]))
-        ([energy]))
-      ([energy]))
-    ([energy]))
-  ([energy])
+       ([energy]))
+     ([energy]))
+   ([energy]))
+ ([energy])
 )
 reward ([energy>3]
  (p2
    ([time > 36000]
      ([time < 50400]
        (takenp2
-           ([0])
-           ([100]))
-       ([0]))
-     ([0]))
-   ([0]))
- ([0])
+           ([0.0])
+           ([101.0]))
+       ([0.0]))
+     ([0.0]))
+   ([0.0]))
+ ([0.0])
 )
 endaction
 discount 1.0000000
