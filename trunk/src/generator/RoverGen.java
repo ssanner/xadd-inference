@@ -111,24 +111,36 @@ public class RoverGen {
 							idVar4 = (String) it4.next();
 							//pi does not change
 							if (idVar4.equals(idVar2)==false && idVar4.equals(idVar3)==false) {
-								os.println(idVar4+"' ( ["+idVar4+"] )");
+								os.println(idVar4+"' ("+idVar4);
+								os.println("       ([1.0])");
+								os.println("       ([0.0])");
+								os.println( "   )" );
 							}
 							else{
-								
+								//pi source
 								if (idVar4.equals(idVar2)==true) {
 									os.println(idVar4+"' ([energy>0.6]");
-									os.println(" ("+idVar4);
-									os.println("   ([0])");
-									os.println( "   (["+idVar4+"]))" );
-									os.println( " (["+idVar4+"])" );
+									os.println("   ([0.0])");
+									os.println("   ("+idVar4);
+									os.println("       ([1.0])");
+									os.println("       ([0.0])");
+									os.println("   )" );
 									os.println( ")" );
 								}
+//								pi target
 								else{
 									os.println(idVar4+"' ([energy>0.6]");
 									os.println(" ("+idVar2);
-									os.println("   ([1])");
-									os.println( "   (["+idVar4+"]))" );
-									os.println( " (["+idVar4+"])" );
+									os.println("   ([1.0])");
+									os.println("   ("+idVar4);
+									os.println("       ([1.0])");
+									os.println("       ([0.0])");
+									os.println("   )" );					
+									os.println("  )" );
+									os.println("  ("+idVar4);
+									os.println("    ([1.0])");
+									os.println("    ([0.0])");
+									os.println("  )" );		
 									os.println( ")" );
 								}
 							}
@@ -138,8 +150,11 @@ public class RoverGen {
 						it5 = taken_ids.iterator();
 						while (it5.hasNext()) {
 							idVar5 = (String) it5.next();
-							os.println(idVar5+"' ( ["+idVar5+"] )");
-                 
+//							taken does not change
+							os.println(idVar5+"' ( "+idVar5);
+							os.println("   ([1.0])");
+							os.println("   ([0.0])");
+							os.println( "  )" );
 						}
 						//print time and energy
 						os.println("time' ([energy>0.6]");
@@ -157,7 +172,7 @@ public class RoverGen {
 						os.println("   ([energy]))");
 						os.println(" ([energy])");
 						os.println( ")" );
-						os.println("reward ([0])");
+						os.println("reward ([0.0])");
 						os.println("endaction");						
 					}
 				
@@ -166,6 +181,7 @@ public class RoverGen {
 			//Actions takepicture	
 			Iterator it6,it7,it8;
 			String idVar6, idVar7,idVar8;
+			int ireward=0;
 			it6 = at_ids.iterator();
 			while (it6.hasNext()) {
 				idVar6 = (String) it6.next();
@@ -174,32 +190,51 @@ public class RoverGen {
 				//print p1 ...pk
 				while (it7.hasNext()) {
 					idVar7 = (String) it7.next();
-					os.println(idVar7+"' ( ["+idVar7+"] )");
+					os.println(idVar7+"' ("+idVar7);
+					os.println("   ([1.0])");
+					os.println("   ([0.0])");
+					os.println( "  )" );
 				}
 				//print takenp1 ...takenpk
 				it8 = taken_ids.iterator();
 				while (it8.hasNext()) {
 					idVar8 = (String) it8.next();
-					//pi does not change
+					//taken does not change
 					if (idVar6.equals(idVar8.substring(5))==false) {
-						os.println(idVar8+"' ( ["+idVar8+"] )");
+						os.println(idVar8+"' ("+idVar8);
+						os.println("     ([1.0])");
+						os.println("     ([0.0])");
+						os.println("     )" );
 					}
 					else{
 							os.println(idVar8+"'([energy>3]");
 							os.println( " ("+idVar6);
 							os.println( "   ([time > 36000]");
 							os.println( "     ([time < 50400]");
-							os.println( "       ("+idVar8);
-							os.println( "          (["+idVar8+"])" );
-							os.println( "          ([1]))");
-							os.println( "     (["+idVar8+"]))" );
-							os.println( "   (["+idVar8+"]))" );
-							os.println( "  (["+idVar8+"]))" );
-							os.println( " (["+idVar8+"])" );
+							os.println( "        ([1.0])");
+							os.println( "        ("+idVar8);
+							os.println( "            ([1.0])");
+							os.println( "            ([0.0])");
+							os.println( "        )" );
+							os.println( "     )" );
+							os.println( "     ("+idVar8);
+							os.println( "        ([1.0])");
+							os.println( "        ([0.0])");
+							os.println( "     )" );
+							os.println( "   )" );
+							os.println( "   ("+idVar8);
+							os.println( "      ([1.0])");
+							os.println( "      ([0.0])");
+							os.println( "   )" );
+							os.println( " )" );
+							os.println( " ("+idVar8);
+							os.println( "    ([1.0])");
+							os.println( "    ([0.0])");
+							os.println( " )" );
 							os.println( ")" );
 					}
 				}
-				//TODO:
+				
 				//print time and energy
 				os.println("time' ([energy>3]"); 
 				os.println( " ("+idVar6);
@@ -218,26 +253,29 @@ public class RoverGen {
 				os.println( "   ([time > 36000]");
 				os.println( "     ([time < 50400]");
 				os.println( "       (taken"+ idVar6);
-				os.println("             ([energy])");
-				os.println("             ([energy - 2]))");
-				os.println("        ([energy]))");
-				os.println("      ([energy]))");
-				os.println("    ([energy]))");
-				os.println("  ([energy])");
+				os.println( "             ([energy])");
+				os.println( "             ([energy - 2]))");
+				os.println( "       ([energy]))");
+				os.println( "     ([energy]))");
+				os.println( "   ([energy]))");
+				os.println( " ([energy])");
 				os.println( ")" );
+				// reward
+				double rew=100+ireward;
 				os.println("reward ([energy>3]"); 
 				os.println( " ("+idVar6);
 				os.println( "   ([time > 36000]");
 				os.println( "     ([time < 50400]");
 				os.println( "       (taken"+ idVar6);
-				os.println( "           ([0])");
-				os.println( "           ([100]))");
-				os.println( "       ([0]))");
-				os.println( "     ([0]))");
-				os.println( "   ([0]))");
-				os.println( " ([0])");
+				os.println( "           ([0.0])");
+				os.println( "           (["+rew+"]))");
+				os.println( "       ([0.0]))");
+				os.println( "     ([0.0]))");
+				os.println( "   ([0.0]))");
+				os.println( " ([0.0])");
 				os.println( ")" );
-				os.println("endaction");						
+				os.println("endaction");	
+				ireward++;
 			}
 			// Generate discount and iterations
 			os.println("discount 1.0000000");
@@ -304,7 +342,7 @@ public class RoverGen {
 		
 		tg.GenRoverFile(4);
 		
-		tg.GenRoverFile(5);
+		//tg.GenRoverFile(5);
 		
 		/*tg.GenRoverFile(6);
 		tg.GenRoverFile(7);

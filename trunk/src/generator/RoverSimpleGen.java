@@ -117,10 +117,11 @@ public class RoverSimpleGen {
 								os.println( "  )" );
 							}
 							else{
-								
+								//pi source
 								if (idVar4.equals(idVar2)==true) {
 									os.println(idVar4+"' ([0.0])");									
 								}
+								//pi target
 								else{
 									os.println(idVar4+"' ("+idVar2);
 									os.println("   ([1.0])");
@@ -137,6 +138,7 @@ public class RoverSimpleGen {
 						it5 = taken_ids.iterator();
 						while (it5.hasNext()) {
 							idVar5 = (String) it5.next();
+//							taken does not change
 							os.println(idVar5+"' ( "+idVar5);
 							os.println("   ([1.0])");
 							os.println("   ([0.0])");
@@ -169,7 +171,7 @@ public class RoverSimpleGen {
 				it8 = taken_ids.iterator();
 				while (it8.hasNext()) {
 					idVar8 = (String) it8.next();
-					//pi does not change
+					//taken does not change
 					if (idVar6.equals(idVar8.substring(5))==false) {
 						os.println(idVar8+"' ("+idVar8);
 						os.println("     ([1.0])");
@@ -186,11 +188,11 @@ public class RoverSimpleGen {
 							os.println( ")" );
 					}
 				}
-				//TODO:
-								os.println("reward"+ " ("+idVar6);
+//				 reward
+				double rew=100+ireward;
+				os.println("reward"+ " ("+idVar6);
 				os.println( "       (taken"+ idVar6);
 				os.println( "           ([0.0])");
-				double rew=100+ireward;
 				os.println( "           (["+rew+"]))");
 				os.println( "       ([0.0])");
 				os.println( ")" );
