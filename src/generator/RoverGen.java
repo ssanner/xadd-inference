@@ -24,7 +24,7 @@ public class RoverGen {
 	private String minEnergy="0";
 	private String maxEnergy="20";
 	private int secondPerMeter=1;//60;
-	private double energyPerMeter=0.2;
+	private double energyPerMeter=0.05;
 		
 	public final static String  PATH_FILES="/home/karina/XADD/xadd-inference/src/cmdp/ex/";
 	
@@ -33,7 +33,7 @@ public class RoverGen {
 	public static  String PROB_NOT_ARRIVE = "0.75";
 	
 	/** For printing **/
-	public static DecimalFormat _df = new DecimalFormat("#.###");
+	public static DecimalFormat _df = new DecimalFormat("#.##");
 
 	/** Generator **/
 	public  void GenRoverFile(int size) {
@@ -107,8 +107,13 @@ public class RoverGen {
 						System.out.println("\nAction: move" + idVar2+idVar3);
 						//print p1 ...pk
 						it4 = at_ids.iterator();
+						
+						double distancepipj=computeDistanceXY(idVar2,idVar3,X,Y,size);
+						double totaltime=distancepipj*secondPerMeter;
+						double totalenergy=distancepipj*energyPerMeter;
 						while (it4.hasNext()) {
 							idVar4 = (String) it4.next();
+						
 							//pi does not change
 							if (idVar4.equals(idVar2)==false && idVar4.equals(idVar3)==false) {
 								os.println(idVar4+"' ("+idVar4);
@@ -119,7 +124,7 @@ public class RoverGen {
 							else{
 								//pi source
 								if (idVar4.equals(idVar2)==true) {
-									os.println(idVar4+"' ([energy>0.6]");
+									os.println(idVar4+"' ([energy> " + _df.format(totalenergy)+ "]");
 									os.println("   ([0.0])");
 									os.println("   ("+idVar4);
 									os.println("       ([1.0])");
@@ -129,7 +134,7 @@ public class RoverGen {
 								}
 //								pi target
 								else{
-									os.println(idVar4+"' ([energy>0.6]");
+									os.println(idVar4+"' ([energy>" + _df.format(totalenergy)+ "]");
 									os.println(" ("+idVar2);
 									os.println("   ([1.0])");
 									os.println("   ("+idVar4);
@@ -157,18 +162,17 @@ public class RoverGen {
 							os.println( "  )" );
 						}
 						//print time and energy
-						os.println("time' ([energy>0.6]");
+						os.println("time' ([energy>" + _df.format(totalenergy)+ "]");
 						os.println(" ("+idVar2);
-						double distancepipj=computeDistanceXY(idVar2,idVar3,X,Y,size);
-						double totaltime=distancepipj*secondPerMeter;
-						os.println("   ([time + "+totaltime+"])");
+				
+						os.println("   ([time + "+_df.format(totaltime)+"])");
 						os.println("   ([time])) ");
 						os.println(" ([time]) ");
 						os.println( ")" );
-						os.println("energy' ([energy>0.6]" );
+						os.println("energy' ([energy>" + _df.format(totalenergy)+ "]" );
 						os.println(" ("+idVar2);
-						double totalenergy=distancepipj*energyPerMeter; 
-						os.println("   ([energy - "+ totalenergy+"])");
+						 
+						os.println("   ([energy - "+ _df.format(totalenergy)+"])");
 						os.println("   ([energy]))");
 						os.println(" ([energy])");
 						os.println( ")" );
@@ -254,7 +258,7 @@ public class RoverGen {
 				os.println( "     ([time < 50400]");
 				os.println( "       (taken"+ idVar6);
 				os.println( "             ([energy])");
-				os.println( "             ([energy - 2]))");
+				os.println( "             ([energy - 3]))");
 				os.println( "       ([energy]))");
 				os.println( "     ([energy]))");
 				os.println( "   ([energy]))");
@@ -275,7 +279,7 @@ public class RoverGen {
 				os.println( " ([0.0])");
 				os.println( ")" );
 				os.println("endaction");	
-				ireward++;
+				ireward=ireward+10;
 			}
 			// Generate discount and iterations
 			os.println("discount 1.0000000");

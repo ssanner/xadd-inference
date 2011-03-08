@@ -63,8 +63,11 @@ public class CMDP {
 	
 	/* Constants */
 	public final static boolean DISPLAY_Q = false;
-	public final static boolean DISPLAY_V = true;
+	public final static boolean DISPLAY_V = false;
+	public final static boolean DISPLAY_MAX = false;
 	public final static boolean DISPLAY_SUBST = false;
+	public final static boolean PRINTFINALQ=false;
+	public final static boolean PRINTSCREENEVAL=false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
 	public static boolean PRINT3DFILE;
@@ -76,7 +79,7 @@ public class CMDP {
 	public final static ArrayList<String> ZERO  =  new ArrayList<String> (Arrays.asList("[0]"));  
 	/* For printing */
 	public static DecimalFormat _df = new DecimalFormat("#.###");
-	public final static String  NAME_FILE_3D="./src/cmdp/ex/File3D.dat";
+	public static String  NAME_FILE_3D="./src/cmdp/ex/File3D";
 	
 	/* Static variables */
 	public static long _lTime; // For timing purposes
@@ -106,6 +109,7 @@ public class CMDP {
 	 **/
 	public CMDP(String filename) {
 		this(HierarchicalParser.ParseFile(filename));
+		NAME_FILE_3D=NAME_FILE_3D+filename.substring(12,filename.indexOf("."))+".dat";
 	}
 
 	/**
@@ -190,8 +194,10 @@ public class CMDP {
 				// ////////////////////////////////////////////////////////////
 				_maxDD = ((_maxDD == null) ? regr :
 					_context.apply(_maxDD, regr, XADD.MAX));
-				//Graph gr = _context.getGraph(_maxDD);
-				//gr.launchViewer(1300, 770);
+				if(DISPLAY_MAX && iter==2){
+				    Graph gr = _context.getGraph(_maxDD);
+				    gr.launchViewer(1300, 770);
+				}
 
 			}
 
@@ -319,9 +325,9 @@ public class CMDP {
 		for (Integer constraint : _alConstraints) {
 			q = _context.apply(q, constraint, XADD.PROD);
 		}
-		 
-		System.out.println("- Final Q(" + a._sName + "):\n" + _context.getString(q));
-
+		if(PRINTFINALQ){ 
+			System.out.println("- Final Q(" + a._sName + "):\n" + _context.getString(q));
+		}
     	//Graph gr = _context.getGraph(q);
 		//gr.launchViewer(1300, 770);
 
@@ -665,8 +671,10 @@ public class CMDP {
               		cont_assign.put(yVar,  Y.get(i));
               		
               		Double z=_context.evaluate(XDD, bool_assign, cont_assign);
+              		if (PRINTSCREENEVAL){
              		System.out.println("Eval: [" + bool_assign + "], [" + cont_assign + "]"
-             						   + ": " + z);		
+             						   + ": " + z);
+              		}
 
              		out.append(z.toString()+" ");
                    /*
