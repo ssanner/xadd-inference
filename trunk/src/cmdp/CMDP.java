@@ -25,6 +25,7 @@ import java.text.*;
 import java.util.regex.*;
 import java.util.*;
 
+
 import xadd.XADD;
 import xadd.XADD.ArithExpr;
 import xadd.XADD.BoolDec;
@@ -198,6 +199,7 @@ public class CMDP {
 				    Graph gr = _context.getGraph(_maxDD);
 				    gr.launchViewer(1300, 770);
 				}
+			    flushCaches();
 
 			}
 
@@ -228,8 +230,45 @@ public class CMDP {
 		
 		
 		// Flush caches and return number of iterations
+        flushCaches();	
 		return iter;
 	}
+
+	public void flushCaches() {
+		if (((double)RUNTIME.freeMemory() / 
+		     (double)RUNTIME.totalMemory()) > FLUSH_PERCENT_MINIMUM) {
+		    return; // Still enough free mem to exceed minimum requirements
+		}
+		System.out.println("Before flush,freeMemory: "+RUNTIME.freeMemory());
+
+		_context.clearSpecialNodes();
+		
+		for (Map.Entry<String,Action> me : _hmName2Action.entrySet()) {
+			Action a=(Action)me.getValue();
+			
+			
+		}
+		Iterator i = _hmName2Action.values().iterator();
+		while (i.hasNext()) {
+		    Action a = (Action)i.next();
+		    Iterator j = a._hsXDDs.iterator(); //list of XDDs  in action
+		    while (j.hasNext()) {
+			 _context.addSpecialNode(j.next());
+		    }
+		    _context.addSpecialNode(a._reward);
+		}
+		if (_prevDD!=null){
+	    _context.addSpecialNode(_prevDD);
+		}
+		if (_maxDD!=null){
+			_context.addSpecialNode(_maxDD);
+		}
+		if (_valueDD!=null){
+			_context.addSpecialNode(_valueDD); 
+		}
+		_context.flushCaches();
+		System.out.println("After flush,freeMemory: "+RUNTIME.freeMemory());
+   }
 
 	/**
 	 * Regress a DD through an action

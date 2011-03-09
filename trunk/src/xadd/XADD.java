@@ -19,6 +19,8 @@ import util.IntTriple;
 import java.text.*;
 import java.util.*;
 
+
+
 import cmdp.HierarchicalParser;
 
 import logic.kb.fol.FOPC;
@@ -79,12 +81,18 @@ public class XADD  {
 	public HashMap<XADDNode,Integer> _hmNode2Int = new HashMap<XADDNode,Integer>();
 	public HashMap<Integer,XADDNode> _hmInt2Node = new HashMap<Integer,XADDNode>();
 	
+	
 	// Reduce & Apply Caches
 	public HashMap<IntTriple,Integer> _hmReduceCache = new HashMap<IntTriple,Integer>();
 	public HashMap<IntTriple,Integer> _hmApplyCache  = new HashMap<IntTriple,Integer>();
 	
 	public HashMap<String,Double> _hmMinVal = new HashMap<String,Double>();
 	public HashMap<String,Double> _hmMaxVal = new HashMap<String,Double>();
+	
+	//Flush
+	public HashSet hsSpecialNodes = new HashSet();
+	public HashMap<XADDNode,Integer> _hmNode2IntNew = new HashMap<XADDNode,Integer>();
+	public HashMap<Integer,XADDNode> _hmInt2NodeNew = new HashMap<Integer,XADDNode>();
 	
 	// Methods
 	public XADD() {
@@ -1727,6 +1735,73 @@ public class XADD  {
 			sb.append(STRING_TAB);
 		return sb.toString();
 	}
+    ///////////////flush/////////////////////
+    public void clearSpecialNodes() {
+   	 hsSpecialNodes.clear();
+       }
+    public void addSpecialNode(Object n) {
+    	try {
+    	if (n == null) throw new Exception("addSpecialNode: null");
+    	} catch (Exception e) {
+    		System.out.println(e);
+    		e.printStackTrace();
+    		System.exit(1);
+    	}
+	  hsSpecialNodes.add(n);
+    }
+
+    public void flushCaches() {
+		System.out.print("[FLUSHING CACHES... ");
+		
+	// Can always clear these
+
+		_hmReduceCache= new HashMap();
+		_hmApplyCache = new HashMap();
+		
+				
+	// Set up temporary alternates to these HashMaps
+	_hmNode2IntNew=new HashMap();
+	_hmInt2NodeNew=new HashMap();
+		
+	// Copy over 'special' nodes then set new maps
+	System.out.println(hsSpecialNodes);
+	Iterator i = hsSpecialNodes.iterator();
+	while (i.hasNext()) {
+		copyInNewCacheNode((Integer)i.next());
+	}
+	_hmNode2Int=_hmNode2IntNew;
+	_hmInt2Node=_hmInt2NodeNew;
+	
+	Runtime.getRuntime().gc();
+	
+}
+    
+    
+    private void copyInNewCacheNode(Integer id) {
+    	
+    	if (_hmInt2NodeNew.containsKey(id)) {
+			return;
+		}
+		Object node =  _hmInt2Node.get(id);
+		if (node instanceof XADDINode) {
+			Integer fh = ((XADDINode)node)._high;
+			Integer fl = ((XADDINode)node)._low;
+			XADDINode nodeNew=new XADDINode(((XADDINode)node)._var,fl,fh);
+			_hmInt2NodeNew.put(id, nodeNew);
+			_hmNode2IntNew.put(nodeNew,id);
+			copyInNewCacheNode(((XADDINode)node)._high);
+			copyInNewCacheNode(((XADDINode)node)._low);
+		}
+		else if (node instanceof XADDTNode) {
+			XADDTNode nodeNew= new XADDTNode(((XADDTNode)node)._expr);
+			_hmInt2NodeNew.put(id, nodeNew);
+			_hmNode2IntNew.put(nodeNew,id);
+			
+		}
+		
+	}
+
+
 
 	////////////////////////////////////////////////////////////////
 	
