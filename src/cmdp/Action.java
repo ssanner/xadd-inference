@@ -36,6 +36,7 @@ public class Action {
 	public CMDP _mdp; // MDP of which this action is a part
 	public String _sName; // Name of this action
 	public HashMap<String, Integer> _hmVar2DD;
+	public HashSet  _hsXDDs;  //Set of the XDDs in Action
 	public Integer _reward;
 
 	/**
@@ -46,6 +47,7 @@ public class Action {
 		_mdp = mdp;
 		_sName = name;
 		_hmVar2DD = new HashMap<String, Integer>();
+		_hsXDDs=new HashSet();
 		_reward = reward;
 		buildAction(cpt_desc);
 	}
@@ -71,8 +73,10 @@ public class Action {
 				xadd = _mdp._context.getINode(var_index, low_branch, high_branch);
 				xadd = _mdp._context.makeCanonical(xadd);
 				_hmVar2DD.put(var, xadd);
-			} else
+			} else{
 				_hmVar2DD.put(var, xadd);
+				}
+			_hsXDDs.add(xadd);
 		}
 	}
 
