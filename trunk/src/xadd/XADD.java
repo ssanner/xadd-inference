@@ -35,7 +35,7 @@ public class XADD  {
 
 	// Flags
 	public final static boolean USE_CANONICAL_NODES = true;  // Store nodes in canonical format?
-	public final static boolean CHECK_MIN_MAX   = false; // Will be buggy if min/max of expr 
+	public final static boolean CHECK_MIN_MAX   = true; // Will be buggy if min/max of expr 
 														// not at extrema of domain
 	public final static boolean USE_MINUS_COMP = false; // Error, all max/min comps reduce to false!
 	
@@ -1091,10 +1091,10 @@ public class XADD  {
 						&& CHECK_MIN_MAX) {
 				// Check for evaluations based on minimum and maximum values
 				TautDec tdec = null;
-				Double lhs_max = ((ExprDec)d)._expr._lhs.evaluate(_hmMaxVal);
-				Double lhs_min = ((ExprDec)d)._expr._lhs.evaluate(_hmMinVal);
-				Double rhs_max = ((ExprDec)d)._expr._rhs.evaluate(_hmMaxVal);
-				Double rhs_min = ((ExprDec)d)._expr._rhs.evaluate(_hmMinVal);
+				Double lhs_max = ((ExprDec)d)._expr._lhs.evaluateRange(_hmMinVal, _hmMaxVal, false);
+				Double lhs_min = ((ExprDec)d)._expr._lhs.evaluateRange(_hmMinVal, _hmMaxVal, true);
+				Double rhs_max = ((ExprDec)d)._expr._rhs.evaluateRange(_hmMinVal, _hmMaxVal, false);
+				Double rhs_min = ((ExprDec)d)._expr._rhs.evaluateRange(_hmMinVal, _hmMaxVal, true);
 				if (lhs_max == null)
 					lhs_max = Double.MAX_VALUE;
 				if (rhs_max == null)
@@ -1141,8 +1141,13 @@ public class XADD  {
 							tdec = new TautDec(false); 
 						break;
 				}
-				if (tdec != null)
+				if (tdec != null) {
+					System.out.println("*** Pruning " + d + " with " + tdec + " because...");
+					System.out.println("- [" + lhs_min + "," + lhs_max + "] " + 
+							_aOpNames[((ExprDec)d)._expr._type] + " [" + rhs_min + "," + rhs_max + "]");
+					
 					d = tdec;
+				} 
 			}
 			
 			return d;
@@ -1389,6 +1394,8 @@ public class XADD  {
 		}
 		public abstract ArithExpr substitute(HashMap<String,ArithExpr> subst);
 		public abstract Double evaluate(HashMap<String,Double>  cont_assign);
+		public abstract Double evaluateRange(HashMap<String,Double> low_assign, 
+				HashMap<String,Double> high_assign, boolean use_low);
 		public abstract void collectVars(HashSet<String> vars);
 	}
 	
@@ -1498,6 +1505,41 @@ public class XADD  {
 			Double accum = _terms.get(0).evaluate(cont_assign);
 			for (int i = 1; i < _terms.size() && accum != null; i++) {
 				Double term_eval = _terms.get(i).evaluate(cont_assign);
+				if (term_eval == null)
+					accum = null;
+				else
+					switch(_type) {
+						case SUM:	accum = accum + term_eval; break;
+						case MINUS:	accum = accum - term_eval; break;
+						case PROD:	accum = accum * term_eval; break;
+						case DIV:	accum = accum / term_eval; break;
+						default: 	accum = null;
+					}
+			}
+			return accum;
+		}
+
+		@Override
+		public Double evaluateRange(HashMap<String, Double> low_assign,
+				HashMap<String, Double> high_assign, boolean use_low) {
+
+			// Must use canonical nodes here... assumes products are binary
+			// with the first term being a coefficient
+			if (!USE_CANONICAL_NODES) {
+				System.err.println("Must use canonical nodes if using evaluateRange");
+				System.exit(1);
+			}
+
+			HashMap<String, Double> assign = use_low ? low_assign : high_assign;
+			Double accum = _terms.get(0).evaluateRange(low_assign, high_assign, use_low);
+			
+			boolean subterm_use_low = 
+				(_type == MINUS || _type == DIV || (_type == PROD && accum < 0d))
+				? !use_low : use_low;
+
+			for (int i = 1; i < _terms.size() && accum != null; i++) {
+									
+				Double term_eval = _terms.get(i).evaluateRange(low_assign, high_assign, subterm_use_low);
 				if (term_eval == null)
 					accum = null;
 				else
@@ -1721,6 +1763,11 @@ public class XADD  {
 		public Double evaluate(HashMap<String,Double>  cont_assign) {
 			return _dConstVal;
 		}
+		@Override
+		public Double evaluateRange(HashMap<String, Double> low_assign,
+				HashMap<String, Double> high_assign, boolean use_low) {
+			return _dConstVal;
+		}
 		public void collectVars(HashSet<String> vars) { }
 		
 		public Expr makeCanonical() {
@@ -1753,6 +1800,11 @@ public class XADD  {
 		}
 		public Double evaluate(HashMap<String,Double>  cont_assign) {
 			return cont_assign.get(_sVarName);
+		}
+		@Override
+		public Double evaluateRange(HashMap<String, Double> low_assign,
+				HashMap<String, Double> high_assign, boolean use_low) {
+			return use_low ? low_assign.get(_sVarName) : high_assign.get(_sVarName);
 		}
 		public void collectVars(HashSet<String> vars) {
 			vars.add(_sVarName);

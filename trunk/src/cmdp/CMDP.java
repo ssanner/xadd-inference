@@ -64,7 +64,7 @@ public class CMDP {
 	
 	/* Constants */
 	public final static boolean DISPLAY_Q = false;
-	public final static boolean DISPLAY_V = false;
+	public final static boolean DISPLAY_V = true;
 	public final static boolean DISPLAY_MAX = false;
 	public final static boolean DISPLAY_SUBST = false;
 	public final static boolean PRINTFINALQ=false;
