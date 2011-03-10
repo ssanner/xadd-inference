@@ -211,8 +211,11 @@ public class CMDP {
 			//			_context.scalarOp(_maxDD, _bdDiscount.doubleValue(), XADD.PROD), 
 			//			XADD.SUM);
 			_valueDD = _maxDD;
+			System.out.println("Value function size @ iteration " + iter + 
+					": " + _context.getNodeCount(_valueDD));
 
 			if (DISPLAY_V) {
+				System.out.print("Displaying value function... ");
 				Graph g = _context.getGraph(_valueDD);
 				g.addNode("_temp_");
 				g.addNodeLabel("_temp_", "V^" + iter);
@@ -222,10 +225,13 @@ public class CMDP {
 
 				// g.genDotFile(type + "value.dot");
 				g.launchViewer(1300, 770);
+				System.out.println("done.");
 			}
 		}
         if(PRINT3DFILE){
+        	System.out.print("Creating data file... ");
         	create3DDataFile(_valueDD,varX,varY); 
+			System.out.println("done.");
         }
 		
 		
@@ -237,28 +243,22 @@ public class CMDP {
 	public void flushCaches() {
 		if (((double)RUNTIME.freeMemory() / 
 		     (double)RUNTIME.totalMemory()) > FLUSH_PERCENT_MINIMUM) {
+			System.out.println("No need to flush caches.");
 		    return; // Still enough free mem to exceed minimum requirements
 		}
-		System.out.println("Before flush,freeMemory: "+RUNTIME.freeMemory());
+		System.out.println("Before flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
+				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
+				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
 
 		_context.clearSpecialNodes();
 		
-		for (Map.Entry<String,Action> me : _hmName2Action.entrySet()) {
-			Action a=(Action)me.getValue();
-			
-			
-		}
-		Iterator i = _hmName2Action.values().iterator();
-		while (i.hasNext()) {
-		    Action a = (Action)i.next();
-		    Iterator j = a._hsXDDs.iterator(); //list of XDDs  in action
-		    while (j.hasNext()) {
-			 _context.addSpecialNode(j.next());
-		    }
+		for (Action a : _hmName2Action.values()) {
 		    _context.addSpecialNode(a._reward);
+		    for (Integer xadd : a._hmVar2DD.values())
+		    	_context.addSpecialNode(xadd);
 		}
 		if (_prevDD!=null){
-	    _context.addSpecialNode(_prevDD);
+			_context.addSpecialNode(_prevDD);
 		}
 		if (_maxDD!=null){
 			_context.addSpecialNode(_maxDD);
@@ -267,7 +267,10 @@ public class CMDP {
 			_context.addSpecialNode(_valueDD); 
 		}
 		_context.flushCaches();
-		System.out.println("After flush,freeMemory: "+RUNTIME.freeMemory());
+		
+		System.out.println("After flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
+				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
+				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
    }
 
 	/**
