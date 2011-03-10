@@ -85,12 +85,13 @@ public class XADD  {
 	// Reduce & Apply Caches
 	public HashMap<IntTriple,Integer> _hmReduceCache = new HashMap<IntTriple,Integer>();
 	public HashMap<IntTriple,Integer> _hmApplyCache  = new HashMap<IntTriple,Integer>();
+	public HashMap<XADDINode,HashSet<String>> _hmINode2Vars = new HashMap<XADDINode,HashSet<String>>();
 	
 	public HashMap<String,Double> _hmMinVal = new HashMap<String,Double>();
 	public HashMap<String,Double> _hmMaxVal = new HashMap<String,Double>();
 	
 	//Flush
-	public HashSet hsSpecialNodes = new HashSet();
+	public HashSet<Integer> _hsSpecialNodes = new HashSet<Integer>();
 	public HashMap<XADDNode,Integer> _hmNode2IntNew = new HashMap<XADDNode,Integer>();
 	public HashMap<Integer,XADDNode> _hmInt2NodeNew = new HashMap<Integer,XADDNode>();
 	
@@ -234,6 +235,11 @@ public class XADD  {
 		}
 	}
 
+	public int getNodeCount(int id) {
+		XADDNode root = _hmInt2Node.get(id);
+		return root.collectNodes().size();
+	}
+	
 	//////////////////////////////////////////////////////////////////////
 	
 	public Graph getGraph(int id) {
@@ -580,7 +586,7 @@ public class XADD  {
 				comp = new CompExpr(LT_EQ, xa1._expr, xa2._expr);
 			Decision d = new ExprDec(comp);
 			int var_index = getVarIndex(d, true);
-			System.out.println("ComputeTerm::max var_index " + _alOrder.get(var_index) + ": " + comp);
+			//System.out.println("ComputeTerm::max var_index " + _alOrder.get(var_index) + ": " + comp);
 			//System.exit(1);
 			int node1 = getTermNode(xa1._expr);
 			int node2 = getTermNode(xa2._expr);
@@ -815,6 +821,11 @@ public class XADD  {
 		public String toString() {
 			return toString(0);
 		}
+		public HashSet<XADDNode> collectNodes() {
+			HashSet<XADDNode> nodes = new HashSet<XADDNode>();
+			collectNodes(nodes);
+			return nodes;			
+		}
 		public HashSet<String> collectVars() {
 			HashSet<String> vars = new HashSet<String>();
 			collectVars(vars);
@@ -823,6 +834,7 @@ public class XADD  {
 		public abstract String toString(int depth);
 		public abstract void toGraph(Graph g, int id);
 		public abstract void collectVars(HashSet<String> vars);
+		public abstract void collectNodes(HashSet<XADDNode> nodes);
 	}
 	
 	public class XADDTNode extends XADDNode {
@@ -850,6 +862,9 @@ public class XADD  {
 		}
 		public void collectVars(HashSet<String> vars) {
 			_expr.collectVars(vars);
+		}
+		public void collectNodes(HashSet<XADDNode> nodes) {
+			nodes.add(this);
 		}
 	    public void toGraph(Graph g, int id) {
 	    	String this_node = Integer.toString(id);
@@ -893,13 +908,31 @@ public class XADD  {
 			} else
 				return false;
 		}
+		public void collectNodes(HashSet<XADDNode> nodes) {
+			if (nodes.contains(this))
+				return;
+			
+			nodes.add(this);
+			_hmInt2Node.get(_low).collectNodes(nodes);
+			_hmInt2Node.get(_high).collectNodes(nodes);
+		}
 		public void collectVars(HashSet<String> vars) {
+			
+			// Check cache
+			HashSet<String> vars2 = _hmINode2Vars.get(this);
+			if (vars2 != null) {
+				vars.addAll(vars2);
+				return;
+			}
+			
 			XADDNode low = _hmInt2Node.get(_low);
 			XADDNode high = _hmInt2Node.get(_high);
 			Decision d = _alOrder.get(_var);
 			d.collectVars(vars);
 			low.collectVars(vars);
 			high.collectVars(vars);
+			
+			_hmINode2Vars.put(this, (HashSet<String>)vars.clone());
 		}
 		public void toGraph(Graph g, int id) {
 			
@@ -1737,9 +1770,9 @@ public class XADD  {
 	}
     ///////////////flush/////////////////////
     public void clearSpecialNodes() {
-   	 hsSpecialNodes.clear();
+   	 _hsSpecialNodes.clear();
        }
-    public void addSpecialNode(Object n) {
+    public void addSpecialNode(Integer n) {
     	try {
     	if (n == null) throw new Exception("addSpecialNode: null");
     	} catch (Exception e) {
@@ -1747,35 +1780,32 @@ public class XADD  {
     		e.printStackTrace();
     		System.exit(1);
     	}
-	  hsSpecialNodes.add(n);
+	  _hsSpecialNodes.add(n);
     }
 
     public void flushCaches() {
 		System.out.print("[FLUSHING CACHES... ");
-		
-	// Can always clear these
 
-		_hmReduceCache= new HashMap();
-		_hmApplyCache = new HashMap();
-		
-				
-	// Set up temporary alternates to these HashMaps
-	_hmNode2IntNew=new HashMap();
-	_hmInt2NodeNew=new HashMap();
-		
-	// Copy over 'special' nodes then set new maps
-	System.out.println(hsSpecialNodes);
-	Iterator i = hsSpecialNodes.iterator();
-	while (i.hasNext()) {
-		copyInNewCacheNode((Integer)i.next());
+		// Can always clear these
+		_hmReduceCache.clear();
+		_hmApplyCache.clear();
+		_hmINode2Vars.clear();
+
+		// Set up temporary alternates to these HashMaps
+		_hmNode2IntNew = new HashMap<XADDNode,Integer>();
+		_hmInt2NodeNew = new HashMap<Integer,XADDNode>();
+
+		// Copy over 'special' nodes then set new maps
+		System.out.println(_hsSpecialNodes);
+		for (Integer n : _hsSpecialNodes) {
+			copyInNewCacheNode(n);
+		}
+		_hmNode2Int = _hmNode2IntNew;
+		_hmInt2Node = _hmInt2NodeNew;
+
+		Runtime.getRuntime().gc();
+
 	}
-	_hmNode2Int=_hmNode2IntNew;
-	_hmInt2Node=_hmInt2NodeNew;
-	
-	Runtime.getRuntime().gc();
-	
-}
-    
     
     private void copyInNewCacheNode(Integer id) {
     	
@@ -1786,26 +1816,21 @@ public class XADD  {
 		if (node instanceof XADDINode) {
 			Integer fh = ((XADDINode)node)._high;
 			Integer fl = ((XADDINode)node)._low;
-			XADDINode nodeNew=new XADDINode(((XADDINode)node)._var,fl,fh);
-			_hmInt2NodeNew.put(id, nodeNew);
-			_hmNode2IntNew.put(nodeNew,id);
+			_hmInt2NodeNew.put(id, (XADDINode)node);
+			_hmNode2IntNew.put((XADDINode)node, id);
 			copyInNewCacheNode(((XADDINode)node)._high);
 			copyInNewCacheNode(((XADDINode)node)._low);
 		}
 		else if (node instanceof XADDTNode) {
-			XADDTNode nodeNew= new XADDTNode(((XADDTNode)node)._expr);
-			_hmInt2NodeNew.put(id, nodeNew);
-			_hmNode2IntNew.put(nodeNew,id);
+			_hmInt2NodeNew.put(id, (XADDTNode)node);
+			_hmNode2IntNew.put((XADDTNode)node, id);
 			
 		}
-		
 	}
-
-
 
 	////////////////////////////////////////////////////////////////
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		//TestPolyOps();
 		//if (0 <= 1) return;
@@ -1828,9 +1853,13 @@ public class XADD  {
 		xadd_context.getVarIndex(xadd_context.new BoolDec("f"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("g"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("h"), true);
+		
+		int xadd_circle = TestBuild(xadd_context, "./src/xadd/circle.xadd");
+		Graph gc = xadd_context.getGraph(xadd_circle); gc.launchViewer();
+		
 		int xadd1 = TestBuild(xadd_context, "./src/xadd/test1.xadd");
 		int xadd2 = TestBuild(xadd_context, "./src/xadd/test2.xadd");
-		
+				
 		//*****************TESTING MAX***********
 		int xadd4 = TestBuild(xadd_context, "./src/xadd/test4.xadd");
 		int xadd5 = TestBuild(xadd_context, "./src/xadd/test5.xadd");
