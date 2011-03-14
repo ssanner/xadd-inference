@@ -237,6 +237,11 @@ public class CMDP {
 		
 		// Flush caches and return number of iterations
         flushCaches();	
+        
+        System.out.println("\nValue iteration complete!");
+        System.out.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
+        System.out.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
+        
 		return iter;
 	}
 
