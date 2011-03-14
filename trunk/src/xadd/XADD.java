@@ -38,6 +38,7 @@ public class XADD  {
 	public final static boolean CHECK_MIN_MAX   = false; // Will be buggy if min/max of expr 
 														// not at extrema of domain
 	public final static boolean USE_MINUS_COMP = false; // Error, all max/min comps reduce to false!
+	public final static int MAX_BRANCH_COUNT = 100000000;
 	
 	// Debug
 	public final static boolean CHECK_LOCAL_ORDERING = true;
@@ -234,6 +235,11 @@ public class XADD  {
 							   l.size() + " args '" + l + "'");
 			return -1;
 		}
+	}
+
+	public int getBranchCount(int id) {
+		XADDNode root = _hmInt2Node.get(id);
+		return root.countBranches();
 	}
 
 	public int getNodeCount(int id) {
@@ -832,6 +838,7 @@ public class XADD  {
 			collectVars(vars);
 			return vars;
 		}
+		public abstract int countBranches();
 		public abstract String toString(int depth);
 		public abstract void toGraph(Graph g, int id);
 		public abstract void collectVars(HashSet<String> vars);
@@ -878,6 +885,10 @@ public class XADD  {
 	    }
 		public String toString(int depth) {
 			return "[ "/*"#" + _hmNode2Int.get(this) + ": "*/ + _expr.toString() + " ]";
+		}
+		@Override
+		public int countBranches() {
+			return 1;
 		}
 
 	}
@@ -980,6 +991,22 @@ public class XADD  {
 			sb.append("] ");
 
 			return sb.toString();
+		}
+		@Override
+		public int countBranches() {
+			int low_count = _hmInt2Node.get(_low).countBranches();
+			if (low_count > MAX_BRANCH_COUNT || low_count == -1)
+				return -1;
+			
+			int high_count = _hmInt2Node.get(_high).countBranches();
+			if (high_count > MAX_BRANCH_COUNT || high_count == -1)
+				return -1;
+
+			int total = low_count + high_count;
+			if (total > MAX_BRANCH_COUNT)
+				return -1;
+			
+			return total;
 		}
 	}
 	

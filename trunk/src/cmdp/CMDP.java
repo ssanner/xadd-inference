@@ -143,20 +143,26 @@ public class CMDP {
 		//Graph gr = _context.getGraph(_valueDD);
 		//gr.launchViewer(1300, 770);
 		
-		
-		// Other initialization
+		// Other initialization -- iteration statistics
 		int iter = 0;
+		long[] time = new long[max_iter + 1];
+		int[] num_nodes = new int[max_iter + 1]; 
+		int[] num_branches = new int[max_iter + 1]; 
+		double[] num_cases = new double[max_iter + 1]; 
+		for (int i = 0; i <= max_iter; i++)
+			num_cases[i] = 1;
 
-		// ////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////
 		// Iterate until convergence (or max iterations)
-		// ////////////////////////////////////////////////////////////
-		ResetTimer();
+		//////////////////////////////////////////////////////////////
 		
 		// Only use file number of iterations if not overridden by command line
 		if (max_iter < 0)
 			max_iter = _nIter;
 		
-		while (iter++ < max_iter) {
+		while (++iter <= max_iter) {
+
+			ResetTimer();
 
 			// Error decreasing?
 			System.out.println("Iteration #" + iter + ", " + MemDisplay()
@@ -172,6 +178,7 @@ public class CMDP {
 			// Iterate over each action
 			//////////////////////////////////////////////////////////////
 			_maxDD=null;
+			
 			for (Map.Entry<String,Action> me : _hmName2Action.entrySet()) {
 
 				//////////////////////////////////////////////////////////////
@@ -190,6 +197,24 @@ public class CMDP {
 					g.launchViewer(1300, 770);
 				}
 
+				///////////////////////////////////////////////////////////////
+				// Estimating number of cases
+				double num_cases_in_regr = num_cases[iter - 1];
+				//System.out.println("Test 1: " + num_cases_in_regr);
+				for (Map.Entry<String,Integer> me2 : me.getValue()._hmVar2DD.entrySet()) {
+					num_cases_in_regr *= _context.getBranchCount(me2.getValue()); // From regr
+					//System.out.println("Test 2: " + num_cases_in_regr);
+					if (_alBVars.contains(me2.getKey()) && num_cases_in_regr > 1)
+						num_cases_in_regr /= 2; // Sum out a variable
+					//System.out.println("Test 3: " + num_cases_in_regr);
+				}
+				num_cases_in_regr *= _context.getBranchCount( me.getValue()._reward);
+				//System.out.println("Test 4: " + num_cases_in_regr);
+				//System.out.println("Test 5: " + num_cases[iter]);
+				num_cases[iter] *= num_cases_in_regr; // From max
+				//System.out.println("Test 6: " + num_cases[iter]);
+				///////////////////////////////////////////////////////////////
+				
 				// ////////////////////////////////////////////////////////////
 				// Take the max over this action and the previous action
 				// ////////////////////////////////////////////////////////////
@@ -211,8 +236,12 @@ public class CMDP {
 			//			_context.scalarOp(_maxDD, _bdDiscount.doubleValue(), XADD.PROD), 
 			//			XADD.SUM);
 			_valueDD = _maxDD;
-			System.out.println("Value function size @ iteration " + iter + 
-					": " + _context.getNodeCount(_valueDD));
+			time[iter] = GetElapsedTime();
+			num_nodes[iter] = _context.getNodeCount(_valueDD);
+			num_branches[iter] = _context.getBranchCount(_valueDD);
+			System.out.println("Value function size @ end of iteration " + iter + 
+					": " + num_nodes[iter] + " nodes = " + 
+					num_branches[iter] + " cases" + " in " + time[iter] + " ms");
 
 			if (DISPLAY_V) {
 				System.out.print("Displaying value function... ");
@@ -234,13 +263,20 @@ public class CMDP {
 			System.out.println("done.");
         }
 		
-		
 		// Flush caches and return number of iterations
         flushCaches();	
         
         System.out.println("\nValue iteration complete!");
         System.out.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
         System.out.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
+        
+        System.out.println("\nIteration Results summary");
+        for (int i = 1; i <= max_iter; i++) {
+        	String branch_count = num_branches[i] >= 0 
+        		? "" + num_branches[i]
+        		: " > " + XADD.MAX_BRANCH_COUNT; 
+        	System.out.println("Iter " + i + ": nodes = " + num_nodes[i] + "\tbranches = " + branch_count + "\tcases = " + num_cases[i] + "\ttime = " + time[i] + " ms");
+        }
         
 		return iter;
 	}
