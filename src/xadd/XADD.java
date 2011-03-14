@@ -1566,6 +1566,51 @@ public class XADD  {
 			return accum;
 		}
 
+		public boolean checkCanonical() {
+			
+			// This node is canonical if it is term canonical
+			// or it is a sum of terms
+			if (checkTermCanonical())
+				return true;
+			
+			if (_type == SUM) {
+				// Ensure all subterms are canonical
+				for (int i = 0; i < _terms.size(); i++) {
+					
+					// First term can be a constant so long as more than one term
+					if (i == 0 && (_terms.get(0) instanceof DoubleExpr))
+						continue;
+				
+					if (!(_terms.get(i) instanceof OperExpr)
+						|| !((OperExpr)_terms.get(i)).checkTermCanonical()) {
+						//System.out.println("-- not canonical because [" + i + "]" + _terms.get(i) + " : " + _terms.get(i).getClass());
+						return false;
+					}
+				}
+				
+				return true;
+			} else {
+				//System.out.println("-- not canonical because not SUM: " + _aOpNames[_type]);
+				return false;
+			}
+		}
+		
+		public boolean checkTermCanonical() {
+			// This is term canonical if it is a product of a constant followed by variables
+			if (_type == PROD) {
+				if (!(_terms.get(0) instanceof DoubleExpr)) 
+					return false;
+				
+				for (int i = 1; i < _terms.size(); i++) {
+					if (!(_terms.get(i) instanceof VarExpr))
+						return false;
+				}
+				
+				return true;
+			} else
+				return false;
+		}
+		
 		// Canonicity for arithmetic expressions:
 		//
 		// 1. Expressions all zero on RHS of comparisons and restrict symbols:
@@ -1581,7 +1626,26 @@ public class XADD  {
 		// 8. Make all products start with a single Double coefficient
 		// 9. Compress / remove common polynomial terms
 		// 10. Prevent singleton operator expressions
+		public static int ALREADY_CANONICAL = 0;
+		public static int NON_CANONICAL = 0;
 		public Expr makeCanonical() {
+
+			// A simple non-canonical case is OperExpr - 0, so catch this
+			if (_type == MINUS 
+				&& _terms.get(1) instanceof DoubleExpr 
+				&& ((DoubleExpr)_terms.get(1))._dConstVal == 0d) {
+				return _terms.get(0).makeCanonical();
+			}
+			
+			// If already canonical, no need to modify
+			if (checkCanonical()) {
+				//System.out.println("** Already canonical: " + this);
+				ALREADY_CANONICAL++;
+				return this;
+			} else {
+				//System.out.println("** Not canonical: " + this);
+				NON_CANONICAL++;
+			}
 			
 			int new_type = _type;
 			ArrayList<ArithExpr> new_terms = new ArrayList<ArithExpr>(_terms);	
@@ -1747,7 +1811,9 @@ public class XADD  {
 			}
 			
 			// Ensure canonical order
-			return new OperExpr(new_type, new_terms);
+			OperExpr canonical_expr = new OperExpr(new_type, new_terms);
+			//System.out.println("- now canonical: " + canonical_expr);
+			return canonical_expr;
 		}
 	}
 	
@@ -1790,14 +1856,16 @@ public class XADD  {
 	
 	public static class VarExpr extends ArithExpr {
 		public String _sVarName = null;
+		public int _nHashCode = -1;
 		public VarExpr(String name) {
 			_sVarName = name.intern();
+			_nHashCode = _sVarName.hashCode();
 		}
 		public String toString() {
 			return _sVarName;
 		}
 		public int hashCode() {
-			return _sVarName.hashCode();
+			return _nHashCode;
 		}
 		public boolean equals(Object o) {
 			if (o instanceof VarExpr) {
