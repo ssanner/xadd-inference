@@ -35,7 +35,7 @@ public class XADD  {
 
 	// Flags
 	public final static boolean USE_CANONICAL_NODES = true;  // Store nodes in canonical format?
-	public final static boolean CHECK_MIN_MAX   = true; // Will be buggy if min/max of expr 
+	public final static boolean CHECK_MIN_MAX   = false; // Will be buggy if min/max of expr 
 														// not at extrema of domain
 	public final static boolean USE_MINUS_COMP = false; // Error, all max/min comps reduce to false!
 	
