@@ -42,6 +42,7 @@ public class XADD  {
 	// Debug
 	public final static boolean CHECK_LOCAL_ORDERING = true;
 	public final static boolean SHOW_DECISION_EVAL = false;
+	public final static boolean DEBUG_EVAL_RANGE = false;
 	
 	// Operators
 	public final static int UND   = 0;
@@ -869,7 +870,7 @@ public class XADD  {
 	    public void toGraph(Graph g, int id) {
 	    	String this_node = Integer.toString(id);
 	    	g.addNode(this_node);
-			g.addNodeLabel(this_node, _expr.toString()+" id:"+id);
+			g.addNodeLabel(this_node, _expr.toString()/*+" id:"+id*/);
 			if (GRAPH_USE_COLOR)
 				g.addNodeColor(this_node, "lightsalmon"); // red, darkred, lightsalmon
 			g.addNodeShape(this_node, "box");
@@ -941,7 +942,7 @@ public class XADD  {
 			//System.out.println("var: " + _var);
 			//System.out.println(_alOrder);
 			g.addNode(this_node);
-			g.addNodeLabel(this_node, _alOrder.get(_var).toString()+" id: "+getVarIndex(_alOrder.get(_var),true));
+			g.addNodeLabel(this_node, _alOrder.get(_var).toString()/*+" id: "+getVarIndex(_alOrder.get(_var),true)*/);
 			if (GRAPH_USE_COLOR)
 				g.addNodeColor(this_node, "lightblue"); // green, lightblue
 			g.addNodeShape(this_node, "ellipse");
@@ -1530,8 +1531,13 @@ public class XADD  {
 				System.exit(1);
 			}
 
+			if (DEBUG_EVAL_RANGE) 
+				System.out.println("Evaluating " + (use_low ? "min" : "max") + " range: " + this);
+			
 			HashMap<String, Double> assign = use_low ? low_assign : high_assign;
 			Double accum = _terms.get(0).evaluateRange(low_assign, high_assign, use_low);
+			if (DEBUG_EVAL_RANGE) 
+				System.out.println("- Term eval [" + 0 + "] = " + _terms.get(0) + " = " + accum + " -- " + use_low);
 			
 			boolean subterm_use_low = 
 				(_type == MINUS || _type == DIV || (_type == PROD && accum < 0d))
@@ -1540,17 +1546,23 @@ public class XADD  {
 			for (int i = 1; i < _terms.size() && accum != null; i++) {
 									
 				Double term_eval = _terms.get(i).evaluateRange(low_assign, high_assign, subterm_use_low);
+				if (DEBUG_EVAL_RANGE) 
+					System.out.println("- Term eval [" + i + "] = " + _terms.get(i) + " = " + term_eval + " -- " + subterm_use_low);
 				if (term_eval == null)
 					accum = null;
 				else
 					switch(_type) {
-						case SUM:	accum = accum + term_eval; break;
-						case MINUS:	accum = accum - term_eval; break;
-						case PROD:	accum = accum * term_eval; break;
-						case DIV:	accum = accum / term_eval; break;
+						case SUM:	accum += term_eval; break;
+						case MINUS:	accum -= term_eval; break;
+						case PROD:	accum *= term_eval; break;
+						case DIV:	accum /= term_eval; break;
 						default: 	accum = null;
 					}
+				if (DEBUG_EVAL_RANGE) 
+					System.out.println("- accum: " + accum);
 			}
+			if (DEBUG_EVAL_RANGE) 
+				System.out.println("* Result " + (use_low ? "min" : "max") + " range: " + accum);
 			return accum;
 		}
 

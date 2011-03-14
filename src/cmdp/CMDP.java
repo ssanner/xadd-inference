@@ -64,7 +64,7 @@ public class CMDP {
 	
 	/* Constants */
 	public final static boolean DISPLAY_Q = false;
-	public final static boolean DISPLAY_V = true;
+	public final static boolean DISPLAY_V = false;
 	public final static boolean DISPLAY_MAX = false;
 	public final static boolean DISPLAY_SUBST = false;
 	public final static boolean PRINTFINALQ=false;
@@ -282,7 +282,7 @@ public class CMDP {
 		HashSet<String> vars = n.collectVars();
 		ArrayList<String> cvar_names = new ArrayList<String>();
 		HashMap<String,Integer> bvar_dds = new HashMap<String,Integer>();
-		HashMap<String,ArithExpr> bool_prime_subs = new HashMap<String,ArithExpr>();
+		HashMap<String,ArithExpr> prime_subs = new HashMap<String,ArithExpr>();
 		ArrayList<XADD.XADDNode> node_list = new ArrayList<XADD.XADDNode>();
 		ArrayList<XADD.ArithExpr> subst = new ArrayList<XADD.ArithExpr>();
 		
@@ -291,12 +291,12 @@ public class CMDP {
 		// and boolean vars.
 		for (String var : vars) {
 			String var_prime = var + "'";
+			prime_subs.put(var, new XADD.VarExpr(var_prime));
 			Integer dd = a._hmVar2DD.get(var_prime);
 			if (_alBVars.contains(var)) {
 				bvar_dds.put(var_prime, dd); // Note: var is unprimed
-				bool_prime_subs.put(var, new XADD.VarExpr(var_prime));
 			} else {
-				cvar_names.add(var);
+				cvar_names.add(var_prime);
 				node_list.add(_context.getNode(dd)); //node_list has all XADDs from action a that are related with valueDD variables
 				subst.add(null);
 			}
@@ -310,11 +310,8 @@ public class CMDP {
 		
 		// Note: following is the regression procedure
 		//
-		// (1) we substitute boolean variable primes: b -> b'
-		// (2) we regress the continuous variable diagram all at once
-		//     building the tree of regression decisions then doing all
-		//     substitutions of continuous vars on the vfun below each
-		//     branch
+		// (1) we substitute variable primes (boolean and continuous): v -> v'
+		// (2) we regress the continuous variables c' one at a time 
 		// (3) we multiply in and sum out the CPTs for each b'
 		//
 		// The trick is to avoid a mix-up of current and next-state variables
@@ -329,14 +326,32 @@ public class CMDP {
 		//      we just use VarExpr as a wrapper for a boolean decision var name
 		//      ... substitute knows how to handle this if it matches a BoolDec
 		//System.out.println("- Before boolean prime substitution:\n" + _context.getString(vfun));
-		int q = _context.substitute(vfun, bool_prime_subs); 
+		int q = _context.substitute(vfun, prime_subs); 
 		//System.out.println("- After boolean prime substitution:\n" + _context.getString(q));
 		
 		// Do the *deterministic regression* for the continuous variables
 		// -- may drop in previous state boolean variables
 		//System.out.println("- Starting V before continuous regression through " + a._sName + ":\n" + _context.getString(vfun));
-		q = regress(node_list, cvar_names, subst, 0, q);//regress(_valueDD, a);
-
+		
+		// Break down continuous regression into multiple steps
+		//q = regress(node_list, cvar_names, subst, 0, q);//regress(_valueDD, a);
+		ArrayList<XADD.XADDNode> temp_node_list = new ArrayList<XADD.XADDNode>();
+		ArrayList<ArithExpr> temp_subst = new ArrayList<ArithExpr>();
+		ArrayList<String> temp_cvar_names = new ArrayList<String>();
+		temp_node_list.add(null);
+		temp_subst.add(null);
+		temp_cvar_names.add(null);
+		for (int i = 0; i < node_list.size(); i++) {
+			temp_node_list.set(0, node_list.get(i));
+			temp_subst.set(0, subst.get(i)); // This is null, right?
+			temp_cvar_names.set(0, cvar_names.get(i));
+			System.out.println("*** Regressing " + temp_cvar_names + ", size before: " + _context.getNodeCount(q));
+			q = regress(temp_node_list, temp_cvar_names, temp_subst, 0, q);//regress(_valueDD, a);
+			System.out.println("*** - size before makeCanonical: " + _context.getNodeCount(q));
+			q = _context.makeCanonical(q);
+			System.out.println("*** - size after: " + _context.getNodeCount(q));
+		}
+		
 		// Do the *decision-theoretic regression* for the primed boolean variables
 		// - multiply in CPT for v'
 		// - marginalize out v'
@@ -386,17 +401,6 @@ public class CMDP {
 		// Check if at terminal
 		if (index >= node_list.size()) {
 		    // Make substitution
-			// TODO: This approach may lead to problems... ideally need to
-			//       prime vfun and then make substitutions for prime variables...
-			//       here the current state variable is directly substituted
-			//       with the regression expression... just need to make sure
-			//       all substitutions are simultaneous and don't lead to 
-			//       resubstitutions x' = x + y, y' = z gets messed up
-			//       if x' gets replaced with x + z because variables were
-			//       not primed.
-			//
-			//       Update: I believe this will be OK here because each
-			//       variable in an expression is only substituted once.
 			HashMap<String,ArithExpr> leaf_subs = new HashMap<String,ArithExpr>();
 			for (int i = 0; i < var_names.size(); i++) 
 				leaf_subs.put(var_names.get(i), subst.get(i));
@@ -404,10 +408,10 @@ public class CMDP {
 							System.out.println("Substituting: " + leaf_subs + 
 					"\ninto:" + _context.getString(vfun));
 			}
-			int temporal = _context.substitute(vfun, leaf_subs);
-			//Graph gr = _context.getGraph(temporal);
+			int sub_dd = _context.substitute(vfun, leaf_subs);
+			//Graph gr = _context.getGraph(sub_dd);
 			//gr.launchViewer(1300, 770);
-			return temporal;
+			return sub_dd;
 		}
 		
 		// Must be nonterminal so continue to recurse
