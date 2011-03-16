@@ -63,14 +63,16 @@ public class CMDP {
 	// TODO: Integrate LP-Solve
 	
 	/* Constants */
+	public final static boolean REDUCE_LP = true;
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = false;
 	public final static boolean DISPLAY_MAX = false;
 	public final static boolean DISPLAY_SUBST = false;
-	public final static boolean PRINTFINALQ=false;
-	public final static boolean PRINTSCREENEVAL=false;
+	public final static boolean PRINTFINALQ= false;
+	public final static boolean PRINTSCREENEVAL= false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
+	
 	public static boolean PRINT3DFILE;
 	public static String varX;
 	public static String varY;
@@ -224,10 +226,30 @@ public class CMDP {
 				    Graph gr = _context.getGraph(_maxDD);
 				    gr.launchViewer(1300, 770);
 				}
+				
 			    flushCaches();
 
 			}
 
+			if (REDUCE_LP) {
+//				Graph g1 = _context.getGraph(_maxDD);
+//				g1.addNode("_temp_");
+//				g1.addNodeLabel("_temp_", "Before [" + iter + "]");
+//				g1.addNodeShape("_temp_", "square");
+//				g1.addNodeStyle("_temp_", "filled");
+//				g1.addNodeColor("_temp_", "lightblue");
+//				g1.launchViewer(1300, 770);
+
+				_maxDD = _context.reduceLP(_maxDD, _alCVars);
+//				Graph g2 = _context.getGraph(_maxDD);
+//				g2.addNode("_temp_");
+//				g2.addNodeLabel("_temp_", "After [" + iter + "]");
+//				g2.addNodeShape("_temp_", "square");
+//				g2.addNodeStyle("_temp_", "filled");
+//				g2.addNodeColor("_temp_", "lightblue");
+//				g2.launchViewer(1300, 770);
+			}
+			
 			// ////////////////////////////////////////////////////////////
 			// Discount the max'ed value function backup and add in reward
 			// ////////////////////////////////////////////////////////////
