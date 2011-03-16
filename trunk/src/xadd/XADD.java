@@ -24,6 +24,8 @@ import java.util.*;
 import cmdp.HierarchicalParser;
 
 import logic.kb.fol.FOPC;
+import lpsolve.LP;
+import lpsolve.LpSolve;
 
 /**
  * General class for implementation of ADD data structure
@@ -44,6 +46,7 @@ public class XADD  {
 	public final static boolean CHECK_LOCAL_ORDERING = true;
 	public final static boolean SHOW_DECISION_EVAL = false;
 	public final static boolean DEBUG_EVAL_RANGE = false;
+	public final static boolean DEBUG_CONSTRAINTS = false;
 	
 	// Operators
 	public final static int UND   = 0;
@@ -86,6 +89,7 @@ public class XADD  {
 	
 	// Reduce & Apply Caches
 	public HashMap<IntTriple,Integer> _hmReduceCache = new HashMap<IntTriple,Integer>();
+	public HashMap<IntTriple,Integer> _hmReduceLPCache = new HashMap<IntTriple,Integer>();
 	public HashMap<IntTriple,Integer> _hmApplyCache  = new HashMap<IntTriple,Integer>();
 	public HashMap<XADDINode,HashSet<String>> _hmINode2Vars = new HashMap<XADDINode,HashSet<String>>();
 	
@@ -342,6 +346,214 @@ public class XADD  {
 		// Put return value in cache and return
 		_hmReduceCache.put(new IntTriple(node_id, var_id, op), ret);
 		return ret;
+	}
+
+	public IntTriple _tempReduceLPKey = new IntTriple(-1,-1,-1);
+	public HashMap<String,Integer> _cvar2ID = null;
+	
+	public int reduceLP(int node_id, List<String> cvars) {
+		if (_cvar2ID == null) {
+			_cvar2ID = new HashMap<String,Integer>();
+			int id = 0;
+			for (String cvar : cvars)
+				_cvar2ID.put(cvar, id++);
+		}		
+		ArrayList<Integer> test_var = new ArrayList<Integer>();
+		ArrayList<Boolean> test_dec = new ArrayList<Boolean>();
+		for (int i = 0; i < _alOrder.size(); i++) {
+			test_dec.add(null);
+		}
+		return reduceLP(node_id, test_var, test_dec);
+	}
+	
+	private int reduceLP(int node_id, 
+			ArrayList<Integer> test_var, 
+			ArrayList<Boolean> test_dec) {
+
+		Integer ret = null;
+		XADDNode n = _hmInt2Node.get(node_id);
+		if (n == null) {
+			System.out.println("ERROR: " + node_id + " expected in node cache, but not found!");
+			new Exception().printStackTrace();
+			System.exit(1);
+		}
+		
+		// A terminal node should be reduced (and cannot be restricted)
+		// by default if hashing and equality testing are working in getTNode
+		if (n instanceof XADDTNode) {
+			return node_id; // Assuming that to have a node id means canonical
+		}
+		
+		// If its an internal node, check the reduce cache
+		_tempReduceLPKey.set(node_id, test_var.hashCode(), test_dec.hashCode());
+		if ((ret = _hmReduceLPCache.get(_tempReduceLPKey)) != null) {
+			// System.out.println("In cache, returning: " + qret);
+			return ret;
+		}
+
+		XADDINode inode = (XADDINode)n;
+		
+		////////////////////////////////////////////////////////////////////////
+		if (isTestImplied(test_var, test_dec, inode._var, true)) {
+			
+			ret = reduceLP(inode._high, test_var, test_dec);
+		} else if (isTestImplied(test_var, test_dec, inode._var, false)) {
+			
+			ret = reduceLP(inode._low, test_var, test_dec);	
+		} else {
+		
+			test_var.add(inode._var);
+			test_dec.set(inode._var, false);
+			int low = reduceLP(inode._low, test_var, test_dec);
+			test_dec.set(inode._var, true);
+			int high = reduceLP(inode._high, test_var, test_dec);
+			test_dec.set(inode._var, null);
+			test_var.remove(test_var.size() - 1);
+		
+			// Standard Reduce: getInode will handle the case of low == high
+			ret = getINode(inode._var, low, high);
+		}
+		////////////////////////////////////////////////////////////////////////
+		
+		// Put return value in cache and return
+		_hmReduceLPCache.put(new IntTriple(node_id, test_var.hashCode(), test_dec.hashCode()), ret);
+		return ret;
+	}
+
+	private boolean isTestImplied(ArrayList<Integer> test_var,
+			ArrayList<Boolean> test_dec, int var_id, boolean dec) {
+
+		if (test_var.size() == 0)
+			return false;
+		
+		if (DEBUG_CONSTRAINTS) {
+			System.out.println("===================\nisTestImplied: " + _alOrder.get(var_id) + " = " + dec);
+			for (int cons : test_var) {
+				System.out.println("- cons :: " + _alOrder.get(cons) + " = " + test_dec.get(cons));
+			}
+		}
+		
+		// if (a > b + c) == true makes system infeasible then it must be implied
+		// that (a > b + c) == false (prove A => B by seeing if A^~B is infeasible)
+
+		// Setup LP
+		int nvars = _cvar2ID.size();
+		double[] obj_coef = new double[nvars]; // default all zeros, which is what we want
+		double[] lb = new double[nvars];
+		double[] ub = new double[nvars];
+		for (Map.Entry<String,Integer> me : _cvar2ID.entrySet()) {
+			String cvar = me.getKey();
+			Integer cvar_id = me.getValue();
+			Double d_lb = this._hmMinVal.get(cvar);
+			lb[cvar_id] = d_lb != null ? d_lb : -1e10d;
+			Double d_ub = this._hmMaxVal.get(cvar);
+			ub[cvar_id] = d_ub != null ? d_ub : 1e10d;
+			obj_coef[cvar_id] = 1d;
+		}
+		
+		LP lp = new LP(nvars, lb, ub, obj_coef, LP.MAXIMIZE);
+		
+		// Now add all constraints
+		for (Integer constraint_id : test_var) {
+			addConstraint(lp, constraint_id, test_dec.get(constraint_id));
+		}
+
+		// Finally add the negated decision to test
+		addConstraint(lp, var_id, !dec);
+
+		// Solve and get decision
+		double[] soln = lp.solve();
+		boolean implied = (lp._status == LpSolve.INFEASIBLE);
+		if (DEBUG_CONSTRAINTS)
+			System.out.println("Solution: " + LP.PrintVector(lp._x));
+		lp.free();
+		
+		// Since dec inverted, infeasibility implies that the implication is true
+		//System.out.println("- RESULT: " + implied); 
+		return implied;
+	}
+
+	private void addConstraint(LP lp, int constraint_id, boolean dec) {
+		
+		if (DEBUG_CONSTRAINTS)
+			System.out.println("Adding constraint id [" + constraint_id + "] = " + dec);
+		
+		Decision d = _alOrder.get(constraint_id);
+		if (d instanceof ExprDec) {
+			ExprDec e = (ExprDec)d;
+			if (!(e._expr._rhs instanceof DoubleExpr)
+					|| ((DoubleExpr)e._expr._rhs)._dConstVal != 0d) {
+				System.out.println("Unexpected RHS constraint value: " + e._expr._rhs);
+				new Exception().printStackTrace(System.out);
+				System.exit(1);
+			}
+			
+			// From here we just need convert LHS to coefficients and construct
+			// correct constraint from CompExpr type
+			double[] coefs = new double[_cvar2ID.size()];
+			double const_coef = setCoefficients(e._expr._lhs, coefs); // move to RHS => -
+			
+			int type = dec ? e._expr._type : invertType(e._expr._type); 
+			
+			if (DEBUG_CONSTRAINTS)
+				System.out.println("- adding cons: " + const_coef + " + " + 
+						LP.PrintVector(coefs) + " <=> " + (dec ? "" : "!") + e._expr);
+			
+			switch (type) {
+			case GT:    lp.addGTConstraint(coefs, -const_coef);  break;
+			case GT_EQ: lp.addGeqConstraint(coefs, -const_coef); break;
+			case LT:    lp.addLTConstraint(coefs, -const_coef);  break;
+			case LT_EQ: lp.addLeqConstraint(coefs, -const_coef); break;
+			case EQ:    lp.addEqConstraint(coefs, -const_coef);  break;
+			case NEQ:   break; // Can't add an NEQ constraint
+			default:    break; // Unknown constraint type
+			}
+		}
+	}
+
+	private int invertType(int type) {
+		switch (type) {
+		case GT:    return LT_EQ;
+		case GT_EQ: return LT;
+		case LT:    return GT_EQ;
+		case LT_EQ: return GT;
+		case EQ:    return NEQ;
+		case NEQ:   return EQ;
+		default:    return -1; // Unknown constraint type
+		}
+	}
+	
+	// Convert an expression to an array of coefficients and a constant
+	private double setCoefficients(ArithExpr e, double[] coefs) {
+		
+		int error = 0;
+		double accum = 0d;
+		if (e instanceof OperExpr) {
+			OperExpr o = ((OperExpr)e);
+			if (o._type == PROD) {
+				if (o._terms.size() != 2)
+					error = 1;
+				else {
+					int index = _cvar2ID.get(((VarExpr)o._terms.get(1))._sVarName);
+					coefs[index] = ((DoubleExpr)o._terms.get(0))._dConstVal;
+				}
+			} else if (o._type == SUM) {
+				for (ArithExpr e2 : o._terms) 
+					accum += setCoefficients(e2, coefs);
+			} else 
+				error = 2;
+		} else if (e instanceof DoubleExpr) {
+			accum += ((DoubleExpr)e)._dConstVal;
+		} else
+			error = 3;
+		
+		if (error > 0) {
+			System.out.println("[" + error + "] Unexpected LHS constraint term: " + e);
+			new Exception().printStackTrace(System.out);
+			System.exit(1);
+		}
+		
+		return accum;
 	}
 
 	public int makeCanonical(int node_id) {
@@ -1605,8 +1817,12 @@ public class XADD  {
 				for (int i = 0; i < _terms.size(); i++) {
 					
 					// First term can be a constant so long as more than one term
-					if (i == 0 && (_terms.get(0) instanceof DoubleExpr))
-						continue;
+					if (i == 0 && (_terms.get(0) instanceof DoubleExpr)) {
+						if (Math.abs(((DoubleExpr)_terms.get(0))._dConstVal) <= 1e-6d)
+							return false;
+						else
+							continue;
+					}
 				
 					if (!(_terms.get(i) instanceof OperExpr)
 						|| !((OperExpr)_terms.get(i)).checkTermCanonical()) {
@@ -1947,6 +2163,7 @@ public class XADD  {
 
 		// Can always clear these
 		_hmReduceCache.clear();
+		_hmReduceLPCache.clear();
 		_hmApplyCache.clear();
 		_hmINode2Vars.clear();
 
@@ -2012,7 +2229,7 @@ public class XADD  {
 		xadd_context.getVarIndex(xadd_context.new BoolDec("f"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("g"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("h"), true);
-		
+
 		int xadd_circle = TestBuild(xadd_context, "./src/xadd/circle.xadd");
 		Graph gc = xadd_context.getGraph(xadd_circle); gc.launchViewer();
 		
@@ -2023,7 +2240,12 @@ public class XADD  {
 		int xadd4 = TestBuild(xadd_context, "./src/xadd/test4.xadd");
 		int xadd5 = TestBuild(xadd_context, "./src/xadd/test5.xadd");
 		int xaddrRes = xadd_context.apply(xadd4, xadd5, XADD.MAX);
-		Graph gRes = xadd_context.getGraph(xaddrRes); gRes.launchViewer();
+		Graph gRes = xadd_context.getGraph(xadd_context.reduceLP(xaddrRes, Arrays.asList("x1","x2","r1"))); gRes.launchViewer();
+
+		int xadd_implied = TestBuild(xadd_context, "./src/xadd/implied.xadd");
+		Graph gb = xadd_context.getGraph(xadd_implied); gb.launchViewer();
+		xadd_implied = xadd_context.reduceLP(xadd_implied, Arrays.asList("x1","x2","r1"));
+		Graph gb2 = xadd_context.getGraph(xadd_implied); gb2.launchViewer();
 		if (true) return;
 		
         //**************************************

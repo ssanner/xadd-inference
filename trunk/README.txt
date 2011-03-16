@@ -3,13 +3,29 @@ xadd-inference -- Implementation of Extended ADDs (XADDs) and
 
 Copyright (C) 2010, Scott Sanner (ssanner [@] gmail.com)
 
-License: MPL 1.1
+License: MPL 1.1 (with exceptions for 3rd party software)
 
-         **Except all other 3rd-party software (mostly .jar's 
-           included for convenience) and data content not 
-           produced by the authors, which retain their original 
-           copyright and license.
+         The MPL license does not apply to 3rd-party software 
+         (most in lib and data content not 
+         produced by the authors, which retain their original 
+         copyright and license.
 
+		 The Java interface to LPSolve
+		 
+		   http://lpsolve.sourceforge.net/5.5/
+		   
+		 is included for the user's convenience.  LPSolve uses
+		 an LGPL license:
+		  
+		   http://lpsolve.sourceforge.net/5.5/LGPL.htm
+		   
+		 LPSolve requires binaries appropriate for the user's
+		 system, e.g., Windows requires lpsolve55j.dll.  To
+		 obtain these binaries, please consult:
+		 
+		   http://lpsolve.sourceforge.net/5.5/distribution.htm
+		   http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/
+		   
 
 Basic Installation and Invocation
 =================================
