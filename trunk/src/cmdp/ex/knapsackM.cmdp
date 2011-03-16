@@ -1,5 +1,5 @@
 cvariables ( k   x1  x2  )
-min-values ( 0   0   0   )
+min-values ( 0.000001   0.000001   0.000001   )
 max-values ( 100 100 100 ) 
 bvariables ( )
 ivariables ( )

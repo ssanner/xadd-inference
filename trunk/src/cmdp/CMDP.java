@@ -26,6 +26,7 @@ import java.util.regex.*;
 import java.util.*;
 
 
+import util.IntTriple;
 import xadd.XADD;
 import xadd.XADD.ArithExpr;
 import xadd.XADD.BoolDec;
@@ -64,12 +65,13 @@ public class CMDP {
 	
 	/* Constants */
 	public final static boolean REDUCE_LP = true;
+	
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = false;
 	public final static boolean DISPLAY_MAX = false;
 	public final static boolean DISPLAY_SUBST = false;
-	public final static boolean PRINTFINALQ= false;
-	public final static boolean PRINTSCREENEVAL= false;
+	public final static boolean PRINTFINALQ = false;
+	public final static boolean PRINTSCREENEVAL = false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
 	
@@ -103,6 +105,9 @@ public class CMDP {
 	
 	public HashMap<String,Action> _hmName2Action;
 	public ArrayList<Integer> _alConstraints;
+	
+	public HashMap<IntTriple,Integer> _hmRegrKey2Node;
+	
 	////////////////////////////////////////////////////////////////////////////
 	// Constructors
 	////////////////////////////////////////////////////////////////////////////
@@ -124,6 +129,7 @@ public class CMDP {
 		_bdDiscount = new BigDecimal("" + (-1));
 		_nIter = null;
 		_hmName2Action = new HashMap<String,Action>();
+		_hmRegrKey2Node = new HashMap<IntTriple,Integer>();
 
 		buildCMDP(input);
 	}
@@ -187,6 +193,11 @@ public class CMDP {
 				// Regress the current value function through each action
 				//////////////////////////////////////////////////////////////
 				int regr = regress(_valueDD, me.getValue());
+				
+				if (REDUCE_LP) {
+					regr = _context.reduceLP(regr, _alCVars);
+				}
+				
 				if (DISPLAY_Q) {
 					Graph g = _context.getGraph(regr);
 					g.addNode("_temp_");
@@ -222,9 +233,19 @@ public class CMDP {
 				// ////////////////////////////////////////////////////////////
 				_maxDD = ((_maxDD == null) ? regr :
 					_context.apply(_maxDD, regr, XADD.MAX));
-				if(DISPLAY_MAX && iter==2){
-				    Graph gr = _context.getGraph(_maxDD);
-				    gr.launchViewer(1300, 770);
+			
+				if (REDUCE_LP) {
+					_maxDD = _context.reduceLP(_maxDD, _alCVars);
+				}
+				
+				if(DISPLAY_MAX){
+				    Graph g = _context.getGraph(_maxDD);
+					g.addNode("_temp_");
+					g.addNodeLabel("_temp_", "max-" + iter);
+					g.addNodeShape("_temp_", "square");
+					g.addNodeStyle("_temp_", "filled");
+					g.addNodeColor("_temp_", "lightblue");
+				    g.launchViewer(1300, 770);
 				}
 				
 			    flushCaches();
@@ -331,6 +352,8 @@ public class CMDP {
 		}
 		_context.flushCaches();
 		
+		_hmRegrKey2Node.clear();
+		
 		System.out.println("After flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
 				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
 				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
@@ -405,14 +428,24 @@ public class CMDP {
 		temp_subst.add(null);
 		temp_cvar_names.add(null);
 		for (int i = 0; i < node_list.size(); i++) {
-			temp_node_list.set(0, node_list.get(i));
-			temp_subst.set(0, subst.get(i)); // This is null, right?
-			temp_cvar_names.set(0, cvar_names.get(i));
-			System.out.println("*** Regressing " + temp_cvar_names + ", size before: " + _context.getNodeCount(q));
-			q = regress(temp_node_list, temp_cvar_names, temp_subst, 0, q);//regress(_valueDD, a);
-			System.out.println("*** - size before makeCanonical: " + _context.getNodeCount(q));
-			q = _context.makeCanonical(q);
-			System.out.println("*** - size after: " + _context.getNodeCount(q));
+			
+			IntTriple regr_key = new IntTriple(q, node_list.get(i).hashCode(), cvar_names.get(i).hashCode());
+			Integer cache_node = null;
+			if ((cache_node = _hmRegrKey2Node.get(regr_key)) != null) {
+				q = cache_node;
+			} else {
+			
+				temp_node_list.set(0, node_list.get(i));
+				temp_subst.set(0, subst.get(i)); // This is null, right?
+				temp_cvar_names.set(0, cvar_names.get(i));
+				System.out.println("*** Regressing " + temp_cvar_names + ", size before: " + _context.getNodeCount(q));
+				q = regress(temp_node_list, temp_cvar_names, temp_subst, 0, q);//regress(_valueDD, a);
+				System.out.println("*** - size before makeCanonical: " + _context.getNodeCount(q));
+				q = _context.makeCanonical(q);
+				System.out.println("*** - size after: " + _context.getNodeCount(q));
+				
+				_hmRegrKey2Node.put(regr_key, q);
+			}
 		}
 		
 		// Do the *decision-theoretic regression* for the primed boolean variables
