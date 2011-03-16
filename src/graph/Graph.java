@@ -607,7 +607,12 @@ public class Graph {
 	}
 	
 	public void launchViewer(int width, int height) {
-		launchViewer(width, height, 0, 0, 20);
+		try {
+			launchViewer(width, height, 0, 0, 20);
+		} catch (Throwable t) {
+			System.err.println(t);
+			t.printStackTrace(System.err);
+		}
 	}
 		
 	public void launchViewer(int w, int h, int x_off, int y_off, int text_h) {

@@ -37,10 +37,11 @@ public class XADD  {
 
 	// Flags
 	public final static boolean USE_CANONICAL_NODES = true;  // Store nodes in canonical format?
-	public final static boolean CHECK_MIN_MAX   = false; // Will be buggy if min/max of expr 
+	public final static boolean CHECK_MIN_MAX   = true; // Will be buggy if min/max of expr 
 														// not at extrema of domain
+
 	public final static boolean USE_MINUS_COMP = false; // Error, all max/min comps reduce to false!
-	public final static int MAX_BRANCH_COUNT = 100000000;
+	public final static int MAX_BRANCH_COUNT = 1000000;
 	
 	// Debug
 	public final static boolean CHECK_LOCAL_ORDERING = true;
@@ -394,6 +395,12 @@ public class XADD  {
 		XADDINode inode = (XADDINode)n;
 		
 		////////////////////////////////////////////////////////////////////////
+		//if (CHECK_MIN_MAX) { // Handled by makeCanonical
+		//	*
+		//}
+		
+		////////////////////////////////////////////////////////////////////////
+		//if (ret == null) {
 		if (isTestImplied(test_var, test_dec, inode._var, true)) {
 			
 			ret = reduceLP(inode._high, test_var, test_dec);
@@ -413,6 +420,7 @@ public class XADD  {
 			// Standard Reduce: getInode will handle the case of low == high
 			ret = getINode(inode._var, low, high);
 		}
+		//}
 		////////////////////////////////////////////////////////////////////////
 		
 		// Put return value in cache and return
@@ -557,6 +565,13 @@ public class XADD  {
 	}
 
 	public int makeCanonical(int node_id) {
+	    Graph g = getGraph(node_id);
+//		g.addNode("_temp_");
+//		g.addNodeLabel("_temp_", "Before make canonical");
+//		g.addNodeShape("_temp_", "square");
+//		g.addNodeStyle("_temp_", "filled");
+//		g.addNodeColor("_temp_", "lightblue");
+//	    g.launchViewer(1300, 770);
 		return reduceSub(node_id, new HashMap<String,ArithExpr>(), new HashMap<Integer,Integer>()); 
 	}
 	
@@ -799,11 +814,20 @@ public class XADD  {
 			
 			ArithExpr diff = new OperExpr(MINUS, xa1._expr, xa2._expr);
 			CompExpr comp = null;
+						
 			if (USE_MINUS_COMP)
 				comp = new CompExpr(LT, diff, new DoubleExpr(0d));
 			else
 				comp = new CompExpr(LT_EQ, xa1._expr, xa2._expr);
 			Decision d = new ExprDec(comp);
+			
+			// Do a range check here
+//			if (CHECK_MIN_MAX) {
+//				TautDec tdec = checkRangeImpliedDecision(d);
+//				if (tdec != null)
+//					d = tdec; // Change to a tautology... getInode will handle this
+//			}
+			
 			int var_index = getVarIndex(d, true);
 			//System.out.println("ComputeTerm::max var_index " + _alOrder.get(var_index) + ": " + comp);
 			//System.exit(1);
@@ -1330,69 +1354,96 @@ public class XADD  {
 			} else if (d instanceof ExprDec 
 						&& CHECK_MIN_MAX) {
 				// Check for evaluations based on minimum and maximum values
-				TautDec tdec = null;
-				Double lhs_max = ((ExprDec)d)._expr._lhs.evaluateRange(_hmMinVal, _hmMaxVal, false);
-				Double lhs_min = ((ExprDec)d)._expr._lhs.evaluateRange(_hmMinVal, _hmMaxVal, true);
-				Double rhs_max = ((ExprDec)d)._expr._rhs.evaluateRange(_hmMinVal, _hmMaxVal, false);
-				Double rhs_min = ((ExprDec)d)._expr._rhs.evaluateRange(_hmMinVal, _hmMaxVal, true);
-				if (lhs_max == null)
-					lhs_max = Double.MAX_VALUE;
-				if (rhs_max == null)
-					rhs_max = Double.MAX_VALUE;
-				if (lhs_min == null)
-					lhs_min = -Double.MAX_VALUE;
-				if (rhs_min == null)
-					rhs_min = -Double.MAX_VALUE;
-				switch (((ExprDec)d)._expr._type) {
-					case EQ:    
-					case NEQ:   
-						if ((lhs_min > rhs_max || rhs_min > lhs_max)
-							|| ((lhs_max == lhs_min) && (rhs_max == rhs_min) && (lhs_min != rhs_min))) {
-							// Indicates they cannot possibly be equal
-							tdec = new TautDec((((ExprDec)d)._expr._type == EQ) ? false : true);
-						}
-						break;
-					case GT:    
-						// lhs > rhs
-						if (lhs_min > rhs_max)
-							tdec = new TautDec(true); 
-						else if (lhs_max <= rhs_min)
-							tdec = new TautDec(false); 
-						break;
-					case GT_EQ: 
-						// lhs >= rhs
-						if (lhs_min >= rhs_max)
-							tdec = new TautDec(true); 
-						else if (lhs_max < rhs_min)
-							tdec = new TautDec(false); 
-						break;
-					case LT:    
-						// lhs < rhs
-						if (lhs_max < rhs_min)
-							tdec = new TautDec(true); 
-						else if (lhs_min >= rhs_max)
-							tdec = new TautDec(false); 
-						break;
-					case LT_EQ: 
-						// lhs <= rhs
-						if (lhs_max <= rhs_min)
-							tdec = new TautDec(true); 
-						else if (lhs_min > rhs_max)
-							tdec = new TautDec(false); 
-						break;
-				}
+				//ExprDec d1 = (ExprDec)d;
+				TautDec tdec = checkRangeImpliedDecision((ExprDec)d);
 				if (tdec != null) {
-					System.out.println("*** Pruning " + d + " with " + tdec + " because...");
-					System.out.println("- [" + lhs_min + "," + lhs_max + "] " + 
-							_aOpNames[((ExprDec)d)._expr._type] + " [" + rhs_min + "," + rhs_max + "]");
-					
 					d = tdec;
 				} 
+//				else {
+//				
+//					// Invert the decision and check for implication...
+//					// curiously note that this testing is asymmetrical due
+//					// to equality and hence the above might not catch half 
+//					// of the implications:
+//					//   a \in [-10,0]
+//					//   if (a < 0) x else y
+//					//   becomes if (0 >= a) 
+//					//   null          true
+//					ExprDec d2 = new ExprDec(new CompExpr(invertType(d1._expr._type), 
+//							d1._expr._rhs, d1._expr._lhs));
+//					
+//					tdec = checkRangeImpliedDecision(d2);
+//					if (tdec != null) {
+//						// We inverted the decision, so now we have to invert
+//						d = new TautDec(!tdec._bTautology);
+//					}
+//				}
 			}
 			
 			return d;
 		}
 
+	}
+	
+	public TautDec checkRangeImpliedDecision(ExprDec d) {
+		TautDec tdec = null;
+		Double lhs_max = d._expr._lhs.evaluateRange(_hmMinVal, _hmMaxVal, false);
+		Double lhs_min = d._expr._lhs.evaluateRange(_hmMinVal, _hmMaxVal, true);
+		Double rhs_max = d._expr._rhs.evaluateRange(_hmMinVal, _hmMaxVal, false);
+		Double rhs_min = d._expr._rhs.evaluateRange(_hmMinVal, _hmMaxVal, true);
+		if (lhs_max == null)
+			lhs_max = Double.MAX_VALUE;
+		if (rhs_max == null)
+			rhs_max = Double.MAX_VALUE;
+		if (lhs_min == null)
+			lhs_min = -Double.MAX_VALUE;
+		if (rhs_min == null)
+			rhs_min = -Double.MAX_VALUE;
+		switch (d._expr._type) {
+			case EQ:    
+			case NEQ:   
+				if ((lhs_min > rhs_max || rhs_min > lhs_max)
+					|| ((lhs_max == lhs_min) && (rhs_max == rhs_min) && (lhs_min != rhs_min))) {
+					// Indicates they cannot possibly be equal
+					tdec = new TautDec((d._expr._type == EQ) ? false : true);
+				}
+				break;
+			case GT: 
+				// lhs > rhs
+				if (lhs_min > rhs_max)
+					tdec = new TautDec(true); 
+				else if (lhs_max <= rhs_min)
+					tdec = new TautDec(false); 
+				break;
+			case GT_EQ: 
+				// lhs >= rhs
+				if (lhs_min >= rhs_max)
+					tdec = new TautDec(true); 
+				else if (lhs_max < rhs_min)
+					tdec = new TautDec(false); 
+				break;
+			case LT:    
+				// lhs < rhs
+				if (lhs_max < rhs_min)
+					tdec = new TautDec(true); 
+				else if (lhs_min >= rhs_max)
+					tdec = new TautDec(false); 
+				break;
+			case LT_EQ: 
+				// lhs <= rhs
+				if (lhs_max <= rhs_min)
+					tdec = new TautDec(true); 
+				else if (lhs_min > rhs_max)
+					tdec = new TautDec(false); 
+				break;
+		}
+		if (tdec != null) {
+			System.out.println("*** " + (tdec == null ? "not" : "") + " pruning " + d + " with " + tdec + " because...");
+			System.out.println("- [" + lhs_min + "," + lhs_max + "] " + 
+					_aOpNames[d._expr._type] + " [" + rhs_min + "," + rhs_max + "]");
+		} 
+
+		return tdec;
 	}
 	
 	/////////////////////////////////////////////////////////////////////
