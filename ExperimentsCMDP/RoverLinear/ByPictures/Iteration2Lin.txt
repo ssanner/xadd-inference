@@ -1,0 +1,5 @@
+2 Iter 2: nodes = 29	branches = 30	cases = 7.074365431063469E59	time = 429 ms
+3 Iter 2: nodes = 117	branches = 157	cases = Infinity	time = 4434 ms
+4 Iter 2: nodes = 332	branches = 545	cases = Infinity	time = 10128 ms
+5 Iter 2: nodes = 718	branches = 1801	cases = Infinity	time = 43241 ms
+

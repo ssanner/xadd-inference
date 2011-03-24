@@ -1,0 +1,38 @@
+RoverLinear2
+
+Iteration Results summary
+Iter 1: nodes = 11	branches = 9	cases = 9.3312E11	time = 82 ms
+Iter 2: nodes = 29	branches = 30	cases = 7.074365431063469E59	time = 429 ms
+Iter 3: nodes = 50	branches = 53	cases = 2.337154685438166E251	time = 983 ms
+Iter 4: nodes = 76	branches = 80	cases = Infinity	time = 2911 ms
+Iter 5: nodes = 95	branches = 100	cases = Infinity	time = 2756 ms
+Iter 6: nodes = 110	branches = 118	cases = Infinity	time = 3696 ms
+Iter 7: nodes = 125	branches = 136	cases = Infinity	time = 4357 ms
+Iter 8: nodes = 137	branches = 150	cases = Infinity	time = 4532 ms
+:   Maximize(R0)
+
+RoverLinear3
+Iteration Results summary
+Iter 1: nodes = 16	branches = 13	cases = 2.6623333280885246E31	time = 92 ms
+Iter 2: nodes = 117	branches = 157	cases = Infinity	time = 4434 ms
+Iter 3: nodes = 258	branches = 349	cases = Infinity	time = 21164 ms
+Iter 4: nodes = 394	branches = 554	cases = Infinity	time = 43508 ms
+Iter 5: nodes = 521	branches = 713	cases = Infinity	time = 60402 ms
+Iter 6: nodes = 665	branches = 945	cases = Infinity	time = 84235 ms
+Iter 7: nodes = 769	branches = 1101	cases = Infinity	time = 103966 ms
+Iter 8: nodes = 823	branches = 1174	cases = Infinity	time = 107532 ms
+ 14 constraints,       2 variables,           21 non-zeros.
+Sets:                                   0 GUB,                  0 SOS.
+
+RoverLinear4
+Iteration Results summary
+Iter 1: nodes = 21	branches = 17	cases = 4.7566888631319536E64	time = 112 ms
+Iter 2: nodes = 332	branches = 545	cases = Infinity	time = 10128 ms
+Iter 3: nodes = 1057	branches = 1629	cases = Infinity	time = 104759 ms
+Iter 4: nodes = 1879	branches = 2732	cases = Infinity	time = 406808 ms
+
+
+RoverLinear5
+Iteration Results summary
+Iter 1: nodes = 26	branches = 21	cases = 2.1798388791247755E115	time = 233 ms
+Iter 2: nodes = 718	branches = 1801	cases = Infinity	time = 43241 ms

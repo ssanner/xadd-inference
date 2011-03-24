@@ -1,0 +1,4 @@
+2 Iter 7: nodes = 125	branches = 136	cases = Infinity	time = 4357 ms
+3 Iter 7: nodes = 769	branches = 1101	cases = Infinity	time = 103966 ms
+4
+5

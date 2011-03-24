@@ -1,0 +1,171 @@
+cvariables (energy )
+min-values (0)
+max-values (20)
+bvariables (p2 p1 takenp2 takenp1 )
+ivariables()
+action movep1p2
+p1' ([energy>0.6]
+   ([0.0])
+   (p1
+       ([1.0])
+       ([0.0])
+   )
+)
+p2' ([energy>0.6]
+ (p1
+   ([1.0])
+   (p2
+       ([1.0])
+       ([0.0])
+   )
+  )
+  (p2
+    ([1.0])
+    ([0.0])
+  )
+)
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+energy' ([energy>0.6]
+ (p1
+   ([energy - 0.6])
+   ([energy]))
+ ([energy])
+)
+reward ([0.0])
+endaction
+action movep2p1
+p1' ([energy>0.6]
+ (p2
+   ([1.0])
+   (p1
+       ([1.0])
+       ([0.0])
+   )
+  )
+  (p1
+    ([1.0])
+    ([0.0])
+  )
+)
+p2' ([energy>0.6]
+   ([0.0])
+   (p2
+       ([1.0])
+       ([0.0])
+   )
+)
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+  )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+  )
+energy' ([energy>0.6]
+ (p2
+   ([energy - 0.6])
+   ([energy]))
+ ([energy])
+)
+reward ([0.0])
+endaction
+action takepicturep1
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+takenp1'([energy>3]
+     (p1
+        ([1.0])
+        (takenp1
+            ([1.0])
+            ([0.0])
+        )
+     )
+     (takenp1
+        ([1.0])
+        ([0.0])
+     )
+   )
+takenp2' (takenp2
+     ([1.0])
+     ([0.0])
+     )
+energy' ([energy>3]
+    (p1
+       (takenp1
+             ([energy])
+             ([energy - 3])
+       )
+       ([energy])
+     )
+     ([energy])
+)
+reward ([energy>3]
+ (p1
+       (takenp1
+           ([0.0])
+           ([100.0])
+       )
+       ([0.0])
+  )
+  ([0.0])
+)
+endaction
+action takepicturep2
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+takenp1' (takenp1
+     ([1.0])
+     ([0.0])
+     )
+takenp2'([energy>3]
+    (p2
+        ([1.0])
+        (takenp2
+            ([1.0])
+            ([0.0])
+        )
+     )
+     (takenp2
+        ([1.0])
+        ([0.0])
+     )
+)
+energy' ([energy>3]
+ (p2
+       (takenp2
+             ([energy])
+             ([energy - 3]))
+       ([energy]))
+ ([energy])
+)
+reward ([energy>3]
+ (p2
+       (takenp2
+           ([0.0])
+           ([101.0]))
+       ([0.0]))
+ ([0.0])
+)
+endaction
+discount 1.0000000
+iterations 10

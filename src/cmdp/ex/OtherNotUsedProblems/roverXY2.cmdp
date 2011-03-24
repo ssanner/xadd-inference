@@ -1,0 +1,48 @@
+cvariables (x y)
+min-values (0 0)
+max-values (4 4)
+bvariables (takenp1)
+ivariables()
+
+action xMoveForward
+x' ([x + 1.0])
+y' ([y])
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+)
+reward ([-1.0])
+endaction
+
+action yMoveForward
+y' ([y + 1.0])
+x' ([x])
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+)
+reward ([-1.0])
+endaction
+
+action takepicturep1
+x' ([x])
+y' ([y])
+
+takenp1'([(x - 2)*(x - 2) + (y - 2)*(y - 2)< 1.5*1.5]
+        ([1.0])
+        (takenp1
+            ([1.0])
+            ([0.0])
+        )
+)
+reward ([(x - 2)*(x - 2) + (y - 2)*(y - 2)< 1.5*1.5]
+        (takenp1
+            ([0.0])
+            ([0.5 - (x - 2)*(x - 2) - (y - 2)*(y - 2)])
+        )
+        ([0.0])
+)
+
+endaction
+discount 1.0000000
+iterations 10

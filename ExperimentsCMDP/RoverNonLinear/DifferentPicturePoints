@@ -1,0 +1,52 @@
+roverXY3-3
+
+Value iteration complete!
+3 iterations took 423 ms
+Canonical / non-canonical: 1801 / 3971
+
+Iteration Results summary
+Iter 1: nodes = 6	branches = 4	cases = 72.0	time = 4 ms
+Iter 2: nodes = 19	branches = 17	cases = 373248.0	time = 93 ms
+Iter 3: nodes = 59	branches = 136	cases = 1.0030613004288E13	time = 165 ms
+
+4 iteration OutOfMemoryError
+
+=============================================================================
+roverXY3-32P
+
+Value iteration complete!
+3 iterations took 3871 ms
+Canonical / non-canonical: 41577 / 91026
+
+Iteration Results summary
+Iter 1: nodes = 15	branches = 18	cases = 82944.0	time = 22 ms
+Iter 2: nodes = 191	branches = 996	cases = 4.733037027712932E19	time = 280 ms
+Iter 3: nodes = 3745	branches = 245210	cases = 8.794368952544245E63	time = 3427 ms
+
+4 iterations OutOfMemoryError
+
+=============================================================================
+roverXY3-33P
+
+Value iteration complete!
+2 iterations took 1028 ms
+Canonical / non-canonical: 10987 / 15649
+
+Iteration Results summary
+Iter 1: nodes = 36	branches = 84	cases = 1.528823808E9	time = 94 ms
+Iter 2: nodes = 1628	branches = 41281	cases = 8.351936549806447E45	time = 822 ms
+
+3 iterations OutOfMemoryError
+
+=============================================================================
+roverXY3-34P
+
+Value iteration complete!
+2 iterations took 2733 ms
+Canonical / non-canonical: 26915 / 38429
+
+Iteration Results summary
+Iter 1: nodes = 59	branches = 196	cases = 4.50868486864896E14	time = 94 ms
+Iter 2: nodes = 5064	branches =  > 1000000	cases = 8.400386918674962E87	time = 2043 ms
+
+==============================================================================

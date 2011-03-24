@@ -1,0 +1,5 @@
+Iter 1 : nodes = 16	branches = 13	cases = 2.6623333280885246E31	time = 46 ms
+Iter 2 : nodes = 266	branches = 1848	cases = Infinity	time = 265 ms
+Iter 3 : nodes = 3286	branches => 4500 cases = Infinity	time = 4376 ms
+Iter 4 : OutofMemory x 4500 x x 4500 x x x x x 110000
+Iter 5 : OutofMemory x 4500 x x 4500 x x x x x 110000

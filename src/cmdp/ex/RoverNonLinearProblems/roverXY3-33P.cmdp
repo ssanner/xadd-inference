@@ -1,0 +1,113 @@
+cvariables (x y)
+min-values (-10 -10)
+max-values (10 10)
+bvariables (takenp1 takenp2 takenp3)
+ivariables()
+
+action move
+y' ([y/3])
+x' ([x/3])
+
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+)
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+)
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+)
+
+reward ([-1.0])
+endaction
+
+action takepicturep1
+x' ([x])
+y' ([y])
+takenp1'([x*x + y*y < 4]
+        ([1.0])
+        (takenp1
+            ([1.0])
+            ([0.0])
+        )
+)
+takenp2'(takenp2
+            ([1.0])
+            ([0.0])
+        )
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+)
+       
+reward ([x*x + y*y < 4]
+        (takenp1
+            ([0.0])
+            ([(4 - x*x - y*y)])
+        )
+        ([0.0])
+)
+endaction
+
+action takepicturep2
+x' ([x])
+y' ([y])
+takenp1'(takenp1
+            ([1.0])
+            ([0.0])
+        )
+takenp2'([x*x + y*y < 2]
+        ([1.0])
+        (takenp2
+            ([1.0])
+            ([0.0])
+        )
+)
+takenp3' ( takenp3
+   ([1.0])
+   ([0.0])
+)
+
+reward ([x*x + y*y < 2]
+        (takenp2
+            ([0.0])
+            ([(2 - x*x - y*y)])
+        )
+        ([0.0])
+)
+endaction
+
+action takepicturep3
+x' ([x])
+y' ([y])
+takenp1'(takenp1
+            ([1.0])
+            ([0.0])
+        )
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+)
+        
+takenp3'([x*x + y*y < 2]
+        ([1.0])
+        (takenp3
+            ([1.0])
+            ([0.0])
+        )
+)
+reward ([x*x + y*y < 1]
+        (takenp3
+            ([0.0])
+            ([(1 - x*x - y*y)])
+        )
+        ([0.0])
+)
+endaction
+
+
+discount 1.0000000
+iterations 10

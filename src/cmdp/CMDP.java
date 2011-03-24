@@ -64,7 +64,7 @@ public class CMDP {
 	// TODO: Integrate LP-Solve
 	
 	/* Constants */
-	public final static boolean REDUCE_LP = true;
+	public final static boolean REDUCE_LP = false;
 	
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = false;
@@ -84,7 +84,7 @@ public class CMDP {
 	public final static ArrayList<String> ZERO  =  new ArrayList<String> (Arrays.asList("[0]"));  
 	/* For printing */
 	public static DecimalFormat _df = new DecimalFormat("#.###");
-	public static String  NAME_FILE_3D="./src/cmdp/ex/File3D";
+	public static String  NAME_FILE_3D="./src/cmdp/ex/data/File3D";
 	
 	/* Static variables */
 	public static long _lTime; // For timing purposes
@@ -774,6 +774,9 @@ public class CMDP {
             if (rover){
             	bool_assign.put("p1", true);
             }
+            else{//knapsack
+            	
+            }
              
              Double minX= _context._hmMinVal.get(xVar);
              Double maxX= _context._hmMaxVal.get(xVar);
@@ -805,7 +808,7 @@ public class CMDP {
              
   		     		HashMap<String,Double> cont_assign = new HashMap<String,Double>();
   		     		
-  		     		for (Map.Entry<String,Double> me : _context._hmMaxVal.entrySet()) {
+  		     		for (Map.Entry<String,Double> me : _context._hmMinVal.entrySet()) {
   		     			cont_assign.put(me.getKey(),  me.getValue());
   		     		}
   		     			     		

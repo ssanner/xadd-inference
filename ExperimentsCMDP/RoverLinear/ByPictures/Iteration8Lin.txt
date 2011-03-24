@@ -1,0 +1,4 @@
+2 Iter 8: nodes = 137	branches = 150	cases = Infinity	time = 4532 ms
+3 Iter 8: nodes = 823	branches = 1174	cases = Infinity	time = 107532 ms
+4
+5
