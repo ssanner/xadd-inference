@@ -1,0 +1,4 @@
+2 Iter 1: nodes = 11	branches = 9	cases = 9.3312E11	time = 82 ms
+3 Iter 1: nodes = 16	branches = 13	cases = 2.6623333280885246E31	time = 92 ms
+4 Iter 1: nodes = 21	branches = 17	cases = 4.7566888631319536E64	time = 112 ms
+5 Iter 1: nodes = 26	branches = 21	cases = 2.1798388791247755E115	time = 233 ms

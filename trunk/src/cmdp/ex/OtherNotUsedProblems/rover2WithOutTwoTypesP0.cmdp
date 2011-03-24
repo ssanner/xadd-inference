@@ -1,0 +1,427 @@
+cvariables (time energy)
+min-values (0 0)
+max-values (57600 20)
+bvariables (p0 p2 p1)
+ivariables()
+
+action movep0p2
+p0' ([energy> 10.7]
+   ([0.0])
+   (p0
+       ([1.0])
+       ([0.0])
+   )
+)
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' ([energy>10.7]
+ (p0
+   ([1.0])
+   (p2
+       ([1.0])
+       ([0.0])
+   )
+  )
+  (p2
+    ([1.0])
+    ([0.0])
+  )
+)
+time' ([energy>10.7]
+ (p0
+   ([time + 1100])
+   ([time])) 
+ ([time]) 
+)
+energy' ([energy>10.7]
+ (p0
+   ([energy - 10.7])
+   ([energy]))
+ ([energy])
+)
+reward ([0.0])
+endaction
+
+action movep0p1
+p0' ([energy> 10.7]
+   ([0.0])
+   (p0
+       ([1.0])
+       ([0.0])
+   )
+)
+
+p1' ([energy>10.7]
+ (p0
+   ([1.0])
+   (p1
+       ([1.0])
+       ([0.0])
+   )
+  )
+  (p1
+    ([1.0])
+    ([0.0])
+  )
+)
+
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+
+
+time' ([energy>10.7]
+ (p0
+   ([time + 1100])
+   ([time])) 
+ ([time]) 
+)
+energy' ([energy>10.7]
+ (p0
+   ([energy - 10.7])
+   ([energy]))
+ ([energy])
+)
+reward ([0.0])
+endaction
+
+action movep1p2
+p0' (p0
+   ([1.0])
+   ([0.0])
+  )
+p1' ([energy> 10.7]
+   ([0.0])
+   (p1
+       ([1.0])
+       ([0.0])
+   )
+)
+p2' ([energy>10.7]
+ (p1
+   ([1.0])
+   (p2
+       ([1.0])
+       ([0.0])
+   )
+  )
+  (p2
+    ([1.0])
+    ([0.0])
+  )
+)
+time' ([energy>10.7]
+ (p1
+   ([time + 1100])
+   ([time])) 
+ ([time]) 
+)
+energy' ([energy>10.7]
+ (p1
+   ([energy - 10.7])
+   ([energy]))
+ ([energy])
+)
+reward ([0.0])
+endaction
+action movep2p1
+p0' (p0
+   ([1.0])
+   ([0.0])
+  )
+p1' ([energy>10.7]
+ (p2
+   ([1.0])
+   (p1
+       ([1.0])
+       ([0.0])
+   )
+  )
+  (p1
+    ([1.0])
+    ([0.0])
+  )
+)
+p2' ([energy> 10.7]
+   ([0.0])
+   (p2
+       ([1.0])
+       ([0.0])
+   )
+)
+time' ([energy>10.7]
+ (p2
+   ([time + 1100])
+   ([time])) 
+ ([time]) 
+)
+energy' ([energy>10.7]
+ (p2
+   ([energy - 10.7])
+   ([energy]))
+ ([energy])
+)
+reward ([0.0])
+endaction
+action takepicturep1
+p0' (p0
+   ([1.0])
+   ([0.0])
+  )
+
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+time' ([energy>3]
+ (p1
+   ([time > 36000]
+     ([time < 50400]
+       ([time + 600])
+       ([time])) 
+     ([time])) 
+   ([time])) 
+ ([time]) 
+)
+energy' ([energy>3]
+ (p1
+   ([time > 36000]
+     ([time < 50400]
+       ([energy - 3])
+       ([energy]))
+     ([energy]))
+   ([energy]))
+ ([energy])
+)
+reward ([energy>3]
+ (p1
+   ([time > 36000]
+     ([time < 50400]
+       ([100.0])
+       ([0.0]))
+     ([0.0]))
+   ([0.0]))
+ ([0.0])
+)
+endaction
+action takepicturep2
+p0' (p0
+   ([1.0])
+   ([0.0])
+  )
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+time' ([energy>3]
+ (p2
+   ([time > 36000]
+     ([time < 50400]
+       ([time + 600])
+       ([time])) 
+     ([time])) 
+   ([time])) 
+ ([time]) 
+)
+energy' ([energy>3]
+ (p2
+   ([time > 36000]
+     ([time < 50400]
+       ([energy - 3])
+       ([energy]))
+     ([energy]))
+   ([energy]))
+ ([energy])
+)
+reward ([energy>3]
+ (p2
+   ([time > 36000]
+     ([time < 50400]
+       ([100.0])
+       ([0.0]))
+     ([0.0]))
+   ([0.0]))
+ ([0.0])
+)
+endaction
+
+action takepicturep1Far
+p0' (p0
+   ([1.0])
+   ([0.0])
+  )
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+time' ([energy>2]
+   ([time > 26000]
+     ([time < 48600]
+       ([time + 725])
+       ([time])) 
+     ([time])) 
+   ([time])
+)
+energy' ([energy>2]
+   ([time > 26000]
+     ([time < 48600]
+       ([energy - 2])
+       ([energy]))
+     ([energy]))
+   ([energy])
+)
+reward ([energy>2]
+   ([time > 26000]
+     ([time < 48600]
+       ([50.0])
+       ([0.0]))
+     ([0.0]))
+   ([0.0])
+)
+endaction
+action takepicturep2Far
+p0' (p0
+   ([1.0])
+   ([0.0])
+  )
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+time' ([energy>2]
+   ([time > 26000]
+     ([time < 48600]
+       ([time + 725])
+       ([time])) 
+     ([time])) 
+   ([time])
+)
+energy' ([energy>2]
+   ([time > 26000]
+     ([time < 48600]
+       ([energy - 2])
+       ([energy]))
+     ([energy]))
+   ([energy])
+)
+reward ([energy>2]
+   ([time > 26000]
+     ([time < 48600]
+       ([50.0])
+       ([0.0]))
+     ([0.0]))
+   ([0.0])
+)
+endaction
+action takepicturep1High
+p0' (p0
+   ([1.0])
+   ([0.0])
+  )
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+time' ([energy>0.5]
+ (p1
+   ([time > 16000]
+     ([time < 50400]
+       ([time + 5])
+       ([time])) 
+     ([time])) 
+   ([time])) 
+ ([time]) 
+)
+energy' ([energy>0.5]
+ (p1
+   ([time > 16000]
+     ([time < 50400]
+       ([energy - 0.5])
+       ([energy]))
+     ([energy]))
+   ([energy]))
+ ([energy])
+)
+reward ([energy>0.5]
+ (p1
+   ([time > 16000]
+     ([time < 50400]
+       ([10.0])
+       ([0.0]))
+     ([0.0]))
+   ([0.0]))
+ ([0.0])
+)
+endaction
+action takepicturep2High
+p0' (p0
+   ([1.0])
+   ([0.0])
+  )
+p1' (p1
+   ([1.0])
+   ([0.0])
+  )
+p2' (p2
+   ([1.0])
+   ([0.0])
+  )
+time' ([energy>0.5]
+ (p2
+   ([time > 16000]
+     ([time < 50400]
+       ([time + 5])
+       ([time])) 
+     ([time])) 
+   ([time])) 
+ ([time]) 
+)
+energy' ([energy>0.5]
+ (p2
+   ([time > 16000]
+     ([time < 50400]
+       ([energy - 0.5])
+       ([energy]))
+     ([energy]))
+   ([energy]))
+ ([energy])
+)
+reward ([energy>0.5]
+ (p2
+   ([time > 16000]
+     ([time < 50400]
+       ([10.0])
+       ([0.0]))
+     ([0.0]))
+   ([0.0]))
+ ([0.0])
+)
+endaction
+
+
+
+discount 1.0000000
+iterations 10

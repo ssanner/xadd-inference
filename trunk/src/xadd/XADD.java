@@ -37,7 +37,7 @@ public class XADD  {
 
 	// Flags
 	public final static boolean USE_CANONICAL_NODES = true;  // Store nodes in canonical format?
-	public final static boolean CHECK_MIN_MAX   = true; // Will be buggy if min/max of expr 
+	public final static boolean CHECK_MIN_MAX   = false; // Will be buggy if min/max of expr 
 														// not at extrema of domain
 
 	public final static boolean USE_MINUS_COMP = false; // Error, all max/min comps reduce to false!
@@ -565,7 +565,7 @@ public class XADD  {
 	}
 
 	public int makeCanonical(int node_id) {
-	    Graph g = getGraph(node_id);
+	    //Graph g = getGraph(node_id);
 //		g.addNode("_temp_");
 //		g.addNodeLabel("_temp_", "Before make canonical");
 //		g.addNodeShape("_temp_", "square");
@@ -2264,9 +2264,8 @@ public class XADD  {
 		
 		System.out.println(Double.MAX_VALUE + " , " + (-Double.MAX_VALUE));
 		/*
-		TestParse("[a]");
-		TestParse("[a + b]");
-		TestParse("[a + b + 3 + 4]");
+		TestParse("[a]");*/
+		/*TestParse("[a + b + 3 + 4]");
 		TestParse("[a + b + 3 + 4 >= 3 / 7]");
 		TestParse("[a + b + 3 + -4 * y = 9]");
 		TestParse("[((a + b) * (3 * 4)]"); // Mismatched parens

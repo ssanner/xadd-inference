@@ -1,0 +1,4 @@
+2 Iter 5: nodes = 95	branches = 100	cases = Infinity	time = 2756 ms
+3 Iter 5: nodes = 521	branches = 713	cases = Infinity	time = 60402 ms
+4
+5

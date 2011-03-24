@@ -1,0 +1,10 @@
+Iter 1 : nodes = 12	branches = 12	cases = 64.0	time = 7 ms
+Iter 2 : nodes = 38	branches = 44	cases = 1.6777216E7	time = 86 ms
+Iter 3 : nodes = 38	branches = 44 	cases = 3.022314549036573E23	time = 77 ms
+Iter 4 : nodes = 38	branches = 44	cases = 1.7668470647783843E72	time = 9 ms
+Iter 5 : nodes = 38	branches = 44	cases = 3.530017448385272E218	time = 9 ms
+Iter 6 : nodes = 38	branches = 44	cases = Infinity	time = 8 ms
+Iter 7 : nodes = 38	branches = 44	cases = Infinity	time = 9 ms
+Iter 8 : nodes = 38	branches = 44	cases = Infinity	time = 10 ms
+Iter 9 : nodes = 38	branches = 44	cases = Infinity	time = 9 ms
+Iter 10 : nodes = 38	branches = 44	cases = Infinity	time = 10 ms

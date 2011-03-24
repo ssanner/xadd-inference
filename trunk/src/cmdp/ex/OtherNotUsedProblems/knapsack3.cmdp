@@ -1,0 +1,50 @@
+cvariables ( k x1 x2 )
+bvariables ( )
+ivariables ( f )
+
+action move1
+    f  ( [k < 5]
+    		(0.9)
+    		(0.7) )
+	k' ( [k + x1 <= 10]
+			( f
+               ( [k + x1] )
+               ( [k] ) )
+            ( [k] ) )
+    x1' ( [k + x1 <= 10]
+ 			( f
+               ( [0] )
+               ( [x1] ) )
+            ( [x1] ) )
+    x2' ( [x2] )
+endaction
+
+action move2
+    f  ( [k < 5]
+    		(0.7)
+    		(0.5) )
+	k' ( [k + x2 <= 10]
+			( f
+               ( [k + x2] )
+               ( [k] ) )
+            ( [k] ) )
+    x2' ( [k + x2 <= 10]
+ 			( f
+               ( [0] )
+               ( [x2] ) )
+            ( [x2] ) )
+    x1' ( [x1] )
+endaction
+
+action noop
+    f  ( 1.0 )
+	k'  ( [k] )
+    x1' ( [x1] ) 
+    x2' ( [x2] )
+endaction
+
+reward 
+   ( [k] ) 
+
+discount 0.900000
+tolerance 0.010000

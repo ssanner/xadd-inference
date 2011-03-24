@@ -1,0 +1,81 @@
+cvariables ( k   x1  x2  x3 x4)
+min-values ( 0   0   0  0  0)
+max-values ( 100 100 100 100 100) 
+bvariables ( )
+ivariables ( )
+
+action move1
+	k' ( [k + x1 <= 100]
+            ( [k + x1] )
+            ( [k] ) )
+    x1' ( [k + x1 <= 100]
+            ( [0] )
+            ( [x1] ) )
+    x2' ( [x2] )
+    x3' ( [x3] )
+    x4' ( [x4] )
+reward 
+    ( [k + x1 <= 100]
+            ( [x1] )
+            ( [0] ) )
+endaction
+
+action move2
+	k' ( [k + x2 <= 100]
+            ( [k + x2] )
+            ( [k] ) )
+    x1' ( [x1] )
+    x2' ( [k + x2 <= 100]
+            ( [0] )
+            ( [x2] ) )
+    x3' ( [x3] )
+    x4' ( [x4] )
+reward 
+    ( [k + x2 <= 100]
+            ( [x2] )
+            ( [0] ) )
+endaction
+
+action move3
+	k' ( [k + x3 <= 100]
+            ( [k + x3] )
+            ( [k] ) )
+    x1' ( [x1] )
+    x2' ( [x2] )
+    x3' ( [k + x3 <= 100]
+            ( [0] )
+            ( [x3] ) )
+    x4' ( [x4] )  
+reward 
+    ( [k + x3 <= 100]
+            ( [x3] )
+            ( [0] ) )
+endaction
+
+action move4
+	k' ( [k + x4 <= 100]
+            ( [k + x4] )
+            ( [k] ) )
+    x1' ( [x1] )
+    x2' ( [x2] )
+    x3' ( [x3] )  
+    x4' ( [k + x4 <= 100]
+            ( [0] )
+            ( [x4] ) )
+reward 
+    ( [k + x4 <= 100]
+            ( [x4] )
+            ( [0] ) )
+endaction
+
+action noop
+	k' ( [k] )
+    x1' ( [x1] ) 
+    x2' ( [x2] )
+    x3' ( [x3] )
+    x4' ( [x4] )  
+reward 
+    ( [0] )
+endaction
+discount 1.000000
+iterations 10
