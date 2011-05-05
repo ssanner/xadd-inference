@@ -19,7 +19,7 @@ License: MPL 1.1 (with exceptions for 3rd party software & data)
 Basic Installation and Invocation
 =================================
 
-dd-inference/ provides the following subdirectories:
+xadd-inference/ provides the following subdirectories:
 
     src   All source code (.java files)
     bin   All binaries (.class files)
