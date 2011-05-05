@@ -33,8 +33,10 @@ dd-inference/ provides the following subdirectories:
     files All supplementary files 
 
 Always ensure that all .jar files in lib/ are included in your
-CLASSPATH for both Java compilation and at Java runtime.  We highly
-recommend that you use Eclipse for Java development:
+CLASSPATH for both Java compilation and at Java runtime.  LPSolve
+should be installed on your system (see info and links above).
+
+We highly recommend that you use Eclipse for Java development:
 
     http://www.eclipse.org/downloads/
 
@@ -53,23 +55,23 @@ You can pass up to 10 arguments to these scripts as required.
 Instructions for using Decision Diagrams and Prob. Inference
 ============================================================
 
-To start with, try to understand XADD.main() by running
+To start with, try to understand XADD.main() by running (using
+the launch scripts ./run or run.bat)
 
-  logic.xadd.XADD
+  xadd.XADD
 
 and tracing the code.
 
-WARNING: the code is complex, so please feel free to ask questions.
 The main thing is to understand the high level structure.
 
 If you think you've got that down, then go onto CMDP.main() by running
 
-  cmdp.CMDP src/cmdp/ex/knapsack.cmdp
+  cmdp.CMDP src/cmdp/ex/knapsackM.cmdp 2
   
-This is only currently setup for deterministic problems... you'll
-probably recognize the code structure and modified file format in
+This is only currently setup for deterministic problems... note 
+the code structure and modified file format in
 
-  src/cmdp/ex/knapsack.cmdp
+  src/cmdp/ex/knapsackM.cmdp
 
 
 GraphViz Visualization

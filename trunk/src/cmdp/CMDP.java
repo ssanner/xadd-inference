@@ -67,7 +67,7 @@ public class CMDP {
 	public final static boolean REDUCE_LP = false;
 	
 	public final static boolean DISPLAY_Q = false;
-	public final static boolean DISPLAY_V = false;
+	public final static boolean DISPLAY_V = true;
 	public final static boolean DISPLAY_MAX = false;
 	public final static boolean DISPLAY_SUBST = false;
 	public final static boolean PRINTFINALQ = false;
@@ -901,16 +901,20 @@ public class CMDP {
 	// Testing Interface
 	////////////////////////////////////////////////////////////////////////////
 
+	public static void usage() {
+		System.out.println("\nMust enter: MDP-filename");
+		System.out.println("\nMust enter: number of iterations");
+		System.out.println("\nMust enter: print 3D file?");
+		
+		System.exit(1);
+	}
+	
 	/**
 	 * Basic testing interface.
 	 **/
 	public static void main(String args[]) {
-		if (args.length < 1 || args.length > 7) {
-			System.out.println("\nMust enter: MDP-filename");
-			System.out.println("\nMust enter: number of iterations");
-			System.out.println("\nMust enter: print 3D file?");
-			
-			System.exit(1);
+		if (args.length < 2 || args.length > 7) {
+			usage();
 		}
 
 		// Parse problem filename
@@ -926,13 +930,15 @@ public class CMDP {
 		}
 		catch(ArrayIndexOutOfBoundsException aiobe){
 			System.out.println("\nIMissing argument\n");
-			System.exit(1);
+			usage();
 		}
 		
+		PRINT3DFILE = false;
 		try {
-			PRINT3DFILE = Boolean.parseBoolean(args[2]);
+			if (args.length >= 3)
+				PRINT3DFILE = Boolean.parseBoolean(args[2]);
 		} catch (NumberFormatException nfe) {
-			System.out.println("\nIllegal print3DFile value\n");
+			System.out.println("\nIllegal print3DFile value: "+ args[2] + "\n");
 			System.exit(1);
 		}
 		
