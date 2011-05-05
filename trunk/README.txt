@@ -2,6 +2,7 @@ xadd-inference -- Implementation of Extended ADDs (XADDs) and
                   XADD-based inference algorithms.
 
 Copyright (C) 2010, Scott Sanner (ssanner [@] gmail.com)
+                    Karina Valdivia Delgado (karinaval [@] gmail.com)
 
 License: MPL 1.1 (with exceptions for 3rd party software & data)
 
@@ -9,18 +10,11 @@ License: MPL 1.1 (with exceptions for 3rd party software & data)
 		 
 		   http://lpsolve.sourceforge.net/5.5/
 		   
-		 is included for the user's convenience.  LPSolve uses
-		 an LGPL license:
+		 is included for the user's convenience.  LPSolve 
+		 uses an LGPL license:
 		  
 		   http://lpsolve.sourceforge.net/5.5/LGPL.htm
-		   
-		 LPSolve requires binaries appropriate for the user's
-		 system, e.g., Windows requires lpsolve55j.dll.  To
-		 obtain these binaries, please consult:
-		 
-		   http://lpsolve.sourceforge.net/5.5/distribution.htm
-		   http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/
-		   
+
 
 Basic Installation and Invocation
 =================================
@@ -33,8 +27,7 @@ dd-inference/ provides the following subdirectories:
     files All supplementary files 
 
 Always ensure that all .jar files in lib/ are included in your
-CLASSPATH for both Java compilation and at Java runtime.  LPSolve
-should be installed on your system (see info and links above).
+CLASSPATH for both Java compilation and at Java runtime.  
 
 We highly recommend that you use Eclipse for Java development:
 
@@ -55,6 +48,9 @@ You can pass up to 10 arguments to these scripts as required.
 Instructions for using Decision Diagrams and Prob. Inference
 ============================================================
 
+**LPSolve and GraphViz should be installed on your system.  See 
+below for instructions on installing each.
+
 To start with, try to understand XADD.main() by running (using
 the launch scripts ./run or run.bat)
 
@@ -64,7 +60,8 @@ and tracing the code.
 
 The main thing is to understand the high level structure.
 
-If you think you've got that down, then go onto CMDP.main() by running
+If you think you've got that down, then go onto CMDP.main() by 
+running
 
   cmdp.CMDP src/cmdp/ex/knapsackM.cmdp 2
   
@@ -72,6 +69,24 @@ This is only currently setup for deterministic problems... note
 the code structure and modified file format in
 
   src/cmdp/ex/knapsackM.cmdp
+
+
+Installing LPSolve
+==================
+
+LPSolve requires binaries appropriate for the user's system, 
+e.g., Windows requires lpsolve55j.dll.  To obtain these binaries, 
+please consult:
+		 
+  http://lpsolve.sourceforge.net/5.5/distribution.htm
+  http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/
+
+To verify it is installed correctly, run
+
+  lpsolve.LP
+
+and ensure that there are no errors (LPSolve provides verbose
+output about it's solution, but these are not errors).
 
 
 GraphViz Visualization
