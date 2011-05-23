@@ -153,6 +153,13 @@ public class XADD  {
 		return id;
 	}
 	
+	public int getVarNode(Decision d, double low_val, double high_val) {
+		int var  = getVarIndex(d, true);
+		int low  = getTermNode(new DoubleExpr(low_val));
+		int high = getTermNode(new DoubleExpr(high_val));
+		return getINode(var, low, high);
+	}
+	
 	public XADDNode getNode(int node_id) {
 		return _hmInt2Node.get(node_id);
 	}
@@ -686,6 +693,32 @@ public class XADD  {
 	
 	/////////////
 	
+	// Convert an ArithExpr to an XADD while performing (optional) substitution of
+	// an XADD for a var (set var = null if no substitution is needed)
+	public int substituteXADDforVarInArithExpr(ArithExpr leaf_val, String var, int xadd) {
+		if (leaf_val instanceof OperExpr) {
+			OperExpr oper_expr = (OperExpr)leaf_val;
+			int running_xadd = substituteXADDforVarInArithExpr(oper_expr._terms.get(0), var, xadd);
+			for (int i = 1; i < oper_expr._terms.size(); i++) {
+				int next_operand = substituteXADDforVarInArithExpr(oper_expr._terms.get(i), var, xadd);
+				running_xadd = apply(running_xadd, next_operand, oper_expr._type /* SUM, PROD, ... */);
+			}
+			return running_xadd;
+		} else if (leaf_val instanceof VarExpr) {
+			VarExpr var_expr = (VarExpr)leaf_val;
+			if (var_expr._sVarName == var) // assume interned
+				return xadd;
+			else
+				return getTermNode(leaf_val);
+		} else if (leaf_val instanceof DoubleExpr) { 
+			return getTermNode(leaf_val);
+		} else {
+			System.out.println("substituteXADDforVar: Unsupported expression '" + leaf_val + "'");
+			System.exit(1);
+			return -1;
+		}
+	}
+
 	// Returns all variables in this XADD
 	public HashSet<String> collectVars(int id) {
 		XADDNode n = _hmInt2Node.get(id);
@@ -796,6 +829,12 @@ public class XADD  {
 		}
 	}
 
+	public int computeDefiniteIntegral(int xadd, String int_var) {
+		XADDLeafDefIntegral integrator = new XADDLeafDefIntegral(int_var);
+		reduceProcessXADDLeaf(xadd, integrator, /*canonical_reorder*/false);
+		return integrator._runningSum;
+	}
+	
 	public class XADDLeafDefIntegral extends XADDLeafIndefIntegral {
 		int _runningSum; // XADD for the running sum of all leaf substitutions
 		double _integrationVarCoef;
@@ -809,9 +848,8 @@ public class XADD  {
 		public int processXADDLeaf(ArrayList<Decision> decisions, 
 				ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
 
-			// TODO: multiply these in later
-			HashMap<String,Boolean> bool_dec = new HashMap<String,Boolean>();
-			HashMap<CompExpr,Boolean> int_var_independent = new HashMap<CompExpr,Boolean>();
+			// Multiply these in later
+			HashMap<Decision,Boolean> int_var_indep_decisions = new HashMap<Decision,Boolean>();
 			
 			// Next compute the upper and lower bounds based on the decisions
 			System.out.println("=============================");
@@ -822,8 +860,7 @@ public class XADD  {
 				Boolean  is_true = decision_values.get(i);
 				CompExpr comp = null;
 				if (d instanceof BoolDec) {
-					BoolDec bd = (BoolDec)d;
-					bool_dec.put(bd._sVarName, is_true);
+					int_var_indep_decisions.put(d, is_true);
 					continue;
 				} else if (d instanceof ExprDec) {
 					ExprDec ed = (ExprDec)d;
@@ -846,7 +883,7 @@ public class XADD  {
 						"\n ==>  " + _integrationVarCoef + " * " + _integrationVar);
 				
 				if (_integrationVarCoef == 0d) {
-					int_var_independent.put(comp, is_true);
+					int_var_indep_decisions.put(d, is_true);
 					continue;
 				}
 				
@@ -933,19 +970,26 @@ public class XADD  {
 			
 			// Now compute:
 			//   leaf_integral{int_var = xadd_upper_bound} - leaf_integral{int_var = xadd_lower_bound}
+			int int_eval_upper = substituteXADDforVarInArithExpr(leaf_integral, _integrationVar, xadd_upper_bound);
+			int int_eval_lower = substituteXADDforVarInArithExpr(leaf_integral, _integrationVar, xadd_lower_bound);
+			int int_eval = apply(int_eval_upper, int_eval_lower, MINUS);
 			
 			// Finally, multiply in boolean decisions and irrelevant comparison expressions
 			// to the XADD and add it to the running sum
 			//
-			// - HashMap<String,Boolean> bool_dec = new HashMap<String,Boolean>();
-			// - HashMap<CompExpr,Boolean> int_var_independent = new HashMap<CompExpr,Boolean>();
-
+			// - HashMap<Decision,Boolean> int_var_indep_decisions
+			for (Map.Entry<Decision, Boolean> me : int_var_indep_decisions.entrySet()) {
+				double high_val = me.getValue() ? 1d : 0d;
+				double low_val  = me.getValue() ? 0d : 1d;
+				int_eval = apply(int_eval, getVarNode(me.getKey(), low_val, high_val), PROD);
+			}
+			_runningSum = apply(_runningSum, int_eval, SUM);
 			
 			// All return information is stored in _runningSum so no need to return
 			// any information here... just keep diagram as is
 			return getTermNode(leaf_val);
 		}
-		
+				
 		// Assume expression is canonical, hence in sum of products form (could be a single term)
 		public ArithExpr removeIntegrationVar(ArithExpr leaf_val) {
 			ArithExpr ret_expr = null;
@@ -2720,12 +2764,10 @@ public class XADD  {
 
 		// Test out definite integration on problems where integration var can be
 		// isolated
-		int int1_xad = xadd_context.reduceProcessXADDLeaf(xadd1, 
-				xadd_context.new XADDLeafDefIntegral("x1"), /*canonical_reorder*/false);
+		int int1_xad = xadd_context.computeDefiniteIntegral(xadd1, "x1");
 		xadd_context.getGraph(int1_xad).launchViewer();
 
-		int int2_xad = xadd_context.reduceProcessXADDLeaf(xadd2, 
-				xadd_context.new XADDLeafDefIntegral("x2"), /*canonical_reorder*/false);
+		int int2_xad = xadd_context.computeDefiniteIntegral(xadd2, "x2");
 		xadd_context.getGraph(int2_xad).launchViewer();
 		
 		// Pause
