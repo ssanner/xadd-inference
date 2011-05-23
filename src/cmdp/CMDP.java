@@ -458,7 +458,13 @@ public class CMDP {
 			System.out.println("- Summing out: " + var_prime + "/" + 
 					           var_id + " in\n" + _context.getString(dd_mult));
 			q = _context.apply(q, dd_mult, XADD.PROD);
-			q = _context.opOut(q, var_id, XADD.SUM);
+			
+			// Following is a safer way to marginalize in the event that two branches
+			// of a boolean variable had equal probability and were collapsed.
+			//q = _context.opOut(q, var_id, XADD.SUM);
+			int restrict_high = _context.opOut(q, var_id, XADD.RESTRICT_HIGH);
+			int restrict_low  = _context.opOut(q, var_id, XADD.RESTRICT_LOW);
+			q = _context.apply(restrict_high, restrict_low, XADD.SUM);
 		}
 		//System.out.println("- After regression:\n" + _context.getString(q));
 		
