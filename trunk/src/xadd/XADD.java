@@ -110,6 +110,10 @@ public class XADD  {
 		
 	}
 	
+	public int getBoolVarIndex(String bool_name) {
+		return getVarIndex(new BoolDec(bool_name), false);
+	}
+	
 	public int getVarIndex(Decision d) {
 		return getVarIndex(d, false);
 	}
@@ -167,6 +171,12 @@ public class XADD  {
 	public XADDINode _tempINode = new XADDINode(-1, -1, -1);
 	public int getINode(int var, int low, int high) {
 	
+		if (low < 0 || high < 0) {
+			System.err.println("Invalid node (low,high)=(" + low + "," + high + ") for var: " + var);
+			new Exception().printStackTrace();
+			System.exit(1);
+		}
+		
 		// First check if low == high... in this case, just perform the
 		// obvious equivalent reduction (this saves headaches later)
 		if (low == high) {
@@ -302,6 +312,12 @@ public class XADD  {
 	
 	private int reduceOp(int node_id, int var_id, int op) {
 
+		if (var_id < 0 && op >= 0) {
+			System.err.println("Illegal op-code '" + op + "' for var id: " + var_id);
+			new Exception().printStackTrace();
+			System.exit(1);
+		}
+		
 		Integer ret = null;
 		XADDNode n = _hmInt2Node.get(node_id);
 		if (n == null) {
@@ -327,10 +343,10 @@ public class XADD  {
 		
 		int low = -1;
 		int high = -1;
-		if (op != RESTRICT_HIGH) {
+		if (op != RESTRICT_HIGH || var_id != inode._var) {
 			low = reduceOp(inode._low, var_id, op);
 		}
-		if (op != RESTRICT_LOW) {
+		if (op != RESTRICT_LOW || var_id != inode._var) {
 			high = reduceOp(inode._high, var_id, op);
 		}
 		
@@ -740,6 +756,128 @@ public class XADD  {
 				ArrayList<Boolean> decision_values, ArithExpr leaf_val);
 	}
 
+	// Given argument var v, the XADD on which this is called contains substitutions
+	// for v at its leaves that are to be substituted into argument XADD xadd and returned
+	// at the leaves (because these branches are the conditions under which the substitutions
+	// are made).
+	//
+	// Need to ensure make_canonical is true in this case
+	public class DeltaFunctionSubstitution extends XADDLeafOperation {
+		String _subVar;
+		int _xaddSubAtLeaves = -1;
+		HashMap<String,ArithExpr> _leafSubs = new HashMap<String,ArithExpr>();
+		
+		public DeltaFunctionSubstitution(String subvar, int xadd_sub_at_leaves) {
+			_subVar = subvar;
+			_xaddSubAtLeaves = xadd_sub_at_leaves;
+		}
+		
+		public int processXADDLeaf(ArrayList<Decision> decisions, 
+				ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
+			
+			// Return an XADD for the resulting expression
+			_leafSubs.clear();
+			_leafSubs.put(_subVar, leaf_val);
+			return substitute(_xaddSubAtLeaves, _leafSubs);
+		}
+	}
+	
+	public class XADDLeafDerivative extends XADDLeafOperation {
+		String _derivativeVar;
+		
+		public XADDLeafDerivative(String deriv_var) {
+			_derivativeVar = deriv_var.intern();
+		}
+		
+		public int processXADDLeaf(ArrayList<Decision> decisions, 
+				ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
+			
+			// Return an XADD for the resulting expression
+			ArithExpr ret_expr = differentiateLeaf(leaf_val);
+			return getTermNode(ret_expr);
+		}
+		
+		// Assume expression is canonical, hence in sum of products form (could be a single term)
+		public ArithExpr differentiateLeaf(ArithExpr leaf_val) {
+			ArithExpr ret_expr = null;
+			if (leaf_val instanceof OperExpr && ((OperExpr)leaf_val)._type == SUM) {
+				ret_expr = differentiateMultipleTerms((OperExpr)leaf_val);
+			} else if (leaf_val instanceof OperExpr && ((OperExpr)leaf_val)._type == PROD) {
+				ret_expr = differentiateTerm((OperExpr)leaf_val);
+			} else if ((leaf_val instanceof VarExpr) || (leaf_val instanceof DoubleExpr)) {
+				OperExpr temp = new OperExpr(PROD, Arrays.asList(leaf_val));
+				ret_expr = differentiateTerm(temp);
+			} else {
+				System.out.println("differentiateLeaf: Unsupported expression '" + leaf_val + "'");
+				System.exit(1);	
+			}
+			return ret_expr;
+		}
+		
+		// Must be a SUM of terms to get here
+		public OperExpr differentiateMultipleTerms(OperExpr expr) {
+			if (expr._type != SUM) {
+				System.out.println("differentiateMultipleTerms: Expected SUM, got '" + expr + "'");
+				System.exit(1);				
+			}
+			ArrayList<ArithExpr> differentiated_terms = new ArrayList<ArithExpr>();
+			for (ArithExpr e : expr._terms) {
+				if (e instanceof OperExpr) {
+					differentiated_terms.add(differentiateTerm((OperExpr)e));
+				} else if ((e instanceof VarExpr) || (e instanceof DoubleExpr)) {
+					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
+					differentiated_terms.add(differentiateTerm(temp));
+				} else {
+					System.out.println("differentiateMultipleTerms: Unsupported expression '" + e + "'");
+					System.exit(1);	
+				}
+			}
+			return new OperExpr(SUM, differentiated_terms);
+		}
+		// A single term (PROD)
+		public ArithExpr differentiateTerm(OperExpr expr) {
+			if (expr._type != PROD) {
+				System.out.println("differentiateTerm: Expected PROD, got '" + expr + "'");
+				System.exit(1);				
+			}
+			
+			// Process all terms (optional double followed by vars)
+			int derivative_var_count = 0;
+			int last_var_added_at = -1;
+			DoubleExpr d = new DoubleExpr(1d);
+			ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
+			for (ArithExpr e : expr._terms) {
+				if (e instanceof DoubleExpr) {
+					DoubleExpr d2 = (DoubleExpr)e;
+					d = new DoubleExpr(d._dConstVal * d2._dConstVal);
+				} else if (e instanceof VarExpr) {
+					factors.add(e);
+					// Both interned so we can test direct equality
+					if (((VarExpr)e)._sVarName == _derivativeVar) {
+						derivative_var_count++;
+						last_var_added_at = factors.size() - 1;
+					}
+				} else {
+					System.out.println("differentiateTerm: Unsupported expression '" + e + "'");
+					System.exit(1);	
+				}
+			}
+			
+			// Perform differentiation
+			if (derivative_var_count == 0) {
+				return ZERO; // Derivative of a constant is 0
+			} else {
+				// x*x*...*x = x^n
+				// d/dx x^n = n*x^{n-1}
+				factors.remove(last_var_added_at);
+				d = new DoubleExpr(((double)derivative_var_count) * d._dConstVal);
+				factors.add(0, d);
+				
+				return new OperExpr(PROD, factors);
+			}
+		}
+	}
+	
 	public class XADDLeafIndefIntegral extends XADDLeafOperation {
 		String _integrationVar;
 		
@@ -782,11 +920,9 @@ public class XADD  {
 			for (ArithExpr e : expr._terms) {
 				if (e instanceof OperExpr) {
 					integrated_terms.add(integrateTerm((OperExpr)e));
-				} else if (e instanceof VarExpr) {
+				} else if ((e instanceof VarExpr) || (e instanceof DoubleExpr)) {
 					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
 					integrated_terms.add(integrateTerm(temp));
-				} else if (e instanceof DoubleExpr) {
-					integrated_terms.add(e);
 				} else {
 					System.out.println("integrateMultipleTerms: Unsupported expression '" + e + "'");
 					System.exit(1);	
@@ -1647,14 +1783,18 @@ public class XADD  {
 		
 			// Children
 			XADDNode low = _hmInt2Node.get(_low);
-			String low_node = Integer.toString(_low);
-			g.addUniLink(this_node, low_node, "black", "dashed", Graph.EMPTY_STR);
-			low.toGraph(g, _low);
+			if (low != null) {
+				String low_node = Integer.toString(_low);
+				g.addUniLink(this_node, low_node, "black", "dashed", Graph.EMPTY_STR);
+				low.toGraph(g, _low);
+			}
 
 			XADDNode high = _hmInt2Node.get(_high);
-			String high_node = Integer.toString(_high);
-			g.addUniLink(this_node, high_node, "black", "solid", Graph.EMPTY_STR);
-			high.toGraph(g, _high);
+			if (high != null) {
+				String high_node = Integer.toString(_high);
+				g.addUniLink(this_node, high_node, "black", "solid", Graph.EMPTY_STR);
+				high.toGraph(g, _high);
+			}
 		}
 		public String toString(int depth) {
 			StringBuffer sb = new StringBuffer();
@@ -2751,24 +2891,53 @@ public class XADD  {
 		System.out.println("Vars in circle.xadd: " + vars);
 		
 		// Test out indefinite integration
-		int int1_xac = xadd_context.reduceProcessXADDLeaf(xadd_circle, 
-				xadd_context.new XADDLeafIndefIntegral("x1"), /*canonical_reorder*/false);
-		xadd_context.getGraph(int1_xac).launchViewer();
-
-		int int2_xac = xadd_context.reduceProcessXADDLeaf(int1_xac, 
-				xadd_context.new XADDLeafIndefIntegral("x2"), /*canonical_reorder*/false);
-		xadd_context.getGraph(int2_xac).launchViewer();
+		//int int1_xac = xadd_context.reduceProcessXADDLeaf(xadd_circle, 
+		//		xadd_context.new XADDLeafIndefIntegral("x1"), /*canonical_reorder*/false);
+		//xadd_context.getGraph(int1_xac).launchViewer();
+		//
+		//int int2_xac = xadd_context.reduceProcessXADDLeaf(int1_xac, 
+		//		xadd_context.new XADDLeafIndefIntegral("x2"), /*canonical_reorder*/false);
+		//xadd_context.getGraph(int2_xac).launchViewer();
 		
 		int xadd1 = TestBuild(xadd_context, "./src/xadd/test1.xadd");
 		int xadd2 = TestBuild(xadd_context, "./src/xadd/test2.xadd");
 
-		// Test out definite integration on problems where integration var can be
-		// isolated
+		// Derivative test
+		//int der1_xac = xadd_context.reduceProcessXADDLeaf(xadd1, 
+		//		xadd_context.new XADDLeafDerivative("x1"), /*canonical_reorder*/false);
+		//xadd_context.getGraph(der1_xac).launchViewer();
+		//
+		//int der2_xac = xadd_context.reduceProcessXADDLeaf(xadd2, 
+		//		xadd_context.new XADDLeafDerivative("x1"), /*canonical_reorder*/false);
+		//xadd_context.getGraph(der2_xac).launchViewer();
+		
+		// Elim Example 1: Definite integral over *continuous var* for polynomial leaf case statement
 		int int1_xad = xadd_context.computeDefiniteIntegral(xadd1, "x1");
 		xadd_context.getGraph(int1_xad).launchViewer();
 
 		int int2_xad = xadd_context.computeDefiniteIntegral(xadd2, "x2");
 		xadd_context.getGraph(int2_xad).launchViewer();
+		
+		// Elim Example 2: Marginalizing out a *boolean var* (in this case f)
+		//                 (make sure all boolean diagrams are "completed" to include
+		//                  branches for f=true and f=false)
+		int restrict_high = xadd_context.opOut(xadd1, xadd_context.getBoolVarIndex("f"), RESTRICT_HIGH);
+		int restrict_low  = xadd_context.opOut(xadd1, xadd_context.getBoolVarIndex("f"), RESTRICT_LOW);
+		int marginal = xadd_context.apply(restrict_high, restrict_low, SUM);
+		xadd_context.getGraph(marginal).launchViewer();
+		
+		// Note: if you can guarantee every leaf is reached by a true or false path through
+		//       the variable being summed out, you can use the shortcut operation
+		// int marginal = xadd_context.opOut(xadd1, xadd_context.getBoolVarIndex("f"), SUM);
+		
+		// Elim Example 3: Integrating out x for [z * \delta(x - y)] for XADDs y and z 
+		// Note: it is assumed that z contains references to x that will be substituted according to y,
+		//       y should *not* contain the variable x
+		//
+		// Here y = xadd_circle(x1,x2,r1,r2), x = k, z = xadd1(k,x1,f)
+		int y = xadd_context.reduceProcessXADDLeaf(xadd_circle, 
+					xadd_context.new DeltaFunctionSubstitution("k", xadd1), /*canonical_reorder*/true);
+		xadd_context.getGraph(y).launchViewer();
 		
 		// Pause
 		System.in.read();
@@ -2815,7 +2984,7 @@ public class XADD  {
 		
 		System.out.println(">> Evaluations");
 		System.out.println("1 Eval: [" + bool_assign + "], [" + cont_assign + "]"
-						   + ": " + xadd_context.evaluate(xaddr3, bool_assign, cont_assign));		
+				   + ": " + xadd_context.evaluate(xaddr3, bool_assign, cont_assign));		
 		cont_assign.put("x1", 10d);
 		System.out.println("2 Eval: [" + bool_assign + "], [" + cont_assign + "]"
 				   + ": " + xadd_context.evaluate(xaddr3, bool_assign, cont_assign));		
