@@ -809,9 +809,6 @@ public class XADD  {
 		public int processXADDLeaf(ArrayList<Decision> decisions, 
 				ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
 
-			// First compute the integral of this leaf w.r.t. the integration variable
-			ArithExpr leaf_integral = integrateLeaf(leaf_val);
-			
 			// TODO: multiply these in later
 			HashMap<String,Boolean> bool_dec = new HashMap<String,Boolean>();
 			HashMap<CompExpr,Boolean> int_var_independent = new HashMap<CompExpr,Boolean>();
@@ -854,7 +851,8 @@ public class XADD  {
 				}
 				
 				// We have coef*x + expr COMP_OPER 0
-				boolean coef_neg = _integrationVarCoef < 0d;
+				boolean flip_comparison = (_integrationVarCoef < 0d) && 
+					(comp._type != EQ) && (comp._type != NEQ);
 				ArithExpr new_rhs = (ArithExpr)new OperExpr(MINUS, ZERO, 
 										new OperExpr(PROD,
 												new DoubleExpr(1d/_integrationVarCoef),
@@ -865,37 +863,83 @@ public class XADD  {
 				// - if decision neg, flip expression
 				// - if both, don't flip
 				int comp_oper = comp._type;
-				if ((/*negated*/ !is_true && !coef_neg)
-					|| (/*not negated*/ is_true && coef_neg)) {
+				if ((/*negated*/ !is_true && !flip_comparison)
+					|| (/*not negated*/ is_true && flip_comparison)) {
 					comp_oper = CompExpr.flipCompOper(comp_oper);
 				}
 					
 				// Now we have x COMP_OPER expr
-				System.out.println("After arrange: " + new CompExpr(comp_oper, new VarExpr(_integrationVar), new_rhs));
+				//System.out.println("After arrange: " + new CompExpr(comp_oper, new VarExpr(_integrationVar), new_rhs));
 				
-				//boolean lower_bound = ; 
-					
-				// Need to get the var isolated on the left side
-				// and all other terms on right side
-				// x <= a
-				// x >= b
-					
-				// Two properties of test can flip the inequality
-				// - negation of the variable when isolated
-				// - decision being false
+				// Now mark this as a lower or upper bound
+				// - lower bounds: x > f(y), x >= f(y)
+				// - upper bounds: x < f(z), x <= f(z)
+				if (comp_oper == GT || comp_oper == GT_EQ)
+					lower_bound.add(new_rhs);
+				else if (comp_oper == LT || comp_oper == LT_EQ)
+					upper_bound.add(new_rhs);
+				else {
+					System.out.println("Cannot currently handle: " + new CompExpr(comp_oper, new VarExpr(_integrationVar), new_rhs));
+					System.out.println("Note: = triggers substitution, not sure how to handle ~=");
+					System.exit(1);
+				}
 			}
 			
-			// Now substitute the bounds and compute the difference in the running sum
-			// - need to handle infinite lower and upper bounds... can just use a very
-			//   large number perhaps since evaluation should be guaranteed to be 0
-			//   in this case?
+			// Now explicitly compute lower and upper bounds as XADDs
 			//
 			// If these are polynomials, must go to +/- infinity at limits so cannot
 			// be used to approximate cdfs.  Hence we must assume that there will always
 			// be limits on the polynomial functions implicit in the bounds.
+			int xadd_lower_bound = -1; 
+			if (lower_bound.isEmpty()) {
+				System.err.println("No explicit lower bound given for '" + _integrationVar + "', using -1e6");
+				System.err.println("Constraints: " + decisions);
+				System.err.println("Assignments: " + decision_values);
+				xadd_lower_bound = getTermNode(new DoubleExpr(-1e6));
+			} else {
+				for (ArithExpr e : lower_bound) {
+					if (xadd_lower_bound == -1) {
+						xadd_lower_bound = getTermNode(e);
+					} else {
+						// Lower bound is max of all lower bounds						
+						xadd_lower_bound = apply(xadd_lower_bound, getTermNode(e), MAX);
+					}
+				}
+			}
+			
+			int xadd_upper_bound = -1; 
+			if (upper_bound.isEmpty()) {
+				System.err.println("No explicit upper bound given for '" + _integrationVar + "', using +1e6");
+				System.err.println("Constraints: " + decisions);
+				System.err.println("Assignments: " + decision_values);
+				xadd_upper_bound = getTermNode(new DoubleExpr(1e6));
+			} else {
+				for (ArithExpr e : upper_bound) {
+					if (xadd_upper_bound == -1) {
+						xadd_upper_bound = getTermNode(e);
+					} else {
+						// Upper bound is min of all upper bounds
+						xadd_upper_bound = apply(xadd_upper_bound, getTermNode(e), MIN);
+					}
+				}
+			}
+			
+			// Display lower and upper bounds
+			System.out.println("Lower bound:\n" + getString(xadd_lower_bound));
+			System.out.println("Upper bound:\n" + getString(xadd_upper_bound));
+			
+			// Compute the integral of this leaf w.r.t. the integration variable
+			ArithExpr leaf_integral = integrateLeaf(leaf_val);
+			
+			// Now compute:
+			//   leaf_integral{int_var = xadd_upper_bound} - leaf_integral{int_var = xadd_lower_bound}
+			
+			// Finally, multiply in boolean decisions and irrelevant comparison expressions
+			// to the XADD and add it to the running sum
 			//
-			// Here we'll just assume the upper and lower bounds are +/-1e6d for test
-			// purposes here printing out a warning when this is done.
+			// - HashMap<String,Boolean> bool_dec = new HashMap<String,Boolean>();
+			// - HashMap<CompExpr,Boolean> int_var_independent = new HashMap<CompExpr,Boolean>();
+
 			
 			// All return information is stored in _runningSum so no need to return
 			// any information here... just keep diagram as is
