@@ -14,7 +14,9 @@
 package xadd;
 
 import graph.Graph;
+import util.IntPair;
 import util.IntTriple;
+import util.Pair;
 
 import java.text.*;
 import java.util.*;
@@ -91,6 +93,7 @@ public class XADD  {
 	// Reduce & Apply Caches
 	public HashMap<IntTriple,Integer> _hmReduceCache = new HashMap<IntTriple,Integer>();
 	public HashMap<IntTriple,Integer> _hmReduceLPCache = new HashMap<IntTriple,Integer>();
+	public HashMap<IntPair,Integer> _hmReduceLeafOpCache = new HashMap<IntPair,Integer>();
 	public HashMap<IntTriple,Integer> _hmApplyCache  = new HashMap<IntTriple,Integer>();
 	public HashMap<XADDINode,HashSet<String>> _hmINode2Vars = new HashMap<XADDINode,HashSet<String>>();
 	
@@ -680,6 +683,365 @@ public class XADD  {
 		subst_cache.put(node_id, ret);
 		return ret;
 	}
+	
+	/////////////
+	
+	// Returns all variables in this XADD
+	public HashSet<String> collectVars(int id) {
+		XADDNode n = _hmInt2Node.get(id);
+		if (n == null) {
+			System.out.println("ERROR: " + id + " expected in node cache, but not found!");
+			new Exception().printStackTrace();
+			System.exit(1);
+		}
+		return n.collectVars();
+	}
+	
+	// This internal class is intended to be used to specify inline operations to perform at the
+	// leaves of an XADD... the operation returns a new XADD for the leaf.
+	//
+	// 'decisions' and 'decision_values' are parallel arrays indicating the path taken to 'leaf_val'
+	// 'xadd' is the XADD being subsituted for 'var' 
+	public abstract class XADDLeafOperation {
+		public abstract int processXADDLeaf(ArrayList<Decision> decisions, 
+				ArrayList<Boolean> decision_values, ArithExpr leaf_val);
+	}
+
+	public class XADDLeafIndefIntegral extends XADDLeafOperation {
+		String _integrationVar;
+		
+		public XADDLeafIndefIntegral(String integration_var) {
+			_integrationVar = integration_var.intern();
+		}
+		
+		public int processXADDLeaf(ArrayList<Decision> decisions, 
+				ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
+			
+			// Return an XADD for the resulting expression
+			ArithExpr ret_expr = integrateLeaf(leaf_val);
+			return getTermNode(ret_expr);
+		}
+		
+		// Assume expression is canonical, hence in sum of products form (could be a single term)
+		public ArithExpr integrateLeaf(ArithExpr leaf_val) {
+			ArithExpr ret_expr = null;
+			if (leaf_val instanceof OperExpr && ((OperExpr)leaf_val)._type == SUM) {
+				ret_expr = integrateMultipleTerms((OperExpr)leaf_val);
+			} else if (leaf_val instanceof OperExpr && ((OperExpr)leaf_val)._type == PROD) {
+				ret_expr = integrateTerm((OperExpr)leaf_val);
+			} else if ((leaf_val instanceof VarExpr) || (leaf_val instanceof DoubleExpr)) {
+				OperExpr temp = new OperExpr(PROD, Arrays.asList(leaf_val));
+				ret_expr = integrateTerm(temp);
+			} else {
+				System.out.println("processXADDLeaf: Unsupported expression '" + leaf_val + "'");
+				System.exit(1);	
+			}
+			return ret_expr;
+		}
+		
+		// Must be a SUM of terms to get here
+		public OperExpr integrateMultipleTerms(OperExpr expr) {
+			if (expr._type != SUM) {
+				System.out.println("integrateMultipleTerms: Expected SUM, got '" + expr + "'");
+				System.exit(1);				
+			}
+			ArrayList<ArithExpr> integrated_terms = new ArrayList<ArithExpr>();
+			for (ArithExpr e : expr._terms) {
+				if (e instanceof OperExpr) {
+					integrated_terms.add(integrateTerm((OperExpr)e));
+				} else if (e instanceof VarExpr) {
+					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
+					integrated_terms.add(integrateTerm(temp));
+				} else if (e instanceof DoubleExpr) {
+					integrated_terms.add(e);
+				} else {
+					System.out.println("integrateMultipleTerms: Unsupported expression '" + e + "'");
+					System.exit(1);	
+				}
+			}
+			return new OperExpr(SUM, integrated_terms);
+		}
+		// A single term (PROD)
+		public ArithExpr integrateTerm(OperExpr expr) {
+			if (expr._type != PROD) {
+				System.out.println("integrateTerm: Expected PROD, got '" + expr + "'");
+				System.exit(1);				
+			}
+			
+			// Process all terms (optional double followed by vars)
+			int integration_var_count = 0;
+			DoubleExpr d = new DoubleExpr(1d);
+			ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
+			for (ArithExpr e : expr._terms) {
+				if (e instanceof DoubleExpr) {
+					DoubleExpr d2 = (DoubleExpr)e;
+					d = new DoubleExpr(d._dConstVal * d2._dConstVal);
+				} else if (e instanceof VarExpr) {
+					factors.add(e);
+					// Both interned so we can test direct equality
+					if (((VarExpr)e)._sVarName == _integrationVar)
+						integration_var_count++;
+				} else {
+					System.out.println("integrateTerm: Unsupported expression '" + e + "'");
+					System.exit(1);	
+				}
+			}
+			
+			// Perform integration
+			factors.add(new VarExpr(_integrationVar));
+			d = new DoubleExpr(d._dConstVal / (double)(integration_var_count + 1));
+			factors.add(0, d);
+			
+			return new OperExpr(PROD, factors);
+		}
+	}
+
+	public class XADDLeafDefIntegral extends XADDLeafIndefIntegral {
+		int _runningSum; // XADD for the running sum of all leaf substitutions
+		double _integrationVarCoef;
+		public XADDLeafDefIntegral(String integration_var) {
+			super(integration_var);
+			_integrationVarCoef = Double.NEGATIVE_INFINITY;
+
+			// Start with the zero XADD
+			_runningSum = getTermNode(ZERO);
+		}
+		public int processXADDLeaf(ArrayList<Decision> decisions, 
+				ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
+
+			// First compute the integral of this leaf w.r.t. the integration variable
+			ArithExpr leaf_integral = integrateLeaf(leaf_val);
+			
+			// TODO: multiply these in later
+			HashMap<String,Boolean> bool_dec = new HashMap<String,Boolean>();
+			HashMap<CompExpr,Boolean> int_var_independent = new HashMap<CompExpr,Boolean>();
+			
+			// Next compute the upper and lower bounds based on the decisions
+			System.out.println("=============================");
+			ArrayList<ArithExpr> lower_bound = new ArrayList<ArithExpr>();
+			ArrayList<ArithExpr> upper_bound = new ArrayList<ArithExpr>();
+			for (int i = 0; i < decisions.size(); i++) {
+				Decision d = decisions.get(i);
+				Boolean  is_true = decision_values.get(i);
+				CompExpr comp = null;
+				if (d instanceof BoolDec) {
+					BoolDec bd = (BoolDec)d;
+					bool_dec.put(bd._sVarName, is_true);
+					continue;
+				} else if (d instanceof ExprDec) {
+					ExprDec ed = (ExprDec)d;
+					comp = ed._expr;
+				} else {
+					System.out.println("processXADDLeaf: Unsupported decision type '" + d + "'");
+					System.exit(1);					
+				}
+				
+				// Check that comparison expression is normalized
+				if (!comp._rhs.equals(ZERO)) {
+					System.out.println("processXADDLeaf: Expected RHS = 0 for '" + comp + "'");
+					System.exit(1);					
+				}
+					
+				_integrationVarCoef = 0d;
+				ArithExpr lhs_isolated = removeIntegrationVar(comp._lhs);
+				System.out.println("Pre: " + comp + " == " + is_true + ", int var [" + _integrationVar + "]" + 
+						"\nLHS isolated: " + lhs_isolated + 
+						"\n ==>  " + _integrationVarCoef + " * " + _integrationVar);
+				
+				if (_integrationVarCoef == 0d) {
+					int_var_independent.put(comp, is_true);
+					continue;
+				}
+				
+				// We have coef*x + expr COMP_OPER 0
+				boolean coef_neg = _integrationVarCoef < 0d;
+				ArithExpr new_rhs = (ArithExpr)new OperExpr(MINUS, ZERO, 
+										new OperExpr(PROD,
+												new DoubleExpr(1d/_integrationVarCoef),
+												lhs_isolated)).makeCanonical();
+				
+				// Divide through by coef (pos or neg)
+				// - if coef neg, flip expression
+				// - if decision neg, flip expression
+				// - if both, don't flip
+				int comp_oper = comp._type;
+				if ((/*negated*/ !is_true && !coef_neg)
+					|| (/*not negated*/ is_true && coef_neg)) {
+					comp_oper = CompExpr.flipCompOper(comp_oper);
+				}
+					
+				// Now we have x COMP_OPER expr
+				System.out.println("After arrange: " + new CompExpr(comp_oper, new VarExpr(_integrationVar), new_rhs));
+				
+				//boolean lower_bound = ; 
+					
+				// Need to get the var isolated on the left side
+				// and all other terms on right side
+				// x <= a
+				// x >= b
+					
+				// Two properties of test can flip the inequality
+				// - negation of the variable when isolated
+				// - decision being false
+			}
+			
+			// Now substitute the bounds and compute the difference in the running sum
+			// - need to handle infinite lower and upper bounds... can just use a very
+			//   large number perhaps since evaluation should be guaranteed to be 0
+			//   in this case?
+			//
+			// If these are polynomials, must go to +/- infinity at limits so cannot
+			// be used to approximate cdfs.  Hence we must assume that there will always
+			// be limits on the polynomial functions implicit in the bounds.
+			//
+			// Here we'll just assume the upper and lower bounds are +/-1e6d for test
+			// purposes here printing out a warning when this is done.
+			
+			// All return information is stored in _runningSum so no need to return
+			// any information here... just keep diagram as is
+			return getTermNode(leaf_val);
+		}
+		
+		// Assume expression is canonical, hence in sum of products form (could be a single term)
+		public ArithExpr removeIntegrationVar(ArithExpr leaf_val) {
+			ArithExpr ret_expr = null;
+			if (leaf_val instanceof OperExpr && ((OperExpr)leaf_val)._type == SUM) {
+				ret_expr = removeIntegrationVarMultipleTerms((OperExpr)leaf_val);
+			} else if (leaf_val instanceof OperExpr && ((OperExpr)leaf_val)._type == PROD) {
+				ret_expr = removeIntegrationVarTerm((OperExpr)leaf_val);
+			} else if ((leaf_val instanceof VarExpr) || (leaf_val instanceof DoubleExpr)) {
+				OperExpr temp = new OperExpr(PROD, Arrays.asList(leaf_val));
+				ret_expr = removeIntegrationVarTerm(temp);
+			} else {
+				System.out.println("removeIntegrationVar: Unsupported expression '" + leaf_val + "'");
+				System.exit(1);	
+			}
+			return ret_expr;
+		}
+		
+		// Must be a SUM of terms to get here
+		public OperExpr removeIntegrationVarMultipleTerms(OperExpr expr) {
+			if (expr._type != SUM) {
+				System.out.println("removeIntegrationVarMultipleTerms: Expected SUM, got '" + expr + "'");
+				System.exit(1);				
+			}
+			ArrayList<ArithExpr> remaining_terms = new ArrayList<ArithExpr>();
+			for (ArithExpr e : expr._terms) {
+				if (e instanceof OperExpr) {
+					remaining_terms.add(removeIntegrationVarTerm((OperExpr)e));
+				} else if (e instanceof VarExpr) {
+					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
+					remaining_terms.add(removeIntegrationVarTerm(temp));
+				} else if (e instanceof DoubleExpr) {
+					remaining_terms.add(e);
+				} else {
+					System.out.println("removeIntegrationVarMultipleTerms: Unsupported expression '" + e + "'");
+					System.exit(1);	
+				}
+			}
+			return new OperExpr(SUM, remaining_terms);
+		}
+		// A single term (PROD)
+		public ArithExpr removeIntegrationVarTerm(OperExpr expr) {
+			if (expr._type != PROD) {
+				System.out.println("removeIntegrationVarTerm: Expected PROD, got '" + expr + "'");
+				System.exit(1);				
+			}
+			
+			// Process all terms (optional double followed by vars)
+			int integration_var_count = 0;
+			double coef = 1d;
+			ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
+			for (ArithExpr e : expr._terms) {
+				if (e instanceof DoubleExpr) {
+					coef *= ((DoubleExpr)e)._dConstVal;
+				} else if (e instanceof VarExpr) {
+					// Both interned so we can test direct equality
+					if (((VarExpr)e)._sVarName == _integrationVar)
+						integration_var_count++;
+					else 
+						factors.add(e);
+				} else {
+					System.out.println("removeIntegrationVarTerm: Unsupported expression '" + e + "'");
+					System.exit(1);	
+				}
+			}
+			
+			// Check for proper form
+			if (integration_var_count > 0) {
+				if (integration_var_count > 1 || factors.size() > 0) {
+					System.out.println("removeIntegrationVarTerm: integration var '" + _integrationVar + 
+							"' must appear linearly in constraint '" + expr + "'");
+					System.exit(1);
+				}
+				// If get here only coef*_integrationVar
+				_integrationVarCoef += coef;
+				return ZERO; // Just add a zero term in this place
+			} else {
+				factors.add(0, new DoubleExpr(coef));
+				return new OperExpr(PROD, factors);
+			}
+		}
+	}
+	
+	// Note: use canonical_reorder=false for integration since internal nodes *cannot* get
+	//       out of order, but use canonical_reorder=true for substitution
+	public int reduceProcessXADDLeaf(int id, XADDLeafOperation leaf_sub, boolean canonical_reorder) {
+		int ret_node = reduceProcessXADDLeaf(id, leaf_sub, new ArrayList<Decision>(), new ArrayList<Boolean>());
+		if (canonical_reorder)
+			return makeCanonical(ret_node);
+		else
+			return ret_node;
+	}
+	
+	public IntPair _tempReduceLeafOpKey = new IntPair(-1,-1);
+
+	private int reduceProcessXADDLeaf(int id, XADDLeafOperation leaf_op,
+			ArrayList<Decision> decisions, ArrayList<Boolean> decision_values) {
+
+		Integer ret = null;
+		XADDNode n = _hmInt2Node.get(id);
+		if (n == null) {
+			System.out.println("ERROR: " + id + " expected in node cache, but not found!");
+			new Exception().printStackTrace();
+			System.exit(1);
+		}
+		
+		// A terminal node should be reduced (and cannot be restricted)
+		// by default if hashing and equality testing are working in getTNode
+		if (n instanceof XADDTNode) {
+			return leaf_op.processXADDLeaf(decisions, decision_values, ((XADDTNode)n)._expr); // Assuming that to have a node id means canonical
+		}
+		
+		// If its an internal node, check the reduce cache
+		_tempReduceLeafOpKey.set(id, leaf_op.hashCode());
+		if ((ret = _hmReduceLeafOpCache.get(_tempReduceLeafOpKey)) != null) {
+			// System.out.println("In cache, returning: " + qret);
+			return ret;
+		}
+
+		XADDINode inode = (XADDINode)n;
+		Decision d = _alOrder.get(inode._var);
+		
+		decisions.add(d);
+		decision_values.add(Boolean.TRUE);
+		int low = reduceProcessXADDLeaf(inode._low, leaf_op, decisions, decision_values);
+
+		decision_values.set(decision_values.size() - 1, Boolean.FALSE);
+		int high = reduceProcessXADDLeaf(inode._high, leaf_op, decisions, decision_values);
+		
+		decisions.remove(decisions.size() - 1);
+		decision_values.remove(decision_values.size() - 1);
+
+		// Standard Reduce: getInode will handle the case of low == high
+		ret = getINode(inode._var, low, high);
+		
+		// Put return value in cache and return
+		_hmReduceLeafOpCache.put(new IntPair(id, leaf_op.hashCode()), ret);
+		return ret;
+	}
+		
+	/////////////
 	
 	public Double evaluate(int node_id,
 						   HashMap<String,Boolean> bool_assign, 
@@ -1493,6 +1855,18 @@ public class XADD  {
 			_rhs = rhs;
 		}
 		
+		public static int flipCompOper(int comp_oper) {
+			switch (comp_oper) {
+				case GT:    return LT_EQ;
+				case GT_EQ: return LT;
+				case LT:    return GT_EQ;
+				case LT_EQ: return GT;
+				case EQ:    return NEQ;
+				case NEQ:   return EQ;
+				default:    return -1;
+			}
+		}
+
 		public Expr makeCanonical() {
 			
 			// 1. Expressions all zero on RHS of comparisons and restrict symbols:
@@ -2215,6 +2589,7 @@ public class XADD  {
 		// Can always clear these
 		_hmReduceCache.clear();
 		_hmReduceLPCache.clear();
+		_hmReduceLeafOpCache.clear();
 		_hmApplyCache.clear();
 		_hmINode2Vars.clear();
 
@@ -2281,11 +2656,37 @@ public class XADD  {
 		xadd_context.getVarIndex(xadd_context.new BoolDec("h"), true);
 
 		int xadd_circle = TestBuild(xadd_context, "./src/xadd/circle.xadd");
-		Graph gc = xadd_context.getGraph(xadd_circle); gc.launchViewer();
+		//Graph gc = xadd_context.getGraph(xadd_circle); gc.launchViewer();
+	
+		// Collect all vars
+		HashSet<String> vars = xadd_context.collectVars(xadd_circle);
+		System.out.println("Vars in circle.xadd: " + vars);
+		
+		// Test out indefinite integration
+		int int1_xac = xadd_context.reduceProcessXADDLeaf(xadd_circle, 
+				xadd_context.new XADDLeafIndefIntegral("x1"), /*canonical_reorder*/false);
+		xadd_context.getGraph(int1_xac).launchViewer();
+
+		int int2_xac = xadd_context.reduceProcessXADDLeaf(int1_xac, 
+				xadd_context.new XADDLeafIndefIntegral("x2"), /*canonical_reorder*/false);
+		xadd_context.getGraph(int2_xac).launchViewer();
 		
 		int xadd1 = TestBuild(xadd_context, "./src/xadd/test1.xadd");
 		int xadd2 = TestBuild(xadd_context, "./src/xadd/test2.xadd");
-				
+
+		// Test out definite integration on problems where integration var can be
+		// isolated
+		int int1_xad = xadd_context.reduceProcessXADDLeaf(xadd1, 
+				xadd_context.new XADDLeafDefIntegral("x1"), /*canonical_reorder*/false);
+		xadd_context.getGraph(int1_xad).launchViewer();
+
+		int int2_xad = xadd_context.reduceProcessXADDLeaf(xadd2, 
+				xadd_context.new XADDLeafDefIntegral("x2"), /*canonical_reorder*/false);
+		xadd_context.getGraph(int2_xad).launchViewer();
+		
+		// Pause
+		System.in.read();
+	
 		//*****************TESTING MAX***********
 		int xadd4 = TestBuild(xadd_context, "./src/xadd/test4.xadd");
 		int xadd5 = TestBuild(xadd_context, "./src/xadd/test5.xadd");
