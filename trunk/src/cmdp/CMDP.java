@@ -64,7 +64,7 @@ public class CMDP {
 	// TODO: Integrate LP-Solve
 	
 	/* Constants */
-	public final static boolean REDUCE_LP = false;
+	public final static boolean REDUCE_LP = true;
 	
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = true;
