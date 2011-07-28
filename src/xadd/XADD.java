@@ -111,7 +111,8 @@ public class XADD {
 
 	// Methods
 	public XADD() {
-
+		// Ensure that the 0th decision ID is invalid
+		_alOrder.add(new NullDec());
 	}
 
 	public int getBoolVarIndex(String bool_name) {
@@ -122,6 +123,7 @@ public class XADD {
 		return getVarIndex(d, false);
 	}
 
+	// Note: var index can never be 0, negative var index now means negated decision
 	public int getVarIndex(Decision d, boolean create) {
 
 		if (USE_CANONICAL_NODES) {
@@ -131,7 +133,28 @@ public class XADD {
 		}
 
 		int index = _alOrder.indexOf(d);
-		if (index >= 0 || !create)
+		
+		// If not found, try negating d
+		if (index < 0 && d instanceof ExprDec) {
+			CompExpr comp = ((ExprDec)d)._expr;
+			//ArithExpr lhs = comp._lhs;
+			//ArithExpr rhs = comp._rhs;
+			//lhs = new OperExpr(PROD, NEG_ONE, lhs);
+			//rhs = new OperExpr(PROD, NEG_ONE, rhs);
+			//CompExpr neg_comp = new CompExpr( CompExpr.flipCompOper(comp._type), lhs, rhs );
+			CompExpr neg_comp = new CompExpr( CompExpr.flipCompOper(comp._type), comp._lhs, comp._rhs );
+			Decision neg_d = new ExprDec(neg_comp).makeCanonical();
+			
+			index = _alOrder.indexOf(neg_d);
+			if (index > 0)
+				index = -index;
+			else
+				index = 0; // No valid decision has index 0
+		} else if (index < 0) {
+			index = 0; // No valid decision has index 0
+		}
+		
+		if (index != 0 || !create) // Valid index found
 			return index;
 		else {
 			_alOrder.add(d);
@@ -177,6 +200,12 @@ public class XADD {
 
 	public int getINode(int var, int low, int high) {
 
+		boolean neg_dec = false;
+		if (var < 0) {
+			neg_dec = true;
+			var = -var;
+		}
+		
 		if (low < 0 || high < 0) {
 			System.err.println("Invalid node (low,high)=(" + low + "," + high + ") for var: " + var);
 			new Exception().printStackTrace();
@@ -193,9 +222,9 @@ public class XADD {
 		Decision d = _alOrder.get(var);
 		if (d instanceof TautDec) {
 			if (((TautDec) d)._bTautology)
-				return high;
+				return neg_dec ? low : high;
 			else
-				return low;
+				return neg_dec ? high : low;
 		}
 
 		// Retrieve inode (and create if it does not exist)
@@ -204,7 +233,9 @@ public class XADD {
 		if (id == null) {
 			// Not in cache so create
 			id = _nodeCounter;
-			XADDINode node = new XADDINode(var, low, high);
+			XADDINode node = 
+				neg_dec ? new XADDINode(var, high, low)
+						: new XADDINode(var, low, high);
 			_hmNode2Int.put(node, id);
 			_hmInt2Node.put(id, node);
 			_nodeCounter++;
@@ -217,7 +248,8 @@ public class XADD {
 	// TODO: This DD can still be out of order if parse tree had out-of-order
 	// variables.
 	public int buildCanonicalXADD(ArrayList l) {
-		return reduce(buildNonCanonicalXADD(l));
+		return makeCanonical(buildNonCanonicalXADD(l));
+		//return reduce(buildNonCanonicalXADD(l));
 	}
 
 	public int buildNonCanonicalXADD(ArrayList l) {
@@ -2208,6 +2240,28 @@ public class XADD {
 		public abstract Decision makeCanonical();
 	}
 
+	public class NullDec extends Decision {
+
+		public void collectVars(HashSet<String> vars) { }
+
+		public Decision makeCanonical() {
+			return this;
+		}
+
+		public String toString(boolean format) {
+			return "[NULL DECISION]";
+		}
+		
+		public int hashCode() {
+			return 0;
+		}
+
+		public boolean equals(Object o) {
+			return (o instanceof NullDec);
+		}
+
+	}
+	
 	// Represents a tautology or its negation (inconsistency)
 	public class TautDec extends Decision {
 		public boolean _bTautology;
@@ -3373,6 +3427,9 @@ public class XADD {
 		xadd_context.getVarIndex(xadd_context.new BoolDec("g"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("h"), true);
 
+		int xadd_implied2 = TestBuild(xadd_context, "./src/xadd/implied2.xadd");
+		//System.in.read();
+		
 		int xadd_circle = TestBuild(xadd_context, "./src/xadd/circle.xadd");
 		Graph gc = xadd_context.getGraph(xadd_circle); gc.launchViewer();
 		//System.in.read();
@@ -3404,6 +3461,10 @@ public class XADD {
 		System.out.println(xadd_context.getString(d2));
 		int prod = xadd_context.apply(d, d2, PROD);
 		System.out.println(xadd_context.getString(prod));
+		int prod2 = xadd_context.apply(d2, d2, PROD);
+		System.out.println(xadd_context.getString(prod2));
+		
+		//System.in.read();
 
 		HashMap<String, Double> hm_eval = new HashMap<String, Double>();
 		hm_eval.put("d", 1d);
