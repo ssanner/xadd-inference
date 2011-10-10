@@ -45,7 +45,12 @@ public class TestXADDDist {
 		int xadd1 = TestXADD.TestBuild(xadd_context, "./src/xadd/normal_mix_simple.xadd");
 		xadd_context.getGraph(xadd1).launchViewer();
 		plotXADD(xadd_context, xadd1, -10d, 0.25d, 10d, bvars, dvars, "y", "Normal Mix Simple");
-		System.out.println("Norm: " + testNormalize(xadd_context, xadd1, bvars, dvars, "y") + "\n\n\n\n\n");
+		System.out.println("N Norm: " + testNormalize(xadd_context, xadd1, bvars, dvars, "y") + "\n\n\n\n\n");
+
+		int xadd1u = TestXADD.TestBuild(xadd_context, "./src/xadd/uniform_mix_simple.xadd");
+		xadd_context.getGraph(xadd1u).launchViewer();
+		plotXADD(xadd_context, xadd1u, -10d, 0.25d, 10d, bvars, dvars, "y", "Uniform Mix Simple");
+		System.out.println("U Norm: " + testNormalize(xadd_context, xadd1u, bvars, dvars, "y") + "\n\n\n\n\n");
 		
 		int xadd2 = TestXADD.TestBuild(xadd_context, "./src/xadd/normal_mix.xadd");
 		xadd_context.getGraph(xadd2).launchViewer();
@@ -53,14 +58,19 @@ public class TestXADDDist {
 		dvars.put("x1", 1d);
 		plotXADD(xadd_context, xadd2, -20d, 0.25d, 20d, bvars, dvars, "y", "Normal Mix");
 		System.out.println("Norm: " + testNormalize(xadd_context, xadd2, bvars, dvars, "y") + "\n\n\n\n\n");
-	}
+
+		int xadd2u = TestXADD.TestBuild(xadd_context, "./src/xadd/uniform_mix.xadd");
+		xadd_context.getGraph(xadd2u).launchViewer();
+		plotXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, bvars, dvars, "y", "Normal Mix");
+		System.out.println("Norm: " + testNormalize(xadd_context, xadd2u, bvars, dvars, "y") + "\n\n\n\n\n");
+}
 
 	public static double testNormalize(XADD context, int xadd, 
 			HashMap<String, Boolean> static_bvars, 
 			HashMap<String, Double> static_dvars,
 			String int_var) {
 		int xadd_int = context.computeDefiniteIntegral(xadd, int_var);
-		System.out.println("Int result: " + context.getString(xadd_int));
+		//System.out.println("Int result: " + context.getString(xadd_int));
 		System.out.println("Evaluating @ " + static_bvars + " " + static_dvars);
 		return context.evaluate(xadd_int, static_bvars, static_dvars);
 	}
