@@ -45,6 +45,22 @@ public class HierarchicalParser {
 			return _s.equalsIgnoreCase(s);
 		}
 	}
+	
+	/**
+	 * Static file parsing methods
+	 **/
+	public static ArrayList ParseString(String content) {
+
+		try {
+			TokenStream ts = new TokenStream();
+			ts.openFromStringContent(content);
+			return ParseFileInt(ts, 0);
+		} catch (TokenStreamException tse) {
+			System.out.println("Error: " + tse);
+			return null;
+		}
+
+	}
 
 	/**
 	 * Static file parsing methods

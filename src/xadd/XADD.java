@@ -246,9 +246,69 @@ public class XADD {
 
 	// TODO: This DD can still be out of order if parse tree had out-of-order
 	// variables.
-	public int buildCanonicalXADD(ArrayList l) {
-		return makeCanonical(buildNonCanonicalXADD(l));
+	//public int buildCanonicalXADD(ArrayList l) {
+	//	return makeCanonical(buildNonCanonicalXADD(l));
 		//return reduce(buildNonCanonicalXADD(l));
+	//}
+
+	public int buildCanonicalXADD(ArrayList l) {
+		if (l.size() == 1) {
+			// Terminal node
+			//System.out.println("Parsing: '" + l.get(0) + "'");
+			if (!(l.get(0) instanceof String)) {
+				System.err.println("Cannot parse terminal: '" + l.get(0) + "'\n... make sure terminals are surrounded in [ ]");
+				System.exit(1);
+			}
+			String s = (String) l.get(0);
+			// Work around a parser issue with singleton vars in brackets
+			if (s.startsWith("["))
+				s = s.substring(1, s.length() - 1);
+			int n = ArithExpr.parseIntoXADD(this, s);
+			if (n < 0) {
+				System.err.println("Failed to parse: '" + s + "'");
+				System.exit(1);
+			}
+			return n;
+		} else if (l.size() == 3) {
+			// Internal node
+			String expr = ((String) l.get(0));
+			Decision d = null;
+			// System.out.println("Expr: " + expr);
+			if (expr.startsWith("[")) {
+				CompExpr c = CompExpr.parse(expr);
+				if (c != null) {
+					// System.out.println("CompExpr: " + c);
+					d = new ExprDec(c);
+				}
+			} else {
+				d = new BoolDec(expr);
+			}
+
+			if (d == null) {
+				System.out.println("Could not buildNonCanonicalXADD for terminal '" + l + "'");
+				return -1;
+			} else {
+				// System.out.println("Var expr: " + d);
+				int var = getVarIndex(d, true);
+				int high = buildCanonicalXADD((ArrayList) l.get(1));
+				int low = buildCanonicalXADD((ArrayList) l.get(2));
+				
+				int T_ZERO = getTermNode(ZERO);
+				int T_ONE = getTermNode(ONE);
+				int ind_true = getINode(var, /* low */T_ZERO, /* high */T_ONE);
+				int ind_false = getINode(var, /* low */T_ONE, /* high */T_ZERO);
+				int true_half = applyInt(ind_true, high, PROD); // Note: this enforces canonicity so
+				int false_half = applyInt(ind_false, low, PROD); // can use applyInt rather than apply
+				
+				// System.out.println("New inode: " + index + " - " + low + ", " + high);
+				// System.out.println("Var: " + _alOrder.get(index));
+				return applyInt(true_half, false_half, SUM);
+			}
+		} else {
+			// Unknown
+			System.out.println("Could not buildNonCanonicalXADD for " + l.size() + " args '" + l + "'");
+			return -1;
+		}
 	}
 
 	public int buildNonCanonicalXADD(ArrayList l) {
@@ -807,6 +867,8 @@ public class XADD {
 	public abstract class XADDLeafOperation {
 		public abstract int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values,
 				ArithExpr leaf_val);
+
+		public abstract boolean isCacheable();
 	}
 
 	
@@ -829,6 +891,11 @@ public class XADD {
 			_actionString = action_St.intern(); // incase there is more than one continuous parameter per action
 			//we need the action because the bounds are required here
 			_runningMax = getTermNode(ZERO);
+		}
+
+		// TODO: revisit whether caching is possible, or in what circumstances
+		public boolean isCacheable() {
+			return false;
 		}
 
 		public int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, ArithExpr leaf_val) 
@@ -1104,6 +1171,11 @@ public class XADD {
 			_xaddSubAtLeaves = xadd_sub_at_leaves;
 		}
 
+		// TODO: revisit whether caching is possible, or in what circumstances
+		public boolean isCacheable() {
+			return false;
+		}
+		
 		public int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
 
 			// Return an XADD for the resulting expression
@@ -1122,6 +1194,11 @@ public class XADD {
 
 		public XADDLeafDerivative(String deriv_var) {
 			_derivativeVar = deriv_var.intern();
+		}
+
+		// TODO: verify this is cacheable... should be, just returns modified subdiagrams
+		public boolean isCacheable() {
+			return true;
 		}
 
 		public int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
@@ -1218,6 +1295,11 @@ public class XADD {
 
 		public XADDLeafIndefIntegral(String integration_var) {
 			_integrationVar = integration_var.intern();
+		}
+
+		// TODO: revisit whether caching is possible... should be, just returning integrated subdiagrams
+		public boolean isCacheable() {
+			return true;
 		}
 
 		public int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
@@ -1321,6 +1403,12 @@ public class XADD {
 
 			// Start with the zero XADD
 			_runningSum = getTermNode(ZERO);
+		}
+
+		// TODO: revisit whether caching is possible, or in what circumstances (i.e., constraints
+		//       irrelevant to the integration variable)
+		public boolean isCacheable() {
+			return false;
 		}
 
 		public int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
@@ -1463,6 +1551,7 @@ public class XADD {
 			int int_eval_lower = substituteXADDforVarInArithExpr(leaf_integral, _integrationVar, xadd_lower_bound);
 			int int_eval_upper = substituteXADDforVarInArithExpr(leaf_integral, _integrationVar, xadd_upper_bound);
 			int int_eval = apply(int_eval_upper, int_eval_lower, MINUS);
+			System.out.println("Result: " + getString(int_eval));
 
 			// Finally, multiply in boolean decisions and irrelevant comparison expressions
 			// to the XADD and add it to the running sum
@@ -1477,7 +1566,7 @@ public class XADD {
 
 			// All return information is stored in _runningSum so no need to return
 			// any information here... just keep diagram as is
-			System.out.println("Result: " + getString(int_eval));
+			System.out.println("Running sum: " + getString(_runningSum));
 			return getTermNode(leaf_val);
 		}
 
@@ -1579,6 +1668,8 @@ public class XADD {
 	private int reduceProcessXADDLeaf(int id, XADDLeafOperation leaf_op, ArrayList<Decision> decisions,
 			ArrayList<Boolean> decision_values) {
 
+		//System.out.println("** Reduce: decisions " + decisions + " -> " + decision_values);
+		
 		Integer ret = null;
 		XADDNode n = _hmInt2Node.get(id);
 		if (n == null) {
@@ -1597,8 +1688,9 @@ public class XADD {
 
 		// If its an internal node, check the reduce cache
 		_tempReduceLeafOpKey.set(id, leaf_op.hashCode());
-		if ((ret = _hmReduceLeafOpCache.get(_tempReduceLeafOpKey)) != null) {
-			// System.out.println("In cache, returning: " + qret);
+		if (leaf_op.isCacheable() && 
+			(ret = _hmReduceLeafOpCache.get(_tempReduceLeafOpKey)) != null) {
+			//System.out.println("** In cache, returning: " + getString(ret));
 			return ret;
 		}
 
@@ -2709,6 +2801,19 @@ public class XADD {
 			}
 		}
 
+		public static int parseIntoXADD(XADD context, String s) {
+			try {
+				FOPC.Node res = FOPC.parse(s + " = 0");
+				//if (res != null)
+				//	System.out.println("==> " + res.toFOLString());
+				return Convert2XADD(context, ((FOPC.PNode) res).getBinding(0));
+			} catch (Exception e) {
+				System.err.println("Could not convert: " + s + "\n" + e);
+				e.printStackTrace(System.err);
+				System.exit(1); return -1;
+			}
+		}
+
 		public abstract String toString(boolean format);
 
 		public static ArithExpr Convert2ArithExpr(FOPC.Term t) {
@@ -2723,6 +2828,20 @@ public class XADD {
 				return OperExpr.Convert2OperExpr((FOPC.TFunction) t);
 			} else
 				return null;
+		}
+		
+		public static int Convert2XADD(XADD context, FOPC.Term t) {
+			// System.out.println("Convert2ArithExpr: " + t.toFOLString());
+			if (t instanceof FOPC.TVar) {
+				return context.getTermNode(new VarExpr(((FOPC.TVar) t)._sName));
+			} else if (t instanceof FOPC.TScalar) {
+				return context.getTermNode(new DoubleExpr(((FOPC.TScalar) t)._dVal));
+			} else if (t instanceof FOPC.TInteger) {
+				return context.getTermNode(new DoubleExpr(((FOPC.TInteger) t)._nVal));
+			} else if (t instanceof FOPC.TFunction) {
+				return OperExpr.Convert2XADD(context, (FOPC.TFunction) t);
+			} else
+				return -1;
 		}
 
 		public static ArithExpr op(ArithExpr f1, ArithExpr f2, int op) {
@@ -2822,12 +2941,109 @@ public class XADD {
 			return _terms.toString().hashCode() - _type;
 		}
 
+		public static int Convert2XADD(XADD context, FOPC.TFunction t) {
+
+			if (t._nArity == 0)
+				return context.getTermNode(new VarExpr(t._sFunName));
+
+			if (t._sFunName.equals("N") && t._nArity == 4) {
+				
+				ArithExpr expr  = ArithExpr.Convert2ArithExpr(t.getBinding(0));
+				ArithExpr mu    = ArithExpr.Convert2ArithExpr(t.getBinding(1));
+				ArithExpr var   = ArithExpr.Convert2ArithExpr(t.getBinding(2));
+				ArithExpr width = ArithExpr.Convert2ArithExpr(t.getBinding(3)); // truncated outside of +/- width
+				
+				if (!(var instanceof DoubleExpr)) {
+					System.out.println("Currently cannot handle non-constant variance: " + var.toString());
+					System.exit(1);
+				}
+				double dvar = ((DoubleExpr)var)._dConstVal;
+				
+				if (!(width instanceof DoubleExpr)) {
+					System.out.println("Currently cannot handle non-constant width: " + width.toString());
+					System.exit(1);
+				}
+				double dwidth = ((DoubleExpr)width)._dConstVal;
+				
+				double Z = 3d / (4d * dwidth * dwidth * dwidth);
+				double DW2 = dwidth * dwidth;
+				String s = "([" + expr + " >= " + mu + " - " + dwidth + "] "
+				           + "([" + expr + " <= " + mu + " + " + dwidth + "] " 
+				             + "( [" + Z + " * " + "(-((" + expr + " - " + mu + ") * (" + expr + " - " + mu + ")) + " + DW2 + ")] )"
+				               + "( [0.0] ) ) ( [0.0] ) )";
+				//String s = "([7.0])";
+				
+				//System.out.println("Produced: " + s);
+				
+				ArrayList l = HierarchicalParser.ParseString(s);
+				//System.out.println("Parsed: " + l);
+				int dd = context.buildCanonicalXADD((ArrayList) l.get(0));
+				return dd;
+				
+			} else if (t._sFunName.equals("U") && t._nArity == 3) {
+
+				ArithExpr expr  = ArithExpr.Convert2ArithExpr(t.getBinding(0));
+				ArithExpr mu    = ArithExpr.Convert2ArithExpr(t.getBinding(1));
+				ArithExpr width = ArithExpr.Convert2ArithExpr(t.getBinding(2)); // truncated outside of +/- width
+				if (!(width instanceof DoubleExpr)) {
+					System.out.println("Currently cannot handle non-constant width: " + width.toString());
+					System.exit(1);
+				}
+				double dwidth = ((DoubleExpr)width)._dConstVal;
+
+				double Z = 1d / (2d * dwidth);
+				String s = "([" + expr + " >= " + mu + " - " + dwidth + "] "
+		           + "([" + expr + " <= " + mu + " + " + dwidth + "] " 
+		             + "( [" + Z + "] )"
+		               + "( [0.0] ) ) ( [0.0] ) )";
+				ArrayList l = HierarchicalParser.ParseString(s);
+				int dd = context.buildCanonicalXADD((ArrayList) l.get(0));
+				return dd;
+				
+			} else if (t._sFunName.equals("T") && t._nArity == 4) {
+				
+				System.out.println("Currently cannot handle: " + t.toFOLString());
+				System.exit(1);
+				String s = "";
+				ArrayList l = HierarchicalParser.ParseString(s);
+				int dd = context.buildCanonicalXADD((ArrayList) l.get(0));
+				return dd;
+				
+			} else if (t._nArity == 2) {
+
+				// A standard operator expression convertible to a terminal node
+				// The following is a bit ugly but easy to write & debug and
+				// only called once when files are read (so inefficiency is OK)
+				int xadd1 = Convert2XADD(context, t.getBinding(0));
+				int xadd2 = Convert2XADD(context, t.getBinding(1));
+				int op = UND;
+				if (t._sFunName.equals("f_add")) {
+					op = SUM;
+				} else if (t._sFunName.equals("f_sub")) {
+					op = MINUS;
+				} else if (t._sFunName.equals("f_mul")) {
+					op = PROD;
+				} else if (t._sFunName.equals("f_div")) {
+					op = DIV;
+				} else {
+					System.err.println("Convert2XADD: Could not process binary function: " + t.toFOLString());
+					System.exit(1);					
+				}
+				return context.apply(xadd1, xadd2, op);
+			} else {
+				System.err.println("Convert2XADD: Could not process: " + t.toFOLString());
+				System.exit(1); return -1;
+			}
+		}
+		
 		public static ArithExpr Convert2OperExpr(FOPC.TFunction t) {
 			// System.out.println("Convert2OperExpr: [" + t._nArity + "] "
 			// + t.toFOLString());
-			if (t._nArity == 0) {
+			if (t._nArity == 0)
 				return new VarExpr(t._sFunName);
-			}
+				
+			// The following is a bit ugly but easy to write & debug and
+			// only called once when files are read (so inefficiency is OK)
 			ArithExpr term1 = ArithExpr.Convert2ArithExpr(t.getBinding(0));
 			ArithExpr term2 = ArithExpr.Convert2ArithExpr(t.getBinding(1));
 			ArrayList<ArithExpr> terms = new ArrayList<ArithExpr>();
@@ -3400,247 +3616,5 @@ public class XADD {
 			_hmNode2IntNew.put((XADDTNode) node, id);
 
 		}
-	}
-
-	// //////////////////////////////////////////////////////////////
-
-	public static void main(String[] args) throws Exception {
-
-		// TestPolyOps();
-		// if (0 <= 1) return;
-
-		System.out.println(Double.MAX_VALUE + " , " + (-Double.MAX_VALUE));
-		/*
-		 * TestParse("[a]");
-		 */
-		/*
-		 * TestParse("[a + b + 3 + 4]"); TestParse("[a + b + 3 + 4 >= 3 / 7]"); TestParse("[a + b + 3 + -4 * y = 9]");
-		 * TestParse("[((a + b) * (3 * 4)]"); // Mismatched parens TestParse("[(a + b) * (3 * 4)]");
-		 * 
-		 * // Build and display an XADD
-		 */
-		XADD xadd_context = new XADD();
-
-		// Put all boolean variables first to avoid reordering clashes
-		xadd_context.getVarIndex(xadd_context.new BoolDec("f"), true);
-		xadd_context.getVarIndex(xadd_context.new BoolDec("g"), true);
-		xadd_context.getVarIndex(xadd_context.new BoolDec("h"), true);
-
-		int xadd_implied2 = TestBuild(xadd_context, "./src/xadd/implied2.xadd");
-		//System.in.read();
-		
-		int xadd_circle = TestBuild(xadd_context, "./src/xadd/circle.xadd");
-		Graph gc = xadd_context.getGraph(xadd_circle); gc.launchViewer();
-		//System.in.read();
-		
-		// Collect all vars
-		HashSet<String> vars = xadd_context.collectVars(xadd_circle);
-		System.out.println("Vars in circle.xadd: " + vars);
-
-		// Test out indefinite integration
-		// int int1_xac = xadd_context.reduceProcessXADDLeaf(xadd_circle,
-		// xadd_context.new XADDLeafIndefIntegral("x1"), /*canonical_reorder*/false);
-		// xadd_context.getGraph(int1_xac).launchViewer();
-		//
-		// int int2_xac = xadd_context.reduceProcessXADDLeaf(int1_xac,
-		// xadd_context.new XADDLeafIndefIntegral("x2"), /*canonical_reorder*/false);
-		// xadd_context.getGraph(int2_xac).launchViewer();
-
-		int xadd1 = TestBuild(xadd_context, "./src/xadd/test1.xadd");
-		int xadd2 = TestBuild(xadd_context, "./src/xadd/test2.xadd");
-
-		int xadd3 = TestBuild(xadd_context, "./src/xadd/test3.xadd");
-
-		int x1_d = TestBuild(xadd_context, "./src/xadd/test4.xadd");
-		int d = TestBuild(xadd_context, "./src/xadd/test5.xadd");
-		HashMap<String, ArithExpr> hm = new HashMap<String, ArithExpr>();
-		hm.put("x1", new XADD.DoubleExpr(5d));
-		int d2 = xadd_context.substitute(x1_d, hm);
-		System.out.println(xadd_context.getString(d));
-		System.out.println(xadd_context.getString(d2));
-		int prod = xadd_context.apply(d, d2, PROD);
-		System.out.println(xadd_context.getString(prod));
-		int prod2 = xadd_context.apply(d2, d2, PROD);
-		System.out.println(xadd_context.getString(prod2));
-		
-		//System.in.read();
-
-		HashMap<String, Double> hm_eval = new HashMap<String, Double>();
-		hm_eval.put("d", 1d);
-		System.out.println(xadd_context.evaluate(prod, new HashMap<String, Boolean>(), hm_eval));
-
-		int dd_norm = xadd_context.computeDefiniteIntegral(prod, "d");
-		XADDTNode t = (XADDTNode) xadd_context.getNode(dd_norm);
-		double norm_const = ((DoubleExpr) t._expr)._dConstVal;
-		int recip_dd_norm = xadd_context.getTermNode(new DoubleExpr(1d / norm_const));
-		int final_result = xadd_context.apply(prod, recip_dd_norm, PROD);
-		System.out.println(xadd_context.getString(final_result));
-
-		dd_norm = xadd_context.computeDefiniteIntegral(final_result, "d");
-		t = (XADDTNode) xadd_context.getNode(dd_norm);
-		norm_const = ((DoubleExpr) t._expr)._dConstVal;
-		System.out.println("Final integrated value = " + norm_const);
-
-		xadd_context.computeDefiniteIntegral(xadd3, "x1");
-
-		// Derivative test
-		// int der1_xac = xadd_context.reduceProcessXADDLeaf(xadd1,
-		// xadd_context.new XADDLeafDerivative("x1"), /*canonical_reorder*/false);
-		// xadd_context.getGraph(der1_xac).launchViewer();
-		//
-		// int der2_xac = xadd_context.reduceProcessXADDLeaf(xadd2,
-		// xadd_context.new XADDLeafDerivative("x1"), /*canonical_reorder*/false);
-		// xadd_context.getGraph(der2_xac).launchViewer();
-
-		// Elim Example 1: Definite integral over *continuous var* for polynomial leaf case statement
-		int int1_xad = xadd_context.computeDefiniteIntegral(xadd1, "x1");
-		xadd_context.getGraph(int1_xad).launchViewer();
-
-		int int2_xad = xadd_context.computeDefiniteIntegral(xadd2, "x2");
-		xadd_context.getGraph(int2_xad).launchViewer();
-
-		// Elim Example 2: Marginalizing out a *boolean var* (in this case f)
-		// (make sure all boolean diagrams are "completed" to include
-		// branches for f=true and f=false)
-		int restrict_high = xadd_context.opOut(xadd1, xadd_context.getBoolVarIndex("f"), RESTRICT_HIGH);
-		int restrict_low = xadd_context.opOut(xadd1, xadd_context.getBoolVarIndex("f"), RESTRICT_LOW);
-		int marginal = xadd_context.apply(restrict_high, restrict_low, SUM);
-		xadd_context.getGraph(marginal).launchViewer();
-
-		// Note: if you can guarantee every leaf is reached by a true or false path through
-		// the variable being summed out, you can use the shortcut operation
-		// int marginal = xadd_context.opOut(xadd1, xadd_context.getBoolVarIndex("f"), SUM);
-
-		// Elim Example 3: Integrating out x for [z * \delta(x - y)] for XADDs y and z
-		// Note: it is assumed that z contains references to x that will be substituted according to y,
-		// y should *not* contain the variable x
-		//
-		// Here y = xadd_circle(x1,x2,r1,r2), x = k, z = xadd1(k,x1,f)
-		xadd1 = TestBuild(xadd_context, "./src/xadd/test1.xadd");
-
-		int y = xadd_context.reduceProcessXADDLeaf(xadd_circle, xadd_context.new DeltaFunctionSubstitution("k", xadd1), /* canonical_reorder */
-		true);
-		xadd_context.getGraph(y).launchViewer();
-		System.out.println(xadd_context.getString(xadd_circle));
-		System.out.println("-------------\n" + xadd_context.getString(y));
-
-		System.exit(1);
-		xadd_context.getGraph(y).launchViewer();
-		System.out.println(xadd_context.getString(xadd_circle));
-
-		// Pause
-		System.in.read();
-
-		// *****************TESTING MAX***********
-		int xadd4 = TestBuild(xadd_context, "./src/xadd/test4.xadd");
-		int xadd5 = TestBuild(xadd_context, "./src/xadd/test5.xadd");
-		int xaddrRes = xadd_context.apply(xadd4, xadd5, XADD.MAX);
-		Graph gRes = xadd_context.getGraph(xadd_context.reduceLP(xaddrRes, Arrays.asList("x1", "x2", "r1")));
-		gRes.launchViewer();
-
-		int xadd_implied = TestBuild(xadd_context, "./src/xadd/implied.xadd");
-		Graph gb = xadd_context.getGraph(xadd_implied);
-		gb.launchViewer();
-		xadd_implied = xadd_context.reduceLP(xadd_implied, Arrays.asList("x1", "x2", "r1"));
-		Graph gb2 = xadd_context.getGraph(xadd_implied);
-		gb2.launchViewer();
-		if (true)
-			return;
-
-		// **************************************
-		System.out.println(">> PROD Operations");
-		int xaddr1 = xadd_context.apply(xadd1, xadd2, XADD.PROD);
-		Graph g1 = xadd_context.getGraph(xaddr1);
-		g1.launchViewer();
-		int xaddr2 = xadd_context.opOut(xaddr1, 2, PROD);
-		Graph g2 = xadd_context.getGraph(xaddr2);
-		g2.launchViewer();
-		System.out.println(">> MAX Operation");
-		int xaddr3 = xadd_context.apply(xadd1, xadd2, XADD.MAX);
-		Graph g3 = xadd_context.getGraph(xaddr3);
-		g3.launchViewer();
-
-		System.out.println(">> Substitutions");
-		HashMap<String, ArithExpr> subst = new HashMap<String, ArithExpr>();
-		subst.put("k", new DoubleExpr(10d));
-		int xaddr4 = xadd_context.substitute(xaddr3, subst);
-		Graph g4 = xadd_context.getGraph(xaddr4);
-		g4.launchViewer();
-		subst.put("x1", new DoubleExpr(0d/* 5d */));
-		int xaddr5 = xadd_context.substitute(xaddr3, subst);
-		Graph g5 = xadd_context.getGraph(xaddr5);
-		g5.launchViewer();
-		System.out.println("Vars: " + xadd_context._alOrder);
-
-		HashMap<String, Boolean> bool_assign = new HashMap<String, Boolean>();
-		bool_assign.put("f", true);
-		bool_assign.put("g", true); // if h instead, eval will be null
-
-		HashMap<String, Double> cont_assign = new HashMap<String, Double>();
-		cont_assign.put("k", 0d);
-		cont_assign.put("x1", -5d);
-
-		System.out.println(">> Evaluations");
-		System.out.println("1 Eval: [" + bool_assign + "], [" + cont_assign + "]" + ": "
-				+ xadd_context.evaluate(xaddr3, bool_assign, cont_assign));
-		cont_assign.put("x1", 10d);
-		System.out.println("2 Eval: [" + bool_assign + "], [" + cont_assign + "]" + ": "
-				+ xadd_context.evaluate(xaddr3, bool_assign, cont_assign));
-		cont_assign.put("x2", 7d);
-		System.out.println("3 Eval: [" + bool_assign + "], [" + cont_assign + "]" + ": "
-				+ xadd_context.evaluate(xaddr3, bool_assign, cont_assign));
-	}
-
-	public static void TestParse(String s) {
-		s = s.substring(1, s.length() - 1);
-		CompExpr e = CompExpr.parse(s);
-		System.out.println("CompExpr for  '" + s + "': " + e);
-		ArithExpr a = ArithExpr.parse(s);
-		System.out.println("ArithExpr for '" + s + "': " + a + "\n");
-		VarExpr sub = new VarExpr("a");
-		ArithExpr a2 = ArithExpr.parse("[c + a]");
-		HashMap<String, ArithExpr> subst = new HashMap<String, ArithExpr>();
-		subst.put("a", a2);
-		if (a != null) {
-			System.out.println("EX + EX = " + ArithExpr.op(a, a, SUM));
-			System.out.println("EX - EX = " + ArithExpr.op(a, a, MINUS));
-			System.out.println("EX * EX = " + ArithExpr.op(a, a, PROD));
-			System.out.println("EX / EX = " + ArithExpr.op(a, a, DIV));
-			System.out.println("EX == EX: " + ArithExpr.parse(s).equals(a));
-			System.out.println("EX != EX * EX: " + ArithExpr.op(a, a, PROD).equals(a));
-			System.out.println("EX+EX:" + sub + "/" + a2 + ": " + ArithExpr.op(a, a, SUM).substitute(subst));
-		} else if (e != null) {
-			System.out.println("EX == EX: " + CompExpr.parse(s).equals(e));
-			System.out.println("EX:" + sub + "/" + a2 + ": " + e.substitute(subst));
-		}
-	}
-
-	public static int TestBuild(XADD xadd_context, String filename) {
-		ArrayList l = HierarchicalParser.ParseFile(filename);
-		System.out.println("Parsed file contents for '" + filename + "': " + l.get(0) + "\n");
-		int dd1 = xadd_context.buildCanonicalXADD((ArrayList) l.get(0));
-		Graph g1 = xadd_context.getGraph(dd1);
-		g1.launchViewer();
-		// int dd2 = xadd_context.apply(dd1, dd1, XADD.SUM);
-		// Graph g2 = xadd_context.getGraph(dd2); g2.launchViewer();
-		// int dd3 = xadd_context.apply(dd1, dd1, XADD.PROD);
-		// Graph g3 = xadd_context.getGraph(dd3); g3.launchViewer();
-		return dd1;
-	}
-
-	public static void TestPolyOps() {
-		XADD xadd_context = new XADD();
-		int xadd1 = TestBuild(xadd_context, "src/xadd/test3.xadd");
-		int xaddr1 = xadd_context.apply(xadd1, xadd1, XADD.SUM);
-		xadd_context.getGraph(xaddr1).launchViewer();
-		int xaddr2 = xadd_context.apply(xadd1, xadd1, XADD.MINUS);
-		xadd_context.getGraph(xaddr2).launchViewer();
-		int xaddr3 = xadd_context.apply(xadd1, xadd1, XADD.PROD);
-		xadd_context.getGraph(xaddr3).launchViewer();
-		int xaddr4 = xadd_context.apply(xaddr3, xaddr3, XADD.PROD);
-		xadd_context.getGraph(xaddr4).launchViewer();
-
-	}
-
-	
+	}	
 }

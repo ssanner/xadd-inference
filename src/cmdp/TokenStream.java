@@ -50,6 +50,25 @@ public class TokenStream {
 	}
 
 	/**
+	 * Process a String for tokenizing
+	 * 
+	 * @param content
+	 *            String content from which to load data
+	 **/
+	public void openFromStringContent(String content) throws TokenStreamException {
+
+		// Initialize components
+		_sFilename = "[local string content]";
+		_nPos = _nLinePos = -1; // No chars read yet
+		_nLine = 1; // Start at line 1
+		if (_brInput != null) {
+			close();
+		}
+
+		_brInput = new BufferedReader(new StringReader(content));
+	}
+	
+	/**
 	 * Open a file for tokenizing
 	 * 
 	 * @param filename
