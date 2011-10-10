@@ -1397,6 +1397,8 @@ public class XADD {
 		int _runningSum; // XADD for the running sum of all leaf substitutions
 		double _integrationVarCoef;
 
+		public final static boolean DEBUG_XADD_DEF_INTEGRAL = false;
+		
 		public XADDLeafDefIntegral(String integration_var) {
 			super(integration_var);
 			_integrationVarCoef = Double.NEGATIVE_INFINITY;
@@ -1417,9 +1419,11 @@ public class XADD {
 			HashMap<Decision, Boolean> int_var_indep_decisions = new HashMap<Decision, Boolean>();
 
 			//upper and lower bounds based on the decisions
-			System.out.println("=============================");
-			System.out.println("Current node: " + leaf_val);
-			System.out.println("Decisions to get to get here: " + decisions + " = " + decision_values + "\n===\n");
+			if (DEBUG_XADD_DEF_INTEGRAL) {
+				System.out.println("=============================");
+				System.out.println("Current node: " + leaf_val);
+				System.out.println("Decisions to get to get here: " + decisions + " = " + decision_values + "\n===\n");
+			}
 			ArrayList<ArithExpr> lower_bound = new ArrayList<ArithExpr>();
 			ArrayList<ArithExpr> upper_bound = new ArrayList<ArithExpr>();
 			for (int i = 0; i < decisions.size(); i++) {
@@ -1445,9 +1449,11 @@ public class XADD {
 
 				_integrationVarCoef = 0d;
 				ArithExpr lhs_isolated = removeIntegrationVar(comp._lhs);
-				System.out.println("Pre: " + comp + " == " + is_true + ", int var [" + _integrationVar + "]"
-						+ "\nLHS isolated: " + lhs_isolated + "\n ==>  " + _integrationVarCoef + " * "
-						+ _integrationVar);
+				if (DEBUG_XADD_DEF_INTEGRAL) {
+					System.out.println("Pre: " + comp + " == " + is_true + ", int var [" + _integrationVar + "]"
+							+ "\nLHS isolated: " + lhs_isolated + "\n ==>  " + _integrationVarCoef + " * "
+							+ _integrationVar);
+				}
 
 				if (_integrationVarCoef == 0d) {
 					int_var_indep_decisions.put(d, is_true);
@@ -1495,12 +1501,15 @@ public class XADD {
 			// be limits on the polynomial functions implicit in the bounds.
 			int xadd_lower_bound = -1;
 			if (lower_bound.isEmpty()) {
-				System.err.println("No explicit lower bound given for '" + _integrationVar + "', using -1e6");
-				System.err.println("Constraints: " + decisions);
-				System.err.println("Assignments: " + decision_values);
+				if (DEBUG_XADD_DEF_INTEGRAL) {
+					System.err.println("No explicit lower bound given for '" + _integrationVar + "', using -1e6");
+					System.err.println("Constraints: " + decisions);
+					System.err.println("Assignments: " + decision_values);
+				}
 				xadd_lower_bound = getTermNode(new DoubleExpr(-1e6));
 			} else {
-				System.out.println("Lower bounds: " + lower_bound);
+				if (DEBUG_XADD_DEF_INTEGRAL) 
+					System.out.println("Lower bounds: " + lower_bound);
 				for (ArithExpr e : lower_bound) {
 					if (xadd_lower_bound == -1) {
 						xadd_lower_bound = getTermNode(e);
@@ -1513,12 +1522,15 @@ public class XADD {
 
 			int xadd_upper_bound = -1;
 			if (upper_bound.isEmpty()) {
-				System.err.println("No explicit upper bound given for '" + _integrationVar + "', using +1e6");
-				System.err.println("Constraints: " + decisions);
-				System.err.println("Assignments: " + decision_values);
+				if (DEBUG_XADD_DEF_INTEGRAL) {
+					System.err.println("No explicit upper bound given for '" + _integrationVar + "', using +1e6");
+					System.err.println("Constraints: " + decisions);
+					System.err.println("Assignments: " + decision_values);
+				}
 				xadd_upper_bound = getTermNode(new DoubleExpr(1e6));
 			} else {
-				System.out.println("Upper bounds: " + upper_bound);
+				if (DEBUG_XADD_DEF_INTEGRAL) 
+					System.out.println("Upper bounds: " + upper_bound);
 				for (ArithExpr e : upper_bound) {
 					if (xadd_upper_bound == -1) {
 						xadd_upper_bound = getTermNode(e);
@@ -1539,19 +1551,22 @@ public class XADD {
 			}
 
 			// Display lower and upper bounds
-			System.out.println("Lower bound:\n" + getString(xadd_lower_bound));
-			System.out.println("Upper bound:\n" + getString(xadd_upper_bound));
-
+			if (DEBUG_XADD_DEF_INTEGRAL) {
+				System.out.println("Lower bound:\n" + getString(xadd_lower_bound));
+				System.out.println("Upper bound:\n" + getString(xadd_upper_bound));
+			}
+				
 			// Compute the integral of this leaf w.r.t. the integration variable
 			ArithExpr leaf_integral = integrateLeaf(leaf_val);
-			System.out.println("Integral: " + leaf_integral);
+			if (DEBUG_XADD_DEF_INTEGRAL)
+				System.out.println("Integral: " + leaf_integral);
 
 			// Now compute:
 			// leaf_integral{int_var = xadd_upper_bound} - leaf_integral{int_var = xadd_lower_bound}
 			int int_eval_lower = substituteXADDforVarInArithExpr(leaf_integral, _integrationVar, xadd_lower_bound);
 			int int_eval_upper = substituteXADDforVarInArithExpr(leaf_integral, _integrationVar, xadd_upper_bound);
 			int int_eval = apply(int_eval_upper, int_eval_lower, MINUS);
-			System.out.println("Result: " + getString(int_eval));
+			//System.out.println("Result: " + getString(int_eval));
 
 			// Finally, multiply in boolean decisions and irrelevant comparison expressions
 			// to the XADD and add it to the running sum
@@ -1566,7 +1581,7 @@ public class XADD {
 
 			// All return information is stored in _runningSum so no need to return
 			// any information here... just keep diagram as is
-			System.out.println("Running sum: " + getString(_runningSum));
+			//System.out.println("Running sum: " + getString(_runningSum));
 			return getTermNode(leaf_val);
 		}
 
