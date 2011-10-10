@@ -3017,9 +3017,51 @@ public class XADD {
 				
 			} else if (t._sFunName.equals("T") && t._nArity == 4) {
 				
-				System.out.println("Currently cannot handle: " + t.toFOLString());
-				System.exit(1);
-				String s = "";
+				ArithExpr expr  = ArithExpr.Convert2ArithExpr(t.getBinding(0));
+				ArithExpr mu    = ArithExpr.Convert2ArithExpr(t.getBinding(1));
+				ArithExpr widthl = ArithExpr.Convert2ArithExpr(t.getBinding(2)); // width left
+				ArithExpr widthr = ArithExpr.Convert2ArithExpr(t.getBinding(3)); // width right
+				
+				if (!(widthl instanceof DoubleExpr)) {
+					System.out.println("Currently cannot handle non-constant variance: " + widthl.toString());
+					System.exit(1);
+				}
+				double dwidthl = ((DoubleExpr)widthl)._dConstVal;
+				
+				if (!(widthr instanceof DoubleExpr)) {
+					System.out.println("Currently cannot handle non-constant width: " + widthr.toString());
+					System.exit(1);
+				}
+				double dwidthr = ((DoubleExpr)widthr)._dConstVal;
+				
+				if (dwidthl < 0 || dwidthr < 0) {
+					System.out.println("Negative widths (" + dwidthl + "," + dwidthr + ") not allowed.");
+					System.exit(1);				
+				}
+				
+				double H = 2d / (dwidthr + dwidthl);
+				String s = null;
+				
+				// Handle cases where left- or right-hand sides are empty
+				if (dwidthl == 0d) {
+					s = "([" + expr + " >= " + mu + "] "
+				          + "([" + expr + " <= " + mu + " + " + dwidthr + "] " 
+				            + "( [" + (-H/dwidthr) + " * " + "(" + expr + " - " + mu + " - " + widthr + ")] )"
+				            + "( [0.0] ) ) ( [0.0] ) )";		
+				} else if (dwidthr == 0d) {
+					s = "([" + expr + " >= " + mu + " - " + dwidthl + "] "
+				          + "([" + expr + " <= " + mu + "] "
+				            + "( [" + (H/dwidthl) + " * " + "(" + expr + " - " + mu + " + " + widthl + ")] )"
+				            + "( [0.0] ) ) ( [0.0] ) )";					
+				} else {
+					s = "([" + expr + " >= " + mu + " - " + dwidthl + "] "
+					       + "([" + expr + " <= " + mu + " + " + dwidthr + "] " 
+					         + "([" + expr + " <= " + mu + "] "
+					           + "( [" + (H/dwidthl) + " * " + "(" + expr + " - " + mu + " + " + widthl + ")] )"
+					           + "( [" + (-H/dwidthr) + " * " + "(" + expr + " - " + mu + " - " + widthr + ")] ))"
+					         + "( [0.0] ) ) ( [0.0] ) )";
+				}
+
 				ArrayList l = HierarchicalParser.ParseString(s);
 				int dd = context.buildCanonicalXADD((ArrayList) l.get(0));
 				return dd;

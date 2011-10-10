@@ -45,24 +45,34 @@ public class TestXADDDist {
 		int xadd1 = TestXADD.TestBuild(xadd_context, "./src/xadd/normal_mix_simple.xadd");
 		xadd_context.getGraph(xadd1).launchViewer();
 		plotXADD(xadd_context, xadd1, -10d, 0.25d, 10d, bvars, dvars, "y", "Normal Mix Simple");
-		System.out.println("N Norm: " + testNormalize(xadd_context, xadd1, bvars, dvars, "y") + "\n\n\n\n\n");
+		System.out.println("NS Norm: " + testNormalize(xadd_context, xadd1, bvars, dvars, "y") + "\n\n\n");
 
 		int xadd1u = TestXADD.TestBuild(xadd_context, "./src/xadd/uniform_mix_simple.xadd");
 		xadd_context.getGraph(xadd1u).launchViewer();
 		plotXADD(xadd_context, xadd1u, -10d, 0.25d, 10d, bvars, dvars, "y", "Uniform Mix Simple");
-		System.out.println("U Norm: " + testNormalize(xadd_context, xadd1u, bvars, dvars, "y") + "\n\n\n\n\n");
+		System.out.println("US Norm: " + testNormalize(xadd_context, xadd1u, bvars, dvars, "y") + "\n\n\n");
+
+		int xadd1t = TestXADD.TestBuild(xadd_context, "./src/xadd/triangle_mix_simple.xadd");
+		xadd_context.getGraph(xadd1t).launchViewer();
+		plotXADD(xadd_context, xadd1t, -10d, 0.25d, 10d, bvars, dvars, "y", "Triangular Mix Simple");
+		System.out.println("TS Norm: " + testNormalize(xadd_context, xadd1t, bvars, dvars, "y") + "\n\n\n");
 		
 		int xadd2 = TestXADD.TestBuild(xadd_context, "./src/xadd/normal_mix.xadd");
 		xadd_context.getGraph(xadd2).launchViewer();
 		dvars.put("k", 9d);
 		dvars.put("x1", 1d);
 		plotXADD(xadd_context, xadd2, -20d, 0.25d, 20d, bvars, dvars, "y", "Normal Mix");
-		System.out.println("Norm: " + testNormalize(xadd_context, xadd2, bvars, dvars, "y") + "\n\n\n\n\n");
+		System.out.println("N Norm: " + testNormalize(xadd_context, xadd2, bvars, dvars, "y") + "\n\n\n");
 
 		int xadd2u = TestXADD.TestBuild(xadd_context, "./src/xadd/uniform_mix.xadd");
 		xadd_context.getGraph(xadd2u).launchViewer();
-		plotXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, bvars, dvars, "y", "Normal Mix");
-		System.out.println("Norm: " + testNormalize(xadd_context, xadd2u, bvars, dvars, "y") + "\n\n\n\n\n");
+		plotXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, bvars, dvars, "y", "Uniform Mix");
+		System.out.println("U Norm: " + testNormalize(xadd_context, xadd2u, bvars, dvars, "y") + "\n\n\n");
+
+		int xadd2t = TestXADD.TestBuild(xadd_context, "./src/xadd/triangle_mix.xadd");
+		xadd_context.getGraph(xadd2t).launchViewer();
+		plotXADD(xadd_context, xadd2t, -20d, 0.25d, 20d, bvars, dvars, "y", "Triangular Mix");
+		System.out.println("T Norm: " + testNormalize(xadd_context, xadd2t, bvars, dvars, "y") + "\n\n\n");
 }
 
 	public static double testNormalize(XADD context, int xadd, 
