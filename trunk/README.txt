@@ -15,6 +15,10 @@ License: MPL 1.1 (with exceptions for 3rd party software & data)
 		  
 		   http://lpsolve.sourceforge.net/5.5/LGPL.htm
 
+		 Also includes a 2D Java plotting package in PlotPackage.jar available here:
+		 
+		   http://homepage.mac.com/jhuwaldt/java/Packages/Plot/PlotPackage.html
+		   
 
 Basic Installation and Invocation
 =================================
