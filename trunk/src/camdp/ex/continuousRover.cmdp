@@ -1,0 +1,87 @@
+cvariables (time energy position)
+min-values (0 0 0)
+max-values (57600 20 100)
+bvariables (taken)
+ivariables()
+avariables(ap at)
+
+action move (0<=ap<=30)
+
+position' ([energy> 1.62]
+   		  	([position+ap])
+   		  	([position]))
+
+time' ([energy>1.62]
+   		([time + 32.39])
+   		([time])) 
+
+energy' ([energy>1.62]
+ 			([energy - 1.62])
+   			([energy]))
+
+reward ([position<=95]
+			([position>=89]
+				([100])
+           		([ap>=0]
+           			([20-ap])
+           			([20+ap])))
+      	([a1>=0]
+      		([-ap])
+      		([ap]))
+      )
+endaction
+
+action takepicture (0<=at<=100)
+position' (position)
+
+taken([energy>3]
+   ([time > 36000]
+     ([time < 50400]
+        ([1.0])
+        (taken
+            ([1.0])
+            ([0.0])
+        )
+     )
+     (takenp1
+        ([1.0])
+        ([0.0])
+     )
+   )
+)
+
+time' ([energy>3]
+   ([time > 36000]
+     ([time < 50400]
+       (taken
+           ([time]) 
+           ([time + 600]))
+       ([time])) 
+     ([time])) 
+   ([time])) 
+)
+energy' ([energy>3]
+   ([time > 36000]
+     ([time < 50400]
+       (taken
+             ([energy])
+             ([energy - 3]))
+       ([energy]))
+     ([energy]))
+   ([energy]))
+)
+reward ([energy>3]
+   ([time > 36000]
+     ([time < 50400]
+       (taken
+           ([0.0])
+           ([100.0]))
+       ([0.0]))
+     ([0.0]))
+   ([0.0]))
+ ([0.0])
+)
+endaction
+
+discount 1.0000000
+iterations 10
