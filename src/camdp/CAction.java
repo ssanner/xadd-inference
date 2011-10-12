@@ -15,16 +15,11 @@
 package camdp;
 
 // Packages to import
-import java.io.*;
+
 import java.util.*;
 
 import xadd.XADD;
-import xadd.XADD.ArithExpr;
-import xadd.XADD.BoolDec;
-import xadd.XADD.CompExpr;
-import xadd.XADD.Decision;
-import xadd.XADD.ExprDec;
-import xadd.XADD.XADDINode;
+
 
 /**
  * Class for action representation/construction.

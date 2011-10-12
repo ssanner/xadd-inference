@@ -143,11 +143,11 @@ public class ComputeVfunction {
 		//LB= max_{over-a}(explicit_a bounds or default (-1000000),branches where a> exists)
 		//UB = min_{over-a}(explicit_a bounds or default(100000), branches where a< exists)
 		int oldq=0;
-		q= computeMax(q, a, a._actionParam.get(0));
+		q= computeMax(q, a._actionParam.get(0),a._contBounds.get(0),a._contBounds.get(1));
 		for (int i=1;i<a._actionParam.size();i++)
 		{
 			oldq = q;
-			q= computeMax(oldq, a, a._actionParam.get(i));
+			q= computeMax(oldq, a._actionParam.get(i),a._contBounds.get(i*2),a._contBounds.get(i*2+1));
 			//q = xadd.apply(q, oldq, XADD.MAX);
 		}
 		//*************************
@@ -171,27 +171,27 @@ public class ComputeVfunction {
 	public void setHashReg(HashMap<IntTriple, Integer> hashReg) {
 		this.hashReg = hashReg;
 	}
-	public int computeMax(int ixadd,CAction action, String _var) {
-		XADDLeafMax max = xadd.new XADDLeafMax(action,_var);
+	public int computeMax(int ixadd,String _action,double lowerbound,double upperbound) {
+		XADDLeafMax max = xadd.new XADDLeafMax(_action, lowerbound,upperbound);
 		Graph g = xadd.getGraph(ixadd);
-		g.addNode("_temp_");
-		g.addNodeLabel("_temp_", "Q (before reduceProcessXADDLeaf");
-		g.addNodeShape("_temp_", "square");
-		g.addNodeStyle("_temp_", "filled");
-		g.addNodeColor("_temp_", "lightblue");
-		g.launchViewer(1300, 770);
+//		g.addNode("_temp_");
+//		g.addNodeLabel("_temp_", "Q (before reduceProcessXADDLeaf");
+//		g.addNodeShape("_temp_", "square");
+//		g.addNodeStyle("_temp_", "filled");
+//		g.addNodeColor("_temp_", "lightblue");
+//		g.launchViewer(1300, 770);
 		ixadd  = xadd.reduceProcessXADDLeaf(ixadd, max, false);
-		g = xadd.getGraph(max._runningMax);
-		g.addNode("_temp_");
-		g.addNodeLabel("_temp_", "Q (before reduceLP)");
-		g.addNodeShape("_temp_", "square");
-		g.addNodeStyle("_temp_", "filled");
-		g.addNodeColor("_temp_", "lightblue");
-		g.launchViewer(1300, 770);
+//		g = xadd.getGraph(max._runningMax);
+//		g.addNode("_temp_");
+//		g.addNodeLabel("_temp_", "Q (after ReduceProcessXADD before calling reduceLP)");
+//		g.addNodeShape("_temp_", "square");
+//		g.addNodeStyle("_temp_", "filled");
+//		g.addNodeColor("_temp_", "lightblue");
+//		g.launchViewer(1300, 770);
 		max._runningMax = xadd.reduceLP(max._runningMax,camdp.contVars);
 		 g = xadd.getGraph(max._runningMax);
 		g.addNode("_temp_");
-		g.addNodeLabel("_temp_", "Q after reduceLP");
+		g.addNodeLabel("_temp_", "Q after reduceLP, runningMax");
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "lightblue");
