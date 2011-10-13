@@ -73,7 +73,12 @@ public class TestXADDDist {
 		xadd_context.getGraph(xadd2t).launchViewer();
 		plotXADD(xadd_context, xadd2t, -20d, 0.25d, 20d, bvars, dvars, "y", "Triangular Mix");
 		System.out.println("T Norm: " + testNormalize(xadd_context, xadd2t, bvars, dvars, "y") + "\n\n\n");
-}
+
+		int xadd_all = TestXADD.TestBuild(xadd_context, "./src/xadd/all_mix.xadd");
+		xadd_context.getGraph(xadd_all).launchViewer();
+		plotXADD(xadd_context, xadd_all, -20d, 0.25d, 20d, bvars, dvars, "y", "All Mix");
+		System.out.println("T Norm: " + testNormalize(xadd_context, xadd_all, bvars, dvars, "y") + "\n\n\n");
+	}
 
 	public static double testNormalize(XADD context, int xadd, 
 			HashMap<String, Boolean> static_bvars, 

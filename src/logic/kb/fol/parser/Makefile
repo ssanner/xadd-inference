@@ -9,7 +9,7 @@
 # environment settings:
 JAVAC   = javac -classpath ../../../..
 JAVADOC = javadoc
-JAVA    = java -classpath ../../../.. 
+JAVA    = java -classpath ../../../..
 
 # project specifics:
 CLASSES      = \

@@ -3139,7 +3139,7 @@ public class XADD {
 				double DW2 = dwidth * dwidth;
 				String s = "([" + expr + " >= " + mu + " - " + dwidth + "] "
 				           + "([" + expr + " <= " + mu + " + " + dwidth + "] " 
-				             + "( [" + Z + " * " + "(-((" + expr + " - " + mu + ") * (" + expr + " - " + mu + ")) + " + DW2 + ")] )"
+				             + "( [" + _df.format(Z) + " * " + "(-((" + expr + " - " + mu + ") * (" + expr + " - " + mu + ")) + " + DW2 + ")] )"
 				               + "( [0.0] ) ) ( [0.0] ) )";
 				//String s = "([7.0])";
 				
@@ -3150,21 +3150,34 @@ public class XADD {
 				int dd = context.buildCanonicalXADD((ArrayList) l.get(0));
 				return dd;
 				
-			} else if (t._sFunName.equals("U") && t._nArity == 3) {
+			} else if (t._sFunName.equals("U") && t._nArity == 4) {
 
 				ArithExpr expr  = ArithExpr.Convert2ArithExpr(t.getBinding(0));
 				ArithExpr mu    = ArithExpr.Convert2ArithExpr(t.getBinding(1));
-				ArithExpr width = ArithExpr.Convert2ArithExpr(t.getBinding(2)); // truncated outside of +/- width
-				if (!(width instanceof DoubleExpr)) {
-					System.out.println("Currently cannot handle non-constant width: " + width.toString());
+				ArithExpr widthl = ArithExpr.Convert2ArithExpr(t.getBinding(2)); // width left
+				ArithExpr widthr = ArithExpr.Convert2ArithExpr(t.getBinding(3)); // width right
+				
+				if (!(widthl instanceof DoubleExpr)) {
+					System.out.println("Currently cannot handle non-constant variance: " + widthl.toString());
 					System.exit(1);
 				}
-				double dwidth = ((DoubleExpr)width)._dConstVal;
+				double dwidthl = ((DoubleExpr)widthl)._dConstVal;
+				
+				if (!(widthr instanceof DoubleExpr)) {
+					System.out.println("Currently cannot handle non-constant width: " + widthr.toString());
+					System.exit(1);
+				}
+				double dwidthr = ((DoubleExpr)widthr)._dConstVal;
+				
+				if (dwidthl < 0 || dwidthr < 0) {
+					System.out.println("Negative widths (" + dwidthl + "," + dwidthr + ") not allowed.");
+					System.exit(1);				
+				}
 
-				double Z = 1d / (2d * dwidth);
-				String s = "([" + expr + " >= " + mu + " - " + dwidth + "] "
-		           + "([" + expr + " <= " + mu + " + " + dwidth + "] " 
-		             + "( [" + Z + "] )"
+				double Z = 1d / (dwidthl + dwidthr);
+				String s = "([" + expr + " >= " + mu + " - " + dwidthl + "] "
+		           + "([" + expr + " <= " + mu + " + " + dwidthr + "] " 
+		             + "( [" + _df.format(Z) + "] )"
 		               + "( [0.0] ) ) ( [0.0] ) )";
 				ArrayList l = HierarchicalParser.ParseString(s);
 				int dd = context.buildCanonicalXADD((ArrayList) l.get(0));
@@ -3172,9 +3185,51 @@ public class XADD {
 				
 			} else if (t._sFunName.equals("T") && t._nArity == 4) {
 				
-				System.out.println("Currently cannot handle: " + t.toFOLString());
-				System.exit(1);
-				String s = "";
+				ArithExpr expr  = ArithExpr.Convert2ArithExpr(t.getBinding(0));
+				ArithExpr mu    = ArithExpr.Convert2ArithExpr(t.getBinding(1));
+				ArithExpr widthl = ArithExpr.Convert2ArithExpr(t.getBinding(2)); // width left
+				ArithExpr widthr = ArithExpr.Convert2ArithExpr(t.getBinding(3)); // width right
+				
+				if (!(widthl instanceof DoubleExpr)) {
+					System.out.println("Currently cannot handle non-constant variance: " + widthl.toString());
+					System.exit(1);
+				}
+				double dwidthl = ((DoubleExpr)widthl)._dConstVal;
+				
+				if (!(widthr instanceof DoubleExpr)) {
+					System.out.println("Currently cannot handle non-constant width: " + widthr.toString());
+					System.exit(1);
+				}
+				double dwidthr = ((DoubleExpr)widthr)._dConstVal;
+				
+				if (dwidthl < 0 || dwidthr < 0) {
+					System.out.println("Negative widths (" + dwidthl + "," + dwidthr + ") not allowed.");
+					System.exit(1);				
+				}
+				
+				double H = 2d / (dwidthr + dwidthl);
+				String s = null;
+				
+				// Handle cases where left- or right-hand sides are empty
+				if (dwidthl == 0d) {
+					s = "([" + expr + " >= " + mu + "] "
+				          + "([" + expr + " <= " + mu + " + " + dwidthr + "] " 
+				            + "( [" + _df.format(-H/dwidthr) + " * " + "(" + expr + " - " + mu + " - " + widthr + ")] )"
+				            + "( [0.0] ) ) ( [0.0] ) )";		
+				} else if (dwidthr == 0d) {
+					s = "([" + expr + " >= " + mu + " - " + dwidthl + "] "
+				          + "([" + expr + " <= " + mu + "] "
+				            + "( [" + _df.format(H/dwidthl) + " * " + "(" + expr + " - " + mu + " + " + widthl + ")] )"
+				            + "( [0.0] ) ) ( [0.0] ) )";					
+				} else {
+					s = "([" + expr + " >= " + mu + " - " + dwidthl + "] "
+					       + "([" + expr + " <= " + mu + " + " + dwidthr + "] " 
+					         + "([" + expr + " <= " + mu + "] "
+					           + "( [" + _df.format(H/dwidthl) + " * " + "(" + expr + " - " + mu + " + " + widthl + ")] )"
+					           + "( [" + _df.format(-H/dwidthr) + " * " + "(" + expr + " - " + mu + " - " + widthr + ")] ))"
+					         + "( [0.0] ) ) ( [0.0] ) )";
+				}
+
 				ArrayList l = HierarchicalParser.ParseString(s);
 				int dd = context.buildCanonicalXADD((ArrayList) l.get(0));
 				return dd;

@@ -51,8 +51,8 @@ WHITE_SPACE_CHAR=[\r\n\ \t\b\012]
 "/" { return new Symbol(sym.DIV); }
 "-" { return new Symbol(sym.MINUS); }
 
-{ALPHA}("#"|{ALPHA}|{DIGIT}|_|-)*("@")*"(" { return new Symbol(sym.PFNAME, yytext().substring(0,yytext().length()-1)); }
-{ALPHA}("#"|{ALPHA}|{DIGIT}|_|-)*("@")* { return new Symbol(sym.IDENT, yytext()); }
+{ALPHA}("#"|{ALPHA}|{DIGIT}|_|-)*("@"|"'")*"(" { return new Symbol(sym.PFNAME, yytext().substring(0,yytext().length()-1)); }
+{ALPHA}("#"|{ALPHA}|{DIGIT}|_|-)*("@"|"'")* { return new Symbol(sym.IDENT, yytext()); }
 {DIGIT}+"."{DIGIT}+ { return new Symbol(sym.DOUBLE, new Double(yytext())); }
 {DIGIT}+ { return new Symbol(sym.INTEGER, new Integer(yytext())); }
 {WHITE_SPACE_CHAR}+ { /* ignore white space. */ }
