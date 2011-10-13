@@ -196,7 +196,7 @@ public class TokenStream {
 			// do... namely, if char is a delimiter then return the
 			// current token if it exists.
 			if (!_bInMath &&
-					(!Character.isLetterOrDigit(cbuf[0]) && cbuf[0] != '-'
+					(!Character.isLetterOrDigit(cbuf[0]) && cbuf[0] != '-' && cbuf[0] != '_'
 					 && cbuf[0] != '\'')) {
 
 				// A delimiter so return token if non-empty,

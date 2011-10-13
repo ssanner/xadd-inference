@@ -1,0 +1,15 @@
+indices (
+  (i = 0 -- 3)
+)
+
+cevidence (
+  (x_1 = 4)
+  (x_2 = 5)
+  (x_3 = 8)
+)
+
+bevidence (
+  (a = true)
+)
+
+query (d)
