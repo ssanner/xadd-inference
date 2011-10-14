@@ -1,5 +1,7 @@
 package sve;
 
+import graph.Graph;
+
 import java.util.*;
 
 import cmdp.HierarchicalParser;
@@ -24,8 +26,10 @@ public class GraphicalModel {
 	public class Factor {
 		public int _xadd;
 		public HashSet<String> _vars;
+		public XADD _localContext; // Outside classes cannot see _context, so store locally
 		public Factor(int xadd) {
 			_xadd = xadd;
+			_localContext = _context;
 			_vars = _context.collectVars(_xadd);
 			_hsVariables.addAll(_vars);
 		}
@@ -83,30 +87,44 @@ public class GraphicalModel {
 						if (!prime)
 							exit("Could not find CPF for " + var + " or " + var + "'");
 					}
-					addXADDVar(var, list == _alBVarsTemplate);
+					addXADDVar(prime ? var + "'" : var, list == _alBVarsTemplate);
 					int cpt_template = getXADD(prime ? var + "'" : var, list == _alBVarsTemplate);
-					System.out.println("Template: " + var + "\n" + _context.getString(cpt_template));
+					//System.out.println("Template: " + var + "\n" + _context.getString(cpt_template));
 					
 					// Process each index var
-					for (int i = 0; i < index_values.size() - 1; i++) { 
+					for (int i = 0; i < index_values.size(); i++) { 
 						Integer index_value = index_values.get(i);
 						
-						String var_inst = var_part + "_" + index_value;
-						String var_inst_prime = var_part + "_" + (index_value + 1);
-
-						addXADDVar(var_inst, list == _alBVarsTemplate);
-						if (prime)
-							addXADDVar(var_inst_prime, list == _alBVarsTemplate);
+						addXADDVar(var_part + "_" + index_value, list == _alBVarsTemplate);
 						
-						if (i == 0) {
-							// Get first index CPF directly from cpt lookup table (must be defined)
-							int cpt_id = getXADD(var_inst, list == _alBVarsTemplate);
+						if (prime && i == 0) {
+							// If using prime, get first index CPF directly from cpt lookup 
+							// table (must be defined)
+							int cpt_id = getXADD(var_part + "_" + index_value, list == _alBVarsTemplate);
 							_alFactors.add(new Factor(cpt_id));
 						} else { // i > 0
-							// Need to substitute var_part / var_inst in XADD template
+							
+							if (prime)
+								addXADDVar(var_part + "_" + (index_value - 1), list == _alBVarsTemplate);
+
+							// Need to process all other variables in XADD and substitute 
+							// into XADD template as needed
 							HashMap<String, ArithExpr> subst = new HashMap<String, ArithExpr>();
-							subst.put(var, new VarExpr(var_inst));
-							subst.put(var + "'", new VarExpr(var_inst_prime));
+							HashSet<String> all_vars = _context.collectVars(cpt_template);
+							for (String xadd_var : all_vars) {
+								
+								if (xadd_var.endsWith("'"))
+									xadd_var = xadd_var.substring(0, xadd_var.length() - 1);
+								String split2[] = xadd_var.split("_");
+								if (split2.length == 2) {
+									if (prime) {
+										subst.put(xadd_var, new VarExpr(split2[0] + "_" + (index_value - 1)));
+										subst.put(xadd_var + "'", new VarExpr(split2[0] + "_" + index_value));
+									} else 
+										subst.put(xadd_var, new VarExpr(split2[0] + "_" + index_value));
+								}
+							}
+														
 							int cpt_id = _context.substitute(cpt_template, subst);
 							_alFactors.add(new Factor(cpt_id));
 						}
@@ -117,11 +135,6 @@ public class GraphicalModel {
 				}
 			}
 		}
-
-		// Build map from each variable to CPTs
-		
-		
-		// Use a topological sort to find a good variable ordering
 	}
 	
 	protected int getXADD(String var, boolean is_bool) {
@@ -132,6 +145,8 @@ public class GraphicalModel {
 		if (is_bool) {
 			// Fill in false side of diagram if boolean
 			int var_index = _context.getVarIndex(_context.new BoolDec(var/* + "'"*/), false);
+			if (var_index == 0)
+				exit("Could not get XADD variable index for " + var);
 			int high_branch = cpt_id;
 			int low_branch = _context.apply(
 					_context.getTermNode(XADD.ONE), high_branch, XADD.MINUS);
@@ -160,11 +175,6 @@ public class GraphicalModel {
 			_context._hmMinVal.put(var, min_value);
 			_context._hmMaxVal.put(var, max_value);
 		}
-	}
-
-	public int doQuery(HashMap<String,Boolean> bvars, HashMap<String,Double> dvars, ArrayList<String> query) {
-		
-		return -1;
 	}
 
 	public void parseGMTemplate(ArrayList l) {
@@ -276,12 +286,14 @@ public class GraphicalModel {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		GraphicalModel gm = new GraphicalModel("./src/sve/test.gm");
-		System.out.println(gm.toString());
-		Query q = new Query("./src/sve/test.query");
+		//GraphicalModel gm = new GraphicalModel("./src/sve/test2.gm");
+		GraphicalModel gm = new GraphicalModel("./src/sve/tracking.gm");
+		//Query q = new Query("./src/sve/test.query");
+		Query q = new Query("./src/sve/tracking.query.1");
+		//System.out.println(gm);
 		System.out.println(q);
 		gm.instantiateGMTemplate(q._hmVar2Expansion);
-		System.out.println(gm.toString());
+		System.out.println(gm);
 	}
 
 }
