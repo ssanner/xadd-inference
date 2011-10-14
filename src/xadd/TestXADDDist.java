@@ -44,43 +44,48 @@ public class TestXADDDist {
 		//int xadd1 = XADD.TestBuild(xadd_context, "./src/xadd/test2.xadd");
 		int xadd1 = TestXADD.TestBuild(xadd_context, "./src/xadd/normal_mix_simple.xadd");
 		xadd_context.getGraph(xadd1).launchViewer();
-		plotXADD(xadd_context, xadd1, -10d, 0.25d, 10d, bvars, dvars, "y", "Normal Mix Simple");
-		System.out.println("NS Norm: " + testNormalize(xadd_context, xadd1, bvars, dvars, "y") + "\n\n\n");
+		PlotXADD(xadd_context, xadd1, -10d, 0.25d, 10d, bvars, dvars, "y", "Normal Mix Simple");
+		System.out.println("NS Norm: " + TestNormalize(xadd_context, xadd1, bvars, dvars, "y") + "\n\n\n");
 
 		int xadd1u = TestXADD.TestBuild(xadd_context, "./src/xadd/uniform_mix_simple.xadd");
 		xadd_context.getGraph(xadd1u).launchViewer();
-		plotXADD(xadd_context, xadd1u, -10d, 0.25d, 10d, bvars, dvars, "y", "Uniform Mix Simple");
-		System.out.println("US Norm: " + testNormalize(xadd_context, xadd1u, bvars, dvars, "y") + "\n\n\n");
+		PlotXADD(xadd_context, xadd1u, -10d, 0.25d, 10d, bvars, dvars, "y", "Uniform Mix Simple");
+		System.out.println("US Norm: " + TestNormalize(xadd_context, xadd1u, bvars, dvars, "y") + "\n\n\n");
 
 		int xadd1t = TestXADD.TestBuild(xadd_context, "./src/xadd/triangle_mix_simple.xadd");
 		xadd_context.getGraph(xadd1t).launchViewer();
-		plotXADD(xadd_context, xadd1t, -10d, 0.25d, 10d, bvars, dvars, "y", "Triangular Mix Simple");
-		System.out.println("TS Norm: " + testNormalize(xadd_context, xadd1t, bvars, dvars, "y") + "\n\n\n");
+		PlotXADD(xadd_context, xadd1t, -10d, 0.25d, 10d, bvars, dvars, "y", "Triangular Mix Simple");
+		System.out.println("TS Norm: " + TestNormalize(xadd_context, xadd1t, bvars, dvars, "y") + "\n\n\n");
 		
 		int xadd2 = TestXADD.TestBuild(xadd_context, "./src/xadd/normal_mix.xadd");
 		xadd_context.getGraph(xadd2).launchViewer();
 		dvars.put("k", 9d);
 		dvars.put("x1", 1d);
-		plotXADD(xadd_context, xadd2, -20d, 0.25d, 20d, bvars, dvars, "y", "Normal Mix");
-		System.out.println("N Norm: " + testNormalize(xadd_context, xadd2, bvars, dvars, "y") + "\n\n\n");
+		PlotXADD(xadd_context, xadd2, -20d, 0.25d, 20d, bvars, dvars, "y", "Normal Mix");
+		System.out.println("N Norm: " + TestNormalize(xadd_context, xadd2, bvars, dvars, "y") + "\n\n\n");
 
 		int xadd2u = TestXADD.TestBuild(xadd_context, "./src/xadd/uniform_mix.xadd");
 		xadd_context.getGraph(xadd2u).launchViewer();
-		plotXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, bvars, dvars, "y", "Uniform Mix");
-		System.out.println("U Norm: " + testNormalize(xadd_context, xadd2u, bvars, dvars, "y") + "\n\n\n");
+		PlotXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, bvars, dvars, "y", "Uniform Mix");
+		System.out.println("U Norm: " + TestNormalize(xadd_context, xadd2u, bvars, dvars, "y") + "\n\n\n");
 
 		int xadd2t = TestXADD.TestBuild(xadd_context, "./src/xadd/triangle_mix.xadd");
 		xadd_context.getGraph(xadd2t).launchViewer();
-		plotXADD(xadd_context, xadd2t, -20d, 0.25d, 20d, bvars, dvars, "y", "Triangular Mix");
-		System.out.println("T Norm: " + testNormalize(xadd_context, xadd2t, bvars, dvars, "y") + "\n\n\n");
+		PlotXADD(xadd_context, xadd2t, -20d, 0.25d, 20d, bvars, dvars, "y", "Triangular Mix");
+		System.out.println("T Norm: " + TestNormalize(xadd_context, xadd2t, bvars, dvars, "y") + "\n\n\n");
 
 		int xadd_all = TestXADD.TestBuild(xadd_context, "./src/xadd/all_mix.xadd");
 		xadd_context.getGraph(xadd_all).launchViewer();
-		plotXADD(xadd_context, xadd_all, -20d, 0.25d, 20d, bvars, dvars, "y", "All Mix");
-		System.out.println("T Norm: " + testNormalize(xadd_context, xadd_all, bvars, dvars, "y") + "\n\n\n");
+		PlotXADD(xadd_context, xadd_all, -20d, 0.25d, 20d, bvars, dvars, "y", "All Mix");
+		System.out.println("T Norm: " + TestNormalize(xadd_context, xadd_all, bvars, dvars, "y") + "\n\n\n");
 	}
 
-	public static double testNormalize(XADD context, int xadd, 
+	public static double TestNormalize(XADD context, int xadd, String int_var) {
+		return TestNormalize(context, xadd, 
+					  new HashMap<String, Boolean>(), new HashMap<String, Double>(), int_var);
+	}
+	
+	public static double TestNormalize(XADD context, int xadd, 
 			HashMap<String, Boolean> static_bvars, 
 			HashMap<String, Double> static_dvars,
 			String int_var) {
@@ -89,8 +94,16 @@ public class TestXADDDist {
 		System.out.println("Evaluating @ " + static_bvars + " " + static_dvars);
 		return context.evaluate(xadd_int, static_bvars, static_dvars);
 	}
-	
-	public static void plotXADD(XADD context, int xadd, 
+
+	public static void PlotXADD(XADD context, int xadd, 
+			double low, double inc, double high,
+			String xVar, String title) {
+		PlotXADD(context, xadd, low, inc, high, 
+				new HashMap<String, Boolean>(), new HashMap<String, Double>(),
+				xVar, title);
+	}
+
+	public static void PlotXADD(XADD context, int xadd, 
 			double low, double inc, double high, 
 			HashMap<String, Boolean> static_bvars, 
 			HashMap<String, Double> static_dvars,
