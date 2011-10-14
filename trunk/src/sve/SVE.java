@@ -8,12 +8,16 @@ import java.util.HashMap;
 import sve.GraphicalModel.Factor;
 
 import cmdp.HierarchicalParser;
+import xadd.TestXADDDist;
 import xadd.XADD;
 import xadd.XADD.ArithExpr;
 import xadd.XADD.VarExpr;
 
 public class SVE {
 
+	public final static HashMap<String,Boolean> EMPTY_BOOL = new HashMap<String,Boolean>();
+	public final static HashMap<String,Double>  EMPTY_DOUBLE = new HashMap<String,Double>();
+	
 	public GraphicalModel _gm = null;
 	public ArrayList<String> _alVariableOrder = null;
 	public XADD _context      = null;
@@ -38,7 +42,7 @@ public class SVE {
 			g.setMultiEdges(false); 
 			for (Factor f : _gm._alFactors)
 				g.addAllUniLinks(f._vars, f._vars);
-			g.launchViewer();			
+			//g.launchViewer();			
 			
 			// Use a topological sort to find a good variable ordering
 			_alVariableOrder = (ArrayList<String>)g.computeBestOrder();
@@ -104,10 +108,14 @@ public class SVE {
 		Factor norm_result = normalize(result);
 		System.out.println("Done: result " + norm_result._vars + ":\n" + _context.getString(norm_result._xadd));
 		
+		if (norm_result._vars.size() == 1)
+			Visualize1DFactor(norm_result, "P(" + q._alQueryVars + " | " + 
+					q._hmBVarAssign + ", " + q._hmCVarAssign + ")");
+		
 		return norm_result;
 	}
 
-	public void splitFactors(
+	private void splitFactors(
 		String split_var, ArrayList<Factor> factor_source,
 		ArrayList<Factor> factors_with_var, ArrayList<Factor> factors_without_var) {
 		
@@ -120,14 +128,14 @@ public class SVE {
 				factors_without_var.add(f);
 	}
 	
-	public Factor multiplyFactors(ArrayList<Factor> factors) {
+	private Factor multiplyFactors(ArrayList<Factor> factors) {
 		int mult_xadd = _context.getTermNode(XADD.ONE);
 		for (Factor f : factors)
 			mult_xadd = _context.applyInt(mult_xadd, f._xadd, XADD.PROD);
 		return _gm.new Factor(mult_xadd);
 	}
 	
-	public Factor marginalizeOut(Factor f, String var) {
+	private Factor marginalizeOut(Factor f, String var) {
 		
 		// Take appropriate action based on whether var is boolean or continuous
 		int bool_var_index = _context.getBoolVarIndex(var);
@@ -144,16 +152,38 @@ public class SVE {
 		return _gm.new Factor(xadd_marginal);
 	}
 	
-	public Factor normalize(Factor f) {
+	private Factor normalize(Factor f) {
 		int xadd_norm = f._xadd;
 		for (String var : f._vars)
 			xadd_norm = _context.computeDefiniteIntegral(xadd_norm, var);
-		double norm = _context.evaluate(xadd_norm, 
-			new HashMap<String,Boolean>(), new HashMap<String,Double>());
-		xadd_norm = _context.scalarOp(xadd_norm, norm, XADD.PROD);
+		double norm = _context.evaluate(xadd_norm, EMPTY_BOOL, EMPTY_DOUBLE);
+		xadd_norm = _context.scalarOp(f._xadd, 1d/norm, XADD.PROD);
 		return _gm.new Factor(xadd_norm);
 	}
 	
+	public static double Get1DExpectedValue(Factor f) {
+		if (f._vars.size() > 1)
+			return Double.NaN;
+		
+		String var = f._vars.iterator().next();
+		int xadd_norm = f._xadd;
+		int xadd_var  = f._localContext.getTermNode(new VarExpr(var));
+		int xadd_prod = f._localContext.apply(xadd_norm, xadd_var, XADD.PROD); 
+		int result    = f._localContext.computeDefiniteIntegral(xadd_prod, var);
+		return f._localContext.evaluate(result, EMPTY_BOOL, EMPTY_DOUBLE);
+	}
+
+	public static void Visualize1DFactor(Factor norm_result, String title) {
+		String var = norm_result._vars.iterator().next();
+		double min_val = norm_result._localContext._hmMinVal.get(var);
+		double max_val = norm_result._localContext._hmMaxVal.get(var);
+		TestXADDDist.PlotXADD(norm_result._localContext, norm_result._xadd, 
+				min_val, 0.1d, max_val, var, title);
+		double integral = TestXADDDist.TestNormalize(norm_result._localContext, norm_result._xadd, var);
+		if (Math.abs(integral - 1d) > 0.001d) 
+			System.err.println("WARNING: distribition does not integrate out to 1: " + integral);
+	}
+
 	/**
 	 * @param args
 	 */
@@ -162,11 +192,22 @@ public class SVE {
 		//GraphicalModel gm = new GraphicalModel("./src/sve/test.gm");
 		//Query q = new Query("./src/sve/test.query");
 
-		GraphicalModel gm = new GraphicalModel("./src/sve/tracking.gm");
-		Query q = new Query("./src/sve/tracking.query.1");
-		
+		GraphicalModel gm = new GraphicalModel("./src/sve/tracking.gm");		
 		SVE sve = new SVE(gm);
-		Factor result = sve.infer(q);
+		
+		Factor result1 = sve.infer(new Query("./src/sve/tracking.query.1"));
+		Factor result2 = sve.infer(new Query("./src/sve/tracking.query.2"));
+		Factor result3 = sve.infer(new Query("./src/sve/tracking.query.3"));
+		Factor result4 = sve.infer(new Query("./src/sve/tracking.query.4"));
+		Factor result5 = sve.infer(new Query("./src/sve/tracking.query.5"));
+		Factor result6 = sve.infer(new Query("./src/sve/tracking.query.6"));
+		
+		System.out.println("Expected Value 1: " + Get1DExpectedValue(result1));
+		System.out.println("Expected Value 2: " + Get1DExpectedValue(result2));
+		System.out.println("Expected Value 3: " + Get1DExpectedValue(result3));
+		System.out.println("Expected Value 4: " + Get1DExpectedValue(result4));
+		System.out.println("Expected Value 5: " + Get1DExpectedValue(result5));
+		System.out.println("Expected Value 6: " + Get1DExpectedValue(result6));
 	}
 
 }
