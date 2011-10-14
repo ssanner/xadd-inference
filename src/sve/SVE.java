@@ -29,7 +29,13 @@ public class SVE {
 	}
 
 	public Factor infer(Query q) {
+		return infer(q, null);
+	}
 	
+	public Factor infer(Query q, ArrayList<String> var_ordering) {
+	
+		// TODO: If known to be a Bayes net, can eliminate all descendants of query/evidence
+		
 		// Set up model and variable ordering
 		if (_lastQuery == null || !_lastQuery._hmVar2Expansion.equals(q._hmVar2Expansion)) {
 
@@ -45,7 +51,10 @@ public class SVE {
 			//g.launchViewer();			
 			
 			// Use a topological sort to find a good variable ordering
-			_alVariableOrder = (ArrayList<String>)g.computeBestOrder();
+			if (var_ordering == null)
+				_alVariableOrder = (ArrayList<String>)g.computeBestOrder();
+			else 
+				_alVariableOrder = var_ordering;
 			System.out.println("Using best ordering: " + _alVariableOrder);
 		}
 		_lastQuery = q;
@@ -95,6 +104,7 @@ public class SVE {
 			// Multiply factors that contain variable and marginalize out variable,
 			// adding this new factor and all without the variable to the factors list
 			Factor xadd_with_var = multiplyFactors(factors_with_var);
+			System.out.println("Marginalizing out: " + _context.getString(xadd_with_var._xadd));
 			Factor xadd_marginal = marginalizeOut(xadd_with_var, var);
 			factors.clear();
 			factors.addAll(factors_without_var);
@@ -106,7 +116,8 @@ public class SVE {
 		// need to compute normalizer
 		Factor result = multiplyFactors(factors);
 		Factor norm_result = normalize(result);
-		System.out.println("Done: result " + norm_result._vars + ":\n" + _context.getString(norm_result._xadd));
+		System.out.println("Done: result " + norm_result._vars 
+				/*+ ":\n" + _context.getString(norm_result._xadd)*/);
 		
 		if (norm_result._vars.size() == 1)
 			Visualize1DFactor(norm_result, "P(" + q._alQueryVars + " | " + 
@@ -191,7 +202,14 @@ public class SVE {
 		
 		//GraphicalModel gm = new GraphicalModel("./src/sve/test.gm");
 		//Query q = new Query("./src/sve/test.query");
+		//Factor result = sve.infer(q);
+		
+		//TestTracking();
+		TestRadar();
+	}
 
+	public static void TestTracking() {
+		
 		GraphicalModel gm = new GraphicalModel("./src/sve/tracking.gm");		
 		SVE sve = new SVE(gm);
 		
@@ -209,5 +227,28 @@ public class SVE {
 		System.out.println("Expected Value 5: " + Get1DExpectedValue(result5));
 		System.out.println("Expected Value 6: " + Get1DExpectedValue(result6));
 	}
+	
+	public static void TestRadar() {
 
+		GraphicalModel gm = new GraphicalModel("./src/sve/radar.gm");
+		SVE sve = new SVE(gm);
+		//Query q = new Query("./src/sve/radar.query.1");
+		//gm.instantiateGMTemplate(q._hmVar2Expansion);
+		//System.out.println(gm);
+
+		Query q1 = new Query("./src/sve/radar.query.1");
+		Factor result1 = sve.infer(q1, CreateRadarVariableOrder(q1));
+		//Factor result2 = sve.infer(new Query("./src/sve/radar.query.2"));
+		//Factor result3 = sve.infer(new Query("./src/sve/radar.query.3"));
+	}
+	
+	public static ArrayList<String> CreateRadarVariableOrder(Query q) {
+		ArrayList<String> var_order = new ArrayList<String>();
+		for (Integer i : q._hmVar2Expansion.get("i")) {
+			var_order.add("b_" + i);
+			var_order.add("x_" + i);
+			var_order.add("o_" + i);
+		}
+		return var_order;
+	}
 }

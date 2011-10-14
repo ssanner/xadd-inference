@@ -1,0 +1,13 @@
+cvariables (d x_i)
+min-values (-10 -10)
+max-values (20 20)
+bvariables (a_i)
+
+d ([U(d,0,0,10)])
+
+a_i 
+  ([x_i < 3]
+    ([0.7])
+    ([1.0])) 
+
+x_i ([U(x_i,d,0,10)])
