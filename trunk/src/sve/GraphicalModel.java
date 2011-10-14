@@ -289,7 +289,7 @@ public class GraphicalModel {
 		//GraphicalModel gm = new GraphicalModel("./src/sve/test2.gm");
 		GraphicalModel gm = new GraphicalModel("./src/sve/tracking.gm");
 		//Query q = new Query("./src/sve/test.query");
-		Query q = new Query("./src/sve/tracking.query.1");
+		Query q = new Query("./src/sve/tracking.query.6");
 		//System.out.println(gm);
 		System.out.println(q);
 		gm.instantiateGMTemplate(q._hmVar2Expansion);
