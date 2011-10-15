@@ -1,9 +1,17 @@
+/* Symbolic Variable Elimination
+ * 
+ * @author Scott Sanner (ssanner@gmail.com)
+ * @author Ehsan Abbasnejad
+ */
 package sve;
 
 import graph.Graph;
 
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import sve.GraphicalModel.Factor;
 
@@ -28,13 +36,24 @@ public class SVE {
 		_context = _gm._context;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////
+	//                             Main Inference Routines
+	//////////////////////////////////////////////////////////////////////////////////
+
 	public Factor infer(Query q) {
 		return infer(q, null);
 	}
 	
 	public Factor infer(Query q, ArrayList<String> var_ordering) {
 	
+		System.out.println(q._alQueryVars + " | " + q._hmCVarAssign + ", " + q._hmBVarAssign);
+		
 		// TODO: If known to be a Bayes net, can eliminate all descendants of query/evidence
+
+		// TODO: Handle unassigned evidence (simply don't instantiate) -- note that this 
+		//       will lead to a ratio of case statements (division not generally defined) 
+		
+		// TODO: Handle expectation for general algebraic expression
 		
 		// Set up model and variable ordering
 		if (_lastQuery == null || !_lastQuery._hmVar2Expansion.equals(q._hmVar2Expansion)) {
@@ -119,9 +138,17 @@ public class SVE {
 		System.out.println("Done: result " + norm_result._vars 
 				/*+ ":\n" + _context.getString(norm_result._xadd)*/);
 		
-		if (norm_result._vars.size() == 1)
+		// Data visualization and export for 1D and 2D cases
+		// (see plot_local.m and plot3d.m for 1D and 2D plotting of output files in Matlab)
+		if (norm_result._vars.size() == 1) {
 			Visualize1DFactor(norm_result, "P(" + q._alQueryVars + " | " + 
 					q._hmBVarAssign + ", " + q._hmCVarAssign + ")");
+			ExportData(norm_result, q._sFilename + ".txt");
+		} else if (norm_result._vars.size() == 2) {
+			Visualize2DFactor(norm_result, "P(" + q._alQueryVars + " | " + 
+					q._hmBVarAssign + ", " + q._hmCVarAssign + ")");
+			Export3DData(norm_result, q._sFilename);
+		}
 		
 		return norm_result;
 	}
@@ -184,6 +211,10 @@ public class SVE {
 		return f._localContext.evaluate(result, EMPTY_BOOL, EMPTY_DOUBLE);
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////
+	//                       Visualization and Plotting Tools
+	//////////////////////////////////////////////////////////////////////////////////
+	
 	public static void Visualize1DFactor(Factor norm_result, String title) {
 		String var = norm_result._vars.iterator().next();
 		double min_val = norm_result._localContext._hmMinVal.get(var);
@@ -195,6 +226,118 @@ public class SVE {
 			System.err.println("WARNING: distribition does not integrate out to 1: " + integral);
 	}
 
+	public void Visualize2DFactor(Factor norm_result, String title) {
+		Iterator iter = norm_result._vars.iterator(); 
+		String varX = (String)iter.next();
+		String varY = (String)iter.next();
+		double min_val_x = norm_result._localContext._hmMinVal.get(varX);
+		double max_val_x = norm_result._localContext._hmMaxVal.get(varX);
+		double min_val_y = norm_result._localContext._hmMinVal.get(varY);
+		double max_val_y = norm_result._localContext._hmMaxVal.get(varY);
+		TestXADDDist.Plot3DXADD(norm_result._localContext, norm_result._xadd, 
+				min_val_x, 0.5d, max_val_x,
+				min_val_y, 0.5d, max_val_y, 
+				varX, varY, title);
+	}
+
+	private void ExportData(Factor norm_result, String filename) {
+		PrintStream ps = null;
+		try {
+			ps = new PrintStream(new FileOutputStream(filename));
+		} catch (Exception e) {
+			System.err.println("Could not open " + filename + " for data export.");
+			return;
+		}
+		String var = norm_result._vars.iterator().next();
+		double low = norm_result._localContext._hmMinVal.get(var);
+		double high = norm_result._localContext._hmMaxVal.get(var);
+		
+		HashMap<String,Double> dvars = new HashMap<String,Double>();
+
+		ArrayList<Double> alX = new ArrayList<Double>();
+		for (double x = low; x <= high; x += 0.1d)
+			alX.add(x);
+		
+		double[] xArr = new double[alX.size()];
+		double[] yArr = new double[alX.size()];
+		for (int i = 0; i < alX.size(); i++) {
+			double x = alX.get(i);
+			dvars.put(var, x);
+			double y = norm_result._localContext.evaluate(norm_result._xadd, EMPTY_BOOL, dvars);
+			dvars.remove(var);
+			
+			ps.println(x + "\t" + y);
+		}
+		ps.close();
+	}
+
+	private void Export3DData(Factor norm_result, String filename) {
+		PrintStream ps_x = null;
+		PrintStream ps_y = null;
+		PrintStream ps_z = null;
+		try {
+			ps_x = new PrintStream(new FileOutputStream(filename + ".x.txt"));
+			ps_y = new PrintStream(new FileOutputStream(filename + ".y.txt"));
+			ps_z = new PrintStream(new FileOutputStream(filename + ".z.txt"));
+		} catch (Exception e) {
+			System.err.println("Could not open " + filename + " for data export.");
+			return;
+		}
+
+		HashMap<String, Boolean> static_bvars = new HashMap<String, Boolean>();
+		HashMap<String, Double>  static_dvars = new HashMap<String, Double>();
+		
+		Iterator iter = norm_result._vars.iterator(); 
+		String varX = (String)iter.next();
+		String varY = (String)iter.next();
+		double low_x = norm_result._localContext._hmMinVal.get(varX);
+		double high_x = norm_result._localContext._hmMaxVal.get(varX);
+		double low_y = norm_result._localContext._hmMinVal.get(varY);
+		double high_y = norm_result._localContext._hmMaxVal.get(varY);
+		double inc_x = 0.5d;
+		double inc_y = inc_x;
+		
+		// Create a Simple 2D XY plot window.
+		ArrayList<Double> alX = new ArrayList<Double>();
+		for (double x = low_x; x <= high_x; x += inc_x)
+			alX.add(x);
+		ArrayList<Double> alY = new ArrayList<Double>();
+		for (double y = low_y; y <= high_y; y += inc_y)
+			alY.add(y);
+
+		double[][] xArr = new double[alY.size()][alX.size()];
+		double[][] yArr = new double[alY.size()][alX.size()];
+		double[][] zArr = new double[alY.size()][alX.size()];
+		for (int i = 0; i < alY.size(); i++) {
+			for (int j = 0; j < alX.size(); j++) {
+
+				double x = alX.get(j);
+				double y = alY.get(i);
+
+				static_dvars.put(varX, x);
+				static_dvars.put(varY, y);
+				double z = norm_result._localContext.evaluate(norm_result._xadd, static_bvars, static_dvars);
+				static_dvars.remove(varX);
+				static_dvars.remove(varY);
+
+				xArr[i][j] = x;
+				yArr[i][j] = y;
+				zArr[i][j] = z; //x + y; //z;
+				
+				ps_x.print((j == 0 ? "" : "\t") + x);
+				ps_y.print((j == 0 ? "" : "\t") + y);
+				ps_z.print((j == 0 ? "" : "\t") + z);
+			}
+			ps_x.println();
+			ps_y.println();
+			ps_z.println();
+		}
+		
+		ps_x.close();
+		ps_y.close();
+		ps_z.close();
+	}
+
 	/**
 	 * @param args
 	 */
@@ -204,11 +347,11 @@ public class SVE {
 		//Query q = new Query("./src/sve/test.query");
 		//Factor result = sve.infer(q);
 		
-		//TestTracking();
+		//TestLocalization();
 		TestRadar();
 	}
 
-	public static void TestTracking() {
+	public static void TestLocalization() {
 		
 		GraphicalModel gm = new GraphicalModel("./src/sve/tracking.gm");		
 		SVE sve = new SVE(gm);
@@ -238,8 +381,9 @@ public class SVE {
 
 		Query q1 = new Query("./src/sve/radar.query.1");
 		Factor result1 = sve.infer(q1, CreateRadarVariableOrder(q1));
-		//Factor result2 = sve.infer(new Query("./src/sve/radar.query.2"));
-		//Factor result3 = sve.infer(new Query("./src/sve/radar.query.3"));
+
+		Query q2 = new Query("./src/sve/radar.query.2");
+		Factor result2 = sve.infer(q2, CreateRadarVariableOrder(q2));
 	}
 	
 	public static ArrayList<String> CreateRadarVariableOrder(Query q) {

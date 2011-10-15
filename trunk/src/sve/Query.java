@@ -1,3 +1,8 @@
+/* Query for Symbolic Variable Elimination
+ * 
+ * @author Scott Sanner (ssanner@gmail.com)
+ * @author Ehsan Abbasnejad
+ */
 package sve;
 
 import java.util.ArrayList;
@@ -12,9 +17,11 @@ public class Query {
 	public HashMap<String,Boolean> _hmBVarAssign = null;
 	public HashMap<String,Double>  _hmCVarAssign = null;
 	public ArrayList<String>       _alQueryVars = null;
+	public String                  _sFilename = null;
 	public HashMap<String,ArrayList<Integer>>   _hmVar2Expansion = null;
 	
 	public Query(String filename) {
+		_sFilename = filename;
 		_hmBVarAssign = new HashMap<String,Boolean>();
 		_hmCVarAssign = new HashMap<String,Double>();
 		_alQueryVars  = new ArrayList<String>();

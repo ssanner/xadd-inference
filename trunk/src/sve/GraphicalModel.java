@@ -1,3 +1,8 @@
+/* Graphical Model Structure for Symbolic Variable Elimination
+ * 
+ * @author Scott Sanner (ssanner@gmail.com)
+ * @author Ehsan Abbasnejad
+ */
 package sve;
 
 import graph.Graph;
@@ -270,8 +275,10 @@ public class GraphicalModel {
 			sb.append("\nModel instantiation:\n");
 			sb.append("All variables in factors: " + _hsVariables + "\n");
 			sb.append("All variables in XADD: " + _context._alOrder + "\n");
-			for (Factor f : _alFactors)
+			for (Factor f : _alFactors) {
 				sb.append(" - " + f + "\n");
+				//_context.getGraph(f._xadd).launchViewer();
+			}
 		}
 		return sb.toString();
 	}
