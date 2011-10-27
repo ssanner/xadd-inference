@@ -1064,7 +1064,8 @@ public class XADD {
 
 			// All return information is stored in _runningSum so no need to return
 			// any information here... just keep diagram as is
-			System.out.println("Result: " + getString(int_eval));
+			//System.out.println("Result: " + getString(int_eval));
+			System.out.println("RunningMax: " + getString(_runningMax));
 			return getTermNode(leaf_val);
 		}
 		// Assume expression is canonical, hence in sum of products form (could be a single term)
