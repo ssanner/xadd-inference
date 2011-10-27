@@ -174,12 +174,12 @@ public class ComputeVfunction {
 	public int computeMax(int ixadd,String _action,double lowerbound,double upperbound) {
 		XADDLeafMax max = xadd.new XADDLeafMax(_action, lowerbound,upperbound);
 		Graph g = xadd.getGraph(ixadd);
-//		g.addNode("_temp_");
-//		g.addNodeLabel("_temp_", "Q (before reduceProcessXADDLeaf");
-//		g.addNodeShape("_temp_", "square");
-//		g.addNodeStyle("_temp_", "filled");
-//		g.addNodeColor("_temp_", "lightblue");
-//		g.launchViewer(1300, 770);
+		g.addNode("_temp_");
+		g.addNodeLabel("_temp_", "Q-value before max operation");
+	g.addNodeShape("_temp_", "square");
+		g.addNodeStyle("_temp_", "filled");
+		g.addNodeColor("_temp_", "lightblue");
+		g.launchViewer(1300, 770);
 		ixadd  = xadd.reduceProcessXADDLeaf(ixadd, max, false);
 //		g = xadd.getGraph(max._runningMax);
 //		g.addNode("_temp_");
@@ -189,13 +189,13 @@ public class ComputeVfunction {
 //		g.addNodeColor("_temp_", "lightblue");
 //		g.launchViewer(1300, 770);
 		max._runningMax = xadd.reduceLP(max._runningMax,camdp.contVars);
-		 g = xadd.getGraph(max._runningMax);
+		/* g = xadd.getGraph(max._runningMax);
 		g.addNode("_temp_");
 		g.addNodeLabel("_temp_", "Q after reduceLP, runningMax");
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "lightblue");
-		g.launchViewer(1300, 770);
+		g.launchViewer(1300, 770);*/
 		//no difference was made here after canonical
 		//max._runningMax = xadd.makeCanonical(max._runningMax);
 		//if a decision consisting of the action is negative, make it positive
