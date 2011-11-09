@@ -3,9 +3,9 @@ min-values (-100 -100)
 max-values (100 100)
 bvariables (g)
 ivariables()
-avariables(ax ay)
+avariables(ay)
 
-action move (0<=ax<=1000000 ^ 0<=ay<=1000000)
+action move (0<=ay<=1000000)
 g' (g 
 	([1.0]) 
 	([y>0]
@@ -13,13 +13,13 @@ g' (g
 		([0.0])))
 
 	
-x' ([x+ax])
+x' ([x])
 y' ([y+ay])
 
 reward (g 	([0.0]) 
 	   	  	([y>0]
-           				([99-(ay+ax)])
-           	 			([-(ay+ax)]))
+           				([99-(ay)])
+           	 			([-(ay)]))
 
            				
            	 + ((-10,-20) (10,-20) (-20))
