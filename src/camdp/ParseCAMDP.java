@@ -116,7 +116,10 @@ public class ParseCAMDP {
 		o = i.next();
 		AVars = (ArrayList<String>) ((ArrayList) o).clone();
 		camdp._alAVars = AVars;
-		
+		ArrayList<String> contVars = new ArrayList<String>();
+		contVars.addAll(CVars);
+		contVars.addAll(AVars);
+		_context._hmContinuousVars = contVars;
 		
 		// Set up actions
 		while (true) 
@@ -163,19 +166,19 @@ public class ParseCAMDP {
 			}
 			o=i.next();
 			ArrayList reward = (ArrayList) o;
-			ArrayList<Obsticle> obsticle = new ArrayList<Obsticle>();
+			ArrayList<Obstacle> obstacle = new ArrayList<Obstacle>();
 			int nextObsPos = -1;
 			for (int s=0;s<reward.size();s++) 
 			{
 				if (reward.get(s).equals("+"))
 				{
 					//all the paranthesis on s+1 is the obsticle
-					Obsticle obs = new Obsticle();
+					Obstacle obs = new Obstacle();
 					int counter =0;
-					ArrayList obsticle1 = (ArrayList) reward.get(s+1);
-					for (int t=0;t<obsticle1.size();t++)
+					ArrayList obstacle1 = (ArrayList) reward.get(s+1);
+					for (int t=0;t<obstacle1.size();t++)
 					{
-						ArrayList obsElement = (ArrayList) obsticle1.get(t);
+						ArrayList obsElement = (ArrayList) obstacle1.get(t);
 							if (counter==0)	
 							 {
 								obs.setXpoint1(Double.parseDouble(obsElement.get(0).toString()));
@@ -195,17 +198,24 @@ public class ParseCAMDP {
 					//remove this obsticle from reward
 					reward.remove(s+1);
 					reward.remove(s);
-					obsticle.add(obs);
+					obstacle.add(obs);
 				}
 			}
 			int _runningSum=0;
 			
 			int reward_toGoal = _context.buildCanonicalXADD(reward);
+			Graph g = _context.getGraph(reward_toGoal);
+			g.addNode("_temp_");
+			g.addNodeLabel("_temp_", "V^0");
+			g.addNodeShape("_temp_", "square");
+			g.addNodeStyle("_temp_", "filled");
+			g.addNodeColor("_temp_", "lightblue");
+			g.launchViewer(1300, 770);
 			//define total reward = reward_toGoal + penalty
-			if (obsticle.size()>0)
+			if (obstacle.size()>0)
 			{
-				for (int t=0;t<obsticle.size();t++)
-					_runningSum = buildObsticleXADD(obsticle.get(t),_runningSum);
+				for (int t=0;t<obstacle.size();t++)
+					_runningSum = buildObstacleXADD(obstacle.get(t),_runningSum);
 				int T_ZERO = _context.getTermNode(ZERO);
 				int T_ONE = _context.getTermNode(ONE);
 				int var = _context.getVarIndex(_context.new BoolDec(BVars.get(0)), false);
@@ -216,8 +226,13 @@ public class ParseCAMDP {
 				int false_half = _context.applyInt(ind_false, reward_d, _context.PROD); // can use applyInt rather than apply
 				int reward_dd = _context.applyInt(true_half, false_half, _context.SUM);
 				//int reward_dd = _context.apply(_runningSum,reward_toGoal, _context.SUM);
-				Graph g = _context.getGraph(reward_dd);
-				g.launchViewer(1300, 770);
+				/*g = _context.getGraph(reward_dd);
+				g.addNode("_temp_");
+				g.addNodeLabel("_temp_", "Q reward_dd");
+				g.addNodeShape("_temp_", "square");
+				g.addNodeStyle("_temp_", "filled");
+				g.addNodeColor("_temp_", "lightblue");
+				g.launchViewer(1300, 770);*/
 				reward_dd = _context.makeCanonical(reward_dd);
 				/*//can't perform LP-reduce because of x*ay (bi-linear constraints)
 				 * ArrayList<String> contVars = new ArrayList<String>();
@@ -266,82 +281,222 @@ public class ParseCAMDP {
 		}
 		iterations = (new Integer((String)i.next()));
 		camdp._nIter = iterations;
+		
 	}
 	
-	private int buildObsticleXADD(Obsticle obsticle,int _RS) {
+	private int buildObstacleXADD(Obstacle obstacle,int _RS) {
+		
 		//hand coded function for x,y,ax,ay 
-		//according to the points, build C and D for the line intersection 
-		//Each decision of C and D are inserted into a tree with true=penalty and false = 0 
-		//to build the tree of the decisions, each indicator function (eg: c>=0) is build with a simple 
-		//getVarNode according to values of C and D and then we multiply the penalty and all the indicator functions
-		//to get the penalty of obsticles tree
+				//according to the points, build C and D for the line intersection 
+				//Each decision of C and D are inserted into a tree with true=penalty and false = 0 
+				//to build the tree of the decisions, each indicator function (eg: c>=0) is build with a simple 
+				//getVarNode according to values of C and D and then we multiply the penalty and all the indicator functions
+				//to get the penalty of obsticles tree
+				
+				//first build test for checking slope equality of parallel lines: ay = (y2-y1)/(x2-x1)*ax
+				int obstacleXADD=0;
+				/*String p_lhs = "ay";
+				ArithExpr arith_p_lhs = ArithExpr.parse(p_lhs);
+				String p_rhs = "(("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")/("+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+"))*ax";
+				ArithExpr arith_p_rhs = ArithExpr.parse(p_rhs);
+				CompExpr comp_p1 = new CompExpr(_context.GT_EQ, arith_p_lhs, arith_p_rhs);
+				ExprDec expr_p1 = _context.new ExprDec(comp_p1);
+				
+				obstacleXADD = _context.getVarNode(expr_p1, 0, 1);
+				obstacleXADD = _context.makeCanonical(obstacleXADD);
+				CompExpr comp_p2 = new CompExpr(_context.LT_EQ, arith_p_lhs, arith_p_rhs);
+				ExprDec expr_p2 = _context.new ExprDec(comp_p2);
+				
+				obstacleXADD = _context.apply(_context.getVarNode(expr_p2,0, 1),obstacleXADD,_context.PROD);
+				//switch the true and false branch
+				int T_ONE = _context.getTermNode(ONE);
+				int switchedBranch = _context.applyInt(T_ONE, obstacleXADD, _context.MINUS); // Note: this enforces canonicity so
+				obstacleXADD = _context.makeCanonical(switchedBranch);*/
+				//Indicator for D>=0
+				
+				String d0_lhs = "-ay*"+obstacle.getXpoint1()+"+(ay*x)-(ax*y)+ax*"+obstacle.getYpoint1();
+				ArithExpr arith_d0_lhs = ArithExpr.parse(d0_lhs);
+				CompExpr comp_d0 = new CompExpr(_context.GT_EQ, arith_d0_lhs, ArithExpr.parse("0"));
+				ExprDec expr_d0 = _context.new ExprDec(comp_d0);
+				obstacleXADD = _context.getVarNode(expr_d0, 0, 1);
+				obstacleXADD = _context.makeCanonical(obstacleXADD);
+				
+				//obstacleXADD = _context.apply(_context.getVarNode(expr_d0, 0, 1),obstacleXADD,_context.PROD);
+				//obstacleXADD = _context.makeCanonical(obstacleXADD);
+				//Indicator for D<=1
+				String d1_lhs = "-ay*"+obstacle.getXpoint1()+"+(ay*x)-(ax*y)+ax*"+obstacle.getYpoint1();
+				ArithExpr arith_d1_lhs = ArithExpr.parse(d1_lhs);
+				String d1_rhs = "ay*("+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+")+(-ax*("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+"))";
+				ArithExpr arith_d1_rhs = ArithExpr.parse(d1_rhs);
+				CompExpr comp_d1 = new CompExpr(_context.LT_EQ, arith_d1_lhs, arith_d1_rhs);
+				ExprDec expr_d1 = _context.new ExprDec(comp_d1);
+				//_context.getVarNode(expr_d1, 0, 1);
+				obstacleXADD = _context.apply(_context.getVarNode(expr_d1, 0, 1),obstacleXADD,_context.PROD);
+				obstacleXADD = _context.makeCanonical(obstacleXADD);
+				//Indicator for C>=0
+				String c0_lhs = "(x*("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) -("+obstacle.getXpoint1()+"*("+
+						obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) - (y*("+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+"))+(("
+						+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+")*"+obstacle.getYpoint1()+")";
+				ArithExpr arith_c0_lhs = ArithExpr.parse(c0_lhs);
+				CompExpr comp_c0 = new CompExpr(_context.GT_EQ, arith_c0_lhs, ArithExpr.parse("0"));
+				ExprDec expr_c0 = _context.new ExprDec(comp_c0);
+				
+				//_context.getVarNode(expr_c0, 0, 1);
+				obstacleXADD = _context.apply(_context.getVarNode(expr_c0, 0, 1),obstacleXADD,_context.PROD);
+				obstacleXADD = _context.makeCanonical(obstacleXADD);
+				//Indicator for D<=1
+				String c1_lhs = "(x*("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) -("+obstacle.getXpoint1()+"*("+
+						obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) - (y*("+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+"))+(("
+				+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+")*"+obstacle.getYpoint1()+")";
+				ArithExpr arith_c1_lhs = ArithExpr.parse(c1_lhs);
+				String c1_rhs = "ay*("+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+")+(-ax*("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+"))";
+				ArithExpr arith_c1_rhs = ArithExpr.parse(c1_rhs);
+				CompExpr comp_c1 = new CompExpr(_context.LT_EQ, arith_c1_lhs, arith_c1_rhs);
+				ExprDec expr_c1 = _context.new ExprDec(comp_c1);
+				
+				//_context.getVarNode(expr_c1, 0, 1);
+				obstacleXADD = _context.apply(_context.getVarNode(expr_c1, 0, 1),obstacleXADD,_context.PROD);
+				obstacleXADD = _context.makeCanonical(obstacleXADD);
+				int NEG_penalty = _context.getTermNode(new DoubleExpr(obstacle.getPenalty()));
+				obstacleXADD = _context.apply(obstacleXADD,NEG_penalty,_context.PROD);
+				if (_RS!=0) obstacleXADD=_context.apply(obstacleXADD,_RS,_context.SUM);
+				return obstacleXADD;
+	}
+	
+	private int buildObstacleXADD_no_ax(Obstacle obstacle,int _RS) {
 		
-		//first build test for checking slope equality of parallel lines: ay = (y2-y1)/(x2-x1)*ax
-		int obsticleXADD=0;
-		String p_lhs = "ay";
+		//no ax - to find the problem
+		//hand coded function for x,y,ay 
+				//according to the points, build C and D for the line intersection 
+				//Each decision of C and D are inserted into a tree with true=penalty and false = 0 
+				//to build the tree of the decisions, each indicator function (eg: c>=0) is build with a simple 
+				//getVarNode according to values of C and D and then we multiply the penalty and all the indicator functions
+				//to get the penalty of obsticles tree
+				
+				//first build test for checking slope equality of parallel lines: ay = (y2-y1)/(x2-x1)*ax
+				int obstacleXADD=0;
+				/*String p_lhs = "ay";
+				ArithExpr arith_p_lhs = ArithExpr.parse(p_lhs);
+				CompExpr comp_p1 = new CompExpr(_context.GT_EQ, arith_p_lhs, ArithExpr.parse("0"));
+				ExprDec expr_p1 = _context.new ExprDec(comp_p1);
+				
+				obstacleXADD = _context.getVarNode(expr_p1, 0, 1);
+				obstacleXADD = _context.makeCanonical(obstacleXADD);
+				CompExpr comp_p2 = new CompExpr(_context.LT_EQ, arith_p_lhs, ArithExpr.parse("0"));
+				ExprDec expr_p2 = _context.new ExprDec(comp_p2);
+				
+				obstacleXADD = _context.apply(_context.getVarNode(expr_p2,0, 1),obstacleXADD,_context.PROD);
+				//switch the true and false branch
+				int T_ONE = _context.getTermNode(ONE);
+				int switchedBranch = _context.applyInt(T_ONE, obstacleXADD, _context.MINUS); // Note: this enforces canonicity so
+				obstacleXADD = _context.makeCanonical(switchedBranch);*/
+				//Indicator for D>=0
+				
+				String d0_lhs = "x +" + (obstacle.getXpoint1()*(-1));
+				ArithExpr arith_d0_lhs = ArithExpr.parse(d0_lhs);
+				CompExpr comp_d0 = new CompExpr(_context.GT_EQ, arith_d0_lhs, ArithExpr.parse("0"));
+				ExprDec expr_d0 = _context.new ExprDec(comp_d0);
+				obstacleXADD = _context.getVarNode(expr_d0, 0, 1);
+				obstacleXADD = _context.makeCanonical(obstacleXADD);
+				
+				//obstacleXADD = _context.apply(_context.getVarNode(expr_d0, 0, 1),obstacleXADD,_context.PROD);
+				//obstacleXADD = _context.makeCanonical(obstacleXADD);
+				//Indicator for D<=1
+				//String d1_lhs = "x";
+				ArithExpr arith_d1_lhs = ArithExpr.parse(d0_lhs);
+				String d1_rhs = obstacle.getXpoint2()+"-"+obstacle.getXpoint1();
+				ArithExpr arith_d1_rhs = ArithExpr.parse(d1_rhs);
+				CompExpr comp_d1 = new CompExpr(_context.LT_EQ, arith_d1_lhs, arith_d1_rhs);
+				ExprDec expr_d1 = _context.new ExprDec(comp_d1);
+				//_context.getVarNode(expr_d1, 0, 1);
+				obstacleXADD = _context.apply(_context.getVarNode(expr_d1, 0, 1),obstacleXADD,_context.PROD);
+				obstacleXADD = _context.makeCanonical(obstacleXADD);
+				//Indicator for C>=0
+				String d = "("+d0_lhs +") /("+ d1_rhs+")";
+				//String c0_lhs = obstacle.getYpoint2()+"-y";
+				String c0_lhs = obstacle.getYpoint1()+"+ ((" + d + ") *"+ "("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) - y"; 
+				ArithExpr arith_c0_lhs = ArithExpr.parse(c0_lhs);
+				CompExpr comp_c0 = new CompExpr(_context.GT_EQ, arith_c0_lhs, ArithExpr.parse("0"));
+				ExprDec expr_c0 = _context.new ExprDec(comp_c0);
+				
+				//_context.getVarNode(expr_c0, 0, 1);
+				obstacleXADD = _context.apply(_context.getVarNode(expr_c0, 0, 1),obstacleXADD,_context.PROD);
+				obstacleXADD = _context.makeCanonical(obstacleXADD);
+				//Indicator for C<=1
+				//String c1_lhs = obstacle.getYpoint2()+"-y";
+				
+				ArithExpr arith_c1_lhs = ArithExpr.parse(c0_lhs);
+				String c1_rhs = "ay";
+				ArithExpr arith_c1_rhs = ArithExpr.parse(c1_rhs);
+				CompExpr comp_c1 = new CompExpr(_context.LT_EQ, arith_c1_lhs, arith_c1_rhs);
+				ExprDec expr_c1 = _context.new ExprDec(comp_c1);
+				
+				//_context.getVarNode(expr_c1, 0, 1);
+				obstacleXADD = _context.apply(_context.getVarNode(expr_c1, 0, 1),obstacleXADD,_context.PROD);
+				obstacleXADD = _context.makeCanonical(obstacleXADD);
+				int NEG_penalty = _context.getTermNode(new DoubleExpr(obstacle.getPenalty()));
+				obstacleXADD = _context.apply(obstacleXADD,NEG_penalty,_context.PROD);
+				if (_RS!=0) obstacleXADD=_context.apply(obstacleXADD,_RS,_context.SUM);
+				return obstacleXADD;
+	}
+	
+	
+	
+	
+	private int buildObstacleXADD2(Obstacle obstacle,int _RS) {
+		//consider the method of only adding the obtacle to the current XADD
+		//build line of the obstacle, add the range of x to the xadd, then the line equality ( in form of 2 inequalities >= ^ <=) 
+		//give penalty to hitting this line, otherwise give full reward
+		
+		int obstacleXADD=0;
+		String p_lhs = "x";
 		ArithExpr arith_p_lhs = ArithExpr.parse(p_lhs);
-		String p_rhs = "(("+obsticle.getYpoint2()+"-"+obsticle.getYpoint1()+")/("+obsticle.getXpoint2()+"-"+obsticle.getXpoint1()+"))*ax";
-		ArithExpr arith_p_rhs = ArithExpr.parse(p_rhs);
-		CompExpr comp_p1 = new CompExpr(_context.GT_EQ, arith_p_lhs, arith_p_rhs);
-		ExprDec expr_p1 = _context.new ExprDec(comp_p1);
+		String biggerX,smallerX;
+		if (obstacle.getXpoint1()>obstacle.getXpoint2()) 
+			{
+				biggerX = Double.toString(obstacle.getXpoint1());
+				smallerX = Double.toString(obstacle.getXpoint2());
+			}
+		else 
+			{
+				biggerX = Double.toString(obstacle.getXpoint2());
+				smallerX = Double.toString(obstacle.getXpoint1());
+			}
+		ArithExpr arith_p_rhs = ArithExpr.parse(smallerX);
+		CompExpr comp_x_g = new CompExpr(_context.GT_EQ, arith_p_lhs, arith_p_rhs);
+		ExprDec expr_x_g = _context.new ExprDec(comp_x_g);
 		
-		obsticleXADD = _context.getVarNode(expr_p1, 0, 1);
-		obsticleXADD = _context.makeCanonical(obsticleXADD);
-		CompExpr comp_p2 = new CompExpr(_context.LT_EQ, arith_p_lhs, arith_p_rhs);
-		ExprDec expr_p2 = _context.new ExprDec(comp_p2);
+		obstacleXADD = _context.getVarNode(expr_x_g, 0, 1);
+		obstacleXADD = _context.makeCanonical(obstacleXADD);
+		arith_p_rhs = ArithExpr.parse(biggerX);
+		CompExpr comp_x_l = new CompExpr(_context.LT_EQ, arith_p_lhs, arith_p_rhs);
+		ExprDec expr_x_l = _context.new ExprDec(comp_x_l);
 		
-		obsticleXADD = _context.apply(_context.getVarNode(expr_p2,0, 1),obsticleXADD,_context.PROD);
-		//switch the true and false branch
-		int T_ONE = _context.getTermNode(ONE);
-		int switchedBranch = _context.applyInt(T_ONE, obsticleXADD, _context.MINUS); // Note: this enforces canonicity so
-		obsticleXADD = _context.makeCanonical(switchedBranch);
-		//Indicator for D>=0
+		obstacleXADD = _context.apply(_context.getVarNode(expr_x_l,0, 1),obstacleXADD,_context.PROD);		
+
+		//build line equation
+		Double slope = (obstacle.getYpoint2()-obstacle.getYpoint1())/(obstacle.getXpoint2()-obstacle.getXpoint1());
+		//indicator for y>=
+		String y0_lhs = "y";
+		ArithExpr y_lhs = ArithExpr.parse(y0_lhs);
+		String y0_rhs = Double.toString(slope)+"*x+"+Double.toString((slope*(-1)*obstacle.getXpoint1())+obstacle.getYpoint1());
+		ArithExpr y_rhs = ArithExpr.parse(y0_rhs);
+		CompExpr comp_y_g = new CompExpr(_context.GT_EQ, y_lhs, y_rhs);
+		ExprDec expr_y_g = _context.new ExprDec(comp_y_g);
 		
-		String d0_lhs = "-ay*"+obsticle.getXpoint1()+"+(ay*x)-(ax*y)+ax*"+obsticle.getYpoint1();
-		ArithExpr arith_d0_lhs = ArithExpr.parse(d0_lhs);
-		CompExpr comp_d0 = new CompExpr(_context.GT_EQ, arith_d0_lhs, ArithExpr.parse("0"));
-		ExprDec expr_d0 = _context.new ExprDec(comp_d0);
+		obstacleXADD = _context.apply(_context.getVarNode(expr_y_g, 0, 1),obstacleXADD,_context.PROD);
+		obstacleXADD = _context.makeCanonical(obstacleXADD);
+		//Indicator for y<=
+		CompExpr comp_y_l = new CompExpr(_context.LT_EQ, y_lhs, y_rhs);
+		ExprDec expr_y_l = _context.new ExprDec(comp_y_l);
 		
-		obsticleXADD = _context.apply(_context.getVarNode(expr_d0, 0, 1),obsticleXADD,_context.PROD);
-		obsticleXADD = _context.makeCanonical(obsticleXADD);
-		//Indicator for D<=1
-		String d1_lhs = "-ay*"+obsticle.getXpoint1()+"+(ay*x)-(ax*y)+ax*"+obsticle.getYpoint1();
-		ArithExpr arith_d1_lhs = ArithExpr.parse(d1_lhs);
-		String d1_rhs = "ay*("+obsticle.getXpoint2()+"-"+obsticle.getXpoint1()+")+(-ax*("+obsticle.getYpoint2()+"-"+obsticle.getYpoint1()+"))";
-		ArithExpr arith_d1_rhs = ArithExpr.parse(d1_rhs);
-		CompExpr comp_d1 = new CompExpr(_context.LT_EQ, arith_d1_lhs, arith_d1_rhs);
-		ExprDec expr_d1 = _context.new ExprDec(comp_d1);
-		//_context.getVarNode(expr_d1, 0, 1);
-		obsticleXADD = _context.apply(_context.getVarNode(expr_d1, 0, 1),obsticleXADD,_context.PROD);
-		obsticleXADD = _context.makeCanonical(obsticleXADD);
-		//Indicator for C>=0
-		String c0_lhs = "(x*("+obsticle.getYpoint2()+"-"+obsticle.getYpoint1()+")) -("+obsticle.getXpoint1()+"*("+
-				obsticle.getYpoint2()+"-"+obsticle.getYpoint1()+")) - (y*("+obsticle.getXpoint2()+"-"+obsticle.getXpoint1()+"))+(("
-				+obsticle.getXpoint2()+"-"+obsticle.getXpoint1()+")*"+obsticle.getYpoint1()+")";
-		ArithExpr arith_c0_lhs = ArithExpr.parse(c0_lhs);
-		CompExpr comp_c0 = new CompExpr(_context.GT_EQ, arith_c0_lhs, ArithExpr.parse("0"));
-		ExprDec expr_c0 = _context.new ExprDec(comp_c0);
+		obstacleXADD = _context.apply(_context.getVarNode(expr_y_l, 0, 1),obstacleXADD,_context.PROD);
+		obstacleXADD = _context.makeCanonical(obstacleXADD);
 		
-		//_context.getVarNode(expr_c0, 0, 1);
-		obsticleXADD = _context.apply(_context.getVarNode(expr_c0, 0, 1),obsticleXADD,_context.PROD);
-		obsticleXADD = _context.makeCanonical(obsticleXADD);
-		//Indicator for D<=1
-		String c1_lhs = "(x*("+obsticle.getYpoint2()+"-"+obsticle.getYpoint1()+")) -("+obsticle.getXpoint1()+"*("+
-		obsticle.getYpoint2()+"-"+obsticle.getYpoint1()+")) - (y*("+obsticle.getXpoint2()+"-"+obsticle.getXpoint1()+"))+(("
-		+obsticle.getXpoint2()+"-"+obsticle.getXpoint1()+")*"+obsticle.getYpoint1()+")";
-		ArithExpr arith_c1_lhs = ArithExpr.parse(c1_lhs);
-		String c1_rhs = "ay*("+obsticle.getXpoint2()+"-"+obsticle.getXpoint1()+")+(-ax*("+obsticle.getYpoint2()+"-"+obsticle.getYpoint1()+"))";
-		ArithExpr arith_c1_rhs = ArithExpr.parse(c1_rhs);
-		CompExpr comp_c1 = new CompExpr(_context.LT_EQ, arith_c1_lhs, arith_c1_rhs);
-		ExprDec expr_c1 = _context.new ExprDec(comp_c1);
-		
-		//_context.getVarNode(expr_c1, 0, 1);
-		obsticleXADD = _context.apply(_context.getVarNode(expr_c1, 0, 1),obsticleXADD,_context.PROD);
-		obsticleXADD = _context.makeCanonical(obsticleXADD);
 		int NEG_20 = _context.getTermNode(new DoubleExpr(-20d));
-		obsticleXADD = _context.apply(obsticleXADD,NEG_20,_context.PROD);
-		if (_RS!=0) obsticleXADD=_context.apply(obsticleXADD,_RS,_context.SUM);
-		return obsticleXADD;
+		obstacleXADD = _context.apply(obstacleXADD,NEG_20,_context.PROD);
+		if (_RS!=0) obstacleXADD=_context.apply(obstacleXADD,_RS,_context.SUM);
+		return obstacleXADD;
 	}
 
 	private void parseActionParam(ArrayList<String> params) {
