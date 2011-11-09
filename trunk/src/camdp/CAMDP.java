@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import util.IntTriple;
+import xadd.TestXADDDist;
 import xadd.XADD;
 import cmdp.HierarchicalParser;
 
@@ -32,6 +33,7 @@ public class CAMDP {
 
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = true;
+	public final static boolean DISPLAY_2D = true;
 	public final static boolean DISPLAY_MAX = false;
 	public final static boolean PRINTSCREENEVAL = false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
@@ -109,6 +111,7 @@ public class CAMDP {
 		contVars = new ArrayList<String>();
 		contVars.addAll(_alCVars);
 		contVars.addAll(_alAVars);
+		//_context._hmContinuousVars = contVars;
 	}
 
 	/**
@@ -205,7 +208,8 @@ public class CAMDP {
 					": " + num_nodes[iter] + " nodes = " + 
 					num_branches[iter] + " cases" + " in " + time[iter] + " ms");
 
-			if (DISPLAY_V) {
+			if (DISPLAY_V) 
+			{
 				System.out.print("Displaying value function... ");
 				Graph g = _context.getGraph(_valueDD);
 				g.addNode("_temp_");
@@ -217,6 +221,17 @@ public class CAMDP {
 				
 				g.launchViewer(1300, 770);
 				System.out.println("done.");
+			}
+			
+			if (DISPLAY_2D)
+			{
+				TestXADDDist plot = new TestXADDDist();
+				HashMap<String,Boolean> bvars = new HashMap<String, Boolean>();
+				HashMap<String,Double> dvars = new HashMap<String, Double>();
+				bvars.put("g", false);
+				plot.Plot3DXADD(_context, _valueDD, -20, 1, 20, -100, 1, 10, bvars,dvars ,"x", "y", "V^"+iter);
+				
+				
 			}
 		}
 		if(PRINT3DFILE){
