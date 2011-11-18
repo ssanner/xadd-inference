@@ -15,12 +15,15 @@ package xadd;
 
 import graph.Graph;
 
+import java.awt.BufferCapabilities.FlipContents;
+import java.security.acl.LastOwnerException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +31,9 @@ import logic.kb.fol.FOPC;
 import lpsolve.LP;
 import lpsolve.LpSolve;
 import util.IntPair;
+import util.IntQuad;
 import util.IntTriple;
+import xadd.XADD.ArithExpr;
 import cmdp.HierarchicalParser;
 
 
@@ -74,7 +79,11 @@ public class XADD {
 	public final static String[] _aOpNames = {/* 0 */"UND",
 	/* 1 */"+", "-", "*", "/", "max", "min", "|l", "|h",
 	/* 9 */"=", "!=", ">", ">=", "<", "<=", "ERROR" };
-
+	//constants for division
+	public static ArrayList<ArithExpr> showDiv = new ArrayList<XADD.ArithExpr>();
+	public static HashMap<Integer,Boolean> lastDecision = new HashMap<Integer,Boolean>();
+	public int changed_var_index = -1;
+	ArithExpr _VarDivisor;
 	// Constants
 	public final static String STRING_TAB = "   ";
 	public final static DecimalFormat _df = new DecimalFormat("#.########################");
@@ -84,6 +93,7 @@ public class XADD {
 	public final static ArithExpr ONE = new DoubleExpr(1d);
 	public final static ArithExpr NEG_ONE = new DoubleExpr(-1d);
 	public final static ArithExpr NEG_INFINITE = new DoubleExpr(-1000000d);
+	//public static ArrayList<ArithExpr> CANONICAL_DIVISOR = new ArrayList<XADD.ArithExpr>();
 	// Variable Maintenance
 	public ArrayList<Decision> _alOrder = new ArrayList<Decision>();
 	// Node Maintenance
@@ -96,10 +106,12 @@ public class XADD {
 	public HashMap<IntTriple, Integer> _hmReduceCache = new HashMap<IntTriple, Integer>();
 	public HashMap<IntTriple, Integer> _hmReduceLPCache = new HashMap<IntTriple, Integer>();
 	public HashMap<IntPair, Integer> _hmReduceLeafOpCache = new HashMap<IntPair, Integer>();
-	public HashMap<IntTriple, Integer> _hmApplyCache = new HashMap<IntTriple, Integer>();
+	public HashMap<IntTriple, Integer> _hmApplyCache0 = new HashMap<IntTriple, Integer>();
+	public HashMap<IntTriple, Integer> _hmApplyCache1 = new HashMap<IntTriple, Integer>();
+	public HashMap<IntTriple, Integer> _hmApplyCache2 = new HashMap<IntTriple, Integer>();
 	public HashMap<XADDINode, HashSet<String>> _hmINode2Vars = new HashMap<XADDINode, HashSet<String>>();
 	public HashSet<String> _hsBooleanVars = new HashSet<String>();
-	public ArrayList<String> _hmContinuousVars;
+	public static ArrayList<String> _hmContinuousVars;
 
 	public HashMap<String, Double> _hmMinVal = new HashMap<String, Double>();
 	public HashMap<String, Double> _hmMaxVal = new HashMap<String, Double>();
@@ -137,7 +149,9 @@ public class XADD {
 
 		if (USE_CANONICAL_NODES) {
 			//System.out.println(">> Before canonical: " + d);
+			
 			d = d.makeCanonical();
+			//TODO
 			//System.out.println(">> After canonical: " + d);
 		}
 
@@ -306,12 +320,12 @@ public class XADD {
 				int T_ONE = getTermNode(ONE);
 				int ind_true = getINode(var, /* low */T_ZERO, /* high */T_ONE);
 				int ind_false = getINode(var, /* low */T_ONE, /* high */T_ZERO);
-				int true_half = applyInt(ind_true, high, PROD); // Note: this enforces canonicity so
-				int false_half = applyInt(ind_false, low, PROD); // can use applyInt rather than apply
+				int true_half = applyInt(ind_true, high, PROD,-1); // Note: this enforces canonicity so
+				int false_half = applyInt(ind_false, low, PROD,-1); // can use applyInt rather than apply
 				
 				// System.out.println("New inode: " + index + " - " + low + ", " + high);
 				// System.out.println("Var: " + _alOrder.get(index));
-				return applyInt(true_half, false_half, SUM);
+				return applyInt(true_half, false_half, SUM,-1);
 			}
 		} else {
 			// Unknown
@@ -789,9 +803,9 @@ public class XADD {
 		int T_ONE = getTermNode(ONE);
 		int ind_true = getINode(var, /* low */T_ZERO, /* high */T_ONE);
 		int ind_false = getINode(var, /* low */T_ONE, /* high */T_ZERO);
-		int true_half = applyInt(ind_true, high, PROD); // Note: this enforces canonicity so
-		int false_half = applyInt(ind_false, low, PROD); // can use applyInt rather than apply
-		ret = applyInt(true_half, false_half, SUM);
+		int true_half = applyInt(ind_true, high, PROD,-1); // Note: this enforces canonicity so
+		int false_half = applyInt(ind_false, low, PROD,-1); // can use applyInt rather than apply
+		ret = applyInt(true_half, false_half, SUM,-1);
 
 		if (CHECK_LOCAL_ORDERING) {
 			// Check ordering
@@ -892,7 +906,6 @@ public class XADD {
 		public int _runningMax; // XADD for the running max of all leaf substitutions
 		double _lowerBound,_higherBound;
 		String _actionString;
-		ArithExpr _VarDivisor;
 		ArrayList<String> _contVars;
 
 		public XADDLeafMax(String action_St,double lower,double higher) {
@@ -922,8 +935,11 @@ public class XADD {
 		{
 
 			// Multiply these in later
+			if (!(leaf_val instanceof DoubleExpr) || ((DoubleExpr) leaf_val)._dConstVal!=0)
+			{
 			HashMap<Decision, Boolean> int_var_indep_decisions = new HashMap<Decision, Boolean>();
-
+			int xadd_upper_bound = -1;
+			int xadd_lower_bound = -1;
 			// Next compute the upper and lower bounds based on the decisions
 			System.out.println("=============================");
 			System.out.println("Current node: " + leaf_val);
@@ -960,27 +976,80 @@ public class XADD {
 					int_var_indep_decisions.put(d, is_true);
 					continue;
 				}
+				//build rhs
+				ArithExpr new_rhs = (ArithExpr) new OperExpr(MINUS, ZERO, new OperExpr(PROD, 
+						(ArithExpr.op(new DoubleExpr(1d), _VarDivisor, DIV)), lhs_isolated)).makeCanonical();
+
+				
 				DoubleExpr doubleCoef;
 				boolean flip_comparison=false;
+				boolean computedBound =false;
 				// We have coef*x + expr COMP_OPER 0
 				if (_VarDivisor instanceof DoubleExpr) 
 				{
 					doubleCoef = (DoubleExpr)_VarDivisor;
 					flip_comparison = (doubleCoef._dConstVal < 0d) && (comp._type != EQ) && (comp._type != NEQ);
 				}
+				else if (_VarDivisor instanceof OperExpr)
+				{
+					//need a tree for the upper or ower bound depending on condition
+					int comp_oper = comp._type;
+					if (!is_true) 
+						comp_oper = CompExpr.flipCompOper(comp_oper);
+					//a positive expression
+					CompExpr comp1 = new CompExpr(GT_EQ, _VarDivisor, new DoubleExpr(0d));
+					//negative expression
+					CompExpr comp2 = new CompExpr(LT_EQ, _VarDivisor, new DoubleExpr(0d));
+					Decision dec1 = new ExprDec(comp1).makeCanonical();
+					Decision dec2 = new ExprDec(comp2).makeCanonical();
+					int var_index1 = getVarIndex(dec1, true);
+					int var_index2 = getVarIndex(dec2,true);
+					int node1, node2;
+					if (comp_oper == LT || comp_oper == LT_EQ)
+					{
+						node1 = getTermNode(new_rhs);
+						node2 = getTermNode(new DoubleExpr(_higherBound));
+						if (xadd_upper_bound==-1) xadd_upper_bound = getINode(var_index1, node2 , node1);
+						else xadd_upper_bound = apply(xadd_upper_bound, getINode(var_index1, node2 , node1), MIN);
+						//flip sides
+						node2 = getTermNode(new DoubleExpr(_lowerBound));
+						node1 = getTermNode(new_rhs);
+						if (xadd_lower_bound==-1) xadd_lower_bound = getINode(var_index2, node2 , node1);
+						else xadd_lower_bound = apply(xadd_lower_bound, getINode(var_index2, node2 , node1), MAX);
+						comp_oper = LT_EQ;
+					}
+
+					else if (comp_oper == GT || comp_oper == GT_EQ)
+					{
+						node1 = getTermNode(new_rhs);
+						node2 = getTermNode(new DoubleExpr(_lowerBound));
+						if (xadd_lower_bound==-1) xadd_lower_bound = getINode(var_index1, node2 , node1);
+						else xadd_lower_bound = apply(xadd_lower_bound, getINode(var_index1, node2 , node1), MAX);
+						//flip sides
+						node2 = getTermNode(new DoubleExpr(_higherBound));
+						node1 = getTermNode(new_rhs);
+						if (xadd_upper_bound==-1) xadd_upper_bound = getINode(var_index2, node2 , node1);
+						else xadd_upper_bound = apply(xadd_upper_bound, getINode(var_index2, node2 , node1), MIN);
+						comp_oper= GT_EQ;
+					}
+					computedBound = true;
+					//make the decision nodes that have devision in them canonical
+					//if (xadd_lower_bound > -1) xadd_lower_bound = makecanonicalDivision(xadd_lower_bound);
+					//if (xadd_upper_bound > -1) xadd_upper_bound = makecanonicalDivision(xadd_upper_bound);
+					//need to build the new decisions here  
+					
+				}
 				//else flip_comparison = (comp._type != EQ) && (comp._type != NEQ);
 				
-				ArithExpr new_rhs = (ArithExpr) new OperExpr(MINUS, ZERO, new OperExpr(PROD, 
-							(ArithExpr.op(new DoubleExpr(1d), _VarDivisor, DIV)), lhs_isolated)).makeCanonical();
-
 				// Divide through by coef (pos or neg)
 				// - if coef neg, flip expression
 				// - if decision neg, flip expression
 				// - if both, don't flip
-				int comp_oper = comp._type;
-				if ((/* negated */!is_true && !flip_comparison) || (/* not negated */is_true && flip_comparison)) {
-					comp_oper = CompExpr.flipCompOper(comp_oper);
-				}
+				if (!computedBound)
+				{
+					int comp_oper = comp._type;
+					if ((/* negated */!is_true && !flip_comparison) || (/* not negated */is_true && flip_comparison)) 
+						comp_oper = CompExpr.flipCompOper(comp_oper);
 
 				// Now mark this as a lower or upper bound
 				// - lower bounds: x > f(y), x >= f(y)
@@ -989,17 +1058,19 @@ public class XADD {
 					lower_bound.add(new_rhs);
 				else if (comp_oper == LT || comp_oper == LT_EQ)
 					upper_bound.add(new_rhs);
-				else {
-					System.out.println("Cannot currently handle: "
+				else 
+					{
+						System.out.println("Cannot currently handle: "
 							+ new CompExpr(comp_oper, new VarExpr(_actionString), new_rhs));
-					System.out.println("Note: = triggers substitution, not sure how to handle ~=");
-					new Exception().printStackTrace();
-					System.exit(1);
+						System.out.println("Note: = triggers substitution, not sure how to handle ~=");
+						new Exception().printStackTrace();
+						System.exit(1);
+					}
 				}
 			}
 			//add the bounds in the action hashmap to the LB and UB
-			lower_bound.add(new DoubleExpr(_lowerBound));
-			upper_bound.add(new DoubleExpr(_higherBound));
+			//if (lower_bound.size()==0) lower_bound.add(new DoubleExpr(_lowerBound));
+			//if (upper_bound.size()==0) upper_bound.add(new DoubleExpr(_higherBound));
 			
 			
 			// Now explicitly compute lower and upper bounds as XADDs
@@ -1007,12 +1078,11 @@ public class XADD {
 			// If these are polynomials, must go to +/- infinity at limits so cannot
 			// be used to approximate cdfs. Hence we must assume that there will always
 			// be limits on the polynomial functions implicit in the bounds.
-			int xadd_lower_bound = -1;
-			if (lower_bound.isEmpty()) {
+			if (lower_bound.isEmpty()&& xadd_lower_bound == -1) {
 				System.err.println("No explicit lower bound given for '" + _actionString + "', using -1e6");
 				System.err.println("Constraints: " + decisions);
 				System.err.println("Assignments: " + decision_values);
-				xadd_lower_bound = getTermNode(new DoubleExpr(-1e6));
+				xadd_lower_bound = getTermNode(new DoubleExpr(_lowerBound));
 			} else {
 				System.out.println("Lower bounds: " + lower_bound);
 				for (ArithExpr e : lower_bound) {
@@ -1025,12 +1095,11 @@ public class XADD {
 				}
 			}
 
-			int xadd_upper_bound = -1;
-			if (upper_bound.isEmpty()) {
+			if (upper_bound.isEmpty() && xadd_upper_bound ==-1) {
 				System.err.println("No explicit upper bound given for '" + _actionString + "', using +1e6");
 				System.err.println("Constraints: " + decisions);
 				System.err.println("Assignments: " + decision_values);
-				xadd_upper_bound = getTermNode(new DoubleExpr(1e6));
+				xadd_upper_bound = getTermNode(new DoubleExpr(_higherBound));
 			} else {
 				System.out.println("Upper bounds: " + upper_bound);
 				for (ArithExpr e : upper_bound) {
@@ -1066,7 +1135,6 @@ public class XADD {
 
 			// Finally, multiply in boolean decisions and irrelevant comparison expressions
 			// to the XADD and add it to the running sum
-			//
 			// - HashMap<Decision,Boolean> int_var_indep_decisions
 			for (Map.Entry<Decision, Boolean> me : int_var_indep_decisions.entrySet()) {
 				double high_val = me.getValue() ? 1d : 0d;
@@ -1084,9 +1152,37 @@ public class XADD {
 			// All return information is stored in _runningSum so no need to return
 			// any information here... just keep diagram as is
 			//System.out.println("Result: " + getString(int_eval));
-			System.out.println("RunningMax: " + getString(_runningMax));
+			//System.out.println("RunningMax: " + getString(_runningMax));
+			}
 			return getTermNode(leaf_val);
 		}
+		/*private int makecanonicalDivision(int xadd_lower_bound) 
+		{
+			
+			if (CANONICAL_DIVISOR.size()>0)
+				for (int i=0;i< CANONICAL_DIVISOR.size();i++)
+				{
+					for (int j=i;j>=0;j--)
+						if ((j>0) &&(CANONICAL_DIVISOR.get(j-1)==CANONICAL_DIVISOR.get(i)))
+							break;
+					CompExpr div_comp = (CompExpr) new CompExpr(GT_EQ, CANONICAL_DIVISOR.get(i), new DoubleExpr(0d)).makeCanonical();
+					ExprDec d_div = new ExprDec(div_comp);
+					int tree = getVarNode(d_div, 0, 1);
+					//the decision we are looking at: 
+					ExprDec d_true = new ExprDec(new_comp);
+					tree = apply(getVarNode(d_true, 0, 1),tree,PROD);
+					CompExpr neg_comp = new CompExpr( CompExpr.flipCompOper(div_comp._type), div_comp._lhs, div_comp._rhs );
+					ExprDec d_false = new ExprDec(neg_comp);
+					tree = apply(getVarNode(d_false, 1, 0),tree,PROD);
+					d = new ExprDec(div_comp);
+					((ExprDec) d)._expr._lhs = new_comp;
+					
+					//return makeCanonical();
+							
+				}
+			return 0;
+		}*/
+
 		// Assume expression is canonical, hence in sum of products form (could be a single term)
 		public ArithExpr removeActionVar(ArithExpr leaf_val,String action) {
 			ArithExpr ret_expr = null;
@@ -1830,16 +1926,24 @@ public class XADD {
 	// only ops that can change inodes can affect ordering and the only
 	// ops that can do this should be max/min.
 	public int apply(int a1, int a2, int op) {
-		int ret = applyInt(a1, a2, op);
+		lastDecision.clear();
+		//start with no divisions, i4 = -1
+		int ret = applyInt(a1, a2, op,-1);
 		// TODO: should maintain a reusable reduce cache here
 		return makeCanonical(ret);
 	}
 
-	public int applyInt(int a1, int a2, int op) {
+	public int applyInt(int a1, int a2, int op,int divBranch) {
 
+		//adding divBranch, -1 if no divison, 1 if branch false, 2 if branch true
 		_tempApplyKey.set(a1, a2, op);
-		Integer ret = _hmApplyCache.get(_tempApplyKey);
+		Integer ret = null;
+		if (divBranch == -1 ) ret = _hmApplyCache0.get(_tempApplyKey);
+		else if (divBranch == 1) ret = _hmApplyCache1.get(_tempApplyKey);
+		else if (divBranch == 2) ret = _hmApplyCache2.get(_tempApplyKey);
+		
 		if (ret != null) {
+			//in cache but check path to make sure it is fliped correctly
 			return ret;
 		}
 
@@ -1847,7 +1951,8 @@ public class XADD {
 		XADDNode n1 = _hmInt2Node.get(a1);
 		XADDNode n2 = _hmInt2Node.get(a2);
 		ret = computeTermNode(a1, n1, a2, n2, op);
-		if (ret == null) {
+		if (ret == null) 
+		{
 
 			int v1low, v1high, v2low, v2high, var;
 
@@ -1865,7 +1970,8 @@ public class XADD {
 			} else {
 				var = ((XADDINode) n2)._var;
 			}
-
+			
+			
 			// Determine next recursion for n1
 			if ((n1 instanceof XADDINode) && (((XADDINode) n1)._var == var)) {
 				XADDINode n1i = (XADDINode) n1;
@@ -1884,25 +1990,62 @@ public class XADD {
 			} else {
 				v2low = a2;
 				v2high = a2;
+				
 			}
+			//going to low branch
+			lastDecision.put(var, false);
+			int low, high;
+			//check to see if the decision node of the divisor is in the false or true branch
+			//if chechDivBranch==true means it is in a division branch, then if in false branch=1, true=2, else -1
+			low = applyInt(v1low, v2low, op,checkDivBranch());
+			//now apply high branch
+			lastDecision.put(var, true);
+			high = applyInt(v1high, v2high, op,checkDivBranch());
 
-			// Perform in-line reduction and set min/max for subnodes if needed
-			int low = applyInt(v1low, v2low, op);
-			int high = applyInt(v1high, v2high, op);
-
+		
+			changed_var_index = -1;
 			// getINode will take care of 'low==high'
 			ret = getINode(var, low, high);
-
+			
 		}
-
-		_hmApplyCache.put(new IntTriple(a1, a2, op), ret);
+		if (changed_var_index == -1 ) _hmApplyCache0.put(new IntTriple(a1, a2, op), ret);
+		else if (changed_var_index == 1) _hmApplyCache1.put(new IntTriple(a1, a2, op), ret);
+		else if (divBranch == 2) _hmApplyCache2.put(new IntTriple(a1, a2, op), ret);
 		return ret;
+	}
+
+	private int checkDivBranch() {
+		// to check if these leaves have divisions based on the decision node
+		Iterator<Integer> iterator = lastDecision.keySet().iterator();
+	     while(iterator.hasNext())
+	     {
+	        int dec_id = (Integer) iterator.next();
+	        boolean dec_value = lastDecision.get(dec_id);
+	        if (_alOrder.get(dec_id) instanceof ExprDec)
+	        {
+	        	ExprDec d1 = (ExprDec) _alOrder.get(dec_id);
+	        	if (d1._expr._lhs.equals(_VarDivisor))
+	        	{
+	        		if (dec_value) return 2;
+	        		else if (!dec_value) return 1;
+	        	}
+	        	else 
+	        	{
+	        		 ArithExpr tempDiv = (ArithExpr) ArithExpr.op(d1._expr._lhs,new DoubleExpr(-1d),PROD).makeCanonical();
+	        			if (tempDiv.equals(_VarDivisor))
+	        				if (dec_value) return 2;
+	    	        		else if (!dec_value) return 1;
+	        	}
+	        }
+	     }
+		return -1;
 	}
 
 	// Computes a terminal node value if possible, assume
 	// terms of same type (otherwise incompatible!)
 	public Integer computeTermNode(int a1, XADDNode n1, int a2, XADDNode n2, int op) {
 
+		changed_var_index = -1;
 		if ((n1 instanceof XADDTNode) && (n2 instanceof XADDTNode)) {
 			XADDTNode xa1 = (XADDTNode) n1;
 			XADDTNode xa2 = (XADDTNode) n2;
@@ -1912,7 +2055,6 @@ public class XADD {
 
 			ArithExpr diff = new OperExpr(MINUS, xa1._expr, xa2._expr);
 			CompExpr comp = null;
-
 			if (USE_MINUS_COMP)
 				comp = new CompExpr(LT, diff, new DoubleExpr(0d));
 			else
@@ -1931,6 +2073,45 @@ public class XADD {
 			// }
 			//makes decisions canonical here!!!!!!!!!!!!
 			int var_index = getVarIndex(d, true);
+			//last node had a division
+			if (showDiv.size()>0 && lastDecision.size()>0)
+			{
+				Iterator<Integer> iterator =  lastDecision.keySet().iterator();
+			     while(iterator.hasNext())
+			     {
+			         int dec_id = (Integer) iterator.next();
+			        boolean dec_value = lastDecision.get(dec_id);
+			        if (_alOrder.get(dec_id) instanceof ExprDec) //else skip this decision
+			        {
+			        	ExprDec d1 = (ExprDec) _alOrder.get(dec_id);
+			        	for (int i=0;i<showDiv.size();i++)
+			        		if (showDiv.get(i).equals(d1._expr._lhs))
+			        		{	if (!dec_value) 
+			        			{
+			        				var_index = -var_index;
+			        				changed_var_index =1;
+			        			}
+			        			//is equal but did not change branch
+			        			else changed_var_index = 2;
+			        		}
+							//consider the neg case of showDiv
+			        		else 
+			        		{
+			        			 ArithExpr tempDiv = (ArithExpr) ArithExpr.op(showDiv.get(i),new DoubleExpr(-1d),PROD).makeCanonical();
+			        			if (tempDiv.equals(d1._expr._lhs))
+			        			{	
+			        				if (!dec_value) 
+			        				{
+			        					var_index = -var_index;
+			        					changed_var_index =1;
+			        				}
+			        				else changed_var_index =2;
+			        			}
+			        		}
+			        }
+			     }
+			}
+			showDiv.clear();
 			// System.out.println("ComputeTerm::max var_index " + _alOrder.get(var_index) + ": " + comp);
 			// System.exit(1);
 			int node1 = getTermNode(xa1._expr);
@@ -2534,8 +2715,12 @@ public class XADD {
 			Decision d = this;
 			if (d instanceof ExprDec) {
 				ExprDec e = (ExprDec) d;
+				//have to add the decisions from the divisor node to the decisions
+				// if the decision of the divisor is positive, the decision d's sign does not change, else flip the decision type. 
 				CompExpr new_comp = (CompExpr) e._expr.makeCanonical();
 				d = new ExprDec(new_comp);
+				//if there were divisors, add the decisions based on the expressions
+			
 			}
 
 			// Check for tautology (or inconsistency)
@@ -2574,90 +2759,14 @@ public class XADD {
 				if (tdec != null) {
 					d = tdec;
 				}
-				// else {
-				//
-				// // Invert the decision and check for implication...
-				// // curiously note that this testing is asymmetrical due
-				// // to equality and hence the above might not catch half
-				// // of the implications:
-				// // a \in [-10,0]
-				// // if (a < 0) x else y
-				// // becomes if (0 >= a)
-				// // null true
-				// ExprDec d2 = new ExprDec(new CompExpr(invertType(d1._expr._type),
-				// d1._expr._rhs, d1._expr._lhs));
-				//
-				// tdec = checkRangeImpliedDecision(d2);
-				// if (tdec != null) {
-				// // We inverted the decision, so now we have to invert
-				// d = new TautDec(!tdec._bTautology);
-				// }
-				// }
 			}
-			//divide all equation by coeff of first variable, invert type if negative
-			if (d instanceof ExprDec)
-			{
-				CompExpr comp = ((ExprDec) d)._expr;
-				//if the prime versions appear, ignore!
-				String contVar = null;
-				boolean handlePrime =false;
-				if (!(_hmContinuousVars.isEmpty()))
-				{
-					for (int i=0;i<_hmContinuousVars.size();i++)
-					{
-						contVar = _hmContinuousVars.get(i);
-						DoubleExpr doubleCoef = findVar(comp._lhs,contVar+"'");
-						if (doubleCoef!=(DoubleExpr)ZERO)
-						{
-							handlePrime = true;
-							break;
-						}
-					}
-					//making sure that the primes are not considered
-					if (!handlePrime)
-					{
-						for (int i=0;i<_hmContinuousVars.size();i++)
-						{
-							contVar = _hmContinuousVars.get(i);
-							DoubleExpr doubleCoef = findVar(comp._lhs,contVar);
-							if (doubleCoef!=(DoubleExpr)ZERO)
-							{
-								boolean flip_comparison=false;
-								flip_comparison = (doubleCoef._dConstVal < 0d) && (comp._type != EQ) && (comp._type != NEQ);
-
-
-								comp._lhs = (ArithExpr) (new OperExpr(PROD, 
-									(ArithExpr.op(new DoubleExpr(1d), doubleCoef, DIV)), comp._lhs)).makeCanonical();
-								int comp_oper = comp._type;
-								if (flip_comparison) 
-									switch (comp_oper) {
-									case GT:
-										comp._type= LT;
-										break;
-									case GT_EQ:
-										comp._type=LT_EQ;
-										break;
-									case LT:
-										comp._type=GT;break;
-									case LT_EQ:
-										comp._type=GT_EQ;
-										break;
-									}
-
-								((ExprDec) d)._expr = comp;
-								break;
-							}
-						}
-					}
-				}
-					
-			}
+			
 			return d;
 		}
 
 	}
 
-			public DoubleExpr findVar(ArithExpr expr,String action) 
+			public static DoubleExpr findVar(ArithExpr expr,String action) 
 			{
 				DoubleExpr result = (DoubleExpr) ZERO;
 				if (expr instanceof OperExpr && ((OperExpr) expr)._type == SUM) 
@@ -2693,7 +2802,7 @@ public class XADD {
 			}
 	// A single term (PROD)
 			
-	public DoubleExpr findVarTerm(OperExpr expr,String action1) 
+	public static DoubleExpr findVarTerm(OperExpr expr,String action1) 
 	{
 		DoubleExpr result = (DoubleExpr) ZERO;
 	
@@ -2866,6 +2975,7 @@ public class XADD {
 			// a > b : a <= b and swap branches
 			// a < b : a >= b and swap branches
 			// a != b : a == b and swap branches
+			//CANONICAL_DIVISOR.clear();
 			CompExpr new_expr = new CompExpr(_type, _lhs, _rhs);
 			switch (new_expr._type) {
 			case GT:
@@ -2895,8 +3005,11 @@ public class XADD {
 			//simplify the terms and continue
 			//TODO: accounted for only 1 div in each time, must solve for more div's
 			ArithExpr div = null;
+			
 			//find first divisor on lhs
 			//only change the decision of the expr, not the _lhs,rhs
+			//NOTE: it does not matter which side the divisor belongs to, a negative expr changes the sign, a positive one does not.
+			//indicate that division has been multiplied
 			CompExpr temp_expr = new CompExpr(new_expr._type, new_expr._lhs, new_expr._rhs);
 			do
 			{
@@ -2905,15 +3018,23 @@ public class XADD {
 					div = checkDivisor((OperExpr) temp_expr._lhs, div);
 				if (div!=null) 
 				{
+					//CANONICAL_DIVISOR.add(div);
+					//left side 
+					if (showDiv.size()>0)
+					{
+					for (int i=0;i<showDiv.size();i++)
+						if (showDiv.get(i)!=div) showDiv.add(div);
+					}
+					else showDiv.add(div);
 					temp_expr._lhs = removeDivFromOtherTerms((OperExpr) temp_expr._lhs, div);
+					temp_expr._lhs = (ArithExpr)temp_expr._lhs.makeCanonical();
 				//we have multiplied the lhs but not the rhs, just multiply it
 					if (temp_expr._rhs instanceof OperExpr)
 						temp_expr._rhs = removeDivFromOtherTerms((OperExpr)temp_expr._rhs, div);
 					else 
 						temp_expr._rhs = (OperExpr) ArithExpr.op(temp_expr._rhs, div, PROD);
-				
-				//new_expr._lhs = (ArithExpr) ((ArithExpr)new_expr._lhs).makeCanonical();
-				//new_expr._rhs = (ArithExpr) ((ArithExpr)new_expr._rhs).makeCanonical();
+					temp_expr._rhs = (ArithExpr) temp_expr._rhs.makeCanonical();
+	
 				}		
 			} while (div!=null);
 			
@@ -2924,25 +3045,87 @@ public class XADD {
 					div = checkDivisor((OperExpr) temp_expr._rhs, div);
 				if (div!=null) 
 				{
+					//CANONICAL_DIVISOR.add(div);
+					if (showDiv.size()>0)
+					{
+					for (int i=0;i<showDiv.size();i++)
+						if (showDiv.get(i)!=div) showDiv.add(div);
+					}
+					else showDiv.add(div);
 					temp_expr._rhs = removeDivFromOtherTerms((OperExpr) temp_expr._rhs, div);
+					temp_expr._rhs = (ArithExpr) temp_expr._rhs.makeCanonical();
 				//we have multiplied the lhs but not the rhs, just multiply it
 					if (temp_expr._lhs instanceof OperExpr)
 						temp_expr._lhs = removeDivFromOtherTerms((OperExpr) temp_expr._lhs, div);
 					else
 						temp_expr._lhs = (OperExpr) ArithExpr.op(temp_expr._lhs, div, PROD);
-				
-				//new_expr._lhs = (ArithExpr) ((ArithExpr)new_expr._lhs).makeCanonical();
-				//new_expr._rhs = (ArithExpr) ((ArithExpr)new_expr._rhs).makeCanonical();
+					temp_expr._lhs = (ArithExpr) temp_expr._lhs.makeCanonical();
+	
 				}		
 			} while (div!=null);
 			
 			// System.out.println(">> CompExpr: makeCanonical: " + _lhs + " - " + _rhs);
 			ArithExpr new_lhs = ArithExpr.op(temp_expr._lhs, temp_expr._rhs, MINUS);
 			new_lhs = (ArithExpr) new_lhs.makeCanonical();
-			//new_expr = new CompExpr(temp_expr._type, new_lhs, ZERO);
+			CompExpr current_expr = new CompExpr(temp_expr._type, new_lhs, ZERO);
 			// System.out.println(">> CompExpr: makeCanonical: " + new_expr);
 			
-			return new CompExpr(temp_expr._type, new_lhs, ZERO);
+			//divide all equation by coeff of first variable, invert type if negative
+			//if the prime versions appear, ignore!
+				String contVar = null;
+				boolean handlePrime =false;
+				if (!(_hmContinuousVars.isEmpty()))
+				{
+					for (int i=0;i<_hmContinuousVars.size();i++)
+					{
+						contVar = _hmContinuousVars.get(i);
+						DoubleExpr doubleCoef = findVar(current_expr._lhs,contVar+"'");
+						if (doubleCoef!=(DoubleExpr)ZERO)
+						{
+							handlePrime = true;
+							break;
+						}
+					}
+					//making sure that the primes are not considered
+					if (!handlePrime)
+					{
+						for (int i=0;i<_hmContinuousVars.size();i++)
+						{
+							contVar = _hmContinuousVars.get(i);
+							DoubleExpr doubleCoef = findVar(current_expr._lhs,contVar);
+							if (doubleCoef!=(DoubleExpr)ZERO)
+							{
+								boolean flip_comparison=false;
+								flip_comparison = (doubleCoef._dConstVal < 0d) && (current_expr._type != EQ) && (current_expr._type != NEQ);
+
+
+								current_expr._lhs = (ArithExpr) (new OperExpr(PROD, 
+									(ArithExpr.op(new DoubleExpr(1d), doubleCoef, DIV)), current_expr._lhs)).makeCanonical();
+								int comp_oper = current_expr._type;
+								if (flip_comparison) 
+									switch (comp_oper) {
+									case GT:
+										current_expr._type= LT;
+										break;
+									case GT_EQ:
+										current_expr._type=LT_EQ;
+										break;
+									case LT:
+										current_expr._type=GT;
+										break;
+									case LT_EQ:
+										current_expr._type=GT_EQ;
+										break;
+									}
+
+								//((ExprDec) d)._expr = comp;
+								break;
+							}
+						}
+					}
+				}
+					
+			return current_expr;
 		}
 
 		private OperExpr removeDivisor(OperExpr expr, ArithExpr div) {
@@ -3017,19 +3200,22 @@ public class XADD {
 						boolean removedDiv = false;
 						for (int k=0;k<temp_expr._terms.size();k++)
 							if (temp_expr._terms.get(k) instanceof OperExpr)
-							if ((((OperExpr) temp_expr._terms.get(k))._type == DIV)&& (((OperExpr) temp_expr._terms.get(k))._terms.get(1).equals(divisor)))
+							{
+								if ((((OperExpr) temp_expr._terms.get(k))._type == DIV)&& (((OperExpr) temp_expr._terms.get(k))._terms.get(1).equals(divisor)))
 								{
-								temp_expr._terms.set(k, removeDivisor((OperExpr) temp_expr._terms.get(k),divisor));
+									temp_expr._terms.set(k, removeDivisor((OperExpr) temp_expr._terms.get(k),divisor));
 									((OperExpr) temp_expr._terms.get(k))._type = PROD;
 									removedDiv = true;
 								}
-							else if (((OperExpr) temp_expr._terms.get(k))._type == DIV)//previously found divisor
+								else if ((((OperExpr) temp_expr._terms.get(k))._type == DIV)&&(((OperExpr) temp_expr._terms.get(k))._terms.get(1).equals(1d)))//previously found divisor
 								{
 								((OperExpr) temp_expr._terms.get(k))._type = PROD;
 									removedDiv = true;
 								}
+							
+							}//after if
 						if (!removedDiv)
-							temp_expr = (OperExpr) (ArithExpr.op(temp_expr, divisor, PROD));	
+								temp_expr = (OperExpr) (ArithExpr.op(temp_expr, divisor, PROD));
 					}
 					else temp_expr = (OperExpr) (ArithExpr.op(temp_expr, divisor, PROD));
 				//}			
@@ -3981,7 +4167,9 @@ public class XADD {
 		_hmReduceCache.clear();
 		_hmReduceLPCache.clear();
 		_hmReduceLeafOpCache.clear();
-		_hmApplyCache.clear();
+		_hmApplyCache0.clear();
+		_hmApplyCache1.clear();
+		_hmApplyCache2.clear();
 		_hmINode2Vars.clear();
 
 		// Set up temporary alternates to these HashMaps
