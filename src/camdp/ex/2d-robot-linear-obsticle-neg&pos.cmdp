@@ -1,11 +1,11 @@
 cvariables (x y)
-min-values (-100 -100)
-max-values (100 100)
+min-values (-500 -500)
+max-values (500 500)
 bvariables (g)
 ivariables()
 avariables(ax ay)
 
-action move (-1000000<=ax<=1000000 ^ -1000000<=ay<=1000000)
+action move (-1000<=ax<=1000 ^ -1000<=ay<=1000)
 g' (g 
 	([1.0]) 
 	([y>0]
