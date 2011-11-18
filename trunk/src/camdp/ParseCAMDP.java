@@ -204,13 +204,13 @@ public class ParseCAMDP {
 			int _runningSum=0;
 			
 			int reward_toGoal = _context.buildCanonicalXADD(reward);
-			Graph g = _context.getGraph(reward_toGoal);
+			/*Graph g = _context.getGraph(reward_toGoal);
 			g.addNode("_temp_");
 			g.addNodeLabel("_temp_", "V^0");
 			g.addNodeShape("_temp_", "square");
 			g.addNodeStyle("_temp_", "filled");
 			g.addNodeColor("_temp_", "lightblue");
-			g.launchViewer(1300, 770);
+			g.launchViewer(1300, 770);*/
 			//define total reward = reward_toGoal + penalty
 			if (obstacle.size()>0)
 			{
@@ -221,10 +221,10 @@ public class ParseCAMDP {
 				int var = _context.getVarIndex(_context.new BoolDec(BVars.get(0)), false);
 				int ind_true = _context.getINode(var, /* low */T_ZERO, /* high */T_ONE);
 				int ind_false = _context.getINode(var, /* low */T_ONE, /* high */T_ZERO);
-				int true_half = _context.applyInt(ind_true, T_ZERO, _context.PROD); // Note: this enforces canonicity so
+				int true_half = _context.applyInt(ind_true, T_ZERO, _context.PROD,-1); // Note: this enforces canonicity so
 				int reward_d = _context.apply(_runningSum,reward_toGoal, _context.SUM);
-				int false_half = _context.applyInt(ind_false, reward_d, _context.PROD); // can use applyInt rather than apply
-				int reward_dd = _context.applyInt(true_half, false_half, _context.SUM);
+				int false_half = _context.applyInt(ind_false, reward_d, _context.PROD,-1); // can use applyInt rather than apply
+				int reward_dd = _context.applyInt(true_half, false_half, _context.SUM,-1);
 				//int reward_dd = _context.apply(_runningSum,reward_toGoal, _context.SUM);
 				/*g = _context.getGraph(reward_dd);
 				g.addNode("_temp_");

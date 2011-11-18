@@ -148,8 +148,10 @@ public class ComputeVfunction {
 		q= computeMax(q, a._actionParam.get(0),a._contBounds.get(0),a._contBounds.get(1));
 		for (int i=1;i<a._actionParam.size();i++)
 		{
+			
 			oldq = q;
 			q= computeMax(oldq, a._actionParam.get(i),a._contBounds.get(i*2),a._contBounds.get(i*2+1));
+			//xadd.flushCaches();
 			//q = xadd.apply(q, oldq, XADD.MAX);
 		}
 		//*************************
@@ -192,13 +194,13 @@ public class ComputeVfunction {
 		g.addNodeColor("_temp_", "lightblue");
 		g.launchViewer(1300, 770);
 		max._runningMax = xadd.reduceLP(max._runningMax,camdp.contVars);
-		/* g = xadd.getGraph(max._runningMax);
+		 g = xadd.getGraph(max._runningMax);
 		g.addNode("_temp_");
 		g.addNodeLabel("_temp_", "Q after reduceLP, runningMax");
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "lightblue");
-		g.launchViewer(1300, 770);*/
+		g.launchViewer(1300, 770);
 		//no difference was made here after canonical
 		//max._runningMax = xadd.makeCanonical(max._runningMax);
 		//if a decision consisting of the action is negative, make it positive
