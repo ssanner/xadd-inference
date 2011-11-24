@@ -226,13 +226,13 @@ public class ParseCAMDP {
 				int false_half = _context.applyInt(ind_false, reward_d, _context.PROD,-1); // can use applyInt rather than apply
 				int reward_dd = _context.applyInt(true_half, false_half, _context.SUM,-1);
 				//int reward_dd = _context.apply(_runningSum,reward_toGoal, _context.SUM);
-				/*g = _context.getGraph(reward_dd);
+				Graph g = _context.getGraph(reward_dd);
 				g.addNode("_temp_");
 				g.addNodeLabel("_temp_", "Q reward_dd");
 				g.addNodeShape("_temp_", "square");
 				g.addNodeStyle("_temp_", "filled");
 				g.addNodeColor("_temp_", "lightblue");
-				g.launchViewer(1300, 770);*/
+				g.launchViewer(1300, 770);
 				reward_dd = _context.makeCanonical(reward_dd);
 				/*//can't perform LP-reduce because of x*ay (bi-linear constraints)
 				 * ArrayList<String> contVars = new ArrayList<String>();
