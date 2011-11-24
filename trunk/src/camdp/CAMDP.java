@@ -14,6 +14,11 @@ import java.util.Map;
 import util.IntTriple;
 import xadd.TestXADDDist;
 import xadd.XADD;
+import xadd.XADD.ArithExpr;
+import xadd.XADD.BoolDec;
+import xadd.XADD.CompExpr;
+import xadd.XADD.Decision;
+import xadd.XADD.DoubleExpr;
 import cmdp.HierarchicalParser;
 
 /**
@@ -120,8 +125,26 @@ public class CAMDP {
 	public int solve(int max_iter)
 	{
 		// Set value function equal to zero
-		_valueDD =_context.buildCanonicalXADD(ZERO);
-
+		//_valueDD =_context.buildCanonicalXADD(ZERO);
+		//value function does not have any actions in it: 
+		ArrayList l1 =new ArrayList();
+		l1.add("[y>0]");
+		ArrayList l1t = new ArrayList();
+		ArrayList l1f = new ArrayList();
+		l1t.add("99");
+		l1f.add("0");
+		l1.add(l1t);
+		l1.add(l1f);
+		
+		ArrayList l2 = new ArrayList();
+		l2.add("g");
+		ArrayList l2t = new ArrayList();
+		l2t.add("0");
+		l2.add(l2t);
+		l2.add(l1);
+		_valueDD =_context.buildCanonicalXADD(l2);
+		
+		
 		int iter = 0;
 		long[] time = new long[max_iter + 1];
 		int[] num_nodes = new int[max_iter + 1]; 
