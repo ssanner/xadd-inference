@@ -33,6 +33,7 @@ import lpsolve.LpSolve;
 import util.IntPair;
 import util.IntQuad;
 import util.IntTriple;
+import util.Pair;
 import xadd.XADD.ArithExpr;
 import cmdp.HierarchicalParser;
 
@@ -110,6 +111,8 @@ public class XADD {
 	public HashMap<IntTriple, Integer> _hmApplyCache1 = new HashMap<IntTriple, Integer>();
 	public HashMap<IntTriple, Integer> _hmApplyCache2 = new HashMap<IntTriple, Integer>();
 	public HashMap<XADDINode, HashSet<String>> _hmINode2Vars = new HashMap<XADDINode, HashSet<String>>();
+	public HashMap<Integer,Pair<XADDNode,XADDNode>> _hmLinearDecisions = new HashMap<Integer,Pair<XADDNode,XADDNode>>();
+
 	public HashSet<String> _hsBooleanVars = new HashSet<String>();
 	public static ArrayList<String> _hmContinuousVars;
 
@@ -120,6 +123,7 @@ public class XADD {
 	public HashSet<Integer> _hsSpecialNodes = new HashSet<Integer>();
 	public HashMap<XADDNode, Integer> _hmNode2IntNew = new HashMap<XADDNode, Integer>();
 	public HashMap<Integer, XADDNode> _hmInt2NodeNew = new HashMap<Integer, XADDNode>();
+
 
 	// Methods
 	public XADD() {
@@ -496,6 +500,213 @@ public class XADD {
 		_hmReduceCache.put(new IntTriple(node_id, var_id, op), ret);
 		return ret;
 	}
+	
+	
+	public int linearizeDecisions(int _runningMax, ArrayList<String> contVars) {
+		Integer ret = null;
+		XADDNode n = _hmInt2Node.get(_runningMax);
+		if (n == null) {
+			System.out.println("ERROR: " + _runningMax + " expected in node cache, but not found!");
+			new Exception().printStackTrace();
+			System.exit(1);
+		}
+
+		if (n instanceof XADDTNode) {
+			return _runningMax; // Assuming that to have a node id means canonical
+		}
+
+		// If its an internal node, check the reduce cache
+		
+		if (_hmLinearDecisions.containsKey(_runningMax)) {
+			// System.out.println("In cache, returning: " + qret);
+			return _runningMax;
+		}
+		XADDINode inode = (XADDINode) n;
+		
+		int ret_low = linearizeDecisions(inode._low,contVars);
+		int ret_high  = linearizeDecisions(inode._high,contVars);
+		
+		String varExpr = null;
+		if ((varExpr = isLinearable(inode,contVars))!=null)
+			//have to make the decision linear
+				ret = replaceLinear(varExpr,inode,contVars);
+		else ret = getINode(inode._var, ret_low, ret_high);
+		
+		return ret;
+	}	
+	
+
+	private int replaceLinear(String varExpr, XADDINode inode, ArrayList<String> contVars) 
+	{
+		//if both children are leaves, otherwise linearize(children)
+	/*	XADDINode inode = (XADDINode) _hmInt2Node.get(inodeID);
+		XADDNode low = _hmInt2Node.get(inode._low);
+		XADDNode high = _hmInt2Node.get(inode._high);
+		int inodeID_low = 0,inodeID_high = 0;
+		if (low instanceof XADDINode)
+			inodeID_low = linearizeDecisions(inode._low, contVars);
+		if (high instanceof XADDINode)
+			inodeID_high = linearizeDecisions(inode._high, contVars);
+		inodeID = getINode(inode._var, inodeID_low, inodeID_high);
+		
+		inode = (XADDINode) _hmInt2Node.get(inodeID);	*/
+		//build the two linear decisions (x*ay + 10*ay< 0) ==>>  (x+10<0 && ay<0)
+		int newPointer=0;
+		Decision d = _alOrder.get(inode._var);
+		ExprDec exprD = (ExprDec) d;
+		//for the variable decision
+		ArithExpr d1_lhs = ArithExpr.parse(varExpr);
+		CompExpr comp_d1 = new CompExpr(exprD._expr._type, d1_lhs, ArithExpr.parse("0"));
+		Decision d1 = new ExprDec(comp_d1);
+		int var = getVarIndex(d1,true);
+		//newPointer = getINode(var,inode._low, inode._high);
+		//newPointer = getVarNode(new ExprDec(comp_d1),0, 1);
+		
+		
+		
+		OperExpr lhs = (OperExpr) exprD._expr._lhs;
+		for (int j=0;j<lhs._terms.size();j++)
+		{
+			String decExpr = lhs._terms.get(j).toString();
+			decExpr = decExpr.replace(varExpr, "1");
+			lhs._terms.set(j, ArithExpr.parse(decExpr));
+		}
+		
+		ArithExpr d2_lhs = (ArithExpr) lhs.makeCanonical();
+		CompExpr comp_d2 = new CompExpr(exprD._expr._type, d2_lhs, ArithExpr.parse("0"));
+		Decision d2 = new ExprDec(comp_d2);
+		var = getVarIndex(d2,true);
+		//the inside node 
+		newPointer = getINode(var, inode._low, inode._high);
+		newPointer = makeCanonical(newPointer);
+		int newNegPointer = getINode(-var, inode._low, inode._high);
+		int T_ZERO = getTermNode(ZERO);
+		int T_ONE = getTermNode(ONE);
+		var = getVarIndex(d1, false);
+		//Difference of branches due to inequality sign
+		if (exprD._expr._type == GT ||exprD._expr._type == GT_EQ)
+		{
+			int ind_true =getINode(var, /* low */T_ZERO, /* high */T_ONE);
+			int ind_false = getINode(var, /* low */T_ONE, /* high */T_ZERO);
+			int true_half = applyInt(ind_true, newPointer, PROD,-1); // Note: this enforces canonicity so
+			int false_half =applyInt(ind_false, newNegPointer, PROD,-1); // can use applyInt rather than apply
+			newPointer = apply(true_half, false_half, SUM);
+			/* example : ( [x*ay + 10*ay <= 0]
+				( [50] )
+				( [y] ) )
+
+			 	* result: ( [(1 * ay) <= 0]
+    						( [(10 + (1 * x)) <= 0]
+       							( [(1 * y)] ) 
+       							( [50] ) )  
+    						( [(10 + (1 * x)) <= 0]
+       							( [50] ) 
+       							( [(1 * y)] ) )  ) */
+		}
+		else if (exprD._expr._type == LT ||exprD._expr._type == LT_EQ)
+		{
+			int ind_true =getINode(var, /* low */T_ZERO, /* high */T_ONE);
+			int ind_false = getINode(var, /* low */T_ONE, /* high */T_ZERO);
+			int true_half = applyInt(ind_true, newNegPointer, PROD,-1); // Note: this enforces canonicity so
+			int false_half =applyInt(ind_false, newPointer, PROD,-1); // can use applyInt rather than apply
+			newPointer = apply(true_half, false_half, SUM);
+			
+			/* example : ( [x*ay + 10*ay <= 0]
+			   				( [50] )
+               				( [y] ) )
+
+			 * result: ( [(1 * ay) <= 0]
+				    ( [(10 + (1 * x)) <= 0]
+				       ( [(1 * y)] ) 
+				       ( [50] ) )  
+				    ( [(10 + (1 * x)) <= 0]
+				       ( [50] ) 
+				       ( [(1 * y)] ) )  ) */
+			
+		}
+		Pair<XADDNode,XADDNode> branch;
+		XADDNode newNode1 = _hmInt2Node.get(newPointer);
+		XADDINode newNode=(XADDINode) newNode1;
+		XADDNode newNode2 = _hmInt2Node.get(newNode._low);
+		XADDNode newNode3 = _hmInt2Node.get(newNode._high);
+		if (newNode1 instanceof XADDINode)
+		{
+			newNode=(XADDINode) newNode1;
+			branch = new Pair<XADDNode, XADDNode>(_hmInt2Node.get(newNode._low), _hmInt2Node.get(newNode._high));
+			_hmLinearDecisions.put(newPointer, branch);
+		}
+		
+		if (newNode2 instanceof XADDINode)
+		{
+			newNode = (XADDINode) newNode2;
+			branch = new Pair<XADDNode, XADDNode>(_hmInt2Node.get(newNode._low), _hmInt2Node.get(newNode._high));
+			_hmLinearDecisions.put(_hmNode2Int.get(newNode2), branch);
+		}
+		
+		if (newNode3 instanceof XADDINode)
+		{
+			newNode = (XADDINode) newNode3;
+			branch = new Pair<XADDNode, XADDNode>(_hmInt2Node.get(newNode._low), _hmInt2Node.get(newNode._high));
+			_hmLinearDecisions.put(_hmNode2Int.get(newNode2), branch);
+		}
+		return newPointer;
+		
+	}
+
+	private String isLinearable(XADDINode inode, ArrayList<String> contVars) 
+	{
+		Decision d = _alOrder.get(inode._var);
+		if (d instanceof ExprDec) 
+		{
+			ExprDec exprD = (ExprDec) d;
+			OperExpr lhs = (OperExpr) exprD._expr._lhs;
+			int noLinearFound = 0;
+			for (int i=0;i<contVars.size();i++)
+			{
+				noLinearFound = 0;	
+				VarExpr varExpr = new VarExpr(contVars.get(i));	
+					//for each term in the sum, search for varExpr, if not available then jump out of loop of finding
+					for (int j=0;j<lhs._terms.size();j++)
+					{
+						ArithExpr decExpr = lhs._terms.get(j);
+						if (decExpr instanceof OperExpr) 
+						{
+							boolean checkTerms = false;
+							for (int k=0;k<((OperExpr)decExpr)._terms.size();k++)
+								if (((OperExpr) decExpr)._terms.get(k).equals(varExpr))
+								{
+									checkTerms = true;
+									break;
+								}
+							if (checkTerms) 
+							{
+								noLinearFound ++;
+					
+							}
+						}
+						else if (decExpr instanceof VarExpr) 
+						{
+							if (!((VarExpr) decExpr)._sVarName.equals(varExpr))
+							{
+								noLinearFound++;
+						
+							}
+						} else if (decExpr instanceof DoubleExpr) 
+						{
+							noLinearFound++;
+						
+						}
+					
+					}
+					if (noLinearFound ==lhs._terms.size()) return varExpr._sVarName;
+
+			}
+		}
+		return null;
+	}
+	
+	
+		
 
 	public IntTriple _tempReduceLPKey = new IntTriple(-1, -1, -1);
 	public HashMap<String, Integer> _cvar2ID = null;
@@ -4171,6 +4382,7 @@ public class XADD {
 		_hmApplyCache1.clear();
 		_hmApplyCache2.clear();
 		_hmINode2Vars.clear();
+		_hmLinearDecisions.clear();
 
 		// Set up temporary alternates to these HashMaps
 		_hmNode2IntNew = new HashMap<XADDNode, Integer>();
@@ -4206,5 +4418,6 @@ public class XADD {
 			_hmNode2IntNew.put((XADDTNode) node, id);
 
 		}
-	}	
+	}
+
 }
