@@ -39,7 +39,16 @@ public class TestXADD {
 		 * // Build and display an XADD
 		 */
 		XADD xadd_context = new XADD();
-
+		
+		//////////////////////
+		//test linearizing decision nodes
+		int xadd_test_6 = TestBuild(xadd_context, "./src/xadd/test6.xadd");
+		ArrayList<String> cont = new ArrayList<String>();
+		cont.add("x");
+		cont.add("y");
+		cont.add("ay");
+		int ret = xadd_context.linearizeDecisions(xadd_test_6, cont);
+		
 		// Put all boolean variables first to avoid reordering clashes
 		xadd_context.getVarIndex(xadd_context.new BoolDec("f"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("g"), true);
