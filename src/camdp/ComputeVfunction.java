@@ -101,8 +101,8 @@ public class ComputeVfunction {
 				//q = regression.regress(temp_node_list, temp_cvar_names, temp_subst, 0, q);//regress(_valueDD, a);
 				q= xadd.reduceProcessXADDLeaf(node_id_list.get(i), xadd.new DeltaFunctionSubstitution(cvar_names.get(i), q), true);
 				System.out.println("*** - size before makeCanonical: " + xadd.getNodeCount(q));
-				q = xadd.makeCanonical(q);
-				System.out.println("*** - size after: " + xadd.getNodeCount(q));
+				//q = xadd.makeCanonical(q);
+				//System.out.println("*** - size after: " + xadd.getNodeCount(q));
 				
 				hashReg.put(regr_key, q);
 			}
@@ -202,7 +202,16 @@ public class ComputeVfunction {
 		g.addNodeColor("_temp_", "lightblue");
 		g.launchViewer(1300, 770);
 		//no difference was made here after canonical
-		//max._runningMax = xadd.makeCanonical(max._runningMax);
+		max._runningMax = xadd.linearizeDecisions(max._runningMax,camdp.contVars);
+		 g = xadd.getGraph(max._runningMax);
+			g.addNode("_temp_");
+			g.addNodeLabel("_temp_", "Q after reduceLP, runningMax");
+			g.addNodeShape("_temp_", "square");
+			g.addNodeStyle("_temp_", "filled");
+			g.addNodeColor("_temp_", "lightblue");
+			g.launchViewer(1300, 770);
+		
+		max._runningMax = xadd.reduceLP(max._runningMax,camdp.contVars);
 		//if a decision consisting of the action is negative, make it positive
 		
 		/* g = xadd.getGraph(max._runningMax);
