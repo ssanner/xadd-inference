@@ -38,7 +38,7 @@ public class CAMDP {
 
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = true;
-	public final static boolean DISPLAY_2D = true;
+	public final static boolean DISPLAY_2D = false;
 	public final static boolean DISPLAY_MAX = false;
 	public final static boolean PRINTSCREENEVAL = false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
@@ -53,11 +53,13 @@ public class CAMDP {
 	public final static ArrayList<String> ZERO  =  new ArrayList<String> (Arrays.asList("[0]"));  
 	/* For printing */
 	public static DecimalFormat _df = new DecimalFormat("#.###");
-	public static String  NAME_FILE_3D="./src/cmdp/ex/data/File3D";
+	public static String  NAME_FILE_3D="./src/camdp/ex/data/File3D";
+	public static String  FILE_TIME_MEM="./src/camdp/ex/analysis/TimeMem";
 
 	/* Static variables */
 	public static long _lTime; // For timing purposes
 	public static Runtime RUNTIME = Runtime.getRuntime();
+
 
 	/* Local vars */
 	public XADD _context = null;
@@ -125,9 +127,9 @@ public class CAMDP {
 	public int solve(int max_iter)
 	{
 		// Set value function equal to zero
-		//_valueDD =_context.buildCanonicalXADD(ZERO);
+		_valueDD =_context.buildCanonicalXADD(ZERO);
 		//value function does not have any actions in it: 
-		ArrayList l1 =new ArrayList();
+		/*ArrayList l1 =new ArrayList();
 		l1.add("[y>0]");
 		ArrayList l1t = new ArrayList();
 		ArrayList l1f = new ArrayList();
@@ -142,7 +144,7 @@ public class CAMDP {
 		l2t.add("0");
 		l2.add(l2t);
 		l2.add(l1);
-		_valueDD =_context.buildCanonicalXADD(l2);
+		_valueDD =_context.buildCanonicalXADD(l2);*/
 		
 		
 		int iter = 0;
@@ -285,6 +287,10 @@ public class CAMDP {
 	// Miscellaneous
 	////////////////////////////////////////////////////////////////////////////
 	public void flushCaches() {
+		flushCaches(new ArrayList<Integer>());
+	}
+	
+	public void flushCaches(ArrayList<Integer> special_nodes) {
 		if (((double)RUNTIME.freeMemory() / 
 				(double)RUNTIME.totalMemory()) > FLUSH_PERCENT_MINIMUM) {
 			System.out.println("No need to flush caches.");
@@ -295,6 +301,8 @@ public class CAMDP {
 				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
 
 		_context.clearSpecialNodes();
+		for (Integer node : special_nodes)
+			_context.addSpecialNode(node);
 
 		for (CAction a : _hmName2Action.values()) {
 			_context.addSpecialNode(a._reward);
@@ -444,29 +452,13 @@ public class CAMDP {
 			usage();
 		}
 
-		PRINT3DFILE = false;
+		PRINT3DFILE = true;
 		try {
 			if (args.length >= 3)
 				PRINT3DFILE = Boolean.parseBoolean(args[2]);
 		} catch (NumberFormatException nfe) {
 			System.out.println("\nIllegal print3DFile value: "+ args[2] + "\n");
 			System.exit(1);
-		}
-
-		if (PRINT3DFILE & args.length==7){ 
-			rover = Boolean.parseBoolean(args[3]);
-			varX = args[4];
-			varY = args[5];
-			size3D= Double.parseDouble(args[6]);
-		}
-		else{
-			if (PRINT3DFILE){
-				System.out.println("\nMust enter: is it a rover problem?");
-				System.out.println("\nMust enter: X var");
-				System.out.println("\nMust enter: Y var");
-				System.out.println("\nMust enter: size 3D");
-				System.exit(1);
-			}
 		}
 
 		// Build a CMDP, display, solve
