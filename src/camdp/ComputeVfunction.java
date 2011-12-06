@@ -2,12 +2,17 @@ package camdp;
 
 import graph.Graph;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
 import util.IntTriple;
+import xadd.TestXADDDist;
 import xadd.XADD;
 import xadd.XADD.ArithExpr;
 import xadd.XADD.BoolDec;
@@ -19,13 +24,23 @@ public class ComputeVfunction {
 	CAMDP camdp = null;
 	public final static boolean PRINTFINALQ = false;
 	public HashMap<IntTriple,Integer> hashReg;
+	//public FileWriter fstream;
+	//  BufferedWriter out; 
 	public ComputeVfunction(XADD context,CAMDP camdp2)
 	{
 		xadd = context;
 		camdp = camdp2;
 		hashReg = camdp.get_hmRegrKey2Node();
-		
-
+		/*try {
+			fstream = new FileWriter("runningMax.txt");
+			
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		out = new BufferedWriter(fstream);
+*/
 	}
 	
 	/**
@@ -132,9 +147,12 @@ public class ComputeVfunction {
 				xadd.scalarOp(q, camdp.get_bdDiscount().doubleValue(), XADD.PROD), 
 				XADD.SUM);
     	
+    	
 		for (Integer constraint : camdp.get_alConstraints()) {
 			q = xadd.apply(q, constraint, XADD.PROD);
 		}
+		
+		
 		//************************** 
 		//Continuous Action code
 		//now we have the q_value at the leaves, 
@@ -148,7 +166,8 @@ public class ComputeVfunction {
 		q= computeMax(q, a._actionParam.get(0),a._contBounds.get(0),a._contBounds.get(1));
 		for (int i=1;i<a._actionParam.size();i++)
 		{
-			
+			ArrayList<Integer> spec_nodes = new ArrayList<Integer>(Arrays.asList(q));
+			camdp.flushCaches(spec_nodes);
 			oldq = q;
 			q= computeMax(oldq, a._actionParam.get(i),a._contBounds.get(i*2),a._contBounds.get(i*2+1));
 			//xadd.flushCaches();
@@ -159,7 +178,12 @@ public class ComputeVfunction {
 		if(PRINTFINALQ){ 
 			System.out.println("- Final Q(" + a._sName + "):\n" + xadd.getString(q));
 		}
-    	
+    	/*try {
+			//out.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}*/
 		return q;
 	}
 	public XADD getXadd() {
@@ -179,41 +203,123 @@ public class ComputeVfunction {
 		XADDLeafMax max = xadd.new XADDLeafMax(_action, lowerbound,upperbound);
 		
 		Graph g = xadd.getGraph(ixadd);
-		g.addNode("_temp_");
+		/*g.addNode("_temp_");
 		g.addNodeLabel("_temp_", "Q-value before max operation");
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "lightblue");
-		g.launchViewer(1300, 770);
+		g.launchViewer(1300, 770);*/
+		xadd.PATH_COUNTER_MAX = 0;
 		ixadd  = xadd.reduceProcessXADDLeaf(ixadd, max, false);
-		g = xadd.getGraph(max._runningMax);
+		System.out.print("\n&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n NUMBER OF PATHS: "+ xadd.PATH_COUNTER_MAX+"\n");
+		/* g = xadd.getGraph(max._runningMax);
 		g.addNode("_temp_");
 		g.addNodeLabel("_temp_", "Q-value before LP");
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "lightblue");
-		g.launchViewer(1300, 770);
+		g.launchViewer(1300, 770);*/
 		max._runningMax = xadd.reduceLP(max._runningMax,camdp.contVars);
-		 g = xadd.getGraph(max._runningMax);
+		/*  g = xadd.getGraph(max._runningMax);
 		g.addNode("_temp_");
 		g.addNodeLabel("_temp_", "Q after reduceLP, runningMax");
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "lightblue");
-		g.launchViewer(1300, 770);
+		g.launchViewer(1300, 770);*/
 		//no difference was made here after canonical
+		/*try 
+		{
+			out.write("\n runningMax before LINEAR for action "+ _action+"\n");
+			out.write(xadd._hmInt2Node.get(max._runningMax).toString());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		*/
 		max._runningMax = xadd.linearizeDecisions(max._runningMax,camdp.contVars);
-		 g = xadd.getGraph(max._runningMax);
+		 /*g = xadd.getGraph(max._runningMax);
+			g.addNode("_temp_");
+			g.addNodeLabel("_temp_", "Q after reduceLP, runningMax");
+			g.addNodeShape("_temp_", "square");
+			g.addNodeStyle("_temp_", "filled");
+			g.addNodeColor("_temp_", "lightblue");
+			g.launchViewer(1300, 770);*/
+
+		max._runningMax = xadd.reduceLP(max._runningMax,camdp.contVars);
+		
+		/* g = xadd.getGraph(max._runningMax);
 			g.addNode("_temp_");
 			g.addNodeLabel("_temp_", "Q after reduceLP, runningMax");
 			g.addNodeShape("_temp_", "square");
 			g.addNodeStyle("_temp_", "filled");
 			g.addNodeColor("_temp_", "lightblue");
 			g.launchViewer(1300, 770);
-		
-		max._runningMax = xadd.reduceLP(max._runningMax,camdp.contVars);
+			
+			try 
+			{
+				out.write("\n runningMax AFTER LINEAR/LP for action "+ _action+"\n");
+				out.write(xadd._hmInt2Node.get(max._runningMax).toString());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
 		//if a decision consisting of the action is negative, make it positive
+		//draw 2D 
+	/*	TestXADDDist plot = new TestXADDDist();
+		HashMap<String,Boolean> bvars = new HashMap<String, Boolean>();
+		HashMap<String,Double> dvars = new HashMap<String, Double>();
+		//draw for ay =0
+		int tempDrawID = max._runningMax;
+		HashMap <String,ArithExpr> subst = new HashMap<String, XADD.ArithExpr>();
+		subst.put("ay", ArithExpr.parse("0"));
+		tempDrawID = xadd.substitute(tempDrawID, subst);
+		bvars.put("g", false);
+		plot.Plot3DXADD(xadd, tempDrawID, -20, 1, 20, -100, 1, 10, bvars,dvars ,"x", "y", "Q for ay=0");
 		
+		 tempDrawID = max._runningMax;
+		 subst = new HashMap<String, XADD.ArithExpr>();
+		subst.put("ay", ArithExpr.parse("10"));
+		tempDrawID = xadd.substitute(tempDrawID, subst);
+		bvars.put("g", false);
+		plot.Plot3DXADD(xadd, tempDrawID, -20, 1, 20, -100, 1, 10, bvars,dvars ,"x", "y", "Q for ay=10");
+		
+		tempDrawID = max._runningMax;
+		subst = new HashMap<String, XADD.ArithExpr>();
+		subst.put("ay", ArithExpr.parse("50"));
+		tempDrawID = xadd.substitute(tempDrawID, subst);
+		bvars.put("g", false);
+		plot.Plot3DXADD(xadd, tempDrawID, -20, 1, 20, -100, 1, 10, bvars,dvars ,"x", "y", "Q for ay=50");
+		
+		
+		tempDrawID = max._runningMax;
+		subst = new HashMap<String, XADD.ArithExpr>();
+		subst.put("ay", ArithExpr.parse("99"));
+		tempDrawID = xadd.substitute(tempDrawID, subst);
+		bvars.put("g", false);
+		plot.Plot3DXADD(xadd, tempDrawID, -20, 1, 20, -100, 1, 10, bvars,dvars ,"x", "y", "Q for ay=99");
+		
+		tempDrawID = max._runningMax;
+		subst = new HashMap<String, XADD.ArithExpr>();
+		subst.put("ay", ArithExpr.parse("30"));
+		tempDrawID = xadd.substitute(tempDrawID, subst);
+		bvars.put("g", false);
+		plot.Plot3DXADD(xadd, tempDrawID, -20, 1, 20, -100, 1, 10, bvars,dvars ,"x", "y", "Q for ay=30");
+		
+		tempDrawID = max._runningMax;
+		subst = new HashMap<String, XADD.ArithExpr>();
+		subst.put("ay", ArithExpr.parse("79"));
+		tempDrawID = xadd.substitute(tempDrawID, subst);
+		bvars.put("g", false);
+		plot.Plot3DXADD(xadd, tempDrawID, -20, 1, 20, -100, 1, 10, bvars,dvars ,"x", "y", "Q for ay=79");
+		
+		tempDrawID = max._runningMax;
+		subst = new HashMap<String, XADD.ArithExpr>();
+		subst.put("ay", ArithExpr.parse("119"));
+		tempDrawID = xadd.substitute(tempDrawID, subst);
+		bvars.put("g", false);
+		plot.Plot3DXADD(xadd, tempDrawID, -20, 1, 20, -100, 1, 10, bvars,dvars ,"x", "y", "Q for ay=119");*/
+		///
 		/* g = xadd.getGraph(max._runningMax);
 			g.addNode("_temp_");
 			g.addNodeLabel("_temp_", "Q after makeCanonical");
