@@ -112,6 +112,7 @@ public class XADD {
 	public HashMap<IntTriple, Integer> _hmReduceLPCache = new HashMap<IntTriple, Integer>();
 	public HashMap<IntPair, Integer> _hmReduceLeafOpCache = new HashMap<IntPair, Integer>();
 	public HashMap<IntPair, Integer> _hmReduceAnnotateCache = new HashMap<IntPair, Integer>();
+	public HashMap<IntTriple, Integer> _hmApplyCache = new HashMap<IntTriple, Integer>();
 	public HashMap<IntTriple, Integer> _hmApplyCache0 = new HashMap<IntTriple, Integer>();
 	public HashMap<IntTriple, Integer> _hmApplyCache1 = new HashMap<IntTriple, Integer>();
 	public HashMap<IntTriple, Integer> _hmApplyCache2 = new HashMap<IntTriple, Integer>();
@@ -595,7 +596,7 @@ public class XADD {
 			int ind_false = getINode(var, /* low */T_ONE, /* high */T_ZERO);
 			int true_half = applyInt(ind_true, newPointer, PROD,-1); // Note: this enforces canonicity so
 			int false_half =applyInt(ind_false, newNegPointer, PROD,-1); // can use applyInt rather than apply
-			newPointer = apply(true_half, false_half, SUM);
+			newPointer = apply(true_half, false_half, SUM,-1);
 			/* example : ( [x*ay + 10*ay <= 0]
 				( [50] )
 				( [y] ) )
@@ -614,7 +615,7 @@ public class XADD {
 			int ind_false = getINode(var, /* low */T_ONE, /* high */T_ZERO);
 			int true_half = applyInt(ind_true, newNegPointer, PROD,-1); // Note: this enforces canonicity so
 			int false_half =applyInt(ind_false, newPointer, PROD,-1); // can use applyInt rather than apply
-			newPointer = apply(true_half, false_half, SUM);
+			newPointer = apply(true_half, false_half, SUM,-1);
 			
 			/* example : ( [x*ay + 10*ay <= 0]
 			   				( [50] )
@@ -1254,12 +1255,12 @@ public class XADD {
 						node1 = getTermNode(new_rhs);
 						node2 = getTermNode(new DoubleExpr(_higherBound));
 						if (xadd_upper_bound==-1) xadd_upper_bound = getINode(var_index1, node2 , node1);
-						else xadd_upper_bound = apply(xadd_upper_bound, getINode(var_index1, node2 , node1), MIN);
+						else xadd_upper_bound = apply(xadd_upper_bound, getINode(var_index1, node2 , node1), MIN,-1);
 						//flip sides
 						node2 = getTermNode(new DoubleExpr(_lowerBound));
 						node1 = getTermNode(new_rhs);
 						if (xadd_lower_bound==-1) xadd_lower_bound = getINode(var_index2, node2 , node1);
-						else xadd_lower_bound = apply(xadd_lower_bound, getINode(var_index2, node2 , node1), MAX);
+						else xadd_lower_bound = apply(xadd_lower_bound, getINode(var_index2, node2 , node1), MAX,-1);
 						comp_oper = LT_EQ;
 					}
 
@@ -1268,12 +1269,12 @@ public class XADD {
 						node1 = getTermNode(new_rhs);
 						node2 = getTermNode(new DoubleExpr(_lowerBound));
 						if (xadd_lower_bound==-1) xadd_lower_bound = getINode(var_index1, node2 , node1);
-						else xadd_lower_bound = apply(xadd_lower_bound, getINode(var_index1, node2 , node1), MAX);
+						else xadd_lower_bound = apply(xadd_lower_bound, getINode(var_index1, node2 , node1), MAX,-1);
 						//flip sides
 						node2 = getTermNode(new DoubleExpr(_higherBound));
 						node1 = getTermNode(new_rhs);
 						if (xadd_upper_bound==-1) xadd_upper_bound = getINode(var_index2, node2 , node1);
-						else xadd_upper_bound = apply(xadd_upper_bound, getINode(var_index2, node2 , node1), MIN);
+						else xadd_upper_bound = apply(xadd_upper_bound, getINode(var_index2, node2 , node1), MIN,-1);
 						comp_oper= GT_EQ;
 					}
 					computedBound = true;
@@ -1335,7 +1336,7 @@ public class XADD {
 						xadd_lower_bound = getTermNode(e);
 					} else {
 						// Lower bound is max of all lower bounds
-						xadd_lower_bound = apply(xadd_lower_bound, getTermNode(e), MAX);
+						xadd_lower_bound = apply(xadd_lower_bound, getTermNode(e), MAX,-1);
 					}
 				}
 			}
@@ -1352,7 +1353,7 @@ public class XADD {
 						xadd_upper_bound = getTermNode(e);
 					} else {
 						// Upper bound is min of all upper bounds
-						xadd_upper_bound = apply(xadd_upper_bound, getTermNode(e), MIN);
+						xadd_upper_bound = apply(xadd_upper_bound, getTermNode(e), MIN,-1);
 					}
 				}
 			}
@@ -1381,20 +1382,20 @@ public class XADD {
 			// leaf_integral{int_var = xadd_upper_bound} - leaf_integral{int_var = xadd_lower_bound}
 			int int_eval_lower = substituteXADDforVarInArithExpr(leaf_val, _actionString, xadd_lower_bound);
 			int int_eval_upper = substituteXADDforVarInArithExpr(leaf_val, _actionString, xadd_upper_bound);
-			int int_eval = apply(int_eval_upper, int_eval_lower, MAX);
+			int int_eval = apply(int_eval_upper, int_eval_lower, MAX,-1);
 			if (root!=0)
-				int_eval = apply(int_eval,root_xadd,MAX);
+				int_eval = apply(int_eval,root_xadd,MAX,-1);
 			// Finally, multiply in boolean decisions and irrelevant comparison expressions
 			// to the XADD and add it to the running sum
 			// - HashMap<Decision,Boolean> int_var_indep_decisions
 			for (Map.Entry<Decision, Boolean> me : int_var_indep_decisions.entrySet()) {
 				double high_val = me.getValue() ? 1d : 0d;
 				double low_val = me.getValue() ? 0d : 1d;
-				int_eval = apply(int_eval, getVarNode(me.getKey(), low_val, high_val), PROD);
+				int_eval = apply(int_eval, getVarNode(me.getKey(), low_val, high_val), PROD,-1);
 			}
 			int_eval = reduceLP(int_eval, _hmContinuousVars);
 			if (_runningMax == -1) _runningMax = int_eval;
-			 	else _runningMax = apply(_runningMax, int_eval, MAX);
+			 	else _runningMax = apply(_runningMax, int_eval, MAX,-1);
 			_runningMax = reduceLP(_runningMax, _hmContinuousVars);
 			//_runningMax = apply(_runningMax, int_eval, MAX);
 			// reduceLP
@@ -2313,10 +2314,84 @@ public class XADD {
 	public int apply(int a1, int a2, int op) {
 		lastDecision.clear();
 		//start with no divisions, i4 = -1
-		int ret = applyInt(a1, a2, op,-1);
+		int ret = applyInt(a1, a2, op);
 		// TODO: should maintain a reusable reduce cache here
 		return makeCanonical(ret);
 	}
+	public int applyInt(int a1, int a2, int op) {
+
+		//adding divBranch, -1 if no divison, 1 if branch false, 2 if branch true
+		_tempApplyKey.set(a1, a2, op);
+		Integer ret = _hmApplyCache.get(_tempApplyKey);
+		if (ret != null) {
+			return ret;
+		}
+
+		// Can we create a terminal node here?
+		XADDNode n1 = _hmInt2Node.get(a1);
+		XADDNode n2 = _hmInt2Node.get(a2);
+		ret = computeTermNode(a1, n1, a2, n2, op);
+		if (ret == null) {
+
+			int v1low, v1high, v2low, v2high, var;
+
+			// Find node with min id (or only internal node)
+			if (n1 instanceof XADDINode) {
+				if (n2 instanceof XADDINode) {
+					if (((XADDINode) n1)._var < ((XADDINode) n2)._var) {
+						var = ((XADDINode) n1)._var;
+					} else {
+						var = ((XADDINode) n2)._var;
+					}
+				} else {
+					var = ((XADDINode) n1)._var;
+				}
+			} else {
+				var = ((XADDINode) n2)._var;
+			}
+
+			// Determine next recursion for n1
+			if ((n1 instanceof XADDINode) && (((XADDINode) n1)._var == var)) {
+				XADDINode n1i = (XADDINode) n1;
+				v1low = n1i._low;
+				v1high = n1i._high;
+			} else {
+				v1low = a1;
+				v1high = a1;
+			}
+
+			// Determine next recursion for n2
+			if ((n2 instanceof XADDINode) && (((XADDINode) n2)._var == var)) {
+				XADDINode n2i = (XADDINode) n2;
+				v2low = n2i._low;
+				v2high = n2i._high;
+			} else {
+				v2low = a2;
+				v2high = a2;
+			}
+
+			// Perform in-line reduction and set min/max for subnodes if needed
+			int low = applyInt(v1low, v2low, op);
+			int high = applyInt(v1high, v2high, op);
+
+			// getINode will take care of 'low==high'
+			ret = getINode(var, low, high);
+
+		}
+
+		_hmApplyCache.put(new IntTriple(a1, a2, op), ret);
+		return ret;
+	}
+	
+	
+	public int apply(int a1, int a2, int op,int divBranch) {
+		lastDecision.clear();
+		//start with no divisions, i4 = -1
+		int ret = applyInt(a1, a2, op,divBranch);
+		// TODO: should maintain a reusable reduce cache here
+		return makeCanonical(ret);
+	}
+
 
 	public int applyInt(int a1, int a2, int op,int divBranch) {
 
@@ -4576,6 +4651,7 @@ public class XADD {
 		_hmReduceCache.clear();
 		_hmReduceLPCache.clear();
 		_hmReduceLeafOpCache.clear();
+		_hmApplyCache.clear();
 		_hmApplyCache0.clear();
 		_hmApplyCache1.clear();
 		_hmApplyCache2.clear();
