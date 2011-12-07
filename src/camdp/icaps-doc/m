@@ -1,0 +1,5 @@
+latex report.tex
+dvips -Ppdf -G0 -tletter report.dvi -o report.pdf
+
+
+
