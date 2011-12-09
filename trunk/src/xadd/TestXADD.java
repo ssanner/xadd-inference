@@ -10,9 +10,13 @@ import java.util.HashSet;
 import xadd.XADD.ArithExpr;
 import xadd.XADD.BoolDec;
 import xadd.XADD.CompExpr;
+import xadd.XADD.Decision;
 import xadd.XADD.DeltaFunctionSubstitution;
 import xadd.XADD.DoubleExpr;
+import xadd.XADD.ExprDec;
 import xadd.XADD.VarExpr;
+import xadd.XADD.XADDINode;
+import xadd.XADD.XADDLeafMax;
 import xadd.XADD.XADDTNode;
 import cmdp.HierarchicalParser;
 
@@ -41,13 +45,84 @@ public class TestXADD {
 		XADD xadd_context = new XADD();
 		
 		//////////////////////
+		int ixadd = TestBuild(xadd_context, "./src/xadd/test7.xadd");
+		
+		Graph g1 = xadd_context.getGraph(ixadd);
+		g1.launchViewer();
+		
+		int reduce = xadd_context.reduceLP(ixadd,Arrays.asList("x"));
+		g1 = xadd_context.getGraph(reduce);
+		g1.launchViewer();
+		//ixadd  = xadd_context.reduceProcessXADDLeaf(ixadd, max, false);
+		/*ArrayList<Decision> decisions = new ArrayList<XADD.Decision>();
+		ArrayList<Boolean> decision_values = new ArrayList<Boolean>();
+		String leaf = "(99 + (-10 * ay * (1 / (-20 + (-1 * y)))) + (-1 * ay) + (1 * x * ay * (1 / (-20 + (-1 * y)))))";
+		ArithExpr leaf_val = ArithExpr.parse(leaf);
+		
+		//build the decisions
+		CompExpr comp_d0 = new CompExpr(xadd_context.GT_EQ, ArithExpr.parse("1 * y"), ArithExpr.parse("0"));
+		ExprDec expr_d0 = xadd_context.new ExprDec(comp_d0);
+		int obstacleXADD = xadd_context.getVarNode(expr_d0, 0, 1);
+		XADDINode inode = (XADDINode) xadd_context._hmInt2Node.get(obstacleXADD);
+		Decision dd = xadd_context._alOrder.get(inode._var);
+		decisions.add(expr_d0);
+		decision_values.add(Boolean.FALSE);
+		
+		comp_d0 = new CompExpr(xadd_context.GT_EQ, ArithExpr.parse("(1 * ay) + (1 * y)"), ArithExpr.parse("0"));
+		expr_d0 = xadd_context.new ExprDec(comp_d0);
+		//obstacleXADD =xadd_context.apply(xadd_context.getVarNode(expr_d0, 0, 1),obstacleXADD,xadd_context.PROD); 
+		//inode = (XADDINode) xadd_context._hmInt2Node.get(obstacleXADD);
+		//dd = xadd_context._alOrder.get(inode._var);
+		decisions.add(expr_d0);
+		decision_values.add(Boolean.FALSE);
+		
+		comp_d0 = new CompExpr(xadd_context.GT_EQ, ArithExpr.parse("-20000 + (-1000 * y) + (10 * ay) + (1 * x * ay)"), ArithExpr.parse("0"));
+		expr_d0 = xadd_context.new ExprDec(comp_d0);
+		decisions.add(expr_d0);
+		decision_values.add(Boolean.FALSE);
+		
+		comp_d0 = new CompExpr(xadd_context.GT_EQ, ArithExpr.parse("-1980 + (1 * x * ay) + (1 * y * ay) + (-99 * y) + (30 * ay)"), ArithExpr.parse("0"));
+		expr_d0 = xadd_context.new ExprDec(comp_d0);
+		decisions.add(expr_d0);
+		decision_values.add(Boolean.FALSE);
+		
+		comp_d0 = new CompExpr(xadd_context.GT_EQ, ArithExpr.parse("1 * ay"), ArithExpr.parse("0"));
+		expr_d0 = xadd_context.new ExprDec(comp_d0);
+		decisions.add(expr_d0);
+		decision_values.add(Boolean.FALSE);
+		
+		comp_d0 = new CompExpr(xadd_context.GT_EQ, ArithExpr.parse("10 + (1 * x) + (1 * y)"), ArithExpr.parse("0"));
+		expr_d0 = xadd_context.new ExprDec(comp_d0);
+		decisions.add(expr_d0);
+		decision_values.add(Boolean.FALSE);
+		
+		comp_d0 = new CompExpr(xadd_context.LT_EQ, ArithExpr.parse("-10 + (1 * x)"), ArithExpr.parse("0"));
+		expr_d0 = xadd_context.new ExprDec(comp_d0);
+		decisions.add(expr_d0);
+		decision_values.add(Boolean.TRUE);
+		
+		comp_d0 = new CompExpr(xadd_context.GT_EQ, ArithExpr.parse("1 * x"), ArithExpr.parse("0"));
+		expr_d0 = xadd_context.new ExprDec(comp_d0);
+		decisions.add(expr_d0);
+		decision_values.add(Boolean.FALSE);
+		
+		comp_d0 = new CompExpr(xadd_context.LT_EQ, ArithExpr.parse("10 + (1 * x)"), ArithExpr.parse("0"));
+		expr_d0 = xadd_context.new ExprDec(comp_d0);
+		decisions.add(expr_d0);
+		decision_values.add(Boolean.FALSE);
+		
+		int ret = max.processXADDLeaf(decisions, decision_values, leaf_val) ;
+		*/
+		
+		
+		
 		//test linearizing decision nodes
-		int xadd_test_6 = TestBuild(xadd_context, "./src/xadd/test6.xadd");
+		/*int xadd_test_6 = TestBuild(xadd_context, "./src/xadd/test6.xadd");
 		ArrayList<String> cont = new ArrayList<String>();
 		cont.add("x");
 		cont.add("y");
 		cont.add("ay");
-		int ret = xadd_context.linearizeDecisions(xadd_test_6, cont);
+		 ret = xadd_context.linearizeDecisions(xadd_test_6, cont);*/
 		
 		// Put all boolean variables first to avoid reordering clashes
 		xadd_context.getVarIndex(xadd_context.new BoolDec("f"), true);
@@ -178,7 +253,7 @@ public class TestXADD {
 		// **************************************
 		System.out.println(">> PROD Operations");
 		int xaddr1 = xadd_context.apply(xadd1, xadd2, XADD.PROD);
-		Graph g1 = xadd_context.getGraph(xaddr1);
+		 g1 = xadd_context.getGraph(xaddr1);
 		g1.launchViewer();
 		int xaddr2 = xadd_context.opOut(xaddr1, 2, XADD.PROD);
 		Graph g2 = xadd_context.getGraph(xaddr2);
