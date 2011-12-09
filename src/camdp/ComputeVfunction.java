@@ -132,27 +132,27 @@ public class ComputeVfunction {
 			Integer dd_mult = e.getValue();
 			System.out.println("- Summing out: " + var_prime + "/" + 
 					           var_id + " in\n" + xadd.getString(dd_mult));
-			q = xadd.apply(q, dd_mult, XADD.PROD);
+			q = xadd.apply(q, dd_mult, XADD.PROD,-1);
 			
 			// Following is a safer way to marginalize in the event that two branches
 			// of a boolean variable had equal probability and were collapsed.
 			//q = _context.opOut(q, var_id, XADD.SUM);
 			int restrict_high = xadd.opOut(q, var_id, XADD.RESTRICT_HIGH);
 			int restrict_low  = xadd.opOut(q, var_id, XADD.RESTRICT_LOW);
-			q = xadd.apply(restrict_high, restrict_low, XADD.SUM);
+			q = xadd.apply(restrict_high, restrict_low, XADD.SUM,-1);
 		}
 		
 		// Multiply in discount and add reward
     	q = xadd.apply(a._reward, 
 				xadd.scalarOp(q, camdp.get_bdDiscount().doubleValue(), XADD.PROD), 
-				XADD.SUM);
+				XADD.SUM,-1);
     	
     	
 		for (Integer constraint : camdp.get_alConstraints()) {
-			q = xadd.apply(q, constraint, XADD.PROD);
+			q = xadd.apply(q, constraint, XADD.PROD,-1);
 		}
 		
-		
+		q = xadd.reduceLP(q,camdp.contVars);
 		//************************** 
 		//Continuous Action code
 		//now we have the q_value at the leaves, 
@@ -202,14 +202,25 @@ public class ComputeVfunction {
 	public int computeMax(int ixadd,String _action,double lowerbound,double upperbound) {
 		XADDLeafMax max = xadd.new XADDLeafMax(_action, lowerbound,upperbound);
 		
-		Graph g = xadd.getGraph(ixadd);
-		/*g.addNode("_temp_");
-		g.addNodeLabel("_temp_", "Q-value before max operation");
+		/*Graph g = xadd.getGraph(ixadd);
+		g.addNode("_temp_");
+		g.addNodeLabel("_temp_", "Q-value before max");
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "lightblue");
 		g.launchViewer(1300, 770);*/
 		xadd.PATH_COUNTER_MAX = 0;
+		/*if (ixadd>0)
+		{
+			ixadd = xadd.linearizeDecisions(ixadd,camdp._alAVars);
+		g = xadd.getGraph(ixadd);
+		g.addNode("_temp_");
+		g.addNodeLabel("_temp_", "Q-value before max operation-after linearization");
+		g.addNodeShape("_temp_", "square");
+		g.addNodeStyle("_temp_", "filled");
+		g.addNodeColor("_temp_", "lightblue");
+		g.launchViewer(1300, 770);
+		}*/
 		ixadd  = xadd.reduceProcessXADDLeaf(ixadd, max, false);
 		System.out.print("\n&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n NUMBER OF PATHS: "+ xadd.PATH_COUNTER_MAX+"\n");
 		/* g = xadd.getGraph(max._runningMax);
@@ -219,10 +230,10 @@ public class ComputeVfunction {
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "lightblue");
 		g.launchViewer(1300, 770);*/
-		max._runningMax = xadd.reduceLP(max._runningMax,camdp.contVars);
-		/*  g = xadd.getGraph(max._runningMax);
+		max._runningMax = xadd.reduceLP(max._runningMax,camdp._alCVars);
+		/* g = xadd.getGraph(max._runningMax);
 		g.addNode("_temp_");
-		g.addNodeLabel("_temp_", "Q after reduceLP, runningMax");
+		g.addNodeLabel("_temp_", "Q before Linearize");
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "lightblue");
@@ -237,16 +248,16 @@ public class ComputeVfunction {
 			e.printStackTrace();
 		}
 		*/
-		max._runningMax = xadd.linearizeDecisions(max._runningMax,camdp.contVars);
-		 /*g = xadd.getGraph(max._runningMax);
+		max._runningMax = xadd.linearizeDecisions(max._runningMax,camdp._alCVars);;
+		/* g = xadd.getGraph(max._runningMax);
 			g.addNode("_temp_");
-			g.addNodeLabel("_temp_", "Q after reduceLP, runningMax");
+			g.addNodeLabel("_temp_", "Q after linearize");
 			g.addNodeShape("_temp_", "square");
 			g.addNodeStyle("_temp_", "filled");
 			g.addNodeColor("_temp_", "lightblue");
 			g.launchViewer(1300, 770);*/
 
-		max._runningMax = xadd.reduceLP(max._runningMax,camdp.contVars);
+		max._runningMax = xadd.reduceLP(max._runningMax,camdp._alCVars);
 		
 		/* g = xadd.getGraph(max._runningMax);
 			g.addNode("_temp_");
