@@ -16,6 +16,7 @@ package xadd;
 import graph.Graph;
 
 import java.awt.BufferCapabilities.FlipContents;
+import java.lang.reflect.Array;
 import java.security.acl.LastOwnerException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -59,8 +60,9 @@ public class XADD {
 	public final static boolean CHECK_LOCAL_ORDERING = true;
 	public final static boolean SHOW_DECISION_EVAL = false;
 	public final static boolean DEBUG_EVAL_RANGE = false;
-	public final static boolean DEBUG_CONSTRAINTS = false;
+	public final static boolean DEBUG_CONSTRAINTS = true;
 	public final static boolean ANNOTATE_ENABLE = false;
+	public final static boolean HANDLE_NONLINEAR = true;
 	// Operators
 	public final static int UND = 0;
 	public final static int SUM = 1;
@@ -109,7 +111,7 @@ public class XADD {
 
 	// Reduce & Apply Caches
 	public HashMap<IntTriple, Integer> _hmReduceCache = new HashMap<IntTriple, Integer>();
-	public HashMap<IntTriple, Integer> _hmReduceLPCache = new HashMap<IntTriple, Integer>();
+	//public HashMap<IntTriple, Integer> _hmReduceLPCache = new HashMap<IntTriple, Integer>();
 	public HashMap<IntPair, Integer> _hmReduceLeafOpCache = new HashMap<IntPair, Integer>();
 	public HashMap<IntPair, Integer> _hmReduceAnnotateCache = new HashMap<IntPair, Integer>();
 	public HashMap<IntTriple, Integer> _hmApplyCache = new HashMap<IntTriple, Integer>();
@@ -510,6 +512,7 @@ public class XADD {
 	
 	public int linearizeDecisions(int _runningMax, ArrayList<String> contVars) {
 		Integer ret = null;
+		int ret_low=0,ret_high=0;
 		XADDNode n = _hmInt2Node.get(_runningMax);
 		if (n == null) {
 			System.out.println("ERROR: " + _runningMax + " expected in node cache, but not found!");
@@ -529,17 +532,232 @@ public class XADD {
 		}
 		XADDINode inode = (XADDINode) n;
 		
-		int ret_low = linearizeDecisions(inode._low,contVars);
-		int ret_high  = linearizeDecisions(inode._high,contVars);
-		
-		String varExpr = null;
+		 ret_low = linearizeDecisions(inode._low,contVars);
+		 ret_high  = linearizeDecisions(inode._high,contVars);
+		 
+		 XADDINode temp = new XADDINode(inode._var, ret_low, ret_high);
+		 /*String varExpr = null;
 		if ((varExpr = isLinearable(inode,contVars))!=null)
 			//have to make the decision linear
-				ret = replaceLinear(varExpr,inode,contVars);
+				ret = replaceLinear(varExpr,inode,contVars);*/
+		Pair<String,double[]> retLinear =isLinearableCoeff(temp,contVars);
+
+		if (retLinear._o2[2]!=0)
+			ret = rootLinear(retLinear._o1,temp,retLinear._o2);
+		//linearizable code for action constraints in ROBOT 
+		/*if (linearType !=0)
+			//have to make the decision linear
+				ret = replaceLinear(varExpr,inode,contVars);*/
 		else ret = getINode(inode._var, ret_low, ret_high);
 		
 		return ret;
 	}	
+	
+
+	private Pair<String, double[]> isLinearableCoeff(XADDINode inode,
+			ArrayList<String> contVars) {
+		//define linear[0] as the coeff of constant, linear[1] as the coeff of X and linear[2] as the coeff of x*x  
+				double[] linear = new double[3];
+				String var = "";
+				for (int i=0;i<linear.length;i++)
+					linear[i]=0;
+				Pair<String,double[]> retLinear = new Pair<String,double[]>(var,linear);
+				Decision d = _alOrder.get(inode._var);
+				if (d instanceof ExprDec) 
+				{
+					ExprDec exprD = (ExprDec) d;
+					OperExpr lhs = (OperExpr) exprD._expr._lhs;
+					/*ArrayList<ArithExpr> new_lhs = new ArrayList<XADD.ArithExpr>();
+					ArrayList<ArithExpr> new_rhs = new ArrayList<XADD.ArithExpr>();*/
+					
+					
+					for (int i=0;i<contVars.size();i++)
+					{
+						/*for (ArithExpr e : lhs._terms)
+						{
+							if ((e.toString()).contains(contVars.get(i)))
+								new_lhs.add(e);
+							else new_rhs.add(e);
+							
+						}*/
+						
+						VarExpr varExpr = new VarExpr(contVars.get(i));	
+							//for each term in the sum, search for varExpr, if not available then jump out of loop of finding
+							for (int j=0;j<lhs._terms.size();j++)
+							{
+								ArithExpr decExpr = lhs._terms.get(j);
+								if (decExpr instanceof OperExpr) 
+								{
+									int checkTerms = 0;
+									for (int k=0;k<((OperExpr)decExpr)._terms.size();k++)
+										if (((OperExpr) decExpr)._terms.get(k).equals(varExpr))
+										{
+											checkTerms ++;
+											
+										}
+									if (checkTerms>1) 
+									{
+										if (((OperExpr)decExpr)._terms.get(0) instanceof DoubleExpr)
+											linear[2] = ((DoubleExpr)((OperExpr)decExpr)._terms.get(0))._dConstVal;
+										else linear[2] = 1;
+							
+									}
+									else if (checkTerms==1)
+										if (((OperExpr)decExpr)._terms.get(0) instanceof DoubleExpr)
+											linear[1] = ((DoubleExpr)((OperExpr)decExpr)._terms.get(0))._dConstVal;
+										else linear[1] = 1;
+								}
+								else if (decExpr instanceof VarExpr) 
+								{
+									if (!((VarExpr) decExpr)._sVarName.equals(varExpr))
+									{
+										linear[1] = 1;
+								
+									}
+								} else if (decExpr instanceof DoubleExpr) 
+								{
+									linear[0] =((DoubleExpr) decExpr)._dConstVal;
+								
+								}
+							
+							}
+						var = varExpr._sVarName;
+
+					}
+				}
+				retLinear._o1 = var;
+				retLinear._o2 = linear;
+				return retLinear;
+	}
+
+	private Integer rootLinear(String var, XADDINode inode, double[] coeff) {
+		
+		Decision d = _alOrder.get(inode._var);
+		ExprDec exprD = (ExprDec) d;
+		int new_type =  exprD._expr._type;
+		int newPointer=0;
+		double sqr = coeff[1] * coeff[1] - 4 * coeff[0]*coeff[2];
+		sqr = Math.sqrt(sqr);
+		if (Double.isNaN(sqr))
+		{
+			if (((coeff[2]<0) &&((new_type==LT || new_type==LT_EQ))) ||((coeff[2]>0) &&((new_type==GT || new_type==GT_EQ)))) 
+			{
+				Decision d2 = new ExprDec(new CompExpr(LT, ArithExpr.parse("0"),ArithExpr.parse("1")));
+				int var2 = getVarIndex(d2,true);
+				newPointer = getINode(var2, inode._low, inode._high);	
+				return newPointer;
+			}
+			else 
+			{
+				Decision d2 = new ExprDec(new CompExpr(LT, ArithExpr.parse("1"),ArithExpr.parse("0")));
+				int var2 = getVarIndex(d2,true);
+				newPointer = getINode(var2, inode._low, inode._high);	
+				return newPointer;
+			}
+		}
+		double root1 = (coeff[1] *(-1) + sqr)/(2*coeff[2]);
+		double root2 = (coeff[1] *(-1) - sqr)/(2*coeff[2]);
+		if (root1==root2) root2= (-1) * root1;
+		ArithExpr d1_lhs , d2_lhs; 
+		
+		//for the variable decision
+		if (coeff[2]<0)
+		{
+			 if  (new_type==LT || new_type==LT_EQ)
+				 new_type=GT_EQ;
+			 else if  (new_type==GT || new_type==GT_EQ)
+				 new_type=LT_EQ;
+		}
+		 d1_lhs = ArithExpr.parse(var + " - "+ root1);
+		 d2_lhs = ArithExpr.parse(var + " - "+ root2);
+		
+		CompExpr comp_d1 = null,comp_d2 = null;
+		/*if (new_type==LT || new_type==LT_EQ)
+		{*/
+			//between
+			if (root1>root2)
+			{
+				comp_d1 = new CompExpr(LT_EQ, d1_lhs, ArithExpr.parse("0"));
+				comp_d2 = new CompExpr(GT_EQ, d2_lhs, ArithExpr.parse("0"));
+			}
+			else 
+			{
+				comp_d1 = new CompExpr(LT_EQ, d2_lhs, ArithExpr.parse("0"));
+				comp_d2 = new CompExpr(GT_EQ, d1_lhs, ArithExpr.parse("0"));
+			}
+		//}
+		/*else if (new_type==GT || new_type==GT_EQ)
+		{
+			//outside
+			if (root1>root2)
+			{
+				comp_d1 = new CompExpr(GT_EQ, d1_lhs, ArithExpr.parse("0"));
+				comp_d2 = new CompExpr(LT_EQ, d2_lhs, ArithExpr.parse("0"));
+			}
+			else 
+			{
+				comp_d1 = new CompExpr(GT_EQ, d2_lhs, ArithExpr.parse("0"));
+				comp_d2 = new CompExpr(LT_EQ, d1_lhs, ArithExpr.parse("0"));
+			}
+		}*/
+		Decision d1 = new ExprDec(comp_d1);
+		int var1 = getVarIndex(d1,true);
+		
+		Decision d2 = new ExprDec(comp_d2);
+		int var2 = getVarIndex(d2,true);
+		if (new_type==GT || new_type==GT_EQ)
+			 newPointer = getINode(var2, inode._high, inode._low);
+		else newPointer = getINode(var2, inode._low, inode._high);
+		newPointer = makeCanonical(newPointer);
+		int T_ZERO = getTermNode(ZERO);
+		int T_ONE = getTermNode(ONE);
+		
+		int ind_true =getINode(var1, /* low */T_ZERO, /* high */T_ONE);
+		int ind_false = getINode(var1, /* low */T_ONE, /* high */T_ZERO);
+		int true_half=0,false_half=0;
+		if (new_type==GT || new_type==GT_EQ)
+		{
+			//outside
+			true_half = applyInt(ind_true, newPointer, PROD,-1); 
+			false_half =applyInt(ind_false, inode._high, PROD,-1); 
+		}
+		else
+		{
+			//between
+			true_half = applyInt(ind_true, newPointer, PROD,-1); 
+			false_half =applyInt(ind_false, inode._low, PROD,-1); 
+		}
+		newPointer = apply(true_half, false_half, SUM,-1);
+		
+		XADDNode newNode1 = _hmInt2Node.get(newPointer);
+		if (newNode1 instanceof XADDTNode) return newPointer;
+		XADDINode newNode=(XADDINode) newNode1;
+		XADDNode newNode2 = _hmInt2Node.get(newNode._low);
+		XADDNode newNode3 = _hmInt2Node.get(newNode._high);
+		Pair<XADDNode,XADDNode> branch;
+		if (newNode1 instanceof XADDINode)
+		{
+			newNode=(XADDINode) newNode1;
+			branch = new Pair<XADDNode, XADDNode>(_hmInt2Node.get(newNode._low), _hmInt2Node.get(newNode._high));
+			_hmLinearDecisions.put(newPointer, branch);
+		}
+		
+		if (newNode2 instanceof XADDINode)
+		{
+			newNode = (XADDINode) newNode2;
+			branch = new Pair<XADDNode, XADDNode>(_hmInt2Node.get(newNode._low), _hmInt2Node.get(newNode._high));
+			_hmLinearDecisions.put(_hmNode2Int.get(newNode2), branch);
+		}
+		
+		if (newNode3 instanceof XADDINode)
+		{
+			newNode = (XADDINode) newNode3;
+			branch = new Pair<XADDNode, XADDNode>(_hmInt2Node.get(newNode._low), _hmInt2Node.get(newNode._high));
+			_hmLinearDecisions.put(_hmNode2Int.get(newNode2), branch);
+		}
+		return newPointer;
+	}
+
 	
 
 	private int replaceLinear(String varExpr, XADDINode inode, ArrayList<String> contVars) 
@@ -658,7 +876,6 @@ public class XADD {
 		return newPointer;
 		
 	}
-
 	private String isLinearable(XADDINode inode, ArrayList<String> contVars) 
 	{
 		Decision d = _alOrder.get(inode._var);
@@ -711,7 +928,6 @@ public class XADD {
 		return null;
 	}
 	
-	
 		
 
 	public IntTriple _tempReduceLPKey = new IntTriple(-1, -1, -1);
@@ -749,11 +965,11 @@ public class XADD {
 		}
 
 		// If its an internal node, check the reduce cache
-		_tempReduceLPKey.set(node_id, test_var.hashCode(), test_dec.hashCode());
-		if ((ret = _hmReduceLPCache.get(_tempReduceLPKey)) != null) {
-			// System.out.println("In cache, returning: " + qret);
-			return ret;
-		}
+		//_tempReduceLPKey.set(node_id, test_var.hashCode(), test_dec.hashCode());
+		//if (false && (ret = _hmReduceLPCache.get(_tempReduceLPKey)) != null) {
+		//	// System.out.println("In cache, returning: " + qret);
+		//	return ret;
+		//}
 
 		XADDINode inode = (XADDINode) n;
 
@@ -787,7 +1003,7 @@ public class XADD {
 		// //////////////////////////////////////////////////////////////////////
 
 		// Put return value in cache and return
-		_hmReduceLPCache.put(new IntTriple(node_id, test_var.hashCode(), test_dec.hashCode()), ret);
+		//_hmReduceLPCache.put(new IntTriple(node_id, test_var.hashCode(), test_dec.hashCode()), ret);
 		return ret;
 	}
 
@@ -860,34 +1076,39 @@ public class XADD {
 			// From here we just need convert LHS to coefficients and construct
 			// correct constraint from CompExpr type
 			double[] coefs = new double[_cvar2ID.size()];
-			double const_coef = setCoefficients(e._expr._lhs, coefs); // move to RHS => -
-
-			int type = dec ? e._expr._type : invertType(e._expr._type);
-
-			if (DEBUG_CONSTRAINTS)
-				System.out.println("- adding cons: " + const_coef + " + " + LP.PrintVector(coefs) + " <=> "
-						+ (dec ? "" : "!") + e._expr);
-
-			switch (type) {
-			case GT:
-				lp.addGTConstraint(coefs, -const_coef);
-				break;
-			case GT_EQ:
-				lp.addGeqConstraint(coefs, -const_coef);
-				break;
-			case LT:
-				lp.addLTConstraint(coefs, -const_coef);
-				break;
-			case LT_EQ:
-				lp.addLeqConstraint(coefs, -const_coef);
-				break;
-			case EQ:
-				lp.addEqConstraint(coefs, -const_coef);
-				break;
-			case NEQ:
-				break; // Can't add an NEQ constraint
-			default:
-				break; // Unknown constraint type
+			
+			try {
+				double const_coef = setCoefficients(e._expr._lhs, coefs); // move to RHS => -
+	
+				int type = dec ? e._expr._type : invertType(e._expr._type);
+	
+				if (DEBUG_CONSTRAINTS)
+					System.out.println("- adding cons: " + const_coef + " + " + LP.PrintVector(coefs) + " <=> "
+							+ (dec ? "" : "!") + e._expr);
+	
+				switch (type) {
+				case GT:
+					lp.addGTConstraint(coefs, -const_coef);
+					break;
+				case GT_EQ:
+					lp.addGeqConstraint(coefs, -const_coef);
+					break;
+				case LT:
+					lp.addLTConstraint(coefs, -const_coef);
+					break;
+				case LT_EQ:
+					lp.addLeqConstraint(coefs, -const_coef);
+					break;
+				case EQ:
+					lp.addEqConstraint(coefs, -const_coef);
+					break;
+				case NEQ:
+					break; // Can't add an NEQ constraint
+				default:
+					break; // Unknown constraint type
+				}
+			} catch (Exception e2) {
+				System.err.println("Could not add constraint: " + e2 + "\n... skipping");
 			}
 		}
 	}
@@ -912,7 +1133,7 @@ public class XADD {
 	}
 
 	// Convert an expression to an array of coefficients and a constant
-	private double setCoefficients(ArithExpr e, double[] coefs) {
+	private double setCoefficients(ArithExpr e, double[] coefs) throws Exception {
 
 		int error = 0;
 		int index=0;
@@ -938,7 +1159,7 @@ public class XADD {
 
 		if (error > 0) {
 			System.out.println("[" + error + "] Unexpected LHS constraint term: " + e);
-			new Exception().printStackTrace(System.out);
+			throw new Exception("[" + error + "] Unexpected LHS constraint term: " + e); //.printStackTrace(System.out);
 			//System.exit(1);
 		}
 
@@ -1202,7 +1423,8 @@ public class XADD {
 					+ _actionString);*/
 				if (_nonLinear!= null)
 				{
-					_nonLinear.makeCanonical();
+					//the left hand isolated is not correct in this case, need to make 2 linear decisions
+					//linearizeDecisions(i, contVars)
 					System.out.println("HAS NON LINEAR DECISIONS");
 					
 					if (_VarDivisor!=null)
@@ -1325,7 +1547,7 @@ public class XADD {
 			// be used to approximate cdfs. Hence we must assume that there will always
 			// be limits on the polynomial functions implicit in the bounds.
 			if (lower_bound.isEmpty()&& xadd_lower_bound == -1) {
-				System.err.println("No explicit lower bound given for '" + _actionString + "', using -1e6");
+				//System.err.println("No explicit lower bound given for '" + _actionString + "', using -1e6");
 				System.err.println("Constraints: " + decisions);
 				System.err.println("Assignments: " + decision_values);
 				xadd_lower_bound = getTermNode(new DoubleExpr(_lowerBound));
@@ -1342,7 +1564,7 @@ public class XADD {
 			}
 
 			if (upper_bound.isEmpty() && xadd_upper_bound ==-1) {
-				System.err.println("No explicit upper bound given for '" + _actionString + "', using +1e6");
+				//System.err.println("No explicit upper bound given for '" + _actionString + "', using +1e6");
 				System.err.println("Constraints: " + decisions);
 				System.err.println("Assignments: " + decision_values);
 				xadd_upper_bound = getTermNode(new DoubleExpr(_higherBound));
@@ -1371,32 +1593,72 @@ public class XADD {
 			// Display lower and upper bounds
 			System.out.println("Lower bound:\n" + getString(xadd_lower_bound));
 			System.out.println("Upper bound:\n" + getString(xadd_upper_bound));
-
+			ArithExpr root = null;
+			int root_xadd=0;
 			// root of function
+			if (HANDLE_NONLINEAR)
+			{
 			OperExpr derivative= firstDerivative(leaf_val,_actionString);
-			double root = 0d;
+			
+			
 			if ((derivative!=null) && (derivative instanceof OperExpr))
-				root = getFunctionRoot(derivative,_actionString);
-			int root_xadd = getTermNode(new DoubleExpr(root));
+			{
+				if (derivative._terms.size()>0)
+				{
+					root = getFunctionRoot(derivative,_actionString);
+					root.makeCanonical();
+					root_xadd = getTermNode(root);
+					System.out.println("ROOT of function: " + root.toString());
+				}
+			}
+			}
 			// Now compute:
 			// leaf_integral{int_var = xadd_upper_bound} - leaf_integral{int_var = xadd_lower_bound}
+			
 			int int_eval_lower = substituteXADDforVarInArithExpr(leaf_val, _actionString, xadd_lower_bound);
 			int int_eval_upper = substituteXADDforVarInArithExpr(leaf_val, _actionString, xadd_upper_bound);
 			int int_eval = apply(int_eval_upper, int_eval_lower, MAX,-1);
-			if (root!=0)
-				int_eval = apply(int_eval,root_xadd,MAX,-1);
+			System.out.println("max of LB and UB: " + getString(int_eval));
+			if (HANDLE_NONLINEAR)
+			{
+				if (root!=null)
+				{
+					int int_eval_root = substituteXADDforVarInArithExpr(leaf_val,_actionString,root_xadd);
+					System.out.println("root substitute: " + getString(int_eval_root));
+					int_eval = apply(int_eval,int_eval_root,MAX,-1);
+					System.out.println("max of root and int_eval(LB/UB): " + getString(int_eval));
+					for (ArithExpr e1 : upper_bound) {
+							CompExpr ce = new CompExpr(GT, e1, root);
+							ExprDec ed = new ExprDec(ce);
+							int_var_indep_decisions.put(ed, Boolean.TRUE);
+					
+					}
+					for (ArithExpr e1 : lower_bound) {
+						CompExpr ce = new CompExpr(GT, root, e1);
+						ExprDec ed = new ExprDec(ce);
+						int_var_indep_decisions.put(ed, Boolean.TRUE);
+					}
+				}
+			}
 			// Finally, multiply in boolean decisions and irrelevant comparison expressions
 			// to the XADD and add it to the running sum
 			// - HashMap<Decision,Boolean> int_var_indep_decisions
 			for (Map.Entry<Decision, Boolean> me : int_var_indep_decisions.entrySet()) {
 				double high_val = me.getValue() ? 1d : 0d;
 				double low_val = me.getValue() ? 0d : 1d;
+				System.out.println("int_eval with decisions: "+me.getKey());
 				int_eval = apply(int_eval, getVarNode(me.getKey(), low_val, high_val), PROD,-1);
 			}
-			int_eval = reduceLP(int_eval, _hmContinuousVars);
+			System.out.println("int_eval with decisions: " + getString(int_eval));
+			/*if (HANDLE_NONLINEAR)
+			{
+				linearizeDecisions(int_eval, _hmContinuousVars);
+				int_eval = reduceLP(int_eval, _hmContinuousVars);
+			}*/
+			//int_eval = reduceLP(int_eval, _hmContinuousVars);
 			if (_runningMax == -1) _runningMax = int_eval;
 			 	else _runningMax = apply(_runningMax, int_eval, MAX,-1);
-			_runningMax = reduceLP(_runningMax, _hmContinuousVars);
+			//_runningMax = reduceLP(_runningMax, _hmContinuousVars);
 			//_runningMax = apply(_runningMax, int_eval, MAX);
 			// reduceLP
 			HashSet<String> all_vars = collectVars(_runningMax);
@@ -1405,19 +1667,21 @@ public class XADD {
 
 			// All return information is stored in _runningSum so no need to return
 			// any information here... just keep diagram as is
-			System.out.println("Result: " + getString(int_eval));
+			System.out.println("Result: " + getString(_runningMax));
 			//System.out.println("RunningMax: " + getString(_runningMax));
 			//}
 			return getTermNode(leaf_val);
 		}
-		private double getFunctionRoot(OperExpr derivative, String _action1) {
+		private ArithExpr getFunctionRoot(OperExpr derivative, String _action1) {
 			
-			double constant = 1d;
+			double div = 0d;
+			ArithExpr coeff_other = null;
+			ArithExpr coeff_action = null;
 			for (ArithExpr e : derivative._terms) {
 				if (e instanceof DoubleExpr) {
-					constant = ((DoubleExpr) e)._dConstVal;
+					div = ((DoubleExpr) e)._dConstVal;
 					//for the RHS
-					constant *= -1;
+					div *= -1;
 				}
 				else if (e instanceof OperExpr) {
 					// Both interned so we can test direct equality
@@ -1425,18 +1689,68 @@ public class XADD {
 						double coef = 0d;
 						for (ArithExpr e1: ((OperExpr) e)._terms)
 						{
+							//for each expression, it is either 3*a or 3*x
 							if (e1 instanceof DoubleExpr)
 								coef = ((DoubleExpr) e1)._dConstVal;
 							else if ((e1 instanceof VarExpr)&& (((VarExpr)e1)._sVarName.equals(_action1)))
 							{
-								constant /=coef;
+								coeff_action = new DoubleExpr(coef);
+							}
+							else
+							{
+								//has other variables than the action variable in it
+								coef *=-1;
+								coeff_other = ArithExpr.op(e1, coef,PROD);
 							}
 						}
 						
 				}
 			}
+			if ((coeff_other == null) && (coeff_action == null))
+				return new DoubleExpr(div);
+			if (coeff_other == null) 
+				return new DoubleExpr(div / ((DoubleExpr)coeff_action)._dConstVal);
+
+			else 
+				{
+					coeff_other = ArithExpr.op(coeff_other, div, SUM);
+					ArrayList<ArithExpr> answers = new ArrayList<XADD.ArithExpr>();
+					if (coeff_action instanceof DoubleExpr)
+					{
+						double divisor = ((DoubleExpr)coeff_action)._dConstVal;
+						for (ArithExpr e1: ((OperExpr) coeff_other)._terms)
+						{
+							if (e1 instanceof DoubleExpr)
+							{
+								double newcoef = ((DoubleExpr) e1)._dConstVal;
+								answers.add(new DoubleExpr(newcoef/ divisor));
+							}
+							else if (e1 instanceof OperExpr)
+							{
+								ArrayList<ArithExpr> answers2 = new ArrayList<XADD.ArithExpr>();
+								for (ArithExpr e2: ((OperExpr) e1)._terms)
+								{
+									if (e2 instanceof DoubleExpr)
+										answers2.add(new DoubleExpr(((DoubleExpr) e2)._dConstVal / divisor));
+									else if (e2 instanceof VarExpr)
+										answers2.add(e2);
+								}
+								answers.add(new OperExpr(PROD, answers2));
+							}
+						}
+					for (int i=0;i<answers.size();i++)
+						if (answers.get(i) instanceof DoubleExpr )
+								if  ((((DoubleExpr) answers.get(i))._dConstVal==0)||((((DoubleExpr) answers.get(i))._dConstVal==0)))
+									answers.remove(i);
 						
-			return constant;
+					return new OperExpr(SUM, answers);	
+					}
+				
+					else {
+						coeff_other = ArithExpr.op(coeff_other, coeff_action, DIV);
+						return coeff_other;
+					}
+			}
 		}
 
 		private OperExpr firstDerivative(ArithExpr leaf_val, String _action1) {
@@ -1456,6 +1770,8 @@ public class XADD {
 					else if (e instanceof OperExpr)
 					{
 						//inside the product term
+						ArithExpr othervar = null;
+						DoubleExpr coeff = null;
 						if (((OperExpr) e)._type == PROD)
 						{
 							order = 0;
@@ -1463,16 +1779,27 @@ public class XADD {
 							{
 								if (e1 instanceof DoubleExpr)
 									coef = ((DoubleExpr) e1)._dConstVal;
-								if ((e1 instanceof VarExpr)&& (((VarExpr)e1)._sVarName.equals(_action1)))
+								else if ((e1 instanceof VarExpr)&& (((VarExpr)e1)._sVarName.equals(_action1)))
 									order++;
+								else 
+									othervar = e1;
 							}
 								coef *=order;
-						
+								if (order==0) othervar = null;
+								coeff = new DoubleExpr(coef);
 						}
-						if (order ==1)
-							ret.add(ArithExpr.parse(coef+""));
-						else if (order==2)
-							ret.add(ArithExpr.parse(coef + "*" + _action1));
+						String vars = "";
+						if (othervar!=null)
+							vars = othervar.toString();
+						if ((order ==1)&&(othervar==null))
+							ret.add(ArithExpr.parse(coeff+""));
+						if ((order ==1)&&(othervar!=null))
+							ret.add(ArithExpr.parse(vars +"*"+coeff));
+						else if ((order==2)&&(othervar==null))
+							ret.add(ArithExpr.parse(coeff + "*" + _action1));
+						else if ((order==2)&&(othervar!=null))
+							ret.add(ArithExpr.parse(coeff + "*" + _action1+"*"+vars));
+						
 					}
 					else if (e instanceof DoubleExpr)
 						continue;
@@ -2520,6 +2847,10 @@ public class XADD {
 			else
 				comp = new CompExpr(LT_EQ, xa1._expr, xa2._expr);
 			
+			// TODO: Remove
+			System.out.println("**ON MAX: " + xa1._expr + " <= " + xa2._expr);
+			System.out.println("**ON MAX, After simplification: " + comp.makeCanonical());
+			
 			//STEP1: For actions changed this!
 			//comp = new CompExpr(GT_EQ, xa1._expr, xa2._expr);
 			
@@ -3563,6 +3894,7 @@ public class XADD {
 						for (int i=0;i<_hmContinuousVars.size();i++)
 						{
 							contVar = _hmContinuousVars.get(i);
+							//first look for x*x 
 							DoubleExpr doubleCoef = findVar(current_expr._lhs,contVar);
 							if (doubleCoef!=(DoubleExpr)ZERO)
 							{
@@ -4649,7 +4981,7 @@ public class XADD {
 
 		// Can always clear these
 		_hmReduceCache.clear();
-		_hmReduceLPCache.clear();
+		//_hmReduceLPCache.clear();
 		_hmReduceLeafOpCache.clear();
 		_hmApplyCache.clear();
 		_hmApplyCache0.clear();
