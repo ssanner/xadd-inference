@@ -39,7 +39,7 @@ public class CAMDP {
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = true;
 	public final static boolean DISPLAY_2D = false;
-	public final static boolean DISPLAY_MAX = false;
+	public final static boolean DISPLAY_MAX = true;
 	public final static boolean PRINTSCREENEVAL = false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
@@ -203,7 +203,7 @@ public class CAMDP {
 				
 				// Take the max over this action and the previous action 
 				//(can have continuous parameters which represents many discrete actions)
-				_maxDD = ((_maxDD == null) ? regr : _context.apply(_maxDD, regr, XADD.MAX));
+				_maxDD = ((_maxDD == null) ? regr : _context.apply(_maxDD, regr, XADD.MAX,-1));
 
 				if (REDUCE_LP) {
 					_maxDD = _context.reduceLP(_maxDD, contVars);
@@ -217,6 +217,8 @@ public class CAMDP {
 					g.addNodeStyle("_temp_", "filled");
 					g.addNodeColor("_temp_", "lightblue");
 					g.launchViewer(1300, 770);
+					
+					
 				}
 				flushCaches();
 			}
@@ -239,13 +241,13 @@ public class CAMDP {
 				Graph g = _context.getGraph(_valueDD);
 				g.addNode("_temp_");
 				g.addNodeLabel("_temp_", "V^" + iter);
-				g.addNodeShape("_temp_", "square");
-				g.addNodeStyle("_temp_", "filled");
+				//g.addNodeShape("_temp_", "square");
+				//g.addNodeStyle("_temp_", "filled");
 				g.addNodeColor("_temp_", "lightblue");
-
+				g.genDotFile("V"+iter+".dot");
 				
 				g.launchViewer(1300, 770);
-				System.out.println("done.");
+				//System.out.println("done.");
 			}
 			
 			if (DISPLAY_2D)
@@ -253,8 +255,11 @@ public class CAMDP {
 				TestXADDDist plot = new TestXADDDist();
 				HashMap<String,Boolean> bvars = new HashMap<String, Boolean>();
 				HashMap<String,Double> dvars = new HashMap<String, Double>();
-				bvars.put("g", false);
-				plot.Plot3DXADD(_context, _valueDD, -20, 1, 20, -100, 1, 10, bvars,dvars ,"x", "y", "V^"+iter);
+				//bvars.put("g", false);
+				//dvars.put(_alCVars.get(0), 0.0);
+				bvars.put(_alBVars.get(0), false);
+				plot.PlotXADD(_context, _valueDD, -30, 0.1, 30,bvars,dvars, "x", "V^"+iter);
+				//plot.Plot3DXADD(_context, _valueDD, -20, 1, 20, -30, 1, 30, bvars,dvars ,"x", "a", "V^"+iter);
 				
 				
 			}
@@ -356,7 +361,7 @@ public class CAMDP {
 
 		if (display_value) {
 			Graph g = _context.getGraph(_valueDD);
-			g.launchViewer(1300, 770);
+			//g.launchViewer(1300, 770);
 		}
 
 		return sb.toString();
