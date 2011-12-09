@@ -1,0 +1,54 @@
+cvariables (l1 l2 t)
+min-values (0 0 0)
+max-values (5000 5000 100)
+bvariables (i)
+ivariables()
+avariables(e)
+
+action drain (0 <= e<= 100)
+
+i' (i ([0.7])([0.3]))
+l1' (i 
+		([450 * e + l1 -1000 * e + 500 * e])
+		([250 * e + l1 - 1000 * e + 500 * e]))
+l2' (i 
+		([450 * e + l2 - 500 * e])
+		([l2 + 250 * e - 500 * e]))
+t' ([t+e])
+
+
+reward 	([l1<=4500]
+				([l2<=4500]
+					([l1>=50]
+							([e])
+							([-100 + e] ))
+				([0] ))
+			([0]))
+												
+					
+endaction
+
+action no-drain (0 <= e <= 100)
+
+i' (i ([0.7])([0.3]))
+l1' (i 
+		([450 * e + l1 -1000 * e])
+		([250 * e + l1 - 1000 * e]))
+l2' (i 
+		([450 * e + l2])
+		([250 * e + l2]))
+t' ([t+e])
+
+reward 	([l1<=4500]
+				([l2<=4500]
+						([l1>=50]
+							([e])
+							([-100 + e] ))
+				([0] ))
+			([0]))					
+					
+endaction
+
+
+discount 1.000000
+iterations 12
