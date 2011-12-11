@@ -183,10 +183,11 @@ public class ParseCAMDP {
 					int var = _context.getVarIndex(_context.new BoolDec(BVars.get(0)), false);
 					int ind_true = _context.getINode(var, /* low */T_ZERO, /* high */T_ONE);
 					int ind_false = _context.getINode(var, /* low */T_ONE, /* high */T_ZERO);
-					int true_half = _context.applyInt(ind_true, T_ZERO, _context.PROD,-1); // Note: this enforces canonicity so
-					int reward_d = _context.apply(reward_2,reward_toGoal, _context.SUM,-1);
-					int false_half = _context.applyInt(ind_false, reward_d, _context.PROD,-1); // can use applyInt rather than apply
-					reward_dd = _context.applyInt(true_half, false_half, _context.SUM,-1);
+					//int true_half = _context.applyInt(ind_true, reward_toGoal, _context.PROD,-1); // Note: this enforces canonicity so
+					//int reward_d = _context.apply(reward_2,reward_toGoal, _context.SUM,-1);
+					int false_half = _context.applyInt(ind_false, reward_2, _context.PROD,-1); // can use applyInt rather than apply
+					//reward_dd = _context.applyInt(true_half, false_half, _context.SUM,-1);
+					reward_dd = _context.applyInt(reward_2, reward_toGoal, _context.SUM,-1);
 				}
 				o=i.next();
 			}
