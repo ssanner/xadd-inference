@@ -1,0 +1,12 @@
+Iteration #1, 9411976:85000192 bytes, 1 ms
+Value function size @ end of iteration 1: 5 nodes = 4 cases in 135 ms
+Iteration #2, 12391488:85000192 bytes, 0 ms
+Value function size @ end of iteration 2: 23 nodes = 20 cases in 2063 ms
+
+Value iteration complete!
+2 iterations took 2069 ms
+Canonical / non-canonical: 40133 / 87292
+
+Iteration Results summary
+Iter 1: nodes = 5	branches = 4	cases = 16.0	time = 135 ms
+Iter 2: nodes = 23	branches = 20	cases = 4096.0	time = 2063 ms
