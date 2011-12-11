@@ -4,6 +4,10 @@ package camdp;
 // Packages to import
 import graph.Graph;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -39,12 +43,12 @@ public class CAMDP {
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = true;
 	public final static boolean DISPLAY_2D = false;
-	public final static boolean DISPLAY_MAX = true;
+	public final static boolean DISPLAY_MAX = false;
 	public final static boolean PRINTSCREENEVAL = false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
 
-	public static boolean PRINT3DFILE;
+	public static boolean PRINT3DFILE=false;
 	public static String varX;
 	public static String varY;
 	public static boolean rover;
@@ -53,9 +57,9 @@ public class CAMDP {
 	public final static ArrayList<String> ZERO  =  new ArrayList<String> (Arrays.asList("[0]"));  
 	/* For printing */
 	public static DecimalFormat _df = new DecimalFormat("#.###");
-	public static String  NAME_FILE_3D="./src/camdp/ex/data/File3D";
-	public static String  FILE_TIME_MEM="./src/camdp/ex/analysis/TimeMem";
-
+	public static String  NAME_FILE_3D="src/camdp/ex/data";
+	public static String  FILE_TIME_MEM="src/camdp/ex/analysis";
+	public static PrintStream os;
 	/* Static variables */
 	public static long _lTime; // For timing purposes
 	public static Runtime RUNTIME = Runtime.getRuntime();
@@ -91,6 +95,13 @@ public class CAMDP {
 	public CAMDP(String filename) {
 		this(HierarchicalParser.ParseFile(filename));
 		NAME_FILE_3D=NAME_FILE_3D+filename.substring(12,filename.indexOf("."))+".dat";
+		try {
+			//String timefile = FILE_TIME_MEM+filename.substring(12,filename.indexOf("."))+".txt";
+			String timefile=  "timeSpace.txt";
+			os = new PrintStream(new FileOutputStream(timefile));
+		} catch (IOException e) {
+			System.err.println(e);
+		}
 	}
 
 	/**
@@ -161,9 +172,11 @@ public class CAMDP {
 		while (++iter <= max_iter) 
 		{
 			ResetTimer();
-			System.out.println("Iteration #" + iter + ", " + MemDisplay()
-					+ " bytes, " + GetElapsedTime() + " ms");
-
+			//System.out.println("Iteration #" + iter + ", " + MemDisplay()
+			//		+ " bytes, " + GetElapsedTime() + " ms");
+			os.println("Iteration #" + iter + ", " + MemDisplay()
+							+ " bytes, " + GetElapsedTime() + " ms");
+			os.flush();
 			// Prime diagram
 			_prevDD = _valueDD;
 
@@ -231,9 +244,12 @@ public class CAMDP {
 			time[iter] = GetElapsedTime();
 			num_nodes[iter] = _context.getNodeCount(_valueDD);
 			num_branches[iter] = _context.getBranchCount(_valueDD);
-			System.out.println("Value function size @ end of iteration " + iter + 
+			os.println("Value function size @ end of iteration " + iter + 
 					": " + num_nodes[iter] + " nodes = " + 
 					num_branches[iter] + " cases" + " in " + time[iter] + " ms");
+			/*System.out.println("Value function size @ end of iteration " + iter + 
+					": " + num_nodes[iter] + " nodes = " + 
+					num_branches[iter] + " cases" + " in " + time[iter] + " ms");*/
 
 			if (DISPLAY_V) 
 			{
@@ -273,16 +289,29 @@ public class CAMDP {
 
 		flushCaches();	
 
-		System.out.println("\nValue iteration complete!");
+		/*System.out.println("\nValue iteration complete!");
 		System.out.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
 		System.out.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
 
-		System.out.println("\nIteration Results summary");
+		os.println("\nIteration Results summary");
 		for (int i = 1; i <= max_iter; i++) {
 			String branch_count = num_branches[i] >= 0 
 			? "" + num_branches[i]
 			                    : " > " + XADD.MAX_BRANCH_COUNT; 
 			System.out.println("Iter " + i + ": nodes = " + num_nodes[i] + "\tbranches = " + branch_count + "\tcases = " + num_cases[i] + "\ttime = " + time[i] + " ms");
+		}*/
+		
+		
+		os.println("\nValue iteration complete!");
+		os.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
+		os.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
+
+		os.println("\nIteration Results summary");
+		for (int i = 1; i <= max_iter; i++) {
+			String branch_count = num_branches[i] >= 0 
+			? "" + num_branches[i]
+			                    : " > " + XADD.MAX_BRANCH_COUNT; 
+			os.println("Iter " + i + ": nodes = " + num_nodes[i] + "\tbranches = " + branch_count + "\tcases = " + num_cases[i] + "\ttime = " + time[i] + " ms");
 		}
 
 		return iter;
@@ -301,10 +330,14 @@ public class CAMDP {
 			System.out.println("No need to flush caches.");
 			return; // Still enough free mem to exceed minimum requirements
 		}
-		System.out.println("Before flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
+		os.println("Before flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
 				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
 				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
 
+		/*System.out.println("Before flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
+				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
+				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
+		 */
 		_context.clearSpecialNodes();
 		for (Integer node : special_nodes)
 			_context.addSpecialNode(node);
@@ -327,9 +360,15 @@ public class CAMDP {
 
 		_hmRegrKey2Node.clear();
 
-		System.out.println("After flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
+		/*System.out.println("After flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
 				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
 				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
+		*/
+		os.println("After flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
+				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
+				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
+	
+	
 	}
 
 
@@ -457,7 +496,7 @@ public class CAMDP {
 			usage();
 		}
 
-		PRINT3DFILE = true;
+		PRINT3DFILE = false;
 		try {
 			if (args.length >= 3)
 				PRINT3DFILE = Boolean.parseBoolean(args[2]);
