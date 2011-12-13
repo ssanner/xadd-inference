@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import javax.security.auth.login.AccountNotFoundException;
+
 import util.IntTriple;
 import xadd.TestXADDDist;
 import xadd.XADD;
@@ -141,13 +143,27 @@ public class ComputeVfunction {
 			int restrict_low  = xadd.opOut(q, var_id, XADD.RESTRICT_LOW);
 			q = xadd.apply(restrict_high, restrict_low, XADD.SUM,-1);
 		}
-		
+		/*Graph g = xadd.getGraph(q);
+		g.addNode("_temp_");
+		g.addNodeLabel("_temp_", "q before reward");
+		g.addNodeShape("_temp_", "square");
+		g.addNodeStyle("_temp_", "filled");
+		g.addNodeColor("_temp_", "lightblue");
+		g.launchViewer(1300, 770);*/
+		if (xadd.ANNOTATE_ENABLE)
+			a._reward = xadd.annotateXADD(a._reward, xadd.getTermNode(ArithExpr.parse("0")),true); //augment with 0
 		// Multiply in discount and add reward
     	q = xadd.apply(a._reward, 
 				xadd.scalarOp(q, camdp.get_bdDiscount().doubleValue(), XADD.PROD), 
 				XADD.SUM,-1);
     	
-    	
+    	/*g = xadd.getGraph(q);
+		g.addNode("_temp_");
+		g.addNodeLabel("_temp_", "q after reward");
+		g.addNodeShape("_temp_", "square");
+		g.addNodeStyle("_temp_", "filled");
+		g.addNodeColor("_temp_", "lightblue");
+		g.launchViewer(1300, 770);*/
 		for (Integer constraint : camdp.get_alConstraints()) {
 			q = xadd.apply(q, constraint, XADD.PROD,-1);
 		}
@@ -201,7 +217,7 @@ public class ComputeVfunction {
 	}
 	public int computeMax(int ixadd,String _action,double lowerbound,double upperbound) {
 		XADDLeafMax max = xadd.new XADDLeafMax(_action, lowerbound,upperbound);
-		
+
 		/*Graph g = xadd.getGraph(ixadd);
 		g.addNode("_temp_");
 		g.addNodeLabel("_temp_", "Q-value before max");
@@ -223,6 +239,8 @@ public class ComputeVfunction {
 		}*/
 		ixadd  = xadd.reduceProcessXADDLeaf(ixadd, max, false);
 		System.out.print("\n&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n NUMBER OF PATHS: "+ xadd.PATH_COUNTER_MAX+"\n");
+		
+		
 		/* g = xadd.getGraph(max._runningMax);
 		g.addNode("_temp_");
 		g.addNodeLabel("_temp_", "Q-value before LP");
