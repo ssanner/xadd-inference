@@ -262,7 +262,7 @@ public class CAMDP {
 				g.addNodeColor("_temp_", "lightblue");
 				g.genDotFile("V"+iter+".dot");
 				
-				g.launchViewer(1300, 770);
+				//g.launchViewer(1300, 770);
 				//System.out.println("done.");
 			}
 			
@@ -283,7 +283,8 @@ public class CAMDP {
 		if(PRINT3DFILE){
 			System.out.print("Creating data file... ");
 			Paint3D paint = new Paint3D(this,_context);
-			paint.create3DDataFile(_valueDD,varX,varY); 
+			//paint.create3DDataFile(_valueDD,"l1","l2"); 
+			paint.create3DDataFile(_valueDD,"x1","x2"); 
 			System.out.println("done.");
 		}
 
@@ -496,7 +497,7 @@ public class CAMDP {
 			usage();
 		}
 
-		PRINT3DFILE = false;
+		//PRINT3DFILE = true;
 		try {
 			if (args.length >= 3)
 				PRINT3DFILE = Boolean.parseBoolean(args[2]);
