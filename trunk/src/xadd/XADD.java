@@ -32,7 +32,6 @@ import logic.kb.fol.FOPC;
 import lpsolve.LP;
 import lpsolve.LpSolve;
 import util.IntPair;
-import util.IntQuad;
 import util.IntTriple;
 import util.Pair;
 import xadd.XADD.ArithExpr;
@@ -62,7 +61,9 @@ public class XADD {
 	public final static boolean DEBUG_EVAL_RANGE = false;
 	public final static boolean DEBUG_CONSTRAINTS = true;
 	public final static boolean ANNOTATE_ENABLE = false;
-	public final static boolean HANDLE_NONLINEAR = true;
+	public final static boolean HANDLE_NONLINEAR = false;
+	public static boolean SUBSTITUTION = false;
+	public static ArithExpr CHANGED_ANNOTATION =null;
 	// Operators
 	public final static int UND = 0;
 	public final static int SUM = 1;
@@ -123,6 +124,7 @@ public class XADD {
 
 	public HashSet<String> _hsBooleanVars = new HashSet<String>();
 	public static ArrayList<String> _hmContinuousVars;
+	public static ArithExpr noop =null;
 
 	public HashMap<String, Double> _hmMinVal = new HashMap<String, Double>();
 	public HashMap<String, Double> _hmMaxVal = new HashMap<String, Double>();
@@ -138,6 +140,7 @@ public class XADD {
 		// Ensure that the 0th decision ID is invalid
 		_alOrder.add(new NullDec());
 		_hmContinuousVars = new ArrayList<String>();
+		noop =ArithExpr.parse("noop");
 	}
 
 	public ArrayList<String> get_hmContinuousVars() {
@@ -213,6 +216,29 @@ public class XADD {
 			// Not in cache so create
 			id = _nodeCounter;
 			XADDTNode node = new XADDTNode(e);
+			_hmNode2Int.put(node, id);
+			_hmInt2Node.put(id, node);
+			_nodeCounter++;
+		}
+		return id;
+	}
+	
+	public XADDTNode _temp2TNode = new XADDTNode(null,noop);
+	public int getTermNode(ArithExpr e,ArithExpr a) {
+
+		if (USE_CANONICAL_NODES) {
+			 //System.out.println(">> TNode: Before canonical: " + e);
+			e = (ArithExpr) e.makeCanonical();
+			if (a!=null ) a = (ArithExpr) a.makeCanonical();
+			// System.out.println(">> TNode: After canonical: " + e);
+		}
+
+		_temp2TNode.set(e,a);
+		Integer id = _hmNode2Int.get(_temp2TNode);
+		if (id == null) {
+			// Not in cache so create
+			id = _nodeCounter;
+			XADDTNode node = new XADDTNode(e,a);
 			_hmNode2Int.put(node, id);
 			_hmInt2Node.put(id, node);
 			_nodeCounter++;
@@ -928,7 +954,72 @@ public class XADD {
 		return null;
 	}
 	
+	
+	public int annotateXADD(int xadd, int leaf,boolean buildtree)
+	{
+		IntPair _tempReduceAnnotateKey = new IntPair(-1, -1);
+		Integer ret = null;
+		XADDNode n = _hmInt2Node.get(xadd);
+		XADDNode leafnode = _hmInt2Node.get(leaf);
+		if (leafnode instanceof XADDTNode) 
+			leafnode = (XADDTNode) _hmInt2Node.get(leaf);
+		if (n == null) {
+			System.out.println("ERROR: " + xadd + " expected in node cache, but not found!");
+			new Exception().printStackTrace();
+			System.exit(1);
+		}
+
+		//n has already been annotated
+		if ((n instanceof XADDTNode)&&(leafnode instanceof XADDTNode)) {
+			//if it is constant, it cant be annotated
+		/*	if (((XADDTNode) leafnode)._expr instanceof DoubleExpr)
+				((XADDTNode) leafnode).set_annotate(((XADDTNode) leafnode)._expr);*/
+				((XADDTNode) leafnode).set_annotate(((XADDTNode) n)._expr);
+			// has to be annoted already
+			
+			if (!buildtree)
+			return getTermNode(((XADDTNode)leafnode)._expr,((XADDTNode)leafnode)._annotate);
+			else
+			{
+				((XADDTNode)n).set_annotate(((XADDTNode) leafnode)._expr);
+				return getTermNode(((XADDTNode)n)._expr,((XADDTNode)n)._annotate);
+			}
+		}
+
+		// If its an internal node, check the annotate cache
+		_tempReduceAnnotateKey.set(xadd, n.hashCode());
+		if 	((ret = _hmReduceAnnotateCache.get(_tempReduceAnnotateKey)) != null) {
+			//System.out.println("** In cache, returning: " + getString(ret));
+			return ret;
+		}
+		if (leafnode instanceof XADDTNode)
+		{
+			XADDINode inode = (XADDINode) n;
+			Decision d1 = _alOrder.get(inode._var);
+			int low = annotateXADD(inode._low,  leaf,true);
+			int high =annotateXADD(inode._high,  leaf,true);
+			ret = getINode(inode._var, low, high);
+			_hmReduceAnnotateCache.put(new IntPair(xadd, n.hashCode()), ret);
+			return ret;
+
+		}
+		XADDINode inode = (XADDINode) n;
+		XADDINode inodeleaf = (XADDINode) leafnode;
+		Decision d1 = _alOrder.get(inode._var);
+		Decision d2= _alOrder.get(inodeleaf._var);
 		
+		//d1 always equal to d2
+		int low = annotateXADD(inode._low,  inodeleaf._low,false);
+		int high =annotateXADD(inode._high,  inodeleaf._high,false);
+
+		ret = getINode(inode._var, low, high);
+
+		// Put return value in cache and return
+		_hmReduceAnnotateCache.put(new IntPair(xadd, n.hashCode()), ret);
+		return ret;
+	}
+	
+	
 
 	public IntTriple _tempReduceLPKey = new IntTriple(-1, -1, -1);
 	public HashMap<String, Integer> _cvar2ID = null;
@@ -1200,7 +1291,9 @@ public class XADD {
 		if (n instanceof XADDTNode) {
 			ArithExpr expr = ((XADDTNode) n)._expr;
 			expr = expr.substitute(subst);
-			return getTermNode(expr);
+			if (ANNOTATE_ENABLE)
+				return getTermNode(expr,((XADDTNode)n)._annotate);
+			else return getTermNode(expr);
 		}
 
 		// If its an internal node, check the reduce cache
@@ -1237,13 +1330,22 @@ public class XADD {
 		// uglier and more computationally costly, but the better solution
 		// is via apply.
 		//
-		// ret = getINode(var, low, high);
-		int T_ZERO = getTermNode(ZERO);
-		int T_ONE = getTermNode(ONE);
+		// ret = getINode(var, low, high);\
+		int T_ZERO,T_ONE;
+		if (ANNOTATE_ENABLE)
+		{
+			T_ZERO = getTermNode(ZERO,ArithExpr.parse("0"));
+			 T_ONE = getTermNode(ONE,ArithExpr.parse("1"));
+		}else
+		{
+		 T_ZERO = getTermNode(ZERO);
+		 T_ONE = getTermNode(ONE);
+		}
 		int ind_true = getINode(var, /* low */T_ZERO, /* high */T_ONE);
 		int ind_false = getINode(var, /* low */T_ONE, /* high */T_ZERO);
 		int true_half = applyInt(ind_true, high, PROD,-1); // Note: this enforces canonicity so
 		int false_half = applyInt(ind_false, low, PROD,-1); // can use applyInt rather than apply
+		
 		ret = applyInt(true_half, false_half, SUM,-1);
 
 		if (CHECK_LOCAL_ORDERING) {
@@ -1312,6 +1414,36 @@ public class XADD {
 			return -1;
 		}
 	}
+	
+	public int substituteXADDforVarInArithExpr(ArithExpr leaf_val,ArithExpr annotate, String var, int xadd) {
+		
+		if (leaf_val instanceof OperExpr) {
+			CHANGED_ANNOTATION=noop;
+			OperExpr oper_expr = (OperExpr) leaf_val;
+			int running_xadd = substituteXADDforVarInArithExpr(oper_expr._terms.get(0),annotate, var, xadd);
+			for (int i = 1; i < oper_expr._terms.size(); i++) {
+				int next_operand = substituteXADDforVarInArithExpr(oper_expr._terms.get(i),annotate, var, xadd);
+				running_xadd = apply(running_xadd, next_operand, oper_expr._type /* SUM, PROD, ... */);
+			}
+			return running_xadd;
+		} else if (leaf_val instanceof VarExpr) {
+			VarExpr var_expr = (VarExpr) leaf_val;
+			if (var_expr._sVarName == var) // assume interned
+			{
+				
+				return xadd;
+			}
+				else
+				return getTermNode(leaf_val,annotate);
+		} else if (leaf_val instanceof DoubleExpr) {
+			return getTermNode(leaf_val,annotate);
+		} else {
+			System.out.println("substituteXADDforVar: Unsupported expression '" + leaf_val + "'");
+			System.exit(1);
+			return -1;
+		}
+		
+	}
 
 	// Returns all variables in this XADD
 	public HashSet<String> collectVars(int id) {
@@ -1332,8 +1464,7 @@ public class XADD {
 	public abstract class XADDLeafOperation {
 		public abstract int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values,
 				ArithExpr leaf_val);
-
-		public abstract boolean isCacheable();
+			public abstract boolean isCacheable();
 	}
 
 	
@@ -1374,7 +1505,7 @@ public class XADD {
 			return false;
 		}
 
-		public int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, ArithExpr leaf_val) 
+		public int processXADDLeafMax(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, XADDTNode leaf_val) 
 		{
 			PATH_COUNTER_MAX++;
 			// Multiply these in later
@@ -1385,7 +1516,7 @@ public class XADD {
 			int xadd_lower_bound = -1;
 			// Next compute the upper and lower bounds based on the decisions
 			System.out.println("=============================");
-			System.out.println("Current node: " + leaf_val);
+			System.out.println("Current node: " + leaf_val._expr +"annotation: " + leaf_val._annotate);
 			System.out.println("Decisions to get to get here: " + decisions + " = " + decision_values + "\n===\n");
 			ArrayList<ArithExpr> lower_bound = new ArrayList<ArithExpr>();
 			ArrayList<ArithExpr> upper_bound = new ArrayList<ArithExpr>();
@@ -1551,28 +1682,38 @@ public class XADD {
 				System.err.println("Constraints: " + decisions);
 				System.err.println("Assignments: " + decision_values);
 				xadd_lower_bound = getTermNode(new DoubleExpr(_lowerBound));
+				if (ANNOTATE_ENABLE)
+					xadd_lower_bound = annotateXADD(xadd_lower_bound, getTermNode(new DoubleExpr(_lowerBound)),false);
 			} else {
 				System.out.println("Lower bounds: " + lower_bound);
 				for (ArithExpr e : lower_bound) {
 					if (xadd_lower_bound == -1) {
 						xadd_lower_bound = getTermNode(e);
+						if (ANNOTATE_ENABLE)
+							xadd_lower_bound = annotateXADD(xadd_lower_bound, getTermNode(e),false);
 					} else {
 						// Lower bound is max of all lower bounds
 						xadd_lower_bound = apply(xadd_lower_bound, getTermNode(e), MAX,-1);
+						
 					}
 				}
 			}
-
+			
+			
 			if (upper_bound.isEmpty() && xadd_upper_bound ==-1) {
 				//System.err.println("No explicit upper bound given for '" + _actionString + "', using +1e6");
 				System.err.println("Constraints: " + decisions);
 				System.err.println("Assignments: " + decision_values);
 				xadd_upper_bound = getTermNode(new DoubleExpr(_higherBound));
+				if (ANNOTATE_ENABLE)
+					xadd_upper_bound = annotateXADD(xadd_upper_bound, getTermNode(new DoubleExpr(_higherBound)),false);
 			} else {
 				System.out.println("Upper bounds: " + upper_bound);
 				for (ArithExpr e : upper_bound) {
 					if (xadd_upper_bound == -1) {
 						xadd_upper_bound = getTermNode(e);
+						if (ANNOTATE_ENABLE)
+							xadd_upper_bound = annotateXADD(xadd_upper_bound, getTermNode(e),false);
 					} else {
 						// Upper bound is min of all upper bounds
 						xadd_upper_bound = apply(xadd_upper_bound, getTermNode(e), MIN,-1);
@@ -1598,7 +1739,7 @@ public class XADD {
 			// root of function
 			if (HANDLE_NONLINEAR)
 			{
-			OperExpr derivative= firstDerivative(leaf_val,_actionString);
+			OperExpr derivative= firstDerivative(leaf_val._expr,_actionString);
 			
 			
 			if ((derivative!=null) && (derivative instanceof OperExpr))
@@ -1608,22 +1749,50 @@ public class XADD {
 					root = getFunctionRoot(derivative,_actionString);
 					root.makeCanonical();
 					root_xadd = getTermNode(root);
+					if (ANNOTATE_ENABLE)
+						root_xadd = annotateXADD(root_xadd, getTermNode(root),false);
 					System.out.println("ROOT of function: " + root.toString());
 				}
 			}
 			}
 			// Now compute:
 			// leaf_integral{int_var = xadd_upper_bound} - leaf_integral{int_var = xadd_lower_bound}
+			SUBSTITUTION = true;
+			int int_eval_lower = substituteXADDforVarInArithExpr(leaf_val._expr,leaf_val._annotate, _actionString, xadd_lower_bound);
+			int int_eval_upper = substituteXADDforVarInArithExpr(leaf_val._expr,leaf_val._annotate, _actionString, xadd_upper_bound);
+			SUBSTITUTION = false;
+			if (ANNOTATE_ENABLE)
+			{
+				//don't annotate any leaf that does not have action in it ( no action required for this partition)
+				if (firstDerivative(leaf_val._expr, _actionString)!=null)
+				{
+					if (firstDerivative(leaf_val._expr, _actionString)._terms.size()!=0)
+					{
+					int_eval_lower = annotateXADD(xadd_lower_bound, int_eval_lower,false);
+					int_eval_upper = annotateXADD(xadd_upper_bound , int_eval_upper,false);
+					}
+					else 
+					{
+						//has a leaf with contants and variables other than the action
+						int_eval_lower = annotateXADD(getTermNode(leaf_val._expr,leaf_val._annotate), int_eval_lower,false);
+						int_eval_upper = annotateXADD(getTermNode(leaf_val._expr,leaf_val._annotate) , int_eval_upper,false);
+					}
+				}
+				else 
+				{
+					int_eval_lower = annotateXADD(getTermNode(leaf_val._expr,leaf_val._annotate), int_eval_lower,false);
+					int_eval_upper = annotateXADD(getTermNode(leaf_val._expr,leaf_val._annotate) , int_eval_upper,false);
+				}
+			}
 			
-			int int_eval_lower = substituteXADDforVarInArithExpr(leaf_val, _actionString, xadd_lower_bound);
-			int int_eval_upper = substituteXADDforVarInArithExpr(leaf_val, _actionString, xadd_upper_bound);
 			int int_eval = apply(int_eval_upper, int_eval_lower, MAX,-1);
+			//int_eval =  annotateXADD(int_eval, getTermNode(leaf_val));
 			System.out.println("max of LB and UB: " + getString(int_eval));
 			if (HANDLE_NONLINEAR)
 			{
 				if (root!=null)
 				{
-					int int_eval_root = substituteXADDforVarInArithExpr(leaf_val,_actionString,root_xadd);
+					int int_eval_root = substituteXADDforVarInArithExpr(leaf_val._expr,_actionString,root_xadd);
 					System.out.println("root substitute: " + getString(int_eval_root));
 					int_eval = apply(int_eval,int_eval_root,MAX,-1);
 					System.out.println("max of root and int_eval(LB/UB): " + getString(int_eval));
@@ -1643,6 +1812,7 @@ public class XADD {
 			// Finally, multiply in boolean decisions and irrelevant comparison expressions
 			// to the XADD and add it to the running sum
 			// - HashMap<Decision,Boolean> int_var_indep_decisions
+			
 			for (Map.Entry<Decision, Boolean> me : int_var_indep_decisions.entrySet()) {
 				double high_val = me.getValue() ? 1d : 0d;
 				double low_val = me.getValue() ? 0d : 1d;
@@ -1655,22 +1825,37 @@ public class XADD {
 				linearizeDecisions(int_eval, _hmContinuousVars);
 				int_eval = reduceLP(int_eval, _hmContinuousVars);
 			}*/
-			//int_eval = reduceLP(int_eval, _hmContinuousVars);
+			/*Graph g = getGraph(int_eval);
+			g.addNode("_temp_");
+			g.addNodeLabel("_temp_", "inteval for "+ leaf_val.toString());
+			g.addNodeShape("_temp_", "square");
+			g.addNodeStyle("_temp_", "filled");
+			g.addNodeColor("_temp_", "lightblue");
+			g.launchViewer(1300, 770);*/
+			int_eval = reduceLP(int_eval, _hmContinuousVars);
 			if (_runningMax == -1) _runningMax = int_eval;
 			 	else _runningMax = apply(_runningMax, int_eval, MAX,-1);
-			//_runningMax = reduceLP(_runningMax, _hmContinuousVars);
+			_runningMax = reduceLP(_runningMax, _hmContinuousVars);
 			//_runningMax = apply(_runningMax, int_eval, MAX);
 			// reduceLP
 			HashSet<String> all_vars = collectVars(_runningMax);
 			all_vars.removeAll(_hsBooleanVars);
-			//_runningMax = reduceLP(_runningMax, new ArrayList<String>(all_vars));
+			/*g = getGraph(_runningMax);
+			g.addNode("_temp_");
+			g.addNodeLabel("_temp_", "runningMax for "+ leaf_val.toString());
+			g.addNodeShape("_temp_", "square");
+			g.addNodeStyle("_temp_", "filled");
+			g.addNodeColor("_temp_", "lightblue");
+			g.launchViewer(1300, 770);*/
 
 			// All return information is stored in _runningSum so no need to return
 			// any information here... just keep diagram as is
 			System.out.println("Result: " + getString(_runningMax));
 			//System.out.println("RunningMax: " + getString(_runningMax));
 			//}
-			return getTermNode(leaf_val);
+			if (ANNOTATE_ENABLE && leaf_val._annotate!=null)
+				return getTermNode(leaf_val._expr,leaf_val._annotate);
+			else return getTermNode(leaf_val._expr);
 		}
 		private ArithExpr getFunctionRoot(OperExpr derivative, String _action1) {
 			
@@ -1835,42 +2020,7 @@ public class XADD {
 				}
 			return 0;
 		}*/
-		public int annotateXADD(int xadd, Expr e)
-		{
-			IntPair _tempReduceAnnotateKey = new IntPair(-1, -1);
-			Integer ret = null;
-			XADDNode n = _hmInt2Node.get(xadd);
-			if (n == null) {
-				System.out.println("ERROR: " + xadd + " expected in node cache, but not found!");
-				new Exception().printStackTrace();
-				System.exit(1);
-			}
-
-			//Do I need to return the annotated tree or does it get replaced itself?
-			if (n instanceof XADDTNode) {
-				((XADDTNode) n).set_annotate((ArithExpr) e);
-				return _hmNode2Int.get(n); 
-			}
-
-			// If its an internal node, check the annotate cache
-			_tempReduceAnnotateKey.set(xadd, n.hashCode());
-			if 	((ret = _hmReduceAnnotateCache.get(_tempReduceAnnotateKey)) != null) {
-				//System.out.println("** In cache, returning: " + getString(ret));
-				return ret;
-			}
-
-			XADDINode inode = (XADDINode) n;
-			Decision d = _alOrder.get(inode._var);
-
-			int low = annotateXADD(inode._low, e);
-			int high =annotateXADD(inode._high, e);
-
-			ret = getINode(inode._var, low, high);
-
-			// Put return value in cache and return
-			_hmReduceAnnotateCache.put(new IntPair(xadd, n.hashCode()), ret);
-			return ret;
-		}
+		
 		
 		
 		// Assume expression is canonical, hence in sum of products form (could be a single term)
@@ -2008,6 +2158,13 @@ public class XADD {
 				factors.add(0, new DoubleExpr(coef));
 				return new OperExpr(PROD, factors);
 			}
+		}
+
+		@Override
+		public int processXADDLeaf(ArrayList<Decision> decisions,
+				ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
+			// TODO Auto-generated method stub
+			return 0;
 		}
 	}
 	////////////////////////////////////////////////////
@@ -2553,6 +2710,11 @@ public class XADD {
 
 		// A terminal node should be reduced (and cannot be restricted)
 		// by default if hashing and equality testing are working in getTNode
+		if ((n instanceof XADDTNode)&&(leaf_op instanceof XADDLeafMax)) {
+			return ((XADDLeafMax)leaf_op).processXADDLeafMax(decisions, decision_values, ((XADDTNode) n)); // Assuming that to have
+																								// a node id means
+																								// canonical
+		}
 		if (n instanceof XADDTNode) {
 			return leaf_op.processXADDLeaf(decisions, decision_values, ((XADDTNode) n)._expr); // Assuming that to have
 																								// a node id means
@@ -2715,6 +2877,7 @@ public class XADD {
 		lastDecision.clear();
 		//start with no divisions, i4 = -1
 		int ret = applyInt(a1, a2, op,divBranch);
+		//return ret;
 		// TODO: should maintain a reusable reduce cache here
 		return makeCanonical(ret);
 	}
@@ -2731,7 +2894,8 @@ public class XADD {
 		
 		if (ret != null) {
 			//in cache but check path to make sure it is fliped correctly
-			return ret;
+			if (!ANNOTATE_ENABLE)
+				return ret;
 		}
 
 		// Can we create a terminal node here?
@@ -2784,10 +2948,10 @@ public class XADD {
 			int low, high;
 			//check to see if the decision node of the divisor is in the false or true branch
 			//if chechDivBranch==true means it is in a division branch, then if in false branch=1, true=2, else -1
-			low = applyInt(v1low, v2low, op,checkDivBranch());
+			low = applyInt(v1low, v2low, op,divBranch);
 			//now apply high branch
 			lastDecision.put(var, true);
-			high = applyInt(v1high, v2high, op,checkDivBranch());
+			high = applyInt(v1high, v2high, op,divBranch);
 
 		
 			changed_var_index = -1;
@@ -2831,15 +2995,26 @@ public class XADD {
 	// Computes a terminal node value if possible, assume
 	// terms of same type (otherwise incompatible!)
 	public Integer computeTermNode(int a1, XADDNode n1, int a2, XADDNode n2, int op) {
-
+		
+		
 		changed_var_index = -1;
 		if ((n1 instanceof XADDTNode) && (n2 instanceof XADDTNode)) {
 			XADDTNode xa1 = (XADDTNode) n1;
 			XADDTNode xa2 = (XADDTNode) n2;
 
 			if ((op != MAX) && (op != MIN))
-				return getTermNode(new OperExpr(op, xa1._expr, xa2._expr));
+			{
+				if ((ANNOTATE_ENABLE)&&(SUBSTITUTION))
+					return getTermNode(new OperExpr(op, xa1._expr, xa2._expr),CHANGED_ANNOTATION);
+				else if ((ANNOTATE_ENABLE)&& ((xa1._annotate!=null)||(xa2._annotate!=null)))
+				{
+					if (xa1._annotate==null) xa1._annotate=ArithExpr.parse("0");
+					else if (xa2._annotate==null) xa2._annotate=ArithExpr.parse("0");
+					return getTermNode(new OperExpr(op, xa1._expr, xa2._expr),new OperExpr(op, xa1._annotate,xa2._annotate));
+				}
+				else return getTermNode(new OperExpr(op, xa1._expr, xa2._expr));
 
+			}
 			ArithExpr diff = new OperExpr(MINUS, xa1._expr, xa2._expr);
 			CompExpr comp = null;
 			if (USE_MINUS_COMP)
@@ -2905,8 +3080,23 @@ public class XADD {
 			showDiv.clear();
 			// System.out.println("ComputeTerm::max var_index " + _alOrder.get(var_index) + ": " + comp);
 			// System.exit(1);
-			int node1 = getTermNode(xa1._expr);
-			int node2 = getTermNode(xa2._expr);
+			
+			int node1,node2;
+			if (ANNOTATE_ENABLE)
+			{
+				//to annotate a node, in a max or min operation ( building upper,lower bounds) annotate the leaves 
+				/*node1 = annotateXADD(node1, node1);
+				node2 = annotateXADD(node2, node2);
+				xa1._annotate = xa1._expr;
+				xa2._annotate = xa2._expr;*/
+				node1 = getTermNode(xa1._expr,xa1._annotate );
+				node2 = getTermNode(xa2._expr,xa2._annotate );
+			}
+			else 
+			{	
+				 node1 = getTermNode(xa1._expr);
+				 node2 = getTermNode(xa2._expr);
+			}
 			//STEP2: change this for actions too
 			return getINode(var_index, op == MAX ? node1 : node2, op == MAX ? node2 : node1);
 			//return getINode(var_index, op == MAX ? node2 : node1, op == MAX ? node1 : node2);
@@ -3171,6 +3361,8 @@ public class XADD {
 		public ArithExpr _annotate;
 
 		public ArithExpr get_annotate() {
+			/*if (_annotate==null) return noop;
+			else */
 			return _annotate;
 		}
 
@@ -3183,6 +3375,19 @@ public class XADD {
 				_expr = ((OperExpr) e)._terms.get(0);
 			else
 				_expr = e;
+			/*if (ANNOTATE_ENABLE)
+				_annotate = noop;*/
+		}
+		public XADDTNode(ArithExpr e,ArithExpr a) {
+			if (e instanceof OperExpr && ((OperExpr) e)._terms.size() == 1)
+				_expr = ((OperExpr) e)._terms.get(0);
+			else
+				_expr = e;
+			if (a instanceof OperExpr && ((OperExpr) a)._terms.size() == 1)
+				_annotate = ((OperExpr) a)._terms.get(0);
+			else
+				_annotate = a;
+			
 		}
 
 		public void set(ArithExpr e) {
@@ -3191,17 +3396,32 @@ public class XADD {
 			else
 				_expr = e;
 		}
+		
+		public void set(ArithExpr e,ArithExpr a) {
+			if (e instanceof OperExpr && ((OperExpr) e)._terms.size() == 1)
+				_expr = ((OperExpr) e)._terms.get(0);
+			else
+				_expr = e;
+			if (a instanceof OperExpr && ((OperExpr) a)._terms.size() == 1)
+				_annotate = ((OperExpr) a)._terms.get(0);
+			else
+				_annotate = a;
+		}
 
 		public int hashCode() {
 			if (!ANNOTATE_ENABLE) return _expr.hashCode();
-			else return _expr.hashCode()+_annotate.hashCode();
+			else  if (_annotate!=null)
+				return _expr.hashCode()+_annotate.hashCode();
+			else return _expr.hashCode();
 		}
 
 		public boolean equals(Object o) {
 			//TODO: handle null here
 			if (o instanceof XADDTNode && (!ANNOTATE_ENABLE))
 				return this._expr.equals(((XADDTNode) o)._expr);
-			else if (ANNOTATE_ENABLE) return (this._expr.equals(((XADDTNode) o)._expr)&&(this._annotate.equals(((XADDTNode) o)._annotate)));
+			else if (ANNOTATE_ENABLE && _annotate!=null) return (this._expr.equals(((XADDTNode) o)._expr)&&(this._annotate.equals(((XADDTNode) o)._annotate)));
+			else if ((ANNOTATE_ENABLE) &&(!SUBSTITUTION) && (_annotate==null)) 
+				return this._expr.equals(((XADDTNode) o)._expr);
 			else return false;
 		}
 
@@ -3215,8 +3435,16 @@ public class XADD {
 
 		public void toGraph(Graph g, int id) {
 			String this_node = Integer.toString(id);
+			String annotation="";
 			g.addNode(this_node);
-			g.addNodeLabel(this_node, _expr.toString()/* +" id:"+id */);
+			if (ANNOTATE_ENABLE)
+			{
+				if (_annotate == null) annotation = ""; 
+				else 
+					annotation = _annotate.toString();
+				g.addNodeLabel(this_node, _expr.toString() + "\n action: "+ annotation);
+			}
+			else g.addNodeLabel(this_node, _expr.toString());
 			if (GRAPH_USE_COLOR)
 				g.addNodeColor(this_node, "lightsalmon"); // red, darkred, lightsalmon
 			g.addNodeShape(this_node, "box");
