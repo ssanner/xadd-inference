@@ -15,9 +15,6 @@ package xadd;
 
 import graph.Graph;
 
-import java.awt.BufferCapabilities.FlipContents;
-import java.lang.reflect.Array;
-import java.security.acl.LastOwnerException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +31,6 @@ import lpsolve.LpSolve;
 import util.IntPair;
 import util.IntTriple;
 import util.Pair;
-import xadd.XADD.ArithExpr;
-import xadd.XADD.DoubleExpr;
 import cmdp.HierarchicalParser;
 
 
@@ -60,10 +55,11 @@ public class XADD {
 	public final static boolean SHOW_DECISION_EVAL = false;
 	public final static boolean DEBUG_EVAL_RANGE = false;
 	public final static boolean DEBUG_CONSTRAINTS = true;
-	public final static boolean ANNOTATE_ENABLE = false;
-	public final static boolean HANDLE_NONLINEAR = false;
+	public final static boolean ANNOTATE_ENABLE = true;
+	public final static boolean HANDLE_NONLINEAR = true;
 	public static boolean SUBSTITUTION = false;
 	public static ArithExpr CHANGED_ANNOTATION =null;
+	public static boolean REDUCE_LP=true;
 	// Operators
 	public final static int UND = 0;
 	public final static int SUM = 1;
@@ -683,7 +679,26 @@ public class XADD {
 		}
 		double root1 = (coeff[1] *(-1) + sqr)/(2*coeff[2]);
 		double root2 = (coeff[1] *(-1) - sqr)/(2*coeff[2]);
-		if (root1==root2) root2= (-1) * root1;
+		if (root1==root2)
+		{
+			//root2= (-1) * root1;
+			//this means a point value for the true branch and a false branch for the rest, we return true branch if inode._type>= 
+			//and false branch if <= (x+1)^2<0 is never correct
+			if (new_type==GT || new_type==GT_EQ)
+			{
+				Decision d1 = new ExprDec(new CompExpr(GT_EQ, ArithExpr.parse("1"), ArithExpr.parse("0")));
+				int var1 = getVarIndex(d1,true);
+				newPointer = getINode(var1, inode._low, inode._high);
+				return newPointer;
+			}
+			else 
+			{
+				Decision d1 = new ExprDec(new CompExpr(LT_EQ, ArithExpr.parse("1"), ArithExpr.parse("0")));
+				int var1 = getVarIndex(d1,true);
+				newPointer = getINode(var1, inode._low, inode._high);
+				return newPointer;
+			}
+		}
 		ArithExpr d1_lhs , d2_lhs; 
 		
 		//for the variable decision
@@ -1512,6 +1527,8 @@ public class XADD {
 			/*if (!(leaf_val instanceof DoubleExpr) || ((DoubleExpr) leaf_val)._dConstVal!=0)
 			{*/
 			HashMap<Decision, Boolean> int_var_indep_decisions = new HashMap<Decision, Boolean>();
+			HashMap<Decision, Boolean> int_var_indep_decisions_root = new HashMap<Decision, Boolean>();
+
 			int xadd_upper_bound = -1;
 			int xadd_lower_bound = -1;
 			// Next compute the upper and lower bounds based on the decisions
@@ -1794,19 +1811,28 @@ public class XADD {
 				{
 					int int_eval_root = substituteXADDforVarInArithExpr(leaf_val._expr,_actionString,root_xadd);
 					System.out.println("root substitute: " + getString(int_eval_root));
-					int_eval = apply(int_eval,int_eval_root,MAX,-1);
-					System.out.println("max of root and int_eval(LB/UB): " + getString(int_eval));
 					for (ArithExpr e1 : upper_bound) {
-							CompExpr ce = new CompExpr(GT, e1, root);
+							CompExpr ce = new CompExpr(GT_EQ, e1, root);
 							ExprDec ed = new ExprDec(ce);
-							int_var_indep_decisions.put(ed, Boolean.TRUE);
+							int_var_indep_decisions_root.put(ed, Boolean.TRUE);
 					
 					}
 					for (ArithExpr e1 : lower_bound) {
-						CompExpr ce = new CompExpr(GT, root, e1);
+						CompExpr ce = new CompExpr(GT_EQ, root, e1);
 						ExprDec ed = new ExprDec(ce);
-						int_var_indep_decisions.put(ed, Boolean.TRUE);
+						int_var_indep_decisions_root.put(ed, Boolean.TRUE);
 					}
+					
+					for (Map.Entry<Decision, Boolean> me : int_var_indep_decisions_root.entrySet()) {
+						double high_val = me.getValue() ? 1d : 0d;
+						double low_val = me.getValue() ? 0d : 1d;
+						System.out.println("int_eval_root with decisions: "+me.getKey());
+						int_eval_root = apply(int_eval_root, getVarNode(me.getKey(), low_val, high_val), PROD,-1);
+					}
+					
+					System.out.println("root with constaints: " + getString(int_eval_root));
+					int_eval = apply(int_eval,int_eval_root,MAX,-1);
+					System.out.println("max of root and int_eval(LB/UB): " + getString(int_eval));
 				}
 			}
 			// Finally, multiply in boolean decisions and irrelevant comparison expressions
@@ -1832,15 +1858,17 @@ public class XADD {
 			g.addNodeStyle("_temp_", "filled");
 			g.addNodeColor("_temp_", "lightblue");
 			g.launchViewer(1300, 770);*/
-			int_eval = reduceLP(int_eval, _hmContinuousVars);
+			if (REDUCE_LP)
+				int_eval = reduceLP(int_eval, _hmContinuousVars);
 			if (_runningMax == -1) _runningMax = int_eval;
 			 	else _runningMax = apply(_runningMax, int_eval, MAX,-1);
+			if (REDUCE_LP)
 			_runningMax = reduceLP(_runningMax, _hmContinuousVars);
 			//_runningMax = apply(_runningMax, int_eval, MAX);
 			// reduceLP
 			HashSet<String> all_vars = collectVars(_runningMax);
 			all_vars.removeAll(_hsBooleanVars);
-			/*g = getGraph(_runningMax);
+			/*Graph g = getGraph(_runningMax);
 			g.addNode("_temp_");
 			g.addNodeLabel("_temp_", "runningMax for "+ leaf_val.toString());
 			g.addNodeShape("_temp_", "square");
@@ -3796,7 +3824,7 @@ public class XADD {
 
 	}
 
-			public static DoubleExpr findVar(ArithExpr expr,String action) 
+			public static DoubleExpr findVar(ArithExpr expr,String action,boolean nonlinear) 
 			{
 				DoubleExpr result = (DoubleExpr) ZERO;
 				if (expr instanceof OperExpr && ((OperExpr) expr)._type == SUM) 
@@ -3807,32 +3835,32 @@ public class XADD {
 					{
 						if (e instanceof OperExpr) 
 						{
-							result = findVarTerm((OperExpr) e,action);
+							result = findVarTerm((OperExpr) e,action,nonlinear);
 							if (result!=(DoubleExpr)ZERO) return result;
 						}
 						 else if (e instanceof VarExpr) {
 							OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
-							result = findVarTerm(temp,action);
+							result = findVarTerm(temp,action,nonlinear);
 							if (result!=(DoubleExpr)ZERO) return result;
 						 }
 					}
 				}			
 				else if (expr instanceof OperExpr && ((OperExpr) expr)._type == PROD) 
 				{
-					result= findVarTerm((OperExpr) expr,action); 
+					result= findVarTerm((OperExpr) expr,action,nonlinear); 
 					if (result!=(DoubleExpr)ZERO) return result;
 				}
 				else if ((expr instanceof VarExpr) || (expr instanceof DoubleExpr)) 
 				{
 					OperExpr temp = new OperExpr(PROD, Arrays.asList(expr));
-					result= findVarTerm(temp,action);
+					result= findVarTerm(temp,action,nonlinear);
 					if (result!=(DoubleExpr)ZERO) return result;
 				}
 				return result;
 			}
 	// A single term (PROD)
 			
-	public static DoubleExpr findVarTerm(OperExpr expr,String action1) 
+	public static DoubleExpr findVarTerm(OperExpr expr,String action1,boolean nonlinear) 
 	{
 		DoubleExpr result = (DoubleExpr) ZERO;
 	
@@ -3859,7 +3887,9 @@ public class XADD {
 			}
 		}
 
-		if (_var_count > 0)
+		if ((nonlinear)&&(_var_count > 1))
+			return new DoubleExpr(coef);
+		else if ((!nonlinear)&&(_var_count>0))
 			return new DoubleExpr(coef);
 		else 
 			return (DoubleExpr) ZERO;
@@ -4109,7 +4139,7 @@ public class XADD {
 					for (int i=0;i<_hmContinuousVars.size();i++)
 					{
 						contVar = _hmContinuousVars.get(i);
-						DoubleExpr doubleCoef = findVar(current_expr._lhs,contVar+"'");
+						DoubleExpr doubleCoef = findVar(current_expr._lhs,contVar+"'",false);
 						if (doubleCoef!=(DoubleExpr)ZERO)
 						{
 							handlePrime = true;
@@ -4122,8 +4152,12 @@ public class XADD {
 						for (int i=0;i<_hmContinuousVars.size();i++)
 						{
 							contVar = _hmContinuousVars.get(i);
+							DoubleExpr doubleCoef = (DoubleExpr) ZERO;
 							//first look for x*x 
-							DoubleExpr doubleCoef = findVar(current_expr._lhs,contVar);
+							if (HANDLE_NONLINEAR)
+								doubleCoef = findVar(current_expr._lhs, contVar,true);
+							if (doubleCoef==(DoubleExpr)ZERO)
+								doubleCoef = findVar(current_expr._lhs,contVar,false);
 							if (doubleCoef!=(DoubleExpr)ZERO)
 							{
 								boolean flip_comparison=false;
