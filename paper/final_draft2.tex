@@ -62,7 +62,7 @@ problems.
 \section{Introduction}
 
 
-Markov decision processes (MDPs)[] have been a theoretical model for many planning problems in the recent years. Although the most common solution to MDPs is to use value iteration or policy iteration, they can quickly fall into Bellman's curse of dimensionality problem for large state – action spaces. In many problems this can be avoided by modelling the problem with continuous state – action spaces which is also a closer resemblance to real-world problems. 
+Markov decision processes (MDPs) have been a theoretical model for many planning problems in the recent years. Although the most common solution to MDPs is to use value iteration or policy iteration, they can quickly fall into Bellman's curse of dimensionality problem for large state – action spaces ~\cite{puterman}. In many problems this can be avoided by modelling the problem with continuous state – action spaces which is also a closer resemblance to real-world problems. 
 
 Examples of problems in the continuous state and action domain can include Robotics, Operation Research and Management problems. The OR (Operation Research) literature has used MDPs to model many problems such as Inventory Control [] or Water Reservoir management []. These are examples where the state space can be modelled by discrete and continuous Markov decision processes and where the actions can also be considered continuous.
 
@@ -811,7 +811,7 @@ Markov Decision Processes have been used as the framework of many planning probl
 Here we offer continuous actions such as time or movement for our domain. The theoretical framework of DCA-MDP is similar to ~\cite{Rachelson08} for considering continuous state and action spaces and the mathematical proofs for extending the MDP framework are provided here, but we presented practical application of this framework using XADDs and the CSA-DP algorithm. 
 
 Most work in the continuous action area consider time-dependent models (TMDP) and consider time as a continuous action and solve the MDP problem. In ~\cite{boyan00} time is considered as a continuous variable and the exact solutions exist, but they are limited to the piecewise linear value function setting. 
-Sampling \cite{Weinstein2010} and approximating \cite{pegasus} the continous action space is the most common solution. 
+Sampling ~\cite{Weinstein2010} and approximating ~\cite{pegasus} the continous action space is the most common solution. 
 
 \section{Conclusions}
 
