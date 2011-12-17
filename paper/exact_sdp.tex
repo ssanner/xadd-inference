@@ -262,7 +262,7 @@ finitely bounded value (guaranteed if $\gamma < 1$); for $H=\infty$,
 the optimal policy is independent of horizon, 
 i.e., $\forall h \geq 0, \pi^{*,h} = \pi^{*,h+1}$.}
 \begin{align}
-V^{\Pi^*}(\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| \vec{b}_0,\vec{x}_0 \right], \label{eq:vfun_def}
+V^{\Pi^*}(\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| \vec{b}_0,\vec{x}_0 \right]. \label{eq:vfun_def}
 \end{align}
 Here $r^h$ is the reward obtained at horizon $h$ following $\Pi^*$ where 
 we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
@@ -290,12 +290,8 @@ DBNs).
 We write the joint transition model as
 \begin{align}
 P(\vec{b}',&\vec{x}'|\vec{b},\vec{x},a,\vec{y}) = \label{eq:dbn} \\
-& \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \nonumber 
+& \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}). \nonumber 
 \end{align}
-where $P(b_i'|\vec{b},\vec{x},a,\vec{y})$ may condition on a subset of
-$\vec{b}$, $\vec{x}$, and $\vec{y}$ and likewise 
-$P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y})$ may condition on a subset of
-$\vec{b}$, $\vec{b}'$, $\vec{x}$, and $\vec{y}$.
 
 We call the conditional probabilities
 $P(b_i'|\vec{b},\vec{x},a,\vec{y})$ for \emph{binary} variables $b_i$
@@ -304,31 +300,20 @@ tabular enumerations, because in general these functions can condition
 on both discrete and continuous state.  For the \emph{continuous}
 variables $x_j$ ($1 \leq j \leq m$), we represent the CPFs
 $P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ with \emph{conditional
-stochastic linear equations} (CSLEs).  For the solution provided here,
-we only require three properties of these CSLEs: (1) they are
-\emph{Markov}, meaning that they can only condition on the previous
-state, (2) they are piecewise linear (pieces entering through the
-conditional part) and (2) they are \emph{deterministic} meaning that
-the next state must be uniquely determined from the previous state
-(i.e., $x_1' = x_1 + x_2^2$ is deterministic whereas $x_1'^2 = x_1^2$
-is not because $x_1' = \pm x_1$).\footnote{While the
-\emph{deterministic} requirement may seem to conflict with the label
-of \emph{stochastic}, we note that stochasticity enters through the
-conditional component to be discussed in a moment.}  Otherwise, we
-allow for arbitrary functions in these Markovian, conditional
-deterministic equations as in the following example:
-\vspace{-3mm}
-
+stochastic linear equations} (CSLEs) satisfying two properties: (1) CSLEs are
+first-order \emph{Markov}, meaning that they can only condition on the previous
+state and (2) CSLEs are piecewise linear.  Following is 
+a concrete example of a CSLE:
 {\footnotesize
 \begin{align}
-P(x_1' | \vec{b},\vec{b}',\vec{x},a) = \delta\left[ x_1' - 
+P(x_1' | \vec{b},\vec{b}',\vec{x},a,\vec{y}) = \delta\left[ x_1' - 
 \begin{cases}
-b_1' \land x_2^2 \leq 1 : & \exp(x_1^2 - x_2^2) \\
-\neg b_1' \lor  x_2^2 > 1 : & x_1 + x_2 \\
+b_1' \land x_2 \leq y_1  : & x_2 + 3y_1 \\
+\neg b_1' \lor x_2 > y_1 : & x_1 + 7\\
 \end{cases}
 \right] \label{eq:ex_csde}
 \end{align}}
-Here %the next-state of $x_1'$ is independent of the action $a$;
+Here 
 the use of the Dirac $\delta[\cdot]$ function ensures that this is a
 conditional probability function that integrates to 1 over $x_1'$
 in this case.  But in more intuitive terms, one can see that this
@@ -340,7 +325,8 @@ function for variable $x_i'$ to use the $\delta[\cdot]$ as shown in this
 example.
 
 It will be obvious that CSLEs in the form of \eqref{eq:ex_csde} are
-\emph{conditional linear equations}; they are furthermore \emph{stochastic}
+\emph{conditional linear equations}; they are furthermore discretely 
+\emph{stochastic}
 because they can condition on boolean random variables in the same time slice
 that are stochastically sampled, e.g., $b_1'$ in
 \eqref{eq:ex_csde}.  Of course, these CSLEs are restricted in that
@@ -350,21 +336,15 @@ continuous variable transitions as a mixture of $\delta$ functions,
 which has been used heavily in previous exact continuous state MDP 
 solutions~\cite{feng04,li05,hao09}.  
 
-We allow 
-the reward function $R_a(\vec{b},\vec{x})$
-to be a piecewise quadratic function of the current state
-for each action $a \in A$ with parameters $\vec{y}$, for example:
+We allow the reward function $R_a(\vec{b},\vec{x},\vec{y})$ to be a
+piecewise quadratic function of the current state for each action $a
+\in A$ with parameters $\vec{y}$, for example:
 \begin{align}
 R_a(\vec{b},\vec{x},\vec{y}) = \begin{cases}
-x_1^2 + x_2^2 \leq 1 : & 1 - x_1^2 - x_2^2  \\
-x_1^2 + x_2^2 > 1 : & 0 \\
-\end{cases} \label{eq:simple_reward}
+x_1 \leq y_1 + 1 : & 1 - x_1^2 - y_1^2  \\
+x_1 > y_1 + 1:     & 0 \\
+\end{cases}. \label{eq:simple_reward}
 \end{align}
-or even 
-\begin{align}
-R_a(\vec{b},\vec{x},\vec{y}) & = 10 x_3 x_4 \exp(x_1^2 + \sqrt{x_2}) \label{eq:expr_reward}
-\end{align}
-
 With our CSA-MDP now completely defined, our next objective
 is to solve it.
 
@@ -385,8 +365,8 @@ thereafter as the following:
 
 {\footnotesize
 \begin{align}
-& Q_a^{h+1}(\vec{b},\vec{x}) = R_a(\vec{b},\vec{x}) + \gamma \cdot \label{eq:qfun} \\ 
-& \sum_{\vec{b}'} \int_{\vec{x}'} \left( \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a) \right) V^h(\vec{b}',\vec{x}') d\vec{x}' \nonumber
+& Q_a^{h+1}(\vec{b},\vec{x}) = \max_{\vec{y}} \Bigg( R_a(\vec{b},\vec{x}) + \gamma \cdot \label{eq:qfun} \\ 
+& \sum_{\vec{b}'} \int_{\vec{x}'} \left( \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \right) V^h(\vec{b}',\vec{x}') d\vec{x}' \Bigg) \nonumber
 \end{align}}
 
 Given $Q_a^h(\vec{b},\vec{x})$ for each $a \in A$, we can proceed
@@ -406,22 +386,19 @@ then value iteration can terminate at horizon $h+1$ if
 $V^{h+1} = V^{h}$; then 
 $\pi^*(\vec{b},\vec{x}) = \argmax_a Q^{h+1}_a(\vec{b},\vec{x})$.
 
-Of course this is simply the \emph{mathematical} definition.  In the
-discrete-only case, we can always compute this in tabular form;
-however, how to compute this for DC-MDPs with reward and transition
-function as previously defined is the objective of the symbolic
-dynamic programming algorithm that we define next.
+Of course this is simply the \emph{mathematical} definition, next
+we show each of these algebraic operations can be computed for
+CSA-MDPs.
 
-\section{Symbolic Dynamic Programming}
+\section{Symbolic Dynamic Programming (SDP)}
 
-As it's name suggests, symbolic dynamic programming (SDP)~\cite{fomdp}
-is simply the process of performing dynamic programming (in this case
-value iteration) via symbolic manipulation.  While SDP as defined
-in~\cite{fomdp} was previously only used with piecewise
-constant functions, we now generalize the representation to work with
-general piecewise functions needed for DC-MDPs in this paper.  
+In this section, we extend the symbolic dynamic programming (SDP)
+work of~\cite{fomdp,sanner_uai11}
+to the case of continuously parameterized actions for CSA-MDPs.  
+For completeness, we recap the general SDP framework, noting that 
+step 4 represents the major modification to prior SDP work.
 
-Before we define our solution, however, we must formally define our
+Before we define our SDP solution, however, we must formally define our
 case representation and symbolic case operators.
 
 \subsection{Case Representation and Operators}
@@ -435,7 +412,7 @@ f =
   \phi_1: & f_1 \\ 
  \vdots&\vdots\\ 
   \phi_k: & f_k \\ 
-\end{cases}
+\end{cases} \label{eq:case}
 \end{align*}
 }
 Here the $\phi_i$ are logical formulae defined over the state
@@ -453,11 +430,6 @@ state assignments.
 %defined state of the reward in horizon $h$.}
 The $f_i$ can be \emph{any} functions of the state
 variables in $\vec{x}$.  
-
-As concrete examples, consider the transition representation for
-KNAPSACKin Ex.~\ref{ex:knapsack}, the optimal value function for
-KNAPSACKfrom~\eqref{eq:vfun_knapsack}, or any of
-\eqref{eq:ex_csde}, \eqref{eq:simple_reward}, or \eqref{eq:expr_reward}.
 
 \emph{Unary operations} such as scalar multiplication $c\cdot f$ (for
 some constant $c \in \mathbb{R}$) or negation $-f$ on case statements
@@ -511,7 +483,7 @@ partitions as they are irrelevant to the function value.
 
 For SDP, we'll also need to perform maximization, restriction,
 and substitution on case statements.  
-\emph{Symbolic maximization} is fairly straightforward
+\emph{Symbolic case maximization} is fairly straightforward
 to define:
 \vspace{-5mm}
 
@@ -591,24 +563,23 @@ Clearly $f|_{\phi}$ only applies when $\phi$ holds and is
 undefined otherwise, hence $f|_{\phi}$ is a partial function
 unless $\phi \equiv \top$.
 
-The final operation that we need to define for case
-statements is substitution.  \emph{Symbolic substitution} simply takes
-a set $\sigma$ of variables and their substitutions, e.g., 
-$\sigma = \{ x_1' / (x_1 \hspace{-.8mm} + \hspace{-.8mm} x_2), x_2' / x_1^2 \hspace{-.3mm} \exp(x_2) \}$ where
-the LHS of the $/$ represents the substitution variable and the
-RHS of the $/$ represents 
-the expression that should be substituted in its place.  No variable
-occurring in any RHS expression of $\sigma$ can also occur in any 
-LHS expression of $\sigma$.
-We write the substitution of a non-case function $f_i$ with $\sigma$ 
-as $f_i\sigma$; as an example, for the $\sigma$ defined previously and 
-$f_i = x_1' + x_2'$ then $f_i\sigma = x_1 + x_2 + x_1^2 \exp(x_2)$ as
-would be expected.  We can also substitute into case partitions $\phi_j$
-by applying $\sigma$ to each inequality operand; as an example, if
-$\phi_j \equiv x_1' \leq \exp(x_2')$ then 
-$\phi_j \sigma \equiv x_1 + x_2 \leq \exp(x_1^2 \exp(x_2))$.
-Having now defined substitution of $\sigma$ for non-case functions $f_i$ and case
-partitions $\phi_j$ we can define it for case statements in general:
+The final operation that we need to define for case statements is
+substitution.  \emph{Symbolic substitution} simply takes a set
+$\sigma$ of variables and their substitutions, e.g., $\sigma = \{ x_1'
+/ (x_1 \hspace{-.8mm} + \hspace{-.8mm} x_2), x_2' / x_1 \}$ where the
+LHS of the $/$ represents the substitution variable and the RHS of the
+$/$ represents the expression that should be substituted in its place.
+No variable occurring in any RHS expression of $\sigma$ can also occur
+in any LHS expression of $\sigma$.  We write the substitution of a
+non-case function $f_i$ with $\sigma$ as $f_i\sigma$; as an example,
+for the $\sigma$ defined previously and $f_i = x_1' + x_2'$ then
+$f_i\sigma = x_1 + x_2 + x_1$ as would be expected.  We can also
+substitute into case partitions $\phi_j$ by applying $\sigma$ to each
+inequality operand; as an example, if $\phi_j \equiv x_1' \leq 2x_2'$ 
+then $\phi_j \sigma \equiv x_1 + x_2 \leq 2x_1$.  
+Having now defined substitution of $\sigma$ for non-case
+functions $f_i$ and case partitions $\phi_j$ we can define it for case
+statements in general:
 
 {\footnotesize
 \begin{center}
@@ -643,84 +614,101 @@ then $\phi_1\sigma \land \phi_2\sigma \models \bot$.
 %We will exploit this property next in SDP for DC-MDPs.
 
 %%zz: entire subsection
-\subsection{Maximization of continuous actions}
+\subsection{Maximization of Continuous Parameters}
 
+In the previous section, we covered the operations required for the
+SDP algorithm defined in~\cite{sanner_uai11}.  As the primary
+technical contribution of this paper, we now address the
+issue of maximizing a function (e.g., Q-function) w.r.t. continuous
+parameters (e.g., action parameters).
 
-In the previous section, we covered the operations required for the SDP algorithm. Here we address the issue of maximizing a function (e.g., Q-function) over continuous action variables.
+It is perhaps easiest to demonstrate how to compute $\max_d f(d)$ in exact,
+closed-form for $f(d)$ in case format with a running example.
+If $f(d)$ has mutually exclusive and exhaustive 
+case partitions w.r.t.\ a fixed $d$ (a property that will be guaranteed 
+whenever this operator is applied in SDP), the following sequence of
+equalities hold:
+\begin{align*}
+\max_d f(d) & = \max_d \sum_i \phi_i(d) f_i(d) & = \max_d \max_i \phi_i(d) f_i(d)\\
+            & = \max_i \max_d \phi_i(d) f_i(d).
+\end{align*}
+The critical step where $\sum_i$ is replaced with $\max_i$ is permitted
+since the $\phi_i$ are mutually disjoint and exhaustive --- only one $\phi_i$
+will ever be true for any given assignment to the case statement variables.
+This step is crucial because the outer $\max_i$ is the ``case maximization''
+operation already discussed while the inner $\max_d$ is a continuous variable
+maximization that we can now compute for just one case partition, i.e.,
+one $\phi_i(d)$ and $f_i(d)$, and the apply a case maximization to all
+of the results for each partition.
 
-To compute the maximum of any arbitrary function $f$ in the case format, over the continuous variable $d$, we maintain a closed-form case representation. Using the mutually exclusive and disjoint property of partitions, :\footnote{Any case partition without this property can be converted into its equivalent case representation using logical operators such as $\wedge$ and $\neg$} we claim that the following equality holds: 
-\begin{equation}
-\sum_{d}\max_{i}\varphi_{i}f_{i}=\max_{i}\max_{d}\varphi_{i}f_{i}
-\end{equation}
+To continue with maximization in one partition, we use our
+\MarsRoverNL example in one of the case partitions of the first iteration for
+continuous maximization.  This partition $i$ (resulting from applying SDP)
+contains conditions $\phi_i(d) \equiv \neg b\wedge
+(x\geq 2)\wedge (d\leq 10) \wedge (d\geq -10)\wedge (x+d\leq 2) \wedge
+(x+d\geq -2) $ and value $f_i(d) = 4 - (x+d)^2 $.
 
-Since we care about taking the maximum of each partition and obtaining an overall maximum for the function and the partitions have no junctions, the above holds for our case representation. Thus we compute the maximum separately for each case partition and then $\max$ over the final results. The final maximum is a symbolic maximum as explained before, the inside maximum for each partition is the operation defined here. 
-
-To continue with maximization in one partition, we use our \MarsRoverNL example in one of the branches of the first iteration for continuous maximization that covers this technique completely. This branch is obtained from replacing the transition function of each variable in the reward function for the conditions $ \neg b\wedge (x\geq 2)\wedge (d\leq 10) \wedge (d\geq -10)\wedge  (x+d\leq 2) \wedge (x+d\geq -2) $ to obtain the root value of $ 4 - (x+a)^2 $.
-
-We also consider some mathematical definitions for the technique of maximizing the continuous action: 
+To perform $\max_d \phi_i f_i(d)$, we consider some mathematical
+definitions necessary for the correctness of this operation:
 \begin{enumerate}
-\item A real-valued function f defined on the real domain is said to have a global (or absolute) maximum point at the point x, if for all x :$ f(x^{*}) \geq f(x) $. The value of the function at this point is the maximum of the function.
-\item By Fermat's theorem, the local maxima (and minima) of a function can occur only at its critical points where either the function is not differentiable or its derivative is 0 at that point. 
-\item Boundedness theorem states that a continuous function f in the closed interval (a,b) is bounded on that interval. That is, there exist real numbers m and M such that:
+\item A real-valued function $f$ defined on the real domain is said to
+have a global (or absolute) maximum point at the point x, if for all $x$:
+$ f(x^{*}) \geq f(x) $. The value of the function at this point is
+the maximum of the function.
+\item By \emph{Fermat's theorem}, the local maxima (and minima) of a function
+can occur only at its critical points: where either the function is not
+differentiable (which only happens at the upper and lower boundaries) or its
+first derivative is 0.
+\item The \emph{Boundedness theorem} states that a continuous function
+$f$ in the closed interval (a,b) is bounded on that interval. That is,
+there exist real numbers m and M such that:
 \begin{align*}
 \forall x \in \{a,b\} : m \leq f(x) \leq M 
 \end{align*}
 \end{enumerate}
 
-Based on these definitions, the maximum value of a function is defined at the boundaries and roots of that function according to the continuous variable $d$. If this function were linear and a polynomial of a certain degree k, then the maximum for that function would occur on any of the (k-1) roots of the function or at the lower and upper bounds defined for it.
-\\We can write the explicit functions for these bounds in  \emph{piecewise linear case form} for the respective lower and upper bounds $LB$, $UB$ and possible roots of our example as shown below. The maximum of all the lower bounds is obtained by taking a maximum over this set and the maximum of the upper bounds is obtained by taking a minimum over the set of UB.
-
+Based on these definitions, the maximum value of $\phi_i f_i$ must occur
+at either the boundaries or the points where its first derivative is zero.
+Because we only consider up to quadratic $f_i$ in this paper, we need only
+consider the single root of $f_i$ if it is quadratic.
+%If this function were linear and a polynomial of a certain degree k, then the maximum for that function would occur on any of the (k-1) roots of the function or at the lower and upper bounds defined for it.
+We can write the explicit functions for these bounds in
+\emph{piecewise linear case form} for the lower bounds $\mathit{LB}$ 
+given by $\phi_i$ (i.e., $d \geq -10$, $d \geq x - 2$), upper bounds 
+$\mathit{UB}$ given by $\phi_i$ (i.e., $d \leq 10$, $d \leq 2 - x$), 
+and the roots of $\frac{\partial}{\partial d} f_i = - 2x - 2d = 0$
+w.r.t.\ $d$ (i.e., $d = -x$).  Since we have multiple lower and upper bounds,
+we must consider the maximum of the lower bounds and the minimum of
+the upper bounds which we can represent in case form as follows:
 {\footnotesize
 \begin{center}
-\begin{tabular}{r c c c l}
-&
-\hspace{-9mm} $LB:= \max
-  \begin{cases}
-d \geq -10 \\ 
-d \geq -2 -x\\ 
-  \end{cases}$
-$=$
-&
-\hspace{-4mm}
-$  \begin{cases}
+\begin{tabular}{r c c l}
+$\mathit{LB}:= \max(-10,-2 -x) = \begin{cases}
 x \leq 8: & -2 -x \\ 
 x \geq 8: &-10\\ 
-  \end{cases}$
-&
-\hspace{-4mm} 
-\\
+\end{cases}$
 &
 \hspace{-4mm}
-$UB:= \max
-  \begin{cases}
-d \leq 10 \\ 
-d \leq 2 -x\\ 
-  \end{cases}$
-$=$
-&
-\hspace{-4mm}
-$  \begin{cases}
+$\mathit{UB}:= \min(10, 2-x) = \begin{cases}
 x \geq -8: & 2 -x \\ 
 x \leq -8: &10\\ 
-  \end{cases}$
-&
-\hspace{-4mm} 
-\\
+\end{cases}$
 &
 \hspace{-4mm}
-$Roots:= 
-  \begin{cases}
--2\times x -2 \times d=0  := -x \\ 
-
-  \end{cases}$
+$\mathit{Root}: d = -x$.
 \end{tabular}
 \end{center}
 }
+We know that the maximum of the $f_i$ could occur at any of the above
+points, but we do not know which.  Hence the true maximum is simply
+the case maximization of the substitution of the $\mathit{UB}$, $\mathit{LB}$, and root
+into $f(d)$.  
+
 
 A lower bound on action $d$ occurs when the inequalities of $\geq ,>$ have action $d$ on their LHS; then any expression on the RHS is considered a lower bound on action $d$. Similar to this, an upper bound occurs for inequalities of $\leq , <$ and the RHS expression is considered an upper bound for action $d$. 
 The roots of the function are also defined by taking the first derivative of $f$ with respect to $d$ and setting it to zero.
 
-To enforce correctness of bounds symbolically we must have $LB \leq Roots \leq UB$, so we add the pair of constraints for the bounds to the root constraint:
+To enforce correctness of bounds symbolically we must have $\mathit{LB} \leq \mathit{Root}s \leq \mathit{UB}$, so we add the pair of constraints for the bounds to the root constraint:
 
 {\footnotesize
 \begin{center}
@@ -745,25 +733,25 @@ x \geq -10\\
 }
 The other two statements can be removed as a tautology, to leave the final root partition as: 
 
-\begin{align*}Roots:= 
+\begin{align*}\mathit{Root}:= 
  \begin{cases}
 x \leq 10 \wedge x \geq -10:              & -x\\ 
 \neg (x \leq 10 \wedge x \geq -10):    & 0\\ 
   \end{cases}
 \end{align*}
 
-Having the UB,LB and root of each case partition, we can maximize the value of each case function according to the bounds. We want to factor out the action variable $d$ (we show later that this is equal to maximizing the Q-function values in order to obtain the value function). This means replacing the continuous action with the possible maximum points; LB, UB and roots. Replacing the action with a constant, variable or another function is equal to applying the \emph{substitute} operator. Each substitution forms a partition of the final maximization over the three posibble maximum points: 
+Having the $\mathit{UB}$,$\mathit{LB}$ and root of each case partition, we can maximize the value of each case function according to the bounds. We want to factor out the action variable $d$ (we show later that this is equal to maximizing the Q-function values in order to obtain the value function). This means replacing the continuous action with the possible maximum points; $\mathit{LB}$, $\mathit{UB}$ and roots. Replacing the action with a constant, variable or another function is equal to applying the \emph{substitute} operator. Each substitution forms a partition of the final maximization over the three posibble maximum points: 
 
 \begin{align*}
 \max_{d}
 \begin{cases}
-4 - (x+ UB)^2 \\ 
-4- (x+LB)^2 \\ 
-4 - (x+Roots)^2\\ 
+4 - (x+ \mathit{UB})^2 \\ 
+4- (x+\mathit{LB})^2 \\ 
+4 - (x+\mathit{Root})^2\\ 
   \end{cases}
 \end{align*}
 
-We take the maximum of the UB and LB  substitutions and then maximum the result with the root substitution. Below shows the substituted maximum points:
+We take the maximum of the $\mathit{UB}$ and $\mathit{LB}$  substitutions and then maximum the result with the root substitution. Below shows the substituted maximum points:
 
 {\footnotesize
 \begin{center}
@@ -804,21 +792,50 @@ The main partitions after the maximization over action $d$ is as below, the rest
 
 After taking the symbolic maximum over the partitions above, we also add all the constraints that did not effect the $d$ boundaries (i.e, $x\leq 2:false $ and $b:false$) which means only considering the partition values for $x \geq 2$ which takes out the final branch of the case partition above. 
 
-%% end of maximization subsection
+\subsection{Extended ADDs (XADDs)}
+
+In practice, it can be prohibitively expensive to maintain a case
+statement representation of a value function with explicit partitions.
+Motivated by the SPUDD~\cite{spudd} algorithm which maintains compact
+value function representations for finite discrete factored MDPs using
+algebraic decision diagrams (ADDs)~\cite{bahar93add}, Sanner {\it et
+al}~\cite{sanner_uai11} introduced \emph{extended ADDs} (XADDs) to handle
+continuous variables in an ADD-like data structure.  An
+example XADD for the optimal \MarsRover value function has already
+been provided in Figure~\ref{fig:opt_val_pol} --- partition
+constraints are simply represented as internal node decisions and
+partition values are simply represented as leaf nodes.
+
+It is fairly straightforward for XADDs to support all case operations
+required for SDP.  Standard operations like unary multiplication,
+negation, $\oplus$, and $\otimes$ are implemented exactly as they are
+for ADDs.  The fact that the decision nodes have internal structure
+means that certain paths in the XADD may be inconsistent or infeasible
+(due to parent decisions).  To remedy this, when the XADD has only
+linear decision nodes (as it will in this work), we can use a 
+feasibility checker of a linear programming solver
+to prune out unreachable paths~\cite{sanner_uai}, which substantially
+improves scalability as we show later.
+
+Sanner {\it et al}~\cite{sanner_uai11} outlined a number of issues
+that arise in XADDs along with efficient solutions; we refer the
+reader to that work for more details.  In this work, we need only
+extend the XADD to support the previously defined continuous variable
+maximization operation --- indeed, considering any path from root to
+leaf in an XADD as a case partition and value, the mapping of this
+operation from cases to XADDs is trivial and directly exploits
+the compact partition structure of the XADD.
 
 \subsection{Symbolic Dynamic Programming (SDP)}
 
-% \ref{sec:dcmdps} \ref{sec:soln} \ref{eq:qfun} \ref{eq:vfun} 
-
-In the SDP solution for DC-MDPs, our objective will be to take
-a DC-MDP as defined in Section~\ref{sec:dcmdps}, apply value
+In the SDP solution for CSA-MDPs, our objective will be to take
+a CSA-MDP as defined in Section~\ref{sec:dcmdps}, apply value
 iteration as defined in Section~\ref{sec:soln}, and produce
 the final value optimal function $V^h$ at horizon $h$ in the form
 of a case statement.
 
 For the base case of $h=0$, we note that setting $V^0(\vec{b},\vec{x}) = 0$
 (or to the reward case statement, if not action dependent)
-%and $R(\vec{b},\vec{x})$ as described in Section~\ref{sec:dcmdps}
 is trivially in the form of a case statement.  
 
 Next, $h > 0$ requires the application of SDP.  
@@ -851,8 +868,8 @@ and $P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) = \delta[x_j' - g(\vec{x})]$;
 hence, the first marginal over $x_j'$ need only be computed over
 $\delta[x_j' - g(\vec{x})] V'^{h}$.
 
-What follows is one of the \emph{key novel insights of SDP} in the context of
-DC-MDPs --- the integration 
+The key insight of the SDP algorithm introduced in~\cite{sanner_uai11}
+is that the integration 
 $\int_{x_j'} \delta[x_j' - g(\vec{x})] V'^{h} dx_j'$ 
 simply \emph{triggers the substitution} $\sigma = \{ x_j' / g(\vec{x}) \}$
 on $V'^{h}$, that is
@@ -861,18 +878,8 @@ on $V'^{h}$, that is
 \end{align}
 Thus we can perform the
 operation in~\eqref{eq:one_int} repeatedly in sequence \emph{for each}
-$x_j'$ ($1 \leq j \leq m$) for every action $a$.  The only
-additional complication is that the form of 
-$P(x_j'|\vec{b},\vec{x},a,\vec{y})$ is a \emph{conditional} 
-equation, c.f.~\eqref{eq:ex_csde}, and represented generically
-as follows:
-\begin{align}
-   P(x_j'|\vec{b},\vec{x},a,\vec{y}) = \delta\left[ x_j' = \begin{cases}
-    \phi_1: & f_1 \\ 
-   \vdots&\vdots\\ 
-    \phi_k: & f_k \\ 
-  \end{cases} \right] \label{eq:cond_sub}
-\end{align}
+$x_j'$ ($1 \leq j \leq m$) for every action $a$.
+
 Hence to perform~\eqref{eq:one_int} on this more general
 representation, we obtain that $\int_{x_j'} P(x_j'|\vec{b},\vec{x},a,\vec{y}) V'^{h} dx_j'$
 \begin{align*}
@@ -880,39 +887,13 @@ representation, we obtain that $\int_{x_j'} P(x_j'|\vec{b},\vec{x},a,\vec{y}) V'
     \phi_1: & V'^{h} \{ x_j' = f_1 \} \\ 
    \vdots&\vdots\\ 
     \phi_k: & V'^{h} \{ x_j' = f_k \}  \\ 
-  \end{cases}
+  \end{cases}.
 \end{align*}
-In effect, we can read~\eqref{eq:cond_sub} as a \emph{conditional
-substitution}, i.e., in each of the different \emph{previous state}
-conditions $\phi_i$ ($1 \leq i \leq k$), we obtain a different
-substitution for $x_j'$ appearing in $V'^{h}$ (i.e., $\sigma = \{ x_j' / f_i
-\}$).  Here we note that because $V'^{h}$ is \emph{already} a case
-statement, we can simply replace the single partition $\phi_i$ with the
-multiple partitions of $V'^h \{ x_j' / f_i \}|_{\phi_i}$.\footnote{If $V'^h$
-had mutually disjoint partitions then we note the restriction and
-substitution operations preserve this disjointness.}  This reduces
-the \emph{nested} case statement back down to a non-nested case
-statement as in the following example:
-\begin{align*}
-    \begin{cases}
-      \phi_1: & 
-        \begin{cases}
-          \psi_1: & f_{11} \\ 
-          \psi_2: & f_{12}  \\ 
-        \end{cases} \\
-      \phi_2: & 
-        \begin{cases}
-          \psi_1: & f_{21} \\ 
-          \psi_2: & f_{22}  \\ 
-        \end{cases} \\
-    \end{cases} & \; = \;
-        \begin{cases}
-          \phi_1 \land \psi_1: & f_{11} \\ 
-          \phi_1 \land \psi_2: & f_{12}  \\ 
-          \phi_2 \land \psi_1: & f_{21} \\ 
-          \phi_2 \land \psi_2: & f_{22}  \\ 
-        \end{cases} 
-\end{align*}
+This operation may be complicated in some cases for
+when the form of 
+$P(x_j'|\vec{b},\vec{x},a,\vec{y})$ is a \emph{conditional} 
+equation, but the result is still in a closed-form case
+statement as outlined in~\cite{sanner_uai11}.
 
 To perform the full continuous integration, 
 if we initialize 
@@ -921,6 +902,7 @@ the above integrals for all $x_j'$, updating $\tilde{Q}_a^{h+1}$ each time,
 then after elimination of all $x_j'$ ($1 \leq j \leq m$), we will have 
 the partial regression of $V'^{h}$ for the continuous variables for
 each action $a$ denoted by $\tilde{Q}_a^{h+1}$.
+
 \item {\it Discrete Marginalization}: Now that we have our partial
 regression $\tilde{Q}_a^{h+1}$ for each action $a$, we proceed
 to derive the full backup $Q_a^{h+1}$ from $\tilde{Q}_a^{h+1}$
@@ -946,8 +928,17 @@ and each operation produces a case statement.
 Thus, once this process is complete, we have marginalized over
 all $\vec{b}'$ and $Q_a^{h+1}$ is the symbolic representation
 of the intended Q-function.
-\item {it Continuous Maximization} Now that we have $Q_a^{h+1}$ in
-the case format we perform continuous maximization for the continuous parameter $y$ as explained in the previous section. This step factors out the continuous action variable from the Q-function. 
+
+\item {\it Continuous Parameter Maximization}: Now that we have
+$Q_a^{h+1}(\vec{y})$ in the case format with free parameters $\vec{y}$
+for the action variables, we simply need to compute $Q_a^{h+1} =
+\max_{\vec{y}} Q_a^{h+1}(\vec{y})$.  This continuous variable
+maximization can be done sequentially for each element of $\vec{y}$ as
+outlined previously.  At the same time, if record the maximal
+substitutions $\vec{y}$ made at each leaf, we can also recover
+the parameterized policy that led to these optimal values, e.g.,
+as shown in Figure~\ref{fig:opt_val_pol}.
+
 \item {\it Maximization}: Now that we have $Q_a^{h+1}$ in
 case format for each action $a \in \{a_1,\ldots,a_p\}$, obtaining
 $V^{h+1}$ in case format as defined in~\eqref{eq:vfun} requires
@@ -969,135 +960,13 @@ operation produces the correct result and that (b) each case operation
 is applied in the correct sequence as defined in \eqref{eq:qfun} or 
 \eqref{eq:vfun}.  
 
-%To make this concrete, we provide an example of SDP for \Knapsack.
-
-On a final note, we observe that SDP holds for \emph{any} symbolic
-case statements; we have not restricted ourselves to rectangular
-piecewise functions, piecewise linear functions, or even piecewise
-polynomial functions.  As the SDP solution is purely symbolic,
-SDP applies to \emph{any} DC-MDPs using bounded symbolic function 
-that can be written in case format!  Of course, that is the theory,
-next we meet practice.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% V2 for marsrover
-\begin{figure*}[t]
-\begin{center}
-\includegraphics[width=0.4\textwidth]{Figures1/v2.pdf}
-\end{center}
-\vspace{-3mm}
-\caption{%\footnotesize 
-The final value function for the second horizon of the \MarsRoverNL example\
-} \label{fig:rover_V2}
-\vspace{-3mm}
-\end{figure*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Extended ADDs (XADDs)}
-
-In practice, it can be prohibitively expensive to maintain
-a case statement representation of a value function with explicit
-partitions.  Motivated by the SPUDD~\cite{spudd} algorithm which
-maintains compact value function representations for finite discrete
-factored MDPs using algebraic decision diagrams (ADDs)~\cite{bahar93add},
-we extend this formalism to handle continuous variables in a data
-structure we refer to as the XADD.  An example XADD for the optimal
-\MarsRoverNL value function for horizon 2 is provided
-in Figure~\ref{fig:rover_V2}.
-
-
-In brief we note that an XADD is like an ADD except that (a) the decision
-nodes can have arbitrary inequalities, equalities, or disequalities (one
-per node) and (b) the leaf nodes can represent arbitrary functions.
-The decision nodes still have a fixed order from root to leaf
-and the standard ADD
-operations to build a canonical ADD (\textsc{Reduce}) and 
-to perform a binary operation on two ADDs (\textsc{Apply}) 
-still applies in the case of XADDs.
-
-While exact solutions using symbolic dynamic
-programming are possible in principle for arbitrary symbolic CSE transition
-and reward functions, we note that it is much more difficult to
-devise a canonical and compact form for representations 
-such as~\eqref{eq:expr_reward}
-in comparison to~\eqref{eq:simple_reward}.
-Hence while we have used general examples throughout the paper
-to demonstrate the expressiveness of our approach, we will restrict
-XADDs to use \emph{polynomial} functions only.  We note the main advantage
-of this for the XADD is that we can put the leaf and decision nodes
-in a \emph{unique, canonical} form, which allows us to minimize 
-redundancy in the XADD representation of a case statement.
-
-It is fairly straightforward for XADDs to support all case operations
-required for SDP.  Standard operations like unary multiplication,
-negation, $\oplus$, and $\otimes$ are implemented exactly as they
-are for ADDs.  The fact that the decision nodes have internal structure
-is irrelevant, although this means that certain paths in the XADD
-may be inconsistent or infeasible (due to parent decisions).  To
-remedy this, when the XADD has only linear decision 
-nodes, we can use the feasibility checkers of
-a linear programming solver (e.g., as also done in~\cite{penberthy94}) 
-to prune unreachable nodes in the XADD; later we show results demonstrating
-impressive reductions in XADD size using this style of pruning.
-
-The only two XADD operations that pose difficulty are substitution
-and maximization.  In principle substitution is simple, the only
-caveat is that substitutions modify the decision nodes and hence
-decision nodes may become unordered.  We can use the 
-recursive application of ADD binary operations $\otimes$ and $\oplus$ 
-as given in Algorithm~\ref{fig:correct} to correctly reorder the
-nodes in an XADD $F$ after substitution.  A related reordering
-issue occurs during XADD maximization; because XADD maximization
-can introduce new decision nodes (which occurs at the leaf when
-two leaf functions are compared) and these decision nodes may
-be out of order w.r.t.\ the diagram, reordering as defined
-in Algorithm~\ref{fig:correct} must also be applied after
-maximization.  
-
-On a final note, we mention that an implementation of SDP using case
-statements without any attempt to merge and simplify cases often
-cannot get past the first or second SDP iteration; as our results show
-next, XADDs allow SDP to scale to much longer horizons in practice.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\incmargin{1em}
-%\linesnumbered
-\begin{algorithm}[t!]
-\SetKwFunction{getCanonicalNode}{{\sc GetCanonicalNode}}
-\SetKwFunction{reduce}{{\sc Reorder}}
-\SetKwInOut{Input}{input}
-\SetKwInOut{Output}{output}
-
-\Input{$F$ (root node for possibly unordered XADD)}
-\Output{$F_r$ (root node for an ordered XADD)}
-\BlankLine
-\Begin{
-   //if terminal node, return canonical terminal node\\
-   \If{F is terminal node}
-   {
-   \Return{canonical terminal node for polynomial of $F$}\;
-   }
-   //nodes have a $\mathit{true}$ \& $\mathit{false}$ branch and $\mathit{var}$ id\\
-   \If{$F \rightarrow F_r$ is not in Cache}
-   {
-    $F_{\mathit{true}}$ = \reduce{$F_{\mathit{true}}$} $\otimes \; \mathbb{I}[F_\mathit{var}]$ \;
-    $F_{\mathit{false}}$ = \reduce{$F_{\mathit{false}}$} $\otimes \; \mathbb{I}[\neg F_\mathit{var}]$\;
-    $F_r = F_{\mathit{true}} \oplus F_{\mathit{false}}$\;
-    insert $F \rightarrow F_r$ in Cache\;
-   } 
-   \Return{$F_r$}\;
-}
-\caption{{\sc Reorder}(F)  \label{fig:correct}}
-\end{algorithm}
-\decmargin{1em}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \section{Empirical Results}
-
-
-We implemented the SDP algorithm using the XADDs and tested it on several domains. Apart from the \MarsRoverNL,  we considered problems from the OR literature such as \InventoryControl  and \WaterReservoir. In the following subsections we will study these examples empirically.
-
+ 
+We implemented the SDP algorithm using the XADDs and tested it on several
+domains. Apart from the \MarsRoverNL, we considered problems from the OR
+literature such as \InventoryControl and \WaterReservoir. In the following
+subsections we will study these examples empirically.
+ 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
 \begin{figure*}[t]
@@ -1108,40 +977,65 @@ We implemented the SDP algorithm using the XADDs and tested it on several domain
 \includegraphics[width=0.47\textwidth]{Figures1/time1-3.pdf}
 %}
 %\vspace{-3mm}
-\caption{%\footnotesize 
+\caption{\footnotesize
 Space (\# XADD nodes in value function) and
-time for different horizons of CSA-DP on \InventoryControl\ 
+time for different horizons of CSA-MDP on \InventoryControl\
 Comparing 1D, 2D and no-pruning}
 \label{fig:invC}
 %\vspace{-3mm}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{\InventoryControl} 
-This domain problem is a well-known optimization benchmark in the OR literature. Business firms often deal with the problem of deciding  upon the amount of product to order in a time period so that the customer demands are satisfied. The firm's warehouse will keep an inventory of this product to address different customer demand levels. Each month, the firm must decide on the amount of products to order based on the current stock level.
-The order should not be too high since keeping the inventory is expensive, nor should it be too low in which case it will be penalized for being unable to meet customer demands and leading to the loss of customers. The optimization problem faced by the firm is to find an optimal order policy that maximizes the profit.~\cite{Mahootchi2009}
-
-We present a simple formulation of this problem where the capacity of the inventory is C units of each product and customer orders not satisfied in this month are backlogged for the next month, so inventory can take negative values. We consider two cases, a one product inventory with one order action and the other with two products that needs two different orders.
-
-We take two continuous state variable $x_1,x_2 \in [-1000,C]$ indicating the current inventory quantity into account, with the total inventory capacity of 800, and a stochastic boolean state variable for customer demand level $d$ where $d=0$ is low demand levels (50) and $d=1$ is high demand levels (150) according to some probability. \\
-The continuous action variable is the order quantity $a_1,a_2 \in [0,C]$ which can at most take the value of the maximum inventory capacity. \\
-
-We define an immediate negative reward for the cost of producing an order and the storage cost of holding the products in the inventory and also a positive reward for fulfilling the customer demand whenever there are enough stocks in the inventory. The transition for one of the state variables and the reward function are defined below:
-%\ because of backlogging, the customer demand is always taken from the current stock level, leaving it negative
-%\ consider the next state as the current state and orders minus the customer orders
-%\ customer demands are boolean of low and high that change in every iteration
-%\ 
-
+ 
+\subsection{\InventoryControl}
+This domain problem is a well-known optimization benchmark in the OR
+literature. Business firms often deal with the problem of deciding upon the
+amount of product to order in a time period so that the customer demands are
+satisfied. The firm's warehouse will keep an inventory of this product to
+address different customer demand levels. Each month, the firm must decide
+on the amount of products to order based on the current stock level.
+The order should not be too high since keeping the inventory is expensive,
+nor should it be too low in which case it will be penalized for being unable
+to meet customer demands and leading to the loss of customers. The
+optimization problem faced by the firm is to find an optimal order policy
+that maximizes the profit.~\cite{Mahootchi2009}
+ 
+We present a simple formulation of this problem where the capacity of the
+inventory is C units of each product and customer orders not satisfied in
+this month are backlogged for the next month, so inventory can take negative
+values. We consider two cases, a one product inventory with one order action
+and the other with two products that needs two different orders.
+ 
+We take two continuous state variable $x_1,x_2 \in [-1000,C]$ indicating the
+current inventory quantity into account, with the total inventory capacity
+of 800, and a stochastic boolean state variable for customer demand level
+$d$ where $d=0$ is low demand levels (50) and $d=1$ is high demand levels
+(150) according to some probability. \\
+The continuous action variable is the order quantity $a_1,a_2 \in [0,C]$
+which can at most take the value of the maximum inventory capacity. \\
+ 
+We define an immediate negative reward for the cost of producing an order
+and the storage cost of holding the products in the inventory and also a
+positive reward for fulfilling the customer demand whenever there are enough
+stocks in the inventory. The transition for one of the state variables and
+the reward function are defined below:
+%\ because of backlogging, the customer demand is always taken from the
+current stock level, leaving it negative
+%\ consider the next state as the current state and orders minus the
+customer orders
+%\ customer demands are boolean of low and high that change in every
+iteration
+%\
+ 
 {\footnotesize
 \begin{align*}
 x'_1 & = \begin{cases}
-d  \wedge (x_1 + a_1 + x_2 - 150 \leq 800) : & x_1 + a_1 - 150 \\
-d  \wedge (x_1 + a_1 + x_2 - 150 \geq 800) : & x_1 - 150  \\
-\neg d \wedge (x_1 + a_1 + x_2 - 150 \leq 800): & x_1 + a_1 - 50    \\
-\neg d \wedge (x_1 + a_1 + x_2 - 150 \geq 800): & x_1 - 50    \\
+d \wedge (x_1 + a_1 + x_2 - 150 \leq 800) : & x_1 + a_1 - 150 \\
+d \wedge (x_1 + a_1 + x_2 - 150 \geq 800) : & x_1 - 150 \\
+\neg d \wedge (x_1 + a_1 + x_2 - 150 \leq 800): & x_1 + a_1 - 50 \\
+\neg d \wedge (x_1 + a_1 + x_2 - 150 \geq 800): & x_1 - 50 \\
 \end{cases}\\
-d' & =  \begin{cases}
-d     : &(0.7)\\
+d' & = \begin{cases}
+d : &(0.7)\\
 \neg d: &(0.3)\\
 \end{cases}\\
 R & = \begin{cases}
@@ -1155,69 +1049,149 @@ R & = \begin{cases}
 (50 - (x_1+x_2)) - 0.5\times a_1 -0.4 \times a_2 - 0.1\times(x_1 + x_2) \\
 \end{cases}
 \end{align*}}
-
-% write description in case we have to take this huge case out! 
-The transition for the continuous actions partitions based on the maximum capacity of the inventory (for both products), and only adds the orders if the current total capacity (with respect to the orders of that product and the stocks available for both products) are less than this maximum capacity. 
-
-The demand variable is transitioned stochastically and the reward function is based on the demand levels and the current stock in inventory. If the current stock is larger than the total inventory, we get the reward for fulfilling the demand $(e.g 150)$, if the demand is high and the inventory is not high enough, then the reward is $(e.g (150 - (x_1+x_2)))$, in both cases the action costs and holding costs are also added. This allows the inventory to stock as many products as possible while not exceeding the capacity of the inventory. 
-
-We plot the results of comparing a 1-product \InventoryControl problem with a multi-dimensional one. Figure~\ref{fig:invC} compares the time and nodes for different iterations for these two problem instances and a third comparisoon for the effect of not pruning on the 1D instance. This demonstrates the impact of having multiple constraints and action variables on the problem size which requires much more state-action partitions. The time and space have increased from the first iteration up to the third iteration for the 2D problem size, but then dropped for the next horizons due to pruning the XADD in our algorithm. As more constraints got added in for horizon 4, they cancelled the effects of some of the previous branches because of infeasibility and the pruning operation allows the XADD to grow smaller in space and requiring almost a constant time depending on the constraints added in each horizon. Without considering pruning, even the 1 product problem instance quickly falls into the curse of dimensionality problem. In fact, after the second iteration time and space grows exponentially and for this reason the plot fails to show the next time and space. 
+ 
+% write description in case we have to take this huge case out!
+The transition for the continuous actions partitions based on the maximum
+capacity of the inventory (for both products), and only adds the orders if
+the current total capacity (with respect to the orders of that product and
+the stocks available for both products) are less than this maximum capacity.
+ 
+ 
+The demand variable is transitioned stochastically and the reward function
+is based on the demand levels and the current stock in inventory. If the
+current stock is larger than the total inventory, we get the reward for
+fulfilling the demand $(e.g 150)$, if the demand is high and the inventory
+is not high enough, then the reward is $(e.g (150 - (x_1+x_2)))$, in both
+cases the action costs and holding costs are also added. This allows the
+inventory to stock as many products as possible while not exceeding the
+capacity of the inventory.
+ 
+We plot the results of comparing a 1-product \InventoryControl problem with
+a multi-dimensional one. Figure~\ref{fig:invC} compares the time and nodes
+for different iterations for these two problem instances and a third
+comparisoon for the effect of not pruning on the 1D instance. This
+demonstrates the impact of having multiple constraints and action variables
+on the problem size which requires much more state-action partitions. The
+time and space have increased from the first iteration up to the third
+iteration for the 2D problem size, but then dropped for the next horizons
+due to pruning the XADD in our algorithm. As more constraints got added in
+for horizon 4, they cancelled the effects of some of the previous branches
+because of infeasibility and the pruning operation allows the XADD to grow
+smaller in space and requiring almost a constant time depending on the
+constraints added in each horizon. Without considering pruning, even the 1
+product problem instance quickly falls into the curse of dimensionality
+problem. In fact, after the second iteration time and space grows
+exponentially and for this reason the plot fails to show the next time and
+space.
 % any need for 3d plot? For the 1 or 2 product case?
 % any thing else we need from this example?
-
-
-
-\subsection{\WaterReservoir}The problem of \WaterReservoir  needs to make an optimal decision on how much and when to discharge water from water reservoirs to maximize hydroelectric energy productions while considering environment constraints such as irrigation requirements and flood prevention. 
-A multi-reservoir system is more desirable than the single reservoir problem due to its ability in controlling various environment parameters such as flooding.  In these systems, the inflow of downstream reservoirs are effected by the outflow of their upstream reservoirs. In the OR literature, this case  is considered much more complex and for the sake of simplicity mainly the single case in considered. For multi-reservoirs the main problem that leads to approximations to DP methods or using other simplifications is the curse of dimensionality. In this domain the discharge action is considered as a discrete action  and so are the energy demands. This causes the state space to grow exponentially in case of multiple states and actions. ~\cite{reservoir}
-Using our method for continuous action value iteration, we show that this problem can be handled efficiently and is scalable to multi-reservoir problems. Consider a two-level reservoir with the outflow of the second reservoir added to the input of the first reservoir. The state space is the level of water in both reservoirs as well as the energy demands and inflow (such as rainfall or streams) to the reservoirs $(l_1,l_2,i,e)$. We consider the water levels as continuous variables, the inflows to both reservoirs are the same which depends on a high-low sessions of rainfall. The energy demands e can be considered both continuous or discrete for different customer needs. 
-
-We want to prevent the upstream reservoir ($l_2$) from reaching low water levels, while avoiding flooding which is caused by high water levels. A constant amount of water is discharged from the downstream reservoir($l_1$) to meet customer electricity demands. The inflow to both reservoirs is assumed to be the same (same amount of rainfall). 
-{\footnotesize
-\begin{align*}
-l_1' & = \begin{cases}
-d     : & l_1 - 1000 \times e + 500 \times e  +450 \times e \\
-\neg d: &  l_1 - 1000 \times e + 500 \times e  +250 \times e \\
-\end{cases}\\
-l_2' & =  \begin{cases}
-d     : & l_2 - 500 \times e  +450 \times e \\
-\neg d: &  l_2 - 500 \times e  +250 \times e \\
- \end{cases}\\
-d' & = \begin{cases}
-d     : & (0.7) \\
-\neg i: &  (0.3)   \\
-\end{cases}\\
-\end{align*}}
-
-The reward is assigned based on preventing the flood. If water levels prevent flooding, a reward is given for the \textit{time} the reservoir selects the action of discharging water from one reservoir to the other, or the choice of not discharging at that time, depending on the water levels. The elapsed time is used as the reward value if the constraints are met, in this case the system should choose to perform an action (drain or no drain) as latest as possible. 
-This elapsed time is added to the current time at each transition. The water levels are transitioned based on the previous levels and the amount of discharge and inflow multiplied by the elapsed time. This means that higher elapsed time is desired to maximize the reward, while lower ones ensure flood prevention.
-
-{\footnotesize
-\begin{align*}
-R & = \begin{cases}
-l_1 \leq 4500 \wedge l_2 \leq 4500 \wedge   l_1\geq 50 : e \\
-l_1 \leq 4500 \wedge l_2 \leq 4500 \wedge   l_1\leq 50 : -100+e \\
-\neg(l_1 \leq 4500 \wedge l_2 \leq 4500) : 0 \\
-\end{cases}
-\end{align*}}
-
-In order to demonstrate the effectiveness of planning optimally with our model, we use this continuous-time example of the multi-reservoir where the elapsed time is defined as the action parameter to drain a reservoir. The goal is to show a form of value function refinement that is generated using this CSA-DP algorithm. The optimal value function will obtain higher values for higher horizons, while the value for lower horizons were less than the current value function. This is demonstrated in Figure~\ref{fig:reservoir} where three value functions have been presented in different horizons. 
-
-Here flood prevention is ensured in each step by the linear piecewise boundaries on the very high and very low levels, the action of discharging occurs here either at time 0 for very critical points or at a time depending on the water levels later during the iteration (i.e, $a = -8.18 + 0.0018\times l_1$ if one of the water levels is above the critical level in the third iteration). As for the constant section, this piece is the safe range and the action of discharge (or not discharge) is left till the latest possible time thus achieving higher rewards. As the iteration number increases, the future discounted reward goes higher than the previous horizon. 
-
+ 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %figure6 : 3d plots of refinement planning for 3 horizons
-\begin{figure*}[t]
+\begin{figure*}[t!]
 \centering
-\includegraphics[width=0.33\textwidth]{Figures1/ref1.pdf}
-\includegraphics[width=0.33\textwidth]{Figures1/ref3.pdf}
-\includegraphics[width=0.33\textwidth]{Figures1/ref6.pdf}
-\caption{%\footnotesize 
-Exact optimal value function for \WaterReservoir  domain
+\includegraphics[width=0.32\textwidth]{Figures1/ref1.pdf}
+\includegraphics[width=0.32\textwidth]{Figures1/ref3.pdf}
+\includegraphics[width=0.32\textwidth]{Figures1/ref6.pdf}
+\caption{\footnotesize
+Exact optimal value function for \WaterReservoir domain
 }
 \label{fig:reservoir}
 %\vspace{-3mm}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\subsection{\WaterReservoir}
+
+The problem of \WaterReservoir~\cite{reservoir} from the operations
+research community needs to make an
+optimal decision on how much and when to discharge water from water
+reservoirs to maximize hydroelectric energy productions while considering
+environment constraints such as irrigation requirements and flood
+prevention.
+
+A multi-reservoir system is more desirable than the single reservoir problem
+due to its ability in controlling various environment parameters such as
+flooding. In these systems, the inflow of downstream reservoirs are effected
+by the outflow of their upstream reservoirs. In the OR literature, this case
+is considered much more complex and for the sake of simplicity mainly the
+single case in considered. For multi-reservoirs the main problem that leads
+to approximations to DP methods or using other simplifications is the curse
+of dimensionality. In this domain the discharge action is considered as a
+discrete action and so are the energy demands. This causes the state space
+to grow exponentially in case of multiple states and actions.
+
+Using our method for continuous action value iteration, we show that this
+problem can be handled efficiently and is scalable to multi-reservoir
+problems. Consider a two-level reservoir with the outflow of the second
+reservoir added to the input of the first reservoir. The state space is the
+level of water in both reservoirs as well as the energy demands and inflow
+(such as rainfall or streams) to the reservoirs $(l_1,l_2,i,e)$. We consider
+the water levels as continuous variables, the inflows to both reservoirs are
+the same which depends on a high-low sessions of rainfall. The energy
+demands e can be considered both continuous or discrete for different
+customer needs.
+ 
+We want to prevent the upstream reservoir ($l_2$) from reaching low water
+levels, while avoiding flooding which is caused by high water levels. A
+constant amount of water is discharged from the downstream reservoir($l_1$)
+to meet customer electricity demands. The inflow to both reservoirs is
+assumed to be the same (same amount of rainfall).
+{\footnotesize
+\begin{align*}
+l_1' & = \begin{cases}
+  d : & l_1 - 1000 \times e + 500 \times e +450 \times e \\
+  \neg d: & l_1 - 1000 \times e + 500 \times e +250 \times e \\
+  \end{cases}\\
+l_2' & = \begin{cases}
+  d : & l_2 - 500 \times e +450 \times e \\
+  \neg d: & l_2 - 500 \times e +250 \times e \\
+  \end{cases}\\
+d' & = \begin{cases}
+  d : & (0.7) \\
+  \neg i: & (0.3) \\
+  \end{cases}
+\end{align*}}
+The reward is assigned based on preventing the flood. If water levels
+prevent flooding, a reward is given for the \textit{time} the reservoir
+selects the action of discharging water from one reservoir to the other, or
+the choice of not discharging at that time, depending on the water levels.
+The elapsed time is used as the reward value if the constraints are met, in
+this case the system should choose to perform an action (drain or no drain)
+as latest as possible.
+
+This elapsed time is added to the current time at each transition. The water
+levels are transitioned based on the previous levels and the amount of
+discharge and inflow multiplied by the elapsed time. This means that higher
+elapsed time is desired to maximize the reward, while lower ones ensure
+flood prevention.
+{\footnotesize
+\begin{align*}
+R & = \begin{cases}
+l_1 \leq 4500 \wedge l_2 \leq 4500 \wedge l_1\geq 50 : e \\
+l_1 \leq 4500 \wedge l_2 \leq 4500 \wedge l_1\leq 50 : -100+e \\
+\neg(l_1 \leq 4500 \wedge l_2 \leq 4500) : 0 \\
+\end{cases}
+\end{align*}} 
+In order to demonstrate the effectiveness of planning optimally with our
+model, we use this continuous-time example of the multi-reservoir where the
+elapsed time is defined as the action parameter to drain a reservoir. The
+goal is to show a form of value function refinement that is generated using
+this CSA-DP algorithm. The optimal value function will obtain higher values
+for higher horizons, while the value for lower horizons were less than the
+current value function. This is demonstrated in Figure~\ref{fig:reservoir}
+where three value functions have been presented in different horizons.
+ 
+Here flood prevention is ensured in each step by the linear piecewise
+boundaries on the very high and very low levels, the action of discharging
+occurs here either at time 0 for very critical points or at a time depending
+on the water levels later during the iteration (i.e, $a = -8.18 +
+0.0018\times l_1$ if one of the water levels is above the critical level in
+the third iteration). As for the constant section, this piece is the safe
+range and the action of discharge (or not discharge) is left till the latest
+possible time thus achieving higher rewards. As the iteration number
+increases, the future discounted reward goes higher than the previous
+horizon.
 
 \section{Related Work}
 The most relevant vein of Related work is that of~\cite{feng04}
