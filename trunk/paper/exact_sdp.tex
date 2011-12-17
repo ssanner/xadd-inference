@@ -238,14 +238,15 @@ $(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$.  We assume
 that each state variable $b_i$ ($1 \leq i \leq n$) is
 boolean$\,$ s.t. $b_i \in \{ 0,1 \}$ and each $x_j$ ($1 \leq j \leq m$) is 
 continuous s.t. $x_j \in [L_j,U_j]$ for $L_j,U_j \in
-\mathbb{R}; L_j \leq U_j$.  We also assume a finite set of actions $A
-= \{ a_1, \ldots, a_p \}$.
+\mathbb{R}; L_j \leq U_j$.  We also assume a finite set of $p$ actions $A
+= \{ a_1(\vec{y}_1), \ldots, a_p(\vec{y}_p) \}$, where the $\vec{y}$ denote
+\emph{continuous action parameters} for the corresponding action.
 
-A DC-MDP is defined by the following: (1) a state transition model
-$P(\vec{b}',\vec{x}'|\cdots,a)$, which specifies the probability of
+A CSA-MDP is defined by the following: (1) a state transition model
+$P(\vec{b}',\vec{x}'|\cdots,a,\vec{y})$, which specifies the probability of
 the next state $(\vec{b}',\vec{x}')$ conditioned on a subset of the
 previous and next state (defined below) and action $a$; (2) a reward
-function $R(\vec{b},\vec{x},a)$, which specifies the immediate reward
+function $R(\vec{b},\vec{x},a,\vec{y})$, which specifies the immediate reward
 obtained by taking action $a$ in state $(\vec{b},\vec{x})$; and (3) a
 discount factor $\gamma, \; 0 \leq \gamma \leq 1$.\footnote{If time is
 explicitly included as one of the continuous state variables, $\gamma
@@ -266,7 +267,7 @@ V^{\Pi^*}(\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| 
 Here $r^h$ is the reward obtained at horizon $h$ following $\Pi^*$ where 
 we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
  
-DC-MDPs as defined above are naturally factored~\cite{boutilier99dt}
+CSA-MDPs as defined above are naturally factored~\cite{boutilier99dt}
 in terms of state variables $(\vec{b},\vec{x})$; as such transition
 structure can be exploited in the form of a dynamic Bayes net
 (DBN)~\cite{dbn} where the individual conditional probabilities
@@ -288,36 +289,34 @@ DBNs).
 %$\vec{b}$ come before $\vec{x}$.  
 We write the joint transition model as
 \begin{align}
-P(\vec{b}',&\vec{x}'|\vec{b},\vec{x},a) = \label{eq:dbn} \\
-& \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a) \nonumber 
+P(\vec{b}',&\vec{x}'|\vec{b},\vec{x},a,\vec{y}) = \label{eq:dbn} \\
+& \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \nonumber 
 \end{align}
-where $P(b_i'|\vec{b},\vec{x},a)$ may condition on a subset of
-$\vec{b}$ and $\vec{x}$ and likewise 
-$P(x_j'|\vec{b},\vec{b}',\vec{x},a)$ may condition on a subset of
-$\vec{b}$, $\vec{b}'$, and $\vec{x}$.
+where $P(b_i'|\vec{b},\vec{x},a,\vec{y})$ may condition on a subset of
+$\vec{b}$, $\vec{x}$, and $\vec{y}$ and likewise 
+$P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y})$ may condition on a subset of
+$\vec{b}$, $\vec{b}'$, $\vec{x}$, and $\vec{y}$.
 
-We call the conditional
-probabilities $P(b_i'|\vec{b},\vec{x},a)$ for \emph{binary} variables
-$b_i$ ($1 \leq i \leq n$) conditional
-probability functions (CPFs) --- not tabular enumerations,
-because in general these functions
-can condition on both discrete and continuous state.
-For the \emph{continuous} variables $x_j$
-($1 \leq j \leq m$), we represent the CPFs 
-$P(x_j'|\vec{b},\vec{b'},\vec{x},a)$ with \emph{conditional stochastic
- equations} (CSEs).  For the solution provided here, we
-only require two properties of these CSEs: (1) they are
+We call the conditional probabilities
+$P(b_i'|\vec{b},\vec{x},a,\vec{y})$ for \emph{binary} variables $b_i$
+($1 \leq i \leq n$) conditional probability functions (CPFs) --- not
+tabular enumerations, because in general these functions can condition
+on both discrete and continuous state.  For the \emph{continuous}
+variables $x_j$ ($1 \leq j \leq m$), we represent the CPFs
+$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ with \emph{conditional
+stochastic linear equations} (CSLEs).  For the solution provided here,
+we only require three properties of these CSLEs: (1) they are
 \emph{Markov}, meaning that they can only condition on the previous
-state, and (2) they are \emph{deterministic} meaning that the next state must
-be uniquely determined from the previous state (i.e., $x_1' = x_1 +
-x_2^2$ is deterministic whereas $x_1'^2 = x_1^2$ is not because $x_1'
-= \pm x_1$).\footnote{While the \emph{deterministic} 
-requirement may seem to conflict 
-with the label of \emph{stochastic}, we note that stochasticity enters through
-the conditional component, to be discussed in a moment.}
-Otherwise, we allow for arbitrary functions in these
-Markovian, conditional deterministic equations as in the following
-example:
+state, (2) they are piecewise linear (pieces entering through the
+conditional part) and (2) they are \emph{deterministic} meaning that
+the next state must be uniquely determined from the previous state
+(i.e., $x_1' = x_1 + x_2^2$ is deterministic whereas $x_1'^2 = x_1^2$
+is not because $x_1' = \pm x_1$).\footnote{While the
+\emph{deterministic} requirement may seem to conflict with the label
+of \emph{stochastic}, we note that stochasticity enters through the
+conditional component to be discussed in a moment.}  Otherwise, we
+allow for arbitrary functions in these Markovian, conditional
+deterministic equations as in the following example:
 \vspace{-3mm}
 
 {\footnotesize
@@ -336,45 +335,38 @@ in this case.  But in more intuitive terms, one can see that this
 $\delta[\cdot]$ encodes the deterministic transition 
 equation $x_1' = \ldots$ where $\ldots$ is the conditional portion 
 of~\eqref{eq:ex_csde}.
-In this work, we require all CSEs in the transition
+In this work, we require all CSLEs in the transition
 function for variable $x_i'$ to use the $\delta[\cdot]$ as shown in this
 example.
 
-It will be obvious that CSEs in the form of \eqref{eq:ex_csde} are
-\emph{conditional  equations}; they are furthermore \emph{stochastic}
+It will be obvious that CSLEs in the form of \eqref{eq:ex_csde} are
+\emph{conditional linear equations}; they are furthermore \emph{stochastic}
 because they can condition on boolean random variables in the same time slice
 that are stochastically sampled, e.g., $b_1'$ in
-\eqref{eq:ex_csde}.  Of course, these CSEs are restricted in that
+\eqref{eq:ex_csde}.  Of course, these CSLEs are restricted in that
 they cannot represent general stochastic noise (e.g., Gaussian noise),
 but we note that this representation effectively allows modeling of
 continuous variable transitions as a mixture of $\delta$ functions,
-which has been used heavily in previous exact DC-MDP
-solutions~\cite{feng04,li05,hao09}.  Furthermore, we note that our
-representation is more general than~\cite{feng04,li05,hao09} in that
-we do not restrict the  equation to be linear, but rather
-allow it to specify \emph{arbitrary} functions (e.g., nonlinear) as
-demonstrated in~\eqref{eq:ex_csde}.
+which has been used heavily in previous exact continuous state MDP 
+solutions~\cite{feng04,li05,hao09}.  
 
 We allow 
 the reward function $R_a(\vec{b},\vec{x})$
-to be \emph{any} arbitrary function of the current state
-for each action $a \in A$, for example:
+to be a piecewise quadratic function of the current state
+for each action $a \in A$ with parameters $\vec{y}$, for example:
 \begin{align}
-R_a(\vec{b},\vec{x}) = \begin{cases}
+R_a(\vec{b},\vec{x},\vec{y}) = \begin{cases}
 x_1^2 + x_2^2 \leq 1 : & 1 - x_1^2 - x_2^2  \\
 x_1^2 + x_2^2 > 1 : & 0 \\
 \end{cases} \label{eq:simple_reward}
 \end{align}
 or even 
 \begin{align}
-R_a(\vec{b},\vec{x}) & = 10 x_3 x_4 \exp(x_1^2 + \sqrt{x_2}) \label{eq:expr_reward}
+R_a(\vec{b},\vec{x},\vec{y}) & = 10 x_3 x_4 \exp(x_1^2 + \sqrt{x_2}) \label{eq:expr_reward}
 \end{align}
-While our DC-MDP examples throughout the paper will demonstrate the
-full expressiveness of our symbolic dynamic programming approach,
-we note that there are computational advantages to be had when
-the reward and transition case conditions and 
-functions can be restricted, e.g., to
-polynomials.  We will return to this issue later.
+
+With our CSA-MDP now completely defined, our next objective
+is to solve it.
 
 \subsection{Solution Methods}
 
