@@ -979,17 +979,6 @@ SDP applies to \emph{any} DC-MDPs using bounded symbolic function
 that can be written in case format!  Of course, that is the theory,
 next we meet practice.
 
-\section{Extended ADDs (XADDs)}
-
-In practice, it can be prohibitively expensive to maintain
-a case statement representation of a value function with explicit
-partitions.  Motivated by the SPUDD~\cite{spudd} algorithm which
-maintains compact value function representations for finite discrete
-factored MDPs using algebraic decision diagrams (ADDs)~\cite{bahar93add},
-we extend this formalism to handle continuous variables in a data
-structure we refer to as the XADD.  An example XADD for the optimal
-\MarsRoverNL value function for horizon 2 is provided
-in Figure~\ref{fig:rover_V2}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % V2 for marsrover
@@ -1004,6 +993,19 @@ The final value function for the second horizon of the \MarsRoverNL example\
 \vspace{-3mm}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Extended ADDs (XADDs)}
+
+In practice, it can be prohibitively expensive to maintain
+a case statement representation of a value function with explicit
+partitions.  Motivated by the SPUDD~\cite{spudd} algorithm which
+maintains compact value function representations for finite discrete
+factored MDPs using algebraic decision diagrams (ADDs)~\cite{bahar93add},
+we extend this formalism to handle continuous variables in a data
+structure we refer to as the XADD.  An example XADD for the optimal
+\MarsRoverNL value function for horizon 2 is provided
+in Figure~\ref{fig:rover_V2}.
+
 
 In brief we note that an XADD is like an ADD except that (a) the decision
 nodes can have arbitrary inequalities, equalities, or disequalities (one
@@ -1093,27 +1095,38 @@ next, XADDs allow SDP to scale to much longer horizons in practice.
 
 \section{Empirical Results}
 
-We implemented the CSA-DP algorithm using the XADDs and tested it on several domains. The first example which has been used throughout the paper is the \MarsRoverNL, problems from the OR literature; \InventoryControl and \WaterReservoir. In the following subsections we will study these examples empirically.
-\subsection{\MarsRoverNL}
-The problem specifications has already been defined in the previous sections. 
 
-This plot visualizes non-linear piecewise boundaries which occurs due to non-linear leaves in the XADD ;equivalent to non-linear partitions of the state space. It shows that the Rover can move non-linearly (quadratic) around the target radius (i.e, [-2,2]) progressively to get to the exact point with high precision. It then achieves a constant optimal value after the radius and before reaching the action boundaries in each iteration (i.e, the rover can move at most between [-10,10] in each iteration). After the boundaries the rover moves according to a non-linear function thus achieving a non-linear value which was demonstrated in Figure~\ref{fig:rover}. 
+We implemented the SDP algorithm using the XADDs and tested it on several domains. Apart from the \MarsRoverNL,  we considered problems from the OR literature such as \InventoryControl  and \WaterReservoir. In the following subsections we will study these examples empirically.
 
-Every step of the algorithm allows the Rover to move from further distances towards the radius, hence the constant step and the non-linear curvature at the boundaries occur iteratively. This example clearly demonstrated the power of the CSA-DP algorithm for non-linear functions.
-
-We note that these results were generated  with the XADD pruning which consists of linear pruning using the LP solver and non-linear pruning using the linearization method.
-Without the pruning, even in low horizons, because of infeasible branches, time and space grows exponentially. We have also used the general pruning method of XADDs as in ~\cite{sanner_uai11} for the other domain problems.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
+\begin{figure*}[t]
+\centering
+%\subfigure{
+\includegraphics[width=0.47\textwidth]{Figures1/space1-2.pdf}
+\hspace{5mm}
+\includegraphics[width=0.47\textwidth]{Figures1/time1-2.pdf}
+%}
+%\vspace{-3mm}
+\caption{%\footnotesize 
+Space (\# XADD nodes in value function) and
+time for different horizons of CSA-DP on \InventoryControl\ 
+Comparing 1D, 2D and no-pruning}
+\label{fig:invC}
+%\vspace{-3mm}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{\InventoryControl} 
-This domain problem has become a benchmark problem for optimization in the OR literature and applies to our general DCA-MDP setting. Business firms often deal with the problem of deciding  the amount of product to order in a time period such that customer demands are satisfied. The firm's warehouse will keep an inventory of this product to deal with different customer demand levels. Each month, the firm must decide on the amount of products to order based on the current stock level.
-The order should not be too high since keeping the inventory is expensive, nor should it be too low in which case it will be penalized for being unable to meet customer demands and leading to loss of customers. The optimization problem faced by the firm is to find an optimal order policy that maximizes the profit.~\cite{Mahootchi2009}
+This domain problem is a well-known optimization benchmark in the OR literature. Business firms often deal with the problem of deciding  upon the amount of product to order in a time period so that the customer demands are satisfied. The firm's warehouse will keep an inventory of this product to address different customer demand levels. Each month, the firm must decide on the amount of products to order based on the current stock level.
+The order should not be too high since keeping the inventory is expensive, nor should it be too low in which case it will be penalized for being unable to meet customer demands and leading to the loss of customers. The optimization problem faced by the firm is to find an optimal order policy that maximizes the profit.~\cite{Mahootchi2009}
 
 We present a simple formulation of this problem where the capacity of the inventory is C units of each product and customer orders not satisfied in this month are backlogged for the next month, so inventory can take negative values. We consider two cases, a one product inventory with one order action and the other with two products that needs two different orders.
 
 We take two continuous state variable $x_1,x_2 \in [-1000,C]$ indicating the current inventory quantity into account, with the total inventory capacity of 800, and a stochastic boolean state variable for customer demand level $d$ where $d=0$ is low demand levels (50) and $d=1$ is high demand levels (150) according to some probability. \\
 The continuous action variable is the order quantity $a_1,a_2 \in [0,C]$ which can at most take the value of the maximum inventory capacity. \\
 
-We define an immediate negative reward for the cost of producing an order and the storage cost of holding the products in the inventory and also a positive reward for fulfilling the customer demand whenever there are enough stocks in the inventory. The transition for one of the state variables and reward function are defined below:
+We define an immediate negative reward for the cost of producing an order and the storage cost of holding the products in the inventory and also a positive reward for fulfilling the customer demand whenever there are enough stocks in the inventory. The transition for one of the state variables and the reward function are defined below:
 %\ because of backlogging, the customer demand is always taken from the current stock level, leaving it negative
 %\ consider the next state as the current state and orders minus the customer orders
 %\ customer demands are boolean of low and high that change in every iteration
@@ -1151,24 +1164,7 @@ The demand variable is transitioned stochastically and the reward function is ba
 We plot the results of comparing a 1-product \InventoryControl problem with a multi-dimensional one. Figure~\ref{fig:invC} compares the time and nodes for different iterations for these two problem instances and a third comparisoon for the effect of not pruning on the 1D instance. This demonstrates the impact of having multiple constraints and action variables on the problem size which requires much more state-action partitions. The time and space have increased from the first iteration up to the third iteration for the 2D problem size, but then dropped for the next horizons due to pruning the XADD in our algorithm. As more constraints got added in for horizon 4, they cancelled the effects of some of the previous branches because of infeasibility and the pruning operation allows the XADD to grow smaller in space and requiring almost a constant time depending on the constraints added in each horizon. Without considering pruning, even the 1 product problem instance quickly falls into the curse of dimensionality problem and as the figure shows, time and space grow non-linearly after the second iteration. 
 % any need for 3d plot? For the 1 or 2 product case?
 % any thing else we need from this example?
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
-\begin{figure*}[t]
-\centering
-%\subfigure{
-\includegraphics[width=0.47\textwidth]{Figures1/space1-2.pdf}
-\hspace{5mm}
-\includegraphics[width=0.47\textwidth]{Figures1/time1-2.pdf}
-%}
-%\vspace{-3mm}
-\caption{%\footnotesize 
-Space (\# XADD nodes in value function) and
-time for different horizons of CSA-DP on \InventoryControl\ 
-Comparing 1D, 2D and no-pruning}
-\label{fig:invC}
-%\vspace{-3mm}
-\end{figure*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 
 \subsection{\WaterReservoir}The problem of \WaterReservoir needs to make an optimal decision on how much and when to discharge water from water reservoirs to maximize hydroelectric energy productions while considering environment constraints such as irrigation requirements and flood prevention. 
@@ -1192,6 +1188,9 @@ d     : & (0.7) \\
 \end{cases}\\
 \end{align*}}
 
+The reward is assigned based on preventing the flood. If water levels prevent flooding, a reward is given for the \textit{time} the reservoir selects the action of discharging water from one reservoir to the other($l2 to l1$), or the choice of not discharging at that time, depending on the water levels. The elapsed time is used as the reward value if the constraints are met, in this case the system should choose to perform an action (drain or no drain) as latest as possible. 
+This elapsed time is added to the current time at each transition. The water levels are transitioned based on the previous levels and the amount of discharge and inflow multiplied by the elapsed time. This means that higher elapsed time is desired to maximize the reward, while lower ones ensure flood prevention.
+
 {\footnotesize
 \begin{align*}
 R & = \begin{cases}
@@ -1200,9 +1199,6 @@ l1 \leq 4500 \wedge l2 \leq 4500 \wedge   l1\leq 50 : -100+e \\
 \neg(l1 \leq 4500 \wedge l2 \leq 4500) : 0 \\
 \end{cases}
 \end{align*}}
-
-The reward is assigned based on preventing the flood. If water levels prevent flooding, a reward is given for the \textit{time} the reservoir selects the action of discharging water from one reservoir to the other($l2 to l1$), or the choice of not discharging at that time, depending on the water levels. The elapsed time is used as the reward value if the constraints are met, in this case the system should choose to perform an action (drain or no drain) as latest as possible. 
-This elapsed time is added to the current time at each transition. The water levels are transitioned based on the previous levels and the amount of discharge and inflow multiplied by the elapsed time. This means that higher elapsed time is desired to maximize the reward, while lower ones ensure flood prevention.
 
 In order to demonstrate the effectiveness of planning optimally with our model, we use this continuous-time example of the multi-reservoir where the elapsed time is defined as the action parameter to drain a reservoir. The goal is to show a form of value function refinement that is generated using this CSA-DP algorithm. The optimal value function will obtain higher values for higher horizons, while the value for lower horizons were less than the current value function. This is demonstrated in Figure~\ref{fig:reservoir} where three value functions have been presented in different horizons. 
 
