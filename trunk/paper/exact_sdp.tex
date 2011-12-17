@@ -710,7 +710,7 @@ x \leq -8: &10\\
 \hspace{-4mm}
 $Roots:= 
   \begin{cases}
--2\cdot x -2 \cdot d=0  := -x \\ 
+-2\times x -2 \times d=0  := -x \\ 
 
   \end{cases}$
 \end{tabular}
@@ -771,7 +771,7 @@ We take the maximum of the UB and LB  substitutions and then maximum the result 
 \hspace{-4mm}
 $
 \begin{cases}
-x \leq -8 : & -96 + 20 \cdot x - x^2 \\ 
+x \leq -8 : & -96 + 20 \times x - x^2 \\ 
 x \geq -8 : & 0 \\ 
 \end{cases} $
 
@@ -779,7 +779,7 @@ x \geq -8 : & 0 \\
 \hspace{-4mm}
 $ \begin{cases}
 x \leq 8 : & 0 \\ 
-x \geq 8: & -96 -x^2 -20\cdot x\\
+x \geq 8: & -96 -x^2 -20\times x\\
 \end{cases}$
 \hspace{-4mm} 
 \\
@@ -797,8 +797,8 @@ The main partitions after the maximization over action $d$ is as below, the rest
 \max_{d}
 \begin{cases}
 -10 \leq x \leq 10 : 4 \\ 
-10 \leq x \leq 12  \wedge  -96-x^2-20\cdot x \geq 0: \\ -96-x^2-20\cdot x \geq 0 \\ 
--12 \leq x \leq -10  \wedge  -96-x^2+20\cdot x \geq 0:\\ -96-x^2+20\cdot x \geq 0 \\
+10 \leq x \leq 12  \wedge  -96-x^2-20\times x \geq 0: \\ -96-x^2-20\times x \geq 0 \\ 
+-12 \leq x \leq -10  \wedge  -96-x^2+20\times x \geq 0:\\ -96-x^2+20\times x \geq 0 \\
   \end{cases}
 \end{align*}
 
@@ -1146,13 +1146,13 @@ d     : &(0.7)\\
 \end{cases}\\
 R & = \begin{cases}
 (x_1 + x_2 \geq 900) \wedge d\\
-150 - 0.5\cdot a_1 -0.4 \cdot a_2 - 0.1\cdot(x_1 + x_2) \\
+150 - 0.5\times a_1 -0.4 \times a_2 - 0.1\times(x_1 + x_2) \\
 (x_1 + x_2 \leq 900) \wedge d\\
-(150 - (x_1+x_2)) - 0.5\cdot a_1 -0.4 \cdot a_2 - 0.1\cdot(x_1 + x_2) \\
+(150 - (x_1+x_2)) - 0.5\times a_1 -0.4 \times a_2 - 0.1\times(x_1 + x_2) \\
 (x_1 + x_2 \geq 300) \wedge \neg d\\
-50 - 0.5\cdot a_1 -0.4 \cdot a_2 - 0.1\cdot(x_1 + x_2) \\
+50 - 0.5\times a_1 -0.4 \times a_2 - 0.1\times(x_1 + x_2) \\
 (x_1 + x_2 \leq 300) \wedge \neg d\\
-(50 - (x_1+x_2)) - 0.5\cdot a_1 -0.4 \cdot a_2 - 0.1\cdot(x_1 + x_2) \\
+(50 - (x_1+x_2)) - 0.5\times a_1 -0.4 \times a_2 - 0.1\times(x_1 + x_2) \\
 \end{cases}
 \end{align*}}
 
@@ -1167,20 +1167,20 @@ We plot the results of comparing a 1-product \InventoryControl problem with a mu
 
 
 
-\subsection{\WaterReservoir}The problem of \WaterReservoir needs to make an optimal decision on how much and when to discharge water from water reservoirs to maximize hydroelectric energy productions while considering environment constraints such as irrigation requirements and flood prevention. 
+\subsection{\WaterReservoir}The problem of \WaterReservoir  needs to make an optimal decision on how much and when to discharge water from water reservoirs to maximize hydroelectric energy productions while considering environment constraints such as irrigation requirements and flood prevention. 
 A multi-reservoir system is more desirable than the single reservoir problem due to its ability in controlling various environment parameters such as flooding.  In these systems, the inflow of downstream reservoirs are effected by the outflow of their upstream reservoirs. In the OR literature, this case  is considered much more complex and for the sake of simplicity mainly the single case in considered. For multi-reservoirs the main problem that leads to approximations to DP methods or using other simplifications is the curse of dimensionality. In this domain the discharge action is considered as a discrete action  and so are the energy demands. This causes the state space to grow exponentially in case of multiple states and actions. ~\cite{reservoir}
-Using our method for continuous action value iteration, we show that this problem can be handled efficiently and is scalable to multi-reservoir problems. Consider a two-level reservoir with the outflow of the second reservoir added to the input of the first reservoir. The state space is the level of water in both reservoirs as well as the energy demands and inflow (such as rainfall or streams) to the reservoirs $(l1,l2,i,e)$. We consider the water levels as continuous variables, the inflows to both reservoirs are the same which depends on a high-low sessions of rainfall. The energy demands e can be considered both continuous or discrete for different customer needs. 
+Using our method for continuous action value iteration, we show that this problem can be handled efficiently and is scalable to multi-reservoir problems. Consider a two-level reservoir with the outflow of the second reservoir added to the input of the first reservoir. The state space is the level of water in both reservoirs as well as the energy demands and inflow (such as rainfall or streams) to the reservoirs $(l_1,l_2,i,e)$. We consider the water levels as continuous variables, the inflows to both reservoirs are the same which depends on a high-low sessions of rainfall. The energy demands e can be considered both continuous or discrete for different customer needs. 
 
-We want to prevent the upstream reservoir ($l2$) from reaching low water levels, while avoiding flooding which is caused by high water levels. A constant amount of water is discharged from the downstream reservoir($l1$) to meet customer electricity demands. The inflow to both reservoirs is assumed to be the same (same amount of rainfall). 
+We want to prevent the upstream reservoir ($l_2$) from reaching low water levels, while avoiding flooding which is caused by high water levels. A constant amount of water is discharged from the downstream reservoir($l_1$) to meet customer electricity demands. The inflow to both reservoirs is assumed to be the same (same amount of rainfall). 
 {\footnotesize
 \begin{align*}
-l1' & = \begin{cases}
-d     : & l1 - 1000 \cdot e + 500 \cdot e  +450 \cdot e \\
-\neg d: &  l1 - 1000 \cdot e + 500 \cdot e  +250 \cdot e \\
+l_1' & = \begin{cases}
+d     : & l_1 - 1000 \times e + 500 \times e  +450 \times e \\
+\neg d: &  l_1 - 1000 \times e + 500 \times e  +250 \times e \\
 \end{cases}\\
-l2' & =  \begin{cases}
-d     : & l2 - 500 \cdot e  +450 \cdot e \\
-\neg d: &  l2 - 500 \cdot e  +250 \cdot e \\
+l_2' & =  \begin{cases}
+d     : & l_2 - 500 \times e  +450 \times e \\
+\neg d: &  l_2 - 500 \times e  +250 \times e \\
  \end{cases}\\
 d' & = \begin{cases}
 d     : & (0.7) \\
@@ -1188,21 +1188,21 @@ d     : & (0.7) \\
 \end{cases}\\
 \end{align*}}
 
-The reward is assigned based on preventing the flood. If water levels prevent flooding, a reward is given for the \textit{time} the reservoir selects the action of discharging water from one reservoir to the other($l2 to l1$), or the choice of not discharging at that time, depending on the water levels. The elapsed time is used as the reward value if the constraints are met, in this case the system should choose to perform an action (drain or no drain) as latest as possible. 
+The reward is assigned based on preventing the flood. If water levels prevent flooding, a reward is given for the \textit{time} the reservoir selects the action of discharging water from one reservoir to the other, or the choice of not discharging at that time, depending on the water levels. The elapsed time is used as the reward value if the constraints are met, in this case the system should choose to perform an action (drain or no drain) as latest as possible. 
 This elapsed time is added to the current time at each transition. The water levels are transitioned based on the previous levels and the amount of discharge and inflow multiplied by the elapsed time. This means that higher elapsed time is desired to maximize the reward, while lower ones ensure flood prevention.
 
 {\footnotesize
 \begin{align*}
 R & = \begin{cases}
-l1 \leq 4500 \wedge l2 \leq 4500 \wedge   l1\geq 50 : e \\
-l1 \leq 4500 \wedge l2 \leq 4500 \wedge   l1\leq 50 : -100+e \\
-\neg(l1 \leq 4500 \wedge l2 \leq 4500) : 0 \\
+l_1 \leq 4500 \wedge l_2 \leq 4500 \wedge   l_1\geq 50 : e \\
+l_1 \leq 4500 \wedge l_2 \leq 4500 \wedge   l_1\leq 50 : -100+e \\
+\neg(l_1 \leq 4500 \wedge l_2 \leq 4500) : 0 \\
 \end{cases}
 \end{align*}}
 
 In order to demonstrate the effectiveness of planning optimally with our model, we use this continuous-time example of the multi-reservoir where the elapsed time is defined as the action parameter to drain a reservoir. The goal is to show a form of value function refinement that is generated using this CSA-DP algorithm. The optimal value function will obtain higher values for higher horizons, while the value for lower horizons were less than the current value function. This is demonstrated in Figure~\ref{fig:reservoir} where three value functions have been presented in different horizons. 
 
-Here flood prevention is ensured in each step by the linear piecewise boundaries on the very high and very low levels, the action of discharging occurs here either at time 0 for very critical points or at a time depending on the water levels later during the iteration (i.e, $a = -8.18 + 0.0018*l1$ if one of the water levels is above the critical level in the third iteration). As for the constant section, this piece is the safe range and the action of discharge (or not discharge) is left till the latest possible time thus achieving higher rewards. As the iteration number increases, the future discounted reward goes higher than the previous horizon. 
+Here flood prevention is ensured in each step by the linear piecewise boundaries on the very high and very low levels, the action of discharging occurs here either at time 0 for very critical points or at a time depending on the water levels later during the iteration (i.e, $a = -8.18 + 0.0018\times l_1$ if one of the water levels is above the critical level in the third iteration). As for the constant section, this piece is the safe range and the action of discharge (or not discharge) is left till the latest possible time thus achieving higher rewards. As the iteration number increases, the future discounted reward goes higher than the previous horizon. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %figure6 : 3d plots of refinement planning for 3 horizons
