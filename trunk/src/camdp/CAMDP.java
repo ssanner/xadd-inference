@@ -4,7 +4,6 @@ package camdp;
 // Packages to import
 import graph.Graph;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -15,14 +14,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import java_cup.parser;
+
 import util.IntTriple;
 import xadd.TestXADDDist;
 import xadd.XADD;
-import xadd.XADD.ArithExpr;
-import xadd.XADD.BoolDec;
-import xadd.XADD.CompExpr;
-import xadd.XADD.Decision;
-import xadd.XADD.DoubleExpr;
 import cmdp.HierarchicalParser;
 
 /**
@@ -48,17 +44,15 @@ public class CAMDP {
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
 
-	public static boolean PRINT3DFILE=false;
+	public static boolean PRINT3DFILE=true;
 	public static String varX;
 	public static String varY;
-	public static boolean rover;
-
+	public static boolean rover=false;
 	public static double size3D = 10d; // Won't flush until < amt
 	public final static ArrayList<String> ZERO  =  new ArrayList<String> (Arrays.asList("[0]"));  
 	/* For printing */
 	public static DecimalFormat _df = new DecimalFormat("#.###");
-	public static String  NAME_FILE_3D="src/camdp/ex/data";
-	public static String  FILE_TIME_MEM="src/camdp/ex/analysis";
+	public static String  NAME_FILE_3D = ""; //"src/camdp/ex/data";
 	public static PrintStream os;
 	/* Static variables */
 	public static long _lTime; // For timing purposes
@@ -67,10 +61,6 @@ public class CAMDP {
 
 	/* Local vars */
 	public XADD _context = null;
-	public ArrayList<String> _alCVars; 
-	public ArrayList<String> _alBVars; 
-	public ArrayList<String> _alIVars; 
-	public ArrayList<String> _alAVars; 
 	public ArrayList<String> contVars;
 
 	public Integer _valueDD; // The resulting value function once this CMDP has
@@ -94,7 +84,11 @@ public class CAMDP {
 	 **/
 	public CAMDP(String filename) {
 		this(HierarchicalParser.ParseFile(filename));
-		NAME_FILE_3D=NAME_FILE_3D+filename.substring(12,filename.indexOf("."))+".dat";
+		//don't give address because of server
+		NAME_FILE_3D= filename.substring(13,filename.indexOf("."))+".dat";
+		NAME_FILE_3D = NAME_FILE_3D.toLowerCase();
+		if (NAME_FILE_3D.contains("rover")) rover = true;
+		//NAME_FILE_3D = filename+ ".dat";
 		try {
 			//String timefile = FILE_TIME_MEM+filename.substring(12,filename.indexOf("."))+".txt";
 			String timefile=  "timeSpace.txt";
@@ -115,21 +109,19 @@ public class CAMDP {
 		_hmName2Action = new HashMap<String,CAction>();
 		_hmRegrKey2Node = new HashMap<IntTriple,Integer>();
 
-		ParseCAMDP parser = new ParseCAMDP(_context,this);
+		ParseCAMDP parser = new ParseCAMDP(this);
 		parser.buildCAMDP(input);
-		_context = parser.get_context();
-		_alBVars = parser.getBVars();
-		_alCVars = parser.getCVars();
+		_context._hmMaxVal=parser._maxCVal;
+		_context._hmMinVal = parser._minCVal;
+		_context._hsBooleanVars = parser.getBVars();
 		_alConstraints = parser.getConstraints();
-		_alIVars = parser.getIVars();
-		_alAVars = parser.getAVars();
 		_nIter = parser.getIterations();
 		_bdDiscount = parser.getDiscount();
 		_hmName2Action = parser.getHashmap();
 		contVars = new ArrayList<String>();
-		contVars.addAll(_alCVars);
-		contVars.addAll(_alAVars);
-		//_context._hmContinuousVars = contVars;
+		contVars.addAll(parser.getCVars());
+		contVars.addAll(parser.getAVars());
+		_context._hmContinuousVars = contVars;
 	}
 
 	/**
@@ -157,7 +149,7 @@ public class CAMDP {
 		l2.add(l1);
 		_valueDD =_context.buildCanonicalXADD(l2);*/
 		
-		
+		Paint3D paint = new Paint3D(this);
 		int iter = 0;
 		long[] time = new long[max_iter + 1];
 		int[] num_nodes = new int[max_iter + 1]; 
@@ -168,7 +160,7 @@ public class CAMDP {
 
 		if (max_iter < 0)
 			max_iter = _nIter;
-
+		
 		while (++iter <= max_iter) 
 		{
 			ResetTimer();
@@ -184,7 +176,7 @@ public class CAMDP {
 			_maxDD=null;
 			for (Map.Entry<String,CAction> me : _hmName2Action.entrySet()) 
 			{
-				// Regress the current value function through each action
+				// Regress the current value function through each action (finite number of continuous actions)
 				ComputeVfunction computation = new ComputeVfunction(_context,this);
 				int regr = computation.computeValueFunction(_valueDD, me.getValue());
 				_context = computation.getXadd();
@@ -208,7 +200,7 @@ public class CAMDP {
 				double num_cases_in_regr = num_cases[iter - 1];
 				for (Map.Entry<String,Integer> me2 : me.getValue()._hmVar2DD.entrySet()) {
 					num_cases_in_regr *= _context.getBranchCount(me2.getValue()); // From regr
-					if (_alBVars.contains(me2.getKey()) && num_cases_in_regr > 1)
+					if (_context._hsBooleanVars.contains(me2.getKey()) && num_cases_in_regr > 1)
 						num_cases_in_regr /= 2; // Sum out a variable
 				}
 				num_cases_in_regr *= _context.getBranchCount( me.getValue()._reward);
@@ -257,40 +249,49 @@ public class CAMDP {
 				Graph g = _context.getGraph(_valueDD);
 				g.addNode("_temp_");
 				g.addNodeLabel("_temp_", "V^" + iter);
-				//g.addNodeShape("_temp_", "square");
-				//g.addNodeStyle("_temp_", "filled");
+				g.addNodeShape("_temp_", "square");
+				g.addNodeStyle("_temp_", "filled");
 				g.addNodeColor("_temp_", "lightblue");
 				g.genDotFile("V"+iter+".dot");
 				
-				//g.launchViewer(1300, 770);
-				//System.out.println("done.");
+				g.launchViewer(1300, 770);
 			}
 			
-			if (DISPLAY_2D)
+			if (DISPLAY_2D)/*||(iter==3)*/
 			{
 				TestXADDDist plot = new TestXADDDist();
 				HashMap<String,Boolean> bvars = new HashMap<String, Boolean>();
 				HashMap<String,Double> dvars = new HashMap<String, Double>();
-				//bvars.put("g", false);
-				//dvars.put(_alCVars.get(0), 0.0);
-				bvars.put(_alBVars.get(0), false);
-				plot.PlotXADD(_context, _valueDD, -30, 0.1, 30,bvars,dvars, "x", "V^"+iter);
+				if (_context._hsBooleanVars.size()>0) bvars.put(_context._hsBooleanVars.get(0), false);
+				if (rover)
+					plot.PlotXADD(_context, _valueDD, -40.0, 0.1, 40.0, bvars,dvars, "x", "V^"+iter);
+				else 
+				plot.PlotXADD(_context, _valueDD, _context._hmMinVal.get("x1"), 1, _context._hmMaxVal.get("x1"), bvars,dvars, "x1", "V^"+iter);
 				//plot.Plot3DXADD(_context, _valueDD, -20, 1, 20, -30, 1, 30, bvars,dvars ,"x", "a", "V^"+iter);
 				
 				
 			}
+			//print 3d for each iteration( file outputs)
+			if(PRINT3DFILE){
+				System.out.print("Creating data file... ");
+				paint.create3DDataFile(_valueDD,"x1","x2"); //for refinement
+				//paint.create3DDataFile(_valueDD,"l1","l2"); //for refinement
+				System.out.println("done.");
+			}
 		}
-		if(PRINT3DFILE){
+		//or just print once outside iteration
+		/*if(PRINT3DFILE){
 			System.out.print("Creating data file... ");
 			Paint3D paint = new Paint3D(this,_context);
 			//paint.create3DDataFile(_valueDD,"l1","l2"); 
 			paint.create3DDataFile(_valueDD,"x1","x2"); 
 			System.out.println("done.");
-		}
+		}*/
 
 		flushCaches();	
 
-		/*System.out.println("\nValue iteration complete!");
+		/*//instead of print in out, print to file
+		 * System.out.println("\nValue iteration complete!");
 		System.out.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
 		System.out.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
 
@@ -381,13 +382,11 @@ public class CAMDP {
 	public String toString(boolean display_reward, boolean display_value) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("\nCMDP Definition:\n===============\n");
-		sb.append("CVars:       " + _alCVars + "\n");
+		sb.append("CVars:       " + _context._hmContinuousVars + "\n");
 		sb.append("Min-values:  " + _context._hmMinVal + "\n");
 		sb.append("Max-values:  " + _context._hmMaxVal + "\n");
-		sb.append("BVars:       " + _alBVars + "\n");
-		sb.append("IVars:       " + _alIVars + "\n");
+		sb.append("BVars:       " + _context._hsBooleanVars + "\n");
 		sb.append("Order:       " + _context._alOrder + "\n");
-		sb.append("Discount:    " + _bdDiscount + "\n");
 		sb.append("Iterations:  " + _nIter + "\n");
 		sb.append("Constraints (" + _alConstraints.size() + "):\n");
 		for (Integer cons : _alConstraints) {
@@ -427,17 +426,7 @@ public class CAMDP {
 ////////////////////////////////
 	//Getters and setters
 
-	public ArrayList<String> get_alBVars() {
-		return _alBVars;
-	}
-
-	public ArrayList<String> get_alAVars() {
-		return _alAVars;
-	}
 	
-	public void set_alBVars(ArrayList<String> _alBVars) {
-		this._alBVars = _alBVars;
-	}
 
 	public BigDecimal get_bdDiscount() {
 		return _bdDiscount;
@@ -497,7 +486,6 @@ public class CAMDP {
 			usage();
 		}
 
-		//PRINT3DFILE = true;
 		try {
 			if (args.length >= 3)
 				PRINT3DFILE = Boolean.parseBoolean(args[2]);
