@@ -55,7 +55,7 @@ public class XADD {
 	public final static boolean SHOW_DECISION_EVAL = false;
 	public final static boolean DEBUG_EVAL_RANGE = false;
 	public final static boolean DEBUG_CONSTRAINTS = true;
-	public final static boolean ANNOTATE_ENABLE = true;
+	public final static boolean ANNOTATE_ENABLE = false;
 	public final static boolean HANDLE_NONLINEAR = true;
 	public static boolean SUBSTITUTION = false;
 	public static boolean REDUCE_LP=true;
@@ -1504,11 +1504,13 @@ public class XADD {
 				//Annotate root substitute with the root value ( annotated before)
 				if (root!=null)
 				{
-				int int_eval_root = substituteXADDforVarInArithExpr(leaf_val._expr,_actionString,root_xadd);
-				if (ANNOTATE_ENABLE)
-					int_eval_root = annotateXADD(int_eval_root,root_xadd);
-				System.out.println("root substitute: " + getString(int_eval_root));
-				 for (ArithExpr ub : upper_bound) {
+					SUBSTITUTION = true;
+					int int_eval_root = substituteXADDforVarInArithExpr(leaf_val._expr,_actionString,root_xadd);
+					SUBSTITUTION = false;
+					if (ANNOTATE_ENABLE)
+						int_eval_root = annotateXADD(int_eval_root,root_xadd);
+					System.out.println("root substitute: " + getString(int_eval_root));
+					for (ArithExpr ub : upper_bound) {
 						 CompExpr ce = new CompExpr(LT_EQ, root, ub);
 						 int ub_xadd = getVarNode(new ExprDec(ce), 0d, 1d);
 						 int_eval_root = apply(int_eval_root, ub_xadd, PROD);
@@ -2584,7 +2586,7 @@ public class XADD {
 
 		if (ret != null) {
 			//in cache but check path to make sure it is fliped correctly
-			if (!ANNOTATE_ENABLE)
+			//if (!ANNOTATE_ENABLE)
 				return ret;
 		}
 
@@ -2668,7 +2670,7 @@ public class XADD {
 			if ((op != MAX) && (op != MIN))
 			{
 				//ANNOTATE: annotate the new operation, according to the _annotate value of the 2nodes
-				if (ANNOTATE_ENABLE)
+				/*if (ANNOTATE_ENABLE && !SUBSTITUTION)
 				{
 					ArithExpr annotate = null;
 					if (xa1._annotate==null) xa1._annotate=ArithExpr.parse("0");
@@ -2680,7 +2682,7 @@ public class XADD {
 					else annotate = xa2._annotate;
 					return getTermNode(new OperExpr(op, xa1._expr, xa2._expr),annotate);
 				}
-				else return getTermNode(new OperExpr(op, xa1._expr, xa2._expr));
+				else */return getTermNode(new OperExpr(op, xa1._expr, xa2._expr));
 
 			}
 			ArithExpr diff = new OperExpr(MINUS, xa1._expr, xa2._expr);
@@ -2753,6 +2755,8 @@ public class XADD {
 			if (ANNOTATE_ENABLE)
 			{
 				//ANNOTATION: to annotate a node, in a max or min operation ( building upper,lower bounds) annotate the leaves 
+				if (xa1._annotate==null) xa1._annotate=ArithExpr.parse("0");
+				if (xa2._annotate==null) xa2._annotate=ArithExpr.parse("0");
 				node1 = getTermNode(xa1._expr,xa1._annotate );
 				node2 = getTermNode(xa2._expr,xa2._annotate );
 			}
