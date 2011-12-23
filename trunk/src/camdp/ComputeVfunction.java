@@ -2,47 +2,31 @@ package camdp;
 
 import graph.Graph;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import javax.security.auth.login.AccountNotFoundException;
-
 import util.IntTriple;
-import xadd.TestXADDDist;
 import xadd.XADD;
 import xadd.XADD.ArithExpr;
-import xadd.XADD.BoolDec;
-import xadd.XADD.DeltaFunctionSubstitution;
 import xadd.XADD.XADDLeafMax;
 
 public class ComputeVfunction {
 	XADD xadd= null;
 	CAMDP camdp = null;
 	public final static boolean PRINTFINALQ = false;
+	public static boolean REDUCE_LP = true;
 	public HashMap<IntTriple,Integer> hashReg;
-	//public FileWriter fstream;
-	//  BufferedWriter out; 
+
 	public ComputeVfunction(XADD context,CAMDP camdp2)
 	{
 		xadd = context;
+		//need camdp for flush-caches mainly
 		camdp = camdp2;
 		hashReg = camdp.get_hmRegrKey2Node();
-		/*try {
-			fstream = new FileWriter("runningMax.txt");
-			
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		out = new BufferedWriter(fstream);
-*/
+		
 	}
 	
 	/**
@@ -79,7 +63,7 @@ public class ComputeVfunction {
 			String var_prime = var + "'";
 			prime_subs.put(var, new XADD.VarExpr(var_prime));
 			Integer dd = a._hmVar2DD.get(var_prime);
-			if (camdp.get_alBVars().contains(var)) {
+			if (xadd._hsBooleanVars.contains(var)) {
 				bvar_dds.put(var_prime, dd); // Note: var is unprimed
 			} else {
 				cvar_names.add(var_prime);
@@ -151,9 +135,9 @@ public class ComputeVfunction {
 		g.addNodeColor("_temp_", "lightblue");
 		g.launchViewer(1300, 770);*/
 		if (xadd.ANNOTATE_ENABLE)
-			a._reward = xadd.annotateXADD(a._reward, xadd.getTermNode(ArithExpr.parse("0")),true); //augment with 0
+			a._reward = xadd.annotateXADD(a._reward, xadd.getTermNode(ArithExpr.parse("0"))); //augment with 0
 		// Multiply in discount and add reward
-    	q = xadd.apply(a._reward, 
+    	q = xadd.apply(a._reward,  
 				xadd.scalarOp(q, camdp.get_bdDiscount().doubleValue(), XADD.PROD), 
 				XADD.SUM,-1);
     	
@@ -167,14 +151,13 @@ public class ComputeVfunction {
 		for (Integer constraint : camdp.get_alConstraints()) {
 			q = xadd.apply(q, constraint, XADD.PROD,-1);
 		}
-		
-		q = xadd.reduceLP(q,camdp.contVars);
+		if (REDUCE_LP)
+			q = xadd.reduceLP(q,camdp.contVars);
 		//************************** 
 		//Continuous Action code
 		//now we have the q_value at the leaves, 
 		//we want to max-out according to each action parameter
 		// Apply LB and UB for each action, use running max to keep the maximum action
-		//TODO: for nonlinear, consider the differential 
 		//Get leaves, compute LB,UB, take maximum of LB and UB, substitute leaf with it
 		//LB= max_{over-a}(explicit_a bounds or default (-1000000),branches where a> exists)
 		//UB = min_{over-a}(explicit_a bounds or default(100000), branches where a< exists)
@@ -194,12 +177,6 @@ public class ComputeVfunction {
 		if(PRINTFINALQ){ 
 			System.out.println("- Final Q(" + a._sName + "):\n" + xadd.getString(q));
 		}
-    	/*try {
-			//out.close();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}*/
 		return q;
 	}
 	public XADD getXadd() {
@@ -248,8 +225,9 @@ public class ComputeVfunction {
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "lightblue");
 		g.launchViewer(1300, 770);*/
-		max._runningMax = xadd.reduceLP(max._runningMax,camdp._alCVars);
-		/* g = xadd.getGraph(max._runningMax);
+		if (REDUCE_LP)
+			max._runningMax = xadd.reduceLP(max._runningMax,xadd._hmContinuousVars);
+		/*g = xadd.getGraph(max._runningMax);
 		g.addNode("_temp_");
 		g.addNodeLabel("_temp_", "Q before Linearize");
 		g.addNodeShape("_temp_", "square");
@@ -257,42 +235,18 @@ public class ComputeVfunction {
 		g.addNodeColor("_temp_", "lightblue");
 		g.launchViewer(1300, 770);*/
 		//no difference was made here after canonical
-		/*try 
-		{
-			out.write("\n runningMax before LINEAR for action "+ _action+"\n");
-			out.write(xadd._hmInt2Node.get(max._runningMax).toString());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		*/
-		max._runningMax = xadd.linearizeDecisions(max._runningMax,camdp._alCVars);;
-		/* g = xadd.getGraph(max._runningMax);
+		if (REDUCE_LP)
+		max._runningMax = xadd.reduceLinearize(max._runningMax);;
+		 /*g = xadd.getGraph(max._runningMax);
 			g.addNode("_temp_");
 			g.addNodeLabel("_temp_", "Q after linearize");
 			g.addNodeShape("_temp_", "square");
 			g.addNodeStyle("_temp_", "filled");
 			g.addNodeColor("_temp_", "lightblue");
 			g.launchViewer(1300, 770);*/
-
-		max._runningMax = xadd.reduceLP(max._runningMax,camdp._alCVars);
+		if (REDUCE_LP)
+		max._runningMax = xadd.reduceLP(max._runningMax,xadd._hmContinuousVars);
 		
-		/* g = xadd.getGraph(max._runningMax);
-			g.addNode("_temp_");
-			g.addNodeLabel("_temp_", "Q after reduceLP, runningMax");
-			g.addNodeShape("_temp_", "square");
-			g.addNodeStyle("_temp_", "filled");
-			g.addNodeColor("_temp_", "lightblue");
-			g.launchViewer(1300, 770);
-			
-			try 
-			{
-				out.write("\n runningMax AFTER LINEAR/LP for action "+ _action+"\n");
-				out.write(xadd._hmInt2Node.get(max._runningMax).toString());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
 		//if a decision consisting of the action is negative, make it positive
 		//draw 2D 
 	/*	TestXADDDist plot = new TestXADDDist();
