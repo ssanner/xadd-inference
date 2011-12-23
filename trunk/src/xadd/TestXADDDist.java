@@ -14,6 +14,9 @@ import jahuwaldt.plot.SimplePlotXY;
 import jahuwaldt.plot.SquareSymbol;
 
 import java.awt.Color;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -28,10 +31,13 @@ public class TestXADDDist {
 	/**
 	 * @param args
 	 */
+	//public static String  NAME_FILE_2D="refinement2D";
+	public static String  NAME_FILE_2D="roverNonlinear2D";
+	public static int counter = 0;
 	public static void main(String[] args) {
 
 		XADD xadd_context = new XADD();
-
+		counter = 0;
 		// Put all boolean variables first to avoid reordering clashes
 		xadd_context.getVarIndex(xadd_context.new BoolDec("f"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("g"), true);
@@ -133,7 +139,14 @@ public class TestXADDDist {
 		ArrayList<Double> alX = new ArrayList<Double>();
 		for (double x = low; x <= high; x += inc)
 			alX.add(x);
-
+		counter++;
+		BufferedWriter out = null;
+		try {
+			out = new BufferedWriter(new FileWriter(NAME_FILE_2D+counter+".txt"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		double[] xArr = new double[alX.size()];
 		double[] yArr = new double[alX.size()];
 		for (int i = 0; i < alX.size(); i++) {
@@ -142,11 +155,22 @@ public class TestXADDDist {
 			double y = context.evaluate(xadd, static_bvars, static_dvars);
 			static_dvars.remove(xVar);
 
-			// System.out.println(x + ": " + y);
+			try {
+				out.append(y + " ");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			xArr[i] = x;
 			yArr[i] = y;
+			
 		}
-
+		try {
+			out.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		Plot2D aPlot = new SimplePlotXY(xArr, yArr, title, xVar + " @ "
 				+ static_bvars + " " + static_dvars, "f(" + xVar + ")", null,
 				null, null/* new jahuwaldt.plot.CircleSymbol() *//* new XSymbol() */);
@@ -208,6 +232,7 @@ public class TestXADDDist {
 				static_dvars.put(xVar, x);
 				static_dvars.put(yVar, y);
 				double z = context.evaluate(xadd, static_bvars, static_dvars);
+				if (Double.isInfinite(z)) z=-300;
 				static_dvars.remove(xVar);
 				static_dvars.remove(yVar);
 
@@ -218,7 +243,12 @@ public class TestXADDDist {
 				zArr[i][j] = z; //x + y; //z;
 			}
 		}
-
+		for (int i=0;i<alY.size();i++)
+		{
+			for (int j=0;j<alX.size();j++)
+				System.out.print(" " + zArr[i][j]);
+			System.out.println();
+		}
 		//String title = "f(" + xVar + "," + yVar + ") @ " + static_bvars + " " + static_dvars;
 		Plot2D aPlot = new ContourPlot(xArr, yArr, zArr, 12, false, title, 
 				xVar, yVar, null, null);
