@@ -72,7 +72,7 @@ public abstract class DotViewer
 	} catch(Exception ex) {
 	    System.err.println("Exception: " + ex.getMessage());
 	    ex.printStackTrace(System.err);
-	    System.exit(1);
+	    //System.exit(1);
 	}
 
 	Graph graph = null;

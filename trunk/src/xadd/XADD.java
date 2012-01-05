@@ -50,11 +50,13 @@ public class XADD {
 	public final static boolean USE_MINUS_COMP = false; // Error, all max/min comps reduce to false!
 	public final static int MAX_BRANCH_COUNT = 1000000;
 
+	public final static double TOL = 1e-10d;
+	
 	// Debug
 	public final static boolean CHECK_LOCAL_ORDERING = true;
 	public final static boolean SHOW_DECISION_EVAL = false;
 	public final static boolean DEBUG_EVAL_RANGE = false;
-	public final static boolean DEBUG_CONSTRAINTS = true;
+	public final static boolean DEBUG_CONSTRAINTS = false;
 	public final static boolean ANNOTATE_ENABLE = false;
 	public final static boolean HANDLE_NONLINEAR = true;
 	public static boolean SUBSTITUTION = false;
@@ -868,6 +870,7 @@ public class XADD {
 		// Solve and get decision
 		double[] soln = lp.solve();
 		boolean implied = (lp._status == LpSolve.INFEASIBLE);
+		//System.out.println(lp._status + " == (infeas) " + LpSolve.INFEASIBLE + " :: " + implied);
 		if (DEBUG_CONSTRAINTS)
 			System.out.println("Solution: " + LP.PrintVector(lp._x));
 		lp.free();
@@ -1489,6 +1492,12 @@ public class XADD {
 				}
 			}
 
+
+			// Display lower and upper bound substitution
+			System.out.println("Substitute in: " + leaf_val);
+			System.out.println("Lower bound sub:\n" + getString(int_eval_lower));
+			System.out.println("Upper bound sub:\n" + getString(int_eval_upper));
+			
 			int int_eval = apply(int_eval_upper, int_eval_lower, MAX,-1);
 			//int_eval =  annotateXADD(int_eval, getTermNode(leaf_val)); // no need already annotated by computeTermNode
 			System.out.println("max of LB and UB: " + getString(int_eval));
@@ -1530,6 +1539,15 @@ public class XADD {
 			} 
 
 					
+
+			System.out.println("int_eval before decisions (after sub root): " + getString(int_eval));
+
+//			/************************/
+//			try {
+//				System.in.read();
+//			} catch (Exception e) { }
+//			/************************/		
+			
 			// Finally, multiply in boolean decisions and irrelevant comparison expressions
 			// to the XADD and add it to the running sum
 			// - HashMap<Decision,Boolean> int_var_indep_decisions
@@ -2693,8 +2711,8 @@ public class XADD {
 				comp = new CompExpr(LT_EQ, xa1._expr, xa2._expr);
 
 			// TODO: Remove
-			System.out.println("**ON MAX: " + xa1._expr + " <= " + xa2._expr);
-			System.out.println("**ON MAX, After simplification: " + comp.makeCanonical());
+			//System.out.println("**ON MAX: " + xa1._expr + " <= " + xa2._expr);
+			//System.out.println("**ON MAX, After simplification: " + comp.makeCanonical());
 
 			//STEP1: For actions changed this!
 			//comp = new CompExpr(GT_EQ, xa1._expr, xa2._expr);
@@ -4768,6 +4786,7 @@ public class XADD {
 		public boolean equals(Object o) {
 			if (o instanceof DoubleExpr) {
 				DoubleExpr d = (DoubleExpr) o;
+				//return Math.abs(this._dConstVal - d._dConstVal) <= TOL;
 				return this._dConstVal == d._dConstVal;
 			} else
 				return false;

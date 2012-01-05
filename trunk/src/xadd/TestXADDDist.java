@@ -134,7 +134,16 @@ public class TestXADDDist {
 	public static void PlotXADD(XADD context, int xadd, double low, double inc,
 			double high, HashMap<String, Boolean> static_bvars,
 			HashMap<String, Double> static_dvars, String xVar, String title) {
-
+		
+		PrintStream ps = null;
+		String filename = title.replace('^', '_') + ".txt"; 
+		try {
+			ps = new PrintStream(new FileOutputStream(filename));
+		} catch (Exception e) {
+			System.err.println("Could not open " + filename + " for data export.");
+			return;
+		}
+		
 		// Create a Simple 2D XY plot window.
 		ArrayList<Double> alX = new ArrayList<Double>();
 		for (double x = low; x <= high; x += inc)
@@ -161,6 +170,7 @@ public class TestXADDDist {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			ps.println(x + "\t" + y);
 			xArr[i] = x;
 			yArr[i] = y;
 			

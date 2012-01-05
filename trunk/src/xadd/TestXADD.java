@@ -53,6 +53,9 @@ public class TestXADD {
 		int reduce = xadd_context.reduceLP(ixadd,Arrays.asList("x"));
 		g1 = xadd_context.getGraph(reduce);
 		g1.launchViewer();
+		
+		System.in.read();
+
 		//ixadd  = xadd_context.reduceProcessXADDLeaf(ixadd, max, false);
 		/*ArrayList<Decision> decisions = new ArrayList<XADD.Decision>();
 		ArrayList<Boolean> decision_values = new ArrayList<Boolean>();
