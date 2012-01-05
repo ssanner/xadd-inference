@@ -195,25 +195,37 @@ public class ComputeVfunction {
 	public int computeMax(int ixadd,String _action,double lowerbound,double upperbound) {
 		XADDLeafMax max = xadd.new XADDLeafMax(_action, lowerbound,upperbound);
 
-		/*Graph g = xadd.getGraph(ixadd);
-		g.addNode("_temp_");
-		g.addNodeLabel("_temp_", "Q-value before max");
-		g.addNodeShape("_temp_", "square");
-		g.addNodeStyle("_temp_", "filled");
-		g.addNodeColor("_temp_", "lightblue");
-		g.launchViewer(1300, 770);*/
-		xadd.PATH_COUNTER_MAX = 0;
-		/*if (ixadd>0)
-		{
-			ixadd = xadd.linearizeDecisions(ixadd,camdp._alAVars);
-		g = xadd.getGraph(ixadd);
-		g.addNode("_temp_");
-		g.addNodeLabel("_temp_", "Q-value before max operation-after linearization");
-		g.addNodeShape("_temp_", "square");
-		g.addNodeStyle("_temp_", "filled");
-		g.addNodeColor("_temp_", "lightblue");
-		g.launchViewer(1300, 770);
-		}*/
+		Graph g = null;
+		
+//		Graph g = xadd.getGraph(ixadd);
+//		g.addNode("_temp_");
+//		g.addNodeLabel("_temp_", "Q-value before max");
+//		g.addNodeShape("_temp_", "square");
+//		g.addNodeStyle("_temp_", "filled");
+//		g.addNodeColor("_temp_", "lightblue");
+//		g.launchViewer(1300, 770);
+//		xadd.PATH_COUNTER_MAX = 0;
+		
+//		if (ixadd>0)
+//		{
+//			ixadd = xadd.linearizeDecisions(ixadd,camdp._alAVars);
+//		g = xadd.getGraph(ixadd);
+//		g.addNode("_temp_");
+//		g.addNodeLabel("_temp_", "Q-value before max operation-after linearization");
+//		g.addNodeShape("_temp_", "square");
+//		g.addNodeStyle("_temp_", "filled");
+//		g.addNodeColor("_temp_", "lightblue");
+//		g.launchViewer(1300, 770);
+//		}
+		System.out.println("XADD before max: " + xadd.getString(ixadd));
+		
+//		xadd.getGraph(ixadd).genDotFile("max.dot");
+//		/************************/
+//		try {
+//			System.in.read();
+//		} catch (Exception e) { }
+//		/************************/		
+		
 		ixadd  = xadd.reduceProcessXADDLeaf(ixadd, max, false);
 		System.out.print("\n&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n NUMBER OF PATHS: "+ xadd.PATH_COUNTER_MAX+"\n");
 		

@@ -38,7 +38,7 @@ public class CAMDP {
 
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = true;
-	public final static boolean DISPLAY_2D = false;
+	public final static boolean DISPLAY_2D = true;
 	public final static boolean DISPLAY_MAX = false;
 	public final static boolean PRINTSCREENEVAL = false;
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
@@ -252,7 +252,7 @@ public class CAMDP {
 				g.addNodeShape("_temp_", "square");
 				g.addNodeStyle("_temp_", "filled");
 				g.addNodeColor("_temp_", "lightblue");
-				g.genDotFile("V"+iter+".dot");
+				g.genDotFile("V_"+iter+".dot");
 				
 				g.launchViewer(1300, 770);
 			}
@@ -372,7 +372,6 @@ public class CAMDP {
 	
 	
 	}
-
 
 
 	public String toString() {
