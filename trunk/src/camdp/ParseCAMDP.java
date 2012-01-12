@@ -182,9 +182,9 @@ public class ParseCAMDP {
 					int ind_false = _camdp._context.getINode(var,  T_ONE,  T_ZERO);
 					//int true_half = _context.applyInt(ind_true, reward_toGoal, _context.PROD,-1); // Note: this enforces canonicity so
 					//int reward_d = _context.apply(reward_2,reward_toGoal, _context.SUM,-1);
-					int false_half = _camdp._context.applyInt(ind_false, reward_2, _camdp._context.PROD,-1); // can use applyInt rather than apply
+					int false_half = _camdp._context.applyInt(ind_false, reward_2, _camdp._context.PROD); // can use applyInt rather than apply
 					//reward_dd = _context.applyInt(true_half, false_half, _context.SUM,-1);
-					reward_dd = _camdp._context.applyInt(reward_2, reward_toGoal, _camdp._context.SUM,-1);
+					reward_dd = _camdp._context.applyInt(reward_2, reward_toGoal, _camdp._context.SUM);
 				}
 				o=i.next();
 			}
@@ -369,7 +369,7 @@ public class ParseCAMDP {
 				CompExpr comp_d1 = new CompExpr(_camdp._context.LT_EQ, arith_d1_lhs, arith_d1_rhs);
 				ExprDec expr_d1 = _camdp._context.new ExprDec(comp_d1);
 				//_context.getVarNode(expr_d1, 0, 1);
-				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_d1, 0, 1),obstacleXADD,_camdp._context.PROD,-1);
+				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_d1, 0, 1),obstacleXADD,_camdp._context.PROD);
 				obstacleXADD = _camdp._context.makeCanonical(obstacleXADD);
 				//Indicator for C>=0
 				String c0_lhs = "(x*("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) -("+obstacle.getXpoint1()+"*("+
@@ -380,7 +380,7 @@ public class ParseCAMDP {
 				ExprDec expr_c0 = _camdp._context.new ExprDec(comp_c0);
 				
 				//_context.getVarNode(expr_c0, 0, 1);
-				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_c0, 0, 1),obstacleXADD,_camdp._context.PROD,-1);
+				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_c0, 0, 1),obstacleXADD,_camdp._context.PROD);
 				obstacleXADD = _camdp._context.makeCanonical(obstacleXADD);
 				//Indicator for D<=1
 				String c1_lhs = "(x*("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) -("+obstacle.getXpoint1()+"*("+
@@ -393,11 +393,11 @@ public class ParseCAMDP {
 				ExprDec expr_c1 = _camdp._context.new ExprDec(comp_c1);
 				
 				//_context.getVarNode(expr_c1, 0, 1);
-				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_c1, 0, 1),obstacleXADD,_camdp._context.PROD,-1);
+				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_c1, 0, 1),obstacleXADD,_camdp._context.PROD);
 				obstacleXADD = _camdp._context.makeCanonical(obstacleXADD);
 				int NEG_penalty = _camdp._context.getTermNode(new DoubleExpr(obstacle.getPenalty()));
-				obstacleXADD = _camdp._context.apply(obstacleXADD,NEG_penalty,_camdp._context.PROD,-1);
-				if (_RS!=0) obstacleXADD=_camdp._context.apply(obstacleXADD,_RS,_camdp._context.SUM,-1);
+				obstacleXADD = _camdp._context.apply(obstacleXADD,NEG_penalty,_camdp._context.PROD);
+				if (_RS!=0) obstacleXADD=_camdp._context.apply(obstacleXADD,_RS,_camdp._context.SUM);
 				return obstacleXADD;
 	}
 	
@@ -447,7 +447,7 @@ public class ParseCAMDP {
 				CompExpr comp_d1 = new CompExpr(_camdp._context.LT_EQ, arith_d1_lhs, arith_d1_rhs);
 				ExprDec expr_d1 =_camdp._context.new ExprDec(comp_d1);
 				//_context.getVarNode(expr_d1, 0, 1);
-				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_d1, 0, 1),obstacleXADD,_camdp._context.PROD,-1);
+				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_d1, 0, 1),obstacleXADD,_camdp._context.PROD);
 				obstacleXADD = _camdp._context.makeCanonical(obstacleXADD);
 				//Indicator for C>=0
 				String d = "("+d0_lhs +") /("+ d1_rhs+")";
@@ -458,7 +458,7 @@ public class ParseCAMDP {
 				ExprDec expr_c0 = _camdp._context.new ExprDec(comp_c0);
 				
 				//_context.getVarNode(expr_c0, 0, 1);
-				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_c0, 0, 1),obstacleXADD,_camdp._context.PROD,-1);
+				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_c0, 0, 1),obstacleXADD,_camdp._context.PROD);
 				obstacleXADD = _camdp._context.makeCanonical(obstacleXADD);
 				//Indicator for C<=1
 				//String c1_lhs = obstacle.getYpoint2()+"-y";
@@ -470,11 +470,11 @@ public class ParseCAMDP {
 				ExprDec expr_c1 = _camdp._context.new ExprDec(comp_c1);
 				
 				//_context.getVarNode(expr_c1, 0, 1);
-				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_c1, 0, 1),obstacleXADD,_camdp._context.PROD,-1);
+				obstacleXADD = _camdp._context.apply(_camdp._context.getVarNode(expr_c1, 0, 1),obstacleXADD,_camdp._context.PROD);
 				obstacleXADD = _camdp._context.makeCanonical(obstacleXADD);
 				int NEG_penalty = _camdp._context.getTermNode(new DoubleExpr(obstacle.getPenalty()));
-				obstacleXADD = _camdp._context.apply(obstacleXADD,NEG_penalty,_camdp._context.PROD,-1);
-				if (_RS!=0) obstacleXADD=_camdp._context.apply(obstacleXADD,_RS,_camdp._context.SUM,-1);
+				obstacleXADD = _camdp._context.apply(obstacleXADD,NEG_penalty,_camdp._context.PROD);
+				if (_RS!=0) obstacleXADD=_camdp._context.apply(obstacleXADD,_RS,_camdp._context.SUM);
 				return obstacleXADD;
 	}
 	

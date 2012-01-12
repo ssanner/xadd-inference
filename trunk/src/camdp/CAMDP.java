@@ -4,28 +4,19 @@ package camdp;
 // Packages to import
 import graph.Graph;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
+import java.util.*;
+
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import java_cup.parser;
 
 import util.IntTriple;
-import xadd.TestXADDDist;
 import xadd.XADD;
+import xadd.XADD.*;
 import cmdp.HierarchicalParser;
 
 /**
- * Main CAMDP inference class
- * Class for continuous states and actions
- * Exact solution to the value function considering the maximum points of the Q-function defined by the actions
- * Partitions according to both the state and the action
+ * Main Continuous State and Action MDP (CAMDP) dynamic programming solution class
  * 
  * @version 1.0
  * @author Zahra
@@ -34,46 +25,50 @@ import cmdp.HierarchicalParser;
 public class CAMDP {
 
 	/* Constants */
-	public final static boolean REDUCE_LP = true;
-
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = true;
 	public final static boolean DISPLAY_2D = true;
 	public final static boolean DISPLAY_MAX = false;
-	public final static boolean PRINTSCREENEVAL = false;
+
+	/* Maintain an explicit policy? */
+	public final static boolean MAINTAIN_POLICY = false;
+	
+	/* Cache maintenance */
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
 
-	public static boolean PRINT3DFILE=true;
-	public static String varX;
-	public static String varY;
-	public static boolean rover=false;
-	public static double size3D = 10d; // Won't flush until < amt
-	public final static ArrayList<String> ZERO  =  new ArrayList<String> (Arrays.asList("[0]"));  
 	/* For printing */
 	public static DecimalFormat _df = new DecimalFormat("#.###");
-	public static String  NAME_FILE_3D = ""; //"src/camdp/ex/data";
-	public static PrintStream os;
+	public static PrintStream _logStream = null;
+	
 	/* Static variables */
 	public static long _lTime; // For timing purposes
 	public static Runtime RUNTIME = Runtime.getRuntime();
 
-
 	/* Local vars */
+	public String _problemFile = null;
 	public XADD _context = null;
-	public ArrayList<String> contVars;
+	public HashSet<String> _hsBoolSVars;
+	public HashSet<String> _hsContSVars;
+	public HashSet<String> _hsContAVars;
 
+	public ArrayList<String> _alBoolSVars; // Retain order given in MDP file
+	public ArrayList<String> _alContSVars; // Retain order given in MDP file
+	public ArrayList<String> _alContAVars; // Retain order given in MDP file
+	public ArrayList<String> _alContAllVars; // Retain order given in MDP file
+	
 	public Integer _valueDD; // The resulting value function once this CMDP has
-	// been solved
 	public Integer _maxDD;
 	public Integer _prevDD;
-	public BigDecimal _bdDiscount;   // Discount (gamma) for CMDP
-	public Integer    _nIter; // Tolerance (gamma) for CMDP
+	public BigDecimal _bdDiscount; // Discount (gamma) for CMDP
+	public Integer    _nIter;      // Number of iterations for CMDP
 
-	public HashMap<String,CAction> _hmName2Action;
-	public ArrayList<Integer> _alConstraints;
-
-	public HashMap<IntTriple,Integer> _hmRegrKey2Node;
+	public HashMap<String,ArithExpr>  _hmPrimeSubs;
+	public HashMap<String,CAction>    _hmName2Action;
+	public HashMap<IntTriple,Integer> _hmContRegrCache;
+	public ArrayList<Integer>         _alConstraints;
+	
+	public ComputeQFunction _qfunHelper = null;
 
 	////////////////////////////////////////////////////////////////////////////
 	// Constructors
@@ -83,237 +78,149 @@ public class CAMDP {
 	 * Constructor - filename
 	 **/
 	public CAMDP(String filename) {
-		this(HierarchicalParser.ParseFile(filename));
-		//don't give address because of server
-		NAME_FILE_3D= filename.substring(13,filename.indexOf("."))+".dat";
-		NAME_FILE_3D = NAME_FILE_3D.toLowerCase();
-		if (NAME_FILE_3D.contains("rover")) rover = true;
-		//NAME_FILE_3D = filename+ ".dat";
-		try {
-			//String timefile = FILE_TIME_MEM+filename.substring(12,filename.indexOf("."))+".txt";
-			String timefile=  "timeSpace.txt";
-			os = new PrintStream(new FileOutputStream(timefile));
-		} catch (IOException e) {
-			System.err.println(e);
-		}
+		this(filename, HierarchicalParser.ParseFile(filename));
 	}
 
 	/**
 	 * Constructor - pre-parsed file
 	 **/
-	public CAMDP(ArrayList input) {
+	private CAMDP(String file_source, ArrayList input) {
+		
+		// Basic initializations
+		_problemFile = file_source;
 		_context = new XADD();
 		_prevDD = _maxDD = _valueDD = null;
 		_bdDiscount = new BigDecimal("" + (-1));
 		_nIter = null;
 		_hmName2Action = new HashMap<String,CAction>();
-		_hmRegrKey2Node = new HashMap<IntTriple,Integer>();
 
+		// Setup CAMDP according to parsed file contents
 		ParseCAMDP parser = new ParseCAMDP(this);
 		parser.buildCAMDP(input);
-		_context._hmMaxVal=parser._maxCVal;
+		_context._hmMaxVal = parser._maxCVal;
 		_context._hmMinVal = parser._minCVal;
-		_context._hsBooleanVars = parser.getBVars();
+		_context._alBooleanVars = parser.getBVars();
 		_alConstraints = parser.getConstraints();
 		_nIter = parser.getIterations();
 		_bdDiscount = parser.getDiscount();
 		_hmName2Action = parser.getHashmap();
-		contVars = new ArrayList<String>();
-		contVars.addAll(parser.getCVars());
-		contVars.addAll(parser.getAVars());
-		_context._hmContinuousVars = contVars;
+		
+		// Setup variable sets and lists
+		_hsBoolSVars = new HashSet<String>(parser.getBVars());
+		_hsContSVars = new HashSet<String>(parser.getCVars());
+		_hsContAVars = new HashSet<String>(parser.getAVars());
+		_alBoolSVars = new ArrayList<String>(parser.getBVars()); // Retain order given in MDP file
+		_alContSVars = new ArrayList<String>(parser.getCVars()); // Retain order given in MDP file
+		_alContAVars = new ArrayList<String>(parser.getAVars()); // Retain order given in MDP file
+		_alContAllVars = new ArrayList<String>(_alContSVars);
+		_alContAllVars.addAll(_alContAVars);
+		_context._alContinuousVars = _alContAllVars;
+		
+		// Build cur-state var -> next-state var map
+		_hmPrimeSubs = new HashMap<String,ArithExpr>();
+		for (String var : _hsContSVars) 
+			_hmPrimeSubs.put(var, new XADD.VarExpr(var + "'"));
+		
+		// This helper class performs the regression
+		_qfunHelper = new ComputeQFunction(_context, this);
+		
+		// Setup a logger
+		try {
+			_logStream = new PrintStream(new FileOutputStream(file_source + ".log"));
+		} catch (FileNotFoundException e) {
+			System.err.println(e);
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
+
+	////////////////////////////////////////////////////////////////////////////
+	// Main value iteration routine
+	////////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * CMDP inference methods
 	 **/
 	public int solve(int max_iter)
 	{
-		// Set value function equal to zero
-		_valueDD =_context.buildCanonicalXADD(ZERO);
-		//value function does not have any actions in it: 
-		/*ArrayList l1 =new ArrayList();
-		l1.add("[y>0]");
-		ArrayList l1t = new ArrayList();
-		ArrayList l1f = new ArrayList();
-		l1t.add("99");
-		l1f.add("0");
-		l1.add(l1t);
-		l1.add(l1f);
-		
-		ArrayList l2 = new ArrayList();
-		l2.add("g");
-		ArrayList l2t = new ArrayList();
-		l2t.add("0");
-		l2.add(l2t);
-		l2.add(l1);
-		_valueDD =_context.buildCanonicalXADD(l2);*/
-		
-		Paint3D paint = new Paint3D(this);
+		//////////////////////////////////////////////////////////////////////////
+		// Value iteration statistics
 		int iter = 0;
 		long[] time = new long[max_iter + 1];
 		int[] num_nodes = new int[max_iter + 1]; 
 		int[] num_branches = new int[max_iter + 1]; 
-		double[] num_cases = new double[max_iter + 1]; 
-		for (int i = 0; i <= max_iter; i++)
-			num_cases[i] = 1;
-
+		//////////////////////////////////////////////////////////////////////////
+		
 		if (max_iter < 0)
 			max_iter = _nIter;
-		
+
+		// Initialize value function to zero
+		_valueDD = _context.getTermNode(XADD.ZERO);
+
+		// Perform value iteration for specified number of iterations, or until convergence detected
 		while (++iter <= max_iter) 
 		{
 			ResetTimer();
-			//System.out.println("Iteration #" + iter + ", " + MemDisplay()
-			//		+ " bytes, " + GetElapsedTime() + " ms");
-			os.println("Iteration #" + iter + ", " + MemDisplay()
-							+ " bytes, " + GetElapsedTime() + " ms");
-			os.flush();
+			_logStream.println("Iteration #" + iter + ", " + MemDisplay() + " bytes, " + GetElapsedTime() + " ms");
+			_logStream.flush();
+			
 			// Prime diagram
 			_prevDD = _valueDD;
 
 			// Iterate over each action
-			_maxDD=null;
-			for (Map.Entry<String,CAction> me : _hmName2Action.entrySet()) 
-			{
+			_maxDD = null;
+			for (Map.Entry<String,CAction> me : _hmName2Action.entrySet()) {
+
 				// Regress the current value function through each action (finite number of continuous actions)
-				ComputeVfunction computation = new ComputeVfunction(_context,this);
-				int regr = computation.computeValueFunction(_valueDD, me.getValue());
-				_context = computation.getXadd();
-				_hmRegrKey2Node = computation.getHashReg();
-				
-				if (REDUCE_LP) {
-					regr = _context.reduceLP(regr, contVars);
-				}
-
-				if (DISPLAY_Q) {
-					Graph g = _context.getGraph(regr);
-					g.addNode("_temp_");
-					g.addNodeLabel("_temp_", "Q^" + iter + "(" + me.getKey() + ")");
-					g.addNodeShape("_temp_", "square");
-					g.addNodeStyle("_temp_", "filled");
-					g.addNodeColor("_temp_", "lightblue");
-					g.launchViewer(1300, 770);
-				}
-
-				// Estimating number of cases
-				double num_cases_in_regr = num_cases[iter - 1];
-				for (Map.Entry<String,Integer> me2 : me.getValue()._hmVar2DD.entrySet()) {
-					num_cases_in_regr *= _context.getBranchCount(me2.getValue()); // From regr
-					if (_context._hsBooleanVars.contains(me2.getKey()) && num_cases_in_regr > 1)
-						num_cases_in_regr /= 2; // Sum out a variable
-				}
-				num_cases_in_regr *= _context.getBranchCount( me.getValue()._reward);
-				num_cases[iter] *= num_cases_in_regr; // From max
-				
+				int regr = _qfunHelper.regress(_valueDD, me.getValue());
+				if (DISPLAY_Q)
+					displayGraph(regr, "Q^" + iter + "(" + me.getKey() + ")");
+	
 				// Take the max over this action and the previous action 
 				//(can have continuous parameters which represents many discrete actions)
-				_maxDD = ((_maxDD == null) ? regr : _context.apply(_maxDD, regr, XADD.MAX,-1));
-
-				if (REDUCE_LP) {
-					_maxDD = _context.reduceLP(_maxDD, contVars);
+				if (_maxDD == null)
+					_maxDD = regr;
+				else {
+					_maxDD = _context.apply(_maxDD, regr, XADD.MAX);
+					_maxDD = _context.reduceLP(_maxDD, _alContAllVars);
 				}
+				if(DISPLAY_MAX)
+					displayGraph(_maxDD, "max-" + iter);
 
-				if(DISPLAY_MAX){
-					Graph g = _context.getGraph(_maxDD);
-					g.addNode("_temp_");
-					g.addNodeLabel("_temp_", "max-" + iter);
-					g.addNodeShape("_temp_", "square");
-					g.addNodeStyle("_temp_", "filled");
-					g.addNodeColor("_temp_", "lightblue");
-					g.launchViewer(1300, 770);
-					
-					
-				}
 				flushCaches();
-			}
-
-			if (REDUCE_LP) {
-				_maxDD = _context.reduceLP(_maxDD , contVars);
 			}
 
 			_valueDD = _maxDD;
 			time[iter] = GetElapsedTime();
 			num_nodes[iter] = _context.getNodeCount(_valueDD);
 			num_branches[iter] = _context.getBranchCount(_valueDD);
-			os.println("Value function size @ end of iteration " + iter + 
+			_logStream.println("Value function size @ end of iteration " + iter + 
 					": " + num_nodes[iter] + " nodes = " + 
 					num_branches[iter] + " cases" + " in " + time[iter] + " ms");
-			/*System.out.println("Value function size @ end of iteration " + iter + 
-					": " + num_nodes[iter] + " nodes = " + 
-					num_branches[iter] + " cases" + " in " + time[iter] + " ms");*/
 
 			if (DISPLAY_V) 
-			{
-				System.out.print("Displaying value function... ");
-				Graph g = _context.getGraph(_valueDD);
-				g.addNode("_temp_");
-				g.addNodeLabel("_temp_", "V^" + iter);
-				g.addNodeShape("_temp_", "square");
-				g.addNodeStyle("_temp_", "filled");
-				g.addNodeColor("_temp_", "lightblue");
-				g.genDotFile("V_"+iter+".dot");
-				
-				g.launchViewer(1300, 770);
-			}
+				displayGraph(_valueDD, "V_"+iter+".dot");
 			
-			if (DISPLAY_2D)/*||(iter==3)*/
-			{
-				TestXADDDist plot = new TestXADDDist();
-				HashMap<String,Boolean> bvars = new HashMap<String, Boolean>();
-				HashMap<String,Double> dvars = new HashMap<String, Double>();
-				if (_context._hsBooleanVars.size()>0) bvars.put(_context._hsBooleanVars.get(0), false);
-				if (rover)
-					plot.PlotXADD(_context, _valueDD, -40.0, 0.1, 40.0, bvars,dvars, "x", "V^"+iter);
-				else 
-				plot.PlotXADD(_context, _valueDD, _context._hmMinVal.get("x1"), 1, _context._hmMaxVal.get("x1"), bvars,dvars, "x1", "V^"+iter);
-				//plot.Plot3DXADD(_context, _valueDD, -20, 1, 20, -30, 1, 30, bvars,dvars ,"x", "a", "V^"+iter);
-				
-				
-			}
-			//print 3d for each iteration( file outputs)
-			if(PRINT3DFILE){
-				System.out.print("Creating data file... ");
-				paint.create3DDataFile(_valueDD,"x1","x2"); //for refinement
-				//paint.create3DDataFile(_valueDD,"l1","l2"); //for refinement
-				System.out.println("done.");
-			}
+//			if (DISPLAY_2D) {
+//				TestXADDDist plot = new TestXADDDist();
+//				HashMap<String,Boolean> bvars = new HashMap<String, Boolean>();
+//				HashMap<String,Double> dvars = new HashMap<String, Double>();
+//				if (_context._alBooleanVars.size()>0) bvars.put(_context._alBooleanVars.get(0), false);
+//				plot.PlotXADD(_context, _valueDD, _context._hmMinVal.get("x1"), 1, _context._hmMaxVal.get("x1"), bvars,dvars, "x1", "V^"+iter);
+//			}
 		}
-		//or just print once outside iteration
-		/*if(PRINT3DFILE){
-			System.out.print("Creating data file... ");
-			Paint3D paint = new Paint3D(this,_context);
-			//paint.create3DDataFile(_valueDD,"l1","l2"); 
-			paint.create3DDataFile(_valueDD,"x1","x2"); 
-			System.out.println("done.");
-		}*/
 
 		flushCaches();	
+		
+		_logStream.println("\nValue iteration complete!");
+		_logStream.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
+		_logStream.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
 
-		/*//instead of print in out, print to file
-		 * System.out.println("\nValue iteration complete!");
-		System.out.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
-		System.out.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
-
-		os.println("\nIteration Results summary");
+		_logStream.println("\nIteration Results summary");
 		for (int i = 1; i <= max_iter; i++) {
 			String branch_count = num_branches[i] >= 0 
-			? "" + num_branches[i]
-			                    : " > " + XADD.MAX_BRANCH_COUNT; 
-			System.out.println("Iter " + i + ": nodes = " + num_nodes[i] + "\tbranches = " + branch_count + "\tcases = " + num_cases[i] + "\ttime = " + time[i] + " ms");
-		}*/
-		
-		
-		os.println("\nValue iteration complete!");
-		os.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
-		os.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
-
-		os.println("\nIteration Results summary");
-		for (int i = 1; i <= max_iter; i++) {
-			String branch_count = num_branches[i] >= 0 
-			? "" + num_branches[i]
-			                    : " > " + XADD.MAX_BRANCH_COUNT; 
-			os.println("Iter " + i + ": nodes = " + num_nodes[i] + "\tbranches = " + branch_count + "\tcases = " + num_cases[i] + "\ttime = " + time[i] + " ms");
+			? "" + num_branches[i] : " > " + XADD.MAX_BRANCH_COUNT; 
+			_logStream.println("Iter " + i + ": nodes = " + num_nodes[i] + "\tbranches = " + branch_count + "\ttime = " + time[i] + " ms");
 		}
 
 		return iter;
@@ -322,24 +229,26 @@ public class CAMDP {
 	////////////////////////////////////////////////////////////////////////////
 	// Miscellaneous
 	////////////////////////////////////////////////////////////////////////////
+	
 	public void flushCaches() {
 		flushCaches(new ArrayList<Integer>());
 	}
 	
-	public void flushCaches(ArrayList<Integer> special_nodes) {
+	public void flushCaches(List<Integer> special_nodes) {
 		if (((double)RUNTIME.freeMemory() / 
 				(double)RUNTIME.totalMemory()) > FLUSH_PERCENT_MINIMUM) {
 			System.out.println("No need to flush caches.");
 			return; // Still enough free mem to exceed minimum requirements
 		}
-		os.println("Before flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
+		
+		// Commence cache flushing
+		_logStream.println("Before flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
 				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
 				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
 
-		/*System.out.println("Before flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
-				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
-				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
-		 */
+		// TODO: Maybe keeping these is worthwhile?
+		_hmContRegrCache.clear();
+		
 		_context.clearSpecialNodes();
 		for (Integer node : special_nodes)
 			_context.addSpecialNode(node);
@@ -360,19 +269,10 @@ public class CAMDP {
 		}
 		_context.flushCaches();
 
-		_hmRegrKey2Node.clear();
-
-		/*System.out.println("After flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
+		_logStream.println("After flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
 				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
 				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
-		*/
-		os.println("After flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
-				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
-				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
-	
-	
 	}
-
 
 	public String toString() {
 		return toString(false, false);
@@ -381,10 +281,10 @@ public class CAMDP {
 	public String toString(boolean display_reward, boolean display_value) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("\nCMDP Definition:\n===============\n");
-		sb.append("CVars:       " + _context._hmContinuousVars + "\n");
+		sb.append("CVars:       " + _context._alContinuousVars + "\n");
 		sb.append("Min-values:  " + _context._hmMinVal + "\n");
 		sb.append("Max-values:  " + _context._hmMaxVal + "\n");
-		sb.append("BVars:       " + _context._hsBooleanVars + "\n");
+		sb.append("BVars:       " + _context._alBooleanVars + "\n");
 		sb.append("Order:       " + _context._alOrder + "\n");
 		sb.append("Iterations:  " + _nIter + "\n");
 		sb.append("Constraints (" + _alConstraints.size() + "):\n");
@@ -405,67 +305,44 @@ public class CAMDP {
 		return sb.toString();
 	}
 
+	public void displayGraph(int xadd_id, String label) {
+		Graph g = _context.getGraph(xadd_id);
+		g.addNode("_temp_");
+		g.addNodeLabel("_temp_", label);
+		g.addNodeShape("_temp_", "square");
+		g.addNodeStyle("_temp_", "filled");
+		g.addNodeColor("_temp_", "lightblue");
+		g.launchViewer(1300, 770);
+	}
+
 	// Reset elapsed time
-	public void ResetTimer() {
+	public static void ResetTimer() {
 		_lTime = System.currentTimeMillis(); 
 	}
 
 	// Get the elapsed time since resetting the timer
-	public long GetElapsedTime() {
+	public static long GetElapsedTime() {
 		return System.currentTimeMillis() - _lTime;
 	}
 
 	public static String MemDisplay() {
 		long total = RUNTIME.totalMemory();
-		long free = RUNTIME.freeMemory();
+		long free  = RUNTIME.freeMemory();
 		return total - free + ":" + total;
 	}
-
-	
-////////////////////////////////
-	//Getters and setters
-
-	
-
-	public BigDecimal get_bdDiscount() {
-		return _bdDiscount;
-	}
-
-	public void set_bdDiscount(BigDecimal _bdDiscount) {
-		this._bdDiscount = _bdDiscount;
-	}
-
-	public ArrayList<Integer> get_alConstraints() {
-		return _alConstraints;
-	}
-
-	public void set_alConstraints(ArrayList<Integer> _alConstraints) {
-		this._alConstraints = _alConstraints;
-	}
-
-	public HashMap<IntTriple, Integer> get_hmRegrKey2Node() {
-		return _hmRegrKey2Node;
-	}
-
-	public void set_hmRegrKey2Node(HashMap<IntTriple, Integer> _hmRegrKey2Node) {
-		this._hmRegrKey2Node = _hmRegrKey2Node;
-	}
-
 
 	////////////////////////////////////////////////////////////////////////////
 	// Testing Interface
 	////////////////////////////////////////////////////////////////////////////
-
+	
 	public static void usage() {
 		System.out.println("\nMust enter: MDP-filename");
 		System.out.println("\nMust enter: number of iterations");
-		System.out.println("\nMust enter: print 3D file?");
-
 		System.exit(1);
 	}
 
 	public static void main(String args[]) {
-		if (args.length < 2 || args.length > 7) {
+		if (args.length != 2) {
 			usage();
 		}
 
@@ -485,23 +362,12 @@ public class CAMDP {
 			usage();
 		}
 
-		try {
-			if (args.length >= 3)
-				PRINT3DFILE = Boolean.parseBoolean(args[2]);
-		} catch (NumberFormatException nfe) {
-			System.out.println("\nIllegal print3DFile value: "+ args[2] + "\n");
-			System.exit(1);
-		}
+		// Build a CAMDP, display, solve
+		CAMDP mdp = new CAMDP(filename);
+		System.out.println(mdp.toString(false, false));
 
-		// Build a CMDP, display, solve
-		CAMDP mdp1 = new CAMDP(filename);
-		System.out.println(mdp1.toString(false, false));
-		//System.exit(1);
-
-		int  iter1 = mdp1.solve(iter);
-		long time1 = mdp1.GetElapsedTime();
+		int iter_used = mdp.solve(iter);
+		System.out.println("\nSolution complete, required " + 
+				iter_used + " / " + iter + " iterations.");
 	}
-
-
-
 }

@@ -5,9 +5,15 @@
 // Decision tests have labels -- either boolean variables or arithmetic
 //                               expressions (could be relational expressions
 //                               as well -- same as FOADD, but not used here)
-//                               Need a list of decisions (type: var, expr)
-// 
+//                               Need a list of decisions (type: var, expr) 
 //                               leaves are expressions (can be constants)
+//
+// TODO: Need a don't care node to handle unreachable values and need
+//       to modify computeTermNode to handle these different values.
+//
+// TODO: Do we need to prune dead branches after case-max for correctness?  
+//       Don't think so.  Do we need to prune dead branches after max_x?
+//       Potentially... this is currently done, but may be wasteful.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -33,7 +39,6 @@ import util.IntTriple;
 import util.Pair;
 import cmdp.HierarchicalParser;
 
-
 /**
  * General class for implementation of ADD data structure
  **/
@@ -57,11 +62,8 @@ public class XADD {
 	public final static boolean SHOW_DECISION_EVAL = false;
 	public final static boolean DEBUG_EVAL_RANGE = false;
 	public final static boolean DEBUG_CONSTRAINTS = false;
-	public final static boolean ANNOTATE_ENABLE = false;
-	public final static boolean HANDLE_NONLINEAR = true;
-	public static boolean SUBSTITUTION = false;
-	public static boolean REDUCE_LP=true;
-	
+	public final static boolean REDUCE_LP = true;
+
 	// Operators
 	public final static int UND = 0;
 	public final static int SUM = 1;
@@ -80,16 +82,12 @@ public class XADD {
 	public final static int LT_EQ = 14;
 	public final static int LINEARIZE = 15;
 	public final static int ERROR = 16;
-	//public final static int POW = 16;
+
 	public final static String[] _aOpNames = {/* 0 */"UND",
 		/* 1 */"+", "-", "*", "/", "max", "min", "|l", "|h",
-		/* 9 */"=", "!=", ">", ">=", "<", "<=", "ERROR" };
-	//constants for division
-	public static ArrayList<ArithExpr> showDiv = new ArrayList<XADD.ArithExpr>();
-	public static HashMap<Integer,Boolean> lastDecision = new HashMap<Integer,Boolean>();
-	public int changed_var_index = -1;
-
-	public static int PATH_COUNTER_MAX = 0;
+		/* 9 */"=", "!=", ">", ">=", "<", "<=", 
+		/* 15 */ "LINEARIZE", "ERROR" };
+		
 	// Constants
 	public final static String STRING_TAB = "   ";
 	public final static DecimalFormat _df = new DecimalFormat("#.########################");
@@ -98,10 +96,10 @@ public class XADD {
 	public final static ArithExpr ZERO = new DoubleExpr(0d);
 	public final static ArithExpr ONE = new DoubleExpr(1d);
 	public final static ArithExpr NEG_ONE = new DoubleExpr(-1d);
-	public final static ArithExpr NEG_INFINITE = new DoubleExpr(-1000000d);
-	//public static ArrayList<ArithExpr> CANONICAL_DIVISOR = new ArrayList<XADD.ArithExpr>();
+
 	// Variable Maintenance
 	public ArrayList<Decision> _alOrder = new ArrayList<Decision>();
+
 	// Node Maintenance
 	public int _markCounter = 1;
 	public int _nodeCounter = 1;
@@ -110,19 +108,13 @@ public class XADD {
 
 	// Reduce & Apply Caches
 	public HashMap<IntTriple, Integer> _hmReduceCache = new HashMap<IntTriple, Integer>();
-	//public HashMap<IntTriple, Integer> _hmReduceLPCache = new HashMap<IntTriple, Integer>();
-	public HashMap<IntPair, Integer> _hmReduceLeafOpCache = new HashMap<IntPair, Integer>();
-	public HashMap<IntPair, Integer> _hmReduceAnnotateCache = new HashMap<IntPair, Integer>();
+	public HashMap<IntPair, Integer>   _hmReduceLeafOpCache = new HashMap<IntPair, Integer>();
+	public HashMap<IntPair, Integer>   _hmReduceAnnotateCache = new HashMap<IntPair, Integer>();
 	public HashMap<IntTriple, Integer> _hmApplyCache = new HashMap<IntTriple, Integer>();
-	public HashMap<IntTriple, Integer> _hmApplyCache0 = new HashMap<IntTriple, Integer>();
-	public HashMap<IntTriple, Integer> _hmApplyCache1 = new HashMap<IntTriple, Integer>();
-	public HashMap<IntTriple, Integer> _hmApplyCache2 = new HashMap<IntTriple, Integer>();
 	public HashMap<XADDINode, HashSet<String>> _hmINode2Vars = new HashMap<XADDINode, HashSet<String>>();
-	public HashMap<Integer,Pair<XADDNode,XADDNode>> _hmLinearDecisions = new HashMap<Integer,Pair<XADDNode,XADDNode>>();
 
-	public ArrayList<String> _hsBooleanVars = new ArrayList<String>();
-	public static ArrayList<String> _hmContinuousVars;
-	public static ArithExpr noop =null;
+	public ArrayList<String> _alBooleanVars = new ArrayList<String>();
+	public ArrayList<String> _alContinuousVars;
 
 	public HashMap<String, Double> _hmMinVal = new HashMap<String, Double>();
 	public HashMap<String, Double> _hmMaxVal = new HashMap<String, Double>();
@@ -137,16 +129,15 @@ public class XADD {
 	public XADD() {
 		// Ensure that the 0th decision ID is invalid
 		_alOrder.add(new NullDec());
-		_hmContinuousVars = new ArrayList<String>();
-		noop =ArithExpr.parse("noop");
+		_alContinuousVars = new ArrayList<String>();
 	}
 
-	public ArrayList<String> get_hmContinuousVars() {
-		return _hmContinuousVars;
+	public ArrayList<String> getContinuousVarList() {
+		return _alContinuousVars;
 	}
 
-	public void set_hmContinuousVars(ArrayList<String> _hmContinuousVars) {
-		this._hmContinuousVars = _hmContinuousVars;
+	public void setContinuousVarList(ArrayList<String> continuousVarList) {
+		_alContinuousVars = continuousVarList;
 	}
 
 	public int getBoolVarIndex(String bool_name) {
@@ -173,11 +164,6 @@ public class XADD {
 		// If not found, try negating d
 		if (index < 0 && d instanceof ExprDec) {
 			CompExpr comp = ((ExprDec)d)._expr;
-			//ArithExpr lhs = comp._lhs;
-			//ArithExpr rhs = comp._rhs;
-			//lhs = new OperExpr(PROD, NEG_ONE, lhs);
-			//rhs = new OperExpr(PROD, NEG_ONE, rhs);
-			//CompExpr neg_comp = new CompExpr( CompExpr.flipCompOper(comp._type), lhs, rhs );
 			CompExpr neg_comp = new CompExpr( CompExpr.flipCompOper(comp._type), comp._lhs, comp._rhs );
 			Decision neg_d = new ExprDec(neg_comp).makeCanonical();
 
@@ -198,45 +184,28 @@ public class XADD {
 		}
 	}
 
-	public XADDTNode _tempTNode = new XADDTNode(null);
+	public int getTermNode(XADDTNode n) {
+		return getTermNode(n._expr, n._annotate); 
+	}
 
 	public int getTermNode(ArithExpr e) {
+		return getTermNode(e, null);
+	}
 
-		if (USE_CANONICAL_NODES) {
-			//System.out.println(">> TNode: Before canonical: " + e);
+	// This version can handle annotations
+	public XADDTNode _tempTNode = new XADDTNode(null,null);
+	
+	public int getTermNode(ArithExpr e, Object annotation) {
+		
+		if (USE_CANONICAL_NODES)
 			e = (ArithExpr) e.makeCanonical();
-			// System.out.println(">> TNode: After canonical: " + e);
-		}
 
-		_tempTNode.set(e);
+		_tempTNode.set(e, annotation);
 		Integer id = _hmNode2Int.get(_tempTNode);
 		if (id == null) {
 			// Not in cache so create
 			id = _nodeCounter;
-			XADDTNode node = new XADDTNode(e);
-			_hmNode2Int.put(node, id);
-			_hmInt2Node.put(id, node);
-			_nodeCounter++;
-		}
-		return id;
-	}
-
-	public XADDTNode _temp2TNode = new XADDTNode(null,noop);
-	public int getTermNode(ArithExpr e,ArithExpr a) {
-
-		if (USE_CANONICAL_NODES) {
-			//System.out.println(">> TNode: Before canonical: " + e);
-			e = (ArithExpr) e.makeCanonical();
-			if (a!=null ) a = (ArithExpr) a.makeCanonical();
-			// System.out.println(">> TNode: After canonical: " + e);
-		}
-
-		_temp2TNode.set(e,a);
-		Integer id = _hmNode2Int.get(_temp2TNode);
-		if (id == null) {
-			// Not in cache so create
-			id = _nodeCounter;
-			XADDTNode node = new XADDTNode(e,a);
+			XADDTNode node = new XADDTNode(e, annotation);
 			_hmNode2Int.put(node, id);
 			_hmInt2Node.put(id, node);
 			_nodeCounter++;
@@ -301,14 +270,18 @@ public class XADD {
 		return id;
 	}
 
-	// //////////////////////////////////////////////////////////////
+	// Returns all variables in this XADD
+	public HashSet<String> collectVars(int id) {
+		XADDNode n = _hmInt2Node.get(id);
+		if (n == null) {
+			System.out.println("ERROR: " + id + " expected in node cache, but not found!");
+			new Exception().printStackTrace();
+			System.exit(1);
+		}
+		return n.collectVars();
+	}
 
-	// TODO: This DD can still be out of order if parse tree had out-of-order
-	// variables.
-	//public int buildCanonicalXADD(ArrayList l) {
-	//	return makeCanonical(buildNonCanonicalXADD(l));
-	//return reduce(buildNonCanonicalXADD(l));
-	//}
+	// //////////////////////////////////////////////////////////////
 
 	public int buildCanonicalXADD(ArrayList l) {
 		if (l.size() == 1) {
@@ -356,12 +329,12 @@ public class XADD {
 				int T_ONE = getTermNode(ONE);
 				int ind_true = getINode(var, /* low */T_ZERO, /* high */T_ONE);
 				int ind_false = getINode(var, /* low */T_ONE, /* high */T_ZERO);
-				int true_half = applyInt(ind_true, high, PROD,-1); // Note: this enforces canonicity so
-				int false_half = applyInt(ind_false, low, PROD,-1); // can use applyInt rather than apply
+				int true_half = applyInt(ind_true, high, PROD); // Note: this enforces canonicity so
+				int false_half = applyInt(ind_false, low, PROD); // can use applyInt rather than apply
 
 				// System.out.println("New inode: " + index + " - " + low + ", " + high);
 				// System.out.println("Var: " + _alOrder.get(index));
-				return applyInt(true_half, false_half, SUM,-1);
+				return applyInt(true_half, false_half, SUM);
 			}
 		} else {
 			// Unknown
@@ -447,8 +420,8 @@ public class XADD {
 
 	// ////////////////////////////////////////////////////////////////////
 
-	// TODO: Implement garbage collection with my counter increment trick
-	// and marking.
+	// TODO: Implement garbage collection with counter increment trick
+	//       and marking.
 
 	public IntTriple _tempReduceKey = new IntTriple(-1, -1, -1);
 
@@ -459,7 +432,7 @@ public class XADD {
 	public int opOut(int node_id, int var_id, int op) {
 		int ret = reduceOp(node_id, var_id, op);
 
-		// operations like sum and product may get decisions out of order
+		// operations like sum and product may get decisions out of order... really?
 		// (reduce low / high should not do this)
 		// TODO: is this right?
 		if (op == SUM || op == PROD)
@@ -485,7 +458,7 @@ public class XADD {
 		}
 
 		// A terminal node should be reduced (and cannot be restricted)
-		// by default if hashing and equality testing are working in getTNode
+		// by default if hashing and equalitay testing are working in getTNode
 		if (n instanceof XADDTNode) {
 			return node_id; // Assuming that to have a node id means canonical
 		}
@@ -516,7 +489,7 @@ public class XADD {
 				ret = high;
 			} else if (op == SUM || op == PROD) { // op \in {MINUS, DIV} not commutative
 				// not obvious if low or high comes first
-				ret = apply(low, high, op); // may not be canonical, but will be fixed
+				ret = apply(low, high, op); // may not be canonical (why?), but will be fixed by makeCanonical
 			} else {
 				System.out.println("ERROR: id:" + op + "/ name:" + _aOpNames[op]
 						+ " expected in node cache, but not found!  (Or illegal op.)");
@@ -692,63 +665,37 @@ public class XADD {
 		return null; // We didn't find a quadratic before this
 	}
 
-
-	public int annotateXADD(int leaf_val, int annotate_val)
+	IntPair _tempReduceAnnotateKey = new IntPair(-1, -1);
+	public int annotateXADD(int node_id, Object annotation)
 	{
-		IntPair _tempReduceAnnotateKey = new IntPair(-1, -1);
 		Integer ret = null;
-		XADDNode leaf = _hmInt2Node.get(leaf_val);
-		XADDNode annotate_value = _hmInt2Node.get(annotate_val);
-		if (annotate_value instanceof XADDTNode) 
-			annotate_value = (XADDTNode) _hmInt2Node.get(annotate_val);
-		if (leaf == null) {
-			System.out.println("ERROR: " + leaf_val + " expected in node cache, but not found!");
+		XADDNode node = _hmInt2Node.get(node_id);
+		if (node == null) {
+			System.out.println("ERROR: " + node_id + " expected in node cache, but not found!");
 			new Exception().printStackTrace();
 			System.exit(1);
 		}
 
-		//n is just a TNode and has already been annotated
-		if ((leaf instanceof XADDTNode)&&(annotate_value instanceof XADDTNode)) {
+		// Directly annotate terminal nodes only 
+		if ((node instanceof XADDTNode)) {
 
-			((XADDTNode)leaf).set_annotate(((XADDTNode) annotate_value)._expr);
-				return getTermNode(((XADDTNode)leaf)._expr,((XADDTNode)leaf)._annotate);
+			XADDTNode tnode = (XADDTNode)node;
+			return getTermNode(tnode._expr, annotation);
 		}
 
-		// If its an internal node, check the annotate cache
-		_tempReduceAnnotateKey.set(leaf_val, leaf.hashCode());
-		if 	((ret = _hmReduceAnnotateCache.get(_tempReduceAnnotateKey)) != null) {
-			return ret;
-		}
-		if (annotate_value instanceof XADDTNode)
-		{
-			//if all the tree has to be annotated with one annotation ( such as reward)
-			XADDINode inode = (XADDINode) leaf;
-			Decision d1 = _alOrder.get(inode._var);
-			int low = annotateXADD(inode._low,  annotate_val);
-			int high =annotateXADD(inode._high,  annotate_val);
-			ret = getINode(inode._var, low, high);
-			_hmReduceAnnotateCache.put(new IntPair(leaf_val, leaf.hashCode()), ret);
+		// If its an internal node, first check the annotate cache
+		_tempReduceAnnotateKey.set(node_id, annotation.hashCode());
+		if 	((ret = _hmReduceAnnotateCache.get(_tempReduceAnnotateKey)) != null)
 			return ret;
 
-		}
-		//both are inodes, they have the same var_dec 
-		XADDINode inode_leaf = (XADDINode) leaf;
-		XADDINode inode_annotate = (XADDINode) annotate_value;
-		Decision d1 = _alOrder.get(inode_leaf._var);
-		Decision d2= _alOrder.get(inode_annotate._var);
-
-		//d1 always equal to d2
-		int low = annotateXADD(inode_leaf._low,  inode_annotate._low);
-		int high =annotateXADD(inode_leaf._high,  inode_annotate._high);
-
-		ret = getINode(inode_leaf._var, low, high);
-
-		// Put return value in cache and return
-		_hmReduceAnnotateCache.put(new IntPair(leaf_val, leaf.hashCode()), ret);
+		// Not annotated before so recursively annotate
+		XADDINode inode = (XADDINode) node;
+		int low  = annotateXADD(inode._low, annotation);
+		int high = annotateXADD(inode._high, annotation);
+		ret = getINode(inode._var, low, high);
+		_hmReduceAnnotateCache.put(new IntPair(node_id, annotation.hashCode()), ret);
 		return ret;
 	}
-
-
 
 	public IntTriple _tempReduceLPKey = new IntTriple(-1, -1, -1);
 	public HashMap<String, Integer> _cvar2ID = null;
@@ -784,7 +731,8 @@ public class XADD {
 			return node_id; // Assuming that to have a node id means canonical
 		}
 
-		// If its an internal node, check the reduce cache
+		// TODO: Checking reduce cache means checking to see which constraints
+		//       were used in pruning a branch
 		//_tempReduceLPKey.set(node_id, test_var.hashCode(), test_dec.hashCode());
 		//if (false && (ret = _hmReduceLPCache.get(_tempReduceLPKey)) != null) {
 		//	// System.out.println("In cache, returning: " + qret);
@@ -793,13 +741,6 @@ public class XADD {
 
 		XADDINode inode = (XADDINode) n;
 
-		// //////////////////////////////////////////////////////////////////////
-		// if (CHECK_MIN_MAX) { // Handled by makeCanonical
-		// *
-		// }
-
-		// //////////////////////////////////////////////////////////////////////
-		// if (ret == null) {
 		if (isTestImplied(test_var, test_dec, inode._var, true)) {
 
 			ret = reduceLP(inode._high, test_var, test_dec);
@@ -819,8 +760,6 @@ public class XADD {
 			// Standard Reduce: getInode will handle the case of low == high
 			ret = getINode(inode._var, low, high);
 		}
-		// }
-		// //////////////////////////////////////////////////////////////////////
 
 		// Put return value in cache and return
 		//_hmReduceLPCache.put(new IntTriple(node_id, test_var.hashCode(), test_dec.hashCode()), ret);
@@ -1018,13 +957,8 @@ public class XADD {
 
 		// A terminal node should be reduced (and cannot be restricted)
 		// by default if hashing and equality testing are working in getTNode
-		if (n instanceof XADDTNode) {
-			ArithExpr expr = ((XADDTNode) n)._expr;
-			expr = expr.substitute(subst);
-			if (ANNOTATE_ENABLE)
-				return getTermNode(expr,((XADDTNode)n)._annotate);
-			else return getTermNode(expr);
-		}
+		if (n instanceof XADDTNode) 
+			return getTermNode((XADDTNode)n);
 
 		// If its an internal node, check the reduce cache
 		if ((ret = subst_cache.get(node_id)) != null) {
@@ -1059,24 +993,15 @@ public class XADD {
 		// substitution could have affected a variable reordering...
 		// uglier and more computationally costly, but the better solution
 		// is via apply.
-		//
-		// ret = getINode(var, low, high);\
-		int T_ZERO,T_ONE;
-		if (ANNOTATE_ENABLE)
-		{
-			T_ZERO = getTermNode(ZERO,ArithExpr.parse("0"));
-			T_ONE = getTermNode(ONE,ArithExpr.parse("0"));
-		}else
-		{
-			T_ZERO = getTermNode(ZERO);
-			T_ONE = getTermNode(ONE);
-		}
-		int ind_true = getINode(var, /* low */T_ZERO, /* high */T_ONE);
+		// ret = getINode(var, low, high);
+		int T_ZERO = getTermNode(ZERO);
+		int T_ONE  = getTermNode(ONE);
+		int ind_true  = getINode(var, /* low */T_ZERO, /* high */T_ONE);
 		int ind_false = getINode(var, /* low */T_ONE, /* high */T_ZERO);
-		int true_half = applyInt(ind_true, high, PROD,-1); // Note: this enforces canonicity so
-		int false_half = applyInt(ind_false, low, PROD,-1); // can use applyInt rather than apply
+		int true_half = applyInt(ind_true, high, PROD); // Note: this enforces canonicity so
+		int false_half = applyInt(ind_false, low, PROD); // can use applyInt rather than apply
 
-		ret = applyInt(true_half, false_half, SUM,-1);
+		ret = applyInt(true_half, false_half, SUM);
 
 		if (CHECK_LOCAL_ORDERING) {
 			// Check ordering
@@ -1114,8 +1039,6 @@ public class XADD {
 		return ret;
 	}
 
-	// ///////////
-
 	// Convert an ArithExpr to an XADD while performing (optional) substitution of
 	// an XADD for a var (set var = null if no substitution is needed)
 	public int substituteXADDforVarInArithExpr(ArithExpr leaf_val, String var, int xadd) {
@@ -1130,10 +1053,7 @@ public class XADD {
 		} else if (leaf_val instanceof VarExpr) {
 			VarExpr var_expr = (VarExpr) leaf_val;
 			if (var_expr._sVarName == var) // assume interned
-			{
-
 				return xadd;
-			}
 			else
 				return getTermNode(leaf_val);
 		} else if (leaf_val instanceof DoubleExpr) {
@@ -1145,46 +1065,213 @@ public class XADD {
 		}
 	}
 
-	public int substituteXADDforVarInArithExpr(ArithExpr leaf_val,ArithExpr annotate, String var, int xadd) {
+	public Double evaluate(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign) {
 
-		if (leaf_val instanceof OperExpr) {
-			OperExpr oper_expr = (OperExpr) leaf_val;
-			int running_xadd = substituteXADDforVarInArithExpr(oper_expr._terms.get(0),annotate, var, xadd);
-			for (int i = 1; i < oper_expr._terms.size(); i++) {
-				int next_operand = substituteXADDforVarInArithExpr(oper_expr._terms.get(i),annotate, var, xadd);
-				running_xadd = apply(running_xadd, next_operand, oper_expr._type /* SUM, PROD, ... */);
-			}
-			return running_xadd;
-		} else if (leaf_val instanceof VarExpr) {
-			VarExpr var_expr = (VarExpr) leaf_val;
-			if (var_expr._sVarName == var) // assume interned
-			{
+		// Get root
+		XADDNode n = _hmInt2Node.get(node_id);
 
-				return xadd;
+		// Traverse decision diagram until terminal found
+		while (n instanceof XADDINode) {
+			XADDINode inode = (XADDINode) n;
+			Decision d = _alOrder.get(inode._var);
+			Boolean branch_high = null;
+			if (d instanceof TautDec)
+				branch_high = ((TautDec) d)._bTautology;
+			else if (d instanceof BoolDec)
+				branch_high = bool_assign.get(((BoolDec) d)._sVarName);
+			else if (d instanceof ExprDec) {
+				branch_high = ((ExprDec) d)._expr.evaluate(cont_assign);
+				if (SHOW_DECISION_EVAL) {
+					System.out.println(" - " + ((ExprDec) d)._expr + ": " + branch_high);
+				}
 			}
-			else
-				return getTermNode(leaf_val,annotate);
-		} else if (leaf_val instanceof DoubleExpr) {
-			return getTermNode(leaf_val,annotate);
-		} else {
-			System.out.println("substituteXADDforVar: Unsupported expression '" + leaf_val + "'");
-			System.exit(1);
-			return -1;
+
+			// Not all required variables were assigned
+			if (branch_high == null)
+				return null;
+
+			// Advance down to next node
+			n = _hmInt2Node.get(branch_high ? inode._high : inode._low);
 		}
 
+		// Now at a terminal node so evaluate expression
+		XADDTNode t = (XADDTNode) n;
+		return t._expr.evaluate(cont_assign);
 	}
 
-	// Returns all variables in this XADD
-	public HashSet<String> collectVars(int id) {
-		XADDNode n = _hmInt2Node.get(id);
-		if (n == null) {
-			System.out.println("ERROR: " + id + " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
+	// TODO: could an op other than max/min lead to a non-canonical diagram???
+	// only ops that can change inodes can affect ordering and the only
+	// ops that can do this should be max/min.
+	public int scalarOp(int dd, double val, int op) {
+		int dd_val = getTermNode(new DoubleExpr(val));
+		return apply(dd, dd_val, op); // could make non-canonical so have to use apply
+	}
+
+	public IntTriple _tempApplyKey = new IntTriple(-1, -1, -1);
+
+	// TODO: could an op other than max/min lead to a non-canonical diagram???
+	// only ops that can change inodes can affect ordering and the only
+	// ops that can do this should be max/min.
+	public int apply(int a1, int a2, int op) {
+		int ret = applyInt(a1, a2, op);
+		if ((op == MAX) || (op == MIN))
+			return makeCanonical(ret);
+		else
+			return ret;
+	}
+	
+	public int applyInt(int a1, int a2, int op) {
+
+		_tempApplyKey.set(a1, a2, op);
+		Integer ret = _hmApplyCache.get(_tempApplyKey);
+		if (ret != null) {
+			return ret;
 		}
-		return n.collectVars();
+
+		// Can we create a terminal node here?
+		XADDNode n1 = _hmInt2Node.get(a1);
+		XADDNode n2 = _hmInt2Node.get(a2);
+		ret = computeTermNode(a1, n1, a2, n2, op);
+		if (ret == null) {
+
+			int v1low, v1high, v2low, v2high, var;
+
+			// Find node with min id (or only internal node)
+			if (n1 instanceof XADDINode) {
+				if (n2 instanceof XADDINode) {
+					if (((XADDINode) n1)._var < ((XADDINode) n2)._var) {
+						var = ((XADDINode) n1)._var;
+					} else {
+						var = ((XADDINode) n2)._var;
+					}
+				} else {
+					var = ((XADDINode) n1)._var;
+				}
+			} else {
+				var = ((XADDINode) n2)._var;
+			}
+
+			// Determine next recursion for n1
+			if ((n1 instanceof XADDINode) && (((XADDINode) n1)._var == var)) {
+				XADDINode n1i = (XADDINode) n1;
+				v1low = n1i._low;
+				v1high = n1i._high;
+			} else {
+				v1low = a1;
+				v1high = a1;
+			}
+
+			// Determine next recursion for n2
+			if ((n2 instanceof XADDINode) && (((XADDINode) n2)._var == var)) {
+				XADDINode n2i = (XADDINode) n2;
+				v2low = n2i._low;
+				v2high = n2i._high;
+			} else {
+				v2low = a2;
+				v2high = a2;
+			}
+
+			// Perform in-line reduction and set min/max for subnodes if needed
+			int low = applyInt(v1low, v2low, op);
+			int high = applyInt(v1high, v2high, op);
+
+			// getINode will take care of 'low==high'
+			ret = getINode(var, low, high);
+		}
+
+		_hmApplyCache.put(new IntTriple(a1, a2, op), ret);
+		return ret;
 	}
 
+	// Computes a terminal node value if possible, assume
+	// terms of same type (otherwise incompatible!)
+	public Integer computeTermNode(int a1, XADDNode n1, int a2, XADDNode n2, int op) {
+
+		//changed_var_index = -1;
+		if ((n1 instanceof XADDTNode) && (n2 instanceof XADDTNode)) {
+			XADDTNode xa1 = (XADDTNode) n1;
+			XADDTNode xa2 = (XADDTNode) n2;
+
+			if ((op != MAX) && (op != MIN))
+				return getTermNode(new OperExpr(op, xa1._expr, xa2._expr));
+
+			CompExpr comp = null;
+			if (USE_MINUS_COMP) {
+				ArithExpr diff = new OperExpr(MINUS, xa1._expr, xa2._expr);
+				comp = new CompExpr(LT, diff, new DoubleExpr(0d));
+			} else
+				comp = new CompExpr(LT_EQ, xa1._expr, xa2._expr);
+
+			// TODO: Remove
+			//System.out.println("**ON MAX: " + xa1._expr + " <= " + xa2._expr);
+			//System.out.println("**ON MAX, After simplification: " + comp.makeCanonical());
+
+			Decision d = new ExprDec(comp);
+
+			// Do a range check here
+			// if (CHECK_MIN_MAX) {
+			//   TautDec tdec = checkRangeImpliedDecision(d);
+			//   if (tdec != null)
+			//     d = tdec; // Change to a tautology... getInode will handle this
+			// }
+
+			int var_index = getVarIndex(d, true);
+			int node1 = getTermNode(xa1); // getTermNode(XADDTNode)
+			int node2 = getTermNode(xa2); // getTermNode(XADDTNode)
+			
+			return getINode(var_index, op == MAX ? node1 : node2, op == MAX ? node2 : node1);
+		}
+
+		if (n1 instanceof XADDTNode) {
+			// If we get here a2 must be XADDINode
+			XADDTNode xa1 = (XADDTNode) n1;
+
+			// Check for identity operation value for n1
+			if ((op == SUM && xa1._expr.equals(ZERO)) || (op == PROD && xa1._expr.equals(ONE))) {
+				return a2;
+			}
+		}
+
+		if (n2 instanceof XADDTNode) {
+			// If we get here a1 must be XADDINode
+			XADDTNode xa2 = (XADDTNode) n2;
+
+			// Check for identity operation value for n2
+			if ((op == SUM && xa2._expr.equals(ZERO)) || (op == PROD && xa2._expr.equals(ONE))
+					|| (op == MINUS && xa2._expr.equals(ZERO)) || (op == DIV && xa2._expr.equals(ONE))) {
+				return a1;
+			}
+		}
+
+		return null;
+	}
+
+	// Quick cache snapshot
+	 public void showCacheSize() {
+		 System.out.println("APPLY CACHE:    " + _hmApplyCache.size());
+		 System.out.println("REDUCE CACHE:   " + _hmReduceCache.size());
+		 System.out.println("REDUCE CACHE L: " + _hmReduceLeafOpCache.size());
+		 System.out.println("REDUCE CACHE A: " + _hmReduceAnnotateCache.size());
+		 System.out.println("INODE CACHE 1:  " + _hmNode2Int.size() + "\n");		 
+		 System.out.println("INODE CACHE 2:  " + _hmInt2Node.size() + "\n");
+		 System.out.println("VAR CACHE 2:    " + _hmINode2Vars.size() + "\n");
+	 }
+
+	public void clearMarks() {
+		_markCounter++;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	//                               XADD Leaf Operations
+	//
+	// - maximization of a variable (max_v F(v))  
+	// - integration (int_v F(v)... indefinite and definite) 
+	// - differentiation (partial_v / partial_F F(v))
+	// - XADD substitution for a variable (int_v delta(v - G)*F = F{v/G})
+	//   ... for now, v can only occur a leaves of F, but can generalize to any F
+	//
+	/////////////////////////////////////////////////////////////////////////////////////
+	
 	// This internal class is intended to be used to specify inline operations to perform at the
 	// leaves of an XADD... the operation returns a new XADD for the leaf.
 	//
@@ -1196,38 +1283,25 @@ public class XADD {
 		public abstract boolean isCacheable();
 	}
 
-
-	/////////////////////////////////////////////////////
-
-	///New class added by Zahra 
-	//Class of XADDLeafMax that preforms max on the leaves 
-	//This max is over the LB,UB or any root of the polynomial 
+	////////////////////////////////////////////////////////////////////////////////
+	// XADDLeafMax added by Zahra 
+	// Class of XADDLeafMax that preforms max over a variable on the leaves subject
+	// to the constraints encountered to reach those leaves.  The leaf max is over
+	// the LB,UB or any root of the polynomial.
+	////////////////////////////////////////////////////////////////////////////////
 
 	public class XADDLeafMax extends XADDLeafOperation {
 
 		public int _runningMax; // XADD for the running max of all leaf substitutions
-		double _lowerBound,_higherBound;
-		String _actionString;
+		double _lowerBound, _upperBound;
+		String _maxVar;
 		ArrayList<String> _contVars;
-		ArithExpr _VarDivisor; //for division expressions
 		
-		public XADDLeafMax(String action_St,double lower,double higher) {
-
-
-			_actionString = action_St.intern(); // incase there is more than one continuous parameter per action
-			//we need the action because the bounds are required here
-			_lowerBound = lower;
-			_higherBound = higher;
+		public XADDLeafMax(String max_var, double lower_bound, double upper_bound) {
+			_maxVar = max_var.intern(); 
+			_lowerBound = lower_bound;
+			_upperBound = upper_bound;
 			_runningMax = -1;
-			_VarDivisor = null;
-		}
-
-		public ArrayList<String> get_contVars() {
-			return _contVars;
-		}
-
-		public void set_contVars(ArrayList<String> _contVars) {
-			this._contVars = _contVars;
 		}
 
 		// TODO: revisit whether caching is possible, or in what circumstances
@@ -1235,657 +1309,226 @@ public class XADD {
 			return false;
 		}
 
-		public int processXADDLeafMax(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, XADDTNode leaf_val) 
-		{
-			PATH_COUNTER_MAX++;
-			// Multiply these in later
-			/*if (!(leaf_val instanceof DoubleExpr) || ((DoubleExpr) leaf_val)._dConstVal!=0)
-			{*/
-			HashMap<Decision, Boolean> int_var_indep_decisions = new HashMap<Decision, Boolean>();
-			int xadd_upper_bound = -1;
-			int xadd_lower_bound = -1;
-			// Next compute the upper and lower bounds based on the decisions
-			System.out.println("=============================");
-			System.out.println("Current node: " + leaf_val._expr +"annotation: " + leaf_val._annotate);
-			System.out.println("Decisions to get to get here: " + decisions + " = " + decision_values + "\n===\n");
-			ArrayList<ArithExpr> lower_bound = new ArrayList<ArithExpr>();
-			ArrayList<ArithExpr> upper_bound = new ArrayList<ArithExpr>();
+        public int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, ArithExpr leaf_val) 
+        {
+            System.out.println("=============================");
+            System.out.println("Current node: " + leaf_val);
+            System.out.println("Decisions to get to get here: " + decisions + " = " + decision_values + "\n===\n");
+
+            // Bound management
+            ArrayList<ArithExpr> lower_bound = new ArrayList<ArithExpr>();
+            ArrayList<ArithExpr> upper_bound = new ArrayList<ArithExpr>();
+        	lower_bound.add(new DoubleExpr(_lowerBound));
+			upper_bound.add(new DoubleExpr(_upperBound));
+
+        	// Multiply these in later
+            HashMap<Decision, Boolean> max_var_indep_decisions = new HashMap<Decision, Boolean>();
+
+            // First compute the upper and lower bounds and var-independent constraints
+			// from the decisions
 			for (int i = 0; i < decisions.size(); i++) {
-				Decision d = decisions.get(i);
-				Boolean is_true = decision_values.get(i);
-				CompExpr comp = null;
-				if (d instanceof BoolDec) {
-					int_var_indep_decisions.put(d, is_true);
-					continue;
-				} else if (d instanceof ExprDec) {
-					ExprDec ed = (ExprDec) d;
-					comp = ed._expr;
-				} else {
-					System.out.println("processXADDLeaf: Unsupported decision type '" + d + "'");
-					System.exit(1);
-				}
+                Decision d = decisions.get(i);
+                Boolean is_true = decision_values.get(i);
+                CompExpr comp = null;
+                if (d instanceof BoolDec) {
+                        max_var_indep_decisions.put(d, is_true);
+                        continue;
+                } else if (d instanceof ExprDec) {
+                        ExprDec ed = (ExprDec) d;
+                        comp = ed._expr;
+                } else {
+                        System.out.println("processXADDLeaf: Unsupported decision type '" + d + "'");
+                        System.exit(1);
+                }
 
-				// Check that comparison expression is normalized
-				if (!comp._rhs.equals(ZERO)) {
-					System.out.println("processXADDLeaf: Expected RHS = 0 for '" + comp + "'");
-					System.exit(1);
-				}
+                // Check that comparison expression is normalized
+                if (!comp._rhs.equals(ZERO)) {
+                        System.out.println("processXADDLeaf: Expected RHS = 0 for '" + comp + "'");
+                        System.exit(1);
+                }
 
-				_VarDivisor = null;
-				DoubleExpr doubleCoef;
-				boolean flip_comparison=false;
-				ArithExpr new_rhs = null;
-				ArithExpr answer1 = null, answer2 = null;
-				ArithExpr lhs_isolated = removeActionVar(comp._lhs,_actionString);
-				/*System.out.println("Pre: " + comp + " == " + is_true + ", int var [" + _actionString + "]"
-					+ "\nLHS isolated: " + lhs_isolated + "\n ==>  " + _VarDivisor.toString() + " * "
-					+ _actionString);*/
-			
-				if (_VarDivisor == null) {
-					int_var_indep_decisions.put(d, is_true);
+                // Takes ArithExpr expr1 linear in var, returns (coef,expr2) where expr1 = coef*x + expr2
+				CoefExprPair p = comp._lhs.removeVarFromExpr(_maxVar); 
+				ArithExpr lhs_isolated = p._expr;
+				double    var_coef     = p._coef;
+				System.out.println("Pre: " + comp + " == " + is_true + ", int var [" + _maxVar + "]"
+						+ "\nLHS isolated: " + lhs_isolated + "\n ==>  " + var_coef + " * " + _maxVar);
+
+				if (var_coef == 0d) {
+					max_var_indep_decisions.put(d, is_true);
 					continue;
 				}
-				//build rhs
-				new_rhs = (ArithExpr) new OperExpr(MINUS, ZERO, new OperExpr(PROD, 
-						(ArithExpr.op(new DoubleExpr(1d), _VarDivisor, DIV)), lhs_isolated)).makeCanonical();
 
+				// We have var_coef*x + lhs_isolated {<,<=,>,>=} 0
+				// ... need to get x {<,<=,>,>=} 1/var_coef * lhs_isolated
+				//     (and inequality gets flipped if var_coef is negative)
+				boolean flip_comparison = (var_coef < 0d) && (comp._type != EQ) && (comp._type != NEQ);
+				ArithExpr new_rhs = (ArithExpr) new OperExpr(MINUS, ZERO, new OperExpr(PROD, new DoubleExpr(
+						1d / var_coef), lhs_isolated)).makeCanonical();
 
-
-				// We have coef*x + expr COMP_OPER 0
-				if (_VarDivisor instanceof OperExpr)
-				{
-					//need a tree for the upper or lower bound depending on condition
-					int comp_oper = comp._type;
-					if (!is_true) 
-						comp_oper = CompExpr.flipCompOper(comp_oper);
-					//a positive expression
-					CompExpr comp1 = new CompExpr(GT_EQ, _VarDivisor, new DoubleExpr(0d));
-					//negative expression
-					CompExpr comp2 = new CompExpr(LT_EQ, _VarDivisor, new DoubleExpr(0d));
-					Decision dec1 = new ExprDec(comp1).makeCanonical();
-					Decision dec2 = new ExprDec(comp2).makeCanonical();
-					int var_index1 = getVarIndex(dec1, true);
-					int var_index2 = getVarIndex(dec2,true);
-					int node1, node2;
-					if (comp_oper == LT || comp_oper == LT_EQ)
-					{
-						node1 = getTermNode(new_rhs);
-						node2 = getTermNode(new DoubleExpr(_higherBound));
-						if (xadd_upper_bound==-1) xadd_upper_bound = getINode(var_index1, node2 , node1);
-						else xadd_upper_bound = apply(xadd_upper_bound, getINode(var_index1, node2 , node1), MIN,-1);
-						//flip sides
-						node2 = getTermNode(new DoubleExpr(_lowerBound));
-						node1 = getTermNode(new_rhs);
-						if (xadd_lower_bound==-1) xadd_lower_bound = getINode(var_index2, node2 , node1);
-						else xadd_lower_bound = apply(xadd_lower_bound, getINode(var_index2, node2 , node1), MAX,-1);
-						comp_oper = LT_EQ;
-					}
-
-					else if (comp_oper == GT || comp_oper == GT_EQ)
-					{
-						node1 = getTermNode(new_rhs);
-						node2 = getTermNode(new DoubleExpr(_lowerBound));
-						if (xadd_lower_bound==-1) xadd_lower_bound = getINode(var_index1, node2 , node1);
-						else xadd_lower_bound = apply(xadd_lower_bound, getINode(var_index1, node2 , node1), MAX,-1);
-						//flip sides
-						node2 = getTermNode(new DoubleExpr(_higherBound));
-						node1 = getTermNode(new_rhs);
-						if (xadd_upper_bound==-1) xadd_upper_bound = getINode(var_index2, node2 , node1);
-						else xadd_upper_bound = apply(xadd_upper_bound, getINode(var_index2, node2 , node1), MIN,-1);
-						comp_oper= GT_EQ;
-					}
-					
+				// Divide through by coef (pos or neg)
+				// - if coef neg, flip expression
+				// - if decision neg, flip expression
+				// - if both, don't flip
+				int comp_oper = comp._type;
+				if ((/* negated */!is_true && !flip_comparison) || (/* not negated */is_true && flip_comparison)) {
+					comp_oper = CompExpr.flipCompOper(comp_oper);
 				}
-				else // (_VarDivisor instanceof DoubleExpr) 
-				{
-					//flip if negative, add to UB or LB 
-					doubleCoef = (DoubleExpr)_VarDivisor;
-					flip_comparison = (doubleCoef._dConstVal < 0d) && (comp._type != EQ) && (comp._type != NEQ);
 
-					int comp_oper = comp._type;
-					if ((/* negated */!is_true && !flip_comparison) || (/* not negated */is_true && flip_comparison)) 
-						comp_oper = CompExpr.flipCompOper(comp_oper);
-
-					// Now mark this as a lower or upper bound
-					// - lower bounds: x > f(y), x >= f(y)
-					// - upper bounds: x < f(z), x <= f(z)
-					if (comp_oper == GT || comp_oper == GT_EQ)
-						lower_bound.add(new_rhs);
-					else if (comp_oper == LT || comp_oper == LT_EQ)
-						upper_bound.add(new_rhs);
-					else 
-					{
-						System.out.println("Cannot currently handle: "
-								+ new CompExpr(comp_oper, new VarExpr(_actionString), new_rhs));
-						System.out.println("Note: = triggers substitution, not sure how to handle ~=");
-						new Exception().printStackTrace();
-						System.exit(1);
-					}
+				// Now we have (x {<,<=,>,>=} expr)... mark each as lower/upper bound:
+				// - lower bounds: x > f(y), x >= f(y)
+				// - upper bounds: x < f(z), x <= f(z)
+				if (comp_oper == GT || comp_oper == GT_EQ)
+					lower_bound.add(new_rhs);
+				else if (comp_oper == LT || comp_oper == LT_EQ)
+					upper_bound.add(new_rhs);
+				else {
+					System.out.println("Cannot currently handle: "
+							+ new CompExpr(comp_oper, new VarExpr(_maxVar), new_rhs));
+					System.out.println("Note: = triggers substitution, not sure how to handle ~=");
+					new Exception().printStackTrace();
+					System.exit(1);
 				}
 			}
-			
+
 			// Now explicitly compute lower and upper bounds as XADDs
 			//
 			// If these are polynomials, must go to +/- infinity at limits so cannot
 			// be used to approximate cdfs. Hence we must assume that there will always
 			// be limits on the polynomial functions implicit in the bounds.
-			
-			//ANNOTATION: First step is to annotate the upper and lower bounds with their values
-			//this means that any of these bounds can be the maximum action, so their values have to be annotated
-			//annotating with same values only occurs for UB,LB,root
-			if (lower_bound.isEmpty()&& xadd_lower_bound == -1) {
-				//System.err.println("No explicit lower bound given for '" + _actionString + "', using -1e6");
-				System.err.println("Constraints: " + decisions);
-				System.err.println("Assignments: " + decision_values);
-				xadd_lower_bound = getTermNode(new DoubleExpr(_lowerBound));
-				if (ANNOTATE_ENABLE)
-					xadd_lower_bound = annotateXADD(xadd_lower_bound, getTermNode(new DoubleExpr(_lowerBound)));
-			} else {
-				System.out.println("Lower bounds: " + lower_bound);
-				for (ArithExpr e : lower_bound) {
-					if (xadd_lower_bound == -1) {
-						xadd_lower_bound = getTermNode(e);
-						if (ANNOTATE_ENABLE)
-							xadd_lower_bound = annotateXADD(xadd_lower_bound, getTermNode(e));
-					} else {
-						// Lower bound is max of all lower bounds
-						if (ANNOTATE_ENABLE)
-							xadd_lower_bound = apply(xadd_lower_bound, annotateXADD(getTermNode(e), getTermNode(e)), MAX,-1);
-						else xadd_lower_bound = apply(xadd_lower_bound, getTermNode(e), MAX,-1);
+			System.out.println("Lower bounds: " + lower_bound);
+			int xadd_lower_bound = -1;
+			for (ArithExpr e : lower_bound) // Lower bound is max of all lower bounds
+				xadd_lower_bound = (xadd_lower_bound == -1) ? getTermNode(e)
+						: apply(xadd_lower_bound, getTermNode(e), MAX);
 
-					}
-				}
-			}
+			System.out.println("Upper bounds: " + upper_bound);
+			int xadd_upper_bound = -1;
+			for (ArithExpr e : upper_bound) // Upper bound is min of all upper bounds
+				xadd_upper_bound = (xadd_upper_bound == -1) ? getTermNode(e)
+						: apply(xadd_upper_bound, getTermNode(e), MIN);
 
-
-			if (upper_bound.isEmpty() && xadd_upper_bound ==-1) {
-				//System.err.println("No explicit upper bound given for '" + _actionString + "', using +1e6");
-				System.err.println("Constraints: " + decisions);
-				System.err.println("Assignments: " + decision_values);
-				xadd_upper_bound = getTermNode(new DoubleExpr(_higherBound));
-				if (ANNOTATE_ENABLE)
-					xadd_upper_bound = annotateXADD(xadd_upper_bound, getTermNode(new DoubleExpr(_higherBound)));
-			} else {
-				System.out.println("Upper bounds: " + upper_bound);
-				for (ArithExpr e : upper_bound) {
-					if (xadd_upper_bound == -1) {
-						xadd_upper_bound = getTermNode(e);
-						if (ANNOTATE_ENABLE)
-							xadd_upper_bound = annotateXADD(xadd_upper_bound, getTermNode(e));
-					} else {
-						// Upper bound is min of all upper bounds
-						if (ANNOTATE_ENABLE)
-							xadd_upper_bound = apply(xadd_upper_bound, annotateXADD(getTermNode(e), getTermNode(e)), MIN,-1);
-						else xadd_upper_bound = apply(xadd_upper_bound, getTermNode(e), MIN,-1);
-					}
-				}
-			}
-
-			// Build all constraints for the integration
-			// add the upper/lower bounds for the decisions
+			// Build all constraints for the maximization
 			for (ArithExpr e1 : upper_bound) {
 				for (ArithExpr e2 : lower_bound) {
 					CompExpr ce = new CompExpr(GT, e1, e2);
 					ExprDec ed = new ExprDec(ce);
-					int_var_indep_decisions.put(ed, Boolean.TRUE);
+					max_var_indep_decisions.put(ed, Boolean.TRUE);
 				}
 			}
 
 			// Display lower and upper bounds
 			System.out.println("Lower bound:\n" + getString(xadd_lower_bound));
 			System.out.println("Upper bound:\n" + getString(xadd_upper_bound));
-			 ArithExpr root = null;
-			 int root_xadd=0;
-			// root of function
-			if (HANDLE_NONLINEAR)
-			{
-				//take the first derivative of the leaf according to the action
-				OperExpr derivative= firstDerivative(leaf_val._expr,_actionString);
 
-				//ANNOTATION: also annotate the root value, since this might be the maximim action
-				if ((derivative!=null) && (derivative instanceof OperExpr))
-				{
-					if (derivative._terms.size()>0)
-					{
-						//it is nonlinear, so put first derivative equal to zero
-						root = getFunctionRoot(derivative,_actionString);
-						root.makeCanonical();
-						root_xadd = getTermNode(root);
-						//ANNOTATION: annotate root node with the root value
-						if (ANNOTATE_ENABLE)
-							root_xadd = annotateXADD(root_xadd, getTermNode(root));
-						System.out.println("ROOT of function: " + root.toString());
-					}
-				}
-			}
-			//substitute LB and UB inside the leaf to get the maximum value
-			//SUBSTITUTION is for ANNOTATION purpose, 
-			//since substituting may fetch nodes that are already in the cache with different annotation values(see equals of XADDTNode)
-			// 
-			SUBSTITUTION = true;
-			int int_eval_lower = substituteXADDforVarInArithExpr(leaf_val._expr,leaf_val._annotate, _actionString, xadd_lower_bound);
-			int int_eval_upper = substituteXADDforVarInArithExpr(leaf_val._expr,leaf_val._annotate, _actionString, xadd_upper_bound);
-			SUBSTITUTION = false;
-			if (ANNOTATE_ENABLE)
-			{
-				//ANNOTATION: don't annotate any leaf that does not have action in it ( no action required for this partition)
-				//otherwise annotate the upper and lower bound trees with the related value from the xadd_lower,upper_bound
-				if (firstDerivative(leaf_val._expr, _actionString)!=null)
-				{
-					if (firstDerivative(leaf_val._expr, _actionString)._terms.size()!=0)
-					{
-						int_eval_lower = annotateXADD(int_eval_lower,xadd_lower_bound);
-						int_eval_upper = annotateXADD(int_eval_upper,xadd_upper_bound);
-					}
-					else 
-					{
-						//has a leaf with contants and variables other than the action
-						int_eval_lower = annotateXADD(int_eval_lower,getTermNode(ArithExpr.parse("0")));
-						int_eval_upper = annotateXADD(int_eval_upper,getTermNode(ArithExpr.parse("0")));
-					}
-				}
-				else 
-				{
-					int_eval_lower = annotateXADD(int_eval_lower,getTermNode(ArithExpr.parse("0")));
-					int_eval_upper = annotateXADD(int_eval_upper,getTermNode(ArithExpr.parse("0")));
-					
-				}
-			}
+			// Determine whether we need to handle the quadratic case, if so,
+			// root will be set to a non-null evaluation
+			ArithExpr root = null;
+			int highest_order = leaf_val.determineHighestOrderOfVar(_maxVar);
+			if (highest_order > 2) {
+				System.out.println("XADDLeafMax: Cannot currently handle expressions higher than order 2 in " + _maxVar + ": " + leaf_val);
+				System.exit(1);					
+			} else if (highest_order == 2) {
+				ArithExpr first_derivative = leaf_val.differentiateExpr(_maxVar);
 
-
-			// Display lower and upper bound substitution
-			System.out.println("Substitute in: " + leaf_val);
-			System.out.println("Lower bound sub:\n" + getString(int_eval_lower));
-			System.out.println("Upper bound sub:\n" + getString(int_eval_upper));
-			
-			int int_eval = apply(int_eval_upper, int_eval_lower, MAX,-1);
-			//int_eval =  annotateXADD(int_eval, getTermNode(leaf_val)); // no need already annotated by computeTermNode
-			System.out.println("max of LB and UB: " + getString(int_eval));
-			int_eval = reduceLinearize(int_eval); //makeCanonical(int_eval));
-			int_eval = reduceLP(int_eval, _hmContinuousVars);
-            int_eval = makeCanonical(int_eval);
-            System.out.println("max of LB and UB (reduce/linearize): " + 
-            		 getString(int_eval));
-			if (HANDLE_NONLINEAR)
-			{
-				//add constraints dependant on the root: LB<=Root<=UB 
-				//Take max over the constraint-added root and the max of LB/UB 
-				//Annotate root substitute with the root value ( annotated before)
-				if (root!=null)
-				{
-					SUBSTITUTION = true;
-					int int_eval_root = substituteXADDforVarInArithExpr(leaf_val._expr,_actionString,root_xadd);
-					SUBSTITUTION = false;
-					if (ANNOTATE_ENABLE)
-						int_eval_root = annotateXADD(int_eval_root,root_xadd);
-					System.out.println("root substitute: " + getString(int_eval_root));
-					for (ArithExpr ub : upper_bound) {
-						 CompExpr ce = new CompExpr(LT_EQ, root, ub);
-						 int ub_xadd = getVarNode(new ExprDec(ce), 0d, 1d);
-						 int_eval_root = apply(int_eval_root, ub_xadd, PROD);
-						 }
-						 for (ArithExpr lb : lower_bound) {
-						 CompExpr ce = new CompExpr(GT_EQ, root, lb);
-						 int lb_xadd = getVarNode(new ExprDec(ce), 0d, 1d);
-						 int_eval_root = apply(int_eval_root, lb_xadd, PROD);
-                         }
-
-						 System.out.println("constrained root substitute: " + 
-						 getString(int_eval_root));
-						 int_eval = apply(int_eval,int_eval_root,MAX,-1);
-						 System.out.println("max of constrained root sub and int_eval(LB/UB): " + 
-						 getString(int_eval));
-						 }
-			} 
-
-					
-
-			System.out.println("int_eval before decisions (after sub root): " + getString(int_eval));
-
-//			/************************/
-//			try {
-//				System.in.read();
-//			} catch (Exception e) { }
-//			/************************/		
-			
-			// Finally, multiply in boolean decisions and irrelevant comparison expressions
-			// to the XADD and add it to the running sum
-			// - HashMap<Decision,Boolean> int_var_indep_decisions
-			for (Map.Entry<Decision, Boolean> me : int_var_indep_decisions.entrySet()) {
-				double high_val = me.getValue() ? 1d : 0d;
-				double low_val = me.getValue() ? 0d : 1d;
-				System.out.println("int_eval with decisions: "+me.getKey());
-				int_eval = apply(int_eval, getVarNode(me.getKey(), low_val, high_val), PROD,-1);
-			}
-			System.out.println("int_eval with decisions: " + getString(int_eval));
-			
-			/*Graph g = getGraph(int_eval);
-			g.addNode("_temp_");
-			g.addNodeLabel("_temp_", "inteval for "+ leaf_val.toString());
-			g.addNodeShape("_temp_", "square");
-			g.addNodeStyle("_temp_", "filled");
-			g.addNodeColor("_temp_", "lightblue");
-			g.launchViewer(1300, 770);*/
-			if (REDUCE_LP)
-				int_eval = reduceLP(int_eval, _hmContinuousVars);
-			if (_runningMax == -1) _runningMax = int_eval;
-			else _runningMax = apply(_runningMax, int_eval, MAX,-1);
-			if (REDUCE_LP)
-				_runningMax = reduceLP(_runningMax, _hmContinuousVars);
-			//_runningMax = apply(_runningMax, int_eval, MAX);
-			// reduceLP
-			HashSet<String> all_vars = collectVars(_runningMax);
-			all_vars.removeAll(_hsBooleanVars);
-			// All return information is stored in _runningSum so no need to return
-			// any information here... just keep diagram as is
-			 _runningMax = reduceLinearize(_runningMax);
-             _runningMax = reduceLP(_runningMax, _hmContinuousVars);
-             _runningMax = makeCanonical(_runningMax);
-             System.out.println("Result after linearizing: " + getString(_runningMax));
-
-			//System.out.println("RunningMax: " + getString(_runningMax));
-			//}
-             //ANNOTATION: if the leaf_val does not depend on action, then no action was performed for selecting this
-             //TODO: does the leaf_val annotation change sometimes during the operations? if so what to do? 
-            if (ANNOTATE_ENABLE && leaf_val._annotate!=null &&(firstDerivative(leaf_val._expr, _actionString)==null))
-            {
-            	leaf_val._annotate = ArithExpr.parse("0");
-            	return getTermNode(leaf_val._expr,leaf_val._annotate);
-            }
-            else if (ANNOTATE_ENABLE && leaf_val._annotate!=null)
-				return getTermNode(leaf_val._expr,leaf_val._annotate);
-			else return getTermNode(leaf_val._expr);
-		}
-		
-		
-		
-		
-		private ArithExpr getFunctionRoot(OperExpr derivative, String _action1) {
-
-			//have derivative(e.g 50a - 50x), put it equal to zero to obtain root value of leaf
-			//for quadratic roots only, the derivative is linear in action
-			double div = 0d;
-			ArithExpr coeff_other = null;
-			ArithExpr coeff_action = null;
-			//for each term in the sum
-			for (ArithExpr e : derivative._terms) {
-				if (e instanceof DoubleExpr) {
-					div = ((DoubleExpr) e)._dConstVal;
-					//for the RHS
-					div *= -1;
-				}
-				else if (e instanceof OperExpr) {
-					DoubleExpr d;
-					double coef = 0d;
-					for (ArithExpr e1: ((OperExpr) e)._terms)
-					{
-						//for each expression in each product, it is either 50*a or -50*x
-						if (e1 instanceof DoubleExpr)
-							coef = ((DoubleExpr) e1)._dConstVal;
-						else if ((e1 instanceof VarExpr)&& (((VarExpr)e1)._sVarName.equals(_action1)))
-						{
-							coeff_action = new DoubleExpr(coef);
-						}
-						else
-						{
-							//has other variables than the action variable in it
-							coef *=-1;
-							coeff_other = ArithExpr.op(e1, coef,PROD);
-						}
-					}
-
-				}
-			}
-			//now coeff_action = 50 if coeff_other=null
-			//divide RHS by the coeff of action
-			if ((coeff_other == null) && (coeff_action == null))
-				return new DoubleExpr(div);
-			if (coeff_other == null) 
-				return new DoubleExpr(div / ((DoubleExpr)coeff_action)._dConstVal);
-
-			else //if coeff_other!=null
-			{
-				//add the coeff_other to the current RHS
-				coeff_other = ArithExpr.op(coeff_other, div, SUM);
-				ArrayList<ArithExpr> answers = new ArrayList<XADD.ArithExpr>();
+                // Takes ArithExpr expr1 linear in var, returns (coef,expr2) where expr1 = coef*x + expr2
+				// setting expr1 = coef*x + expr2 = 0 then x = -expr2/coef
+				CoefExprPair p2 = leaf_val.removeVarFromExpr(_maxVar);
 				
-				//divide each term in the RHS by the coeff_action (here it is linear)
-				if (coeff_action instanceof DoubleExpr)
-				{
-					double divisor = ((DoubleExpr)coeff_action)._dConstVal;
-					for (ArithExpr e1: ((OperExpr) coeff_other)._terms)
-					{
-						//divide a double by the double-action
-						if (e1 instanceof DoubleExpr)
-						{
-							double newcoef = ((DoubleExpr) e1)._dConstVal;
-							answers.add(new DoubleExpr(newcoef/ divisor));
-						}
-						//divide a product term by the action(double)
-						else if (e1 instanceof OperExpr)
-						{
-							ArrayList<ArithExpr> answers2 = new ArrayList<XADD.ArithExpr>();
-							for (ArithExpr e2: ((OperExpr) e1)._terms)
-							{
-								//divide the coeff of the product by the action
-								if (e2 instanceof DoubleExpr)
-									answers2.add(new DoubleExpr(((DoubleExpr) e2)._dConstVal / divisor));
-								//multiply in the rest of the terms
-								else if (e2 instanceof VarExpr)
-									answers2.add(e2);
-							}
-							answers.add(new OperExpr(PROD, answers2));
-						}
-					}
-					//to remove all zero coeffs from the answer
-					for (int i=0;i<answers.size();i++)
-						if (answers.get(i) instanceof DoubleExpr )
-							if  ((((DoubleExpr) answers.get(i))._dConstVal==0)||((((DoubleExpr) answers.get(i))._dConstVal==0)))
-								answers.remove(i);
-
-					return new OperExpr(SUM, answers);	
-				}
-
-				else {//if coeff_action!=Double, just divide all RHS by coeff_action
-					coeff_other = ArithExpr.op(coeff_other, coeff_action, DIV);
-					return coeff_other;
-				}
+				root = (ArithExpr)(new OperExpr(MINUS, ZERO, new OperExpr(PROD, new DoubleExpr(
+									           1d / p2._coef), p2._expr)).makeCanonical());
 			}
-		}
+            
+			// Substitute lower and upper bounds into leaf
+            int max_eval_lower = substituteXADDforVarInArithExpr(leaf_val, _maxVar, xadd_lower_bound);
+            int max_eval_upper = substituteXADDforVarInArithExpr(leaf_val, _maxVar, xadd_upper_bound);
 
-		private OperExpr firstDerivative(ArithExpr leaf_val, String _action1) {
-			//keep the derivative of each expression in ret
-			ArrayList<ArithExpr> ret = new ArrayList<XADD.ArithExpr>();
-			double coef = 1d;
-			int order = 0;
-			if (leaf_val instanceof OperExpr)
-			{
-				OperExpr oper_expr = (OperExpr) leaf_val;
-				//sum of products, for each sum term:
-				for (ArithExpr e : oper_expr._terms) {
-					if (e instanceof VarExpr)
-					{
-						// in form of "a"
-						if (((VarExpr) e)._sVarName.equals(_action1))
-							ret.add(new DoubleExpr(1d));
-					}
-					else if (e instanceof OperExpr)
-					{
-						//inside each product term 
-						ArithExpr othervar = null;
-						DoubleExpr coeff = null;
-						if (((OperExpr) e)._type == PROD)
-						{
-							order = 0;
-							//for each of the products: 
-							//order = keeps order of this term ( for quadratic, order 0,1,2) 
-							//othervars -coef = keeps the variable or constant coeff of the action variable 
-							for (ArithExpr e1: ((OperExpr) e)._terms)
-							{
-								if (e1 instanceof DoubleExpr)
-									coef = ((DoubleExpr) e1)._dConstVal;
-								else if ((e1 instanceof VarExpr)&& (((VarExpr)e1)._sVarName.equals(_action1)))
-									order++;
-								else 
-									othervar = e1;
-							}
-							coef *=order;
-							if (order==0) othervar = null;
-							coeff = new DoubleExpr(coef);
-						}
-						String vars = "";
-						if (othervar!=null)
-							vars = othervar.toString();
-						//in form of 2*a or 2*a*x
-						if ((order ==1)&&(othervar==null))
-							ret.add(ArithExpr.parse(coeff+""));
-						if ((order ==1)&&(othervar!=null))
-							ret.add(ArithExpr.parse(vars +"*"+coeff));
-						//in form of 2*a*a
-						else if ((order==2)&&(othervar==null))
-							ret.add(ArithExpr.parse(coeff + "*" + _action1));
-						else if ((order==2)&&(othervar!=null))
-							ret.add(ArithExpr.parse(coeff + "*" + _action1+"*"+vars));
+            // Display lower and upper bound substitution
+            System.out.println("Substitute in: " + leaf_val);
+            System.out.println("Lower bound sub:\n" + getString(max_eval_lower));
+            System.out.println("Upper bound sub:\n" + getString(max_eval_upper));
+            
+            // We don't know which of UB/LB substitution is maximal so we take the "case"-max
+            // ... if there were nonlinearities in leaf, then substitution leads to nonlinear
+            //     function which ends up in decisions... need linear decisions so
+            //     call reduceLinearize to complete-the-square for quadratic variables
+            //     and linearize the decisions (linearize includes makeCanonical)
+            // ??? need to avoid case where max leads to an illegal pruning -- occurs???
+            //     e.g., could an unreachable constant prune out another reachable node?
+            //     (don't think this can happen... still in context of unreachable constraints)
+            int max_eval = apply(max_eval_upper, max_eval_lower, MAX);
+            max_eval = reduceLinearize(max_eval); 
+            max_eval = reduceLP(max_eval, _alContinuousVars); // Result should be canonical
+            System.out.println("max of LB and UB (reduce/linearize): " + getString(max_eval));
 
-					}
-					else if (e instanceof DoubleExpr)
-						continue;
-				}
-				return new OperExpr(SUM, ret);	
-			}
-			else return null;
-		}
+            // NOTE: Constraints on root have to be multiplied in here, not at end.  -Scott
+            if (root != null) {
+            	
+                int max_eval_root = substituteXADDforVarInArithExpr(leaf_val, _maxVar, getTermNode(root));
+                System.out.println("root substitute: " + getString(max_eval_root));
+                
+                // Now multiply in constraints into int_eval, make result canonical
+                for (ArithExpr ub : upper_bound) {
+                    CompExpr ce = new CompExpr(LT_EQ, root, ub);
+                    int ub_xadd = getVarNode(new ExprDec(ce), 0d, 1d);
+                    max_eval_root = apply(max_eval_root, ub_xadd, PROD);
+                }
+                for (ArithExpr lb : lower_bound) {
+                    CompExpr ce = new CompExpr(GT_EQ, root, lb);
+                    int lb_xadd = getVarNode(new ExprDec(ce), 0d, 1d);
+                    max_eval_root = apply(max_eval_root, lb_xadd, PROD);
+                }
+                max_eval_root = reduceLP(max_eval_root, _alContinuousVars); // Result should be canonical
+                
+                System.out.println("constrained root substitute: " + getString(max_eval_root));
+                max_eval = apply(max_eval, max_eval_root, MAX);
+                System.out.println("max of constrained root sub and int_eval(LB/UB): " + getString(max_eval));
+            }
 
-		// expression is canonical, hence in sum of products form (could be a single term)
-		public ArithExpr removeActionVar(ArithExpr leaf_val,String action) {
-			ArithExpr ret_expr = null;
-			if (leaf_val instanceof OperExpr && ((OperExpr) leaf_val)._type == SUM) {
-				ret_expr = removeActionVarMultipleTerms((OperExpr) leaf_val,action);
-			} else if (leaf_val instanceof OperExpr && ((OperExpr) leaf_val)._type == PROD) {
-				ret_expr = removeActionVarTerm((OperExpr) leaf_val,action);
-			} else if ((leaf_val instanceof VarExpr) || (leaf_val instanceof DoubleExpr)) {
-				OperExpr temp = new OperExpr(PROD, Arrays.asList(leaf_val));
-				ret_expr = removeActionVarTerm(temp,action);
-			} else {
-				System.out.println("removeActionVar: Unsupported expression '" + leaf_val + "'");
-				System.exit(1);
-			}
-			return ret_expr;
-		}
+            System.out.println("max_eval before decisions (after sub root): " + getString(max_eval));
 
-		// Must be a SUM of terms to get here
-		public OperExpr removeActionVarMultipleTerms(OperExpr expr,String action) {
-			if (expr._type != SUM) {
-				System.out.println("removeActionVarMultipleTerms: Expected SUM, got '" + expr + "'");
-				System.exit(1);
-			}
-			ArrayList<ArithExpr> remaining_terms = new ArrayList<ArithExpr>();
-			for (ArithExpr e : expr._terms) {
-				if (e instanceof OperExpr) {
-					remaining_terms.add(removeActionVarTerm((OperExpr) e,action));
-				} else if (e instanceof VarExpr) {
-					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
-					remaining_terms.add(removeActionVarTerm(temp,action));
-				} else if (e instanceof DoubleExpr) {
-					remaining_terms.add(e);
-				} else {
-					System.out.println("removeActionVarMultipleTerms: Unsupported expression '" + e + "'");
-					System.exit(1);
-				}
-			}
-			return new OperExpr(SUM, remaining_terms);
-		}
+            // Finally, multiply in boolean decisions and irrelevant comparison expressions
+            // to the XADD and add it to the running sum
+            for (Map.Entry<Decision, Boolean> me : max_var_indep_decisions.entrySet()) {
+                    double high_val = me.getValue() ? 1d : 0d;
+                    double low_val = me.getValue() ? 0d : 1d;
+                    System.out.println("max_eval with decisions: " + me.getKey());
+                    max_eval = apply(max_eval, getVarNode(me.getKey(), low_val, high_val), PROD);
+            }
+            System.out.println("max_eval with decisions: " + getString(max_eval));
+            
+            System.out.println("Before linearize: " + getString(max_eval));
+            max_eval = reduceLinearize(max_eval); 
+            max_eval = reduceLP(max_eval, _alContinuousVars); // Result should be canonical
+            System.out.println("After linearize: " + getString(max_eval));
+                            
+            if (_runningMax == -1) 
+            	_runningMax = max_eval;
+            else 
+            	_runningMax = apply(_runningMax, max_eval, MAX);
 
-		// A single term (PROD)
-		public ArithExpr removeActionVarTerm(OperExpr expr,String action1) {
-			if (expr._type != PROD) {
-				System.out.println("removeActionVarTerm: Expected PROD, got '" + expr + "'");
-				System.exit(1);
-			}
+            _runningMax = reduceLinearize(_runningMax);
+            _runningMax = reduceLP(_runningMax, _alContinuousVars);
+            _runningMax = makeCanonical(_runningMax);
+            System.out.println("running max result: " + getString(_runningMax));
 
-			// Process all terms (optional double followed by vars)
-			int _var_count = 0;
-			double coef = 1d;
-			ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
-			ArrayList<ArithExpr> divfactors = new ArrayList<ArithExpr>();
-			for (ArithExpr e : expr._terms) {
-				if (e instanceof DoubleExpr) {
-					coef *= ((DoubleExpr) e)._dConstVal;
-				}
-				else if (e instanceof OperExpr)
-				{
-					double operand1 = ((DoubleExpr)((OperExpr) e)._terms.get(0))._dConstVal;
-					ArithExpr operand2 = ((OperExpr) e)._terms.get(1);
-					//it is in the form of x/y =, first for x
-					coef *=operand1;
-					//for y
-
-					divfactors.add(operand2);
-
-				}
-				else if (e instanceof VarExpr) {
-					// Both interned so we can test direct equality
-					if (((VarExpr) e)._sVarName.equals(action1))
-					{
-						_var_count++;
-
-					}
-					if (_var_count==0)
-						factors.add(e);
-				} else {
-					System.out.println("removeActionVarTerm: Unsupported expression '" + e + "'");
-					System.exit(1);
-				}
-			}
-
-			// Invariant here: if var_count > 0 (==1) then factors.size() = 0
-			if (_var_count > 0) 
-			{
-				//has action var
-				if (_var_count > 1 || factors.size() > 0) 
-				{
-					System.out.println("removeActionVarTerm: integration var '" + action1
-							+ "' must appear linearly in constraint '" + expr + "'");
-						ArithExpr coeff = ArithExpr.op(factors.get(0),coef,PROD);
-						for (int i=1;i<factors.size();i++)
-							coeff = ArithExpr.op(factors.get(i),coeff,PROD);
-						for (int i=0;i<divfactors.size();i++)
-							coeff = ArithExpr.op(coeff,divfactors.get(i),DIV);
-						if (_VarDivisor!=null)
-							_VarDivisor=ArithExpr.op(_VarDivisor, coeff, SUM);
-						else _VarDivisor=coeff;
-						return ZERO;
-			
-				}
-				// If get here only coef*_integrationVar
-				//_VarCoef += coef;
-				if (_VarDivisor!=null)
-					_VarDivisor=ArithExpr.op(_VarDivisor, coef, SUM);
-				else _VarDivisor = new DoubleExpr(coef);
-				return ZERO; // Just add a zero term in this place
-			} else {
-				//does not have action var
-				factors.add(0, new DoubleExpr(coef));
-				return new OperExpr(PROD, factors);
-			}
-		}
-
-		@Override
-		public int processXADDLeaf(ArrayList<Decision> decisions,
-				ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
-			// TODO Auto-generated method stub
-			return 0;
-		}
+			// All return information is stored in _runningMax so no need to return
+			// any information here... just keep diagram as is
+            return getTermNode(leaf_val);
+        }
 	}
-	////////////////////////////////////////////////////
-
 
 	// Given argument var v, the XADD on which this is called contains substitutions
 	// for v at its leaves that are to be substituted into argument XADD xadd and returned
 	// at the leaves (because these branches are the conditions under which the substitutions
 	// are made).
 	//
-	// Need to ensure make_canonical is true in this case
+	// Need to ensure make_canonical is true when call reduceProcessXADD
+	//
+	// (int_v delta(v - G)*F = F{v/G})
+	// ... here v is subvar, F is xadd_sub_at_leaves, G is passed to reduceProcessXADD
+	//     (G is passed because substitution works by recursing to its leaves to
+	//      to determine conditions under which each substitution should be made in F
 	public class DeltaFunctionSubstitution extends XADDLeafOperation {
 		String _subVar;
 		int _xaddSubAtLeaves = -1;
@@ -1929,89 +1572,8 @@ public class XADD {
 		public int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
 
 			// Return an XADD for the resulting expression
-			ArithExpr ret_expr = differentiateLeaf(leaf_val);
+			ArithExpr ret_expr = leaf_val.differentiateExpr(_derivativeVar);
 			return getTermNode(ret_expr);
-		}
-
-		// Assume expression is canonical, hence in sum of products form (could be a single term)
-		public ArithExpr differentiateLeaf(ArithExpr leaf_val) {
-			ArithExpr ret_expr = null;
-			if (leaf_val instanceof OperExpr && ((OperExpr) leaf_val)._type == SUM) {
-				ret_expr = differentiateMultipleTerms((OperExpr) leaf_val);
-			} else if (leaf_val instanceof OperExpr && ((OperExpr) leaf_val)._type == PROD) {
-				ret_expr = differentiateTerm((OperExpr) leaf_val);
-			} else if ((leaf_val instanceof VarExpr) || (leaf_val instanceof DoubleExpr)) {
-				OperExpr temp = new OperExpr(PROD, Arrays.asList(leaf_val));
-				ret_expr = differentiateTerm(temp);
-			} else {
-				System.out.println("differentiateLeaf: Unsupported expression '" + leaf_val + "'");
-				System.exit(1);
-			}
-			return ret_expr;
-		}
-
-		// Must be a SUM of terms to get here
-		public OperExpr differentiateMultipleTerms(OperExpr expr) {
-			if (expr._type != SUM) {
-				System.out.println("differentiateMultipleTerms: Expected SUM, got '" + expr + "'");
-				System.exit(1);
-			}
-			ArrayList<ArithExpr> differentiated_terms = new ArrayList<ArithExpr>();
-			for (ArithExpr e : expr._terms) {
-				if (e instanceof OperExpr) {
-					differentiated_terms.add(differentiateTerm((OperExpr) e));
-				} else if ((e instanceof VarExpr) || (e instanceof DoubleExpr)) {
-					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
-					differentiated_terms.add(differentiateTerm(temp));
-				} else {
-					System.out.println("differentiateMultipleTerms: Unsupported expression '" + e + "'");
-					System.exit(1);
-				}
-			}
-			return new OperExpr(SUM, differentiated_terms);
-		}
-
-		// A single term (PROD)
-		public ArithExpr differentiateTerm(OperExpr expr) {
-			if (expr._type != PROD) {
-				System.out.println("differentiateTerm: Expected PROD, got '" + expr + "'");
-				System.exit(1);
-			}
-
-			// Process all terms (optional double followed by vars)
-			int derivative_var_count = 0;
-			int last_var_added_at = -1;
-			DoubleExpr d = new DoubleExpr(1d);
-			ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
-			for (ArithExpr e : expr._terms) {
-				if (e instanceof DoubleExpr) {
-					DoubleExpr d2 = (DoubleExpr) e;
-					d = new DoubleExpr(d._dConstVal * d2._dConstVal);
-				} else if (e instanceof VarExpr) {
-					factors.add(e);
-					// Both interned so we can test direct equality
-					if (((VarExpr) e)._sVarName == _derivativeVar) {
-						derivative_var_count++;
-						last_var_added_at = factors.size() - 1;
-					}
-				} else {
-					System.out.println("differentiateTerm: Unsupported expression '" + e + "'");
-					System.exit(1);
-				}
-			}
-
-			// Perform differentiation
-			if (derivative_var_count == 0) {
-				return ZERO; // Derivative of a constant is 0
-			} else {
-				// x*x*...*x = x^n
-				// d/dx x^n = n*x^{n-1}
-				factors.remove(last_var_added_at);
-				d = new DoubleExpr(((double) derivative_var_count) * d._dConstVal);
-				factors.add(0, d);
-
-				return new OperExpr(PROD, factors);
-			}
 		}
 	}
 
@@ -2030,84 +1592,8 @@ public class XADD {
 		public int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
 
 			// Return an XADD for the resulting expression
-			ArithExpr ret_expr = integrateLeaf(leaf_val);
+			ArithExpr ret_expr = leaf_val.integrateExpr(_integrationVar);
 			return getTermNode(ret_expr);
-		}
-
-		// Assume expression is canonical, hence in sum of products form (could be a single term)
-		public ArithExpr integrateLeaf(ArithExpr leaf_val) {
-			ArithExpr ret_expr = null;
-			if (leaf_val instanceof OperExpr && ((OperExpr) leaf_val)._type == SUM) {
-				ret_expr = integrateMultipleTerms((OperExpr) leaf_val);
-			} else if (leaf_val instanceof OperExpr && ((OperExpr) leaf_val)._type == PROD) {
-				ret_expr = integrateTerm((OperExpr) leaf_val);
-			} else if ((leaf_val instanceof VarExpr) || (leaf_val instanceof DoubleExpr)) {
-				OperExpr temp = new OperExpr(PROD, Arrays.asList(leaf_val));
-				ret_expr = integrateTerm(temp);
-			} else {
-				System.out.println("processXADDLeaf: Unsupported expression '" + leaf_val + "'");
-				System.exit(1);
-			}
-			return ret_expr;
-		}
-
-		// Must be a SUM of terms to get here
-		public OperExpr integrateMultipleTerms(OperExpr expr) {
-			if (expr._type != SUM) {
-				System.out.println("integrateMultipleTerms: Expected SUM, got '" + expr + "'");
-				System.exit(1);
-			}
-			ArrayList<ArithExpr> integrated_terms = new ArrayList<ArithExpr>();
-			for (ArithExpr e : expr._terms) {
-				if (e instanceof OperExpr) {
-					integrated_terms.add(integrateTerm((OperExpr) e));
-				} else if ((e instanceof VarExpr) || (e instanceof DoubleExpr)) {
-					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
-					integrated_terms.add(integrateTerm(temp));
-				} else {
-					System.out.println("integrateMultipleTerms: Unsupported expression '" + e + "'");
-					System.exit(1);
-				}
-			}
-			return new OperExpr(SUM, integrated_terms);
-		}
-
-		// A single term (PROD)
-		public ArithExpr integrateTerm(OperExpr expr) {
-			if (expr._type != PROD) {
-				System.out.println("integrateTerm: Expected PROD, got '" + expr + "'");
-				System.exit(1);
-			}
-
-			// Process all terms (optional double followed by vars)
-			int integration_var_count = 0;
-			DoubleExpr d = new DoubleExpr(1d);
-			ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
-			for (ArithExpr e : expr._terms) {
-				// while (e instanceof OperExpr) {
-				// OperExpr oe = (OperExpr) e;
-				// e = e.op(oe._terms.get(0), oe._terms.get(1), oe._type);
-				// }
-				if (e instanceof DoubleExpr) {
-					DoubleExpr d2 = (DoubleExpr) e;
-					d = new DoubleExpr(d._dConstVal * d2._dConstVal);
-				} else if (e instanceof VarExpr) {
-					factors.add(e);
-					// Both interned so we can test direct equality
-					if (((VarExpr) e)._sVarName == _integrationVar)
-						integration_var_count++;
-				} else {
-					System.out.println("integrateTerm: Unsupported expression '" + e + "'");
-					System.exit(1);
-				}
-			}
-
-			// Perform integration
-			factors.add(new VarExpr(_integrationVar));
-			d = new DoubleExpr(d._dConstVal / (double) (integration_var_count + 1));
-			factors.add(0, d);
-
-			return new OperExpr(PROD, factors);
 		}
 	}
 
@@ -2120,13 +1606,11 @@ public class XADD {
 
 	public class XADDLeafDefIntegral extends XADDLeafIndefIntegral {
 		int _runningSum; // XADD for the running sum of all leaf substitutions
-		double _integrationVarCoef;
 
 		public final static boolean DEBUG_XADD_DEF_INTEGRAL = false;
 
 		public XADDLeafDefIntegral(String integration_var) {
 			super(integration_var);
-			_integrationVarCoef = Double.NEGATIVE_INFINITY;
 
 			// Start with the zero XADD
 			_runningSum = getTermNode(ZERO);
@@ -2172,23 +1656,25 @@ public class XADD {
 					System.exit(1);
 				}
 
-				_integrationVarCoef = 0d;
-				ArithExpr lhs_isolated = removeIntegrationVar(comp._lhs);
+				// Takes ArithExpr expr1 linear in var, returns (coef,expr2) where expr1 = coef*x + expr2
+				CoefExprPair p = comp._lhs.removeVarFromExpr(_integrationVar); 
+				ArithExpr lhs_isolated = p._expr;
+				double    var_coef     = p._coef;
 				if (DEBUG_XADD_DEF_INTEGRAL) {
 					System.out.println("Pre: " + comp + " == " + is_true + ", int var [" + _integrationVar + "]"
-							+ "\nLHS isolated: " + lhs_isolated + "\n ==>  " + _integrationVarCoef + " * "
+							+ "\nLHS isolated: " + lhs_isolated + "\n ==>  " + var_coef + " * "
 							+ _integrationVar);
 				}
 
-				if (_integrationVarCoef == 0d) {
+				if (var_coef == 0d) {
 					int_var_indep_decisions.put(d, is_true);
 					continue;
 				}
 
 				// We have coef*x + expr COMP_OPER 0
-				boolean flip_comparison = (_integrationVarCoef < 0d) && (comp._type != EQ) && (comp._type != NEQ);
+				boolean flip_comparison = (var_coef < 0d) && (comp._type != EQ) && (comp._type != NEQ);
 				ArithExpr new_rhs = (ArithExpr) new OperExpr(MINUS, ZERO, new OperExpr(PROD, new DoubleExpr(
-						1d / _integrationVarCoef), lhs_isolated)).makeCanonical();
+						1d / var_coef), lhs_isolated)).makeCanonical();
 
 				// Divide through by coef (pos or neg)
 				// - if coef neg, flip expression
@@ -2282,7 +1768,7 @@ public class XADD {
 			}
 
 			// Compute the integral of this leaf w.r.t. the integration variable
-			ArithExpr leaf_integral = integrateLeaf(leaf_val);
+			ArithExpr leaf_integral = leaf_val.integrateExpr(_integrationVar);
 			if (DEBUG_XADD_DEF_INTEGRAL)
 				System.out.println("Integral: " + leaf_integral);
 
@@ -2309,94 +1795,12 @@ public class XADD {
 			//System.out.println("Running sum: " + getString(_runningSum));
 			return getTermNode(leaf_val);
 		}
-
-		// Assume expression is canonical, hence in sum of products form (could be a single term)
-		public ArithExpr removeIntegrationVar(ArithExpr leaf_val) {
-			ArithExpr ret_expr = null;
-			if (leaf_val instanceof OperExpr && ((OperExpr) leaf_val)._type == SUM) {
-				ret_expr = removeIntegrationVarMultipleTerms((OperExpr) leaf_val);
-			} else if (leaf_val instanceof OperExpr && ((OperExpr) leaf_val)._type == PROD) {
-				ret_expr = removeIntegrationVarTerm((OperExpr) leaf_val);
-			} else if ((leaf_val instanceof VarExpr) || (leaf_val instanceof DoubleExpr)) {
-				OperExpr temp = new OperExpr(PROD, Arrays.asList(leaf_val));
-				ret_expr = removeIntegrationVarTerm(temp);
-			} else {
-				System.out.println("removeIntegrationVar: Unsupported expression '" + leaf_val + "'");
-				System.exit(1);
-			}
-			return ret_expr;
-		}
-
-		// Must be a SUM of terms to get here
-		public OperExpr removeIntegrationVarMultipleTerms(OperExpr expr) {
-			if (expr._type != SUM) {
-				System.out.println("removeIntegrationVarMultipleTerms: Expected SUM, got '" + expr + "'");
-				System.exit(1);
-			}
-			ArrayList<ArithExpr> remaining_terms = new ArrayList<ArithExpr>();
-			for (ArithExpr e : expr._terms) {
-				if (e instanceof OperExpr) {
-					remaining_terms.add(removeIntegrationVarTerm((OperExpr) e));
-				} else if (e instanceof VarExpr) {
-					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
-					remaining_terms.add(removeIntegrationVarTerm(temp));
-				} else if (e instanceof DoubleExpr) {
-					remaining_terms.add(e);
-				} else {
-					System.out.println("removeIntegrationVarMultipleTerms: Unsupported expression '" + e + "'");
-					System.exit(1);
-				}
-			}
-			return new OperExpr(SUM, remaining_terms);
-		}
-
-		// A single term (PROD)
-		public ArithExpr removeIntegrationVarTerm(OperExpr expr) {
-			if (expr._type != PROD) {
-				System.out.println("removeIntegrationVarTerm: Expected PROD, got '" + expr + "'");
-				System.exit(1);
-			}
-
-			// Process all terms (optional double followed by vars)
-			int integration_var_count = 0;
-			double coef = 1d;
-			ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
-			for (ArithExpr e : expr._terms) {
-				if (e instanceof DoubleExpr) {
-					coef *= ((DoubleExpr) e)._dConstVal;
-				} else if (e instanceof VarExpr) {
-					// Both interned so we can test direct equality
-					if (((VarExpr) e)._sVarName == _integrationVar)
-						integration_var_count++;
-					else
-						factors.add(e);
-				} else {
-					System.out.println("removeIntegrationVarTerm: Unsupported expression '" + e + "'");
-					System.exit(1);
-				}
-			}
-
-			// Check for proper form
-			if (integration_var_count > 0) {
-				if (integration_var_count > 1 || factors.size() > 0) {
-					System.out.println("removeIntegrationVarTerm: integration var '" + _integrationVar
-							+ "' must appear linearly in constraint '" + expr + "'");
-					System.exit(1);
-				}
-				// If get here only coef*_integrationVar
-				_integrationVarCoef += coef;
-				return ZERO; // Just add a zero term in this place
-			} else {
-				factors.add(0, new DoubleExpr(coef));
-				return new OperExpr(PROD, factors);
-			}
-		}
 	}
 
 	// Note: use canonical_reorder=false for integration since internal nodes *cannot* get
 	// out of order, but use canonical_reorder=true for substitution
-	public int reduceProcessXADDLeaf(int id, XADDLeafOperation leaf_sub, boolean canonical_reorder) {
-		int ret_node = reduceProcessXADDLeaf(id, leaf_sub, new ArrayList<Decision>(), new ArrayList<Boolean>());
+	public int reduceProcessXADDLeaf(int id, XADDLeafOperation leaf_op, boolean canonical_reorder) {
+		int ret_node = reduceProcessXADDLeaf(id, leaf_op, new ArrayList<Decision>(), new ArrayList<Boolean>());
 		if (canonical_reorder)
 			return makeCanonical(ret_node);
 		else
@@ -2405,10 +1809,10 @@ public class XADD {
 
 	public IntPair _tempReduceLeafOpKey = new IntPair(-1, -1);
 
-	private int reduceProcessXADDLeaf(int id, XADDLeafOperation leaf_op, ArrayList<Decision> decisions,
-			ArrayList<Boolean> decision_values) {
+	private int reduceProcessXADDLeaf(int id, XADDLeafOperation leaf_op, 
+			ArrayList<Decision> decisions, ArrayList<Boolean> decision_values) {
 
-		//System.out.println("** Reduce: decisions " + decisions + " -> " + decision_values);
+		//System.out.println("** reduceProcessXADDLeaf: decisions " + decisions + " -> " + decision_values);
 
 		Integer ret = null;
 		XADDNode n = _hmInt2Node.get(id);
@@ -2420,23 +1824,16 @@ public class XADD {
 
 		// A terminal node should be reduced (and cannot be restricted)
 		// by default if hashing and equality testing are working in getTNode
-		if ((n instanceof XADDTNode)&&(leaf_op instanceof XADDLeafMax)) {
-			return ((XADDLeafMax)leaf_op).processXADDLeafMax(decisions, decision_values, ((XADDTNode) n)); // Assuming that to have
-			// a node id means
-			// canonical
-		}
 		if (n instanceof XADDTNode) {
 			return leaf_op.processXADDLeaf(decisions, decision_values, ((XADDTNode) n)._expr); // Assuming that to have
-			// a node id means
-			// canonical
 		}
 
-		// If its an internal node, check the reduce cache
-		_tempReduceLeafOpKey.set(id, leaf_op.hashCode());
-		if (leaf_op.isCacheable() && 
-				(ret = _hmReduceLeafOpCache.get(_tempReduceLeafOpKey)) != null) {
-			//System.out.println("** In cache, returning: " + getString(ret));
-			return ret;
+		// If its an internal node, check the reduce cache		
+		if (leaf_op.isCacheable()) {
+			_tempReduceLeafOpKey.set(id, leaf_op.hashCode());
+			// System.out.println("** In cache, returning: " + getString(ret));
+			if ((ret = _hmReduceLeafOpCache.get(_tempReduceLeafOpKey)) != null)
+				return ret;
 		}
 
 		XADDINode inode = (XADDINode) n;
@@ -2456,548 +1853,25 @@ public class XADD {
 		ret = getINode(inode._var, low, high);
 
 		// Put return value in cache and return
-		_hmReduceLeafOpCache.put(new IntPair(id, leaf_op.hashCode()), ret);
+		if (leaf_op.isCacheable())
+			_hmReduceLeafOpCache.put(new IntPair(id, leaf_op.hashCode()), ret);
+		
 		return ret;
 	}
 
-	// ///////////
-
-	public Double evaluate(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign) {
-
-		// Get root
-		XADDNode n = _hmInt2Node.get(node_id);
-
-		// Traverse decision diagram until terminal found
-		while (n instanceof XADDINode) {
-			XADDINode inode = (XADDINode) n;
-			Decision d = _alOrder.get(inode._var);
-			Boolean branch_high = null;
-			if (d instanceof TautDec)
-				branch_high = ((TautDec) d)._bTautology;
-			else if (d instanceof BoolDec)
-				branch_high = bool_assign.get(((BoolDec) d)._sVarName);
-			else if (d instanceof ExprDec) {
-				branch_high = ((ExprDec) d)._expr.evaluate(cont_assign);
-				if (SHOW_DECISION_EVAL) {
-					System.out.println(" - " + ((ExprDec) d)._expr + ": " + branch_high);
-				}
-			}
-
-			// Not all required variables were assigned
-			if (branch_high == null)
-				return null;
-
-			// Advance down to next node
-			n = _hmInt2Node.get(branch_high ? inode._high : inode._low);
+	///////////////////////////////////////////////////////////////////////////////
+	//                           Helper Internal Classes
+	///////////////////////////////////////////////////////////////////////////////
+	
+	public static class CoefExprPair {
+		public ArithExpr _expr;
+		public double    _coef;
+		public CoefExprPair(ArithExpr expr, double coef) {
+			_expr = expr;
+			_coef = coef;
 		}
-
-		// Now at a terminal node so evaluate expression
-		XADDTNode t = (XADDTNode) n;
-		return t._expr.evaluate(cont_assign);
 	}
-
-	// TODO: could an op other than max/min lead to a non-canonical diagram???
-	// only ops that can change inodes can affect ordering and the only
-	// ops that can do this should be max/min.
-	public int scalarOp(int dd, double val, int op) {
-		int dd_val = getTermNode(new DoubleExpr(val));
-		return apply(dd, dd_val, op); // could make non-canonical so have to use apply
-	}
-
-	public IntTriple _tempApplyKey = new IntTriple(-1, -1, -1);
-
-
-	// TODO: could an op other than max/min lead to a non-canonical diagram???
-	// only ops that can change inodes can affect ordering and the only
-	// ops that can do this should be max/min.
-	public int apply(int a1, int a2, int op) {
-		lastDecision.clear();
-		//start with no divisions, i4 = -1
-		int ret = applyInt(a1, a2, op);
-		// TODO: should maintain a reusable reduce cache here
-		return makeCanonical(ret);
-	}
-	public int applyInt(int a1, int a2, int op) {
-
-		//adding divBranch, -1 if no divison, 1 if branch false, 2 if branch true
-		_tempApplyKey.set(a1, a2, op);
-		Integer ret = _hmApplyCache.get(_tempApplyKey);
-		if (ret != null) {
-			return ret;
-		}
-
-		// Can we create a terminal node here?
-		XADDNode n1 = _hmInt2Node.get(a1);
-		XADDNode n2 = _hmInt2Node.get(a2);
-		ret = computeTermNode(a1, n1, a2, n2, op);
-		if (ret == null) {
-
-			int v1low, v1high, v2low, v2high, var;
-
-			// Find node with min id (or only internal node)
-			if (n1 instanceof XADDINode) {
-				if (n2 instanceof XADDINode) {
-					if (((XADDINode) n1)._var < ((XADDINode) n2)._var) {
-						var = ((XADDINode) n1)._var;
-					} else {
-						var = ((XADDINode) n2)._var;
-					}
-				} else {
-					var = ((XADDINode) n1)._var;
-				}
-			} else {
-				var = ((XADDINode) n2)._var;
-			}
-
-			// Determine next recursion for n1
-			if ((n1 instanceof XADDINode) && (((XADDINode) n1)._var == var)) {
-				XADDINode n1i = (XADDINode) n1;
-				v1low = n1i._low;
-				v1high = n1i._high;
-			} else {
-				v1low = a1;
-				v1high = a1;
-			}
-
-			// Determine next recursion for n2
-			if ((n2 instanceof XADDINode) && (((XADDINode) n2)._var == var)) {
-				XADDINode n2i = (XADDINode) n2;
-				v2low = n2i._low;
-				v2high = n2i._high;
-			} else {
-				v2low = a2;
-				v2high = a2;
-			}
-
-			// Perform in-line reduction and set min/max for subnodes if needed
-			int low = applyInt(v1low, v2low, op);
-			int high = applyInt(v1high, v2high, op);
-
-			// getINode will take care of 'low==high'
-			ret = getINode(var, low, high);
-
-		}
-
-		_hmApplyCache.put(new IntTriple(a1, a2, op), ret);
-		return ret;
-	}
-
-
-	public int apply(int a1, int a2, int op,int divBranch) {
-		lastDecision.clear();
-		//start with no divisions, i4 = -1
-		int ret = applyInt(a1, a2, op,divBranch);
-		//return ret;
-		// TODO: should maintain a reusable reduce cache here
-		return makeCanonical(ret);
-	}
-
-
-	public int applyInt(int a1, int a2, int op,int divBranch) {
-
-		//adding divBranch, -1 if no divison, 1 if branch false, 2 if branch true
-		_tempApplyKey.set(a1, a2, op);
-		Integer ret = null;
-		if (divBranch == -1 ) ret = _hmApplyCache0.get(_tempApplyKey);
-		else if (divBranch == 1) ret = _hmApplyCache1.get(_tempApplyKey);
-		else if (divBranch == 2) ret = _hmApplyCache2.get(_tempApplyKey);
-
-		if (ret != null) {
-			//in cache but check path to make sure it is fliped correctly
-			//if (!ANNOTATE_ENABLE)
-				return ret;
-		}
-
-		// Can we create a terminal node here?
-		XADDNode n1 = _hmInt2Node.get(a1);
-		XADDNode n2 = _hmInt2Node.get(a2);
-		ret = computeTermNode(a1, n1, a2, n2, op);
-		if (ret == null) 
-		{
-
-			int v1low, v1high, v2low, v2high, var;
-
-			// Find node with min id (or only internal node)
-			if (n1 instanceof XADDINode) {
-				if (n2 instanceof XADDINode) {
-					if (((XADDINode) n1)._var < ((XADDINode) n2)._var) {
-						var = ((XADDINode) n1)._var;
-					} else {
-						var = ((XADDINode) n2)._var;
-					}
-				} else {
-					var = ((XADDINode) n1)._var;
-				}
-			} else {
-				var = ((XADDINode) n2)._var;
-			}
-
-
-			// Determine next recursion for n1
-			if ((n1 instanceof XADDINode) && (((XADDINode) n1)._var == var)) {
-				XADDINode n1i = (XADDINode) n1;
-				v1low = n1i._low;
-				v1high = n1i._high;
-			} else {
-				v1low = a1;
-				v1high = a1;
-			}
-
-			// Determine next recursion for n2
-			if ((n2 instanceof XADDINode) && (((XADDINode) n2)._var == var)) {
-				XADDINode n2i = (XADDINode) n2;
-				v2low = n2i._low;
-				v2high = n2i._high;
-			} else {
-				v2low = a2;
-				v2high = a2;
-
-			}
-			//going to low branch
-			lastDecision.put(var, false);
-			int low, high;
-			//check to see if the decision node of the divisor is in the false or true branch
-			//if chechDivBranch==true means it is in a division branch, then if in false branch=1, true=2, else -1
-			low = applyInt(v1low, v2low, op,divBranch);
-			//now apply high branch
-			lastDecision.put(var, true);
-			high = applyInt(v1high, v2high, op,divBranch);
-
-
-			changed_var_index = -1;
-			// getINode will take care of 'low==high'
-			ret = getINode(var, low, high);
-
-		}
-		if (changed_var_index == -1 ) _hmApplyCache0.put(new IntTriple(a1, a2, op), ret);
-		else if (changed_var_index == 1) _hmApplyCache1.put(new IntTriple(a1, a2, op), ret);
-		else if (divBranch == 2) _hmApplyCache2.put(new IntTriple(a1, a2, op), ret);
-		return ret;
-	}
-
-	// Computes a terminal node value if possible, assume
-	// terms of same type (otherwise incompatible!)
-	public Integer computeTermNode(int a1, XADDNode n1, int a2, XADDNode n2, int op) {
-
-
-		changed_var_index = -1;
-		if ((n1 instanceof XADDTNode) && (n2 instanceof XADDTNode)) {
-			XADDTNode xa1 = (XADDTNode) n1;
-			XADDTNode xa2 = (XADDTNode) n2;
-
-			if ((op != MAX) && (op != MIN))
-			{
-				//ANNOTATE: annotate the new operation, according to the _annotate value of the 2nodes
-				/*if (ANNOTATE_ENABLE && !SUBSTITUTION)
-				{
-					ArithExpr annotate = null;
-					if (xa1._annotate==null) xa1._annotate=ArithExpr.parse("0");
-					if (xa2._annotate==null) xa2._annotate=ArithExpr.parse("0");
-					if ((!xa1._annotate.equals(ArithExpr.parse("0"))) && (!xa2._annotate.equals(ArithExpr.parse("0"))))
-						annotate = new OperExpr(op, xa1._annotate,xa2._annotate);
-					else if (!xa1._annotate.equals(ArithExpr.parse("0")))
-							annotate = xa1._annotate;
-					else annotate = xa2._annotate;
-					return getTermNode(new OperExpr(op, xa1._expr, xa2._expr),annotate);
-				}
-				else */return getTermNode(new OperExpr(op, xa1._expr, xa2._expr));
-
-			}
-			ArithExpr diff = new OperExpr(MINUS, xa1._expr, xa2._expr);
-			CompExpr comp = null;
-			if (USE_MINUS_COMP)
-				comp = new CompExpr(LT, diff, new DoubleExpr(0d));
-			else
-				comp = new CompExpr(LT_EQ, xa1._expr, xa2._expr);
-
-			// TODO: Remove
-			//System.out.println("**ON MAX: " + xa1._expr + " <= " + xa2._expr);
-			//System.out.println("**ON MAX, After simplification: " + comp.makeCanonical());
-
-			//STEP1: For actions changed this!
-			//comp = new CompExpr(GT_EQ, xa1._expr, xa2._expr);
-
-			Decision d = new ExprDec(comp);
-
-			// Do a range check here
-			// if (CHECK_MIN_MAX) {
-			// TautDec tdec = checkRangeImpliedDecision(d);
-			// if (tdec != null)
-			// d = tdec; // Change to a tautology... getInode will handle this
-			// }
-			//makes decisions canonical here!!!!!!!!!!!!
-			int var_index = getVarIndex(d, true);
-			//last node had a division
-			if (showDiv.size()>0 && lastDecision.size()>0)
-			{
-				Iterator<Integer> iterator =  lastDecision.keySet().iterator();
-				while(iterator.hasNext())
-				{
-					int dec_id = (Integer) iterator.next();
-					boolean dec_value = lastDecision.get(dec_id);
-					if (_alOrder.get(dec_id) instanceof ExprDec) //else skip this decision
-					{
-						ExprDec d1 = (ExprDec) _alOrder.get(dec_id);
-						for (int i=0;i<showDiv.size();i++)
-							if (showDiv.get(i).equals(d1._expr._lhs))
-							{	if (!dec_value) 
-							{
-								var_index = -var_index;
-								changed_var_index =1;
-							}
-							//is equal but did not change branch
-							else changed_var_index = 2;
-							}
-						//consider the neg case of showDiv
-							else 
-							{
-								ArithExpr tempDiv = (ArithExpr) ArithExpr.op(showDiv.get(i),new DoubleExpr(-1d),PROD).makeCanonical();
-								if (tempDiv.equals(d1._expr._lhs))
-								{	
-									if (!dec_value) 
-									{
-										var_index = -var_index;
-										changed_var_index =1;
-									}
-									else changed_var_index =2;
-								}
-							}
-					}
-				}
-			}
-			showDiv.clear();
-			// System.out.println("ComputeTerm::max var_index " + _alOrder.get(var_index) + ": " + comp);
-			// System.exit(1);
-
-			int node1,node2;
-			if (ANNOTATE_ENABLE)
-			{
-				//ANNOTATION: to annotate a node, in a max or min operation ( building upper,lower bounds) annotate the leaves 
-				if (xa1._annotate==null) xa1._annotate=ArithExpr.parse("0");
-				if (xa2._annotate==null) xa2._annotate=ArithExpr.parse("0");
-				node1 = getTermNode(xa1._expr,xa1._annotate );
-				node2 = getTermNode(xa2._expr,xa2._annotate );
-			}
-			else 
-			{	
-				node1 = getTermNode(xa1._expr);
-				node2 = getTermNode(xa2._expr);
-			}
-			//STEP2: change this for actions too
-			return getINode(var_index, op == MAX ? node1 : node2, op == MAX ? node2 : node1);
-			//return getINode(var_index, op == MAX ? node2 : node1, op == MAX ? node1 : node2);
-		}
-
-		if (n1 instanceof XADDTNode) {
-			// If we get here a2 must be XADDINode
-			XADDTNode xa1 = (XADDTNode) n1;
-
-			// Check for identity operation value for n1
-			if ((op == SUM && xa1._expr.equals(ZERO)) || (op == PROD && xa1._expr.equals(ONE))) {
-				return a2;
-			}
-		}
-
-		if (n2 instanceof XADDTNode) {
-			// If we get here a1 must be XADDINode
-			XADDTNode xa2 = (XADDTNode) n2;
-
-			// Check for identity operation value for n2
-			if ((op == SUM && xa2._expr.equals(ZERO)) || (op == PROD && xa2._expr.equals(ONE))
-					|| (op == MINUS && xa2._expr.equals(ZERO)) || (op == DIV && xa2._expr.equals(ONE))) {
-				return a1;
-			}
-		}
-
-		return null;
-	}
-
-	// // ////////////////////////////////////////////////////////////////
-	// // Flushing and special node maintenance
-	// // ////////////////////////////////////////////////////////////////
-	//
-	// // Designate/remove/clear nodes to persist through flushing
-	// public void addSpecialNode(int n) {
-	// _hsSpecialNodes.add(new ADDRNode(n));
-	// }
-	//
-	// public void removeSpecialNode(int n) {
-	// _hsSpecialNodes.remove(new ADDRNode(n));
-	// }
-	//
-	// public void clearSpecialNodes() {
-	// _hsSpecialNodes.clear();
-	// }
-	//
-	// // Flush caches but save special nodes
-	// public void flushCaches(boolean print_info) {
-	//
-	// // Print starting info
-	// if (print_info) {
-	// System.out.print("[FLUSHING CACHES... ");
-	// // showCacheSize();
-	// ResetTimer();
-	// }
-	//
-	// // Can always clear these
-	// _hmPairs = new HashMap();
-	// _hmReduceMap = new HashMap();
-	// _hmPruneMap = new HashMap();
-	//
-	// // Set up temporary alternates to these HashMaps
-	// _hmNewADDNodes = new HashMap();
-	// _hmNewINodeCache = new HashMap();
-	// _hmNewDNodeCache = new HashMap();
-	//
-	// // Copy over 'special' nodes then set new maps
-	// Iterator i = _hsSpecialNodes.iterator();
-	// while (i.hasNext()) {
-	// cacheNode((ADDRNode) i.next());
-	// }
-	// _hmADDNodes = _hmNewADDNodes;
-	// _hmINodeCache = _hmNewINodeCache;
-	// _hmDNodeCache = _hmNewDNodeCache;
-	//
-	// // Print results
-	// if (GC_DURING_FLUSH) {
-	// RUNTIME.gc();
-	// }
-	// if (print_info) {
-	// System.out.print(" TIME: " + GetElapsedTime());
-	// System.out
-	// .print("  RESULT: "
-	// + _df
-	// .format(((double) RUNTIME.freeMemory() / (double) RUNTIME
-	// .totalMemory())));
-	// System.out.print("  CACHE: " + getCacheSize() + "] ");
-	// }
-	// }
-	//
-	// // ////////////////////////////////////////////////////////////////
-	// // Internal data structure maintenance
-	// // ////////////////////////////////////////////////////////////////
-	//
-	// // Quick cache snapshot
-	// public void showCacheSize() {
-	// System.out.println("APPLY CACHE:  " + _hmPairs.size());
-	// System.out.println("REDUCE CACHE: " + _hmReduceMap.size());
-	// System.out.println("INODE CACHE:  " + _hmINodeCache.size() + "\n");
-	// }
-	//
-	// // Total cache snapshot
-	// public long getCacheSize() {
-	// return _hmPairs.size() + _hmReduceMap.size() + _hmINodeCache.size();
-	// }
-	//
-	// // An exact count for the ADD rooted at _nRoot
-	// public long countExactNodes(int id) {
-	// HashSet cset = new HashSet();
-	// countExactNodesInt(cset, id);
-	// return cset.size();
-	// }
-	//
-	// public Set getExactNodes(int id) {
-	// HashSet cset = new HashSet();
-	// countExactNodesInt(cset, id);
-	// return cset;
-	// }
-	//
-	// public void countExactNodesInt(HashSet cset, int id) {
-	// if (cset.contains(new Integer(id))) {
-	// return;
-	// }
-	// ADDNode n = getNode(id);
-	// // Uncomment the following to get internal-only count
-	// // if (n instanceof ADDDNode) {
-	// // return;
-	// // }
-	// cset.add(new Integer(id));
-	// if (n instanceof ADDINode) {
-	// countExactNodesInt(cset, ((ADDINode) n)._nLow);
-	// countExactNodesInt(cset, ((ADDINode) n)._nHigh);
-	// }
-	// }
-	//
-	// public Set getVarIDs(int id) {
-	// HashSet cset = new HashSet();
-	// HashSet gset = new HashSet();
-	// collectGIDsInt(cset, gset, id);
-	// return gset;
-	// }
-	//
-	// public void collectGIDsInt(HashSet cset, HashSet gset, int id) {
-	// if (cset.contains(new Integer(id))) {
-	// return;
-	// }
-	// cset.add(new Integer(id));
-	// ADDNode n = getNode(id);
-	// if (n instanceof ADDINode) {
-	// gset.add(new Integer(((ADDINode) n)._nGlobalID));
-	// collectGIDsInt(cset, gset, ((ADDINode) n)._nLow);
-	// collectGIDsInt(cset, gset, ((ADDINode) n)._nHigh);
-	// }
-	// }
-	//
-	// // ///////////////////////////////////////////////////////////////
-	// // Order maintenance
-	// // ///////////////////////////////////////////////////////////////
-	//
-	// // Probably have more efficient ways to do a lot of these using
-	// // binary search and hash tables
-	//
-	// // Order check - both must occur in list!
-	// public boolean comesBefore(int gid1, int gid2) {
-	// // Get level for gid1 and gid2
-	// int l1 = ((Integer) _hmGVarToLevel.get(new Integer(gid1))).intValue();
-	// int l2 = ((Integer) _hmGVarToLevel.get(new Integer(gid2))).intValue();
-	//
-	// // Determine which comes first (i.e. earlier level)
-	// return (l1 <= l2);
-	// }
-	//
-	//
-	// // //////////////////////////////////////////////////////////////
-	// // Miscellaneous methods
-	// // //////////////////////////////////////////////////////////////
-	//
-	// public String toString() {
-	//
-	// StringBuffer sb = new StringBuffer();
-	//
-	// // Show order
-	// sb.append("Var order: " + _alOrder + "\n");
-	// // sb.append("Val range: " + procList(getValueRange()) + "\n");
-	//
-	// // Recurse from the root and show each branch
-	// sb.append("Structure:\n" + getNode(_nRoot).toString(this, 0) + "\n");
-	//
-	// return sb.toString();
-	// }
-
-	// //////////////////////////////////////////////////////////////
-	// Inner Classes
-	// //////////////////////////////////////////////////////////////
-
-	// XADD has to map integers to decisions, probably in an array
-	// since lookup will only ever be linear to match BoolDec
-	// and ExprDec's... all decision tests will be with integers,
-	// IDs only accessed for adding new decisions, printing,
-	// evaluation, and when maximizing to build new decisions.
-	//
-	// Need ability to substitute VarExpr with more complex
-	// ArithExpr's during regression.
-	//
-	// Requires equals() for ExprDec & BoolDec
-	//
-	//
-
-	// //////////////////////////////////////////////////////////////
-
-	public void clearMarks() {
-		_markCounter++;
-	}
-
-
+	
 	public abstract class XADDNode {
 		public int _mark;
 
@@ -3044,71 +1918,45 @@ public class XADD {
 
 	public class XADDTNode extends XADDNode {
 		public ArithExpr _expr;
-		public ArithExpr _annotate;
-
-		public ArithExpr get_annotate() {
-			/*if (_annotate==null) return noop;
-			else */
-			return _annotate;
-		}
-
-		public void set_annotate(ArithExpr _annotate) {
-			this._annotate = _annotate;
-		}
+		public Object    _annotate;
 
 		public XADDTNode(ArithExpr e) {
 			if (e instanceof OperExpr && ((OperExpr) e)._terms.size() == 1)
 				_expr = ((OperExpr) e)._terms.get(0);
 			else
 				_expr = e;
-			/*if (ANNOTATE_ENABLE)
-				_annotate = noop;*/
+			_annotate = null;
 		}
-		public XADDTNode(ArithExpr e,ArithExpr a) {
+		
+		public void set(ArithExpr e, Object annotation) {
+			_expr = e;
+			_annotate = annotation;
+		}
+
+		public XADDTNode(ArithExpr e, Object annotation) {
 			if (e instanceof OperExpr && ((OperExpr) e)._terms.size() == 1)
 				_expr = ((OperExpr) e)._terms.get(0);
 			else
 				_expr = e;
-			if (a instanceof OperExpr && ((OperExpr) a)._terms.size() == 1)
-				_annotate = ((OperExpr) a)._terms.get(0);
-			else
-				_annotate = a;
-
-		}
-
-		public void set(ArithExpr e) {
-			if (e instanceof OperExpr && ((OperExpr) e)._terms.size() == 1)
-				_expr = ((OperExpr) e)._terms.get(0);
-			else
-				_expr = e;
-		}
-
-		public void set(ArithExpr e,ArithExpr a) {
-			if (e instanceof OperExpr && ((OperExpr) e)._terms.size() == 1)
-				_expr = ((OperExpr) e)._terms.get(0);
-			else
-				_expr = e;
-			if (a instanceof OperExpr && ((OperExpr) a)._terms.size() == 1)
-				_annotate = ((OperExpr) a)._terms.get(0);
-			else
-				_annotate = a;
+			_annotate = annotation;
 		}
 
 		public int hashCode() {
-			if (!ANNOTATE_ENABLE) return _expr.hashCode();
-			else  if (_annotate!=null)
-				return _expr.hashCode()+_annotate.hashCode();
-			else return _expr.hashCode();
+			if (_annotate == null) 
+				return _expr.hashCode();
+			else
+				return _expr.hashCode() + _annotate.hashCode();
 		}
 
 		public boolean equals(Object o) {
-			//TODO: handle null here
-			if (o instanceof XADDTNode && (!ANNOTATE_ENABLE))
-				return this._expr.equals(((XADDTNode) o)._expr);
-			else if (ANNOTATE_ENABLE && _annotate!=null) return (this._expr.equals(((XADDTNode) o)._expr)&&(this._annotate.equals(((XADDTNode) o)._annotate)));
-			else if ((ANNOTATE_ENABLE) &&(!SUBSTITUTION) && (_annotate==null)) 
-				return this._expr.equals(((XADDTNode) o)._expr);
-			else return false;
+			if (o instanceof XADDTNode) {
+				XADDTNode t = (XADDTNode)o;
+				if (_annotate == null)
+					return t._annotate == null && t._expr.equals(_expr);
+				else 
+					return t._annotate.equals(_annotate) && t._expr.equals(_expr);
+			} else 
+				return false;
 		}
 
 		public void collectVars(HashSet<String> vars) {
@@ -3121,16 +1969,12 @@ public class XADD {
 
 		public void toGraph(Graph g, int id) {
 			String this_node = Integer.toString(id);
-			String annotation="";
 			g.addNode(this_node);
-			if (ANNOTATE_ENABLE)
-			{
-				if (_annotate == null) annotation = ""; 
-				else 
-					annotation = _annotate.toString();
-				g.addNodeLabel(this_node, _expr.toString() + "\n action: "+ annotation);
-			}
-			else g.addNodeLabel(this_node, _expr.toString());
+			if (_annotate == null)
+				g.addNodeLabel(this_node, _expr.toString());
+			else
+				g.addNodeLabel(this_node, _expr.toString() + "\n[ " + _annotate + " ]");
+
 			if (GRAPH_USE_COLOR)
 				g.addNodeColor(this_node, "lightsalmon"); // red, darkred, lightsalmon
 			g.addNodeShape(this_node, "box");
@@ -3266,7 +2110,6 @@ public class XADD {
 			return sb.toString();
 		}
 
-		@Override
 		public int countBranches() {
 			int low_count = _hmInt2Node.get(_low).countBranches();
 			if (low_count > MAX_BRANCH_COUNT || low_count == -1)
@@ -3283,7 +2126,6 @@ public class XADD {
 			return total;
 		}
 
-		@Override
 		public String toString(boolean format) {
 			return toString(0, format);
 		}
@@ -3351,7 +2193,6 @@ public class XADD {
 			return this;
 		}
 
-		@Override
 		public String toString(boolean format) {
 			return Boolean.toString(_bTautology);
 		}
@@ -3362,7 +2203,7 @@ public class XADD {
 
 		public BoolDec(String var_name) {
 			_sVarName = var_name.intern();
-			_hsBooleanVars.add(_sVarName);
+			_alBooleanVars.add(_sVarName);
 		}
 
 		public int hashCode() {
@@ -3388,7 +2229,6 @@ public class XADD {
 			return this;
 		}
 
-		@Override
 		public String toString(boolean format) {
 			return toString();
 		}
@@ -3481,79 +2321,6 @@ public class XADD {
 		}
 
 	}
-
-	public static DoubleExpr findVar(ArithExpr expr,String action,boolean nonlinear) 
-	{
-		DoubleExpr result = (DoubleExpr) ZERO;
-		if (expr instanceof OperExpr && ((OperExpr) expr)._type == SUM) 
-		{
-			//sum of products
-			OperExpr eOp = ((OperExpr) expr);
-			for (ArithExpr e: eOp._terms) 
-			{
-				if (e instanceof OperExpr) 
-				{
-					result = findVarTerm((OperExpr) e,action,nonlinear);
-					if (result!=(DoubleExpr)ZERO) return result;
-				}
-				else if (e instanceof VarExpr) {
-					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
-					result = findVarTerm(temp,action,nonlinear);
-					if (result!=(DoubleExpr)ZERO) return result;
-				}
-			}
-		}			
-		else if (expr instanceof OperExpr && ((OperExpr) expr)._type == PROD) 
-		{
-			result= findVarTerm((OperExpr) expr,action,nonlinear); 
-			if (result!=(DoubleExpr)ZERO) return result;
-		}
-		else if ((expr instanceof VarExpr) || (expr instanceof DoubleExpr)) 
-		{
-			OperExpr temp = new OperExpr(PROD, Arrays.asList(expr));
-			result= findVarTerm(temp,action,nonlinear);
-			if (result!=(DoubleExpr)ZERO) return result;
-		}
-		return result;
-	}
-	// A single term (PROD)
-
-	public static DoubleExpr findVarTerm(OperExpr expr,String action1,boolean nonlinear) 
-	{
-		DoubleExpr result = (DoubleExpr) ZERO;
-
-		// Process all terms (optional double followed by vars)
-		int _var_count = 0;
-		double coef = 1d;
-		for (ArithExpr e : expr._terms) {
-			if (e instanceof DoubleExpr) {
-				coef *= ((DoubleExpr) e)._dConstVal;
-			}
-			else if (e instanceof OperExpr)
-			{
-				//don't divide if it comes here, makes it complicated
-			}
-			else if (e instanceof VarExpr) {
-				// Both interned so we can test direct equality
-				if (((VarExpr) e)._sVarName.equals(action1))
-				{
-					_var_count++;
-				}
-			} else {
-				System.out.println("findVarTerm: Unsupported expression '" + e + "'");
-				System.exit(1);
-			}
-		}
-
-		if ((nonlinear)&&(_var_count > 1))
-			return new DoubleExpr(coef);
-		else if ((!nonlinear)&&(_var_count>0))
-			return new DoubleExpr(coef);
-		else 
-			return (DoubleExpr) ZERO;
-
-	}
-
 
 	public TautDec checkRangeImpliedDecision(ExprDec d) {
 		TautDec tdec = null;
@@ -3693,7 +2460,6 @@ public class XADD {
 			// a > b : a <= b and swap branches
 			// a < b : a >= b and swap branches
 			// a != b : a == b and swap branches
-			//CANONICAL_DIVISOR.clear();
 			CompExpr new_expr = new CompExpr(_type, _lhs, _rhs);
 			switch (new_expr._type) {
 			case GT:
@@ -3715,239 +2481,14 @@ public class XADD {
 				new_expr._rhs = _lhs;
 				break;
 			}
-			//new_expr._lhs = (ArithExpr) ((ArithExpr)new_expr._lhs).makeCanonical();
-			//new_expr._rhs = (ArithExpr) ((ArithExpr)new_expr._rhs).makeCanonical();
-
-			//for both lhs and rhs (both operExr) see if type=division,
-			//then multiply all elements of all sides by the second_term
-			//simplify the terms and continue
-			//TODO: accounted for only 1 div in each time, must solve for more div's
-			ArithExpr div = null;
-
-			//find first divisor on lhs
-			//only change the decision of the expr, not the _lhs,rhs
-			//NOTE: it does not matter which side the divisor belongs to, a negative expr changes the sign, a positive one does not.
-			//indicate that division has been multiplied
-			CompExpr temp_expr = new CompExpr(new_expr._type, new_expr._lhs, new_expr._rhs);
-			do
-			{
-				div = null;
-				if (temp_expr._lhs instanceof OperExpr)
-					div = checkDivisor((OperExpr) temp_expr._lhs, div);
-				if (div!=null) 
-				{
-					//CANONICAL_DIVISOR.add(div);
-					//left side 
-					if (showDiv.size()>0)
-					{
-						for (int i=0;i<showDiv.size();i++)
-							if (showDiv.get(i)!=div) showDiv.add(div);
-					}
-					else showDiv.add(div);
-					temp_expr._lhs = removeDivFromOtherTerms((OperExpr) temp_expr._lhs, div);
-					temp_expr._lhs = (ArithExpr)temp_expr._lhs.makeCanonical();
-					//we have multiplied the lhs but not the rhs, just multiply it
-					if (temp_expr._rhs instanceof OperExpr)
-						temp_expr._rhs = removeDivFromOtherTerms((OperExpr)temp_expr._rhs, div);
-					else 
-						temp_expr._rhs = (OperExpr) ArithExpr.op(temp_expr._rhs, div, PROD);
-					temp_expr._rhs = (ArithExpr) temp_expr._rhs.makeCanonical();
-
-				}		
-			} while (div!=null);
-
-			do
-			{
-				div = null;
-				if (temp_expr._rhs instanceof OperExpr)
-					div = checkDivisor((OperExpr) temp_expr._rhs, div);
-				if (div!=null) 
-				{
-					//CANONICAL_DIVISOR.add(div);
-					if (showDiv.size()>0)
-					{
-						for (int i=0;i<showDiv.size();i++)
-							if (showDiv.get(i)!=div) showDiv.add(div);
-					}
-					else showDiv.add(div);
-					temp_expr._rhs = removeDivFromOtherTerms((OperExpr) temp_expr._rhs, div);
-					temp_expr._rhs = (ArithExpr) temp_expr._rhs.makeCanonical();
-					//we have multiplied the lhs but not the rhs, just multiply it
-					if (temp_expr._lhs instanceof OperExpr)
-						temp_expr._lhs = removeDivFromOtherTerms((OperExpr) temp_expr._lhs, div);
-					else
-						temp_expr._lhs = (OperExpr) ArithExpr.op(temp_expr._lhs, div, PROD);
-					temp_expr._lhs = (ArithExpr) temp_expr._lhs.makeCanonical();
-
-				}		
-			} while (div!=null);
-
+			
 			// System.out.println(">> CompExpr: makeCanonical: " + _lhs + " - " + _rhs);
-			ArithExpr new_lhs = ArithExpr.op(temp_expr._lhs, temp_expr._rhs, MINUS);
+			ArithExpr new_lhs = ArithExpr.op(new_expr._lhs, new_expr._rhs, MINUS);
 			new_lhs = (ArithExpr) new_lhs.makeCanonical();
-			CompExpr current_expr = new CompExpr(temp_expr._type, new_lhs, ZERO);
+			new_expr = new CompExpr(new_expr._type, new_lhs, ZERO);
 			// System.out.println(">> CompExpr: makeCanonical: " + new_expr);
-
-			//divide all equation by coeff of first variable, invert type if negative
-			//if the prime versions appear, ignore!
-			String contVar = null;
-			boolean handlePrime =false;
-			if (!(_hmContinuousVars.isEmpty()))
-			{
-				for (int i=0;i<_hmContinuousVars.size();i++)
-				{
-					contVar = _hmContinuousVars.get(i);
-					DoubleExpr doubleCoef = findVar(current_expr._lhs,contVar+"'",false);
-					if (doubleCoef!=(DoubleExpr)ZERO)
-					{
-						handlePrime = true;
-						break;
-					}
-				}
-				//making sure that the primes are not considered
-				if (!handlePrime)
-				{
-					for (int i=0;i<_hmContinuousVars.size();i++)
-					{
-						contVar = _hmContinuousVars.get(i);
-						DoubleExpr doubleCoef = (DoubleExpr) ZERO;
-						//first look for x*x 
-						if (HANDLE_NONLINEAR)
-							doubleCoef = findVar(current_expr._lhs, contVar,true);
-						if (doubleCoef==(DoubleExpr)ZERO)
-							doubleCoef = findVar(current_expr._lhs,contVar,false);
-						if (doubleCoef!=(DoubleExpr)ZERO)
-						{
-							boolean flip_comparison=false;
-							flip_comparison = (doubleCoef._dConstVal < 0d) && (current_expr._type != EQ) && (current_expr._type != NEQ);
-
-
-							current_expr._lhs = (ArithExpr) (new OperExpr(PROD, 
-									(ArithExpr.op(new DoubleExpr(1d), doubleCoef, DIV)), current_expr._lhs)).makeCanonical();
-							int comp_oper = current_expr._type;
-							if (flip_comparison) 
-								switch (comp_oper) {
-								case GT:
-									current_expr._type= LT;
-									break;
-								case GT_EQ:
-									current_expr._type=LT_EQ;
-									break;
-								case LT:
-									current_expr._type=GT;
-									break;
-								case LT_EQ:
-									current_expr._type=GT_EQ;
-									break;
-								}
-
-							//((ExprDec) d)._expr = comp;
-							break;
-						}
-					}
-				}
-			}
-
-			return current_expr;
+			return new_expr;
 		}
-
-		private OperExpr removeDivisor(OperExpr expr, ArithExpr div) {
-			//removing the divisor term from an OperExr that occurs on the lhs/rhs 
-			//operands can be operExr or DoubleExpr
-			ArrayList<ArithExpr> local_terms = new ArrayList<ArithExpr>(expr._terms);
-			local_terms.set(1, new DoubleExpr(1d));
-			//expr._type = PROD;
-			//expr = (OperExpr) expr._terms.get(0);
-			return new OperExpr(expr._type, local_terms);
-			//removing the divisor term from the expression
-
-
-		}
-
-		//steps to multiply all terms by the divisor
-		private ArithExpr checkDivisor( OperExpr changing_expr,ArithExpr divisor) {
-			if (divisor ==null)
-			{
-				if (changing_expr._type==DIV)
-				{
-					divisor = (ArithExpr) changing_expr._terms.get(1);
-					//(1)remove the divisor term from that term
-					changing_expr = removeDivisor(changing_expr, divisor);
-					//do not take division sign out for the next iteration
-					return divisor;
-
-				}
-
-				else //have to go inside the expr
-				{
-					for (int i=0;i<changing_expr._terms.size();i++)
-					{
-						if (changing_expr._terms.get(i) instanceof OperExpr)
-							divisor = checkDivisor((OperExpr)changing_expr._terms.get(i),divisor);
-						if (divisor !=null) break;
-					}
-				}
-			}
-			return divisor;
-		}
-		public OperExpr removeDivFromOtherTerms( OperExpr changing_expr ,ArithExpr divisor) {
-			OperExpr temp_expr = new OperExpr(changing_expr._type, changing_expr._terms);
-			if (temp_expr._type == SUM)//we have to go in one level
-			{
-				ArrayList<ArithExpr> oper_list = new ArrayList<ArithExpr>();
-				for (int i=0;i<temp_expr._terms.size();i++)
-					if (temp_expr._terms.get(i) instanceof OperExpr)
-						oper_list.add(removeDivFromOtherTerms((OperExpr) temp_expr._terms.get(i), divisor));
-					else if (temp_expr._terms.get(i) instanceof DoubleExpr)
-						oper_list.add(ArithExpr.op(temp_expr._terms.get(i), divisor, PROD));
-				for  (int i=0;i<oper_list.size();i++)
-					return new OperExpr(SUM, oper_list);
-			}
-			//found the first instance of divisor.search the rest of the expr for the divisor
-			//for (int j=0;j<changing_expr._terms.size();j++)
-			//in the other statements there is either product or division (sum of products, this level is the products level)
-			else{
-				if (temp_expr._type ==DIV)
-				{
-					ArithExpr other_divisor = (ArithExpr) temp_expr._terms.get(1);
-					//(1)remove the divisor term from that term
-					if (divisor.equals(other_divisor))
-					{
-						temp_expr = removeDivisor(temp_expr, divisor);
-						temp_expr._type = PROD;
-					}
-					else temp_expr = (OperExpr) ArithExpr.op(temp_expr, divisor, PROD);
-				}
-				else if (temp_expr._type ==PROD)
-				{
-					boolean removedDiv = false;
-					for (int k=0;k<temp_expr._terms.size();k++)
-						if (temp_expr._terms.get(k) instanceof OperExpr)
-						{
-							if ((((OperExpr) temp_expr._terms.get(k))._type == DIV)&& (((OperExpr) temp_expr._terms.get(k))._terms.get(1).equals(divisor)))
-							{
-								temp_expr._terms.set(k, removeDivisor((OperExpr) temp_expr._terms.get(k),divisor));
-								((OperExpr) temp_expr._terms.get(k))._type = PROD;
-								removedDiv = true;
-							}
-							else if ((((OperExpr) temp_expr._terms.get(k))._type == DIV)&&(((OperExpr) temp_expr._terms.get(k))._terms.get(1).equals(1d)))//previously found divisor
-							{
-								((OperExpr) temp_expr._terms.get(k))._type = PROD;
-								removedDiv = true;
-							}
-
-						}//after if
-					if (!removedDiv)
-						temp_expr = (OperExpr) (ArithExpr.op(temp_expr, divisor, PROD));
-				}
-				else temp_expr = (OperExpr) (ArithExpr.op(temp_expr, divisor, PROD));
-				//}			
-				//changing_expr.makeCanonical();
-			}	
-			return new OperExpr(temp_expr._type, temp_expr._terms);
-		}
-
-
 
 		public boolean equals(Object o) {
 			if (o instanceof CompExpr) {
@@ -4147,17 +2688,6 @@ public class XADD {
 			}
 		}
 
-		public static ArithExpr sqrt(ArithExpr f1) {
-			if (f1 instanceof DoubleExpr) 
-				return new DoubleExpr(Math.sqrt((((DoubleExpr) f1)._dConstVal)));
-			else {
-
-				String result = "sqrt"+ f1.toString();
-				return ArithExpr.parse(result);
-			}
-
-		}
-
 		public abstract ArithExpr substitute(HashMap<String, ArithExpr> subst);
 
 		public abstract Double evaluate(HashMap<String, Double> cont_assign);
@@ -4166,6 +2696,79 @@ public class XADD {
 				boolean use_low);
 
 		public abstract void collectVars(HashSet<String> vars);
+		
+		// Assume expression is canonical, hence in sum of products form (could be a single term)
+		public ArithExpr differentiateExpr(String diff_var) {
+			diff_var = diff_var.intern();
+			ArithExpr ret_expr = null;
+			if (this instanceof OperExpr && ((OperExpr) this)._type == SUM) {
+				ret_expr = ((OperExpr) this).differentiateMultipleTerms(diff_var);
+			} else if (this instanceof OperExpr && ((OperExpr) this)._type == PROD) {
+				ret_expr = ((OperExpr) this).differentiateTerm(diff_var);
+			} else if ((this instanceof VarExpr) || (this instanceof DoubleExpr)) {
+				OperExpr temp = new OperExpr(PROD, Arrays.asList(this));
+				ret_expr = temp.differentiateTerm(diff_var);
+			} else {
+				System.out.println("differentiateLeaf: Unsupported expression '" + this + "'");
+				System.exit(1);
+			}
+			return ret_expr;
+		}
+		
+		// Assume expression is canonical, hence in sum of products form (could be a single term)
+		public ArithExpr integrateExpr(String integration_var) {
+			integration_var = integration_var.intern();
+			ArithExpr ret_expr = null;
+			if (this instanceof OperExpr && ((OperExpr) this)._type == SUM) {
+				ret_expr = ((OperExpr) this).integrateMultipleTerms(integration_var);
+			} else if (this instanceof OperExpr && ((OperExpr) this)._type == PROD) {
+				ret_expr = ((OperExpr) this).integrateTerm(integration_var);
+			} else if ((this instanceof VarExpr) || (this instanceof DoubleExpr)) {
+				OperExpr temp = new OperExpr(PROD, Arrays.asList(this));
+				ret_expr = temp.integrateTerm(integration_var);
+			} else {
+				System.out.println("processXADDLeaf: Unsupported expression '" + this + "'");
+				System.exit(1);
+			}
+			return ret_expr;
+		}
+		
+		// Takes ArithExpr expr1 linear in var, returns (coef,expr2) where expr1 = coef*x + expr2
+		// Assume expression is canonical, hence in sum of products form (could be a single term)
+		public CoefExprPair removeVarFromExpr(String remove_var) {
+			remove_var = remove_var.intern();
+			CoefExprPair ret = null;
+			if (this instanceof OperExpr && ((OperExpr) this)._type == SUM) {
+				ret = ((OperExpr) this).removeVarFromExprMultipleTerms(remove_var);
+			} else if (this instanceof OperExpr && ((OperExpr) this)._type == PROD) {
+				ret = ((OperExpr) this).removeVarFromExprTerm(remove_var);
+			} else if ((this instanceof VarExpr) || (this instanceof DoubleExpr)) {
+				OperExpr temp = new OperExpr(PROD, Arrays.asList(this));
+				ret = temp.removeVarFromExprTerm(remove_var);
+			} else {
+				System.out.println("removeVarFromExpr: Unsupported expression '" + this + "'");
+				System.exit(1);
+			}
+			return ret;
+		}
+		
+		// Assume expression is canonical, hence in sum of products form (could be a single term)
+		public int determineHighestOrderOfVar(String var) {
+			var = var.intern();
+			CoefExprPair ret = null;
+			if (this instanceof OperExpr && ((OperExpr) this)._type == SUM) {
+				return ((OperExpr) this).determineHighestOrderOfVarMultipleTerms(var);
+			} else if (this instanceof OperExpr && ((OperExpr) this)._type == PROD) {
+				return ((OperExpr) this).determineHighestOrderOfVarTerm(var);
+			} else if ((this instanceof VarExpr) || (this instanceof DoubleExpr)) {
+				OperExpr temp = new OperExpr(PROD, Arrays.asList(this));
+				return temp.determineHighestOrderOfVarTerm(var);
+			} else {
+				System.out.println("removeVarFromExpr: Unsupported expression '" + this + "'");
+				System.exit(1);
+				return 0;
+			}
+		}
 	}
 
 	public static class OperExpr extends ArithExpr {
@@ -4211,7 +2814,7 @@ public class XADD {
 			if (t._nArity == 0)
 				return context.getTermNode(new VarExpr(t._sFunName));
 
-			if (t._sFunName.equals("N") && t._nArity == 4) {
+			if (t._sFunName.equals("N") && t._nArity == 4) { // Normal approximation
 
 				ArithExpr expr  = ArithExpr.Convert2ArithExpr(t.getBinding(0));
 				ArithExpr mu    = ArithExpr.Convert2ArithExpr(t.getBinding(1));
@@ -4236,7 +2839,6 @@ public class XADD {
 						+ "([" + expr + " <= " + mu + " + " + dwidth + "] " 
 						+ "( [" + _df.format(Z) + " * " + "(-((" + expr + " - " + mu + ") * (" + expr + " - " + mu + ")) + " + DW2 + ")] )"
 						+ "( [0.0] ) ) ( [0.0] ) )";
-				//String s = "([7.0])";
 
 				//System.out.println("Produced: " + s);
 
@@ -4245,7 +2847,7 @@ public class XADD {
 				int dd = context.buildCanonicalXADD((ArrayList) l.get(0));
 				return dd;
 
-			} else if (t._sFunName.equals("U") && t._nArity == 4) {
+			} else if (t._sFunName.equals("U") && t._nArity == 4) { // Triangular 
 
 				ArithExpr expr  = ArithExpr.Convert2ArithExpr(t.getBinding(0));
 				ArithExpr mu    = ArithExpr.Convert2ArithExpr(t.getBinding(1));
@@ -4278,7 +2880,7 @@ public class XADD {
 				int dd = context.buildCanonicalXADD((ArrayList) l.get(0));
 				return dd;
 
-			} else if (t._sFunName.equals("T") && t._nArity == 4) {
+			} else if (t._sFunName.equals("T") && t._nArity == 4) { // Uniform
 
 				ArithExpr expr  = ArithExpr.Convert2ArithExpr(t.getBinding(0));
 				ArithExpr mu    = ArithExpr.Convert2ArithExpr(t.getBinding(1));
@@ -4745,6 +3347,7 @@ public class XADD {
 					return new DoubleExpr(0d);
 				}
 			}
+			
 			// Handle division of two constants
 			if (new_type == DIV && new_terms.get(0) instanceof DoubleExpr && new_terms.get(1) instanceof DoubleExpr) {
 				return new DoubleExpr(((DoubleExpr)new_terms.get(0))._dConstVal / ((DoubleExpr) new_terms.get(1))._dConstVal);
@@ -4764,6 +3367,250 @@ public class XADD {
 		@Override
 		public String toString() {
 			return toString(true);
+		}
+		
+		// Must be a SUM of terms to get here
+		public OperExpr differentiateMultipleTerms(String diff_var) {
+			if (this._type != SUM) {
+				System.out.println("differentiateMultipleTerms: Expected SUM, got '" + this + "'");
+				System.exit(1);
+			}
+			ArrayList<ArithExpr> differentiated_terms = new ArrayList<ArithExpr>();
+			for (ArithExpr e : this._terms) {
+				if (e instanceof OperExpr) {
+					differentiated_terms.add(((OperExpr) e).differentiateTerm(diff_var));
+				} else if ((e instanceof VarExpr) || (e instanceof DoubleExpr)) {
+					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
+					differentiated_terms.add(temp.differentiateTerm(diff_var));
+				} else {
+					System.out.println("differentiateMultipleTerms: Unsupported expression '" + e + "'");
+					System.exit(1);
+				}
+			}
+			return new OperExpr(SUM, differentiated_terms);
+		}
+
+		// A single term (PROD)
+		public ArithExpr differentiateTerm(String diff_var) {
+			if (this._type != PROD) {
+				System.out.println("differentiateTerm: Expected PROD, got '" + this + "'");
+				System.exit(1);
+			}
+
+			// Process all terms (optional double followed by vars)
+			int derivative_var_count = 0;
+			int last_var_added_at = -1;
+			DoubleExpr d = new DoubleExpr(1d);
+			ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
+			for (ArithExpr e : this._terms) {
+				if (e instanceof DoubleExpr) {
+					DoubleExpr d2 = (DoubleExpr) e;
+					d = new DoubleExpr(d._dConstVal * d2._dConstVal);
+				} else if (e instanceof VarExpr) {
+					factors.add(e);
+					// Both interned so we can test direct equality
+					if (((VarExpr) e)._sVarName == diff_var) {
+						derivative_var_count++;
+						last_var_added_at = factors.size() - 1;
+					}
+				} else {
+					System.out.println("differentiateTerm: Unsupported expression '" + e + "'");
+					System.exit(1);
+				}
+			}
+
+			// Perform differentiation
+			if (derivative_var_count == 0) {
+				return ZERO; // Derivative of a constant is 0
+			} else {
+				// x*x*...*x = x^n
+				// d/dx x^n = n*x^{n-1}
+				factors.remove(last_var_added_at);
+				d = new DoubleExpr(((double) derivative_var_count) * d._dConstVal);
+				factors.add(0, d);
+
+				return new OperExpr(PROD, factors);
+			}
+		}
+		
+		// Must be a SUM of terms to get here
+		public OperExpr integrateMultipleTerms(String integration_var) {
+			if (this._type != SUM) {
+				System.out.println("integrateMultipleTerms: Expected SUM, got '" + this + "'");
+				System.exit(1);
+			}
+			ArrayList<ArithExpr> integrated_terms = new ArrayList<ArithExpr>();
+			for (ArithExpr e : this._terms) {
+				if (e instanceof OperExpr) {
+					integrated_terms.add(((OperExpr) e).integrateTerm(integration_var));
+				} else if ((e instanceof VarExpr) || (e instanceof DoubleExpr)) {
+					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
+					integrated_terms.add(temp.integrateTerm(integration_var));
+				} else {
+					System.out.println("integrateMultipleTerms: Unsupported expression '" + e + "'");
+					System.exit(1);
+				}
+			}
+			return new OperExpr(SUM, integrated_terms);
+		}
+
+		// A single term (PROD)
+		public ArithExpr integrateTerm(String integration_var) {
+			if (this._type != PROD) {
+				System.out.println("integrateTerm: Expected PROD, got '" + this + "'");
+				System.exit(1);
+			}
+
+			// Process all terms (optional double followed by vars)
+			int integration_var_count = 0;
+			DoubleExpr d = new DoubleExpr(1d);
+			ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
+			for (ArithExpr e : this._terms) {
+				// while (e instanceof OperExpr) {
+				// OperExpr oe = (OperExpr) e;
+				// e = e.op(oe._terms.get(0), oe._terms.get(1), oe._type);
+				// }
+				if (e instanceof DoubleExpr) {
+					DoubleExpr d2 = (DoubleExpr) e;
+					d = new DoubleExpr(d._dConstVal * d2._dConstVal);
+				} else if (e instanceof VarExpr) {
+					factors.add(e);
+					// Both interned so we can test direct equality
+					if (((VarExpr) e)._sVarName == integration_var)
+						integration_var_count++;
+				} else {
+					System.out.println("integrateTerm: Unsupported expression '" + e + "'");
+					System.exit(1);
+				}
+			}
+
+			// Perform integration
+			factors.add(new VarExpr(integration_var));
+			d = new DoubleExpr(d._dConstVal / (double) (integration_var_count + 1));
+			factors.add(0, d);
+
+			return new OperExpr(PROD, factors);
+		}
+		
+		// Must be a SUM of terms to get here
+		public CoefExprPair removeVarFromExprMultipleTerms(String remove_var) {
+			if (this._type != SUM) {
+				System.out.println("removeVarFromExprMultipleTerms: Expected SUM, got '" + this + "'");
+				System.exit(1);
+			}
+			double var_coef = 0d;
+			ArrayList<ArithExpr> remaining_terms = new ArrayList<ArithExpr>();
+			for (ArithExpr e : this._terms) {
+				if (e instanceof OperExpr) {
+					CoefExprPair p = ((OperExpr) e).removeVarFromExprTerm(remove_var);
+					var_coef += p._coef;
+					remaining_terms.add(p._expr);
+				} else if (e instanceof VarExpr) {
+					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
+					CoefExprPair p = temp.removeVarFromExprTerm(remove_var);
+					var_coef += p._coef;
+					remaining_terms.add(p._expr);
+				} else if (e instanceof DoubleExpr) {
+					remaining_terms.add(e);
+				} else {
+					System.out.println("removeVarFromExprMultipleTerms: Unsupported expression '" + e + "'");
+					System.exit(1);
+				}
+			}
+			return new CoefExprPair(new OperExpr(SUM, remaining_terms), var_coef);
+		}
+
+		// A single term (PROD)
+		public CoefExprPair removeVarFromExprTerm(String remove_var) {
+			double var_coef = 0d;
+			if (this._type != PROD) {
+				System.out.println("removeVarFromExprTerm: Expected PROD, got '" + this + "'");
+				System.exit(1);
+			}
+
+			// Process all terms (optional double followed by vars)
+			int remove_var_count = 0;
+			double coef = 1d;
+			ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
+			for (ArithExpr e : this._terms) {
+				if (e instanceof DoubleExpr) {
+					coef *= ((DoubleExpr) e)._dConstVal;
+				} else if (e instanceof VarExpr) {
+					// Both interned so we can test direct equality
+					if (((VarExpr) e)._sVarName == remove_var)
+						remove_var_count++;
+					else
+						factors.add(e);
+				} else {
+					System.out.println("removeVarFromExprTerm: Unsupported expression '" + e + "'");
+					System.exit(1);
+				}
+			}
+
+			// Check for proper form
+			if (remove_var_count > 0) {
+				if (remove_var_count > 1 || factors.size() > 0) {
+					System.out.println("removeVarFromExprTerm: var '" + remove_var
+							+ "' must appear linearly in expression '" + this + "'");
+					System.exit(1);
+				}
+				// If get here only coef*_integrationVar
+				var_coef += coef;
+				return new CoefExprPair(ZERO, var_coef); // Just add a zero term in this place
+			} else {
+				factors.add(0, new DoubleExpr(coef));
+				return new CoefExprPair(new OperExpr(PROD, factors), var_coef);
+			}
+		}
+		
+		// Must be a SUM of terms to get here
+		public int determineHighestOrderOfVarMultipleTerms(String var) {
+			if (this._type != SUM) {
+				System.out.println("determineHighestOrderOfVarMultipleTerms: Expected SUM, got '" + this + "'");
+				System.exit(1);
+			}
+			int max_order = 0;
+			for (ArithExpr e : this._terms) {
+				if (e instanceof OperExpr) {
+					max_order = Math.max(max_order, ((OperExpr) e).determineHighestOrderOfVarTerm(var));
+				} else if (e instanceof VarExpr) {
+					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
+					max_order = Math.max(max_order, temp.determineHighestOrderOfVarTerm(var));
+				} else if (!(e instanceof DoubleExpr)) {
+					System.out.println("determineHighestOrderOfVarMultipleTerms: Unsupported expression '" + e + "'");
+					System.exit(1);
+				}
+			}
+			return max_order;
+		}
+
+		// A single term (PROD)
+		public int  determineHighestOrderOfVarTerm(String var) {
+			double var_coef = 0d;
+			if (this._type != PROD) {
+				System.out.println("determineHighestOrderOfVarTerm: Expected PROD, got '" + this + "'");
+				System.exit(1);
+			}
+
+			// Process all terms (optional double followed by vars)
+			int integration_var_count = 0;
+			double coef = 1d;
+			ArrayList<ArithExpr> factors = new ArrayList<ArithExpr>();
+			for (ArithExpr e : this._terms) {
+				if (e instanceof DoubleExpr) {
+					coef *= ((DoubleExpr) e)._dConstVal;
+				} else if (e instanceof VarExpr) {
+					// Both interned so we can test direct equality
+					if (((VarExpr) e)._sVarName == var)
+						integration_var_count++;
+					else
+						factors.add(e);
+				} else {
+					System.out.println("determineHighestOrderOfVarTerm: Unsupported expression '" + e + "'");
+					System.exit(1);
+				}
+			}
+			return integration_var_count;
 		}
 	}
 
@@ -4880,20 +3727,20 @@ public class XADD {
 		return sb.toString();
 	}
 
-	// /////////////flush/////////////////////
+	///////////////////////////////////////////////////////////////////
+	// Cache flushing
+	///////////////////////////////////////////////////////////////////
+	
 	public void clearSpecialNodes() {
 		_hsSpecialNodes.clear();
 	}
 
 	public void addSpecialNode(Integer n) {
-		try {
-			if (n == null)
-				throw new Exception("addSpecialNode: null");
-		} catch (Exception e) {
-			System.out.println(e);
-			e.printStackTrace();
+		if (n == null) {
+			System.out.println("addSpecialNode: null");
+			new Exception().printStackTrace();
 			System.exit(1);
-		}
+		} 
 		_hsSpecialNodes.add(n);
 	}
 
@@ -4902,14 +3749,9 @@ public class XADD {
 
 		// Can always clear these
 		_hmReduceCache.clear();
-		//_hmReduceLPCache.clear();
 		_hmReduceLeafOpCache.clear();
 		_hmApplyCache.clear();
-		_hmApplyCache0.clear();
-		_hmApplyCache1.clear();
-		_hmApplyCache2.clear();
 		_hmINode2Vars.clear();
-		_hmLinearDecisions.clear();
 		_hmReduceAnnotateCache.clear();
 
 		// Set up temporary alternates to these HashMaps
@@ -4925,7 +3767,6 @@ public class XADD {
 		_hmInt2Node = _hmInt2NodeNew;
 
 		Runtime.getRuntime().gc();
-
 	}
 
 	private void copyInNewCacheNode(Integer id) {
@@ -4933,19 +3774,17 @@ public class XADD {
 		if (_hmInt2NodeNew.containsKey(id)) {
 			return;
 		}
+		
+		// Insert node into cache
 		Object node = _hmInt2Node.get(id);
+		_hmInt2NodeNew.put(id, (XADDINode) node);
+		_hmNode2IntNew.put((XADDINode) node, id);
+		
+		// Recurse on children (if any) and insert them
 		if (node instanceof XADDINode) {
-			Integer fh = ((XADDINode) node)._high;
-			Integer fl = ((XADDINode) node)._low;
-			_hmInt2NodeNew.put(id, (XADDINode) node);
-			_hmNode2IntNew.put((XADDINode) node, id);
 			copyInNewCacheNode(((XADDINode) node)._high);
 			copyInNewCacheNode(((XADDINode) node)._low);
-		} else if (node instanceof XADDTNode) {
-			_hmInt2NodeNew.put(id, (XADDTNode) node);
-			_hmNode2IntNew.put((XADDTNode) node, id);
-
-		}
+		} 
 	}
 
 }

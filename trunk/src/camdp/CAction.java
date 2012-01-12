@@ -65,7 +65,7 @@ public class CAction {
 				int var_index = _camdp._context.getVarIndex( _camdp._context.new BoolDec(var/* + "'"*/), false);
 				int high_branch = xadd;
 				int low_branch = _camdp._context.apply(
-						_camdp._context.getTermNode(XADD.ONE), high_branch, XADD.MINUS,-1);
+						_camdp._context.getTermNode(XADD.ONE), high_branch, XADD.MINUS);
 				xadd = _camdp._context.getINode(var_index, low_branch, high_branch);
 				xadd = _camdp._context.makeCanonical(xadd);
 				_hmVar2DD.put(var, xadd);
