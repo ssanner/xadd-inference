@@ -294,7 +294,7 @@ public class TestXADDDist {
 		split = label.split("[\\.:]");
 		if (split.length == 2)
 			label = split[0];
-		else
+		else if (split.length > 2)
 			label = split[0] + ":" + split[2];
 		return label;
 	}
