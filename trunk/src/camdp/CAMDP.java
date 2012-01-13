@@ -117,12 +117,12 @@ public class CAMDP {
 		_hmContRegrCache = new HashMap<IntTriple,Integer>();
 		
 		// Setup variable sets and lists
-		_hsBoolSVars = new HashSet<String>(parser.getBVars());
-		_hsContSVars = new HashSet<String>(parser.getCVars());
-		_hsContAVars = new HashSet<String>(parser.getAVars());
-		_alBoolSVars = new ArrayList<String>(parser.getBVars()); // Retain order given in MDP file
-		_alContSVars = new ArrayList<String>(parser.getCVars()); // Retain order given in MDP file
-		_alContAVars = new ArrayList<String>(parser.getAVars()); // Retain order given in MDP file
+		_hsBoolSVars = new HashSet<String>(Intern(parser.getBVars()));
+		_hsContSVars = new HashSet<String>(Intern(parser.getCVars()));
+		_hsContAVars = new HashSet<String>(Intern(parser.getAVars()));
+		_alBoolSVars = new ArrayList<String>(Intern(parser.getBVars())); // Retain order given in MDP file
+		_alContSVars = new ArrayList<String>(Intern(parser.getCVars())); // Retain order given in MDP file
+		_alContAVars = new ArrayList<String>(Intern(parser.getAVars())); // Retain order given in MDP file
 		_alContAllVars = new ArrayList<String>(_alContSVars);
 		_alContAllVars.addAll(_alContAVars);
 		_context._alContinuousVars = _alContAllVars;
@@ -130,6 +130,8 @@ public class CAMDP {
 		// Build cur-state var -> next-state var map
 		_hmPrimeSubs = new HashMap<String,ArithExpr>();
 		for (String var : _hsContSVars) 
+			_hmPrimeSubs.put(var, new XADD.VarExpr(var + "'"));
+		for (String var : _hsBoolSVars) 
 			_hmPrimeSubs.put(var, new XADD.VarExpr(var + "'"));
 		
 		// This helper class performs the regression
@@ -207,6 +209,7 @@ public class CAMDP {
 			}
 
 			_valueDD = _maxDD;
+			_logStream.println("- V^" + _nCurIter + _context.getString(_valueDD));
 			doDisplay(_valueDD, _logFileRoot + ": V^"+_nCurIter);
 			
 			//////////////////////////////////////////////////////////////////////////
@@ -294,10 +297,11 @@ public class CAMDP {
 	public String toString(boolean display_reward, boolean display_value) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("\nCMDP Definition:\n===============\n");
-		sb.append("CVars:       " + _context._alContinuousVars + "\n");
+		sb.append("CVars:       " + _context._alContinuousVars + " / " + 
+				_alContAllVars + " = " + _hsContSVars + " + " + _hsContAVars + "\n");
 		sb.append("Min-values:  " + _context._hmMinVal + "\n");
 		sb.append("Max-values:  " + _context._hmMaxVal + "\n");
-		sb.append("BVars:       " + _context._alBooleanVars + "\n");
+		sb.append("BVars:       " + _context._alBooleanVars + "/" + _hsBoolSVars + "\n");
 		sb.append("Order:       " + _context._alOrder + "\n");
 		sb.append("Iterations:  " + _nMaxIter + "\n");
 		sb.append("Constraints (" + _alConstraints.size() + "):\n");
@@ -449,6 +453,13 @@ public class CAMDP {
 		return null;
 	}
 
+	public ArrayList<String> Intern(ArrayList<String> l) {
+		ArrayList<String> ret = new ArrayList<String>();
+		for (String s : l)
+			ret.add(s.intern());
+		return ret;
+	}
+	
 	public static void Usage() {
 		System.out.println("\nUsage: MDP-filename #iter display-2D? display-3D?");
 		System.exit(1);
@@ -476,6 +487,7 @@ public class CAMDP {
 		mdp.DISPLAY_2D = Boolean.parseBoolean(args[2]);
 		mdp.DISPLAY_3D = Boolean.parseBoolean(args[3]);
 		System.out.println(mdp.toString(false, false));
+		//System.in.read();
 
 		int iter_used = mdp.solve(iter);
 		System.out.println("\nSolution complete, required " + 

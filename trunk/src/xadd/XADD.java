@@ -415,7 +415,11 @@ public class XADD {
 
 	public String getString(int id, boolean format) {
 		XADDNode root = _hmInt2Node.get(id);
-		return root.toString(format);
+		int num_nodes = getNodeCount(id);
+		if (num_nodes > 30)
+			return "[XADD " + id + " contains " + num_nodes + " nodes... too large to print]";
+		else
+			return root.toString(format);
 	}
 
 	// ////////////////////////////////////////////////////////////////////
@@ -512,6 +516,7 @@ public class XADD {
 	public int reduceLinearize(int node_id) {
 		int prev_node_id = -1;
 		while (node_id != prev_node_id) {
+			System.out.println("Reduce linearize... " + node_id + " / " + prev_node_id);
 			prev_node_id = node_id;
 			node_id = reduceLinearizeInt(node_id);
 			node_id = makeCanonical(node_id); // Nodes may have gotten out of order
@@ -638,8 +643,12 @@ public class XADD {
 				//      if (a < 0) COMP = flip(COMP)
 				// => x^2 + d*x + (d/2)^2 COMP (d/2)^2 + e
 				// => (x + d/2)^2 COMP (d/2)^2 + e
-				// => (x + d/2) COMP SQRT((d/2)^2 + e)
-				//    ^ (x + d/2) flip(COMP) -SQRT((d/2)^2 + e)
+				// => [if ((d/2)^2 + e) >= 0]
+				//      (x + d/2) COMP SQRT((d/2)^2 + e)
+				//      OR (x + d/2) flip(COMP) -SQRT((d/2)^2 + e)
+				//    [else]
+				//      substitute x/0 then makeCanonical 
+				//      (to find out whether true or false since for any x, always on same side)
 				double var_d = linear_coef / quad_coef;
 				double var_e = -const_coef / quad_coef;
 
@@ -649,7 +658,15 @@ public class XADD {
 					comp_oper = CompExpr.flipCompOper(comp_oper);
 				int flip_comp_oper = CompExpr.flipCompOper(comp_oper);
 				OperExpr lhs_expr = new OperExpr(SUM, new VarExpr(var), new DoubleExpr(var_d / 2d));
-				double rhs_const = Math.sqrt(var_e + var_d * var_d / 4d);
+				double rhs_pre_sqrt = var_e + var_d * var_d / 4d;
+				if (rhs_pre_sqrt < 0) {
+					// Check for imaginary roots... quadratic never crosses zero
+					HashMap<String,ArithExpr> subst = new HashMap<String,ArithExpr>();
+					subst.put(var, ZERO);
+					TautDec new_dec = (TautDec)(new ExprDec(e._expr.substitute(subst)).makeCanonical());
+					return getTermNode(new_dec._bTautology ? ONE : ZERO); // will be multiplied by true branch
+				}
+				double rhs_const = Math.sqrt(rhs_pre_sqrt);
 				int var1_id = getVarIndex(new ExprDec(new CompExpr(comp_oper, lhs_expr, new 
 						DoubleExpr(rhs_const))), true);
 				int var2_id = getVarIndex(new ExprDec(new CompExpr(flip_comp_oper, lhs_expr, new 
@@ -964,8 +981,14 @@ public class XADD {
 
 		// A terminal node should be reduced (and cannot be restricted)
 		// by default if hashing and equality testing are working in getTNode
-		if (n instanceof XADDTNode) 
-			return getTermNode((XADDTNode)n);
+		if (n instanceof XADDTNode) {
+			ArithExpr expr = ((XADDTNode)n)._expr.substitute(subst);
+			Object annotation = ((XADDTNode)n)._annotate;
+			if (annotation != null && annotation instanceof ArithExpr) {
+				annotation = ((ArithExpr)annotation).substitute(subst);
+			}
+			return getTermNode(expr, annotation);
+		}
 
 		// If its an internal node, check the reduce cache
 		if ((ret = subst_cache.get(node_id)) != null) {
@@ -1440,7 +1463,7 @@ public class XADD {
 
                 // Takes ArithExpr expr1 linear in var, returns (coef,expr2) where expr1 = coef*x + expr2
 				// setting expr1 = coef*x + expr2 = 0 then x = -expr2/coef
-				CoefExprPair p2 = leaf_val.removeVarFromExpr(_maxVar);
+				CoefExprPair p2 = first_derivative.removeVarFromExpr(_maxVar);
 				
 				root = (ArithExpr)(new OperExpr(MINUS, ZERO, new OperExpr(PROD, new DoubleExpr(
 									           1d / p2._coef), p2._expr)).makeCanonical());
