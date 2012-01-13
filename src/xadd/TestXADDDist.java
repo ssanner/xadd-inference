@@ -135,7 +135,8 @@ public class TestXADDDist {
 			HashMap<String, Double> static_dvars, String xVar, String title) {
 		
 		PrintStream ps = null;
-		String filename = title.replace('^', '_') + ".txt"; 
+		String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "") + ".txt";
+		title = RemovePathAndExt(title);
 		try {
 			ps = new PrintStream(new FileOutputStream(filename));
 		} catch (Exception e) {
@@ -204,7 +205,8 @@ public class TestXADDDist {
 			String title) {
 		
 		PrintStream ps = null;
-		String filename = title.replace('^', '_') + ".txt"; 
+		String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "") + ".txt"; 
+		title = RemovePathAndExt(title);
 		try {
 			ps = new PrintStream(new FileOutputStream(filename));
 		} catch (Exception e) {
@@ -286,4 +288,14 @@ public class TestXADDDist {
 		window.show();
 	}
 
+	public static String RemovePathAndExt(String label) {
+		String[] split = label.split("[\\\\/]");
+		label = split[split.length - 1];
+		split = label.split("[\\.:]");
+		if (split.length == 2)
+			label = split[0];
+		else
+			label = split[0] + ":" + split[2];
+		return label;
+	}
 }

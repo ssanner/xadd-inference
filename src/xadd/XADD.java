@@ -506,13 +506,20 @@ public class XADD {
 		return ret;
 	}
 
-
+	// NOTE: this linearizes one decision variable at a time, need to iterate
+	//       in case additional variables in decisions can be linearized;
+	//       iteration terminates when the node_id has not changed
 	public int reduceLinearize(int node_id) {
-		node_id = reduceLinearizeInt(node_id);
-		return makeCanonical(node_id); // Nodes may have gotten out of order
+		int prev_node_id = -1;
+		while (node_id != prev_node_id) {
+			prev_node_id = node_id;
+			node_id = reduceLinearizeInt(node_id);
+			node_id = makeCanonical(node_id); // Nodes may have gotten out of order
+		}
+		return node_id;
 	}
 
-	public int reduceLinearizeInt(int node_id) {
+	private int reduceLinearizeInt(int node_id) {
 
 		Integer ret = null;
 		XADDNode n = _hmInt2Node.get(node_id);
@@ -620,8 +627,8 @@ public class XADD {
 				}
 			}
 
-			//If this is a quadratic expression in one variable, we can
-			// linerize and return the true indicator XADD for it
+			// If this is a quadratic expression in one variable, we can
+			// linearize and return the true indicator XADD for it
 			if (all_var && !higher_order && quad_coef != null) {
 
 				//Build XADD for new decision true indicator and return
@@ -649,7 +656,7 @@ public class XADD {
 						DoubleExpr(-rhs_const))), true);
 
 				// Build XADD indicator from expressions
-				//Note: disjunction 'a v b = 1 - (1 - a)*(1 - b)
+				// Note: disjunction a v b = 1 - (1 - a)*(1 - b)
 				int T_ZERO = getTermNode(ZERO);
 				int T_ONE = getTermNode(ONE);
 				int expr1_xadd = getINode(var1_id, /* low */T_ONE, /* high */T_ZERO);
@@ -1509,7 +1516,10 @@ public class XADD {
 
             _runningMax = reduceLinearize(_runningMax);
             _runningMax = reduceLP(_runningMax, _alContinuousVars);
-            _runningMax = makeCanonical(_runningMax);
+            if (_runningMax != makeCanonical(_runningMax)) {
+            	System.err.println("processXADDMax ERROR: encountered non-canonical node that should have been canonical");
+            	System.exit(1);
+            }
             System.out.println("running max result: " + getString(_runningMax));
 
 			// All return information is stored in _runningMax so no need to return
@@ -3776,9 +3786,9 @@ public class XADD {
 		}
 		
 		// Insert node into cache
-		Object node = _hmInt2Node.get(id);
-		_hmInt2NodeNew.put(id, (XADDINode) node);
-		_hmNode2IntNew.put((XADDINode) node, id);
+		XADDNode node = _hmInt2Node.get(id);
+		_hmInt2NodeNew.put(id, node);
+		_hmNode2IntNew.put(node, id);
 		
 		// Recurse on children (if any) and insert them
 		if (node instanceof XADDINode) {

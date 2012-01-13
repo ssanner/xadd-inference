@@ -102,6 +102,10 @@ public class ComputeQFunction {
 		if (_camdp._alConstraints.size() > 0)
 			q = _xadd.reduceLP(q, _camdp._alContAllVars);
 		
+		// Optional Display
+		if (CAMDP.DISPLAY_PREMAX_Q)
+			_camdp.displayGraph(q, ": Q^" + _camdp._nCurIter + "(" + a._sName + ", " + a._actionParam + " )");
+		
 		// Continuous action parameter maximization
 		for (int i=0; i < a._actionParam.size(); i++) {
 			String var = a._actionParam.get(i);
