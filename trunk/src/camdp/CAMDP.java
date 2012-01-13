@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
 import util.IntTriple;
+import xadd.TestXADDDist;
 import xadd.XADD;
 import xadd.XADD.*;
 import cmdp.HierarchicalParser;
@@ -20,14 +21,17 @@ import cmdp.HierarchicalParser;
  * 
  * @version 1.0
  * @author Zahra
+ * @author Scott
  * @language Java (JDK 1.5)
  **/
 public class CAMDP {
 
 	/* Constants */
-	public final static boolean DISPLAY_Q = false;
+	public final static String RESULTS_DIR = "results"; // Diagnostic output destination
+	
+	public final static boolean DISPLAY_PREMAX_Q = true;
+	public final static boolean DISPLAY_POSTMAX_Q = true;
 	public final static boolean DISPLAY_V = true;
-	public final static boolean DISPLAY_2D = true;
 	public final static boolean DISPLAY_MAX = false;
 
 	/* Maintain an explicit policy? */
@@ -46,7 +50,11 @@ public class CAMDP {
 	public static Runtime RUNTIME = Runtime.getRuntime();
 
 	/* Local vars */
+	public boolean DISPLAY_2D = false;
+	public boolean DISPLAY_3D = false;
+
 	public String _problemFile = null;
+	public String _logFileRoot = null;
 	public XADD _context = null;
 	public HashSet<String> _hsBoolSVars;
 	public HashSet<String> _hsContSVars;
@@ -61,7 +69,8 @@ public class CAMDP {
 	public Integer _maxDD;
 	public Integer _prevDD;
 	public BigDecimal _bdDiscount; // Discount (gamma) for CMDP
-	public Integer    _nIter;      // Number of iterations for CMDP
+	public Integer    _nMaxIter;   // Number of iterations for CMDP
+	public Integer    _nCurIter;   // Number of iterations for CMDP
 
 	public HashMap<String,ArithExpr>  _hmPrimeSubs;
 	public HashMap<String,CAction>    _hmName2Action;
@@ -88,10 +97,11 @@ public class CAMDP {
 		
 		// Basic initializations
 		_problemFile = file_source;
+		_logFileRoot = InsertDirectory(_problemFile, RESULTS_DIR).replace("-", "_");
 		_context = new XADD();
 		_prevDD = _maxDD = _valueDD = null;
 		_bdDiscount = new BigDecimal("" + (-1));
-		_nIter = null;
+		_nMaxIter = null;
 		_hmName2Action = new HashMap<String,CAction>();
 
 		// Setup CAMDP according to parsed file contents
@@ -101,9 +111,10 @@ public class CAMDP {
 		_context._hmMinVal = parser._minCVal;
 		_context._alBooleanVars = parser.getBVars();
 		_alConstraints = parser.getConstraints();
-		_nIter = parser.getIterations();
+		_nMaxIter = parser.getIterations();
 		_bdDiscount = parser.getDiscount();
 		_hmName2Action = parser.getHashmap();
+		_hmContRegrCache = new HashMap<IntTriple,Integer>();
 		
 		// Setup variable sets and lists
 		_hsBoolSVars = new HashSet<String>(parser.getBVars());
@@ -126,7 +137,7 @@ public class CAMDP {
 		
 		// Setup a logger
 		try {
-			_logStream = new PrintStream(new FileOutputStream(file_source + ".log"));
+			_logStream = new PrintStream(new FileOutputStream(_logFileRoot + ".log"));
 		} catch (FileNotFoundException e) {
 			System.err.println(e);
 			e.printStackTrace();
@@ -145,23 +156,23 @@ public class CAMDP {
 	{
 		//////////////////////////////////////////////////////////////////////////
 		// Value iteration statistics
-		int iter = 0;
+		_nCurIter = 0;
+		if (max_iter < 0)
+			max_iter = _nMaxIter;
 		long[] time = new long[max_iter + 1];
 		int[] num_nodes = new int[max_iter + 1]; 
 		int[] num_branches = new int[max_iter + 1]; 
 		//////////////////////////////////////////////////////////////////////////
 		
-		if (max_iter < 0)
-			max_iter = _nIter;
-
 		// Initialize value function to zero
 		_valueDD = _context.getTermNode(XADD.ZERO);
 
 		// Perform value iteration for specified number of iterations, or until convergence detected
-		while (++iter <= max_iter) 
+		while (_nCurIter < max_iter) 
 		{
+			++_nCurIter;
 			ResetTimer();
-			_logStream.println("Iteration #" + iter + ", " + MemDisplay() + " bytes, " + GetElapsedTime() + " ms");
+			_logStream.println("Iteration #" + _nCurIter + ", " + MemDisplay() + " bytes, " + GetElapsedTime() + " ms");
 			_logStream.flush();
 			
 			// Prime diagram
@@ -173,8 +184,8 @@ public class CAMDP {
 
 				// Regress the current value function through each action (finite number of continuous actions)
 				int regr = _qfunHelper.regress(_valueDD, me.getValue());
-				if (DISPLAY_Q)
-					displayGraph(regr, "Q^" + iter + "(" + me.getKey() + ")");
+				if (DISPLAY_POSTMAX_Q)
+					doDisplay(regr, _logFileRoot + ": Q^" + _nCurIter + "(" + me.getKey() + ")");
 	
 				// Take the max over this action and the previous action 
 				//(can have continuous parameters which represents many discrete actions)
@@ -182,36 +193,37 @@ public class CAMDP {
 					_maxDD = regr;
 				else {
 					_maxDD = _context.apply(_maxDD, regr, XADD.MAX);
+					_maxDD = _context.reduceLinearize(_maxDD);
 					_maxDD = _context.reduceLP(_maxDD, _alContAllVars);
+		            if (_maxDD != _context.makeCanonical(_maxDD)) {
+		            	System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical");
+		            	System.exit(1);
+		            }
 				}
 				if(DISPLAY_MAX)
-					displayGraph(_maxDD, "max-" + iter);
+					displayGraph(_maxDD, "max-" + _nCurIter);
 
 				flushCaches();
 			}
 
 			_valueDD = _maxDD;
-			time[iter] = GetElapsedTime();
-			num_nodes[iter] = _context.getNodeCount(_valueDD);
-			num_branches[iter] = _context.getBranchCount(_valueDD);
-			_logStream.println("Value function size @ end of iteration " + iter + 
-					": " + num_nodes[iter] + " nodes = " + 
-					num_branches[iter] + " cases" + " in " + time[iter] + " ms");
-
-			if (DISPLAY_V) 
-				displayGraph(_valueDD, "V_"+iter+".dot");
+			doDisplay(_valueDD, _logFileRoot + ": V^"+_nCurIter);
 			
-//			if (DISPLAY_2D) {
-//				TestXADDDist plot = new TestXADDDist();
-//				HashMap<String,Boolean> bvars = new HashMap<String, Boolean>();
-//				HashMap<String,Double> dvars = new HashMap<String, Double>();
-//				if (_context._alBooleanVars.size()>0) bvars.put(_context._alBooleanVars.get(0), false);
-//				plot.PlotXADD(_context, _valueDD, _context._hmMinVal.get("x1"), 1, _context._hmMaxVal.get("x1"), bvars,dvars, "x1", "V^"+iter);
-//			}
+			//////////////////////////////////////////////////////////////////////////
+			// Value iteration statistics
+			time[_nCurIter] = GetElapsedTime();
+			num_nodes[_nCurIter] = _context.getNodeCount(_valueDD);
+			num_branches[_nCurIter] = _context.getBranchCount(_valueDD);
+			_logStream.println("Value function size @ end of iteration " + _nCurIter + 
+					": " + num_nodes[_nCurIter] + " nodes = " + 
+					num_branches[_nCurIter] + " cases" + " in " + time[_nCurIter] + " ms");
+			//////////////////////////////////////////////////////////////////////////
 		}
 
 		flushCaches();	
 		
+		//////////////////////////////////////////////////////////////////////////
+		// Performance Logging
 		_logStream.println("\nValue iteration complete!");
 		_logStream.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
 		_logStream.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
@@ -222,8 +234,9 @@ public class CAMDP {
 			? "" + num_branches[i] : " > " + XADD.MAX_BRANCH_COUNT; 
 			_logStream.println("Iter " + i + ": nodes = " + num_nodes[i] + "\tbranches = " + branch_count + "\ttime = " + time[i] + " ms");
 		}
+		//////////////////////////////////////////////////////////////////////////
 
-		return iter;
+		return _nCurIter;
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -286,7 +299,7 @@ public class CAMDP {
 		sb.append("Max-values:  " + _context._hmMaxVal + "\n");
 		sb.append("BVars:       " + _context._alBooleanVars + "\n");
 		sb.append("Order:       " + _context._alOrder + "\n");
-		sb.append("Iterations:  " + _nIter + "\n");
+		sb.append("Iterations:  " + _nMaxIter + "\n");
 		sb.append("Constraints (" + _alConstraints.size() + "):\n");
 		for (Integer cons : _alConstraints) {
 			sb.append("- " + _context.getString(cons) + "\n");
@@ -305,16 +318,104 @@ public class CAMDP {
 		return sb.toString();
 	}
 
+	public void doDisplay(int xadd_id, String label) {
+		if (DISPLAY_V) 
+			displayGraph(xadd_id, label);
+		if (DISPLAY_2D)
+			display2D(xadd_id, label);
+		if (DISPLAY_3D) 
+			display3D(xadd_id, label);
+	}
+	
 	public void displayGraph(int xadd_id, String label) {
 		Graph g = _context.getGraph(xadd_id);
+		String[] split = label.split("[\\\\/]");
+		label = split[split.length - 1];
+		label = label.replace(".camdp", "").replace(".cmdp", "");
 		g.addNode("_temp_");
 		g.addNodeLabel("_temp_", label);
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
-		g.addNodeColor("_temp_", "lightblue");
+		g.addNodeColor("_temp_", "gold1");
 		g.launchViewer(1300, 770);
 	}
 
+	public void display2D(int xadd_id, String label) {
+		
+		// If DISPLAY_2D is enabled, it is expected that necessary parameters 
+		// have been placed in a _problemFile + ".2d"
+		FileOptions opt = new FileOptions(_problemFile + ".2d");
+
+		System.out.println("Plotting 2D...");
+		System.out.println("var: " + opt._var.get(0) + ", [" + opt._varLB.get(0) + ", " + 
+				opt._varInc.get(0) + ", " + opt._varUB.get(0) + "]");
+		System.out.println("bassign: " + opt._bassign);
+		System.out.println("dassign: " + opt._dassign);
+		
+		TestXADDDist.PlotXADD(_context, xadd_id, 
+				opt._varLB.get(0), opt._varInc.get(0), opt._varUB.get(0), 
+				opt._bassign, opt._dassign, opt._var.get(0), label);
+	}
+	
+	public void display3D(int xadd_id, String label) {
+		
+		// If DISPLAY_3D is enabled, it is expected that necessary parameters 
+		// have been placed in a _problemFile + ".2d"
+		FileOptions opt = new FileOptions(_problemFile + ".3d");
+
+		System.out.println("Plotting 3D...");
+		System.out.println("var: " + opt._var.get(1) + ", [" + opt._varLB.get(1) + ", " + 
+				opt._varInc.get(1) + ", " + opt._varUB.get(1) + "]");
+		System.out.println("bassign: " + opt._bassign);
+		System.out.println("dassign: " + opt._dassign);
+
+		TestXADDDist.Plot3DXADD(_context, xadd_id, 
+				opt._varLB.get(0), opt._varInc.get(0), opt._varUB.get(0), 
+				opt._varLB.get(1), opt._varInc.get(1), opt._varUB.get(1), 
+				opt._bassign, opt._dassign, opt._var.get(0), opt._var.get(1), label);
+	}
+	
+	// A helper class to load options for 2D and 3D plotting for specific problems
+	public class FileOptions {
+		public ArrayList<String> _var = new ArrayList<String>();
+		public ArrayList<Double> _varLB = new ArrayList<Double>();
+		public ArrayList<Double> _varInc = new ArrayList<Double>();
+		public ArrayList<Double> _varUB = new ArrayList<Double>();
+		public HashMap<String,Boolean> _bassign = new HashMap<String, Boolean>();
+		public HashMap<String,Double>  _dassign = new HashMap<String, Double>();
+		public FileOptions(String filename) {
+			String line = null;
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(filename));
+				while ((line = br.readLine()) != null) {
+					line = line.trim();
+					if (line.length() == 0)
+						continue;
+					String[] split = line.split("\t");
+					String label = split[0].trim();
+					if (label.equalsIgnoreCase("var")) {
+						// Line format: var name lb inc ub
+						_var.add(split[1].trim());
+						_varLB.add(Double.parseDouble(split[2]));
+						_varInc.add(Double.parseDouble(split[3]));
+						_varUB.add(Double.parseDouble(split[4]));
+					} else if (label.equalsIgnoreCase("bassign")) {
+						// Line format: bassign name {true,false}
+						_bassign.put(split[1].trim(), Boolean.parseBoolean(split[2]));
+					} else if (label.equalsIgnoreCase("cassign")) {
+						// Line format: cassign name double
+						_dassign.put(split[1].trim(), Double.parseDouble(split[2]));
+					} else {
+						throw new Exception("ERROR: Unexpected line label '" + label + "', not {var, bassign, dassign}");
+					}
+				}
+			} catch (Exception e) {
+				System.err.println(e + "\nContent at current line: '" + line + "'");
+				System.err.println("ERROR: could not read 2d file: " + filename + ", exiting.");
+			}		
+		}
+	}
+	
 	// Reset elapsed time
 	public static void ResetTimer() {
 		_lTime = System.currentTimeMillis(); 
@@ -335,15 +436,27 @@ public class CAMDP {
 	// Testing Interface
 	////////////////////////////////////////////////////////////////////////////
 	
-	public static void usage() {
-		System.out.println("\nMust enter: MDP-filename");
-		System.out.println("\nMust enter: number of iterations");
+	public static String InsertDirectory(String filename, String add_dir) {
+		try {
+			File f = new File(filename);
+			String parent = f.getParent();
+			return (parent == null ? "" : parent) + File.separator + add_dir + 
+				File.separator + f.getName();
+		} catch (Exception e) {
+			System.err.println("Could not insert directory '" + add_dir + "' into '" + filename + "' to produce output files.");
+			System.exit(1);
+		}
+		return null;
+	}
+
+	public static void Usage() {
+		System.out.println("\nUsage: MDP-filename #iter display-2D? display-3D?");
 		System.exit(1);
 	}
 
 	public static void main(String args[]) {
-		if (args.length != 2) {
-			usage();
+		if (args.length != 4) {
+			Usage();
 		}
 
 		// Parse problem filename
@@ -355,15 +468,13 @@ public class CAMDP {
 			iter = Integer.parseInt(args[1]);
 		} catch (NumberFormatException nfe) {
 			System.out.println("\nIllegal iteration value\n");
-			System.exit(1);
-		}
-		catch(ArrayIndexOutOfBoundsException aiobe){
-			System.out.println("\nIMissing argument\n");
-			usage();
+			Usage();
 		}
 
 		// Build a CAMDP, display, solve
 		CAMDP mdp = new CAMDP(filename);
+		mdp.DISPLAY_2D = Boolean.parseBoolean(args[2]);
+		mdp.DISPLAY_3D = Boolean.parseBoolean(args[3]);
 		System.out.println(mdp.toString(false, false));
 
 		int iter_used = mdp.solve(iter);

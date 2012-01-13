@@ -78,10 +78,10 @@ public class CAction {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(_sName + " + params: ");
-		for (int i=0;i< _contBounds.size();i++)
-			sb.append( _contBounds.get(i) + " ");
-		sb.append( ":\n");
+		sb.append(_sName + " ( ");
+		for (int i = 0; i < _actionParam.size(); i++)
+			sb.append( _actionParam.get(i) + " [" + _contBounds.get(2*i) + ", " + _contBounds.get(2*i+1) + "] ");
+		sb.append("):\n");
 		for (Map.Entry<String,Integer> me : _hmVar2DD.entrySet()) {
 			XADD.XADDNode n = _camdp._context.getNode(me.getValue());
 			sb.append("*****\n" + me.getKey() + " " + n.collectVars() + ":\n" + 
