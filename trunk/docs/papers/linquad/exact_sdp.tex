@@ -1103,95 +1103,68 @@ Exact optimal value function for \WaterReservoir domain
  
 \subsection{\WaterReservoir}
 
-The problem of \WaterReservoir~\cite{reservoir} from the operations
-research community needs to make an
-optimal decision on how much and when to discharge water from water
-reservoirs to maximize hydroelectric energy productions while considering
-environment constraints such as irrigation requirements and flood
-prevention.
+In this experiment, we consider a continuous-time approach for the multi-reservoir domain.  
+The problem of \WaterReservoir  needs to make an optimal decision on how much and when to discharge water from water reservoirs to maximize hydroelectric energy productions while considering environment constraints such as irrigation requirements and flood prevention. 
 
-A multi-reservoir system is more desirable than the single reservoir problem
-due to its ability in controlling various environment parameters such as
-flooding. In these systems, the inflow of downstream reservoirs are effected
-by the outflow of their upstream reservoirs. In the OR literature, this case
-is considered much more complex and for the sake of simplicity mainly the
-single case in considered. For multi-reservoirs the main problem that leads
-to approximations to DP methods or using other simplifications is the curse
-of dimensionality. In this domain the discharge action is considered as a
-discrete action and so are the energy demands. This causes the state space
-to grow exponentially in case of multiple states and actions.
+A multi-reservoir system is more desirable than the single reservoir problem due to its ability in controlling various environment parameters such as flooding.  In these systems, the inflow of downstream reservoirs are affected by the outflow of their upstream reservoirs. In the OR literature, this case  is considered much more complex and for the sake of simplicity mainly the single case in considered. For multi-reservoirs the main problem that leads to approximations to DP methods or sampling approaches is the curse of dimensionality \cite{Mahootchi2009}. Our approach handles this complexity using continuous states and actions.
 
-Using our method for continuous action value iteration, we show that this
-problem can be handled efficiently and is scalable to multi-reservoir
-problems. Consider a two-level reservoir with the outflow of the second
-reservoir added to the input of the first reservoir. The state space is the
-level of water in both reservoirs as well as the energy demands and inflow
-(such as rainfall or streams) to the reservoirs $(l_1,l_2,i,e)$. We consider
-the water levels as continuous variables, the inflows to both reservoirs are
-the same which depends on a high-low sessions of rainfall. The energy
-demands e can be considered both continuous or discrete for different
-customer needs.
- 
-We want to prevent the upstream reservoir ($l_2$) from reaching low water
-levels, while avoiding flooding which is caused by high water levels. A
-constant amount of water is discharged from the downstream reservoir($l_1$)
-to meet customer electricity demands. The inflow to both reservoirs is
-assumed to be the same (same amount of rainfall).
+The objective in this example is to find the optimal time for draining the reservoirs so that maximum reward is obtained. If draining occurs too frequently (in small time frames), flooding may occur from the excess water. This means draining should occur as latest as possible. On the other hand, not draining will cause overflow of the reservoir and waste of the energy. 
+
+The MDP solution should solve a policy that obtains the maximum profit of electricity charges, while staying in the safe water levels of both reservoirs. In order to consider the time as a continuous variable, we allowing the system to choose to drain at any time. The choice of not draining will not gain any profit as we reward according to the electricity discharged. Two discrete actions of drain and no-drain is considered where the former is a of a continuous-time  nature. The transition function is demonstrated below: 
+
 {\footnotesize
 \begin{align*}
-l_1' & = \begin{cases}
-  d : & l_1 - 1000 \times e + 500 \times e +450 \times e \\
-  \neg d: & l_1 - 1000 \times e + 500 \times e +250 \times e \\
-  \end{cases}\\
-l_2' & = \begin{cases}
-  d : & l_2 - 500 \times e +450 \times e \\
-  \neg d: & l_2 - 500 \times e +250 \times e \\
-  \end{cases}\\
-d' & = \begin{cases}
-  d : & (0.7) \\
-  \neg i: & (0.3) \\
-  \end{cases}
-\end{align*}}
-The reward is assigned based on preventing the flood. If water levels
-prevent flooding, a reward is given for the \textit{time} the reservoir
-selects the action of discharging water from one reservoir to the other, or
-the choice of not discharging at that time, depending on the water levels.
-The elapsed time is used as the reward value if the constraints are met, in
-this case the system should choose to perform an action (drain or no drain)
-as latest as possible.
+x_1'  = 400 * e + x1 -700 * e + 500 * e \\
+x_2'  = 400 * e + x2 - 500 * e \\
+\end{align*}
+}
+Here we take draining as the act of discharging water levels per time-step from the upper-stream reservoir to the down-stream reservoir ($500 * e$). A constant amount of discharge is always considered for the down-stream to ensure all electricity demands are fulfilled.  The amount of rain (r) is considered as a constant(400)which affects both reservoirs at the time of discharge. 
 
-This elapsed time is added to the current time at each transition. The water
-levels are transitioned based on the previous levels and the amount of
-discharge and inflow multiplied by the elapsed time. This means that higher
-elapsed time is desired to maximize the reward, while lower ones ensure
-flood prevention.
+The reward function for both actions considers the safe range of [50,4500] as the safe water levels and assigns a positive reward of $e$ for the action of draining, and no rewards ( but also no penalty) for not draining. If the next state is not in the safe range, a huge penalty of -1+e6 is assigned as the reward:
+
 {\footnotesize
 \begin{align*}
-R & = \begin{cases}
-l_1 \leq 4500 \wedge l_2 \leq 4500 \wedge l_1\geq 50 : e \\
-l_1 \leq 4500 \wedge l_2 \leq 4500 \wedge l_1\leq 50 : -100+e \\
-\neg(l_1 \leq 4500 \wedge l_2 \leq 4500) : 0 \\
-\end{cases}
-\end{align*}} 
-In order to demonstrate the effectiveness of planning optimally with our
-model, we use this continuous-time example of the multi-reservoir where the
-elapsed time is defined as the action parameter to drain a reservoir. The
-goal is to show a form of value function refinement that is generated using
-this CSA-DP algorithm. The optimal value function will obtain higher values
-for higher horizons, while the value for lower horizons were less than the
-current value function. This is demonstrated in Figure~\ref{fig:reservoir}
-where three value functions have been presented in different horizons.
- 
-Here flood prevention is ensured in each step by the linear piecewise
-boundaries on the very high and very low levels, the action of discharging
-occurs here either at time 0 for very critical points or at a time depending
-on the water levels later during the iteration (i.e, $a = -8.18 +
-0.0018\times l_1$ if one of the water levels is above the critical level in
-the third iteration). As for the constant section, this piece is the safe
-range and the action of discharge (or not discharge) is left till the latest
-possible time thus achieving higher rewards. As the iteration number
-increases, the future discounted reward goes higher than the previous
-horizon.
+(x_1\leq 4500 - 200 * e) \wedge (x2 \leq 4500 +100 *e) \\
+\wedge (x_1\geq 50 - 200 * e) \wedge (x2 \geq 50 +100 *e) : e \\
+\end{align*}
+}
+We have presented the results for this experiment next. Because of the two actions and the fact that one is continuous, we would expect to see a draining action in one iteration and a no-drain action in the next iteration, since two  draining could be performed in one longer step.
+
+The first iteration starts with a drain only policy and achieves the value according to the current water levels of both reservoirs. The up-stream reservoir obtains the maximum value function if it has water levels above half of the safe range. The value decreases as water levels in the down-stream reservoir goes higher due to flood prevention. 
+
+In figure \ref{fig:v2plots}, both Q-values of drain and no-drain for the second iteration have been visualized. As expected the value function follows from selecting the no-drain action. The Q-value of draining is similar to that of the first iteration and the final value function is similar to the Q-function of no-drain. The difference of the recent two value functions is in the fact that since draining was performed in the first iteration, in the second iteration, the down-stream reservoir is not in danger of flooding and can obtain the optimal value (22.5). Since flooding is a direct result of excess water in $x_1$, the optimal value is for the lower range levels in the down-stream compared to the levels of $x_2$. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% v2plot.pdf, Q-drain, Q-noDrain.pdf
+% annotation?
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.33\textwidth]{Figures1/reservoir/Q2-Drain.pdf}
+\includegraphics[width=0.33\textwidth]{Figures1/reservoir/Q2-noDrain.pdf}
+\includegraphics[width=0.33\textwidth]{Figures1/reservoir/v2plot.pdf}
+\caption{%\footnotesize 
+Value function and Q-function values of actions: Drain, No-Drain for second iteration
+}
+\label{fig:v2plots}
+%\vspace{-3mm}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+Further iterations of the exact CSA-DP algorithm results in more partitions on the state-action space. The optimal policy converges to the value obtained in the second iteration. There are some minor difference in the value of each iteration due to the fact that with higher horizons, the reservoir can plan to obtain higher rewards and prevent flooding or overflowing. We provide the Q-values of draining, not draining and the value function for iteration 9 in \ref{fig:v9plots} to show this effect. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% v9plot.pdf, Q-drain, Q-noDrain.pdf
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.33\textwidth]{Figures1/reservoir/Q9-Drain.pdf}
+\includegraphics[width=0.33\textwidth]{Figures1/reservoir/Q9-noDrain.pdf}
+\includegraphics[width=0.33\textwidth]{Figures1/reservoir/v9plot.pdf}
+\caption{%\footnotesize 
+Value function and Q-function values of actions: Drain, No-Drain for the 9th iteration
+}
+\label{fig:v9plots}
+%\vspace{-3mm}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+Also from this plot we want to confirm the fact that in the $9^th$ iteration, the policy should choose to drain (as all other odd-iterations). The difference between the Q-values of the two actions is very minor. The sum of distances between the value function and the two Q-values shows that this distance is 49.4887 for the drain action while it is equal to 90.5312 for the no-drain action. This shows that despite the small difference, the policy tends more towards draining in this iteration. 
 
 \section{Related Work}
 The most relevant vein of Related work is that of~\cite{feng04}
