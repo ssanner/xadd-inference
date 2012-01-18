@@ -23,6 +23,7 @@ import cmdp.HierarchicalParser;
  * @author Scott Sanner
  * @language Java (JDK 1.5)
  * 
+ * TODO: Dump dot file
  * TODO: Reintroduce policy annotation
  * TODO: Allow next-state dependent rewards
  * TODO: Allow alternate initialization of V^0 in input file

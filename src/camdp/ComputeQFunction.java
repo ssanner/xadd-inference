@@ -131,7 +131,7 @@ public class ComputeQFunction {
 	}
 	
 	public int maxOutVar(int ixadd, String var, double lb, double ub) {
-		XADDLeafMax max = _context.new XADDLeafMax(var, lb, ub);
+		XADDLeafMax max = _context.new XADDLeafMax(var, lb, ub, _camdp._logStream);
 		ixadd  = _context.reduceProcessXADDLeaf(ixadd, max, false);
 		return max._runningMax;
 	}
