@@ -26,6 +26,7 @@ import javax.swing.WindowConstants;
 
 import plot.PlotExample;
 import graph.Graph;
+import util.DevNullPrintStream;
 import xadd.XADD.BoolDec;
 
 public class TestXADDDist {
@@ -141,7 +142,7 @@ public class TestXADDDist {
 			ps = new PrintStream(new FileOutputStream(filename));
 		} catch (Exception e) {
 			System.err.println("Could not open " + filename + " for data export.");
-			return;
+			ps = new DevNullPrintStream();
 		}
 		
 		// Create a Simple 2D XY plot window.
@@ -211,7 +212,7 @@ public class TestXADDDist {
 			ps = new PrintStream(new FileOutputStream(filename));
 		} catch (Exception e) {
 			System.err.println("Could not open " + filename + " for data export.");
-			return;
+			ps = new DevNullPrintStream();
 		}
 
 		// Create a Simple 2D XY plot window.

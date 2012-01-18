@@ -347,8 +347,8 @@ public class SVE {
 		//Query q = new Query("./src/sve/test.query");
 		//Factor result = sve.infer(q);
 		
-		//TestLocalization();
-		TestRadar();
+		TestLocalization();
+		//TestRadar();
 	}
 
 	public static void TestLocalization() {
