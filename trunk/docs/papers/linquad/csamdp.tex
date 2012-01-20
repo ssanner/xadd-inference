@@ -1,0 +1,164 @@
+\label{sec:csamdp}
+
+We first introduce continuous state and action Markov decision
+processes (CSA-MDPs) and then review their finite-horizon solution via
+dynamic programming building on~\cite{sanner_uai11}.  
+
+\subsection{Factored Representation}
+
+In a CSA-MDP, states will be represented by vectors of variables
+$(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$.  We assume
+that each state variable $b_i$ ($1 \leq i \leq n$) is
+boolean$\,$ s.t. $b_i \in \{ 0,1 \}$ and each $x_j$ ($1 \leq j \leq m$) is 
+continuous s.t. $x_j \in [L_j,U_j]$ for $L_j,U_j \in
+\mathbb{R}; L_j \leq U_j$.  We also assume a finite set of $p$ actions $A
+= \{ a_1(\vec{y}_1), \ldots, a_p(\vec{y}_p) \}$, where the $\vec{y}$ denote
+\emph{continuous action parameters} for the corresponding action.
+
+A CSA-MDP is defined by the following: (1) a state transition model
+$P(\vec{b}',\vec{x}'|\cdots,a,\vec{y})$, which specifies the probability of
+the next state $(\vec{b}',\vec{x}')$ conditioned on a subset of the
+previous and next state (defined below) and action $a$; (2) a reward
+function $R(\vec{b},\vec{x},a,\vec{y})$, which specifies the immediate reward
+obtained by taking action $a$ in state $(\vec{b},\vec{x})$; and (3) a
+discount factor $\gamma, \; 0 \leq \gamma \leq 1$.\footnote{If time is
+explicitly included as one of the continuous state variables, $\gamma
+= 1$ is typically used, unless discounting by horizon (different from
+the state variable time) is still intended.}  
+A policy $\pi$
+specifies the action $\pi(\vec{b},\vec{x})$ to take in each state
+$(\vec{b},\vec{x})$.  Our goal is to find an optimal sequence of
+horizon-dependent policies $\Pi^* = (\pi^{*,1},\ldots,\pi^{*,H})$
+that maximizes the expected sum of discounted rewards over a horizon
+$h \in H; H \geq 0$:\footnote{$H=\infty$ is allowed if an optimal policy has a
+finitely bounded value (guaranteed if $\gamma < 1$); for $H=\infty$, 
+the optimal policy is independent of horizon, 
+i.e., $\forall h \geq 0, \pi^{*,h} = \pi^{*,h+1}$.}
+\begin{align}
+V^{\Pi^*}(\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| \vec{b}_0,\vec{x}_0 \right]. \label{eq:vfun_def}
+\end{align}
+Here $r^h$ is the reward obtained at horizon $h$ following $\Pi^*$ where 
+we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
+ 
+CSA-MDPs as defined above are naturally factored~\cite{boutilier99dt}
+in terms of state variables $(\vec{b},\vec{x})$; as such transition
+structure can be exploited in the form of a dynamic Bayes net
+(DBN)~\cite{dbn} where the individual conditional probabilities
+$P(b_i'|\cdots,a)$ and $P(x_j'|\cdots,a)$ condition on a subset of the
+variables in the current and next state.  We disallow \emph{synchronic
+arcs} (variables that condition on each other in the same time slice) 
+within the binary $\vec{b}$ and continuous variables $\vec{x}$, 
+but we allow synchronic arcs from $\vec{b}$ to $\vec{x}$ (note that
+these conditions enforce the directed acyclic graph requirements of
+DBNs).
+%from variables in $\vec{b}$ to each other and to $\vec{x}$.
+%variables to condition on binary
+%them between  to enforce directed graph
+%properties for \emph{synchronic arcs} among binary variables 
+%, we assume a total ordering over
+%binary and continuous variables and let $\vec{b}_{<i}$
+%($\vec{x}_{<j}$) represent all variables lower than $b_i$ ($x_j$) in
+%the ordering; furthermore we asssume and that all 
+%$\vec{b}$ come before $\vec{x}$.  
+We write the joint transition model as
+\begin{align}
+P(\vec{b}',&\vec{x}'|\vec{b},\vec{x},a,\vec{y}) = \label{eq:dbn} \\
+& \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}). \nonumber 
+\end{align}
+
+We call the conditional probabilities
+$P(b_i'|\vec{b},\vec{x},a,\vec{y})$ for \emph{binary} variables $b_i$
+($1 \leq i \leq n$) conditional probability functions (CPFs) --- not
+tabular enumerations, because in general these functions can condition
+on both discrete and continuous state.  For the \emph{continuous}
+variables $x_j$ ($1 \leq j \leq m$), we represent the CPFs
+$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ with \emph{conditional
+stochastic linear equations} (CSLEs) satisfying two properties: (1) CSLEs are
+first-order \emph{Markov}, meaning that they can only condition on the previous
+state and (2) CSLEs are piecewise linear.  Following is 
+a concrete example of a CSLE:
+{\footnotesize
+\begin{align}
+P(x_1' | \vec{b},\vec{b}',\vec{x},a,\vec{y}) = \delta\left[ x_1' - 
+\begin{cases}
+b_1' \land x_2 \leq y_1  : & x_2 + 3y_1 \\
+\neg b_1' \lor x_2 > y_1 : & x_1 + 7\\
+\end{cases}
+\right] \label{eq:ex_csde}
+\end{align}}
+Here 
+the use of the Dirac $\delta[\cdot]$ function ensures that this is a
+conditional probability function that integrates to 1 over $x_1'$
+in this case.  But in more intuitive terms, one can see that this
+$\delta[\cdot]$ encodes the deterministic transition 
+equation $x_1' = \ldots$ where $\ldots$ is the conditional portion 
+of~\eqref{eq:ex_csde}.
+In this work, we require all CSLEs in the transition
+function for variable $x_i'$ to use the $\delta[\cdot]$ as shown in this
+example.
+
+It will be obvious that CSLEs in the form of \eqref{eq:ex_csde} are
+\emph{conditional linear equations}; they are furthermore discretely 
+\emph{stochastic}
+because they can condition on boolean random variables in the same time slice
+that are stochastically sampled, e.g., $b_1'$ in
+\eqref{eq:ex_csde}.  Of course, these CSLEs are restricted in that
+they cannot represent general stochastic noise (e.g., Gaussian noise),
+but we note that this representation effectively allows modeling of
+continuous variable transitions as a mixture of $\delta$ functions,
+which has been used heavily in previous exact continuous state MDP 
+solutions~\cite{feng04,li05,hao09}.  
+
+We allow the reward function $R_a(\vec{b},\vec{x},\vec{y})$ to be a
+piecewise quadratic function of the current state for each action $a
+\in A$ with parameters $\vec{y}$, for example:
+\begin{align}
+R_a(\vec{b},\vec{x},\vec{y}) = \begin{cases}
+x_1 \leq y_1 + 1 : & 1 - x_1^2 - y_1^2  \\
+x_1 > y_1 + 1:     & 0 \\
+\end{cases}. \label{eq:simple_reward}
+\end{align}
+With our CSA-MDP now completely defined, our next objective
+is to solve it.
+
+\subsection{Solution Methods}
+
+\label{sec:soln}
+
+Now we provide a continuous state generalization of {\it
+value iteration}~\cite{bellman}, which is a dynamic programming
+algorithm for constructing optimal policies.  It proceeds by
+constructing a series of $h$-stage-to-go value functions
+$V^h(\vec{b},\vec{x})$.  Initializing $V^0(\vec{b},\vec{x})$ 
+(e.g., to $V^0(\vec{b},\vec{x}) = 0$) 
+we define the quality of taking action $a$ in state
+$(\vec{b},\vec{x})$ and acting so as to obtain $V^{h}(\vec{b},\vec{x})$ 
+thereafter as the following:
+\vspace{-3mm}
+
+{\footnotesize
+\begin{align}
+& Q_a^{h+1}(\vec{b},\vec{x}) = \max_{\vec{y}} \Bigg( R_a(\vec{b},\vec{x}) + \gamma \cdot \label{eq:qfun} \\ 
+& \sum_{\vec{b}'} \int_{\vec{x}'} \left( \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \right) V^h(\vec{b}',\vec{x}') d\vec{x}' \Bigg) \nonumber
+\end{align}}
+
+Given $Q_a^h(\vec{b},\vec{x})$ for each $a \in A$, we can proceed
+to define the $h+1$-stage-to-go value function as follows:
+\begin{align}
+V^{h+1}(\vec{b},\vec{x}) & = \max_{a \in A} \left\{ Q^{h+1}_a(\vec{b},\vec{x}) \right\} \label{eq:vfun}
+\end{align}
+
+If the horizon $H$ is finite, then the optimal value function is
+obtained by computing $V^H(\vec{b},\vec{x})$ and the optimal
+horizon-dependent policy $\pi^{*,h}$ at each stage $h$ can be easily
+determined via 
+$\pi^{*,h}(\vec{b},\vec{x}) = \argmax_a Q^h_a(\vec{b},\vec{x})$.  
+If the horizon 
+$H = \infty$ and the optimal policy has finitely bounded value, 
+then value iteration can terminate at horizon $h+1$ if 
+$V^{h+1} = V^{h}$; then 
+$\pi^*(\vec{b},\vec{x}) = \argmax_a Q^{h+1}_a(\vec{b},\vec{x})$.
+
+Of course this is simply the \emph{mathematical} definition, next
+we show each of these algebraic operations can be computed for
+CSA-MDPs.
