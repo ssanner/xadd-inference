@@ -29,6 +29,12 @@ Boutilier, C.; Dean, T.; and Hanks, S.
   leverage.
 \newblock {\em {JAIR}} 11:1--94.
 
+\bibitem[\protect\citeauthoryear{Boutilier, Reiter, and Price}{2001}]{fomdp}
+Boutilier, C.; Reiter, R.; and Price, B.
+\newblock 2001.
+\newblock Symbolic dynamic programming for first-order {MDPs}.
+\newblock In {\em {IJCAI-01}},  690--697.
+
 \bibitem[\protect\citeauthoryear{Boyan and Littman}{2001}]{boyan01}
 Boyan, J., and Littman, M.
 \newblock 2001.
@@ -89,8 +95,9 @@ Li, L., and Littman, M.~L.
 \bibitem[\protect\citeauthoryear{Mahootchi}{2009}]{Mahootchi2009}
 Mahootchi, M.
 \newblock 2009.
-\newblock Storage system management using reinforcement learning techniques and
-  nonlinear models.
+\newblock {\em Storage System Management Using Reinforcement Learning
+  Techniques and Nonlinear Models}.
+\newblock Ph.D. Dissertation, University of Waterloo,Canada.
 
 \bibitem[\protect\citeauthoryear{Marecki, Koenig, and Tambe}{2007}]{phase07}
 Marecki, J.; Koenig, S.; and Tambe, M.

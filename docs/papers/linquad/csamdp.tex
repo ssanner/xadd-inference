@@ -83,7 +83,7 @@ linear equations} (PLEs) satisfying three properties: (1) PLEs are
 first-order \emph{Markov}, meaning that they can only condition on the
 previous state, (2) PLEs are deterministic, and (2) PLEs are piecewise
 linear, where the piecewise conditions may be arbitrary logical
-combinations of $\vec{b}$ and linear inequalities over $\vec{x}$.  An
+combinations of $\vec{b}$ and \emph{linear inequalities} over $\vec{x}$.  An
 example PLE has been provided in~\eqref{eq:mr_cont_trans} where the
 use of the Dirac $\delta[\cdot]$ function ensures that this is a
 conditional probability function that integrates to 1 over $x'$; In
@@ -99,28 +99,33 @@ that our restrictions do not permit general stochastic transition noise
 (e.g., Gaussian white noise as in LQR), they do permit discrete noise
 in the sense that $P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$
 may condition on $\vec{b'}$, which are stochastically sampled according
-to their CPFs.  While limited, 
-we note that this representation effectively allows modeling of
+to their CPFs.  
+We note that this representation effectively allows modeling of
 continuous variable transitions as a mixture of $\delta$ functions,
 which has been used heavily in previous exact continuous state MDP 
 solutions~\cite{feng04,hao09}.
-% TODO: Not li05, another?
+% TODO: Not li05 here (allowed PWC probability), another?
 
 % Future work: To incorporate more general
-% forms of noise would generally lead to integrals over 
+% forms of noise would generally lead to increase in order
+% of polynomials
 
 We allow the reward function $R_a(\vec{b},\vec{x},\vec{y})$ to be either
-(1) a general piecewise linear function 
-piecewise quadratic function of the current state for each action $a
-\in A$ with parameters $\vec{y}$, for example:
+(1) a general piecewise linear function (boolean or linear conditions
+and linear valuations) such as
 \begin{align}
 R_a(\vec{b},\vec{x},\vec{y}) = \begin{cases}
-x_1 \leq y_1 + 1 : & 1 - x_1^2 \\
-x_1 > y_1 + 1:     & 0 \\
-\end{cases}. \label{eq:simple_reward}
+x_1 \leq x_2 + 1 : & 1 - x_1 + 2x_2 \\
+x_1 > x_2 + 1:     & 3x_1 + 2x_2 \\
+\end{cases} \label{eq:linear_reward}
 \end{align}
-With our CSA-MDP now completely defined, our next objective
-is to solve it.
+or (2) a piecewise quadratic function restricted to be quadratic in
+one state variable and linear in *** such as~\eqref{eq:mr_reward}.  In
+the concluding remarks, we discuss the implications of
+relaxing the above restrictions on the transition and reward
+functions.  For now, with our CSA-MDP defined as above, we proceed
+to discuss how to solve for it's optimal finite horizon value
+function and policy.
 
 \subsection{Solution Methods}
 

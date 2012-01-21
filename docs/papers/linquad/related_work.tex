@@ -1,0 +1,40 @@
+\section{Related Work}
+
+The most relevant vein of Related work is that of~\cite{feng04}
+and~\cite{li05} which can perform exact dynamic programming on
+DC-MDPs with rectangular piecewise linear reward and transition functions
+that are delta functions.  While SDP can solve these same problems,
+it removes both the rectangularity and piecewise restrictions on the
+reward and value functions, while
+retaining exactness.  
+Heuristic search approaches with formal guarantees 
+like HAO*~\cite{hao09} are an attractive future extension of SDP;
+in fact HAO* currently uses the method of~\cite{feng04}, which could
+be directly replaced with SDP.  While~\cite{penberthy94} has considered
+general piecewise functions with linear boundaries (and in fact,
+we borrow our linear pruning approach from this paper), this work
+only applied to fully deterministic settings, not DC-MDPs.
+
+Other work has analyzed limited DC-MDPS having only one continuous
+variable.  Clearly rectangular restrictions are meaningless with
+only one continuous variable, so it is not surprising that more
+progress has been made in this restricted setting.  One continuous
+variable can be useful for optimal solutions to time-dependent MDPs 
+(TMDPs)~\cite{boyan01}.  Or phase transitions can be used to 
+arbitrarily approximate one-dimensional continuous distributions
+leading to a bounded approximation approach for arbitrary single continuous
+variable DC-MDPs~\cite{phase07}.  
+While this work cannot handle arbitrary stochastic
+noise in its continuous distribution, it does exactly solve DC-MDPs
+with multiple continuous dimensions.
+
+Finally, there are a number of general DC-MDP approximation
+approaches that use approximate linear programming~\cite{kveton06}
+or sampling in a reinforcement learning style approach~\cite{munos02}.
+In general, while approximation methods are quite promising in
+practice for DC-MDPS, the objective of this paper was to push
+the boundaries of \emph{exact} solutions; however, in some sense, 
+we believe that more expressive exact solutions may also inform
+better approximations, e.g., by allowing the use of data structures
+with non-rectangular piecewise partitions that allow higher fidelity
+approximations.
