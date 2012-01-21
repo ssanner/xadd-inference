@@ -1,8 +1,12 @@
 \label{sec:csamdp}
 
-We first introduce continuous state and action Markov decision
-processes (CSA-MDPs) and then review their finite-horizon solution via
-dynamic programming building on~\cite{sanner_uai11}.  
+We first introduce general continuous state and action Markov decision
+processes (CSA-MDPs) and then our specific restricted version of
+CSA-MDPs with piecewise linear continuous transitions,
+arbitrary stochastic discrete transitions, and quadratic (or
+lower-order) reward.  We then provide an algorithm their
+finite-horizon solution via symbolic dynamic programming by
+extending~\cite{sanner_uai11}.
 
 \subsection{Factored Representation}
 
@@ -16,24 +20,24 @@ continuous s.t. $x_j \in [L_j,U_j]$ for $L_j,U_j \in
 \emph{continuous action parameters} for the corresponding action.
 
 A CSA-MDP is defined by the following: (1) a state transition model
-$P(\vec{b}',\vec{x}'|\cdots,a,\vec{y})$, which specifies the probability of
-the next state $(\vec{b}',\vec{x}')$ conditioned on a subset of the
-previous and next state (defined below) and action $a$; (2) a reward
-function $R(\vec{b},\vec{x},a,\vec{y})$, which specifies the immediate reward
-obtained by taking action $a$ in state $(\vec{b},\vec{x})$; and (3) a
-discount factor $\gamma, \; 0 \leq \gamma \leq 1$.\footnote{If time is
-explicitly included as one of the continuous state variables, $\gamma
-= 1$ is typically used, unless discounting by horizon (different from
-the state variable time) is still intended.}  
-A policy $\pi$
-specifies the action $\pi(\vec{b},\vec{x})$ to take in each state
-$(\vec{b},\vec{x})$.  Our goal is to find an optimal sequence of
-horizon-dependent policies $\Pi^* = (\pi^{*,1},\ldots,\pi^{*,H})$
-that maximizes the expected sum of discounted rewards over a horizon
-$h \in H; H \geq 0$:\footnote{$H=\infty$ is allowed if an optimal policy has a
-finitely bounded value (guaranteed if $\gamma < 1$); for $H=\infty$, 
-the optimal policy is independent of horizon, 
-i.e., $\forall h \geq 0, \pi^{*,h} = \pi^{*,h+1}$.}
+$P(\vec{b}',\vec{x}'|\cdots,a,\vec{y})$, which specifies the
+probability of the next state $(\vec{b}',\vec{x}')$ conditioned on a
+subset of the previous and next state and action $a(\vec{y})$; (2) a
+reward function $R(\vec{b},\vec{x},a,\vec{y})$, which specifies the
+immediate reward obtained by taking action $a(\vec{y})$ in state
+$(\vec{b},\vec{x})$; and (3) a discount factor $\gamma, \; 0 \leq
+\gamma \leq 1$.\footnote{If time is explicitly included as one of the
+continuous state variables, $\gamma = 1$ is typically used, unless
+discounting by horizon (different from the state variable time) is
+still intended.}  A policy $\pi$ specifies the action $a(\vec{y}) =
+\pi(\vec{b},\vec{x})$ to take in each state $(\vec{b},\vec{x})$.  Our
+goal is to find an optimal sequence of horizon-dependent policies
+$\Pi^* = (\pi^{*,1},\ldots,\pi^{*,H})$ that maximizes the expected sum
+of discounted rewards over a horizon $h \in H; H \geq
+0$:\footnote{$H=\infty$ is allowed if an optimal policy has a finitely
+bounded value (guaranteed if $\gamma < 1$); for $H=\infty$, the
+optimal policy is independent of horizon, i.e., $\forall h \geq 0,
+\pi^{*,h} = \pi^{*,h+1}$.}
 \begin{align}
 V^{\Pi^*}(\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| \vec{b}_0,\vec{x}_0 \right]. \label{eq:vfun_def}
 \end{align}
@@ -41,80 +45,77 @@ Here $r^h$ is the reward obtained at horizon $h$ following $\Pi^*$ where
 we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
  
 CSA-MDPs as defined above are naturally factored~\cite{boutilier99dt}
-in terms of state variables $(\vec{b},\vec{x})$; as such transition
-structure can be exploited in the form of a dynamic Bayes net
-(DBN)~\cite{dbn} where the individual conditional probabilities
-$P(b_i'|\cdots,a)$ and $P(x_j'|\cdots,a)$ condition on a subset of the
-variables in the current and next state.  We disallow \emph{synchronic
-arcs} (variables that condition on each other in the same time slice) 
-within the binary $\vec{b}$ and continuous variables $\vec{x}$, 
-but we allow synchronic arcs from $\vec{b}$ to $\vec{x}$ (note that
-these conditions enforce the directed acyclic graph requirements of
-DBNs).
-%from variables in $\vec{b}$ to each other and to $\vec{x}$.
-%variables to condition on binary
-%them between  to enforce directed graph
-%properties for \emph{synchronic arcs} among binary variables 
-%, we assume a total ordering over
-%binary and continuous variables and let $\vec{b}_{<i}$
-%($\vec{x}_{<j}$) represent all variables lower than $b_i$ ($x_j$) in
-%the ordering; furthermore we asssume and that all 
-%$\vec{b}$ come before $\vec{x}$.  
-We write the joint transition model as
+in terms of state variables $(\vec{b},\vec{x},\vec{y})$; as such
+transition structure can be exploited in the form of a dynamic Bayes
+net (DBN)~\cite{dbn} where the individual conditional probabilities
+$P(b_i'|\cdots)$ and $P(x_j'|\cdots)$ for each next state variable
+condition on the action and (a subset of) the variables in the action,
+current and next state.  For simplicity of exposition, we assume there
+are no \emph{synchronic arcs} (variables that condition on each other
+in the same time slice) within the binary $\vec{b}$ and continuous
+variables $\vec{x}$, but we allow synchronic arcs from variables in
+$\vec{b}$ to variables in $\vec{x}$.\footnote{Synchronic arcs between
+variables within $\vec{b}$ or within $\vec{x}$ can be accommodated if
+the forthcoming Algorithm~\ref{alg:regress} (\texttt{Regress}) 
+is modified to
+eliminate child variables before parent variables in the directed
+acyclic graph (DAG) formed by the DBN.}  We write the joint transition
+model as
 \begin{align}
 P(\vec{b}',&\vec{x}'|\vec{b},\vec{x},a,\vec{y}) = \label{eq:dbn} \\
 & \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}). \nonumber 
 \end{align}
 
+% can always linearize a quadratic decision (give example), 
+% more general reward: parameterized quadratically constrained 
+%   quadratic programs
+% transition: stochasticity would mean int_n V(x,n) (= { x + n) P(n)
+
 We call the conditional probabilities
 $P(b_i'|\vec{b},\vec{x},a,\vec{y})$ for \emph{binary} variables $b_i$
 ($1 \leq i \leq n$) conditional probability functions (CPFs) --- not
 tabular enumerations, because in general these functions can condition
-on both discrete and continuous state.  For the \emph{continuous}
-variables $x_j$ ($1 \leq j \leq m$), we represent the CPFs
-$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ with \emph{conditional
-stochastic linear equations} (CSLEs) satisfying two properties: (1) CSLEs are
-first-order \emph{Markov}, meaning that they can only condition on the previous
-state and (2) CSLEs are piecewise linear.  Following is 
-a concrete example of a CSLE:
-{\footnotesize
-\begin{align}
-P(x_1' | \vec{b},\vec{b}',\vec{x},a,\vec{y}) = \delta\left[ x_1' - 
-\begin{cases}
-b_1' \land x_2 \leq y_1  : & x_2 + 3y_1 \\
-\neg b_1' \lor x_2 > y_1 : & x_1 + 7\\
-\end{cases}
-\right] \label{eq:ex_csde}
-\end{align}}
-Here 
-the use of the Dirac $\delta[\cdot]$ function ensures that this is a
-conditional probability function that integrates to 1 over $x_1'$
-in this case.  But in more intuitive terms, one can see that this
-$\delta[\cdot]$ encodes the deterministic transition 
-equation $x_1' = \ldots$ where $\ldots$ is the conditional portion 
-of~\eqref{eq:ex_csde}.
-In this work, we require all CSLEs in the transition
-function for variable $x_i'$ to use the $\delta[\cdot]$ as shown in this
-example.
+on both discrete and continuous state as
+in~\eqref{eq:mr_discrete_trans}.  For the \emph{continuous} variables
+$x_j$ ($1 \leq j \leq m$), we represent the CPFs
+$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ with \emph{piecewise
+linear equations} (PLEs) satisfying three properties: (1) PLEs are
+first-order \emph{Markov}, meaning that they can only condition on the
+previous state, (2) PLEs are deterministic, and (2) PLEs are piecewise
+linear, where the piecewise conditions may be arbitrary logical
+combinations of $\vec{b}$ and linear inequalities over $\vec{x}$.  An
+example PLE has been provided in~\eqref{eq:mr_cont_trans} where the
+use of the Dirac $\delta[\cdot]$ function ensures that this is a
+conditional probability function that integrates to 1 over $x'$; In
+more intuitive terms, one can see that this $\delta[\cdot]$ is a
+simple way to encode the PLE transition $x' = \begin{cases} \ldots
+\end{cases}$ as a probability distribution, which is required in
+general when PLEs are used to encode the
+$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ as in this work.
 
-It will be obvious that CSLEs in the form of \eqref{eq:ex_csde} are
-\emph{conditional linear equations}; they are furthermore discretely 
-\emph{stochastic}
-because they can condition on boolean random variables in the same time slice
-that are stochastically sampled, e.g., $b_1'$ in
-\eqref{eq:ex_csde}.  Of course, these CSLEs are restricted in that
-they cannot represent general stochastic noise (e.g., Gaussian noise),
-but we note that this representation effectively allows modeling of
+It is important at this point to qualify the extent of stochasticity
+permitted in this restriction of CSA-MDPs.  While it will be clear
+that our restrictions do not permit general stochastic transition noise
+(e.g., Gaussian white noise as in LQR), they do permit discrete noise
+in the sense that $P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$
+may condition on $\vec{b'}$, which are stochastically sampled according
+to their CPFs.  While limited, 
+we note that this representation effectively allows modeling of
 continuous variable transitions as a mixture of $\delta$ functions,
 which has been used heavily in previous exact continuous state MDP 
-solutions~\cite{feng04,li05,hao09}.  
+solutions~\cite{feng04,hao09}.
+% TODO: Not li05, another?
 
-We allow the reward function $R_a(\vec{b},\vec{x},\vec{y})$ to be a
+% Future work: To incorporate more general
+% forms of noise would generally lead to integrals over 
+
+We allow the reward function $R_a(\vec{b},\vec{x},\vec{y})$ to be either
+(1) a general piecewise linear function 
 piecewise quadratic function of the current state for each action $a
 \in A$ with parameters $\vec{y}$, for example:
 \begin{align}
 R_a(\vec{b},\vec{x},\vec{y}) = \begin{cases}
-x_1 \leq y_1 + 1 : & 1 - x_1^2 - y_1^2  \\
+x_1 \leq y_1 + 1 : & 1 - x_1^2 \\
 x_1 > y_1 + 1:     & 0 \\
 \end{cases}. \label{eq:simple_reward}
 \end{align}
@@ -162,3 +163,57 @@ $\pi^*(\vec{b},\vec{x}) = \argmax_a Q^{h+1}_a(\vec{b},\vec{x})$.
 Of course this is simply the \emph{mathematical} definition, next
 we show each of these algebraic operations can be computed for
 CSA-MDPs.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{.5em}
+\linesnumbered
+\begin{algorithm}[t!]
+\dontprintsemicolon
+\SetKwFunction{regress}{Regress}
+\Begin{
+   $V^0:=0, h:=0$\;
+   \While{$h < H$}{
+       $h:=h+1$\;
+       \ForEach {$a(\vec{y}) \in A$}{
+              $Q_a^{h}(\vec{y})\,:=\,$\regress{$V^{h-1},a,\vec{y}$}\;
+              $Q_a^{h} := \max_{\vec{y}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// Continuous $\max$}\;
+              $V^{h} := \max_a Q_a^{h}$ $\,$ \emph{// Discrete $\max$}\;
+              $\pi^{*,h} := \argmax_{(a,\vec{y})} \, Q_a^{h}(\vec{y})$\;
+       }
+       \If{$V^h = V^{h-1}$}
+           {break $\,$ \emph{// Terminate if early convergence}\;}
+   }
+     \Return{$V^h$} \;
+}
+\caption{\footnotesize \texttt{Solve}(CSA-MDP, $H$) \label{alg:vi}}
+\end{algorithm}
+\decmargin{.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{.5em}
+\linesnumbered
+\begin{algorithm}[t!]
+\dontprintsemicolon
+\SetKwFunction{remapWithPrimes}{Prime}
+%\SetKwFunction{sumout}{sumout}
+
+
+\Begin{
+    $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
+    \emph{// Continuous regression marginal}\\
+    \For {all $x'_j$ in $Q$}{
+         $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \, d_{x'_j}$\;
+    }
+    \emph{// Discrete regression marginal}\\
+    \For {all $b'_i$ in $Q$}{
+         $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 1}$\\
+         \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 0}$\;
+    }
+    \Return{$R(\vec{b},\vec{x},a,\vec{y}) \oplus (\gamma \otimes Q)$} \;
+}
+\caption{\footnotesize \texttt{Regress}($V,a,\vec{y}$)\label{alg:regress}}
+\end{algorithm}
+\decmargin{.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

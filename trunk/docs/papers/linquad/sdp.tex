@@ -462,25 +462,21 @@ function $V'^{h}$ in case statement format defined over next state
 variables $(\vec{b}',\vec{x}')$, we first evaluate the integral
 marginalization $\int_{\vec{x}'}$ over the continuous variables
 in~\eqref{eq:qfun}.  Because the lower and upper integration bounds
-are respectively $-\infty$ and $\infty$
-and we have
-disallowed synchronic arcs between variables in $\vec{x}'$ 
-in the transition DBN, we can marginalize out each
-$x_j'$ independently, and in any order.  Using 
-\emph{variable elimination}~\cite{varelim}, when marginalizing
-over $x_j'$ we can factor out any functions independent of $x_j'$ --- 
-that is, for $\int_{x_j'}$ in~\eqref{eq:qfun}, 
-one can see that initially, 
-the only functions that can include $x_j'$ are $V'^{h}$
-and $P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) = \delta[x_j' - g(\vec{x})]$; 
-hence, the first marginal over $x_j'$ need only be computed over
-$\delta[x_j' - g(\vec{x})] V'^{h}$.
+are respectively $-\infty$ and $\infty$ and we have disallowed
+synchronic arcs between variables in $\vec{x}'$ in the transition DBN,
+we can marginalize out each $x_j'$ independently, and in any order.
+Using \emph{variable elimination}~\cite{varelim}, when marginalizing
+over $x_j'$ we can factor out any functions independent of $x_j'$ ---
+that is, for $\int_{x_j'}$ in~\eqref{eq:qfun}, one can see that
+initially, the only functions that can include $x_j'$ are $V'^{h}$ and
+$P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) = \delta[x_j' -
+g(\vec{x})]$; hence, the first marginal over $x_j'$ need only be
+computed over $\delta[x_j' - g(\vec{x})] V'^{h}$.
 
 The key insight of the SDP algorithm introduced in~\cite{sanner_uai11}
-is that the integration 
-$\int_{x_j'} \delta[x_j' - g(\vec{x})] V'^{h} dx_j'$ 
-simply \emph{triggers the substitution} $\sigma = \{ x_j' / g(\vec{x}) \}$
-on $V'^{h}$, that is
+is that the integration $\int_{x_j'} \delta[x_j' - g(\vec{x})] V'^{h}
+dx_j'$ simply \emph{triggers the substitution} $\sigma = \{ x_j' /
+g(\vec{x}) \}$ on $V'^{h}$, that is
 \begin{align}
 \int_{x_j'} \delta[x_j' - g(\vec{x})] V'^{h} dx_j' \; = \; V'^{h} \{x_j' / g(\vec{x}) \} . \label{eq:one_int}
 \end{align}
