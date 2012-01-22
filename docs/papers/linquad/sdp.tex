@@ -1,18 +1,76 @@
 \label{sec:sdp}
 
-In this section, we extend the symbolic dynamic programming (SDP)
-work of~\cite{fomdp,sanner_uai11}
-to the case of continuously parameterized actions for CSA-MDPs.  
-For completeness, we recap the general SDP framework, noting that 
-step 4 represents the major modification to prior SDP work.
+In this section, we extend the symbolic dynamic programming (SDP) work
+of~\cite{sanner_uai11} to the case of continuously parameterized
+actions for CSA-MDPs.  We present the general SDP framework for value
+iteration in Algorithm~\ref{alg:vi} (\texttt{VI})
+and a Q-function regression subroutine~\ref{alg:regress} (\texttt{Regress}) 
+where we have omitted parameters $\vec{b}$ and $\vec{x}$ from $V$ and $Q$
+to avoid notational clutter.  We note the single difference between
+this algorithm and that described in~\cite{sanner_uai11} comes in 
+the continuous action parameter maximization in line 7
+of \texttt{VI}.  Before we explain this contribution though, we
+first recap the SDP solution, which relies on the \emph{case} representation
+and symbolic case operators to represent all functions
+and perform all operations in these algorithms.
 
-Before we define our SDP solution, however, we must formally define our
-case representation and symbolic case operators.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{.5em}
+\linesnumbered
+\begin{algorithm}[t!]
+\dontprintsemicolon
+\SetKwFunction{regress}{Regress}
+\Begin{
+   $V^0:=0, h:=0$\;
+   \While{$h < H$}{
+       $h:=h+1$\;
+       \ForEach {$a(\vec{y}) \in A$}{
+              $Q_a^{h}(\vec{y})\,:=\,$\regress{$V^{h-1},a,\vec{y}$}\;
+              $Q_a^{h} := \max_{\vec{y}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// Continuous $\max$}\;
+              $V^{h} := \casemax_a \, Q_a^{h}$ $\,$ \emph{// $\casemax$ all $Q_a$}\;
+              $\pi^{*,h} := \argmax_{(a,\vec{y})} \, Q_a^{h}(\vec{y})$\;
+       }
+       \If{$V^h = V^{h-1}$}
+           {break $\,$ \emph{// Terminate if early convergence}\;}
+   }
+     \Return{$(V^h,\pi^{*,h})$} \;
+}
+\caption{\footnotesize \texttt{VI}(CSA-MDP, $H$) $\longrightarrow$ $(V^h,\pi^{*,h})$ \label{alg:vi}}
+\end{algorithm}
+\decmargin{.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{.5em}
+\linesnumbered
+\begin{algorithm}[t!]
+\dontprintsemicolon
+\SetKwFunction{remapWithPrimes}{Prime}
+%\SetKwFunction{sumout}{sumout}
+
+
+\Begin{
+    $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
+    \emph{// Continuous regression marginal integration}\\
+    \For {all $x'_j$ in $Q$}{
+         $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \, d_{x'_j}$\;
+    }
+    \emph{// Discrete regression marginal summation}\\
+    \For {all $b'_i$ in $Q$}{
+         $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 1}$\\
+         \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 0}$\;
+    }
+    \Return{$R(\vec{b},\vec{x},a,\vec{y}) \oplus (\gamma \otimes Q)$} \;
+}
+\caption{\footnotesize \texttt{Regress}($V,a,\vec{y}$) $\longrightarrow$ $Q$ \label{alg:regress}}
+\end{algorithm}
+\decmargin{.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Case Representation and Operators}
 
-Throughout this paper, we will assume that all symbolic functions
-can be represented in \emph{case} form as follows:
+From here out, we assume that all symbolic functions
+can be represented in \emph{case} form~\cite{fomdp}:
 {%\footnotesize 
 \begin{align}
 f = 
@@ -25,19 +83,19 @@ f =
 }
 Here the $\phi_i$ are logical formulae defined over the state
 $(\vec{b},\vec{x})$ that can include arbitrary logical ($\land,\lor,\neg$)
-combinations of (a) boolean variables in $\vec{b}$ and (b) 
-inequalities ($\geq,>,\leq,<$), equalities ($=$), or disequalities ($\neq$)
-where the left and right operands can be \emph{any} function of one or more 
-variables in $\vec{x}$.  
+combinations of (i) boolean variables and (ii) 
+\emph{linear} inequalities ($\geq,>,\leq,<$) 
+over continuous variables.  
 Each $\phi_i$ will be disjoint from the other $\phi_j$ ($j \neq i$); 
 however the $\phi_i$ may not exhaustively cover the state space, hence
 $f$ may only be a \emph{partial function} and may be undefined for some
-state assignments.
+variable assignments.
 %\footnote{In the context of SDP, states whose value
 %at horizon $h$ is undefined correspond to states that cannot reach any
 %defined state of the reward in horizon $h$.}
-The $f_i$ can be \emph{any} functions of the state
-variables in $\vec{x}$.  
+The $f_i$ may be either linear or quadratic in the continuous parameters
+according to the same restrictions as for 
+$R(\vec{b},\vec{x},a,\vec{y})$.
 
 \emph{Unary operations} such as scalar multiplication $c\cdot f$ (for
 some constant $c \in \mathbb{R}$) or negation $-f$ on case statements
@@ -93,23 +151,23 @@ For SDP, we'll also need to perform maximization, restriction,
 and substitution on case statements.  
 \emph{Symbolic case maximization} is fairly straightforward
 to define:
-\vspace{-5mm}
+\vspace{-4mm}
 
 {\footnotesize
 \begin{center}
 \begin{tabular}{r c c c l}
 &
-\hspace{-9mm} $\max \Bigg(
+\hspace{-7mm} $\casemax \Bigg(
   \begin{cases}
-    \phi_1: & f_1 \\ 
-    \phi_2: & f_2 \\ 
+    \phi_1: \hspace{-2mm} & \hspace{-2mm} f_1 \\ 
+    \phi_2: \hspace{-2mm} & \hspace{-2mm} f_2 \\ 
   \end{cases}$
 $,$
 &
 \hspace{-4mm}
   $\begin{cases}
-    \psi_1: & g_1 \\ 
-    \psi_2: & g_2 \\ 
+    \psi_1: \hspace{-2mm} & \hspace{-2mm} g_1 \\ 
+    \psi_2: \hspace{-2mm} & \hspace{-2mm} g_2 \\ 
   \end{cases} \Bigg)$
 &
 \hspace{-4mm} 
@@ -117,32 +175,39 @@ $ = $
 &
 \hspace{-4mm}
   $\begin{cases}
-  \phi_1 \wedge \psi_1 \wedge f_1 > g_1    : & f_1 \\ 
-  \phi_1 \wedge \psi_1 \wedge f_1 \leq g_1 : & g_1 \\ 
-  \phi_1 \wedge \psi_2 \wedge f_1 > g_2    : & f_1 \\ 
-  \phi_1 \wedge \psi_2 \wedge f_1 \leq g_2 : & g_2 \\ 
-  \phi_2 \wedge \psi_1 \wedge f_2 > g_1    : & f_2 \\ 
-  \phi_2 \wedge \psi_1 \wedge f_2 \leq g_1 : & g_1 \\ 
-  \phi_2 \wedge \psi_2 \wedge f_2 > g_2    : & f_2 \\ 
-  \phi_2 \wedge \psi_2 \wedge f_2 \leq g_2 : & g_2 \\ 
+  \phi_1 \wedge \psi_1 \wedge f_1 > g_1    : & \hspace{-2mm} f_1 \\ 
+  \phi_1 \wedge \psi_1 \wedge f_1 \leq g_1 : & \hspace{-2mm} g_1 \\ 
+  \phi_1 \wedge \psi_2 \wedge f_1 > g_2    : & \hspace{-2mm}f_1 \\ 
+  \phi_1 \wedge \psi_2 \wedge f_1 \leq g_2 : & \hspace{-2mm} g_2 \\ 
+  \phi_2 \wedge \psi_1 \wedge f_2 > g_1    : & \hspace{-2mm} f_2 \\ 
+  \phi_2 \wedge \psi_1 \wedge f_2 \leq g_1 : & \hspace{-2mm} g_1 \\ 
+  \phi_2 \wedge \psi_2 \wedge f_2 > g_2    : & \hspace{-2mm} f_2 \\ 
+  \phi_2 \wedge \psi_2 \wedge f_2 \leq g_2 : & \hspace{-2mm} g_2 \\ 
   \end{cases}$
 \end{tabular}
 \end{center}
-}
-One can verify that the resulting case statement is still
-within the case language defined previously.  At first
-glance this may seem like a cheat and little is gained
-by this symbolic sleight of hand.  However, simply
-having a case partition representation that is closed under 
-maximization will facilitate the closed-form regression 
-step that we need for SDP.\ \  Furthermore, the 
-XADD that we introduce later will be able to exploit the 
-internal decision structure of this
-maximization to represent it much more compactly.
+} A few remarks are required here.  If all $f_i$ and $g_i$ are linear,
+the $\casemax$ result is clearly still linear.  If the $f_i$ or $g_i$
+are quadratic according to the previous reward restriction, it will
+shortly become obvious that the expressions $f_i > g_i$ or $f_i \leq
+g_i$ will be at most univariate quadratic and any such quadratic
+inequality can be \emph{linearized} into a logical combination of two
+linear inequalities by completing the square (e.g., $x^2 + 8x > 0
+\equiv [x + 4]^2 > 4 \equiv [x \leq -2] \lor [x > 6]$).  Hence
+according to the earlier restrictions, the result of this $\casemax$
+operator will be representable in the case format previously described
+(i.e., linear inequalities in decisions).
 
-The next operation of \emph{restriction} is fairly simple: in this
+% define boolean restriction
+
+% define substitution then explain the integral is substitution,
+% refer to UAI paper for how to substitute a case into a case
+
+% now all operations defined except line 7!
+
+The next operation of \emph{boolean restriction} is fairly simple: in this
 operation, we want to restrict a function $f$ to apply only in cases
-that satisfy some formula $\phi$, which we write as $f|_{\phi}$.  
+that satisfy some boolean variable $b$, which we write as $f|_{\phi}$.  
 This can be done by simply appending $\phi$ to each case partition
 as follows:
 {\footnotesize
@@ -402,6 +467,8 @@ After taking the symbolic maximum over the partitions above, we also add all the
 
 \subsection{Extended ADDs (XADDs)}
 
+% mention feasibility checking, all ops apply directly
+
 In practice, it can be prohibitively expensive to maintain a case
 statement representation of a value function with explicit partitions.
 Motivated by the SPUDD~\cite{spudd} algorithm which maintains compact
@@ -422,7 +489,7 @@ means that certain paths in the XADD may be inconsistent or infeasible
 (due to parent decisions).  To remedy this, when the XADD has only
 linear decision nodes (as it will in this work), we can use a 
 feasibility checker of a linear programming solver
-to prune out unreachable paths~\cite{sanner_uai}, which substantially
+to prune out unreachable paths~\cite{sanner_uai11}, which substantially
 improves scalability as we show later.
 
 Sanner {\it et al}~\cite{sanner_uai11} outlined a number of issues
