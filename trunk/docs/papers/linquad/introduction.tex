@@ -21,21 +21,20 @@ minimizing a quadratic cost function subject to linear dynamics with
 Gaussian noise in a partially observed setting.  However, the
 transition dynamics and reward (or cost) for such problems 
 cannot be piecewise --- a crucial limitation preventing the application
-of such solutions to planning and operations research problems. 
+of such solutions to many planning and operations research problems. 
 
 In this paper, we provide an exact symbolic dyanmic programming (SDP)
-solution to a subset of continuous state and action Markov decision
-processes (CSA-MDPs), namely CSA-MDPs with \emph{multivariate}
-continuous state and actions, discrete noise, \emph{piecewise} linear
-dynamics, and \emph{piecewise} linear (or restricted \emph{piecewise}
-quadratic) reward.  To be concrete about the form of CSA-MDPs we can
-solve with our SDP approach, let us formalize a simple \MarsRover\
-problem:\footnote{One should note that for purposes of concise
-exposition and explanation of the optimal value function and policy,
-this CSA-MDP example contains only univariate state and action and
-deterministic transitions; the empirical results will later define a
-range of CSA-MDPs with multivariate state and action and discrete
-noise.}
+solution to a useful subset of continuous state and action Markov
+decision processes (CSA-MDPs) with \emph{multivariate} continuous
+state and actions, discrete noise, \emph{piecewise} linear dynamics,
+and \emph{piecewise} linear (or restricted \emph{piecewise} quadratic)
+reward.  To be concrete about the form of CSA-MDPs we can solve with
+our SDP approach, let us formalize a simple \MarsRover\
+problem:\footnote{For purposes of concise exposition and explanation
+of the optimal value function and policy, this CSA-MDP example uses
+continuous univariate state and action and deterministic transitions;
+the empirical results will later define a range of CSA-MDPs with
+multivariate continuous state and action and stochastic transitions.}
 
 \begin{example*}[\MarsRover]
 \label{ex:knapsack}
@@ -48,9 +47,9 @@ automatically take a picture when it starts a time step within the
 range $x \in [-2,2]$ and it only receives this reward once.
 \end{example*}
 Using boolean variable $b$ to indicate whether the picture has
-already been taken and $x'$ and $b'$ to denote the
-post-action state and $R$ to denote the reward function, we obtain a
-simple instance of a \MarsRover\ CSA-MDP:
+already been taken, $x'$ and $b'$ to denote 
+post-action state, and $R$ to denote reward, we can
+express this simple \MarsRover\ CSA-MDP using piecewise dynamics and reward:
 \begin{align} 
 P(b'|x) & = 
 \begin{cases}
@@ -84,15 +83,14 @@ obtained from any state over a fixed time horizon?
 \includegraphics[width=0.4\textwidth]{Figures1/v2_mr.pdf}\\
 \includegraphics[width=0.4\textwidth]{Figures1/v3_mr.pdf}
 \vspace{-2mm}
-\caption{\footnotesize Optimal value functions $V^t$ (for $b =
-\false$) for time horizons (i.e., decision stages remaining) $t=0$,
+\caption{\footnotesize Optimal sum of rewards 
+(value functions) $V^t(x)$ for $b =
+\false$ for time horizons (i.e., decision stages remaining) $t=0$,
 $t=1$, and $t=2$ on the \MarsRover\ problem.  For $x \in [-2,2]$, the
 rover automatically takes a picture and receives a reward quadratic in
-$x$.  For $V^1$, the rover may move up to 10 units in
-either direction, reaching the full reward of $4$ up
-to $x = \pm 10$ and non-zero reward up to $x = \pm 12$. 
-For $V^2$, the rover can move up to 20 units in two time steps,
-allowing it to achieve non-zero reward up to $x = \pm 22$.}
+$x$.  For $V^1(x)$, the rover can achieve
+non-zero reward up to $x = \pm 12$ and for 
+$V^2(x)$, up to $x = \pm 22$.}
 \label{fig:opt_graph}
 %\vspace{-2mm}
 \end{figure}
@@ -104,17 +102,15 @@ allowing it to achieve non-zero reward up to $x = \pm 22$.}
 %\subfigure{
 \includegraphics[width=0.5\textwidth]{Figures1/v2_mr_dd.pdf}
 %\vspace{-3mm}
-\caption{\footnotesize Optimal value function $V^1$ for the
+\caption{\footnotesize Optimal value function $V^1(x)$ for the
 \MarsRover\ problem represented as an extended algebraic decision
 diagram (XADD).  Here the solid lines represent the $\true$ branch for
 the decision and the dashed lines the $\false$ branch.  To evaluate
 $V^1(x)$ for any state $x$, one simply traverses the diagram in a
 decision-tree like fashion until a leaf is reached where the
-expression provides the value.  The second expression in parentheses
-in each leaf provides the optimal action \emph{policy} for $d$ as a
-function of the state that allows one to obtain $V^1(x)$.  This
-closed-form policy can be derived as a byproduct of symbolic dynamic
-programming as we discuss later.}
+non-parenthetical expression provides the \emph{optimal value} and the
+parenthetical expression provides the \emph{optimal policy} 
+($d = \pi^{*,1}(x)$) to achieve value $V^1(x)$.}
 \label{fig:opt_val_pol}
 %\vspace{-3mm}
 \end{figure}
@@ -127,32 +123,26 @@ form, we display both the 1-step time horizon value function (the
 2-step is too large to display) \emph{and} corresponding optimal
 policy in Figure~\ref{fig:opt_val_pol}.  Here, the piecewise nature of
 the transition and reward function lead to piecewise
-structure in the value function and policy.  Despite the intuitive and
+structure in the value function and policy.  Yet despite the intuitive and
 simple nature of this result, we are unaware of prior methods that can
 produce such exact solutions.
 
 To this end, we extend the previous SDP framework
 of~\cite{sanner_uai11} to the case of continuous actions to obtain the
 \emph{optimal closed-form} value function and policy for the
-class of CSA-MDPs previously described.
-
+class of CSA-MDPs described previously (as well as the useful
+deterministic subset).
 As the fundamental technical contribution of the paper, we
-show how the \emph{continuous action maximization} step in the dynamic
-programming backup can be evaluated optimally and symbolically and how
-it can be efficiently realized in the extended algebraic decision diagram (XADD)
-we use to perform all SDP operations.  This
-allows us to obtain the \emph{first} algorithm to derive exact closed-form
-solutions to this class of CSA-MDPs along with a closed-form
-representation of the optimal policy
-(cf. Figure~\ref{fig:opt_val_pol}).  
-%- extension to XADDs
-%- solutions for multivariate actions and quadratic reward
-%- automatic derivation of the policy
-%- first exact solution to variants of multi-inventory control
-%  problem, water reservoir, and quadratic reward problems with
-%  piecewise dynamics
-We empirically evaluate the time and space required to compute exact
-solutions to the \MarsRover\ problem for different time horizons, as
-well as \WaterReservoir\ and multivariate action \InventoryControl\
-studied in operations research showing the first exact solutions for
-these problems can be practically computed for reasonable horizons.
+show how the continuous action maximization step in the dynamic programming
+backup can be evaluated optimally and symbolically --- a task which
+amounts to \emph{symbolically} solving a linear program subject to
+unknown state parameters; we further integrate this technique to work
+with an efficient and compact data structure for SDP --- the extended
+algebraic decision diagram (XADD).  
+In addition to the solution of the nonlinear \MarsRover\
+planning example above, we demonstrate empirical results on
+\WaterReservoir\ and \InventoryControl\ domains from operations research
+to show the \emph{first automated exact solution} to these problems.
+%We additionally remark that all of the results in this paper apply to
+%the deterministic subset of CSA-MDPs hence also providing exact
+%solutions for continuous state and action deterministic planning.
