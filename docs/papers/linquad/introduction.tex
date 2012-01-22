@@ -37,10 +37,10 @@ the empirical results will later define a range of CSA-MDPs with
 multivariate continuous state and action and stochastic transitions.}
 
 \begin{example*}[\MarsRover]
-\label{ex:knapsack}
+\label{ex:marsrover}
 A Mars Rover state consists of its continuous position $x$ along a
 given route.  In a given time step, the rover may move a 
-continuous distance $d \in [-10,10]$.  The rover receives its greatest
+continuous distance $y \in [-10,10]$.  The rover receives its greatest
 reward for taking a picture at $x=0$, which quadratically decreases
 to zero at the boundaries of the range $x \in [-2,2]$.  The rover will
 automatically take a picture when it starts a time step within the
@@ -56,9 +56,9 @@ express the \MarsRover\ CSA-MDP using piecewise dynamics and reward:
 b \lor (x \geq -2 \land x \leq 2): & 1.0\\
 \neg b \land (x < -2 \lor x > 2):  & 0.0
 \end{cases} \label{eq:mr_discrete_trans} \\
-\hspace{-2mm} P(x'|x,d) & = \delta \left( x' - \begin{cases}
-d \geq -10 \land d \leq 10 : & \hspace{-2mm} x + d \\
-d < -10 \lor d > 10 : & \hspace{-2mm} x
+\hspace{-2mm} P(x'|x,y) & = \delta \left( x' - \begin{cases}
+y \geq -10 \land y \leq 10 : & \hspace{-2mm} x + y \\
+y < -10 \lor y > 10 : & \hspace{-2mm} x
 \end{cases}
 \right) \label{eq:mr_cont_trans} \\
 \hspace{-2mm} R(x,b) & = \begin{cases}
@@ -83,13 +83,13 @@ obtained from any state over a fixed time horizon?
 \includegraphics[width=0.4\textwidth]{Figures1/v2_mr.pdf}\\
 \includegraphics[width=0.4\textwidth]{Figures1/v3_mr.pdf}
 \vspace{-2mm}
-\caption{\footnotesize Optimal sum of rewards 
-(value functions) $V^t(x)$ for $b =
-\false$ for time horizons (i.e., decision stages remaining) $t=0$,
+\caption{\footnotesize Optimal sum of rewards (value) 
+$V^t(x)$ for $b = 0 \, 
+(\false)$ for time horizons (i.e., decision stages remaining) $t=0$,
 $t=1$, and $t=2$ on the \MarsRover\ problem.  For $x \in [-2,2]$, the
 rover automatically takes a picture and receives a reward quadratic in
-$x$.  For $V^1(x)$, the rover can achieve
-non-zero reward up to $x = \pm 12$ and for 
+$x$.  We initialized $V^0(x,b) = R(x,b)$; for $V^1(x)$, the rover achieves
+non-zero value up to $x = \pm 12$ and for 
 $V^2(x)$, up to $x = \pm 22$.}
 \label{fig:opt_graph}
 %\vspace{-2mm}
@@ -98,9 +98,9 @@ $V^2(x)$, up to $x = \pm 22$.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[t!]
-\centering
+%\centering
 %\subfigure{
-\includegraphics[width=0.5\textwidth]{Figures1/v2_mr_dd.pdf}
+\hspace{-1mm}\includegraphics[width=0.51\textwidth]{Figures1/v2_mr_dd.pdf}
 %\vspace{-3mm}
 \caption{\footnotesize Optimal value function $V^1(x)$ for the
 \MarsRover\ problem represented as an extended algebraic decision
@@ -110,7 +110,7 @@ $V^1(x)$ for any state $x$, one simply traverses the diagram in a
 decision-tree like fashion until a leaf is reached where the
 non-parenthetical expression provides the \emph{optimal value} and the
 parenthetical expression provides the \emph{optimal policy} 
-($d = \pi^{*,1}(x)$) to achieve value $V^1(x)$.}
+($y = \pi^{*,1}(x)$) to achieve value $V^1(x)$.}
 \label{fig:opt_val_pol}
 %\vspace{-3mm}
 \end{figure}
