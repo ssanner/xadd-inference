@@ -46,22 +46,22 @@ to zero at the boundaries of the range $x \in [-2,2]$.  The rover will
 automatically take a picture when it starts a time step within the
 range $x \in [-2,2]$ and it only receives this reward once.
 \end{example*}
-Using boolean variable $b$ to indicate whether the picture has
-already been taken, $x'$ and $b'$ to denote 
-post-action state, and $R$ to denote reward, we can
-express this simple \MarsRover\ CSA-MDP using piecewise dynamics and reward:
+Using boolean variable $b \in \{0,1\}$ to indicate if the picture has
+already been taken ($b=1$), $x'$ and $b'$ to denote 
+post-action state, and $R$ to denote reward, we 
+express the \MarsRover\ CSA-MDP using piecewise dynamics and reward:
 \begin{align} 
-P(b'|x) & = 
+\hspace{-2mm} P(b'=1|x) & = 
 \begin{cases}
 b \lor (x \geq -2 \land x \leq 2): & 1.0\\
 \neg b \land (x < -2 \lor x > 2):  & 0.0
 \end{cases} \label{eq:mr_discrete_trans} \\
-P(x'|x,d) & = \delta \left( x' - \begin{cases}
+\hspace{-2mm} P(x'|x,d) & = \delta \left( x' - \begin{cases}
 d \geq -10 \land d \leq 10 : & \hspace{-2mm} x + d \\
 d < -10 \lor d > 10 : & \hspace{-2mm} x
 \end{cases}
 \right) \label{eq:mr_cont_trans} \\
-R(x,b) & = \begin{cases}
+\hspace{-2mm} R(x,b) & = \begin{cases}
 \neg b \land x \geq -2 \land x \leq 2 : & 4 - x^2 \\
 b \lor x < -2 \lor x > 2 : & 0
 \end{cases} \label{eq:mr_reward}
