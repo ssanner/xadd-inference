@@ -3,16 +3,16 @@
 In this section, we extend the symbolic dynamic programming (SDP) work
 of~\cite{sanner_uai11} to the case of continuously parameterized
 actions for CSA-MDPs.  We present the general SDP framework for value
-iteration in Algorithm~\ref{alg:vi} (\texttt{VI})
-and a Q-function regression subroutine~\ref{alg:regress} (\texttt{Regress}) 
-where we have omitted parameters $\vec{b}$ and $\vec{x}$ from $V$ and $Q$
-to avoid notational clutter.  We note the single difference between
-this algorithm and that described in~\cite{sanner_uai11} comes in 
-the continuous action parameter maximization in line 7
-of \texttt{VI}.  Before we explain this contribution though, we
-first recap the SDP solution, which relies on the \emph{case} representation
-and symbolic case operators to represent all functions
-and perform all operations in these algorithms.
+iteration in Algorithm~\ref{alg:vi} (\texttt{VI}) and a Q-function
+regression subroutine~\ref{alg:regress} (\texttt{Regress}) where we
+have omitted parameters $\vec{b}$ and $\vec{x}$ from $V$ and $Q$ to
+avoid notational clutter.  We note the single difference between this
+algorithm and that described in~\cite{sanner_uai11} comes in the
+continuous action parameter maximization in line 7 of \texttt{VI}.
+Before we explain this contribution though, we first recap the SDP
+solution, which requires that the CSA-MDP and all other
+functions such as $Q$ and $V$ are represented in \emph{case} form and
+all operations are \emph{case operations}, defined next.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{.5em}
@@ -186,142 +186,94 @@ $ = $
   \end{cases}$
 \end{tabular}
 \end{center}
-} A few remarks are required here.  If all $f_i$ and $g_i$ are linear,
+} We remark that if all $f_i$ and $g_i$ are linear,
 the $\casemax$ result is clearly still linear.  If the $f_i$ or $g_i$
 are quadratic according to the previous reward restriction, it will
 shortly become obvious that the expressions $f_i > g_i$ or $f_i \leq
 g_i$ will be at most univariate quadratic and any such quadratic
-inequality can be \emph{linearized} into a logical combination of two
-linear inequalities by completing the square (e.g., $x^2 + 8x > 0
+inequality can be \emph{linearized} into a logical combination of at most 
+two linear inequalities by completing the square (e.g., $x^2 + 8x > 0
 \equiv [x + 4]^2 > 4 \equiv [x \leq -2] \lor [x > 6]$).  Hence
 according to the earlier restrictions, the result of this $\casemax$
 operator will be representable in the case format previously described
 (i.e., linear inequalities in decisions).
 
-% define boolean restriction
+There are two operations in \texttt{Regress} that we have not defined
+yet.  The first operation of \emph{boolean restriction} required in
+lines 8--9 is obvious and an example is omitted: in this operation
+$f|_{b=v}$, anywhere a boolean variable $b$ occurs in $f$, we assign
+it the value $v \in \{ 0,1 \}$.  The second operation of
+\emph{continuous regression} $\int Q(x'_j) \otimes P(x'_j|\cdots)
+dx'_j$ is required in line 5; as previously defined, $P(x_j'|\cdots)$
+will always be of the form $\delta[x_j' - h(\vec{z})]$ where
+$h(\vec{z})$ is a case statement and $\vec{z}$ does not contain
+$x'_j$.  Rules of integration then tell us that $\int f(x'_j) \otimes
+\delta[x_j' - h(\vec{z})] dx'_j = f(x'_j) \{ x'_j / h(\vec{z}) \}$
+where the latter operation indicates that any occurrence of $x'_j$ in
+$f(x'_j)$ is \emph{symbolically substituted} with the case statement
+$h(\vec{z})$.  The full specification of this operation was a key
+contribution of~\cite{sanner_uai11} so we refer the reader to that
+paper for further technical details.  The
+important insight is that this $\int$ operation yields a result that is a
+case statement in the form previously outlined.
 
-% define substitution then explain the integral is substitution,
-% refer to UAI paper for how to substitute a case into a case
-
-% now all operations defined except line 7!
-
-The next operation of \emph{boolean restriction} is fairly simple: in this
-operation, we want to restrict a function $f$ to apply only in cases
-that satisfy some boolean variable $b$, which we write as $f|_{\phi}$.  
-This can be done by simply appending $\phi$ to each case partition
-as follows:
-{\footnotesize
-\begin{center}
-\begin{tabular}{r c c l}
-&
-\hspace{-6mm} 
-  $f = \begin{cases}
-    \phi_1: & f_1 \\ 
-   \vdots&\vdots\\ 
-    \phi_k: & f_k \\ 
-  \end{cases}$
-&
-
-&
-\hspace{-2mm}
-  $f|_{\phi} = \begin{cases}
-    \phi_1 \land \phi : & f_1 \\ 
-   \vdots&\vdots\\ 
-    \phi_k \land \phi : & f_k \\ 
-  \end{cases}$
-\end{tabular}
-\end{center}
-}
-Clearly $f|_{\phi}$ only applies when $\phi$ holds and is
-undefined otherwise, hence $f|_{\phi}$ is a partial function
-unless $\phi \equiv \top$.
-
-The final operation that we need to define for case statements is
-substitution.  \emph{Symbolic substitution} simply takes a set
-$\sigma$ of variables and their substitutions, e.g., $\sigma = \{ x_1'
-/ (x_1 \hspace{-.8mm} + \hspace{-.8mm} x_2), x_2' / x_1 \}$ where the
-LHS of the $/$ represents the substitution variable and the RHS of the
-$/$ represents the expression that should be substituted in its place.
-No variable occurring in any RHS expression of $\sigma$ can also occur
-in any LHS expression of $\sigma$.  We write the substitution of a
-non-case function $f_i$ with $\sigma$ as $f_i\sigma$; as an example,
-for the $\sigma$ defined previously and $f_i = x_1' + x_2'$ then
-$f_i\sigma = x_1 + x_2 + x_1$ as would be expected.  We can also
-substitute into case partitions $\phi_j$ by applying $\sigma$ to each
-inequality operand; as an example, if $\phi_j \equiv x_1' \leq 2x_2'$ 
-then $\phi_j \sigma \equiv x_1 + x_2 \leq 2x_1$.  
-Having now defined substitution of $\sigma$ for non-case
-functions $f_i$ and case partitions $\phi_j$ we can define it for case
-statements in general:
-
-{\footnotesize
-\begin{center}
-\begin{tabular}{r c c l}
-&
-\hspace{-6mm} 
-  $f = \begin{cases}
-    \phi_1: & f_1 \\ 
-   \vdots&\vdots\\ 
-    \phi_k: & f_k \\ 
-  \end{cases}$
-&
-
-&
-\hspace{-2mm}
-  $f\sigma = \begin{cases}
-    \phi_1\sigma: & f_1\sigma \\ 
-   \vdots&\vdots\\ 
-    \phi_k\sigma: & f_k\sigma \\ 
-  \end{cases}$
-\end{tabular}
-\end{center}
-}
-\normalsize
-
-One property of substitution is that
-if $f$ has mutually exclusive partitions $\phi_i$ ($1 \leq i \leq k$)
-then $f\sigma$ must also have mutually exclusive partitions ---
-this follows from the logical consequence that 
-if $\phi_1 \land \phi_2 \models \bot$
-then $\phi_1\sigma \land \phi_2\sigma \models \bot$.
-%We will exploit this property next in SDP for DC-MDPs.
-
-%%zz: entire subsection
 \subsection{Maximization of Continuous Parameters}
 
-In the previous section, we covered the operations required for the
-SDP algorithm defined in~\cite{sanner_uai11}.  As the primary
-technical contribution of this paper, we now address the
-issue of maximizing a function (e.g., Q-function) w.r.t. continuous
-parameters (e.g., action parameters).
+The only operation in \texttt{VI} and \texttt{Regress} that has not
+yet been defined is the continuous action maximization in line 7 of
+\texttt{VI} that forms the key novel contribution of this paper.
+Reintroducing suppressed state variables and renaming $Q_a^{h}$ to
+$f$, we write this operation as $g(\vec{b},\vec{x}) := \max_{\vec{y}}
+\, f(\vec{b},\vec{x},\vec{y})$ --- the key point to realize here is
+that \emph{the} maximizing $\vec{y}$ is a function
+$g(\vec{b},\vec{x})$.  We work through the derivation of $g$ in this
+section, which amounts to \emph{symbolically} solving a linear program
+subject to unknown state parameters $\vec{b}$ and $\vec{x}$.
 
-It is perhaps easiest to demonstrate how to compute $\max_d f(d)$ in exact,
-closed-form for $f(d)$ in case format with a running example.
-If $f(d)$ has mutually exclusive and exhaustive 
-case partitions w.r.t.\ a fixed $d$ (a property that will be guaranteed 
-whenever this operator is applied in SDP), the following sequence of
+Exploiting the commutativity of $\max$, we can first rewrite any
+multivariate $\max_{\vec{y}}$ as a sequence of univariate $\max$
+operations $\max_{y_1} \cdots \max_{y_{|\vec{y}|}}$; hence it suffices
+to provide the univariate $\max_y$ solution: 
+$g(\vec{b},\vec{x}) := \max_{y} \, f(\vec{b},\vec{x},y)$.
+
+If $f(\vec{b},\vec{x},y)$ has mutually disjoint and exhaustive
+case partitions $\phi_i$ (a property that is 
+guaranteed whenever this operator is applied in SDP), the following
 equalities hold:
+{\footnotesize
 \begin{align*}
-\max_d f(d) & = \max_d \sum_i \phi_i(d) f_i(d) & = \max_d \max_i \phi_i(d) f_i(d)\\
-            & = \max_i \max_d \phi_i(d) f_i(d).
-\end{align*}
-The critical step where $\sum_i$ is replaced with $\max_i$ is permitted
-since the $\phi_i$ are mutually disjoint and exhaustive --- only one $\phi_i$
-will ever be true for any given assignment to the case statement variables.
-This step is crucial because the outer $\max_i$ is the ``case maximization''
-operation already discussed while the inner $\max_d$ is a continuous variable
-maximization that we can now compute for just one case partition, i.e.,
-one $\phi_i(d)$ and $f_i(d)$, and the apply a case maximization to all
-of the results for each partition.
+\max_y f(\vec{b},\vec{x},y) & = \max_y \sum_i \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)\\
+& = \max_y \casemax_i \, \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)\\
+& = \casemax_i \max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y).
+\end{align*}}
+The critical step where $\sum_i$ is replaced with $\max_i$ is
+permitted since the $\phi_i$ are mutually disjoint and exhaustive ---
+only one $\phi_i$ will ever be true for any given assignment to the
+case statement variables.  This step is crucial because the outer
+$\max_i$ is the $\casemax$ operation already discussed
+while the inner $\max_y$ is a continuous variable maximization that we
+can now compute for \emph{each case partition individually}.  Hence we
+need only define $\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$.
 
-To continue with maximization in one partition, we use our
-\MarsRoverNL example in one of the case partitions of the first iteration for
-continuous maximization.  This partition $i$ (resulting from applying SDP)
-contains conditions $\phi_i(d) \equiv \neg b\wedge
-(x\geq 2)\wedge (d\leq 10) \wedge (d\geq -10)\wedge (x+d\leq 2) \wedge
-(x+d\geq -2) $ and value $f_i(d) = 4 - (x+d)^2 $.
+{\bf STOPPED HERE}
 
-To perform $\max_d \phi_i f_i(d)$, we consider some mathematical
+From here out we assume that all partitions $\phi_i$ consist of
+conjunctions of linear inequalities and (possibly negated) 
+boolean variables --- a condition easy to enforce since disjunctions
+$\lor$ can be broken up across multiple case partitions and negated
+inequalities are still inequalities ($\neg [x < 2] \equiv [x \geq 2]$).
+To make the partition maximization procedure concrete, 
+we use an example that arises in the \MarsRover problem.  
+This partition $i$ (resulting
+from applying SDP) has conditions $\phi_i(x,b,y) \equiv \neg b\wedge
+(x\geq 2)\wedge (y\leq 10) \wedge (y\geq -10)\wedge (x+y\leq 2) \wedge
+(x+y\geq -2)$ and value $f_i(x,y) = 4 - (x+d)^2 $.
+
+To perform $\max_y \phi_i f_i(d)$, we make a few remarks on the
+structure of this operation.
+
+
+we consider some mathematical
 definitions necessary for the correctness of this operation:
 \begin{enumerate}
 \item A real-valued function $f$ defined on the real domain is said to
@@ -465,6 +417,8 @@ The main partitions after the maximization over action $d$ is as below, the rest
 
 After taking the symbolic maximum over the partitions above, we also add all the constraints that did not effect the $d$ boundaries (i.e, $x\leq 2:false $ and $b:false$) which means only considering the partition values for $x \geq 2$ which takes out the final branch of the case partition above. 
 
+% mention how to derive policy (refer to Figure 2 and parens)
+
 \subsection{Extended ADDs (XADDs)}
 
 % mention feasibility checking, all ops apply directly
@@ -501,132 +455,3 @@ leaf in an XADD as a case partition and value, the mapping of this
 operation from cases to XADDs is trivial and directly exploits
 the compact partition structure of the XADD.
 
-\subsection{Symbolic Dynamic Programming (SDP)}
-
-In the SDP solution for CSA-MDPs, our objective will be to take
-a CSA-MDP as defined in Section~\ref{sec:dcmdps}, apply value
-iteration as defined in Section~\ref{sec:soln}, and produce
-the final value optimal function $V^h$ at horizon $h$ in the form
-of a case statement.
-
-For the base case of $h=0$, we note that setting $V^0(\vec{b},\vec{x}) = 0$
-(or to the reward case statement, if not action dependent)
-is trivially in the form of a case statement.  
-
-Next, $h > 0$ requires the application of SDP.  
-Fortunately, given our previously defined
-operations, SDP is straightforward and can be divided into four 
-steps: 
-\begin{enumerate}
-\item {\it Prime the Value Function}: Since $V^{h}$ will become
-the ``next state'' in value iteration, we setup a substitution
-$\sigma = \{ b_1 / b_1', \ldots, b_n / b_n', x_1 / x_1', \ldots, x_m / x_m' \}$
-and obtain $V'^{h} = V^{h}\sigma$.
-%where $V'^{h}$ is over $(\vec{b}',\vec{x}')$.
-
-\item {\it Continuous Integration}: Now that we have our primed value
-function $V'^{h}$ in case statement format defined over next state
-variables $(\vec{b}',\vec{x}')$, we first evaluate the integral
-marginalization $\int_{\vec{x}'}$ over the continuous variables
-in~\eqref{eq:qfun}.  Because the lower and upper integration bounds
-are respectively $-\infty$ and $\infty$ and we have disallowed
-synchronic arcs between variables in $\vec{x}'$ in the transition DBN,
-we can marginalize out each $x_j'$ independently, and in any order.
-Using \emph{variable elimination}~\cite{varelim}, when marginalizing
-over $x_j'$ we can factor out any functions independent of $x_j'$ ---
-that is, for $\int_{x_j'}$ in~\eqref{eq:qfun}, one can see that
-initially, the only functions that can include $x_j'$ are $V'^{h}$ and
-$P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) = \delta[x_j' -
-g(\vec{x})]$; hence, the first marginal over $x_j'$ need only be
-computed over $\delta[x_j' - g(\vec{x})] V'^{h}$.
-
-The key insight of the SDP algorithm introduced in~\cite{sanner_uai11}
-is that the integration $\int_{x_j'} \delta[x_j' - g(\vec{x})] V'^{h}
-dx_j'$ simply \emph{triggers the substitution} $\sigma = \{ x_j' /
-g(\vec{x}) \}$ on $V'^{h}$, that is
-\begin{align}
-\int_{x_j'} \delta[x_j' - g(\vec{x})] V'^{h} dx_j' \; = \; V'^{h} \{x_j' / g(\vec{x}) \} . \label{eq:one_int}
-\end{align}
-Thus we can perform the
-operation in~\eqref{eq:one_int} repeatedly in sequence \emph{for each}
-$x_j'$ ($1 \leq j \leq m$) for every action $a$.
-
-Hence to perform~\eqref{eq:one_int} on this more general
-representation, we obtain that $\int_{x_j'} P(x_j'|\vec{b},\vec{x},a,\vec{y}) V'^{h} dx_j'$
-\begin{align*}
-    = \begin{cases}
-    \phi_1: & V'^{h} \{ x_j' = f_1 \} \\ 
-   \vdots&\vdots\\ 
-    \phi_k: & V'^{h} \{ x_j' = f_k \}  \\ 
-  \end{cases}.
-\end{align*}
-This operation may be complicated in some cases for
-when the form of 
-$P(x_j'|\vec{b},\vec{x},a,\vec{y})$ is a \emph{conditional} 
-equation, but the result is still in a closed-form case
-statement as outlined in~\cite{sanner_uai11}.
-
-To perform the full continuous integration, 
-if we initialize 
-$\tilde{Q}_a^{h+1} := V'^{h}$ for each action $a \in A$, and repeat
-the above integrals for all $x_j'$, updating $\tilde{Q}_a^{h+1}$ each time,
-then after elimination of all $x_j'$ ($1 \leq j \leq m$), we will have 
-the partial regression of $V'^{h}$ for the continuous variables for
-each action $a$ denoted by $\tilde{Q}_a^{h+1}$.
-
-\item {\it Discrete Marginalization}: Now that we have our partial
-regression $\tilde{Q}_a^{h+1}$ for each action $a$, we proceed
-to derive the full backup $Q_a^{h+1}$ from $\tilde{Q}_a^{h+1}$
-by evaluating the discrete 
-marginalization $\sum_{\vec{b}'}$ in~\eqref{eq:qfun}.
-Because we previously disallowed synchronic arcs
-between the variables in $\vec{b}'$ 
-in the transition DBN, we can sum out each variable $b_i'$ ($1 \leq i \leq n$) 
-independently.  Hence, initializing
-$Q_a^{h+1} := \tilde{Q}_a^{h+1}$
-we perform the discrete regression by applying the following iterative
-process \emph{for each} $b_i'$ in any order
-for each action $a$:
-\begin{align}
-Q_a^{h+1} := & \left[ Q_a^{h+1} \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 1} \nonumber \\
- & \oplus \left[ Q_a^{h+1} \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 0}.
-\end{align}
-This requires a variant of the earlier restriction operator $|_v$ that
-actually \emph{sets} the variable $v$ to the given value if present.
-Note that both $Q_a^{h+1}$ and $P(b_i'|\vec{b},\vec{x},a,\vec{y})$ can be represented
-as case statements (discrete CPTs \emph{are} case statements), 
-and each operation produces a case statement.
-Thus, once this process is complete, we have marginalized over
-all $\vec{b}'$ and $Q_a^{h+1}$ is the symbolic representation
-of the intended Q-function.
-
-\item {\it Continuous Parameter Maximization}: Now that we have
-$Q_a^{h+1}(\vec{y})$ in the case format with free parameters $\vec{y}$
-for the action variables, we simply need to compute $Q_a^{h+1} =
-\max_{\vec{y}} Q_a^{h+1}(\vec{y})$.  This continuous variable
-maximization can be done sequentially for each element of $\vec{y}$ as
-outlined previously.  At the same time, if record the maximal
-substitutions $\vec{y}$ made at each leaf, we can also recover
-the parameterized policy that led to these optimal values, e.g.,
-as shown in Figure~\ref{fig:opt_val_pol}.
-
-\item {\it Maximization}: Now that we have $Q_a^{h+1}$ in
-case format for each action $a \in \{a_1,\ldots,a_p\}$, obtaining
-$V^{h+1}$ in case format as defined in~\eqref{eq:vfun} requires
-sequentially applying
-\emph{symbolic maximization} as defined previously:
-\begin{align*}
-V^{h+1} & = 
-\max(Q_{a_1}^{h+1},\max(\ldots,\max(Q_{a_{p-1}}^{h+1},Q_{a_p}^{h+1})))
-\end{align*}
-\end{enumerate}
-By induction, because $V^0$ is a case statement and applying
-SDP to $V^h$ in case statement form produces $V^{h+1}$ in case
-statement form, we have achieved our intended
-objective with SDP.  On the issue of correctness,
-we note that each operation above simply implements one of the
-dynamic programming operations in \eqref{eq:qfun} or \eqref{eq:vfun}, 
-so correctness simply follows from verifying (a) that each case
-operation produces the correct result and that (b) each case operation
-is applied in the correct sequence as defined in \eqref{eq:qfun} or 
-\eqref{eq:vfun}.  
