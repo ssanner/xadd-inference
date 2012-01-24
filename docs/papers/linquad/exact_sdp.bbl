@@ -71,6 +71,12 @@ Hoey, J.; St-Aubin, R.; Hu, A.; and Boutilier, C.
 \newblock {SPUDD}: Stochastic planning using decision diagrams.
 \newblock In {\em {UAI-99}},  279--288.
 
+\bibitem[\protect\citeauthoryear{Kenneth~Arrow}{1958}]{Scarf_Karlin58}
+Kenneth~Arrow, Samuel~Karlin, H.~S.
+\newblock 1958.
+\newblock {\em Studies in the mathematical theory of inventory and production}.
+\newblock Stanford University Press.
+
 \bibitem[\protect\citeauthoryear{Kveton, Hauskrecht, and
   Guestrin}{2006}]{kveton06}
 Kveton, B.; Hauskrecht, M.; and Guestrin, C.
@@ -135,10 +141,17 @@ Sanner, S.; Delgado, K.~V.; and {de Barros}, L.~N.
 \newblock In {\em Proceedings of the 27th Conference on Uncertainty in {AI}
   ({UAI-2011})}.
 
-\bibitem[\protect\citeauthoryear{Zhang and Poole}{1996}]{varelim}
-Zhang, N.~L., and Poole, D.
-\newblock 1996.
-\newblock Exploiting causal independence in bayesian network inference.
-\newblock {\em J. Artif. Intell. Res. (JAIR)} 5:301--328.
+\bibitem[\protect\citeauthoryear{Scarf}{2002}]{Scarf2002}
+Scarf, H.~E.
+\newblock 2002.
+\newblock {Inventory Theory}.
+\newblock {\em Operations Research} 50(1):186--191.
+
+\bibitem[\protect\citeauthoryear{Yeh}{1985}]{Yeh1985}
+Yeh, W.~G.
+\newblock 1985.
+\newblock Reservoir management and operations models: A state-of-the-art
+  review.
+\newblock {\em Water Resources research} 21,12:1797–1818.
 
 \end{thebibliography}
