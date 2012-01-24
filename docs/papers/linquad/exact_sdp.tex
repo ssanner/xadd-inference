@@ -21,6 +21,12 @@
 \newcommand{\true}{\mathit{true}}
 \newcommand{\false}{\mathit{false}}
 \newcommand{\casemax}{\mathrm{casemax}}
+\newcommand{\casemin}{\mathrm{casemin}}
+\newcommand{\UB}{\mathit{UB}}
+\newcommand{\LB}{\mathit{LB}}
+\newcommand{\IND}{\mathit{IND}}
+\newcommand{\Root}{\mathit{Root}}
+\newcommand{\Max}{\mathit{MAX}}
 \def\argmax{\operatornamewithlimits{arg\,max}}
 \def\argmin{\operatornamewithlimits{arg\,min}}
 
@@ -61,7 +67,7 @@ and piecewise linear (or restricted piecewise quadratic) reward.  Our
 key contribution over previous SDP work is to show how the continuous
 action maximization step in the dynamic programming backup can be
 evaluated optimally and symbolically --- a task which amounts to
-\emph{symbolically} solving a linear program subject to unknown state
+\emph{symbolic} constrained optimization subject to unknown state
 parameters; we further integrate this technique to work with an
 efficient and compact data structure for SDP --- the extended
 algebraic decision diagram (XADD).  We demonstrate empirical results
