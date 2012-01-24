@@ -227,113 +227,129 @@ $f$, we write this operation as $g(\vec{b},\vec{x}) := \max_{\vec{y}}
 \, f(\vec{b},\vec{x},\vec{y})$ --- the key point to realize here is
 that \emph{the} maximizing $\vec{y}$ is a function
 $g(\vec{b},\vec{x})$.  We work through the derivation of $g$ in this
-section, which amounts to \emph{symbolically} solving a linear program
+section, which amounts to \emph{symbolic} constrained optimization 
 subject to unknown state parameters $\vec{b}$ and $\vec{x}$.
+
+From here out we assume that all case partition conditions $\phi_i$ of
+$f$ consist of conjunctions of non-negated linear inequalities and
+possibly negated boolean variables --- a condition easy to enforce
+since disjunctions can be split across multiple non-disjunctive, 
+disjoint case partitions, e.g., {\footnotesize
+\begin{equation}
+f = 
+\begin{cases}
+a \lor b: & f_1 \\ 
+\neg a \land \neg b: & f_2\\ 
+\end{cases} 
+\; \; \; =  \; \; \;
+\begin{cases}
+a: & f_1 \\ 
+\neg a \land b: & f_1 \\ 
+\neg a \land \neg b: & f_2\\ 
+\end{cases} 
+\end{equation}}
+and negation
+inverts inequalities, e.g., $\neg [x < 2] \equiv [x \geq 2]$.
 
 Exploiting the commutativity of $\max$, we can first rewrite any
 multivariate $\max_{\vec{y}}$ as a sequence of univariate $\max$
 operations $\max_{y_1} \cdots \max_{y_{|\vec{y}|}}$; hence it suffices
-to provide the univariate $\max_y$ solution: 
+to provide just the \emph{univariate} $\max_y$ solution: 
 $g(\vec{b},\vec{x}) := \max_{y} \, f(\vec{b},\vec{x},y)$.
 
-If $f(\vec{b},\vec{x},y)$ has mutually disjoint and exhaustive
-case partitions $\phi_i$ (a property that is 
-guaranteed whenever this operator is applied in SDP), the following
-equalities hold:
+We can rewrite $f(\vec{b},\vec{x},y)$ via 
+the following equalities:
 {\footnotesize
 \begin{align*}
-\max_y f(\vec{b},\vec{x},y) & = \max_y \sum_i \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)\\
-& = \max_y \casemax_i \, \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)\\
+\max_y f(\vec{b},\vec{x},y) & = 
+% cannot use summation form... it assigns the value 0 to illegal cases!
+% \max_y \sum_i \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)\\
+\max_y \casemax_i \, \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)\\
 & = \casemax_i \max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y).
 \end{align*}}
-The critical step where $\sum_i$ is replaced with $\max_i$ is
-permitted since the $\phi_i$ are mutually disjoint and exhaustive ---
-only one $\phi_i$ will ever be true for any given assignment to the
-case statement variables.  This step is crucial because the outer
-$\max_i$ is the $\casemax$ operation already discussed
-while the inner $\max_y$ is a continuous variable maximization that we
-can now compute for \emph{each case partition individually}.  Hence we
-need only define $\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$.
+%Because the 
+%$\phi_i$ are mutually disjoint and exhaustive, 
+%$f(\vec{b},\vec{x},y) = \casemax_i \, \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$.  
+The first equality is a consequence of the mutual 
+disjointness of the partitions in $f$.  Then because 
+$\max_y$ and $\casemax_i$ are commutative and may be reordered,
+we can compute $\max_y$ for \emph{each case partition
+individually}.  Thus to complete this section we need only
+show how to symbolically compute a single partition 
+$\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$.
 
-{\bf STOPPED HERE}
-
-From here out we assume that all partitions $\phi_i$ consist of
-conjunctions of linear inequalities and (possibly negated) 
-boolean variables --- a condition easy to enforce since disjunctions
-$\lor$ can be broken up across multiple case partitions and negated
-inequalities are still inequalities ($\neg [x < 2] \equiv [x \geq 2]$).
 To make the partition maximization procedure concrete, 
-we use an example that arises in the \MarsRover problem.  
+we use an example that arises in the \MarsRover\ problem.  
 This partition $i$ (resulting
-from applying SDP) has conditions $\phi_i(x,b,y) \equiv \neg b\wedge
-(x\geq 2)\wedge (y\leq 10) \wedge (y\geq -10)\wedge (x+y\leq 2) \wedge
-(x+y\geq -2)$ and value $f_i(x,y) = 4 - (x+d)^2 $.
+from applying SDP) has conditions $\phi_i(x,b,y) \equiv \neg b \wedge
+(x\geq 2) \wedge (y\leq 10) \wedge (y\geq -10) \wedge (y\leq 2-x) \wedge
+(y\geq -2-x)$ and value $f_i(x,y) = 4 - (x+y)^2 $.
 
-To perform $\max_y \phi_i f_i(d)$, we make a few remarks on the
-structure of this operation.
-
-
-we consider some mathematical
-definitions necessary for the correctness of this operation:
-\begin{enumerate}
-\item A real-valued function $f$ defined on the real domain is said to
-have a global (or absolute) maximum point at the point x, if for all $x$:
-$ f(x^{*}) \geq f(x) $. The value of the function at this point is
-the maximum of the function.
-\item By \emph{Fermat's theorem}, the local maxima (and minima) of a function
-can occur only at its critical points: where either the function is not
-differentiable (which only happens at the upper and lower boundaries) or its
-first derivative is 0.
-\item The \emph{Boundedness theorem} states that a continuous function
-$f$ in the closed interval (a,b) is bounded on that interval. That is,
-there exist real numbers m and M such that:
-\begin{align*}
-\forall x \in \{a,b\} : m \leq f(x) \leq M 
-\end{align*}
-\end{enumerate}
-
-Based on these definitions, the maximum value of $\phi_i f_i$ must occur
-at either the boundaries or the points where its first derivative is zero.
-Because we only consider up to quadratic $f_i$ in this paper, we need only
-consider the single root of $f_i$ if it is quadratic.
-%If this function were linear and a polynomial of a certain degree k, then the maximum for that function would occur on any of the (k-1) roots of the function or at the lower and upper bounds defined for it.
-We can write the explicit functions for these bounds in
-\emph{piecewise linear case form} for the lower bounds $\mathit{LB}$ 
-given by $\phi_i$ (i.e., $d \geq -10$, $d \geq x - 2$), upper bounds 
-$\mathit{UB}$ given by $\phi_i$ (i.e., $d \leq 10$, $d \leq 2 - x$), 
-and the roots of $\frac{\partial}{\partial d} f_i = - 2x - 2d = 0$
-w.r.t.\ $d$ (i.e., $d = -x$).  Since we have multiple lower and upper bounds,
-we must consider the maximum of the lower bounds and the minimum of
-the upper bounds which we can represent in case form as follows:
+In $\phi_i$, we observe that each conjoined constraint serves one of
+three purposes: (i) \emph{upper bound on $y$}: it can be written
+as $y < \cdots$ or $y \leq \cdots$ (i.e., $y \leq 10$, $y \leq 2 -
+x$), (ii) \emph{lower bound on $y$}: it can be written as $y >
+\cdots$ or $y \geq \cdots$ (i.e., $d \geq -10$, $d \geq x - 2$), or
+(iii) \emph{independent of $y$}: the constraints do not contain $y$
+and can be safely factored outside of the $\max_y$ (i.e., 
+$\IND = \neg b \land (x \geq 2)$).  
+Because there are multiple symbolic upper and lower
+bounds on $y$, in general we will need to apply the $\casemax$
+($\casemin$) operator to determine the highest lower bound $\LB$
+(lowest upper bound $\UB$):
+%\footnote{We could have also written
+%the $\LB$ with respective constraints $x < 8$ and $x \geq 8$ since
+%the $\casemax$ ensures that the two adjoining case partitions
+%have the same valuation on their mutual boundary (by definition
+%the boundary is where the two functions meet).  Likewise for
+%$\UB$ and $\casemin$.  This note is important here because then we
+%can safely take limits and replace $<$ with $\leq$ and  
+%$>$ with $\geq$ when examining the lower and upper bounds on $y$.}
 {\footnotesize
-\begin{center}
-\begin{tabular}{r c c l}
-$\mathit{LB}:= \max(-10,-2 -x) = \begin{cases}
+\begin{align*}
+\LB = \casemax(-10,-2 -x) & = \begin{cases}
 x \leq 8: & -2 -x \\ 
-x \geq 8: &-10\\ 
-\end{cases}$
-&
-\hspace{-4mm}
-$\mathit{UB}:= \min(10, 2-x) = \begin{cases}
+x > 8: &-10\\ 
+\end{cases}\\
+\UB = \casemin(10, 2-x) & = \begin{cases}
 x \geq -8: & 2 -x \\ 
-x \leq -8: &10\\ 
-\end{cases}$
-&
-\hspace{-4mm}
-$\mathit{Root}: d = -x$.
-\end{tabular}
-\end{center}
-}
-We know that the maximum of the $f_i$ could occur at any of the above
-points, but we do not know which.  Hence the true maximum is simply
-the case maximization of the substitution of the $\mathit{UB}$, $\mathit{LB}$, and root
-into $f(d)$.  
+x < -8: &10\\ 
+\end{cases}
+\end{align*}
+} We know that $\max_y \phi_i(\vec{b},\vec{x},y)
+f_i(\vec{b},\vec{x},y)$ for a continuous function $f_i$ (here at most
+quadratic) must occur at the critical points of the function --- 
+either the upper or lower bounds ($\UB$ and $\LB$) of $y$, 
+or the $\Root$ (i.e., zero) of $\frac{\partial}{\partial y} f_i$ 
+w.r.t.\ $y$ (because $f_i$ is at most quadratic, there exists 
+at most one $\Root$).  Here each of $\UB$, $\LB$, and $\Root$
+is a symbolic function of $\vec{b}$ and $\vec{x}$.  $\UB$ and $\LB$
+have already been computed, here we show the computation of $\Root$:
+{\footnotesize 
+\begin{align*}
+\frac{\partial}{\partial y} f_i = - 2y - 2d = 0 \;\;\; \Longrightarrow \;\;\; \Root = y = -d
+\end{align*}}
+Finally, we have the potential maxima $y = \UB$, $y = \LB$, and $y = \Root$
+of $f_i(\vec{b},\vec{x},y)$ w.r.t. constraints $\phi_i(\vec{b},\vec{x},y)$,
+but since each is symbolically represented as a case statement, we cannot
+numerically evaluate them to determine which is the true maxima. 
+Instead, we need to symbolically evaluate this maximum $\Max$ as follows:
+\footnotesize{
+\begin{align*}
+\Max \hspace{-1mm} =  \hspace{-1mm} \begin{cases}
+\mbox{has $\Root$}  \hspace{-1mm}: \hspace{-1mm} & \hspace{-2mm} \casemax( f_i \{ y / \Root \}, f_i \{ y / \UB \}, f_i \{ y / \LB \})\\
+\mbox{otherwise}  \hspace{-1mm}:  \hspace{-1mm} & \hspace{-2mm} \casemax( f_i \{ y / \UB \}, f_i \{ y / \LB \})
+\end{cases}
+\end{align*}}
+Here a ternary $\casemax$ is just the successive application of
+the previously defined binary $\casemax$.
 
+\textbf{UP TO HERE, TODO: show result and add in constraints}
 
 A lower bound on action $d$ occurs when the inequalities of $\geq ,>$ have action $d$ on their LHS; then any expression on the RHS is considered a lower bound on action $d$. Similar to this, an upper bound occurs for inequalities of $\leq , <$ and the RHS expression is considered an upper bound for action $d$. 
 The roots of the function are also defined by taking the first derivative of $f$ with respect to $d$ and setting it to zero.
 
-To enforce correctness of bounds symbolically we must have $\mathit{LB} \leq \mathit{Root}s \leq \mathit{UB}$, so we add the pair of constraints for the bounds to the root constraint:
+To enforce correctness of bounds symbolically we must have $\LB \leq \Root \leq \UB$, so we add the pair of constraints for the bounds to the root constraint:
 
 {\footnotesize
 \begin{center}
@@ -358,25 +374,25 @@ x \geq -10\\
 }
 The other two statements can be removed as a tautology, to leave the final root partition as: 
 
-\begin{align*}\mathit{Root}:= 
+\begin{align*}\Root:= 
  \begin{cases}
 x \leq 10 \wedge x \geq -10:              & -x\\ 
 \neg (x \leq 10 \wedge x \geq -10):    & 0\\ 
   \end{cases}
 \end{align*}
 
-Having the $\mathit{UB}$,$\mathit{LB}$ and root of each case partition, we can maximize the value of each case function according to the bounds. We want to factor out the action variable $d$ (we show later that this is equal to maximizing the Q-function values in order to obtain the value function). This means replacing the continuous action with the possible maximum points; $\mathit{LB}$, $\mathit{UB}$ and roots. Replacing the action with a constant, variable or another function is equal to applying the \emph{substitute} operator. Each substitution forms a partition of the final maximization over the three posibble maximum points: 
+Having the $\UB$,$\LB$ and root of each case partition, we can maximize the value of each case function according to the bounds. We want to factor out the action variable $d$ (we show later that this is equal to maximizing the Q-function values in order to obtain the value function). This means replacing the continuous action with the possible maximum points; $\LB$, $\UB$ and roots. Replacing the action with a constant, variable or another function is equal to applying the \emph{substitute} operator. Each substitution forms a partition of the final maximization over the three posibble maximum points: 
 
 \begin{align*}
 \max_{d}
 \begin{cases}
-4 - (x+ \mathit{UB})^2 \\ 
-4- (x+\mathit{LB})^2 \\ 
-4 - (x+\mathit{Root})^2\\ 
+4 - (x+ \UB)^2 \\ 
+4- (x+\LB)^2 \\ 
+4 - (x+\Root)^2\\ 
   \end{cases}
 \end{align*}
 
-We take the maximum of the $\mathit{UB}$ and $\mathit{LB}$  substitutions and then maximum the result with the root substitution. Below shows the substituted maximum points:
+We take the maximum of the $\UB$ and $\LB$  substitutions and then maximum the result with the root substitution. Below shows the substituted maximum points:
 
 {\footnotesize
 \begin{center}
@@ -415,7 +431,7 @@ The main partitions after the maximization over action $d$ is as below, the rest
   \end{cases}
 \end{align*}
 
-After taking the symbolic maximum over the partitions above, we also add all the constraints that did not effect the $d$ boundaries (i.e, $x\leq 2:false $ and $b:false$) which means only considering the partition values for $x \geq 2$ which takes out the final branch of the case partition above. 
+% make sure (iii) constraints get added back in
 
 % mention how to derive policy (refer to Figure 2 and parens)
 
