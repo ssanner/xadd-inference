@@ -641,10 +641,19 @@ public class XADD {
 				// => (x + d/2)^2 COMP (d/2)^2 + e
 				// => [if ((d/2)^2 + e) >= 0]
 				//      (x + d/2) COMP SQRT((d/2)^2 + e)
-				//      OR (x + d/2) flip(COMP) -SQRT((d/2)^2 + e)
+				//      LOG_SYMB (x + d/2) flip(COMP) -SQRT((d/2)^2 + e)
 				//    [else]
 				//      substitute x/0 then makeCanonical 
 				//      (to find out whether true or false since for any x, always on same side)
+				//
+				// LOG_SYMB:
+				//   COMP=>,>= / a > 0: LOG_SYMB = OR
+				//   COMP=<,<= / a > 0: LOG_SYMB = AND
+				//   COMP=>,>= / a < 0: LOG_SYMB = AND
+				//   COMP=<,<= / a < 0: LOG_SYMB = OR
+				boolean is_and = (quad_coef < 0 && (e._expr._type == GT || e._expr._type == GT_EQ))
+							  || (quad_coef > 0 && (e._expr._type == LT || e._expr._type == LT_EQ));
+				
 				double var_d = linear_coef / quad_coef;
 				double var_e = -const_coef / quad_coef;
 
@@ -670,11 +679,18 @@ public class XADD {
 
 				// Build XADD indicator from expressions
 				// Note: disjunction a v b = 1 - (1 - a)*(1 - b)
+				int ret_xadd = -1;
 				int T_ZERO = getTermNode(ZERO);
 				int T_ONE = getTermNode(ONE);
-				int expr1_xadd = getINode(var1_id, /* low */T_ONE, /* high */T_ZERO);
-				int expr2_xadd = getINode(var2_id, /* low */T_ONE, /* high */T_ZERO);
-				int ret_xadd = apply(T_ONE, apply(expr1_xadd, expr2_xadd, PROD), MINUS);
+				if (is_and) {
+					int expr1_xadd = getINode(var1_id, /* low */T_ZERO, /* high */T_ONE);
+					int expr2_xadd = getINode(var2_id, /* low */T_ZERO, /* high */T_ONE);
+					ret_xadd = apply(expr1_xadd, expr2_xadd, PROD);				
+				} else {
+					int expr1_xadd = getINode(var1_id, /* low */T_ONE, /* high */T_ZERO);
+					int expr2_xadd = getINode(var2_id, /* low */T_ONE, /* high */T_ZERO);
+					ret_xadd = apply(T_ONE, apply(expr1_xadd, expr2_xadd, PROD), MINUS);
+				}
 				System.out.println("LINEARIZE -- started with: " + e + "... returning\n" + 
 						getString(ret_xadd));
 				//System.exit(1);
