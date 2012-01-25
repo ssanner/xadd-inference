@@ -79,10 +79,12 @@ obtained from any state over a fixed time horizon?
 \begin{figure}[t!]
 \centering
 %\subfigure{
-\includegraphics[width=0.4\textwidth]{Figures1/v1_mr.pdf}\\
-\includegraphics[width=0.4\textwidth]{Figures1/v2_mr.pdf}\\
-\includegraphics[width=0.4\textwidth]{Figures1/v3_mr.pdf}
-\vspace{-2mm}
+\includegraphics[width=0.35\textwidth]{Figures1/v1_mr.pdf}\\
+\vspace{-1mm}
+\includegraphics[width=0.35\textwidth]{Figures1/v2_mr.pdf}\\
+\vspace{-1mm}
+\includegraphics[width=0.35\textwidth]{Figures1/v3_mr.pdf}
+\vspace{-3mm}
 \caption{\footnotesize Optimal sum of rewards (value) 
 $V^t(x)$ for $b = 0 \, 
 (\false)$ for time horizons (i.e., decision stages remaining) $t=0$,
@@ -92,27 +94,7 @@ $x$.  We initialized $V^0(x,b) = R(x,b)$; for $V^1(x)$, the rover achieves
 non-zero value up to $x = \pm 12$ and for 
 $V^2(x)$, up to $x = \pm 22$.}
 \label{fig:opt_graph}
-%\vspace{-2mm}
-\end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure}[t!]
-%\centering
-%\subfigure{
-\hspace{-1mm}\includegraphics[width=0.51\textwidth]{Figures1/v2_mr_dd.pdf}
-%\vspace{-3mm}
-\caption{\footnotesize Optimal value function $V^1(x)$ for the
-\MarsRover\ problem represented as an extended algebraic decision
-diagram (XADD).  Here the solid lines represent the $\true$ branch for
-the decision and the dashed lines the $\false$ branch.  To evaluate
-$V^1(x)$ for any state $x$, one simply traverses the diagram in a
-decision-tree like fashion until a leaf is reached where the
-non-parenthetical expression provides the \emph{optimal value} and the
-parenthetical expression provides the \emph{optimal policy} 
-($y = \pi^{*,1}(x)$) to achieve value $V^1(x)$.}
-\label{fig:opt_val_pol}
-%\vspace{-3mm}
+\vspace{-3mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -146,3 +128,23 @@ to show the \emph{first automated exact solution} to these problems.
 %We additionally remark that all of the results in this paper apply to
 %the deterministic subset of CSA-MDPs hence also providing exact
 %solutions for continuous state and action deterministic planning.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[t!]
+%\centering
+%\subfigure{
+\hspace{-1mm}\includegraphics[width=0.43\textwidth]{Figures1/v2_mr_dd.pdf}
+\vspace{-1mm}
+\caption{\footnotesize Optimal value function $V^1(x)$ for the
+\MarsRover\ problem represented as an extended algebraic decision
+diagram (XADD).  Here the solid lines represent the $\true$ branch for
+the decision and the dashed lines the $\false$ branch.  To evaluate
+$V^1(x)$ for any state $x$, one simply traverses the diagram in a
+decision-tree like fashion until a leaf is reached where the
+non-parenthetical expression provides the \emph{optimal value} and the
+parenthetical expression provides the \emph{optimal policy} 
+($y = \pi^{*,1}(x)$) to achieve value $V^1(x)$.}
+\label{fig:opt_val_pol}
+\vspace{-3mm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
