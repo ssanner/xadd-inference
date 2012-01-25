@@ -354,6 +354,7 @@ piecewise polynomial discrete/continuous graphical models.
 $\mathit{order}$ for elimination}
 \Output{a set of factors after eliminating each $\var \in \mathit{order}$}
 \BlankLine
+{\small
 \Begin{
    \emph{// eliminate each $\var$ in the given $\mathit{order}$}\\
    \ForEach{$\var \in \mathit{order}$}{
@@ -377,6 +378,7 @@ $\mathit{order}$ for elimination}
      }
    }
    \Return{$F$}\;
+}
 }
 \caption{{\sc VE}($F,\mathit{order}$)  \label{alg:varelim}}
 \end{algorithm}
@@ -590,18 +592,19 @@ operation defined previously, we can
 write explicit functions in 
 \emph{piecewise polynomial case form} for the respective 
 lower and upper bounds $\LB$ and $\UB$:
+{\footnotesize
 \vspace{-2mm}
 \begin{align*}
-\LB & := \begin{cases}
-    x_2 - 1 > -1: & x_2 - 1 \\ 
-    x_2 - 1 \leq -1: & -1 \\ 
-  \end{cases}\\
-\UB & := \begin{cases}
-    x_2^2 < x_2 + 1 : & x_2^2 \\ 
-    x_2^2 \geq x_2 + 1 : & x_2 + 1 \\ 
+\LB &:=\begin{cases}
+    x_2-1 > -1:& x_2 - 1 \\ 
+    x_2-1 \leq -1:& -1 \\ 
+  \end{cases}\quad
+\UB &:=\begin{cases}
+    x_2^2<x_2+1:& x_2^2 \\ 
+    x_2^2\geq x_2+1:& x_2 + 1 \\ 
   \end{cases}
 \end{align*}
-
+}
 Now we can rewrite the integral as\footnote{The careful reader will note
 that because the lower bounds were defined in terms of $>$
 rather than $\leq$, we technically have an improper integral
@@ -620,9 +623,10 @@ can factor outside the integral.  With all indicator functions
 moved into the $\LB$ or $\UB$ or factored out, we can now compute
 the integral:
 \vspace{-5mm}
+{\footnotesize
 \begin{equation}
 \I[x_2 > 0] \left[ \frac{1}{3}x_1^3 - \frac{1}{2}x_1^2 x_2 \bigg|_{x_1=\LB}^{x_1=\UB} \right] .
-\end{equation}
+\end{equation} }
 The question now is simply how to do this evaluation?  Here we note
 that every expression (variables, constants, indicator functions, etc.) 
 can be written as a 
@@ -632,7 +636,7 @@ and lower bounds as shown previously.  So the evaluation is simply
 {\footnotesize
 \begin{align}
 \I[x_2 > 0] \otimes \bigg[ & \left( \frac{1}{3} \UB \otimes \UB \otimes \UB \ominus \frac{1}{2} \UB \otimes \UB \otimes (x_2) \right) \nonumber \\
-& \hspace{-2mm} \ominus \left( \frac{1}{3} \LB \otimes \LB \otimes \LB \ominus \frac{1}{2} \LB \otimes \LB \otimes (x_2) \right) \bigg] \label{eq:almost_final}.
+& \hspace{-8mm} \ominus \left( \frac{1}{3} \LB \otimes \LB \otimes \LB \ominus \frac{1}{2} \LB \otimes \LB \otimes (x_2) \right) \bigg] \label{eq:almost_final}.
 \end{align}
 }
 Hence the result of the definite integration over a case
@@ -770,8 +774,9 @@ Section~\ref{sec:def_int} from case statements to XADDs is straightforward.}
 \includegraphics[width=.2\textwidth]{norm_unif.pdf}
 \end{center}
 \vspace{-2mm}
-\caption{\footnotesize An XADD for the case statement in Figure~\ref{fig:xadd_tree}.} \label{fig:xadd}
-\vspace{-7mm}
+\caption{\footnotesize An XADD example from a case statement.% in Figure~\ref{fig:xadd_tree}.
+} \label{fig:xadd}
+\vspace{-4mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -787,12 +792,9 @@ still applies in the case of XADDs.
 
 Of particular importance is that the XADD is a directed acyclic graph
 (DAG), and hence is often much more compact than a tree
-representation.  For example, in Figure~\ref{fig:xadd_tree} we provide
-the function represented by the XADD in Figure~\ref{fig:xadd} 
-expanded from a DAG into it's tree form.  We note that not only is
-the XADD much more compact on account of its DAG, but that all
-unary and binary operations on XADDs can directly exploit this
-compact structure for efficiency.
+representation.  For example, in Figure~\ref{fig:xadd} the XADD of a function is provided.
+%in Figure~\ref{fig:xadd_tree} we provide the function represented by the XADD in Figure~\ref{fig:xadd} expanded from a DAG into it's tree form.  
+We note that not only is the XADD much more compact on account of its DAG, but that all unary and binary operations on XADDs can directly exploit this compact structure for efficiency.
 
 It is fairly straightforward for XADDs to support all case operations
 required for SVE.  Standard operations like unary multiplication,
@@ -816,11 +818,11 @@ which can be easily detected and repaired as discussed in~\cite{uai11} .
 %{\tiny
 \begin{tabular}{ccc}
 \vspace{-3mm}
-\hspace{-8mm} \includegraphics[width=100pt]{r1.pdf} & \hspace{-6mm} \includegraphics[width=100pt]{r2.pdf} & \hspace{-10mm} \includegraphics[width=100pt]{r3.pdf} \\  
+\hspace{-8mm} \includegraphics[width=90pt]{r1.pdf} & \hspace{-6mm} \includegraphics[width=90pt]{r2.pdf} & \hspace{-10mm} \includegraphics[width=90pt]{r3.pdf} \\  
 \vspace{4mm}
 {\small$\E[D|x_1=6, x_2=5] = 4.98$} & {\footnotesize$\E[D|x_1=8, x_2=5]= 6.0$} & \hspace{-3mm} {\footnotesize$\E[D|x_1=5, x_2=3, x_3=8] = 4.39$}\\
 \vspace{-2mm}
-\hspace{-8mm} \includegraphics[width=100pt]{r4.pdf} & \hspace{-6mm} \includegraphics[width=100pt]{r5.pdf} & \hspace{-10mm} \includegraphics[width=100pt]{r6.pdf} \\
+\hspace{-8mm} \includegraphics[width=90pt]{r4.pdf} & \hspace{-6mm} \includegraphics[width=90pt]{r5.pdf} & \hspace{-10mm} \includegraphics[width=90pt]{r6.pdf} \\
 \vspace{4mm}
 {\footnotesize$\E[D|x_1=5, x_2=5, x_3=6] = 4.98$} & {\footnotesize$\E[D|x_2=1, x_2=3, x_3=4, x_4=8] = 5.45$} & {\footnotesize$\E[D|x_1=5, x_2=4, x_3=6, x_4=5] = 4.89$} 
 \end{tabular}

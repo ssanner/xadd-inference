@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.10.25)  25 JAN 2012 16:07
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.10.25)  25 JAN 2012 16:56
 entering extended mode
  %&-line parsing enabled.
 **sve.tex
@@ -307,122 +307,112 @@ OT1/cmr/bx/n/10 e\OMS/cmsy/m/n/10 g \OT1/cmr/m/n/10 = (\OML/cmm/m/it/10 b[]; []
  []
 
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <7> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 380.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 381.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <9> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 381.
 
-Underfull \hbox (badness 10000) detected at line 382
+Underfull \hbox (badness 10000) detected at line 384
 [][]
  []
 
 
-Underfull \hbox (badness 1571) in paragraph at lines 387--397
+Underfull \hbox (badness 1571) in paragraph at lines 389--399
 \OT1/ptm/m/n/10 As dis-cussed in Sec-tion [], piece-wise poly-no-mial func-
  []
 
 [2] [3]
-Underfull \hbox (badness 10000) in paragraph at lines 727--730
+Overfull \hbox (28.72055pt too wide) in paragraph at lines 606--606
+[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 731--734
 
  []
 
-[4] <norm_unif.pdf, id=45, 534.99875pt x 635.37375pt>
+[4] <norm_unif.pdf, id=46, 534.99875pt x 635.37375pt>
 File: norm_unif.pdf Graphic file (type pdf)
  <use norm_unif.pdf>
-LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <9> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 773.
-
-
-LaTeX Warning: Reference `fig:xadd_tree' on page 5 undefined on input line 773.
-
-
-
-LaTeX Warning: Reference `fig:xadd_tree' on page 5 undefined on input line 790.
-
-
-<r1.pdf, id=46, 520.94624pt x 407.5225pt>
+<r1.pdf, id=47, 520.94624pt x 407.5225pt>
 File: r1.pdf Graphic file (type pdf)
  <use r1.pdf>
-<r2.pdf, id=47, 520.94624pt x 404.51125pt>
+<r2.pdf, id=48, 520.94624pt x 404.51125pt>
 File: r2.pdf Graphic file (type pdf)
  <use r2.pdf>
-<r3.pdf, id=48, 520.94624pt x 404.51125pt>
+<r3.pdf, id=49, 520.94624pt x 404.51125pt>
 File: r3.pdf Graphic file (type pdf)
  <use r3.pdf>
-<r4.pdf, id=49, 520.94624pt x 404.51125pt>
+<r4.pdf, id=50, 520.94624pt x 404.51125pt>
 File: r4.pdf Graphic file (type pdf)
  <use r4.pdf>
-<r5.pdf, id=50, 520.94624pt x 404.51125pt>
+<r5.pdf, id=51, 520.94624pt x 404.51125pt>
 File: r5.pdf Graphic file (type pdf)
  <use r5.pdf>
-<r6.pdf, id=51, 520.94624pt x 404.51125pt>
+<r6.pdf, id=52, 520.94624pt x 404.51125pt>
 File: r6.pdf Graphic file (type pdf)
  <use r6.pdf>
-Overfull \hbox (6.65651pt too wide) in paragraph at lines 817--827
+Overfull \hbox (6.65651pt too wide) in paragraph at lines 819--829
  [] 
  []
 
-<gm3.pdf, id=52, 648.4225pt x 169.63374pt>
+<gm3.pdf, id=53, 648.4225pt x 169.63374pt>
 File: gm3.pdf Graphic file (type pdf)
  <use gm3.pdf>
-<radar_x_2_fix.pdf, id=53, 258.9675pt x 150.5625pt>
+<radar_x_2_fix.pdf, id=54, 258.9675pt x 150.5625pt>
 File: radar_x_2_fix.pdf Graphic file (type pdf)
  <use radar_x_2_fix.pdf>
-<tracker_3d_x3o1_aistat.pdf, id=54, 606.265pt x 370.38374pt>
+<tracker_3d_x3o1_aistat.pdf, id=55, 606.265pt x 370.38374pt>
 File: tracker_3d_x3o1_aistat.pdf Graphic file (type pdf)
 
 <use tracker_3d_x3o1_aistat.pdf>
-<tracker_3d_x5o1_aistat.pdf, id=55, 606.265pt x 370.38374pt>
+<tracker_3d_x5o1_aistat.pdf, id=56, 606.265pt x 370.38374pt>
 File: tracker_3d_x5o1_aistat.pdf Graphic file (type pdf)
 
-<use tracker_3d_x5o1_aistat.pdf>
+<use tracker_3d_x5o1_aistat.pdf> [5 <./norm_unif.pdf>] (./sve.bbl
 Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [5 <./norm_unif.pdf>]
-Underfull \vbox (badness 3612) has occurred while \output is active []
 
  [6 <./r1.pdf> <./r2.pdf> <./r3.pdf> <./r4.pdf> <./r5.pdf> <./r6.pdf> <./gm3.pd
 f> <./radar_x_2_fix.pdf> <./tracker_3d_x3o1_aistat.pdf> <./tracker_3d_x5o1_aist
-at.pdf>]
-(./sve.bbl) [7
+at.pdf>])
+[7
 
-] (./sve.aux)
-
-LaTeX Warning: There were undefined references.
-
- ) 
+] (./sve.aux) ) 
 Here is how much of TeX's memory you used:
- 3388 strings out of 495061
- 41177 string characters out of 1182620
+ 3387 strings out of 495061
+ 41162 string characters out of 1182620
  132027 words of memory out of 3000000
- 6499 multiletter control sequences out of 15000+50000
+ 6498 multiletter control sequences out of 15000+50000
  34435 words of font info for 73 fonts, out of 3000000 for 9000
  28 hyphenation exceptions out of 8191
- 32i,18n,24p,320b,404s stack positions out of 5000i,500n,10000p,200000b,50000s
-{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.enc}</usr/share/texmf-texli
-ve/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-texlive/fonts/ty
-pe1/public/amsfonts/cm/cmbx7.pfb></usr/share/texmf-texlive/fonts/type1/public/a
-msfonts/cm/cmbx9.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/c
-mex10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cmextra/cmex9.p
-fb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/sh
-are/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texmf-te
-xlive/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texmf-texlive/fonts/
-type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/fonts/type1/public
-/amsfonts/cm/cmmi9.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm
-/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr5.pfb></
-usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/tex
-mf-texlive/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texmf-texlive/fo
-nts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texmf-texlive/fonts/type1/pub
-lic/amsfonts/cm/cmsy10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfont
-s/cm/cmsy5.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy7.p
-fb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/sha
-re/texmf-texlive/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texmf-te
-xlive/fonts/type1/public/amsfonts/cm/cmti7.pfb></usr/share/texmf-texlive/fonts/
-type1/public/amsfonts/cm/cmti9.pfb></usr/share/texmf-texlive/fonts/type1/public
-/amsfonts/symbols/msbm10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfo
-nts/symbols/msbm7.pfb></usr/share/texmf-texlive/fonts/type1/urw/times/utmb8a.pf
-b></usr/share/texmf-texlive/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf-
-texlive/fonts/type1/urw/times/utmri8a.pfb>
-Output written on sve.pdf (7 pages, 363563 bytes).
+ 32i,18n,24p,320b,440s stack positions out of 5000i,500n,10000p,200000b,50000s
+{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.enc}</usr/shar
+e/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-tex
+live/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/share/texmf-texlive/fonts/t
+ype1/public/amsfonts/cm/cmbx9.pfb></usr/share/texmf-texlive/fonts/type1/public/
+amsfonts/cm/cmex10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm
+extra/cmex9.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi10
+.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/s
+hare/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texmf-t
+exlive/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/fonts
+/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texmf-texlive/fonts/type1/publi
+c/amsfonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/c
+m/cmr5.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr6.pfb></
+usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/tex
+mf-texlive/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texmf-texlive/fo
+nts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-texlive/fonts/type1/p
+ublic/amsfonts/cm/cmsy5.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfon
+ts/cm/cmsy6.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy7.
+pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/sh
+are/texmf-texlive/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texmf-t
+exlive/fonts/type1/public/amsfonts/cm/cmti7.pfb></usr/share/texmf-texlive/fonts
+/type1/public/amsfonts/cm/cmti9.pfb></usr/share/texmf-texlive/fonts/type1/publi
+c/amsfonts/symbols/msbm10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsf
+onts/symbols/msbm7.pfb></usr/share/texmf-texlive/fonts/type1/urw/times/utmb8a.p
+fb></usr/share/texmf-texlive/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf
+-texlive/fonts/type1/urw/times/utmri8a.pfb>
+Output written on sve.pdf (7 pages, 373437 bytes).
 PDF statistics:
- 189 PDF objects out of 1000 (max. 8388607)
+ 193 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  61 words of extra memory for PDF output out of 10000 (max. 10000000)
 
