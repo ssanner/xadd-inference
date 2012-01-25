@@ -196,13 +196,14 @@ $ = $
   \end{cases}$
 \end{tabular}
 \end{center}
-} We remark that if all $f_i$ and $g_i$ are linear,
+} If all $f_i$ and $g_i$ are linear,
 the $\casemax$ result is clearly still linear.  If the $f_i$ or $g_i$
 are quadratic according to the previous reward restriction, it will
 shortly become obvious that the expressions $f_i > g_i$ or $f_i \leq
-g_i$ will be at most univariate quadratic and any such quadratic
-inequality can be \emph{linearized} into a logical combination of at most 
-two linear inequalities by completing the square (e.g., 
+g_i$ will be at most univariate quadratic and any such constraint
+can be \emph{linearized} into a combination of at most 
+two linear inequalities (unless tautologous or inconsistent) 
+by completing the square (e.g., 
 %$x^2 + 8x > 0 \equiv [x + 4]^2 > 4 \equiv [x \leq -2] \lor [x > 6]$
 $-x^2 + 20x - 96 > 0 \equiv [x - 10]^2 \leq 4 \equiv [x > 8] \land [x \leq 12]$).  Hence
 according to the earlier restrictions, the result of this $\casemax$
@@ -354,7 +355,8 @@ Here we show the computation of $\Root$:
 \end{align*}}
 
 Given the \emph{potential} maxima points of $y = \UB$, $y = \LB$, and $y =
-\Root$ of $f_i(\vec{b},\vec{x},y)$ w.r.t. constraints
+\Root$ of $\frac{\partial}{\partial y} f_i(\vec{b},\vec{x},y)$ 
+w.r.t. constraints
 $\phi_i(\vec{b},\vec{x},y)$, we remark that each of 
 $\UB$, $\LB$, and $\Root$ is a symbolic function so we must 
 symbolically evaluate which yields the maximizing value $\Max$
@@ -421,8 +423,9 @@ Now we express the final result as a single case partition:
 \max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y) \;\; = \;\;
 \left\{ \CONS \land \IND: \Max \right.
 \end{equation*}
-Returning to the original~\eqref{eq:casemax_max}, we find that we have
-now specified the inner operation $\Box$.  Hence, to complete the
+Returning to~\eqref{eq:casemax_max}, we find that we have
+now specified the inner operation (shown in the $\Box$).  
+Hence, to complete the
 maximization for an entire case statement $f$, we need only apply the
 above procedure to each case partition of $f$ and then $\casemax$ all
 of these results.  Revisiting the \MarsRover\ example $V^1$ in
