@@ -234,10 +234,14 @@ As a general representation of both directed and undirected graphical
 models, we use a \emph{factor graph}~\cite{factor_graph} 
 representing a joint probability $p(\vec{b},\vec{x})$ as a
 product of a finite set of factors $F$, i.e.,
+\vspace{-2mm}
+{\footnotesize
 \begin{equation}
 p(\vec{b},\vec{x}) = \frac{1}{Z} \prod_{f \in F} \Psi_f(\vec{b}_f,\vec{x}_f).
 \label{eq:fg}
+\vspace{-1mm}
 \end{equation}
+}
 Here, $\vec{b}_f$ and $\vec{x}_f$ denote the subset of variables that
 participate in factor $f$ and $\Psi_f(\vec{b}_f,\vec{x}_f)$ is a 
 non-negative, real-valued 
@@ -255,11 +259,12 @@ in the introductory example, the joint distribution
 for $n$ variables is represented as the product of all variables
 conditioned on their parent variables in the graph and can be
 easily converted to factor graph form, i.e., 
-{\small
+{{\footnotesize
 \vspace{-2mm}
 \begin{align}
 p(d,x_1,\ldots,x_k) \; & = \; p(d) \prod_{i=1}^k p(x_i|d) \nonumber \\
 & = \; \psi_d(d) \prod_{i=1}^k \Psi_{x_i} (x_i,d) \label{eq:bn}
+\vspace{-1mm}
 \end{align}
 }
 where quite simply, $\Psi_{d} (d) := p(d)$ and $\Psi_{x_i} (x_i,d) :=
@@ -291,11 +296,13 @@ achieved by the following computation, where
 for notational convenience we assume variables are renamed s.t. 
 $\{ \vec{b} \cup \vec{x} \} \setminus \{ \vec{q} \cup \vec{e} \} = ( b_1,\ldots,b_s,x_1,\ldots,x_t)$ and 
 $\vec{q} = (b_{s+1},\ldots,b_{s'},x_{t+1},\ldots,x_{t'})$:
+{\footnotesize
 \begin{align}
 & p(\vec{q}|\vec{e}) = \label{eq:cprob}\\
 & = \frac{\sum_{b_1} \cdots \sum_{b_s} \int \cdots \int_{\mathbb{R}^t} \prod_{f \in F} \Psi_f(\vec{b}_f,\vec{x}_f) \, dx_1 \ldots dx_t}
 {\sum_{b_1} \cdots \sum_{b_{s'}} \int \cdots \int_{\mathbb{R}^{t'}} \prod_{f \in F} \Psi_f(\vec{b}_f,\vec{x}_f) \, dx_1 \ldots dx_{t'}} \nonumber
 \end{align}
+}
 The $\frac{1}{Z}$ from~\eqref{eq:fg} would appear in \emph{both}
 the numerator and denominator and hence cancels.
 
@@ -311,12 +318,16 @@ already be computed in~\eqref{eq:cprob}.}
 This can be achieved by the following
 computation, where $p(q|\vec{e})$ can be pre-computed according to~\eqref{eq:cprob}:
 %$\vec{q} = \{ b_{s'+1},\ldots,b_{s''},x_{t'+1},\ldots,x_{t''} \}$:
+\vspace{-3mm}
+{\footnotesize 
 \begin{equation} 
 \E[Q|\vec{e}] = 
 %\sum_{b_{s'+1}} \cdots \sum_{b_{s''}} 
 %\int_{x_{t'+1}=-\infty}^{\infty} \cdots \int_{x_{t''}=-\infty}^{\infty} 
 \int_{q=-\infty}^{\infty} [q \cdot p(q|\vec{e})] \, dq \label{eq:cexp}
+\vspace{-2mm}
 \end{equation}
+}
 %Here, $p(q|\vec{e})$ is computed using the conditional probability 
 %query expression in~\eqref{eq:cprob}.
 %\end{itemize}
@@ -572,9 +583,12 @@ continuous variables in SVE.  If we are
 computing $\int_{x_1=-\infty}^{\infty} f \, dx_1$ for $f$ 
 in~\eqref{eq:case}, we can rewrite it in the following equivalent form
 \vspace{-2mm}
+{\footnotesize
 \begin{equation}
 \int_{x_1=-\infty}^{\infty} \sum_i \I[\phi_i] \cdot f_i \, dx_1 \; = \; \sum_i \int_{x_1=-\infty}^{\infty} \I[\phi_i] \cdot f_i \, dx_1 \label{eq:int_decomp}
+\vspace{-1mm}
 \end{equation}
+}
 where $\I[\cdot]$ is an indicator function taking value 1 when
 its argument is true, 0 when it is false.  Hence we can compute
 the integrals separately for each case partition (producing a 
@@ -596,12 +610,12 @@ lower and upper bounds $\LB$ and $\UB$:
 \vspace{-2mm}
 \begin{align*}
 \LB &:=\begin{cases}
-    x_2-1 > -1:& x_2 - 1 \\ 
-    x_2-1 \leq -1:& -1 \\ 
+    x_2-1 > -1:&\hspace{-2mm} x_2 - 1 \\ 
+    x_2-1 \leq -1:&\hspace{-2mm} -1 \\ 
   \end{cases}\quad
 \UB &:=\begin{cases}
-    x_2^2<x_2+1:& x_2^2 \\ 
-    x_2^2\geq x_2+1:& x_2 + 1 \\ 
+    x_2<x_3+1:&\hspace{-2mm} x_2 \\ 
+    x_2\geq x_3+1:&\hspace{-2mm} x_3 + 1 \\ 
   \end{cases}
 \end{align*}
 }
@@ -658,7 +672,7 @@ case statements representing the following inequalities for all pairs
 of upper and lower bounds:
 {\footnotesize
 \begin{equation}
-\I[x_2^2 > x_2 - 1] \otimes \I[x_2^2 > -1] \otimes \I[x_2 + 1 > x_2 - 1] \otimes \I[x_2 + 1 > 1]
+\I[x_2 > x_2 - 1] \otimes \I[x_2 > -1] \otimes \I[x_3 + 1 > x_2 - 1] \otimes \I[x_3 + 1 > -1]
 \end{equation}}
 Of course, here $\I[x_2 + 1 > x_2 - 1]$ could be removed as a tautology,
 but the other constraints must remain.
@@ -828,30 +842,30 @@ which can be easily detected and repaired as discussed in~\cite{uai11} .
 \end{tabular}
 \end{center}
 \vspace{-6mm}
-\caption{\footnotesize Queries for \emph{robot localization}.  The diagrams show $p(d|\vec{e})$ vs. $d$ for the given evidence $\vec{e}$ shown below each diagram along with the exactly computed expectation $\E[D|\vec{e}]$ for this distribution.} \label{fig:dist}
+\caption{\footnotesize Queries for {robot localization}.  The diagrams show $p(d|\vec{e})$ vs. $d$ for the given evidence $\vec{e}$ shown below each diagram along with the exactly computed expectation $\E[D|\vec{e}]$ for this distribution.} \label{fig:dist}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-In this section we present proof-of-concept experiments for the \emph{robot
+In this section we present proof-of-concept experiments for the {robot
 localization} graphical model provided in Section~\ref{sec:intro} and
-a basic discrete/continuous \emph{tracking} task in
+a basic discrete/continuous {tracking} task in
 Figure~\ref{fig:gm3}.  Our objectives in this section are to show that
-the previously defined \emph{exact} inference methods can work with
+the previously defined {exact} inference methods can work with
 reasonably sized graphical models having multiple continuous and
-discrete variables having complex piecewise polynomial distributions
-and that SVE can exactly compute the highly complex, multimodal
-queries in an \emph{exact} functional form --- a breakthrough
+discrete variables with complex piecewise polynomial distributions
+and that SVE can exactly compute the highly complex, multi-modal
+queries in an {exact} functional form --- a breakthrough
 in exact inference for such graphical models.
 
-For the \emph{robot localization} task, we plot the posterior over
+For the {robot localization} task, we plot the posterior over
 the distance $d \in D$ given various observations in Figure~\ref{fig:dist}.
-What is interesting to note here is the interesting multi-modal
+What is noteworthy here is the interesting multi-modal
 nature of these plots.  Recalling the discussion in the introduction,
 the range finder was modeled with various error modes; because of these
 models, the posterior plots demonstrate the different combinatorial
 possibilities that each measurement was accurate or noise with the various
-peaks in the distribution weighted according to these probabitities.
-Despite the multimodal nature of these distributions, the conditional 
+peaks in the distribution weighted according to these probabilities.
+Despite the multi-modal nature of these distributions, the conditional 
 expectation of $D$ can be computed exactly and is shown below each posterior.
 We note that in a Bayesian risk setting, where these posterior beliefs
 may be multiplied by some position-based risk function (e.g., one
@@ -859,7 +873,7 @@ that increases with proximity to stairwells),
 it is important to have this true multi-modal posterior rather than an 
 inaccurate unimodal approximation.
 
-The \emph{tracking} graphical model and (conditional) distributions
+The {tracking} graphical model and (conditional) distributions
 are shown in Figure~\ref{fig:gm3}
 and works as follows: an object has hidden state $x_i \in \R$ defining
 it's $x$ position that is sampled for time steps $i = 1 \ldots t$.  On
@@ -878,15 +892,15 @@ to underestimate.
 \vspace{-1mm}
 \includegraphics[width=.7\textwidth]{gm3.pdf}
 \end{center}
-\vspace{-5mm}
-\caption{\footnotesize The \emph{tracking} graphical model and all conditional probabilities.} \label{fig:gm3}
+\vspace{-6mm}
+\caption{\footnotesize The {tracking} graphical model and all conditional probabilities.} \label{fig:gm3}
 %\vspace{-2mm}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure*}[t!]
-%\vspace{-20mm}
+\vspace{-5mm}
 \begin{center}
 \begin{tabular}{ccc}
 \hspace{-3mm} \includegraphics[width=120pt]{radar_x_2_fix.pdf} & \hspace{-5mm} \includegraphics[width=120pt]{tracker_3d_x3o1_aistat.pdf} & \hspace{-4mm} \includegraphics[width=120pt]{tracker_3d_x5o1_aistat.pdf}\\ %& \includegraphics[width=160pt]{tracker_3d_x7o1_aistat.pdf} \\
@@ -901,19 +915,23 @@ and $p(x_2|o_1=5,b_1=1)$ (red solid).
 (b) $p(x_3,o_1)$, (c) $p(x_5,o_1)$.  $o$ is on the lower left-edge
 axis, $x$ is on the lower right, and the probability is the $z$ axis.}
 \label{fig:track}
-%\vspace{-2mm}
+\vspace{-3mm}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-We show results for three queries $p(x_j|o_1)$ in the \emph{tracking}
+We show results for three queries $p(x_j|o_1)$ in the {tracking}
 model for predicting the state after $j$ steps (up to 7) given an
 initial observation.  Again, the results demonstrate the complex
-multimodal nature of the distribution and the ability of the SVE
+multi-modal nature of the distribution and the ability of the SVE
 inference algorithm to compute this in an exact closed-form.  All of
 these queries completed in under 1 minute demonstrating that despite
 the complex symbolic manipulations involved, the SVE method should be
 reasonably scalable especially in graphical models with sparse
 structure like this sequential model.
+
+Even though one can use other inference methods such as sampling to calculate the expectation, the interesting thing to observe here in Figure \ref{fig:dist} and \ref{fig:track} is that using SVE we are able to derive the posterior model in a functional form. This is particularly helpful in cases where the objective is to evaluate the behavior of one variable with respect to another one when its value is not observed.
+
+%One interesting thing to observe here in these experiments is the clear advantage of using 
 
 %\vspace{-5mm}
 
@@ -925,7 +943,7 @@ Almost all prior work on continuous variable graphical models (with
 the exception of Kalman filtering~\cite{kalman_filter} and other joint
 Gaussian models~\cite{Weiss99correctnesof}) has focused on
 \emph{approximate} and/or \emph{non-closed-form, exact} inference.
-Commonly used methods for continouous graphical models include
+Commonly used methods for continuous graphical models include
 discretization (which is approximate) and numerical integration /
 (MCMC) sampling as exemplified in the BUGS tool~\cite{bugs} (which
 provides an expressive language, but provides numerical results rather
@@ -935,7 +953,7 @@ advances have been made using projected message passing algorithms
 such as variational inference~\cite{variational} and expectation
 propagation~\cite{minka_ep} that can produce a functional form for a
 query result, albeit an approximation.  However, it seems that little
-progress has been made in \emph{closed-form exact} inference of
+progress has been made in {closed-form exact} inference of
 results in a functional form for \emph{expressive} non-Gaussian joint
 distributions --- especially piecewise polynomial distributions with
 bounded support --- which is the task addressed in this paper.
