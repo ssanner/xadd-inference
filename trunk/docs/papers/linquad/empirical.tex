@@ -6,7 +6,7 @@
 \includegraphics[width=0.3\textwidth]{new_pics/policy-iteration2-3.pdf}
 \includegraphics[width=0.3\textwidth]{new_pics/V2.pdf}
 \includegraphics[width=0.3\textwidth]{new_pics/V9.pdf}
-\caption{%\footnotesize 
+\caption{\footnotesize 
 Policy and Value of second iteration (No-Drain) and value of iteration 9.
 }
 \label{fig:v2plots}
@@ -49,14 +49,39 @@ or Stochastic (SD) demand and no-pruning}.
 
 \label{sec:results}
  
-We evaluated SDP using the XADD representation on the nonlinear
-\MarsRover example, whose solution is easily computed for arbitrary
-horizons and for which examples of $V^2$ and $V^3$ are shown in
-Figures~\ref{fig:opt_graph} and~\ref{fig:opt_val_pol}.  In this
-section we experiment with two we considered problems from the OR
-literature such as \InventoryControl and \WaterReservoir. In the
-following section we study these examples empirically.
- 
+We evaluated SDP using XADDs on the nonlinear
+\MarsRover\ example and two problems from operations research,
+\InventoryControl\ and \WaterReservoir, described below.\footnote{
+Full problem specifications and Java code to
+reproduce these experiments are currently 
+in Google Code; anonymity restrictions 
+prevent us from providing this link in the submitted paper version.}
+Space precludes us from showing 
+additional results beyond Figures~\ref{fig:opt_graph}
+and~\ref{fig:opt_val_pol} for
+\MarsRover, but we remark that SDP can efficiently solve this
+nonlinear problem for arbitrary horizons.
+
+{\bf \InventoryControl:} Inventory control problems (how much of an
+item to reorder subject to various constraints and optimization
+criteria) in Operations Research date back to the 1950's with Scarf's
+seminal optimal solution to the single item inventory
+problem~\cite{Scarf_Karlin58}.  Multi-item inventory control has
+proved to be an NP-hard problem and as a consequence, most solutions
+resort to some form of approximation~\cite{needref}; indeed we are
+unaware of any work which claims a non-myopic optimal solution for
+multi-item inventory control under discrete stochastic demand, and
+linear reordering costs, holding costs, \emph{and} capacity
+constraints that can be easily modeled as a CSA-MDP and solved
+optimally with SDP.
+
+In Figure~\ref{ref:} ***
+
+
+since
+that time, 
+
+{\bf \WaterReservoir:}
 
 \subsection{\InventoryControl}
 This domain problem is a well-known optimization benchmark in the OR

@@ -2,46 +2,44 @@ This is BibTeX, Version 0.99c (Web2C 7.5.4)
 The top-level auxiliary file: exact_sdp.aux
 The style file: aaai.bst
 Database file #1: exact_sdp.bib
-Warning--I didn't find a database entry for "bitran"
-You've used 22 entries,
+You've used 23 entries,
             2568 wiz_defined-function locations,
-            711 strings with 8240 characters,
-and the built_in function-call counts, 9443 in all, are:
-= -- 1006
-> -- 349
+            718 strings with 8375 characters,
+and the built_in function-call counts, 9907 in all, are:
+= -- 1055
+> -- 373
 < -- 7
-+ -- 120
-- -- 116
-* -- 709
-:= -- 1490
-add.period$ -- 110
-call.type$ -- 22
-change.case$ -- 143
-chr.to.int$ -- 22
-cite$ -- 22
-duplicate$ -- 399
-empty$ -- 702
-format.name$ -- 153
-if$ -- 2011
++ -- 128
+- -- 124
+* -- 755
+:= -- 1565
+add.period$ -- 115
+call.type$ -- 23
+change.case$ -- 151
+chr.to.int$ -- 23
+cite$ -- 23
+duplicate$ -- 413
+empty$ -- 731
+format.name$ -- 165
+if$ -- 2105
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 23
-newline$ -- 135
-num.names$ -- 66
-pop$ -- 139
+missing$ -- 24
+newline$ -- 141
+num.names$ -- 69
+pop$ -- 144
 preamble$ -- 1
-purify$ -- 168
+purify$ -- 177
 quote$ -- 0
-skip$ -- 317
+skip$ -- 328
 stack$ -- 0
-substring$ -- 521
-swap$ -- 115
+substring$ -- 547
+swap$ -- 117
 text.length$ -- 7
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 168
+type$ -- 176
 warning$ -- 0
-while$ -- 71
-width$ -- 26
-write$ -- 304
-(There was 1 warning)
+while$ -- 74
+width$ -- 27
+write$ -- 318

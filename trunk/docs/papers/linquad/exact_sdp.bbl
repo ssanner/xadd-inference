@@ -1,5 +1,12 @@
 \begin{thebibliography}{}
 
+\bibitem[\protect\citeauthoryear{Arrow, Karlin, and
+  Scarf}{1958}]{Scarf_Karlin58}
+Arrow, K.; Karlin, S.; and Scarf, H.
+\newblock 1958.
+\newblock {\em Studies in the mathematical theory of inventory and production}.
+\newblock Stanford University Press.
+
 \bibitem[\protect\citeauthoryear{Athans}{1971}]{lqgc}
 Athans, M.
 \newblock 1971.
@@ -20,6 +27,12 @@ Bellman, R.~E.
 \newblock 1957.
 \newblock {\em Dynamic Programming}.
 \newblock Princeton, NJ: Princeton University Press.
+
+\bibitem[\protect\citeauthoryear{Bitran and Yanasse}{1982}]{bitran}
+Bitran, G.~R., and Yanasse, H.
+\newblock 1982.
+\newblock Computational complexity of the capacitated lot size problem.
+\newblock {\em Management Science} 28(10):1271--81.
 
 \bibitem[\protect\citeauthoryear{Boutilier, Dean, and
   Hanks}{1999}]{boutilier99dt}
@@ -70,12 +83,6 @@ Hoey, J.; St-Aubin, R.; Hu, A.; and Boutilier, C.
 \newblock 1999.
 \newblock {SPUDD}: Stochastic planning using decision diagrams.
 \newblock In {\em {UAI-99}},  279--288.
-
-\bibitem[\protect\citeauthoryear{Kenneth~Arrow}{1958}]{Scarf_Karlin58}
-Kenneth~Arrow, Samuel~Karlin, H.~S.
-\newblock 1958.
-\newblock {\em Studies in the mathematical theory of inventory and production}.
-\newblock Stanford University Press.
 
 \bibitem[\protect\citeauthoryear{Kveton, Hauskrecht, and
   Guestrin}{2006}]{kveton06}
@@ -144,7 +151,7 @@ Sanner, S.; Delgado, K.~V.; and {de Barros}, L.~N.
 \bibitem[\protect\citeauthoryear{Scarf}{2002}]{Scarf2002}
 Scarf, H.~E.
 \newblock 2002.
-\newblock {Inventory Theory}.
+\newblock Inventory theory.
 \newblock {\em Operations Research} 50(1):186--191.
 
 \bibitem[\protect\citeauthoryear{Yeh}{1985}]{Yeh1985}
