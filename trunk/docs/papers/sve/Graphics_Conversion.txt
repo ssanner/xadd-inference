@@ -1,0 +1,2 @@
+fig2dev -Leps gm2.fig > gm2.eps; epstopdf gm2.eps
+dot -Tps -Efontsize=36 -Nfontsize=36 aadd.dot > aadd.ps

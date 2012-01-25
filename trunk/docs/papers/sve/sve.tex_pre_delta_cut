@@ -1,0 +1,595 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{nips11submit_e,times}
+%\documentstyle[nips11submit_09,times,art10]{article} % For LaTeX 2.09
+
+\usepackage{epsfig,subfigure}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage{array}
+
+%\usepackage{algorithmic}
+%\usepackage{algorithm}
+
+\usepackage[vlined,algoruled,titlenumbered,noend]{algorithm2e}
+%\usepackage{proceed2e}
+
+\title{Symbolic Variable Elimination for Discrete and Continuous Graphical Models}
+
+\author{
+David S.~Hippocampus\thanks{ Use footnote for providing further information
+about author (webpage, alternative address)---\emph{not} for acknowledging
+funding agencies.} \\
+Department of Computer Science\\
+Cranberry-Lemon University\\
+Pittsburgh, PA 15213 \\
+\texttt{hippo@cs.cranberry-lemon.edu} \\
+%\And
+Coauthor \\
+Affiliation \\
+Address \\
+\texttt{email} \\
+%\AND
+Coauthor \\
+Affiliation \\
+Address \\
+\texttt{email} \\
+%\And
+Coauthor \\
+Affiliation \\
+Address \\
+\texttt{email} \\
+%\And
+Coauthor \\
+Affiliation \\
+Address \\
+\texttt{email} \\
+(if needed)\\
+}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+\newcommand{\ind}[1]{\mathbb{I}[#1]}
+\newcommand{\inde}{\mathbb{I}}
+\newcommand{\ie}{i.e.}
+
+\newcommand{\E}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\I}{\mathbb{I}}
+
+%\nipsfinalcopy % Uncomment for camera-ready version
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Probabilistic reasoning in the real-world often requires inference in
+continuous variable graphical models, yet there are few methods for
+\emph{exact, closed-form} inference when joint distributions are
+non-Gaussian.  To address this inferential deficit, we
+introduce SVE -- a \emph{symbolic} extension of the well-known
+\emph{variable elimination} algorithm to perform exact inference in an
+\emph{expressive} class of mixed discrete and continuous variable
+graphical models whose conditional probability functions can be
+well-approximated as piecewise combinations of Dirac delta functions
+and polynomials with bounded support.  Using this representation, we
+show that we can compute all of the SVE operations \emph{exactly and
+in closed-form} (this includes \emph{definite integration over
+nonlinear piecewise boundary constraints}).  To aid in the efficient
+computation and compact representation of this solution, we use an
+extended algebraic decision diagram (XADD) data structure that
+supports all SVE operations.  We provide illustrative results for SVE
+on probabilistic inference queries inspired by financial, robotic, and
+radar tracking applications that use complex continuous distributions; this
+represents the \emph{first} time a general closed-form exact solution has
+been proposed for this class of expressive graphical models.
+\end{abstract}
+
+\section{Introduction}
+
+% Max function
+% Dynamics
+% Expectations of arbitrary functions!
+
+% Conditions for delta: 
+% - either a Bayesian network (so parents form DAG), or a 
+% - factor graph where delta connects disconnected components
+%   for LHS and RHS (removal of delta leads to disconnection)
+%delta(x=y)
+%delta(y=z)
+%delta(z=x)
+
+Real-world probabilistic reasoning is rife with 
+uncertainty over continuous random variables with
+complex (often highly nonlinear) relationships, e.g.,
+\begin{enumerate} 
+\item estimating the monetary \emph{return} of various investments 
+and the corresponding maximum  
+\emph{utility} for a risk-averse agent (which is a
+concave function of these returns), or
+\item determining the \emph{position} and \emph{pose} of entities from 
+\emph{measurements} in robotics and radar tracking
+applications with nonlinear dynamics and complex mixtures of 
+noise processes.
+\end{enumerate}
+While closed-form exact solutions exist for inferences in some
+continuous variable graphical models, such solutions are largely
+limited to relatively well-behaved cases such as joint Gaussian
+models.  On the other hand, the two more complex inference tasks and
+underlying distributions described above are beyond the reach of
+current closed-form exact solutions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=.7\textwidth]{gm1.pdf}
+\end{center}
+\vspace{-3mm}
+\caption{\footnotesize Graphical models for (a) expected utility of
+of returns, and (b) expected value of perfect information.} \label{fig:gm1}
+\vspace{-3mm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+To give a sense of the difficulty of inference, let us formalize
+the first example.  Here, let us assume that there is a stochastic
+market indicator $d \in$
+
+
+ such as jointly Gaussian models
+
+with continuous variables such as mixed-discrete 
+with finite, discrete random variables and for some extensions
+with continuous random variables, 
+finite discrete 
+
+
+
+\emph{closed-form exact} inference has been ignored based on the
+commonly held belief that it would be impractical (if not impossible
+due to the symbolic integrations required).  In this paper, we
+challenge this belief by showing that exact inference is possible in
+an expressive class of mixed discrete and continuous variable Bayesian
+networks whose conditional probability functions can be
+well-approximated as piecewise polynomials with bounded support, or
+Dirac delta functions.  In practice, this representation is sufficient
+to represent or arbitrarily approximate a wide range of common
+distributions ranging from uniforms (piecewise constant), triangular
+(piecewise linear), truncated normal distributions (piecewise
+quadratic or quartic).\footnote{In practice, measurements have natural
+bounds that make truncated variants of distributions appropriate,
+e.g., a distribution over human heights may be well-approximated
+by a truncated Normal distribution with support in $(0,3]$ meters.}  
+Furthermore, many processes like dynamical systems often
+\\
+
+Economic decision-making may 
+require uncertainty over monetary values and utilities; robotics and radar
+tracking may require uncertainty over position, pose, and sensor
+measurements.  All of these random variables are 
+
+In practice, this
+is sufficient to represent uniform, triangular, normal, and a variety of other
+
+
+- Importance of continuous variables for real-world problems -- examples (robotics, control, time, space, measurements -- test results)
+- Current non-Gaussian solutions are approximate... don't handle complex transforms like squaring of output, nonlinear dynamics
+- We propose a method that yields closed-form exact solutions for cpfs represented as conditional polynomial and delta functions.  Quite expressive -- 
+- We note that by definition, the polynomials must be bounded in order for the cpf to sum out to 1.
+- As an illustrative example, let's look at the following example of calculating EVPI from decision theory assuming that a user is risk-averse, i.e., has a concave utility functions.  We have 3 random variables, drawn in figure, show cpfs in case format.  Assume multiple random variables and a nonlinear process.
+- Explain that we want the EVPI... show expectation calculation.  How would we do it?  This paper provides an exact solution.
+
+\section{Background}
+Bayesian network is a model that represents the relationship between variables in graphical form. Each node in this graph represents a random variable and its dependence is captured by a directed edge. Bayesian network has been a focus of attention for their strength in modeling complex problems and handling causal relations. Additionally, they have the inherent ability to use the prior knowledge into inference. This means, as long as we are able to model the problem in a valid probabilistic framework, we will be able to use Bayesian network to infer the relationship between variables. Formally, a Bayesian network is defined as:
+\begin{equation}
+p(q|e) = \int_{v\notin{q\cup e}} \prod p(x_i|par(x_i)) dv
+\end{equation}
+where $par(x_i)$ is the parent of $x_i$ in the graph and $p(x|par(x))$ is the conditional probability function (CPF). Since building a complete joint probability is a tedious task, \emph{variable elimination} for exact inference has been developed. Variable elimination is a form of dynamic programming that seeks to firstly calculate independent parts of the graph in factors (by multiplication) and eliminate them in the network (by summation). Subsequently, the simplified graph is iterated again to calculate new factors and eventually reach the exact solution.
+
+Another interesting characteristics of the Bayesian network is that the \emph{semantics} of the problem can be incorporated by the conditional probabilities. particularly we can define the problem in a \emph{case}-based form, \ie:
+{%\footnotesize 
+\begin{align*}
+p(x_i) = 
+\begin{cases}
+  \phi_1 & f_1 \\ 
+  : & : \\ 
+  \phi_k & f_k 
+\end{cases}
+\end{align*}
+}
+where $\phi_k$ is the logical constraint. This is particularly interesting because in many real-world problems the CPFs cannot be simply modeled by a function. They may vary over different conditions in the environment. Furthermore, it is worth adding that such probabilities can be written as:
+\begin{equation}
+p(x_i) = \int_{-\infty}^\infty\inde_{k_1} \ldots \inde_{k_n} f_1(x_i)\ldots f_k(x_i) d{x_i}
+\end{equation}
+where 
+\begin{equation}
+\inde_{k_i}= \inde[{\phi_1(x_i) \wedge\ldots\wedge \phi_k(x_i)}]
+\end{equation}
+in which $\ind{.}$ is the indicator function and $k_i$ denotes the number of constraints on the variable $x_i$. We will make use of these representations in the subsequent sections.
+
+\section{Symbolic variable elimination}
+Before going any further, we define a set of operations on the given case statement. These operations are then used to devise an efficient method to compute the exact joint probability of a Bayesian network. In our method we are interested in the problems where the CDFs are defined as:
+
+{%\footnotesize 
+\begin{align*}
+p(x_i) = 
+\begin{cases}
+  \phi_{1_i} & f_1(x_i) + \delta_1(x_i,par(x_i)) \\ 
+  : & : \\ 
+  \phi_{k_i} & f_k(x_i) + \delta_k(x_i,par(x_i)) \\ 
+\end{cases}
+\end{align*}
+}
+
+In our method, the $\phi_i$ are logical formulae defined over the boolean variables and the linear function\footnote{\label{ll}In some cases this constraint can be relaxed to any function} of others. It can include arbitrary logical ($\land,\lor,\neg$)
+combinations of (a) boolean variables and (b) 
+inequalities ($\geq,>,\leq,<$), equalities ($=$), or disequalities ($\neq$)
+where the left and right operands can be linear function of one or more 
+variables in $x_i$.  
+
+Additionally, each case in the CPF is linearly separated from others. In other words,
+each $\phi_i$ will be disjoint from the other $\phi_j$ ($j \neq i$); 
+however the $\phi_i$ may not exhaustively cover the state space, hence
+$f$ may only be a \emph{partial function} and may be undefined for some
+state assignments. Here, $f$ is assumed to be a polynomial function of degree $n_i$, \ie
+\begin{eqnarray}
+f_j(x_i) = \sum_{\ell=1}^{m_{(i,j)}} c_{{(i,j)}_\ell}x_{i}^\ell + c_{{(i,j)}_0}
+\end{eqnarray}
+This is because polynomial functions are extremely powerful in modeling various aspects of real world problems. Additionally, most of the probability distribution functions can be finely approximated by a polynomial function. As it will be shown later, this condition enables us to compute the final solution efficiently.
+
+Furthermore, for reasons that will become clear later, we define a $\delta$ function of each variable and its parents. This will enable us to change one variable with an arbitrary linear function\footnotemark[\value{footnote}] of its parents.
+
+\subsection{Operations on the case statements}
+
+This formulation represents a logical form on the distribution of variables and further enables us to define a set of operation on these distributions as follows.
+
+\emph{Unary operations} such as scalar multiplication $c\cdot p$ (for
+some constant $c \in \mathbb{R}$) or negation $-p$ on case statements
+$p$ are straightforward; the unary operation is simply applied to each
+$f_i$ ($1 \leq i \leq k$). Intuitively, to perform a \emph{binary operation} on two case statements, we simply take the cross-product
+of the logical partitions of each case statement and perform the
+corresponding operation on the resulting paired partitions.  Letting
+each $\phi_i$ and $\psi_j$ denote generic first-order formulae, we can
+perform the ``cross-sum'' $\oplus$ of two (unnamed) cases in the
+following manner:
+
+{\footnotesize 
+\begin{center}
+\begin{tabular}{r c c c l}
+&
+\hspace{-6mm} 
+  $\begin{cases}
+    \phi_1: & f_1 \\ 
+    \phi_2: & f_2 \\ 
+  \end{cases}$
+$\oplus$
+&
+\hspace{-4mm}
+  $\begin{cases}
+    \psi_1: & g_1 \\ 
+    \psi_2: & g_2 \\ 
+  \end{cases}$
+&
+\hspace{-2mm} 
+$ = $
+&
+\hspace{-2mm}
+  $\begin{cases}
+  \phi_1 \wedge \psi_1: & f_1 + g_1 \\ 
+  \phi_1 \wedge \psi_2: & f_1 + g_2 \\ 
+  \phi_2 \wedge \psi_1: & f_2 + g_1 \\ 
+  \phi_2 \wedge \psi_2: & f_2 + g_2 \\ 
+  \end{cases}$
+\end{tabular}
+\end{center}
+}
+\normalsize
+
+Likewise, we can perform $\ominus$ and $\otimes$ by,
+respectively, subtracting or multiplying partition values (as opposed
+to adding them) to obtain the result.  Some partitions resulting from
+the application of the $\oplus$, $\ominus$, and $\otimes$ operators
+may be inconsistent (infeasible); we may simply discard such 
+partitions as they are irrelevant to the function value.
+
+For SDP, we'll also need to perform maximization, restriction,
+and substitution on case statements.  
+\emph{Symbolic maximization} is fairly straightforward
+to define:
+\vspace{-5mm}
+
+{\footnotesize
+\begin{center}
+\begin{tabular}{r c c c l}
+&
+\hspace{-9mm} $\max \Bigg(
+  \begin{cases}
+    \phi_1: & f_1 \\ 
+    \phi_2: & f_2 \\ 
+  \end{cases}$
+$,$
+&
+\hspace{-4mm}
+  $\begin{cases}
+    \psi_1: & g_1 \\ 
+    \psi_2: & g_2 \\ 
+  \end{cases} \Bigg)$
+&
+\hspace{-4mm} 
+$ = $
+&
+\hspace{-4mm}
+  $\begin{cases}
+  \phi_1 \wedge \psi_1 \wedge f_1 > g_1    : & f_1 \\ 
+  \phi_1 \wedge \psi_1 \wedge f_1 \leq g_1 : & g_1 \\ 
+  \phi_1 \wedge \psi_2 \wedge f_1 > g_2    : & f_1 \\ 
+  \phi_1 \wedge \psi_2 \wedge f_1 \leq g_2 : & g_2 \\ 
+  \phi_2 \wedge \psi_1 \wedge f_2 > g_1    : & f_2 \\ 
+  \phi_2 \wedge \psi_1 \wedge f_2 \leq g_1 : & g_1 \\ 
+  \phi_2 \wedge \psi_2 \wedge f_2 > g_2    : & f_2 \\ 
+  \phi_2 \wedge \psi_2 \wedge f_2 \leq g_2 : & g_2 \\ 
+  \end{cases}$
+\end{tabular}
+\end{center}
+}
+One can verify that the resulting case statement is still
+within the case language defined previously.  At first
+glance this may seem like a cheat and little is gained
+by this symbolic sleight of hand.  As it turns out, simply
+having a well-defined case partition representation of the
+maximization will facilitate the regression step required
+for SDP.  Furthermore, the 
+XADD that we introduce later will be able to exploit the 
+internal decision structure of this
+maximization to represent it much more compactly.
+
+The next operation of \emph{restriction} is fairly simple: in this
+operation, we want to restrict a function $p$ to apply only in cases
+that satisfy some formula $\phi$, which we write as $p|_{\phi}$.  
+This can be done by simply appending $\phi$ to each case partition
+as follows:
+{\footnotesize
+\begin{center}
+\begin{tabular}{r c c l}
+&
+\hspace{-6mm} 
+  $p = \begin{cases}
+    \phi_1: & f_1 \\ 
+    : & : \\ 
+    \phi_k: & f_k \\ 
+  \end{cases}$
+&
+
+&
+\hspace{-2mm}
+  $p|_{\phi} = \begin{cases}
+    \phi_1 \land \phi : & f_1 \\ 
+    : & : \\ 
+    \phi_k \land \phi : & f_k \\ 
+  \end{cases}$
+\end{tabular}
+\end{center}
+}
+Clearly $p|_{\phi}$ only applies when $\phi$ holds and is
+undefined otherwise, hence $p|_{\phi}$ is a partial function
+unless $\phi \equiv \top$.
+
+The final operation that we need to define for case
+statements is substitution.  \emph{Symbolic substitution} simply takes
+a set $\sigma$ of variables and their substitutions, e.g., 
+$\sigma = \{ x_1' = x_1 + x_2, x_2' = x_1^2 \exp(x_2) \}$ where
+the LHS of the $=$ represents the substitution variable and the
+RHS of the $=$
+the expression that should be substituted in its place.  No variable
+occurring in any RHS expression of $\sigma$ can also occur in any 
+LHS expression of $\sigma$.
+We write the substitution of a non-case function $f_i$ with $\sigma$ 
+as $f_i\sigma$; as an example, for the $\sigma$ defined previously and 
+$f_i = x_1' + x_2'$ and $f_i\sigma = x_1 + x_2 + x_1^2 \exp(x_2)$ as
+would be expected.  We can also substitute into case partitions $\phi_j$
+by applying $\sigma$ to its LHS and RHS operands; as an example, if
+$\phi_j \equiv x_1' \leq \exp(x_2')$ then 
+$\phi_j \sigma \equiv x_1 + x_2 \leq \exp(x_1^2 \exp(x_2))$.
+Having now defined substitution of $\sigma$ for non-case functions $f_i$ and case
+partitions $\phi_j$ we can define it for case statements in general:
+
+{\footnotesize
+\begin{center}
+\begin{tabular}{r c c l}
+&
+\hspace{-6mm} 
+  $p = \begin{cases}
+    \phi_1: & f_1 \\ 
+    : & : \\ 
+    \phi_k: & f_k \\ 
+  \end{cases}$
+&
+
+&
+\hspace{-2mm}
+  $p\sigma = \begin{cases}
+    \phi_1\sigma: & f_1\sigma \\ 
+    : & : \\ 
+    \phi_k\sigma: & f_k\sigma \\ 
+  \end{cases}$
+\end{tabular}
+\end{center}
+}
+\normalsize
+
+One useful property of substitution is that
+if $p$ has mutually exclusive partitions $\phi_i$ ($1 \leq i \leq k$)
+then $p\sigma$ must also have mutually exclusive partitions ---
+this follows from the logical consequence that 
+if $\phi_1 \land \phi_2 \vdash \bot$
+then $\phi_1\sigma \land \phi_2\sigma \vdash \bot$.
+We will exploit this property next in SDP.
+
+% In the framework we are considering, the CDFs are modeled as case statements. In these case statements, we can put either linear constraints on the variables or another boolean variable. The boolean constraints are useful when the value of a given variable is dependent on the output of other binary variables. On the other hand, we are able to define linear functions of input variables to control its CPF.
+
+
+\subsection{Procedure}
+Once we have defined the operations on the cases, we would like to compute the joint probability over variables $x_1, x_2, \ldots, x_n$. In order to do that, we devise the symbolic elimination algorithm that seeks to identify the independent variables, compute their respective value and substitute it into the equation. Formally we are interested in:
+\begin{equation}
+\label{eq:joint}
+p(q|e) = \int_{-\infty}^{\infty} p(x_1|par(x_1)) \otimes p(x_2|par(x_2)) \otimes \ldots \otimes p(x_n|par(x_n)) dx_n\ldots dx_2 dx_1
+\end{equation}
+One can see that this huge case statement can be represented as a binary tree where each node represents a condition and the terminal nodes are the value of function $f_j(x_i)$. We will show in the subsequent section how to build an efficient tree for this representation.
+
+Having the tree built, we firstly need to single out the variable we want to eliminate, namely $x_i$ in the leaves of the tree. Then, with respect to Equation \ref{}, we know that each case statement can be written as an integral over the indicator function of the constraints. Thus, we can shift the bounds on the integral of the indicator functions to simplify our problem. By doing that, we resolved and therefore we can write each independent CPF as:
+\begin{equation}
+\left( 
+	\sum_{\ell=1}^{m_{(i,j)}} \frac{c_{{(i,j)}_\ell}}{\ell+1}(x_i)^{\ell+1} + c_{{(i,j)}_0}(x_i)  
+\right) \left| \begin{array}{l}
+{\min_{k_{i-1}}\tilde{\phi}_{k_{i-1}}-l_i} \\ {\max_{k_{i-1}}\tilde{\phi}_{k_{i-1}}-u_i} 
+\end{array}
+\right.
+\end{equation}
+It should be noted that $l_i,u_i$ denote the lower and upper bound on the variable we would like to eliminate and $\tilde{\phi}_{k_i}$ is the modified constrain such that for $\phi_k(x_i)$ to be true we have $\tilde{\phi}_{k_i}>0$. In practice these values can be provided as a prior knowledge of the user on each variable. Subsequently, the following case statement is obtained:
+{\small
+\begin{equation}
+\label{case1}
+\left\lbrace
+\begin{aligned}
+&\tilde{\phi_{1_{i-1}}} > \tilde{\phi}_{2_{i-1}} \wedge \ldots \wedge \tilde{\phi}_{k_{i-1}} \wedge \tilde{\phi}_{{k-1}_{i-1}}>\tilde{\phi}_{{k}_{i-1}} > 0\wedge
+\tilde{\phi}_{k_{i-1}}-l_i>0 \wedge \tilde{\phi}_{1_{i-1}}-u_i>0 \\ 
+&& \hspace*{-6cm} : \sum_{\ell=1}^{m_i} \frac{c_{i_\ell}}{\ell+1}(l_i-u_i)^{\ell+1} + c_{i_0}(u_i-l_i) \\
+&\tilde{\phi_{1_{i-1}}} > \tilde{\phi}_{2_{i-1}} \wedge \ldots \wedge \tilde{\phi}_{k_{i-1}} \wedge \tilde{\phi}_{{k-1}_{i-1}}>\tilde{\phi}_{{k}_{i-1}} > 0\wedge
+\tilde{\phi}_{k_{i-1}}-l_i > 0 \wedge \tilde{\phi}_{k_{i-1}}-u_i \leq 0 \\
+&&\hspace*{-6cm} :  \sum_{\ell=1}^{m_i} \frac{c_{i_\ell}}{\ell+1}(l_i-x_{i-1})^{i+1} + c_{i_0}(x_{i-1}-l_i) \\
+&\tilde{\phi_{1_{i-1}}} > \tilde{\phi}_{2_{i-1}} \wedge \ldots \wedge \tilde{\phi}_{k_{i-1}} \wedge \tilde{\phi}_{{k-1}_{i-1}}>\tilde{\phi}_{{k}_{i-1}} > 0\wedge 
+\tilde{\phi}_{k_i}(x_{i-1})-l_i \leq 0 \wedge \tilde{\phi}_1(x_{i-1})-u_i > 0 \\ 
+&&\hspace*{-6cm}:  \sum_{\ell=1}^{m_i} \frac{c_{i_\ell}}{\ell+1}(x_{i-1}-u_i)^{i+1} + c_{i_0}(u_i-x_{i-1}) \\ 
+& \hspace*{3cm} \vdots  && \hspace*{-5cm} \vdots \\
+& \text{otherwise} && \hspace*{-5cm}: 0
+\end{aligned}
+\right .
+\end{equation}
+}
+
+
+\section{Extended ADDs (XADDs)}
+
+In practice, it can be prohibitively expensive to maintain
+a case statement representation of a value function with explicit
+partitions.  Motivated by the SPUDD~\cite{spudd} algorithm which
+maintains compact value function representations for finite discrete
+factored MDPs using algebraic decision diagrams (ADDs)~\cite{bahar93add},
+we extend this formalism to handle continuous variables in a data
+structure we refer to as the XADD.
+
+In brief we note that an XADD is like an ADD except that (a) the decision
+nodes can have arbitrary inequalities, equalities, or disequalities (one
+per node) and (b) the leaf nodes can represent arbitrary functions.
+The decision nodes still have a fixed order from root to leaf
+and the standard ADD
+operations to build a canonical ADD (\textsc{Reduce}) and 
+to perform a binary operation on two ADDs (\textsc{Apply}) 
+still applies in the case of XADDs. 
+
+Furthermore, having defined the model of problem on polynomial functions, we enjoy the advantage
+of this for the XADD as we can put the leaf and decision nodes
+in a \emph{unique, canonical} form, which allows us to minimize 
+redundancy in the XADD representation of a case statement.
+
+It is fairly straightforward for XADDs to support all case operations
+required for SDP.  Standard operations like unary multiplication,
+negation, $\oplus$, and $\otimes$ are implemented exactly as they
+are for ADDs.  The fact that the decision nodes have internal structure
+is irrelevant, although this means that certain paths in the XADD
+may be inconsistent or infeasible (due to parent decisions).  To
+remedy this, when the XADD has only linear decision nodes and
+linear leaf functions, we can use the feasibility checkers of
+a linear programming solver (e.g., as also done in~\cite{penberthy94}) 
+to prune unreachable nodes in the XADD; later we show results demonstrating
+impressive reductions in XADD size using this style of pruning.
+
+The only two XADD operations that pose difficulty are substitution
+and maximization.  In principle substitution is simple, the only
+caveat is that substitutions change the decision nodes and hence
+decision nodes may get out of order.  We can use the 
+recursive application of ADD binary operations $\otimes$ and $\oplus$ 
+as given in Algorithm~\ref{fig:correct} to correctly reorder the
+nodes in an XADD $F$ after substitution.  A related reordering
+issue occurs during XADD maximization; because XADD maximization
+can introduce new decision nodes (which occurs at the leaf when
+two leaf functions are compared) and these decision nodes may
+be out of order w.r.t.\ the diagram, reordering as defined
+in Algorithm~\ref{fig:correct} must also be applied after
+maximization.  
+
+On a final note, we mention that an implementation of case statements
+without any attempt to merge and simplify cases often cannot get
+past the first or second iteration of SDP; as our results show next,
+XADDs allow SDP to perform quite well in practice.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\incmargin{1em}
+%\linesnumbered
+\begin{algorithm}[t!]
+\SetKwFunction{getCanonicalNode}{{\sc GetCanonicalNode}}
+\SetKwFunction{reduce}{{\sc Reorder}}
+\SetKwInOut{Input}{input}
+\SetKwInOut{Output}{output}
+
+\Input{$F$ (root node for possibly unordered XADD)}
+\Output{$F_r$ (root node for an ordered XADD)}
+\BlankLine
+\Begin{
+   //if terminal node, return canonical terminal node\\
+   \If{F is terminal node}
+   {
+   \Return{canonical terminal node for polynomial of $F$}\;
+   }
+   //nodes have a $\mathit{true}$ \& $\mathit{false}$ branch and $\mathit{var}$ id\\
+   \If{$F \rightarrow F_r$ is not in Cache}
+   {
+    $F_{\mathit{true}}$ = \reduce{$F_{\mathit{true}}$} $\otimes \; \mathbb{I}[F_\mathit{var}]$ \;
+    $F_{\mathit{false}}$ = \reduce{$F_{\mathit{false}}$} $\otimes \; \mathbb{I}[\neg F_\mathit{var}]$\;
+    $F_r = F_{\mathit{true}} \oplus F_{\mathit{false}}$\;
+    insert $F \rightarrow F_r$ in Cache\;
+   } 
+   \Return{$F_r$}\;
+}
+\caption{{\sc Reorder}(F)  \label{fig:correct}}
+\end{algorithm}
+\decmargin{1em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Empirical Results}
+
+\section{Related Work}
+
+In recent years, significant advances have been made in the
+areas of \emph{approximate} and \emph{non-closed-form, 
+exact} inference for many of these problems when
+represented as continuous variable graphical models (e.g.,
+discretization~\cite{nips}, numerical integration~\cite{num},
+(MCMC) sampling~\cite{murray_or_mckay},
+variational inference~\cite{jordan}, expectation
+propagation~\cite{minka}, and even copulas~\cite{}) 
+as well as some notable cases
+of \emph{restricted exact} inference
+in joint Gaussian models~\cite{weiss} or for exact Bayesian inference
+over joint (continuous) hyperparameters of piecewise constant 
+functions~\cite{hutter}.  However, it seems that little progress
+has been made in \emph{closed-form exact} inference for
+\emph{expressive} non-uniform and non-Gaussian joint distributions,
+which is the task addressed in this paper.
+
+\section{Conclusions and Future Work}
+
+Significant step forward...
+
+\bibliography{cont_mdp}
+\bibliographystyle{plain}
+
+
+\end{document}

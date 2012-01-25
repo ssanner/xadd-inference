@@ -1,0 +1,133 @@
+digraph G {
+  graph [
+    ranksep = "2.00",
+    bb = "0,0,2190,588",
+    ratio = auto,
+    fontsize = 16,
+    fontname = Helvetica,
+    size = "7.5,10"
+  ];
+
+  node [
+    fontsize = 16
+  ];
+
+  25 [
+    height = "0.55556",
+    label = b1,
+    fillcolor = lightblue,
+    style = filled,
+    pos = "723,568"
+  ];
+  24 [
+    height = "0.55556",
+    label = "x1 <= o1",
+    fillcolor = lightblue,
+    width = "4.4444",
+    style = filled,
+    pos = "892,384"
+  ];
+  23 [
+    height = "0.55556",
+    label = "2 + x1 >= o1",
+    fillcolor = lightblue,
+    width = "5.1111",
+    style = filled,
+    pos = "999,200"
+  ];
+  22 [
+    shape = box,
+    label = "(-0.002 * o1 * o1) + ... + (0.004 * o1 * x1)",
+    fillcolor = lightsalmon,
+    width = "10.861",
+    style = filled,
+    pos = "1799,18"
+  ];
+  19 [
+    height = "0.55556",
+    label = "2 + x1 >= o1",
+    fillcolor = lightblue,
+    width = "5.1111",
+    style = filled,
+    pos = "447,200"
+  ];
+  21 [
+    shape = box,
+    label = "(-0.001 * x1 * x1) + ... ",
+    fillcolor = lightsalmon,
+    width = "6.861",
+    style = filled,
+    pos = "999,18"
+  ];
+  18 [
+    shape = box,
+    label = "0.28 + (0.04 * x1) + (-0.04 * o1)",
+    fillcolor = lightsalmon,
+    width = "3.9722",
+    style = filled,
+    pos = "447,18"
+  ];
+  20 [
+    height = "0.55556",
+    label = "x1 <= o1",
+    fillcolor = lightblue,
+    width = "4.4444",
+    style = filled,
+    pos = "554,384"
+  ];
+  17 [
+    shape = box,
+    label = "(0.28 + (0.04 * o1) + (-0.04 * x1))",
+    fillcolor = lightsalmon,
+    width = "3.9722",
+    style = filled,
+    pos = "143,18"
+  ];
+  6 [
+    shape = box,
+    label = 0,
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "723,200"
+  ];
+  23 -> 21 [
+    style = "",
+    pos = "e,999,36.087 999,179.83 999,147.31 999,83.226 999,46.204"
+  ];
+  20 -> 19 [
+    style = "",
+    pos = "e,458.64,220.02 542.35,363.96 523.37,331.33 485.73,266.6 463.84,228.96"
+  ];
+  24 -> 23 [
+    style = "",
+    pos = "e,987.36,220.02 903.65,363.96 922.63,331.33 960.27,266.6 982.16,228.96"
+  ];
+  25 -> 20 [
+    style = "",
+    pos = "e,572.43,404.06 707.7,551.35 678.65,519.72 615.21,450.65 579.59,411.86"
+  ];
+  23 -> 22 [
+    style = dashed,
+    pos = "e,1719.7,36.043 1078.6,181.88 1228.7,147.75 1552.3,74.123 1709.6,38.344"
+  ];
+  19 -> 17 [
+    style = "",
+    pos = "e,173.35,36.17 413.89,180.18 357.39,146.35 242.62,77.642 182.21,41.474"
+  ];
+  25 -> 24 [
+    style = dashed,
+    pos = "e,873.57,404.06 738.3,551.35 767.35,519.72 830.79,450.65 866.41,411.86"
+  ];
+  24 -> 6 [
+    style = dashed,
+    pos = "e,739.63,218.1 873.59,363.96 842.68,330.31 780.41,262.5 746.43,225.5"
+  ];
+  20 -> 6 [
+    style = dashed,
+    pos = "e,706.37,218.1 572.41,363.96 603.32,330.31 665.59,262.5 699.57,225.5"
+  ];
+  19 -> 18 [
+    style = dashed,
+    pos = "e,447,36.087 447,179.83 447,147.31 447,83.226 447,46.204"
+  ];
+}
