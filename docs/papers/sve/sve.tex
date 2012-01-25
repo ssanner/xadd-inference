@@ -84,7 +84,7 @@ well-approximated as piecewise combinations of polynomials with
 bounded support.  Using this representation, we show that we can
 compute all of the SVE operations \emph{exactly and in closed-form},
 which crucially includes \emph{definite integration w.r.t.\ nonlinear
-piecewise boundary constraints}.  To aid in the efficient computation
+piecewise functions}.  To aid in the efficient computation
 and compact representation of this solution, we use an extended
 algebraic decision diagram (XADD) data structure that supports all SVE
 operations.  We provide illustrative results for SVE on probabilistic
@@ -180,26 +180,25 @@ queries or conditional expectation computations.
 To achieve this task, we focus on an expressive class of mixed
 discrete and continuous variable Bayesian networks whose conditional
 probability functions can be expressed as piecewise polynomials with
-bounded support (where nonlinear piece boundaries themselves may consist
-of inequalities over polynomials).
-In practice, this representation is sufficient to represent or
-arbitrarily approximate a wide range of common distributions such as  
-the following: uniform (piecewise constant), triangular
-(piecewise linear), truncated normal distributions\footnote{In
-practice, measurements have natural ranges that make truncated
-variants of distributions appropriate, e.g., a range finder that
-exhibits Gaussian distributed measurement errors but only returns
-measurements in the range $[0,10]$ may be well-suited to a truncated
-Normal distribution observation model.}  (piecewise quadratic or
-quartic), as well as all mixtures of such distributions as exemplified
-in $P(x_i|d)$ above (since a sum of piecewise polynomials is still piecewise
-polynomial).  While polynomials directly support the integrals we will
-need to compute \emph{variable elimination}~\cite{varelim} in
-closed-form, computing the definite integrals w.r.t.\ arbitrary
-polynomial piece boundaries is a much more difficult task achieved
-through novel \emph{symbolic} methods that underlie the key
-contribution of \emph{symbolic variable elimination (SVE)} that we
-make in this paper.
+bounded support (where piece boundaries must be inequalities of linear
+functions).  In practice, this representation is sufficient to
+represent or arbitrarily approximate a wide range of common
+distributions such as the following: uniform (piecewise constant),
+triangular (piecewise linear), truncated normal
+distributions\footnote{In practice, measurements have natural ranges
+that make truncated variants of distributions appropriate, e.g., a
+range finder that exhibits Gaussian distributed measurement errors but
+only returns measurements in the range $[0,10]$ may be well-suited to
+a truncated Normal distribution observation model.}  (piecewise
+quadratic or quartic), as well as all mixtures of such distributions
+as exemplified in $P(x_i|d)$ above (since a sum of piecewise
+polynomials is still piecewise polynomial).  While polynomials
+directly support the integrals we will need to compute \emph{variable
+elimination}~\cite{varelim} in closed-form, computing the definite
+integrals of polynomials w.r.t.\ arbitrary linear piece boundaries
+turns out to be a much more difficult task achieved through novel
+\emph{symbolic} methods that underlie the key contribution of
+\emph{symbolic variable elimination (SVE)} that we make in this paper.
 
 % E[d|x_1] example?
 In the following sections, we present our graphical model
@@ -209,8 +208,8 @@ After this, we introduce
 the \emph{extended algebraic decision diagram (XADD)} --- a practical
 data structure for efficiently and compactly manipulating the case
 representation --- and apply XADD-based SVE to robotics localization 
-and a tracking tasks.  We conclude with a discussion of future 
-extensions.
+and a tracking tasks demonstrating exact closed-form inference 
+for these problems.  
 
 \section{Discrete and Continuous Graphical Models}
 
@@ -318,14 +317,14 @@ already be computed in~\eqref{eq:cprob}.}
 This can be achieved by the following
 computation, where $p(q|\vec{e})$ can be pre-computed according to~\eqref{eq:cprob}:
 %$\vec{q} = \{ b_{s'+1},\ldots,b_{s''},x_{t'+1},\ldots,x_{t''} \}$:
-\vspace{-3mm}
+\vspace{-0.5mm}
 {\footnotesize 
 \begin{equation} 
 \E[Q|\vec{e}] = 
 %\sum_{b_{s'+1}} \cdots \sum_{b_{s''}} 
 %\int_{x_{t'+1}=-\infty}^{\infty} \cdots \int_{x_{t''}=-\infty}^{\infty} 
 \int_{q=-\infty}^{\infty} [q \cdot p(q|\vec{e})] \, dq \label{eq:cexp}
-\vspace{-2mm}
+\vspace{-0.5mm}
 \end{equation}
 }
 %Here, $p(q|\vec{e})$ is computed using the conditional probability 
@@ -397,14 +396,14 @@ $\mathit{order}$ for elimination}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Symbolic Variable Elimination in Discrete/Continuous Graphical Models}
-As discussed in Section~\ref{sec:intro}, piecewise polynomial functions 
+As discussed previously, piecewise polynomial functions 
 provide an expressive framework for representing discrete/continuous
 variable graphical models when all distributions have bounded
 support.  In this section, we introduce 
 a case notation and operations for piecewise polynomials, define factor
 graphs in terms of these case statements, and finally show that all VE
 operations, including definite integration w.r.t.\ nonlinear piecewise
-boundary constraints, can be computed exactly and in closed-form
+functions, can be computed exactly and in closed-form
 using a purely \emph{symbolic} representation, hence the algorithm
 \emph{Symbolic VE} (SVE).
 
@@ -412,7 +411,7 @@ using a purely \emph{symbolic} representation, hence the algorithm
 
 For this section, we will assume all functions
 are represented in \emph{case} form as follows:
-\vspace{-5mm}
+\vspace{-1mm}
 {%\footnotesize 
 \begin{align}
 f = 
@@ -429,14 +428,14 @@ exponents.  The $\phi_i$ are logical formulae defined over
 $(\vec{b},\vec{x})$ that can consist of arbitrary conjunctions of (a)
 (negated) boolean variables in $\vec{v}$ and (b) inequalities
 ($\geq,>,\leq,<$), equalities ($=$), or disequalities ($\neq$) where
-the left and right operands can be in the same form as the $f_i$.  We
+the left and right operands must be \emph{linear} functions.  We
 assume that the set of conditions $\{ \phi_1,\ldots,\phi_k \}$ 
 disjointly and exhaustively partition $(\vec{b},\vec{x})$ such that $f$
 is well defined for all $(\vec{b},\vec{x})$.  It is easy to verify
 that such a representation can represent the uniform and triangular
 distributions and arbitrarily approximate the truncated normal 
 distribution required to specify $p(x_i|d)$ discussed in 
-Section~\ref{sec:intro}.
+the introduction.
 
 % TODO: Examples
 
@@ -448,7 +447,7 @@ $f_i$ ($1 \leq i \leq k$). Intuitively, to perform a \emph{binary
 of the logical partitions of each case statement and perform the
 corresponding operation on the resulting paired partitions.  Thus, we 
 perform the ``cross-sum'' $\oplus$ of two (unnamed) cases as follows:
-\vspace{-4mm}
+\vspace{-1mm}
 {\footnotesize 
 \begin{center}
 \begin{tabular}{r c c c l}
@@ -488,7 +487,7 @@ adding them) to obtain the result.
 Some partitions resulting from
 the application of the $\oplus$, $\ominus$, and $\otimes$ operators
 may be inconsistent (infeasible); if we can detect this (e.g., via
-a nonlinear constraint solver), we may simply discard such 
+a linear constraint solver), we may simply discard such 
 partitions as they are irrelevant to the function value.
 
 For variable elimination, we'll need to compute definite integrals
@@ -596,23 +595,23 @@ case statement) and then $\sum$ the results using $\oplus$.
 
 To continue with the integral for a single case partition, we
 introduce a concrete example.  Let $f_1 := x_1^2 - x_1 x_2$ and $\phi_1
-:= [x_1 > -1] \land [x_1 > x_2-1] \land [x_1 \leq x_2^2] \land [x_1 \leq x_2 +1] \land [x_2 > 0]$.  
+:= [x_1 > -1] \land [x_1 > x_2-1] \land [x_1 \leq x_2] \land [x_1 \leq x_3 +1] \land [x_2 > 0]$.  
 In computing $\int_{x_1=-\infty}^{\infty} \I[\phi_1] \cdot f_1 \, dx_1$,
 the first thing we note is that the constraints involving $x_1$ in
 $\I[\phi_1]$ can be used to restrict the integration range for $x_1$.
 In fact, we know that the integrand is only non-zero for
-$\max(x_2 - 1, -1) < x_1 \leq \min(x_2^2,x_2 + 1)$.  Using the $\max$
+$\max(x_2 - 1, -1) < x_1 \leq \min(x_2,x_3 + 1)$.  Using the $\max$
 operation defined previously, we can 
 write explicit functions in 
 \emph{piecewise polynomial case form} for the respective 
 lower and upper bounds $\LB$ and $\UB$:
 {\footnotesize
-\vspace{-2mm}
+\vspace{-1mm}
 \begin{align*}
 \LB &:=\begin{cases}
     x_2-1 > -1:&\hspace{-2mm} x_2 - 1 \\ 
     x_2-1 \leq -1:&\hspace{-2mm} -1 \\ 
-  \end{cases}\quad
+  \end{cases}\;
 \UB &:=\begin{cases}
     x_2<x_3+1:&\hspace{-2mm} x_2 \\ 
     x_2\geq x_3+1:&\hspace{-2mm} x_3 + 1 \\ 
@@ -628,7 +627,7 @@ of order 0 or greater, so the limit exists and yields the
 same answer as substituting the limit value.  Hence for 
 polynomials, we need not be concerned about whether bounds
 are inclusive or not.}
-\vspace{-2mm}
+\vspace{-1mm}
 \begin{equation}
 \I[x_2 > 0] \int_{x_1=\LB}^{\UB} (x_1^2 - x_1 x_2) \, dx_1 .
 \end{equation}
@@ -636,7 +635,7 @@ Note here that $\I[x_2 > 0]$ is independent of $x_1$ and hence
 can factor outside the integral.  With all indicator functions
 moved into the $\LB$ or $\UB$ or factored out, we can now compute
 the integral:
-\vspace{-5mm}
+\vspace{-1mm}
 {\footnotesize
 \begin{equation}
 \I[x_2 > 0] \left[ \frac{1}{3}x_1^3 - \frac{1}{2}x_1^2 x_2 \bigg|_{x_1=\LB}^{x_1=\UB} \right] .
@@ -654,8 +653,9 @@ and lower bounds as shown previously.  So the evaluation is simply
 \end{align}
 }
 Hence the result of the definite integration over a case
-partition of a polynomial function with piecewise nonlinear constraints
-is simply a case statement --- this is somewhat remarkable given that
+partition of a piecewise polynomial function with linear constraints
+is simply a case statement in the same form --- 
+this is somewhat remarkable given that
 all of the bound computations were symbolic.  Furthermore, one might
 fear that high-order operations like $\UB \otimes \UB \otimes \UB$
 could lead to a case partition explosion, but we note this example simply
@@ -709,49 +709,46 @@ the full integral, \emph{still in piecewise polynomial case form}.
 
 \subsection{Piecewise Polynomial Factor Graphs and Symbolic Variable Elimination (SVE)}
 
-We now proceed
-to define our factor graph from~\eqref{eq:fg} using factors
-represented by case statements.  The only restriction that we have on
-\emph{piecewise polynomial factor graphs (PPFG)} requires
-knowledge of the variable elimination $\mathit{order}$ to be used in
-Algorithm~\ref{alg:varelim} and is stated as follows: 
-\begin{restr}[Case Factor Restriction for PPFGs]
-Given
-variable elimination $\mathit{order}$, for all PPFG factors
-$f(\vec{v})$, the $v \in \vec{v}$ occurring earliest in
-$\mathit{order}$ may only occur linearly in any of the constraints
-$\phi_i$ of factor $f(\vec{v})$.
-\end{restr}
-\vspace{-2mm}
-In brief, this is to ensure that the
-bounds on $v$ can be isolated in order to perform the definite
-integration from Section~\ref{sec:def_int}.  We note that this
-constraint only affects \emph{one} variable in each factor, hence
-$\mathit{order}$ can be adapted as appropriate to accommodate a range
-of nonlinear modeling
-requirements.  Furthermore, when all piecewise boundaries are
-linear constraints (which occurs often), this condition is always
-satisfied.
-
+We define a factor graph from~\eqref{eq:fg} with factors represented
+by our case formalism as \emph{piecewise polynomial factor graphs
+(PPFGs)}.  
+%\begin{restr}[Case Factor Restriction for PPFGs]
+%Given
+%variable elimination $\mathit{order}$, for all PPFG factors
+%$f(\vec{v})$, the $v \in \vec{v}$ occurring earliest in
+%$\mathit{order}$ may only occur linearly in any of the constraints
+%$\phi_i$ of factor $f(\vec{v})$.
+%\end{restr}
+%\vspace{-1mm}
 With the preceding machinery, generalizing VE to Symbolic VE (SVE) for
 PPFGs is straightforward.  We need only replace all sums and products
 in VE with the case versions $\oplus$ and $\otimes$.  Then the only
 operation we need to specify in the VE Algorithm~\ref{alg:varelim} is
 to define the computation for the variable
-eliminations.  For PPFGs, the two cases can be computed as follows:
+eliminations.  For PPFGs, there are two cases:
 
+\vspace{2mm}
 {\bf Discrete Variable Elimination} (line 14 of VE):\\
 \vspace{-3mm}
 $$\sum_v f_v := f_v|_{v=1} \oplus f_v|_{v=1}.$$
 \vspace{-2mm}
 {\bf Continuous Variable Elimination} (line 15 of VE):\\ 
-$$\int_{\var=-\infty}^{\infty} f_\var \, d\var := \mbox{(see Section~\ref{sec:def_int})}$$.
+$$\int_{\var=-\infty}^{\infty} f_\var \, d\var := \mbox{(see definite integration)}$$.
+
+Each elimination operation takes operands in the previously defined
+case form and produces operands in this same form --- crucially this means
+that the piece constraints always remain linear.  Importantly for the
+complex operation of definite integration, this means that the upper
+and lower bounds can always be isolated in order to evaluate the
+integral.  Since definite integration and all other
+required SVE operations preserve the case property, 
+all SVE operations can be computed on an PPFG in closed-form.
 
 This completes the definition of SVE.  If the exact model could be
-represented as a PPFG, then SVE provides exact inference.  Otherwise
-one can approximate most graphical models to arbitrary
-precision using PPFGs --- once this is done, 
-SVE will provide exact inference in this approximated model.
+represented as a PPFG, then SVE provides exact closed-form inference.
+Otherwise one can approximate most graphical models to arbitrary
+precision using PPFGs --- once this is done, SVE will provide exact
+inference in this approximated model.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\begin{figure*}[t!]
@@ -778,8 +775,8 @@ from~\cite{uai11} in that it was used there to represent
 \emph{deterministic equations} over continuous variables, whereas
 here we use it to represent polynomial condition \emph{probability
 densities}.  \cite{uai11} did not discuss \emph{definite integration} in XADDs,
-but the adaptation of this operation defined in 
-Section~\ref{sec:def_int} from case statements to XADDs is straightforward.}
+but the adaptation of this operation 
+from case statements to XADDs is straightforward.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[t!]
@@ -794,9 +791,9 @@ Section~\ref{sec:def_int} from case statements to XADDs is straightforward.}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-In brief we note that an XADD is like an algebraic decision 
+The XADD is like an algebraic decision 
 diagram (ADD)~\cite{bahar93add} except that (a) the decision
-nodes can have arbitrary inequalities, equalities, or disequalities (one
+nodes can have arbitrary inequalities or (dis)equalities (one
 per node) and (b) the leaf nodes can represent arbitrary functions.
 The decision nodes still have a fixed order from root to leaf
 and the standard ADD
@@ -806,9 +803,13 @@ still applies in the case of XADDs.
 
 Of particular importance is that the XADD is a directed acyclic graph
 (DAG), and hence is often much more compact than a tree
-representation.  For example, in Figure~\ref{fig:xadd} the XADD of a function is provided.
+representation, e.g., as demonstrated in 
+Figure~\ref{fig:xadd}.
 %in Figure~\ref{fig:xadd_tree} we provide the function represented by the XADD in Figure~\ref{fig:xadd} expanded from a DAG into it's tree form.  
-We note that not only is the XADD much more compact on account of its DAG, but that all unary and binary operations on XADDs can directly exploit this compact structure for efficiency.
+We remark that not only are XADDs compact on account of their
+reconvergent DAG structure (each path from root to leaf would be a separate
+case partition), but that all unary and binary operations
+on XADDs can directly exploit this compact structure for efficiency.
 
 It is fairly straightforward for XADDs to support all case operations
 required for SVE.  Standard operations like unary multiplication,
@@ -847,32 +848,42 @@ which can be easily detected and repaired as discussed in~\cite{uai11} .
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 In this section we present proof-of-concept experiments for the {robot
-localization} graphical model provided in Section~\ref{sec:intro} and
+localization} graphical model provided in the introduction and
 a basic discrete/continuous {tracking} task in
 Figure~\ref{fig:gm3}.  Our objectives in this section are to show that
 the previously defined {exact} inference methods can work with
 reasonably sized graphical models having multiple continuous and
 discrete variables with complex piecewise polynomial distributions
 and that SVE can exactly compute the highly complex, multi-modal
-queries in an {exact} functional form --- a breakthrough
-in exact inference for such graphical models.
+queries in an {exact} functional form --- a milestone in 
+exact closed-form inference for graphical models
+with such complex combinations of distributions.
 
-For the {robot localization} task, we plot the posterior over
-the distance $d \in D$ given various observations in Figure~\ref{fig:dist}.
-What is noteworthy here is the interesting multi-modal
-nature of these plots. Recalling the discussion in the introduction,
-the range finder was modeled with various error modes; because of these
-models, the posterior plots demonstrate the different combinatorial
-possibilities that each measurement was accurate or noise with the various
-peaks in the distribution weighted according to these probabilities.
-Despite the multi-modal nature of these distributions, the conditional 
-expectation of $D$ can be computed exactly and is shown below each posterior.
-We note that in a Bayesian risk setting, where these posterior beliefs
-may be multiplied by some position-based risk function (e.g., one
-that increases with proximity to stairwells),
-it is important to have this true multi-modal posterior rather than an 
-inaccurate unimodal approximation.
+{\bf Localization:} 
+For the {robot localization} task, we plot the posterior over the
+distance $d \in D$ given various observations in
+Figure~\ref{fig:dist}.  What is noteworthy here is the interesting
+multi-modal nature of these plots. Recalling the discussion in the
+introduction, the range finder was modeled with various error modes;
+because of these models, the posterior plots demonstrate the different
+combinatorial possibilities that each measurement was accurate or
+noise with the various peaks in the distribution weighted according to
+these probabilities.  Despite the multi-modal nature of these
+distributions, the conditional expectation of $D$ can be computed
+exactly and is shown below each posterior.  
 
+We note that in a Bayesian
+risk setting, where these posterior beliefs may be multiplied by some
+position-based risk function (e.g., one that increases with proximity
+to stairwells), it is important to have this true multi-modal
+posterior rather than an inaccurate unimodal approximation.  And while
+sampling may work well for fixed expected risk calculations, if the
+evidence is changing or one wants to perform sensitivity analysis of
+risk subject to differing evidence (i.e., conditioning on unassigned
+evidence), one must collect samples for each specific evidence case
+under consideration.
+
+{\bf Tracking:} 
 The {tracking} graphical model and (conditional) distributions
 are shown in Figure~\ref{fig:gm3}
 and works as follows: an object has hidden state $x_i \in \R$ defining
@@ -882,15 +893,15 @@ the position of the object.  Also at every time step, a variable $b_i$
 indicates whether the sensor is broken.  A sensor fails with probability
 0.2 and stays broken once it breaks.  If the sensor is broken, the
 observation model is a simple uninformed triangular distribution, if
-it is not broken the observation model is an asymmetric triangular %truncated asymmetric normal 
-distribution that peaks at the true $x$ position, but is biased
+it is not broken the observation model is an asymmetric
+triangular distribution that peaks at the true $x$ position, but is biased
 to underestimate.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure*}[t!]
 \begin{center}
 \vspace{-1mm}
-\includegraphics[width=.7\textwidth]{gm3.pdf}
+\includegraphics[width=.90\textwidth]{gm3.pdf}
 \end{center}
 \vspace{-6mm}
 \caption{\footnotesize The {tracking} graphical model and all conditional probabilities.} \label{fig:gm3}
@@ -903,7 +914,7 @@ to underestimate.
 \vspace{-5mm}
 \begin{center}
 \begin{tabular}{ccc}
-\hspace{-3mm} \includegraphics[width=120pt]{radar_x_2_fix.pdf} & \hspace{-5mm} \includegraphics[width=120pt]{tracker_3d_x3o1_aistat.pdf} & \hspace{-4mm} \includegraphics[width=120pt]{tracker_3d_x5o1_aistat.pdf}\\ %& \includegraphics[width=160pt]{tracker_3d_x7o1_aistat.pdf} \\
+\hspace{-3mm} \includegraphics[width=160pt]{radar_x_2_fix.pdf} & \hspace{-5mm} \includegraphics[width=160pt]{tracker_3d_x3o1_aistat.pdf} & \hspace{-4mm} \includegraphics[width=160pt]{tracker_3d_x5o1_aistat.pdf}\\ %& \includegraphics[width=160pt]{tracker_3d_x7o1_aistat.pdf} \\
 (a) & (b) & (c) \\
 \multicolumn{3}{c}{}
 \end{tabular}
@@ -915,21 +926,31 @@ and $p(x_2|o_1=5,b_1=1)$ (red solid).
 (b) $p(x_3,o_1)$, (c) $p(x_5,o_1)$.  $o$ is on the lower left-edge
 axis, $x$ is on the lower right, and the probability is the $z$ axis.}
 \label{fig:track}
-\vspace{-4mm}
+%\vspace{-4mm}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-We show results for three queries $p(x_j|o_1)$ in the {tracking}
-model for predicting the state after $j$ steps (up to 7) given an
-initial observation.  Again, the results demonstrate the complex
-multi-modal nature of the distribution and the ability of the SVE
-inference algorithm to compute this in an exact closed-form.  All of
-these queries completed in under 1 minute demonstrating that despite
-the complex symbolic manipulations involved, the SVE method should be
-reasonably scalable especially in graphical models with sparse
-structure like this sequential model.
+In Figure~\ref{fig:track}, we show results for three queries in the
+{tracking} model.  Result (a) demonstrates an asymmetric posterior
+while results (b) and (c) demonstrate the
+complex multi-modal nature of the joint distribution and the ability of the
+SVE inference algorithm to compute this in an exact closed-form.  All
+of these queries completed in under 1 minute demonstrating that
+despite the complex symbolic manipulations involved and 
+multidimensional/multimodal inference results, the SVE method
+can effectively compute closed-form exact inference for this non-Gaussian
+tracking task.
 
-Even though one can use other inference methods such as sampling to calculate the expectation, the interesting thing to observe here in Figure \ref{fig:dist} and \ref{fig:track} is that using SVE we are able to derive the posterior model in a functional form. This is particularly helpful in cases where the objective is to evaluate the behavior of one variable with respect to another one when its value is not observed. With same analogy we are able to analyze the variable dependencies in a highly complex system with sophisticated distributions.
+The important point to observe here in both 
+Figures~\ref{fig:dist} and \ref{fig:track} is that using SVE we are
+able to derive the posterior model in an exact functional form.  This
+is particularly helpful in cases where the objective is to evaluate
+the behavior of one variable with respect to another one when its
+value assignment is not observed at all.  
+This latter case is useful when we want 
+to analyze arbitrary variable dependencies in 
+complex systems with sophisticated distributions that
+can be specified (or arbitrarily approximated) as PPFGs.
 
 %One interesting thing to observe here in these experiments is the clear advantage of using 
 
@@ -956,33 +977,36 @@ query result, albeit an approximation.  However, it seems that little
 progress has been made in {closed-form exact} inference of
 results in a functional form for \emph{expressive} non-Gaussian joint
 distributions --- especially piecewise polynomial distributions with
-bounded support --- which is the task addressed in this paper.
+bounded support --- addressed in this paper.
 
-\section{Conclusions and Future Work}
+\section{Conclusions}
 
-\vspace{-1mm}
+SVE and its PPFG formalism using piecewise polynomial case factors
+represents a novel and expressive class of \emph{non-Gaussian} factors
+for which integration is closed-form, thus enabling exact closed-form
+inference for arbitrary probability queries and expectations in this
+model.  Many real-world distributions have bounded support and can be
+arbitrarily approximated by polynomial functions, hence this work
+opens up the possibility of exact solutions (or arbitrary
+approximations thereof) in discrete/continuous graphical models for
+which previous exact solutions were not available.  As
+such, we believe that SVE provides a significant step forward and a
+new alternative for the difficult task of \emph{exact closed-form} inference
+in discrete and continuous graphical models.
 
-We believe that SVE provides a significant step forward for exact,
-closed-form inference in discrete/continuous graphical models.  Many
-real-world distributions have bounded support and can be arbitrarily
-approximated by polynomial functions, hence this work opens up the
-possibility of exact solutions (or arbitrary approximations thereof)
-in discrete/continuous graphical models for which previous exact,
-closed-form solutions were not available.
-
-We crucially note that SVE is \emph{not} limited to piecewise
-polynomial models, but that once more general expressions are
-introduced, we cannot guarantee that symbolic integrations will always
-be possible.  Nonetheless, when all of the integrations in more
-general models can be computed symbolically (and much progress has
-been made in recent decades on automated symbolic integration), the
-SVE result will be \emph{exact and closed-form}.  Furthermore, if a certain
-function class is truly non-integrable, it may still be
-well-approximated by other integral function classes; this paves the way
-for the application of SVE to an extremely 
-expressive range of discrete/continuous graphical models.  Hence, we
-believe this paper is only the tip of the iceberg for SVE and its
-future applications.
+%We crucially note that SVE is \emph{not} limited to piecewise
+%polynomial models, but that once more general expressions are
+%introduced, we cannot guarantee that symbolic integrations will always
+%be possible.  Nonetheless, when all of the integrations in more
+%general models can be computed symbolically (and much progress has
+%been made in recent decades on automated symbolic integration), the
+%SVE result will be \emph{exact and closed-form}.  Furthermore, if a certain
+%function class is truly non-integrable, it may still be
+%well-approximated by other integral function classes; this paves the way
+%for the application of SVE to an extremely 
+%expressive range of discrete/continuous graphical models.  Hence, we
+%believe this paper is only the tip of the iceberg for SVE and its
+%future applications.
 
 \bibliography{sve}
 \bibliographystyle{aaai}
