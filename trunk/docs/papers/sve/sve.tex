@@ -83,8 +83,8 @@ graphical models whose conditional probability functions can be
 well-approximated as piecewise combinations of polynomials with
 bounded support.  Using this representation, we show that we can
 compute all of the SVE operations \emph{exactly and in closed-form},
-which crucially includes \emph{definite integration w.r.t.\ piecewise 
-polynomial functions}.  To aid in the efficient computation
+which crucially includes \emph{definite integration w.r.t.\ multivariate 
+piecewise polynomial functions}.  To aid in the efficient computation
 and compact representation of this solution, we use an extended
 algebraic decision diagram (XADD) data structure that supports all SVE
 operations.  We provide illustrative results for SVE on probabilistic
@@ -396,16 +396,16 @@ $\mathit{order}$ for elimination}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Symbolic Variable Elimination in Discrete/Continuous Graphical Models}
-As discussed previously, piecewise polynomial functions 
-provide an expressive framework for representing discrete/continuous
-variable graphical models when all distributions have bounded
-support.  In this section, we introduce 
-a case notation and operations for piecewise polynomials, define factor
-graphs in terms of these case statements, and finally show that all VE
-operations, including definite integration w.r.t.\ piecewise polynomial 
-functions, can be computed exactly and in closed-form
-using a purely \emph{symbolic} representation, hence the algorithm
-\emph{Symbolic VE} (SVE).
+
+As discussed previously, piecewise polynomial functions provide an
+expressive framework for representing discrete/continuous variable
+graphical models when all distributions have bounded support.  In this
+section, we introduce a case notation and operations for piecewise
+polynomials, define factor graphs in terms of these case statements,
+and show that all VE operations, including definite
+integration w.r.t.\ multivariate piecewise polynomial functions, can
+be computed in exact, closed-form using a purely \emph{symbolic}
+representation, hence the algorithm \emph{Symbolic VE} (SVE).
 
 \subsection{Case Representation and Operators}
 
