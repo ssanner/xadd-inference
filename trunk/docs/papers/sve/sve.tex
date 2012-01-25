@@ -83,8 +83,8 @@ graphical models whose conditional probability functions can be
 well-approximated as piecewise combinations of polynomials with
 bounded support.  Using this representation, we show that we can
 compute all of the SVE operations \emph{exactly and in closed-form},
-which crucially includes \emph{definite integration w.r.t.\ nonlinear
-piecewise functions}.  To aid in the efficient computation
+which crucially includes \emph{definite integration w.r.t.\ piecewise 
+polynomial functions}.  To aid in the efficient computation
 and compact representation of this solution, we use an extended
 algebraic decision diagram (XADD) data structure that supports all SVE
 operations.  We provide illustrative results for SVE on probabilistic
@@ -402,7 +402,7 @@ variable graphical models when all distributions have bounded
 support.  In this section, we introduce 
 a case notation and operations for piecewise polynomials, define factor
 graphs in terms of these case statements, and finally show that all VE
-operations, including definite integration w.r.t.\ nonlinear piecewise
+operations, including definite integration w.r.t.\ piecewise polynomial 
 functions, can be computed exactly and in closed-form
 using a purely \emph{symbolic} representation, hence the algorithm
 \emph{Symbolic VE} (SVE).
@@ -979,7 +979,7 @@ results in a functional form for \emph{expressive} non-Gaussian joint
 distributions --- especially piecewise polynomial distributions with
 bounded support --- addressed in this paper.
 
-\section{Conclusions}
+\section{Concluding Remarks}
 
 SVE and its PPFG formalism using piecewise polynomial case factors
 represents a novel and expressive class of \emph{non-Gaussian} factors
