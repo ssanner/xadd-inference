@@ -8,7 +8,11 @@
 \includegraphics[width=0.3\textwidth]{new_pics/V9.pdf}
 \vspace{-3mm}
 \caption{\footnotesize 
-Policy and Value of second iteration (No-Drain) and value of iteration 9.
+\WaterReservoir: 
+{\it (left)} Policy $\mathit{no}$-$\mathit{drain}(e)=\pi^{2,*}(l_1,l_2)$ 
+for elapsed time $e$; 
+{\it (middle)} $V^2(l_1,l_2)$; 
+{\it (right)} $V^9(l_1,l_2)$.
 }
 \label{fig:v2plots}
 %\vspace{-3mm}
@@ -41,10 +45,12 @@ Policy and Value of second iteration (No-Drain) and value of iteration 9.
 \includegraphics[width=0.42\textwidth]{new_pics/time1.pdf}
 %}
 \vspace{-2mm}
-\caption{\footnotesize Space (Number of XADD nodes in value function) 
-and time for different horizons for \InventoryControl comparing 
-1,2 or 3 States and actions (SA) with Deterministic (DD) 
-or Stochastic (SD) demand and no-pruning}.
+\caption{\footnotesize \InventoryControl: space 
+and time vs. horizon.
+% comparing 
+%1,2 or 3 States and actions (SA) with Deterministic (DD) 
+%or Stochastic (SD) demand and no-pruning}.
+}
 \label{fig:invC}
 \vspace{-3mm}
 \end{figure}
@@ -52,42 +58,46 @@ or Stochastic (SD) demand and no-pruning}.
 
 \label{sec:results}
  
-We evaluated SDP using XADDs on the nonlinear
-\MarsRover\ example and two problems from operations research,
-\InventoryControl\ and \WaterReservoir, described below.\footnote{
+We evaluated SDP using XADDs on the didactic nonlinear
+\MarsRover\ example and two problems from Operations Research (OR) --- 
+\InventoryControl\ and \WaterReservoir --- described below.\footnote{
 Full problem specifications and Java code to
 reproduce these experiments are currently 
 in Google Code; anonymity restrictions 
 prevent us from providing this link in the submitted paper version.}
-Space precludes us from showing 
-additional results beyond Figures~\ref{fig:opt_graph}
-and~\ref{fig:opt_val_pol} for
-\MarsRover, but we remark that SDP can efficiently solve this
-nonlinear problem for arbitrary horizons.
+Space precludes showing 
+more results for \MarsRover\ than in Figures~\ref{fig:opt_graph}
+and~\ref{fig:opt_val_pol}; we note that SDP efficiently solves it
+for arbitrary horizons.
 
 {\bf \InventoryControl:} Inventory control problems (how much of an
-item to reorder subject to various constraints and optimization
-criteria) in Operations Research (OR) date back to the 1950's with
+item to reorder subject to capacity constraints, demand, and 
+optimization criteria) date back to the 1950's with
 Scarf's seminal optimal solution to the \emph{single-item capacitated
 inventory control} (SCIC) problem~\cite{Scarf_Karlin58}.
 \emph{Multi-item joint capacitated inventory} (MJCIC) control (upper limits
 on total storage of all items) has proved to be an NP-hard problem and
 as a consequence, most solutions resort to some form of
-approximation~\cite{bitran,wusd10}; indeed we are unaware of any
+approximation~\cite{bitran,wusd10}; indeed, we are unaware of any 
 work which claims to find an exact closed-form non-myopic
-optimal policy for \emph{all} (continuous) inventory states for MJCIC
-under linear reordering costs and linear holding costs; these are
-problems that can be easily modeled as a CSA-MDP and solved optimally
-with SDP.
+optimal policy for \emph{all} (continuous) inventory states for MJCIC 
+under linear reordering costs and linear holding costs; these 
+problems can be easily modeled as CSA-MDPs and solved optimally
+with SDP.  
 
-In Figure~\ref{fig:invC}, we provide a time and space analysis
-of variants of deterministic and stochastic variants of the
-SIC and MJCIC problem for up to three items (the same scale of
-problems often studied in the OR literature); for each number
-of items $n \in \{ 1,2,3 \}$ the state (inventory levels) 
-is $\vec{x} \in [0,\infty]^n$ and the 
-action (reorder amounts) is $\vec{y} \in [0,\infty]^n$.
-NEED MORE DESCRIPTION.  Vs. items.  DD, SD, No pruning.  6 month horizon.
+In Figure~\ref{fig:invC}, we provide a time and space analysis of
+deterministic- and stochastic-demand (resp. DD and SD) variants of the
+SCIC and MJCIC problem for up to three items (the same scale of
+problems often studied in the OR literature); for each number of items
+$n \in \{ 1,2,3 \}$ the state (inventory levels) is $\vec{x} \in
+[0,\infty]^n$ and the action (reorder amounts) is $\vec{y} \in
+[0,\infty]^n$.  Orders are made at one month intervals and we solve
+for a horizon up to $h=6$ months.  Here we see that linear feasbility
+checking/pruning in the XADD is crucial -- we cannot solve beyond
+$h=2$ without it for 1 item!  While solving for larger numbers of
+items and SD (rather than DD) both increase time and space, 
+the solutions quickly reach quiescence indicating structural
+convergence.
 
 %{\footnotesize
 %\begin{align*}
@@ -99,18 +109,18 @@ NEED MORE DESCRIPTION.  Vs. items.  DD, SD, No pruning.  6 month horizon.
 %\end{cases}
 %\end{align*}}
 
-{\bf \WaterReservoir:} Reservoir management represents a problem also
-well-studied in the OR literature~\cite{Mahootchi2009,Yeh1985} where
-one needs to make an optimal sequential decisions on how much and when
-to discharge water from water reservoirs to maximize hydroelectric
-energy production while considering constraints such as overflow
-and underflow.  This is a continuous time problem where the key decision
-is how long to drain (or not drain) each reservoir to maximize
+{\bf \WaterReservoir:} Reservoir management is also
+well-studied in OR~\cite{Mahootchi2009,Yeh1985} where
+one controls the flow of water between reservoirs to maximize hydroelectric
+energy production while avoiding reservoir overflow
+and underflow.  The key continuous decision
+is how much elapsed time $e$ to 
+\emph{drain} (or \emph{not drain}) each reservoir to maximize
 electricity revenue over the decision-stage horizon.  
 We are unaware of any algorithm which claims 
 to find an exact closed-form non-myopic
 optimal policy for \emph{all} (continuous) reservoir levels
-in reservoir problems with piecewise linear continuous dynamics and reward.
+under piecewise linear dynamics and rewards.
 
 In Figure~\ref{fig:v2plots}, we examine a 2-reservoir problem with
 piecewise linear dynamics encoding the flow of water between two
