@@ -1,3 +1,52 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% policy2, v2plot.pdf, v9plot
+% annotation?
+\begin{figure*}[tbp!]
+\centering
+\includegraphics[width=0.3\textwidth]{new_pics/policy-iteration2-3.pdf}
+\includegraphics[width=0.3\textwidth]{new_pics/V2.pdf}
+\includegraphics[width=0.3\textwidth]{new_pics/V9.pdf}
+\caption{%\footnotesize 
+Policy and Value of second iteration (No-Drain) and value of iteration 9.
+}
+\label{fig:v2plots}
+%\vspace{-3mm}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% v9plot.pdf, Q-drain, Q-noDrain.pdf
+%\begin{figure*}[t]
+%\centering
+%\includegraphics[width=0.33\textwidth]{new_pics/policy-iteration3-3.pdf}
+%\includegraphics[width=0.33\textwidth]{new_pics/V3.pdf}
+%\includegraphics[width=0.33\textwidth]{new_pics/V9.pdf}
+%\caption{%\footnotesize 
+%Policy and Value of third iteration (Drain) and value of iteration 9.
+%}
+%\label{fig:v3plots}
+%\vspace{-3mm}
+%\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
+\begin{figure}[tbp!]
+%\centering
+%\subfigure{
+\includegraphics[width=0.3\textwidth]{new_pics/space1.pdf}\\
+\includegraphics[width=0.3\textwidth]{new_pics/time1.pdf}
+%}
+\vspace{-2mm}
+\caption{\footnotesize Space (Number of XADD nodes in value function) 
+and time for different horizons for \InventoryControl comparing 
+1,2 or 3 States and actions (SA) with Deterministic (DD) 
+or Stochastic (SD) demand and no-pruning}.
+\label{fig:invC}
+%\vspace{-3mm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \label{sec:results}
  
 We evaluated SDP using the XADD representation on the nonlinear
@@ -40,24 +89,6 @@ where p() is the shortage cost function, h() the holding cost function and $\var
 \end{itemize}
 
 % end of scarf's policy
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
-\begin{figure*}[t]
-%\centering
-%\subfigure{
-\includegraphics[width=0.4\textwidth]{new_pics/space1.pdf}\\
-\includegraphics[width=0.4\textwidth]{new_pics/time1.pdf}
-%}
-\vspace{-2mm}
-\caption{\footnotesize Space (Number of XADD nodes in value function) 
-and time for different horizons for \InventoryControl comparing 
-1,2 or 3 States and actions (SA) with Deterministic (DD) 
-or Stochastic (SD) demand and no-pruning}.
-\label{fig:invC}
-%\vspace{-3mm}
-\end{figure*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 We present a simple formulation of this problem with a maximum capacity C for the inventory. This capacitated version of Scarf's policy is proved to be an NP-hard problem \cite{bitran} and more complicated than its uncapacitated counterparts. Assuming customer orders not satisfied in this month are backlogged for the next month, allows inventory to take negative values. 
 
@@ -134,36 +165,6 @@ Stochastic demands force more partitions for a problem instance as the plots for
 Without considering pruning, even the 1 product problem instance quickly falls into the curse of dimensionality problem. In fact, after the second iteration time and space grows exponentially and for this reason the plot fails to show the next time and
 space.
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% policy2, v2plot.pdf, v9plot
-% annotation?
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.33\textwidth]{new_pics/policy-iteration2-3.pdf}
-\includegraphics[width=0.33\textwidth]{new_pics/V2.pdf}
-\includegraphics[width=0.33\textwidth]{new_pics/V9.pdf}
-\caption{%\footnotesize 
-Policy and Value of second iteration (No-Drain) and value of iteration 9.
-}
-\label{fig:v2plots}
-%\vspace{-3mm}
-\end{figure*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% v9plot.pdf, Q-drain, Q-noDrain.pdf
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.33\textwidth]{new_pics/policy-iteration3-3.pdf}
-\includegraphics[width=0.33\textwidth]{new_pics/V3.pdf}
-\includegraphics[width=0.33\textwidth]{new_pics/V9.pdf}
-\caption{%\footnotesize 
-Policy and Value of third iteration (Drain) and value of iteration 9.
-}
-\label{fig:v3plots}
-%\vspace{-3mm}
-\end{figure*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 \subsection{\WaterReservoir}
 
