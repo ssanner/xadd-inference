@@ -12,7 +12,7 @@
 
 \newtheorem{lemma}{Lemma}
 \newtheorem{assumption}[lemma]{Assumption}
-\newtheorem{restr}{Restriction}[section]
+\newtheorem{restr}{Restriction}   %[section]
 \newtheorem{theorem}[lemma]{Theorem}
 \newtheorem{proposition}[lemma]{Proposition}
 \newtheorem{corollary}[lemma]{Corollary}
@@ -66,7 +66,7 @@
 %Ehsan Abbasnejad\\
 %ANU \& NICTA\\
 %Canberra, Australia\\
-%{\tt eabbasnejad@anu.edu.au}
+%{\tt ehsan.abbasnejad@anu.edu.au}
 %}
 
 \maketitle
@@ -136,20 +136,20 @@ tracking with real-world sensors involves underlying distributions
 that are beyond the reach of current closed-form exact solutions.
 Take, for example, the robot sensor model in Figure~\ref{fig:gm2} 
 motivated by~\cite{thrun_mcl}.
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}[th!]
+%\begin{minipage}{\textwidth}
+\begin{figure}%[th!]
 \begin{center}
 \vspace{-1mm}
-\includegraphics[width=.8\textwidth]{gm2.pdf}
+\includegraphics[width=.48\textwidth]{gm2.pdf}
 \end{center}
-\vspace{-4mm}
+\vspace{-6mm}
 \caption{\footnotesize The \emph{robot localization} graphical model and all conditional probabilities.} \label{fig:gm2}
 %\caption{\footnotesize .} 
-%\vspace{-2mm}
-\end{figure*}
+\vspace{-4mm}
+\end{figure}
+%\end{minipage}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 Here $d \in \R$ is a variable representing the distance of a
 mobile robot to a wall and $x_i$ are the observed measurements of
 distance (e.g., using a laser range finder).  The prior distribution
@@ -255,10 +255,13 @@ in the introductory example, the joint distribution
 for $n$ variables is represented as the product of all variables
 conditioned on their parent variables in the graph and can be
 easily converted to factor graph form, i.e., 
+{\small
+\vspace{-2mm}
 \begin{align}
 p(d,x_1,\ldots,x_k) \; & = \; p(d) \prod_{i=1}^k p(x_i|d) \nonumber \\
 & = \; \psi_d(d) \prod_{i=1}^k \Psi_{x_i} (x_i,d) \label{eq:bn}
 \end{align}
+}
 where quite simply, $\Psi_{d} (d) := p(d)$ and $\Psi_{x_i} (x_i,d) :=
 p(x_i|d)$.  Here, $Z=1$ and is hence omitted since joint distribitions
 represented by Bayesian networks marginalize to 1 by definition.
@@ -396,6 +399,7 @@ using a purely \emph{symbolic} representation, hence the algorithm
 
 For this section, we will assume all functions
 are represented in \emph{case} form as follows:
+\vspace{-5mm}
 {%\footnotesize 
 \begin{align}
 f = 
@@ -403,6 +407,7 @@ f =
   \phi_1 & f_1 \\ 
   \vdots & \vdots \\ 
   \phi_k & f_k \\ 
+  \vspace{-6mm}
 \end{cases} \label{eq:case}
 \end{align}
 } 
@@ -430,6 +435,7 @@ $f_i$ ($1 \leq i \leq k$). Intuitively, to perform a \emph{binary
 of the logical partitions of each case statement and perform the
 corresponding operation on the resulting paired partitions.  Thus, we 
 perform the ``cross-sum'' $\oplus$ of two (unnamed) cases as follows:
+\vspace{-4mm}
 {\footnotesize 
 \begin{center}
 \begin{tabular}{r c c c l}
@@ -481,7 +487,7 @@ maximization (needed for working with integral bounds) and restriction
 \emph{Symbolic maximization} is fairly straightforward
 to define if we note that the conditional nature of the
 case statements allows us to directly encode maximization:
-\vspace{-5mm}
+\vspace{-1mm}
 {\footnotesize
 \begin{center}
 \begin{tabular}{r c c c l}
@@ -529,15 +535,18 @@ $b$ are $\oplus$ and \emph{restriction} of variable $b$ in factor $f$
 to the value $x \in {0,1}$, written as $f|_b=x$.
 For $x = 1$ ($x = 0$), $f|_b=x$ simply requires instantiating all
 variables $b$ in $f$ with $x$.  For example, let
+\vspace{-1mm}
 \begin{align*}
 f = \begin{cases}
     \phi_1 \land b: & f_1 \\ 
     \phi_2 \land \neg b: & f_2 \\ 
     \phi_3 : & f_3 \\ 
   \end{cases}
+  \vspace{-3mm}
 \end{align*}
 then the two possible restrictions of $b$ yield the following 
 results (where inconsistent case partitions have been removed):
+\vspace{-4mm}
 \begin{align*}
 f|_{b=1} = \begin{cases}
     \phi_1: & f_1 \\ 
@@ -548,6 +557,7 @@ f|_{b=0} = \begin{cases}
     \phi_2: & f_2 \\ 
     \phi_3: & f_3 \\ 
   \end{cases}.
+  \vspace{-4mm}
 \end{align*}
 
 \subsection{Definite Integration of the Case Representation}
@@ -559,6 +569,7 @@ computation of the definite integration required to eliminate
 continuous variables in SVE.  If we are 
 computing $\int_{x_1=-\infty}^{\infty} f \, dx_1$ for $f$ 
 in~\eqref{eq:case}, we can rewrite it in the following equivalent form
+\vspace{-2mm}
 \begin{equation}
 \int_{x_1=-\infty}^{\infty} \sum_i \I[\phi_i] \cdot f_i \, dx_1 \; = \; \sum_i \int_{x_1=-\infty}^{\infty} \I[\phi_i] \cdot f_i \, dx_1 \label{eq:int_decomp}
 \end{equation}
@@ -579,6 +590,7 @@ operation defined previously, we can
 write explicit functions in 
 \emph{piecewise polynomial case form} for the respective 
 lower and upper bounds $\LB$ and $\UB$:
+\vspace{-2mm}
 \begin{align*}
 \LB & := \begin{cases}
     x_2 - 1 > -1: & x_2 - 1 \\ 
@@ -599,6 +611,7 @@ of order 0 or greater, so the limit exists and yields the
 same answer as substituting the limit value.  Hence for 
 polynomials, we need not be concerned about whether bounds
 are inclusive or not.}
+\vspace{-2mm}
 \begin{equation}
 \I[x_2 > 0] \int_{x_1=\LB}^{\UB} (x_1^2 - x_1 x_2) \, dx_1 .
 \end{equation}
@@ -606,6 +619,7 @@ Note here that $\I[x_2 > 0]$ is independent of $x_1$ and hence
 can factor outside the integral.  With all indicator functions
 moved into the $\LB$ or $\UB$ or factored out, we can now compute
 the integral:
+\vspace{-5mm}
 \begin{equation}
 \I[x_2 > 0] \left[ \frac{1}{3}x_1^3 - \frac{1}{2}x_1^2 x_2 \bigg|_{x_1=\LB}^{x_1=\UB} \right] .
 \end{equation}
@@ -614,11 +628,13 @@ that every expression (variables, constants, indicator functions, etc.)
 can be written as a 
 simple case statements or as operations on case statements, even the upper
 and lower bounds as shown previously.  So the evaluation is simply 
+\vspace{-1mm}
 {\footnotesize
 \begin{align}
 \I[x_2 > 0] \otimes \bigg[ & \left( \frac{1}{3} \UB \otimes \UB \otimes \UB \ominus \frac{1}{2} \UB \otimes \UB \otimes (x_2) \right) \nonumber \\
 & \hspace{-2mm} \ominus \left( \frac{1}{3} \LB \otimes \LB \otimes \LB \ominus \frac{1}{2} \LB \otimes \LB \otimes (x_2) \right) \bigg] \label{eq:almost_final}.
-\end{align}}
+\end{align}
+}
 Hence the result of the definite integration over a case
 partition of a polynomial function with piecewise nonlinear constraints
 is simply a case statement --- this is somewhat remarkable given that
@@ -707,8 +723,9 @@ to define the computation for the variable
 eliminations.  For PPFGs, the two cases can be computed as follows:
 
 {\bf Discrete Variable Elimination} (line 14 of VE):\\
+\vspace{-3mm}
 $$\sum_v f_v := f_v|_{v=1} \oplus f_v|_{v=1}.$$
-
+\vspace{-2mm}
 {\bf Continuous Variable Elimination} (line 15 of VE):\\ 
 $$\int_{\var=-\infty}^{\infty} f_\var \, d\var := \mbox{(see Section~\ref{sec:def_int})}$$.
 
@@ -719,15 +736,15 @@ precision using PPFGs --- once this is done,
 SVE will provide exact inference in this approximated model.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}[t!]
-\begin{center}
-\vspace{-1mm}
-\includegraphics[width=1.0\textwidth]{norm_unif_tree.pdf}
-\end{center}
-\vspace{-2mm}
-\caption{\footnotesize A tree representation of a case statement; each branch corresponds to a single case partition.} \label{fig:xadd_tree}
+%\begin{figure*}[t!]
+%\begin{center}
+%\vspace{-1mm}
+%\includegraphics[width=1.0\textwidth]{norm_unif_tree.pdf}
+%\end{center}
 %\vspace{-2mm}
-\end{figure*}
+%\caption{\footnotesize A tree representation of a case statement; each branch corresponds to a single case partition.} \label{fig:xadd_tree}
+%%\vspace{-2mm}
+%\end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Extended ADDs (XADDs) for Case Statements}
@@ -750,11 +767,11 @@ Section~\ref{sec:def_int} from case statements to XADDs is straightforward.}
 \begin{figure}[t!]
 \begin{center}
 \vspace{-1mm}
-\includegraphics[width=.25\textwidth]{norm_unif.pdf}
+\includegraphics[width=.2\textwidth]{norm_unif.pdf}
 \end{center}
 \vspace{-2mm}
 \caption{\footnotesize An XADD for the case statement in Figure~\ref{fig:xadd_tree}.} \label{fig:xadd}
-%\vspace{-2mm}
+\vspace{-7mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -786,9 +803,11 @@ the additional decision node $f > g$ is introduced to represent
 the maximum.  This may occasionally introduce out-of-order decisions
 which can be easily detected and repaired as discussed in~\cite{uai11} .
 
+\vspace{-3mm}
+
 \section{Empirical Results}
 
-%\vspace{-3mm}
+\vspace{-1mm}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure*}[t!]
@@ -797,13 +816,13 @@ which can be easily detected and repaired as discussed in~\cite{uai11} .
 %{\tiny
 \begin{tabular}{ccc}
 \vspace{-3mm}
-\hspace{-8mm} \includegraphics[width=120pt]{r1.pdf} & \hspace{-6mm} \includegraphics[width=120pt]{r2.pdf} & \hspace{-10mm} \includegraphics[width=120pt]{r3.pdf} \\  
+\hspace{-8mm} \includegraphics[width=100pt]{r1.pdf} & \hspace{-6mm} \includegraphics[width=100pt]{r2.pdf} & \hspace{-10mm} \includegraphics[width=100pt]{r3.pdf} \\  
 \vspace{4mm}
-{\small$\E[D|x_1=6, x_2=5] = 4.98$} & {\small$\E[D|x_1=8, x_2=5]= 6.0$} & \hspace{-3mm} {\small$\E[D|x_1=5, x_2=3, x_3=8] = 4.39$}\\
+{\small$\E[D|x_1=6, x_2=5] = 4.98$} & {\footnotesize$\E[D|x_1=8, x_2=5]= 6.0$} & \hspace{-3mm} {\footnotesize$\E[D|x_1=5, x_2=3, x_3=8] = 4.39$}\\
 \vspace{-2mm}
-\hspace{-8mm} \includegraphics[width=120pt]{r4.pdf} & \hspace{-6mm} \includegraphics[width=120pt]{r5.pdf} & \hspace{-10mm} \includegraphics[width=120pt]{r6.pdf} \\
+\hspace{-8mm} \includegraphics[width=100pt]{r4.pdf} & \hspace{-6mm} \includegraphics[width=100pt]{r5.pdf} & \hspace{-10mm} \includegraphics[width=100pt]{r6.pdf} \\
 \vspace{4mm}
-{\small$\E[D|x_1=5, x_2=5, x_3=6] = 4.98$} & {\small$\E[D|x_2=1, x_2=3, x_3=4, x_4=8] = 5.45$} & {\small$\E[D|x_1=5, x_2=4, x_3=6, x_4=5] = 4.89$} 
+{\footnotesize$\E[D|x_1=5, x_2=5, x_3=6] = 4.98$} & {\footnotesize$\E[D|x_2=1, x_2=3, x_3=4, x_4=8] = 5.45$} & {\footnotesize$\E[D|x_1=5, x_2=4, x_3=6, x_4=5] = 4.89$} 
 \end{tabular}
 \end{center}
 \vspace{-6mm}
@@ -851,12 +870,11 @@ it is not broken the observation model is a truncated asymmetric
 normal distribution that peaks at the true $x$ position, but is biased
 to underestimate.
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure*}[t!]
 \begin{center}
 \vspace{-1mm}
-\includegraphics[width=1.0\textwidth]{gm3.pdf}
+\includegraphics[width=.7\textwidth]{gm3.pdf}
 \end{center}
 \vspace{-5mm}
 \caption{\footnotesize The \emph{tracking} graphical model and all conditional probabilities.} \label{fig:gm3}
@@ -869,7 +887,7 @@ to underestimate.
 %\vspace{-20mm}
 \begin{center}
 \begin{tabular}{ccc}
-\hspace{-3mm} \includegraphics[width=160pt]{radar_x_2_fix.pdf} & \hspace{-5mm} \includegraphics[width=160pt]{tracker_3d_x3o1_aistat.pdf} & \hspace{-4mm} \includegraphics[width=160pt]{tracker_3d_x5o1_aistat.pdf}\\ %& \includegraphics[width=160pt]{tracker_3d_x7o1_aistat.pdf} \\
+\hspace{-3mm} \includegraphics[width=120pt]{radar_x_2_fix.pdf} & \hspace{-5mm} \includegraphics[width=120pt]{tracker_3d_x3o1_aistat.pdf} & \hspace{-4mm} \includegraphics[width=120pt]{tracker_3d_x5o1_aistat.pdf}\\ %& \includegraphics[width=160pt]{tracker_3d_x7o1_aistat.pdf} \\
 (a) & (b) & (c) \\
 \multicolumn{3}{c}{}
 \end{tabular}
