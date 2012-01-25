@@ -6,6 +6,7 @@
 \includegraphics[width=0.3\textwidth]{new_pics/policy-iteration2-3.pdf}
 \includegraphics[width=0.3\textwidth]{new_pics/V2.pdf}
 \includegraphics[width=0.3\textwidth]{new_pics/V9.pdf}
+\vspace{-3mm}
 \caption{\footnotesize 
 Policy and Value of second iteration (No-Drain) and value of iteration 9.
 }
@@ -32,10 +33,12 @@ Policy and Value of second iteration (No-Drain) and value of iteration 9.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
 \begin{figure}[tbp!]
-%\centering
+\vspace{-5mm}
+\centering
 %\subfigure{
-\includegraphics[width=0.45\textwidth]{new_pics/space1.pdf}\\
-\includegraphics[width=0.45\textwidth]{new_pics/time1.pdf}
+\includegraphics[width=0.42\textwidth]{new_pics/space1.pdf}\\
+\vspace{-2mm}
+\includegraphics[width=0.42\textwidth]{new_pics/time1.pdf}
 %}
 \vspace{-2mm}
 \caption{\footnotesize Space (Number of XADD nodes in value function) 
@@ -43,7 +46,7 @@ and time for different horizons for \InventoryControl comparing
 1,2 or 3 States and actions (SA) with Deterministic (DD) 
 or Stochastic (SD) demand and no-pruning}.
 \label{fig:invC}
-%\vspace{-3mm}
+\vspace{-3mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -64,179 +67,85 @@ nonlinear problem for arbitrary horizons.
 
 {\bf \InventoryControl:} Inventory control problems (how much of an
 item to reorder subject to various constraints and optimization
-criteria) in Operations Research date back to the 1950's with Scarf's
-seminal optimal solution to the single item inventory
-problem~\cite{Scarf_Karlin58}.  Multi-item inventory control has
-proved to be an NP-hard problem and as a consequence, most solutions
-resort to some form of approximation~\cite{needref}; indeed we are
-unaware of any work which claims a non-myopic optimal solution for
-multi-item inventory control under discrete stochastic demand, and
-linear reordering costs, holding costs, \emph{and} capacity
-constraints that can be easily modeled as a CSA-MDP and solved
-optimally with SDP.
+criteria) in Operations Research (OR) date back to the 1950's with
+Scarf's seminal optimal solution to the \emph{single-item capacitated
+inventory control} (SCIC) problem~\cite{Scarf_Karlin58}.
+\emph{Multi-item joint capacitated inventory} (MJCIC) control (upper limits
+on total storage of all items) has proved to be an NP-hard problem and
+as a consequence, most solutions resort to some form of
+approximation~\cite{bitran,wusd10}; indeed we are unaware of any
+work which claims to find an exact closed-form non-myopic
+optimal policy for \emph{all} (continuous) inventory states for MJCIC
+under linear reordering costs and linear holding costs; these are
+problems that can be easily modeled as a CSA-MDP and solved optimally
+with SDP.
 
-In Figure~\ref{ref:} ***
+In Figure~\ref{fig:invC}, we provide a time and space analysis
+of variants of deterministic and stochastic variants of the
+SIC and MJCIC problem for up to three items (the same scale of
+problems often studied in the OR literature); for each number
+of items $n \in \{ 1,2,3 \}$ the state (inventory levels) 
+is $\vec{x} \in [0,\infty]^n$ and the 
+action (reorder amounts) is $\vec{y} \in [0,\infty]^n$.
+NEED MORE DESCRIPTION.  Vs. items.  DD, SD, No pruning.  6 month horizon.
 
-
-since
-that time, 
-
-{\bf \WaterReservoir:}
-
-\subsection{\InventoryControl}
-This domain problem is a well-known optimization benchmark in the OR
-literature. The inventory control theory is concerned with the decision problems of when to buy and how much to buy of a certain inventory item (inventory quantity or lot-size). The goal is to optimize a certain property of the system such as costs or profits. \cite{Scarf2002}, \cite{Scarf_Karlin58} 
-
-There are various costs related to any item in the inventory. Production/ procurement costs are used to benefit ordering large quantities in advance. Holding/storage costs are used as the trade-off against production costs as holding items in the inventory before the time required is expensive. Shortage/ penalty costs are considered when the inventory can not meet the customer requirements. Demand levels are another source for holding inventories in case future requirements change deterministically or in a stochastic manner. 
-% we can take this part out:
-We consider our model as a variation of Scarf's general inventory control model:
- 
-\paragraph*{Scarf's (S,s) policy:}
-%single item, discrete time, deterministic demand, no capacity constraints
-The (S,s) policy is a wide spread policy used in practice which considers a policy with the two constant s,S such that: 
-\[y = \begin{cases}
-S & if x<s \\
-x & if x \geq s
-\end{cases}\]
-
-where y is the inventory level and x is the order quantity.  A deterministic model of the inventory theory is defined so that all cost prices and demands are known with certainty. 
-
-The formal MDP definition of this problem is as below:
-\begin{itemize}
-\item y = State of the single-item inventory stock
-\item x = Action for ordering (quantity to order) 
-\item Transition function $y = y + x - \varphi(t) $ where $\varphi$ is the density of the demand distribution.
-\item Reward function $R = -C(x) = c(y-x)+L(y)$ which is the negative expected cost function with c(z) as the ordering cost and L(y) as the expected holding and shortage costs defined below: 
-\[ 
-L(y) =\int_0^y \! h(y-\xi)\varphi(\xi) \, \mathrm{d} xi + \int_y^{\infty} \! p(\xi - y)\varphi(\xi) \, \mathrm{d} \xi 
-\]
-where p() is the shortage cost function, h() the holding cost function and $\varphi$ the density of the demand distribution. 
-\end{itemize}
-
-% end of scarf's policy
-
-We present a simple formulation of this problem with a maximum capacity C for the inventory. This capacitated version of Scarf's policy is proved to be an NP-hard problem \cite{bitran} and more complicated than its uncapacitated counterparts. Assuming customer orders not satisfied in this month are backlogged for the next month, allows inventory to take negative values. 
-
-We consider three capacitated problem instances, a one product inventory with one order action, a two product inventory that needs two different orders and a three product, 3 orders with deterministic demand.
-We present the mathematical formulation of the two product-two order case, the other two domains are modeled similarly. We take two continuous state variable $x_1,x_2$ indicating the current inventory quantity, with the total inventory capacity of 200, and a stochastic boolean state variable for customer demand level $d$ where $d=0$ is low demand levels (50) and $d=1$ is high demand levels (150) according to some probability. The continuous action variable is the order quantity $a_1,a_2$.The transition for one of the state variables is defined below:
- 
-{\footnotesize
-\begin{align*}
-x'_1 & = \begin{cases}
-d \wedge (x_1 + a_1 - 150 \leq 200) : & x_1 + a_1 - 150 \\
-d \wedge (x_1 + a_1 - 150 \geq 200) : & x_1 - 150 \\
-\neg d \wedge (x_1 + a_1 - 50 \leq 200): & x_1 + a_1 - 50 \\
-\neg d \wedge (x_1 + a_1 - 50 \geq 200): & x_1 - 50 \\
-\end{cases}
-\end{align*}}
-
-%The transition for the continuous actions partitions based on the maximum
-%capacity of the inventory (for both products), and only adds the orders if
-%the current total capacity (with respect to the orders of that product and
-%the stocks available for both products) are less than this maximum capacity.
-%The demand variable is transitioned stochastically. 
 %{\footnotesize
 %\begin{align*}
-%d' & = \begin{cases}
-%d : &(0.7)\\
-%\neg d: &(0.3)\\
-%\end{cases}\\
-%\end{align*}}
-An immediate negative reward is assigned for the cost of producing an order
-and the storage cost of holding the products in the inventory and a
-positive reward for fulfilling the customer demand whenever there are enough
-stocks in the inventory. The reward is constrained by the maximum available capacity of the inventory which is 200 for the 2-product case.
-%need this? 
-%The total reward is defined in the following, the holding costs and storage costs $(- 0.5*a1 - 0.4 *a2 - 0.1 * x1 - 0.2 *x2)$ added to each of the case partitions:
-%      			
-%{\footnotesize
-%\begin{align*}
-%R_1 & = \begin{cases}
-%(x_1 + x_2 <= 200) \wedge (x_1 >= 150)\wedge (x_2 >=150): 300 \\
-%(x_1 + x_2 <= 200) \wedge (x_1 >= 150)\wedge \neg(x_2 >=150): 150 +x_2 \\
-%(x_1 + x_2 <= 200) \wedge \neg(x_1 >= 150)\wedge (x_2 >=150): 150 + x_1 \\
-%(x_1 + x_2 <= 200) \wedge \neg(x_1 >= 150)\wedge \neg(x_2 >=150): x_1 + x_2 \\
-%\neg (x_1 + x_2 <= 200): -200\\
+%x'_1 & = \begin{cases}
+%d \wedge (x_1 + a_1 - 150 \leq 200) : & x_1 + a_1 - 150 \\
+%d \wedge (x_1 + a_1 - 150 \geq 200) : & x_1 - 150 \\
+%\neg d \wedge (x_1 + a_1 - 50 \leq 200): & x_1 + a_1 - 50 \\
+%\neg d \wedge (x_1 + a_1 - 50 \geq 200): & x_1 - 50 \\
 %\end{cases}
 %\end{align*}}
-%
-% 
-%The reward function is based on demand levels and current stock in inventory. If the current stock is larger than the total inventory, we get rewarded for
-%fulfilling the demand $(e.g 150)$, if the demand is high or if the inventory
-%is not high enough, then the reward is $(e.g (150 - (x_1+x_2)))$, in both
-%cases action order costs are added. This allows the
-%inventory to stock as many products as possible while not exceeding the
-%capacity of the inventory.
- 
-We plot the results of comparing different \InventoryControl problem sizes: 1-State,1-Action with deterministic and stochastic demand (1SA,DD; 1SA,SD), 2-State,2-Action with stochastic and deterministic demand (2SA,SD ; 2SA,DD) and a 3-State, 3-Action with deterministic demand (3SA,DD). Figure~\ref{fig:invC} compares the time and space
-for different iterations for these problems instances with an extra
-comparison for the effect of not pruning on the 1D instance. 
 
-Comparing different problem sizes demonstrates the effect of the number of action variables in our algorithm. As the problem size increases, both action and states effect the time and space required to perform the algorithm. CSA-MDP claims exact results for these problem instances therefore it iterates on all possible state-action partitions to find the optimal policy. 
+{\bf \WaterReservoir:} Reservoir management represents a problem also
+well-studied in the OR literature~\cite{Mahootchi2009,Yeh1985} where
+one needs to make an optimal sequential decisions on how much and when
+to discharge water from water reservoirs to maximize hydroelectric
+energy production while considering constraints such as overflow
+and underflow.  This is a continuous time problem where the key decision
+is how long to drain (or not drain) each reservoir to maximize
+electricity revenue over the decision-stage horizon.  
+We are unaware of any algorithm which claims 
+to find an exact closed-form non-myopic
+optimal policy for \emph{all} (continuous) reservoir levels
+in reservoir problems with piecewise linear continuous dynamics and reward.
 
-The time and space have increased from the first iteration up to the third
-iteration for the 2D problem size, but then dropped for the next horizons
-due to pruning the XADD in our algorithm. As more constraints got added in
-for horizon 4, they canceled the effects of some of the previous branches
-because of in-feasibility and the pruning operation allows the XADD to grow
-smaller in space and requiring almost a constant time depending on the
-constraints added in each horizon.
-
-For the 2-state-action problem, we considered two variations with constraints such as holding costs or total inventory capacity. Results show that adding holding costs to the problem does effect the complexity of the problem. In general adding state or action variables in the reward function can increase the XADD size. The holding cost adds the following constraint to all branches in the reward function: 
-$ -0.1*x1 -0.1*x2 $
-In another simulation, we tested adding all the products to the inventory constraints such that the transition function is conditioned on both products and their future orders:  $x'_1 = (x_1 + a_1 + x_2 +a_2 - 150 \leq 200) $. This version requires more space since replacing each of the action variables with their related bounds adds to the decision nodes.
-Stochastic demands force more partitions for a problem instance as the plots for the 2-state-action case shows. Although the result for 1d stochastic is impressive, but for the 2d case, stochastic demand forces complexity. This partitioning occurs in the Q-function where the final result considers the restriction to the stochastic variable values. 
-
-Without considering pruning, even the 1 product problem instance quickly falls into the curse of dimensionality problem. In fact, after the second iteration time and space grows exponentially and for this reason the plot fails to show the next time and
-space.
-
-
-\subsection{\WaterReservoir}
-
-In this experiment, we consider a continuous-time approach for the multi-reservoir domain. The problem of \WaterReservoir  needs to make an optimal decision on how much and when to discharge water from water reservoirs to maximize hydroelectric energy productions while considering environment constraints such as irrigation requirements and flood prevention. 
-
-%A multi-reservoir system is more desirable than the single reservoir problem due to its ability in controlling various environment parameters such as flooding.  
-In a multi-reservoir system, the inflow of downstream reservoirs are affected by the outflow of their upstream reservoirs. 
-%In the OR literature, this case  is considered much more complex and for the sake of simplicity mainly the single case in considered. 
-For multi-reservoirs the main problem that leads to approximations to DP methods or sampling approaches is the curse of dimensionality \cite{Mahootchi2009}, \cite{Yeh1985}. Our approach handles this complexity using continuous states and actions.
-
-%The objective in this example is to find the optimal time for draining the reservoirs so that maximum reward is obtained. If draining occurs too frequently (in small time frames), flooding may occur from the excess water. This means draining should occur as latest as possible. On the other hand, not draining will cause overflow of the reservoir and waste of the energy. 
-
-%general description
-The MDP solution should solve a policy that obtains the maximum profit of electricity charges, while staying in the safe water levels of both reservoirs. We allow the system to choose to drain at any time to meet this requirement. The choice of not draining will not gain any profit as we reward according to the electricity discharged. Two discrete actions of drain and no-drain is considered where each are defined with a continuous-time parameter. 
+In Figure~\ref{fig:v2plots}, we examine a 2-reservoir problem with
+piecewise linear dynamics encoding the flow of water between two
+reservoirs having continuous levels $l_1$ and $l_2$, a single reward
+linear in the elapsed time $e$ for periods when the
+$\mathit{drain}(e)$ action drains water from $l_2$ to $l_1$ (for the
+amount of electricity generated by water flowing through the
+hydro-electric generator between them), and deterministic 
+rainfall replenishment.
 
 % or put complete description here: 
-The transition function is demonstrated below: 
-{\footnotesize
-\begin{align*}
-l_1'  = 400 * e + l_1 -700 * e + 500 * e \\
-l_2'  = 400 * e + l_2 - 500 * e \\
-\end{align*}
-}
-Here we take draining as the act of discharging water levels per time-step from the upper-stream reservoir to the down-stream reservoir ($500 * e$). A constant amount of discharge is always considered for the down-stream to ensure all electricity demands are fulfilled.  The amount of rain (r) is considered as a constant which affects both reservoirs at the time of discharge. 
+%The transition function is demonstrated below: 
+%{\footnotesize
+%\begin{align*}
+%l_1'  = 400 * e + l_1 -700 * e + 500 * e \\
+%l_2'  = 400 * e + l_2 - 500 * e \\
+%\end{align*}
+%}
 
-The reward function for both actions considers the safe range of [50,4500] as the safe water levels and assigns a positive reward of $e$ for the action of draining, and no rewards ( but also no penalty) for not draining. If the next state is not in the safe range, a huge penalty of -1+e6 is assigned as the reward.
+%Here we take draining as the act of discharging water levels per
+%time-step from the upper-stream reservoir to the down-stream reservoir
+%($500 * e$). A constant amount of discharge is always considered for
+%the down-stream to ensure all electricity demands are fulfilled.  The
+%amount of rain (r) is considered as a constant which affects both
+%reservoirs at the time of discharge.
 
-{\footnotesize
-\begin{align*}
-(l_1\leq 4500 - 200 * e) \wedge (l_2 \leq 4500 +100 *e) \\
-\wedge (l_1\geq 50 - 200 * e) \wedge (l_2 \geq 50 +100 *e) : e \\
-\end{align*}
-}
-% end of description
-%%%%%%%%%
-We present the results for this experiment next. 
-%Because of the two actions and the fact that one is continuous, we would expect to see a draining action in one iteration and a no-drain action in the next iteration, since two  draining could be performed in one longer step.
-
-The first iteration starts with a drain only policy and achieves the optimal value according to the current water levels of both reservoirs. The up-stream reservoir obtains the maximum value function if it has water levels above half of the safe range. The value decreases as water levels in the down-stream reservoir goes higher due to flood prevention. 
-
-%for iteration 2
-We demonstrated the optimal policy and value for the next iteration. 
-In the second iteration, CSA-MDP will not drain the water because of the continuous nature of the problem, the required draining was performed in the previous iteration. As the water levels in the down-stream reservoir increases, the time increases linearly according to $-0.1667 + 0.0033*l_1$ and $11.25 - 0.0025 *l_2$. The maximum action is achieved in the upper half of the down-stream reservoir. If a drain action from the down-stream to outside was available, this no-drain (from $l_2$) would be equal to draining from $l_1$. The value function for this iteration results from the maximum of the Q-value of drain and no-drain and in this iteration it is equal to the Q-value of no-drain. 
-
-
-% for iteration 3
-We demonstrated the optimal policy and value for the third iteration. Here draining times depend on the upper-stream water level since draining pours excess water from level 2 to level 1 reservoir. The time to drain increases linearly as water levels increase, but after about half the reservoir is filled, it chooses to drain at the maximum time of $0.01 *l_2 - 0.5$ and $22.5$ .  The value function for this iteration results from the maximum of the Q-value of drain and no-drain and in this iteration it is equal to the Q-value of drain. 
-
-% for iteration 9 
-Further iterations of the exact CSA-DP algorithm results in more partitions on the state-action space. The optimal policy converges to the value obtained in the second iteration. There are some minor difference in the value of each iteration due to the fact that with higher horizons, the reservoir can plan to obtain higher rewards and prevent flooding or overflowing. In the last plot we want to confirm the fact that in the $9^th$ iteration, the policy should choose to drain (as all other odd-iterations). 
+%The reward function for both actions considers the safe range of
+%[50,4500] as the safe water levels and assigns a positive reward of
+%$e$ for the action of draining, and no rewards ( but also no penalty)
+%for not draining. If the next state is not in the safe range, a huge
+%penalty of -1+e6 is assigned as the reward.
+%
+%{\footnotesize
+%\begin{align*}
+%(l_1\leq 4500 - 200 * e) \wedge (l_2 \leq 4500 +100 *e) \\
+%\wedge (l_1\geq 50 - 200 * e) \wedge (l_2 \geq 50 +100 *e) : e \\
+%\end{align*}
+%}
