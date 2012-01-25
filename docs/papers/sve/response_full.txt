@@ -1,0 +1,106 @@
+We thank the reviewers for their comments that will help us improve
+the paper.  Expository comments are noted and will be addressed in a
+revision.
+
+
+> computational complexity?
+> results impressive?  inference scales?
+
+To clarify some details, it is important to note that the complexity
+of exact inference in continuous variable graphical models with
+piecewise factors cannot generally be bounded by a tree-width analysis
+as can be done in the finite discrete case.
+
+A worst-case analysis would assume that all generated case partitions
+are feasible and distinct.  In this case, assuming all case statements
+in the problem definition have two partitions, and symbolic variable
+elimination (SVE) requires n case operations, then the complexity is
+O(2^n).  
+
+It should be noted that this is not n eliminations, but n case
+operations (e.g., the UB and LB substitution in the integral in
+Eq. (9) incurs 12 operations alone).  So for k variables, how many
+case operations might be used in the worst-case for SVE?  By far the
+integration is the worst offender and depends linearly on the number
+of polynomial terms in the partition values, cf. Eq. (9).  The number
+of terms in a multivariate polynomial of k variables and order m is
+O(m^k) terms.  So the integral complexity may incur n = O(2^{m^k})
+case operations.
+
+So for all initial case statements of order 2 or less, what is the
+maximum polynomial order m that might occur in a case statement?
+Since every multiplication may double the order (x^3 * x^3 = x^6), if
+there are p case multiplications, the maximum order m = O(2^p).
+
+And how many multiplications p might occur?  Most occur in the
+integral evaluation and this depends on the order, and so on.
+
+Already we're at O(2^{{2^p}^k}), so triply exponential!  Even if this
+is an over-estimate (typically the polynomial order is far less than
+this worst case analysis), there would be no hope if case statements
+were not simplified in some way and this is where the XADD becomes
+absolutely crucial in practice.
+
+And how well can the XADD do?  In short, by removing redundancy,
+pruning inconsistent paths, and compressing a decision tree
+representation of cases, SVE with XADDs can exactly solve all of the
+graphical model inference tasks in the paper.  In light of the
+worst-case complexity analysis above, we hope that this helps shed a
+more positive light on the results section and the overall
+computational difficulty of this task.
+
+We will add more discussion along the above lines to the paper.
+
+
+> algorithm may be too costly for large scale applications
+> would still be necessary to introduce some approximation step
+
+Undoubtedly, for enhanced scalability, this is the most important
+direction for future work.
+
+
+> represents more of an "epsilon-improvement" rather than a
+> significant contribution
+
+This is the first time (that we know of) where an exact closed-form
+factor representation for inference in continuous variable graphical
+models has been proposed.
+
+We agree that SVE has not "solved" large-scale continuous inference.
+But with approximation, we believe there is substantial space for
+improvement.
+
+
+> Why do we need a closed-form solution 
+
+It may not be needed in many cases --- it simply happens to be
+a convenient by-product of the SVE approach --- why approximate if
+the exact solution may be computed?
+
+However, they may be computational settings where fast evaluations of
+a query are required for different evidence assignments.  While SVE
+may take non-negligible time to produce P(v_1|v_2) --- v_2 is a free
+variable here, once SVE has derived the solution, it is extremely
+efficient to evaluate (like a decision tree) for *any* instantiation
+of v_2.  MCMC methods, on the other hand, would have to perform new
+inference every time v_2 was changed.  So SVE could be quite efficient
+compared to MCMC for multiple queries.
+
+Efficient MAP.
+
+> why their approach should be preferred to the existing approximate
+> methods such as MCMC
+
+We do not want to claim that SVE should be categorically preferred to
+MCMC.  But there may be inferential advantages to SVE in heavily
+multimodal settings that can be problematic for MCMC.
+
+Additionally, MCMC methods in practice require some degree of
+problem-specific manual tuning (initialization, burn-in period,
+convergence detection and termination criteria, thinning intervals for
+long chains, proposal distributions for MH approaches).  In contrast,
+SVE is exact and given the XADD data structure (a straightforward
+extension of ADDs), it literally only takes a few lines of code to
+implement SVE to produce an exact solution with absolutely no tuning
+required.
+

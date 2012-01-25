@@ -1,0 +1,33 @@
+We thank the reviewers for their comments.  All expository comments are noted and will be addressed on revision, in addition to the technical points below.
+
+> Computational complexity?
+> Results impressive?
+
+Unfortunately, the complexity of exact inference in continuous variable graphical models with piecewise factors generally cannot be bounded by a tree-width analysis as in the finite discrete case.
+
+For SVE, assuming all case statements in the problem definition have two partitions and that no case simplification is attempted, the complexity of SVE is O(2^n), where n is the number of case operations.
+
+For k variables, what is the worst-case for n?  The largest number of case operations occur during integration, which depends linearly on the *number of polynomial terms* in the partition values (cf. Eq. (9)).
+
+There are O(m^k) of these polynomial terms in a multivariate polynomial of k variables and order m.  But what is the maximum polynomial order m that might occur in a case statement?  Since every multiplication may double the order, if there are p case multiplications, the maximum order m = O(2^p).
+
+We could bound p (exponentially) in terms of k, but let us stop here.  Already we're at O(2^{{2^p}^k}), so triply exponential!  Even if this is a doubly exponential over-estimate, there would be no hope if case statements were not simplified in some way, hence the critical need for the XADD.
+
+And how well can the XADD do?  SVE with XADDs can exactly solve all of the graphical model inference tasks in the paper.  In light of the multiple exponential analysis above, we hope this sheds a more positive light on the results section and the overall computational difficulty of the task.
+
+> Why do we need a closed-form solution?
+
+It may not be needed in many cases --- it simply happens to be a convenient, exact by-product of the SVE approach.
+
+However, there may be computational settings where fast evaluations of a query are required for different evidence assignments.  E.g., P(v_1|v_2) --- v_2 is a free variable here --- could be derived with one call to SVE, resulting in a symbolic solution that is extremely efficient to evaluate for *any* instantiation of v_2 (e.g., v_2 = 1.0, v_2 = -3.7).  In contrast, MCMC methods would have to perform new inference *every time* v_2 was changed to a different value.
+
+> Why SVE preferred to methods such as MCMC?
+
+We do not want to claim that SVE should be categorically preferred to MCMC.  But to suggest some reasons:
+
+- As noted above, there are computational advantages when the same query must be evaluated repeatedly with changing evidence values.
+
+- SVE is exact in heavily multimodal settings that can be problematic for MCMC.
+
+- MCMC methods in practice require some degree of problem-specific tuning (initialization, burn-in period, samples to convergence); in contrast, SVE has no parameters to tune or convergence to determine.
+
