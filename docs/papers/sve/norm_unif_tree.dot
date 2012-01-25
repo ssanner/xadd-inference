@@ -1,0 +1,617 @@
+digraph G {
+  graph [
+    ranksep = "2.00",
+    bb = "0,0,4438,1116",
+    ratio = auto,
+    fontsize = 16,
+    fontname = Helvetica,
+    size = "7.5,10"
+  ];
+
+  node [
+    fontsize = 16
+  ];
+
+  203 [
+    label = "2*x + z <= 10",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "1010,918"
+  ];
+  235 [
+    label = "2*x + z <= 10",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "1314,918"
+  ];
+  202 [
+    label = "y >= -6",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "886,738"
+  ];
+  234 [
+    label = "y >= -6",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "2564,738"
+  ];
+  201 [
+    label = "y <= 4",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "886,558"
+  ];
+  233 [
+    label = "y <= 4",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "2564,558"
+  ];
+  200 [
+    label = "y - x >= -2",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "920,378"
+  ];
+  232 [
+    label = "y - x >= -2",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "2415,378"
+  ];
+  231 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "2117,198"
+  ];
+  230 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "2091,18"
+  ];
+  199 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "1415,198"
+  ];
+  198 [
+    shape = box,
+    label = "y*y",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "1815,18"
+  ];
+  197 [
+    shape = box,
+    label = "y*y",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "1415,18"
+  ];
+  164 [
+    label = "y - x >= -2",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "1226,738"
+  ];
+  196 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "920,198"
+  ];
+  163 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "1137,558"
+  ];
+  195 [
+    shape = box,
+    label = "y*y",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "615,18"
+  ];
+  162 [
+    shape = box,
+    label = "0.1",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "1191,378"
+  ];
+  194 [
+    shape = box,
+    label = "y*y",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "1015,18"
+  ];
+  161 [
+    shape = box,
+    label = 0,
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "1119,378"
+  ];
+  160 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "1435,558"
+  ];
+  192 [
+    label = "y - x >= -2",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "533,378"
+  ];
+  191 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "140,198"
+  ];
+  190 [
+    shape = box,
+    label = 0,
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "104,18"
+  ];
+  229 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "2243,18"
+  ];
+  228 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "2415,198"
+  ];
+  227 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "2547,18"
+  ];
+  226 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "2395,18"
+  ];
+  225 [
+    label = "y - x >= -2",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "2713,378"
+  ];
+  224 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "3011,198"
+  ];
+  223 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "3155,18"
+  ];
+  222 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "3003,18"
+  ];
+  221 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "2713,198"
+  ];
+  220 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "2851,18"
+  ];
+  159 [
+    shape = box,
+    label = 0,
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "1399,378"
+  ];
+  158 [
+    shape = box,
+    label = 0,
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "1471,378"
+  ];
+  189 [
+    shape = box,
+    label = 0,
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "176,18"
+  ];
+  188 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "438,198"
+  ];
+  187 [
+    shape = box,
+    label = 0,
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "307,18"
+  ];
+  186 [
+    shape = box,
+    label = 0,
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "379,18"
+  ];
+  219 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "2699,18"
+  ];
+  218 [
+    label = "y <= 4",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "3466,558"
+  ];
+  217 [
+    label = "y - x >= -2",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "3918,378"
+  ];
+  216 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "3918,198"
+  ];
+  215 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "3915,18"
+  ];
+  214 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "4067,18"
+  ];
+  213 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "4219,198"
+  ];
+  212 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "4371,18"
+  ];
+  211 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "4219,18"
+  ];
+  210 [
+    label = "y - x >= -2",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "3466,378"
+  ];
+  209 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "3615,198"
+  ];
+  208 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "3763,18"
+  ];
+  207 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "3611,18"
+  ];
+  206 [
+    label = "y - x <= 3",
+    fillcolor = lightblue,
+    style = filled,
+    pos = "3317,198"
+  ];
+  205 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "3459,18"
+  ];
+  204 [
+    shape = box,
+    label = "x + z",
+    fillcolor = lightsalmon,
+    style = filled,
+    pos = "3307,18"
+  ];
+  236 [
+    label = f,
+    fillcolor = lightblue,
+    style = filled,
+    pos = "1162,1098"
+  ];
+  192 -> 191 [
+    style = "",
+    pos = "e,178.06,215.43 494.96,360.58 422.77,327.51 266.08,255.75 187.27,219.65"
+  ];
+  216 -> 214 [
+    style = dashed,
+    pos = "e,4052,36.112 3932.8,180.08 3959.3,148.09 4014.8,81.023 4045.5,43.974"
+  ];
+  209 -> 208 [
+    style = "",
+    pos = "e,3748.1,36.112 3629.7,180.08 3656,148.09 3711.2,81.023 3741.6,43.974"
+  ];
+  228 -> 227 [
+    style = "",
+    pos = "e,2533.8,36.031 2428.4,179.75 2451.9,147.73 2500.6,81.318 2527.7,44.327"
+  ];
+  234 -> 218 [
+    style = dashed,
+    pos = "e,3401.9,570.79 2626.7,725.49 2788.3,693.24 3218.3,607.43 3391.8,572.8"
+  ];
+  163 -> 162 [
+    style = "",
+    pos = "e,1185.6,396.03 1142.5,539.75 1152,508.13 1171.5,442.99 1182.7,405.75"
+  ];
+  235 -> 164 [
+    style = dashed,
+    pos = "e,1234.8,756.03 1305.1,899.75 1289.6,868 1257.5,802.44 1239.3,765.27"
+  ];
+  203 -> 164 [
+    style = dashed,
+    pos = "e,1204.6,755.84 1031.5,900.08 1070.5,867.6 1152.8,798.97 1196.8,762.3"
+  ];
+  232 -> 228 [
+    style = dashed,
+    pos = "e,2415,216.03 2415,359.75 2415,328.27 2415,263.55 2415,226.22"
+  ];
+  191 -> 189 [
+    style = dashed,
+    pos = "e,172.39,36.031 143.65,179.75 149.95,148.27 162.89,83.55 170.36,46.225"
+  ];
+  206 -> 204 [
+    style = dashed,
+    pos = "e,3308,36.031 3316,179.75 3314.2,148.27 3310.6,83.55 3308.6,46.225"
+  ];
+  225 -> 221 [
+    style = dashed,
+    pos = "e,2713,216.03 2713,359.75 2713,328.27 2713,263.55 2713,226.22"
+  ];
+  213 -> 212 [
+    style = "",
+    pos = "e,4355.7,36.112 4234.1,180.08 4261.1,148.09 4317.8,81.023 4349.1,43.974"
+  ];
+  199 -> 197 [
+    style = dashed,
+    pos = "e,1415,36.031 1415,179.75 1415,148.27 1415,83.55 1415,46.225"
+  ];
+  188 -> 187 [
+    style = "",
+    pos = "e,320.12,36.031 424.72,179.75 401.41,147.73 353.08,81.318 326.16,44.327"
+  ];
+  233 -> 232 [
+    style = "",
+    pos = "e,2430,396.11 2549.2,540.08 2522.7,508.09 2467.2,441.02 2436.5,403.97"
+  ];
+  218 -> 217 [
+    style = "",
+    pos = "e,3874.8,395.21 3506.5,541.87 3588.5,509.2 3774.3,435.24 3865.5,398.92"
+  ];
+  164 -> 160 [
+    style = dashed,
+    pos = "e,1414.3,575.84 1246.8,720.08 1284.4,687.67 1363.9,619.26 1406.5,582.53"
+  ];
+  210 -> 206 [
+    style = dashed,
+    pos = "e,3332,216.11 3451.2,360.08 3424.7,328.09 3369.2,261.02 3338.5,223.97"
+  ];
+  200 -> 196 [
+    style = dashed,
+    pos = "e,920,216.03 920,359.75 920,328.27 920,263.55 920,226.22"
+  ];
+  231 -> 230 [
+    style = "",
+    pos = "e,2093.6,36.031 2114.4,179.75 2109.8,148.27 2100.5,83.55 2095.1,46.225"
+  ];
+  192 -> 188 [
+    style = dashed,
+    pos = "e,447.52,216.03 523.37,359.75 506.61,328 472.01,262.44 452.39,225.27"
+  ];
+  216 -> 215 [
+    style = "",
+    pos = "e,3915.3,36.031 3917.7,179.75 3917.2,148.27 3916.1,83.55 3915.5,46.225"
+  ];
+  209 -> 207 [
+    style = dashed,
+    pos = "e,3611.4,36.031 3614.6,179.75 3613.9,148.27 3612.5,83.55 3611.6,46.225"
+  ];
+  234 -> 233 [
+    style = "",
+    pos = "e,2564,576.03 2564,719.75 2564,688.27 2564,623.55 2564,586.22"
+  ];
+  228 -> 226 [
+    style = dashed,
+    pos = "e,2397,36.031 2413,179.75 2409.5,148.27 2402.3,83.55 2398.1,46.225"
+  ];
+  202 -> 192 [
+    style = dashed,
+    pos = "e,550.61,395.96 868.49,720.15 810.63,661.13 625.34,472.17 557.87,403.37"
+  ];
+  217 -> 213 [
+    style = dashed,
+    pos = "e,4189.5,215.66 3947.4,360.41 4002.1,327.68 4119.6,257.44 4180.5,220.99"
+  ];
+  163 -> 161 [
+    style = dashed,
+    pos = "e,1120.8,396.03 1135.2,539.75 1132,508.27 1125.6,443.55 1121.8,406.22"
+  ];
+  236 -> 235 [
+    style = "",
+    pos = "e,1298.8,936.06 1175.5,1082 1201.8,1050.9 1260,981.91 1292,944.08"
+  ];
+  221 -> 219 [
+    style = dashed,
+    pos = "e,2700.4,36.031 2711.6,179.75 2709.1,148.27 2704.1,83.55 2701.2,46.225"
+  ];
+  203 -> 202 [
+    style = "",
+    pos = "e,898.42,756.03 997.43,899.75 975.37,867.73 929.62,801.32 904.14,764.33"
+  ];
+  160 -> 158 [
+    style = dashed,
+    pos = "e,1467.4,396.03 1438.6,539.75 1444.9,508.27 1457.9,443.55 1465.4,406.22"
+  ];
+  196 -> 194 [
+    style = dashed,
+    pos = "e,1005.5,36.031 929.63,179.75 946.39,148 980.99,82.437 1000.6,45.27"
+  ];
+  201 -> 192 [
+    style = dashed,
+    pos = "e,567.42,395.55 852.79,541.07 788.73,508.4 648.12,436.7 576.62,400.24"
+  ];
+  224 -> 223 [
+    style = "",
+    pos = "e,3140.5,36.112 3025.3,180.08 3050.9,148.09 3104.6,81.023 3134.2,43.974"
+  ];
+  199 -> 198 [
+    style = "",
+    pos = "e,1774.8,36.099 1453.7,180.58 1526.7,147.72 1684.6,76.666 1765.3,40.351"
+  ];
+  213 -> 211 [
+    style = dashed,
+    pos = "e,4219,36.031 4219,179.75 4219,148.27 4219,83.55 4219,46.225"
+  ];
+  188 -> 186 [
+    style = dashed,
+    pos = "e,384.91,36.031 432.02,179.75 421.65,148.13 400.3,82.994 388.09,45.746"
+  ];
+  233 -> 225 [
+    style = dashed,
+    pos = "e,2698,396.11 2578.8,540.08 2605.3,508.09 2660.8,441.02 2691.5,403.97"
+  ];
+  218 -> 210 [
+    style = dashed,
+    pos = "e,3466,396.03 3466,539.75 3466,508.27 3466,443.55 3466,406.22"
+  ];
+  164 -> 163 [
+    style = "",
+    pos = "e,1145.9,576.03 1217,719.75 1201.3,688 1168.9,622.44 1150.5,585.27"
+  ];
+  235 -> 234 [
+    style = "",
+    pos = "e,2492.4,748.31 1408.2,904.43 1644.7,870.38 2260.2,781.75 2482.4,749.74"
+  ];
+  200 -> 199 [
+    style = "",
+    pos = "e,1368.2,215.02 966.57,361.07 1057.9,327.87 1260.1,254.34 1358.7,218.47"
+  ];
+  232 -> 231 [
+    style = "",
+    pos = "e,2146.2,215.62 2385.6,360.25 2331.3,327.43 2215.2,257.31 2155,220.94"
+  ];
+  191 -> 190 [
+    style = "",
+    pos = "e,107.61,36.031 136.35,179.75 130.05,148.27 117.11,83.55 109.64,46.225"
+  ];
+  206 -> 205 [
+    style = "",
+    pos = "e,3444.7,36.112 3331.1,180.08 3356.4,148.09 3409.3,81.023 3438.5,43.974"
+  ];
+  225 -> 224 [
+    style = "",
+    pos = "e,2981.8,215.62 2742.4,360.25 2796.7,327.43 2912.8,257.31 2973,220.94"
+  ];
+  202 -> 201 [
+    style = "",
+    pos = "e,886,576.03 886,719.75 886,688.27 886,623.55 886,586.22"
+  ];
+  217 -> 216 [
+    style = "",
+    pos = "e,3918,216.03 3918,359.75 3918,328.27 3918,263.55 3918,226.22"
+  ];
+  236 -> 203 [
+    style = dashed,
+    pos = "e,1025.2,936.06 1148.5,1082 1122.2,1050.9 1064,981.91 1032,944.08"
+  ];
+  160 -> 159 [
+    style = "",
+    pos = "e,1402.6,396.03 1431.4,539.75 1425.1,508.27 1412.1,443.55 1404.6,406.22"
+  ];
+  221 -> 220 [
+    style = "",
+    pos = "e,2837.1,36.112 2726.7,180.08 2751.2,148.22 2802.3,81.586 2830.7,44.443"
+  ];
+  210 -> 209 [
+    style = "",
+    pos = "e,3600,216.11 3480.8,360.08 3507.3,328.09 3562.8,261.02 3593.5,223.97"
+  ];
+  196 -> 195 [
+    style = "",
+    pos = "e,645.76,36.153 889.92,180.25 834.49,147.53 716.24,77.746 654.45,41.282"
+  ];
+  201 -> 200 [
+    style = "",
+    pos = "e,916.59,396.03 889.45,539.75 895.39,508.27 907.62,443.55 914.67,406.22"
+  ];
+  224 -> 222 [
+    style = dashed,
+    pos = "e,3003.8,36.031 3010.2,179.75 3008.8,148.27 3005.9,83.55 3004.3,46.225"
+  ];
+  231 -> 229 [
+    style = dashed,
+    pos = "e,2230.4,36.031 2129.8,179.75 2152.2,147.73 2198.7,81.318 2224.6,44.327"
+  ];
+}

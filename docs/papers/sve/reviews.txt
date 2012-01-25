@@ -1,0 +1,141 @@
+META-REVIEW
+
+This is a new exact inference method for continuous random
+variables. All the reviewers had at least some interest in the general
+idea, and serious concerns about the how well the current method
+scales, but there was considerable disagreement as to how fruitful the
+new ideas would be going forward. Although this paper can be
+considered for the conference, given the high volume of submissions I
+think it would be difficult to justify acceptance at this time.
+
+===
+===
+
+This paper introduces a method for performing variable elimination in 
+a graphical model with both discrete and continuous variables. The 
+basic variable elimination procedure is unchanged -- the only thing 
+that needs to change is how factors are multiplied and how variables 
+are summed out. In the case of complex factors, these operations are 
+more involved than with only discrete variables. 
+
+What's interesting about the proposed method is that it can handle 
+piecewise polynomial factors, which are quite flexible. It does this 
+through summing and multiplying cases, creating Cartesian products. 
+I'm concerned that this could be worse than exponential in the number 
+of variables involved -- it could be exponential in the number of 
+factors multiplied. Little is said about complexity. 
+
+The biggest weakness is that the experiments are very limited and 
+suggest that the proposed method does not scale well. For example, 
+inference in a dynamic model with 7 time steps takes 1 minute. This 
+model has only 14 unobserved variables, and a tree-width of 2. What's 
+nice about variable elimination is that it's only exponential in the 
+tree-width, not the total number of variables. These results suggest 
+that the proposed algorithm is not very efficient. 
+
+Overall, I think developing good methods for handling continuous 
+variables exactly is a worthwhile direction, but the proposed approach 
+is lacking in complexity analysis and detailed evaluation.
+
+===
+===
+
+This paper describes how to do exact inference by using piecewise polynomial functions, represented as extended algebraic decision diagrams (XADDs). 
+
+Major comments 
+============== 
+Decision diagrams have previously been used for inference in discrete domains - the main contribution of this paper is to extend their use to continuous domains through the use of polynomial functions at the terminal nodes + extending the form of the decision nodes to include inequalities. The fact that this extension remains tractable (i.e. that integration can still be performed efficiently) is a thought-provoking results that should be of interest to the machine learning community. 
+
+The paper is mostly clearly presented and well structured. There are two particular points which would merit further discussion. The first is a discussion of the computational cost of the algorithm. For many real world models, I would anticipate that the XADDs would grow unmanageably large. In such settings it would still be necessary to introduce some approximation step whereby the XADD is simplified (e.g. using an EP or VB-like approximation). The results for the tracking model (which takes a minute for 7 time steps) indicate already that the algorithm may be too costly for large scale applications. I don't consider this a show-stopper since SVE may be useful in those small scale applications where exact posteriors are desired or in combination with approximation steps in a large scale application, but the authors should acknowledge and discuss this issue. 
+
+The second point that would aid understanding is additional discussion of restriction 3.1 - in particular an example of a common model that violates this restriction (or, if there isn't one, a list of common models that don't violate it). This would be helpful in understanding the scope of the proposed algorithm. 
+
+Minor comments 
+============== 
+I found the overuse of italics in this paper quite jarring (e.g. 6 italicised phrases in the abstract alone). I would suggest limiting the use of italics to only those points where particular emphasis is needed. 
+
+===
+===
+
+This paper outlines a method for obtaining exact inference in closed form for 
+non-Gaussian graphical models. Specifically, the symbolic variable elimination 
+(SVE) procedure is developed for the mixed discrete/continuous case where conditional 
+probability functions can be expressed as piecewise polynomials with bounded support. 
+The key contribution is that inference for this particular case is exact, and so 
+sampling-based or approximate methods can be avoided. 
+
+Major comments: 
+--------------- 
+
+I enjoyed the paper, which is for the most part quite well-written, but I do 
+have some reservations. Primarily, the authors make some rather grand claims as to 
+the major significance of this breakthrough (particularly in the conclusion), but 
+also admit that their procedure is restricted to the somewhat limited piecewise 
+polynomial case. Unfortunately, I found neither of the two worked examples to be 
+very compelling, and the exposition is at times quite sloppy. I got the sense 
+that the method, while it might be a neat methodological and computational trick, 
+is in actuality quite limited for applications, and represents more of an 
+"epsilon-improvement" rather than a significant contribution. 
+
+Moreover, the authors provide no reason why their approach should be preferred to 
+the existing approximate methods such as MCMC. Why do we need a closed-form solution 
+for this limited class if accurate approximate inference is readily available and is 
+applicable to a far larger class of real-world models? Perhaps there are good reasons, 
+but I did not see any described here. 
+
+The first example (the Bayesian robot sensor) is easy to follow. If I understand correctly, 
+all the variables (d and the x_i's) are real-valued, so in this case there are no 
+boolean b_i variables. Hence the whole derivation in Section 2 for both boolean B and 
+real X is not applicable in this motivating example. This was confusing. In Figure 4, 
+I understand how you get the expectations using SVE and equation (4), but how do you 
+draw the various posterior distributions. Do you use the functional form that you 
+obtained from the method in equation (3)? If so, it would be very useful to have a 
+single worked case where you end up with, say, the multi-modal posterior function which 
+is then plotted. 
+
+The second (tracking) example does use both Boolean and real variables. The text states 
+that if the sensor is not broken, the observation model is the truncated normal. From 
+Figure 5, it looks as if the observation model in this case is the asymmetric triangle, 
+not the Gaussian. What am I missing? Unfortunately, Figure 6 is a mess (see comments 
+below) and does not help at all. 
+
+In both examples, it's not clear what we have learned from the analysis, or why we need 
+the closed-form solution. 
+
+Minor comments: 
+--------------- 
+
+The word "distributions" is misspelled on more than one occasion, eg. on pages 1 and 2.
+
+Section 1, 2nd last line: "tasks" should be "task". 
+
+There are places where notation is either undefined or carelessly not explained. This 
+makes it unnecessarily difficult for the reader to follow. For example, what is the bold "v" 
+4 lines below equation (5)? I did not see it defined earlier. I assume that the ^ symbol 
+is the logical AND, but it is not specified. Also, what is the symbol in front of the b 
+in the middle line of the equation on page 4, top of the 2nd column? 
+
+In the worked example of Section 3.2, I could see how you get the LB and UB for 
+integrating over x_1, but it was not immediately clear how this follows from the max 
+operation defined in the previous section. A little more explanation would be useful. 
+
+In equation (10), shouldn't the final condition be "x_2 + 1 > -1"? 
+
+In Section 3.3, the Discrete Variable Elimination definition has f_v|v=1 twice? 
+Shouldn't the second one be f_v|v=0? Perhaps I am missing something here. 
+
+I could not find a reference to Figure 2 anywhere within the text, only within the 
+caption to Figure 3. So it really is not clear what Figure 2 is for when reading the 
+paper. Please give more explanation of these figures. What are the dotted lines and 
+solid lines? The whole of Section 4 is very vague and brief and seems to be almost solely 
+a reference to other work. It is not clear how it connects or contributes to the 
+methodological development in Section 3 or the results in Section 5. 
+
+In Figure 4, why is -0.1 a value on the y-axes? I assume the closed-form pdfs never 
+actually take on negative values. 
+
+Figure 6 is very sloppy, and is also not referenced in the text of Section 5. Panel (a) 
+is a marginal for x_2 conditioned on values of o_1 and b_1. The caption refers to x_3. 
+The other two panels appear to be joint distributions (correct?), but again the variables
+on the figure axes do not agree with the caption text. The whole figure and the caption
+need to be re-done if it is to make any sense. 

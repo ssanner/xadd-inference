@@ -1,0 +1,9 @@
+Need to preempt notion that b/c the factors are polynomial that the 
+work is trivial.
+
+Issue is that these are piecewise polynomials over arbitrary convex
+regions and that the upper and lower integral bounds are themselves
+piecewise symbolic functions.  To the best of our knowledge, no
+previous work has worked through an algorithm for performing these
+integrals in closed-form, much less efficiently via the use of
+data structures.

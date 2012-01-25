@@ -1,0 +1,3 @@
+#!/bin/sh
+~/Java/dot.exe -Tps -Efontsize=36 -Nfontsize=36 -Granksep=1 norm_unif.dot > norm_unif.eps; epstopdf norm_unif.eps
+~/Java/dot.exe -Tps -Efontsize=36 -Nfontsize=36 -Granksep=1 norm_unif_tree.dot > norm_unif_tree.eps; epstopdf norm_unif_tree.eps
