@@ -23,7 +23,7 @@ transition dynamics and reward (or cost) for such problems
 cannot be piecewise --- a crucial limitation preventing the application
 of such solutions to many planning and operations research problems. 
 
-In this paper, we provide an exact symbolic dyanmic programming (SDP)
+In this paper, we provide an exact symbolic dynamic programming (SDP)
 solution to a useful subset of continuous state and action Markov
 decision processes (CSA-MDPs) with \emph{multivariate} continuous
 state and actions, discrete noise, \emph{piecewise} linear dynamics,
@@ -51,17 +51,17 @@ already been taken ($b=1$), $x'$ and $b'$ to denote
 post-action state, and $R$ to denote reward, we 
 express the \MarsRover\ CSA-MDP using piecewise dynamics and reward:
 \begin{align} 
-\hspace{-2mm} P(b'=1|x) & = 
+\hspace{-2.8mm} P(b'\sq=\sq1|x,b) & = 
 \begin{cases}
-b \lor (x \geq -2 \land x \leq 2): & 1.0\\
-\neg b \land (x < -2 \lor x > 2):  & 0.0
+b \lor (x \geq -2 \land x \leq 2): & \sqm 1.0\\
+\neg b \land (x < -2 \lor x > 2):  & \sqm 0.0
 \end{cases} \label{eq:mr_discrete_trans} \\
-\hspace{-2mm} P(x'|x,y) & = \delta \left( x' - \begin{cases}
+\hspace{-2.8mm} P(x'|x,y) & = \delta \left( x' - \begin{cases}
 y \geq -10 \land y \leq 10 : & \hspace{-2mm} x + y \\
 y < -10 \lor y > 10 : & \hspace{-2mm} x
 \end{cases}
 \right) \label{eq:mr_cont_trans} \\
-\hspace{-2mm} R(x,b) & = \begin{cases}
+\hspace{-2.8mm} R(x,b) & = \begin{cases}
 \neg b \land x \geq -2 \land x \leq 2 : & 4 - x^2 \\
 b \lor x < -2 \lor x > 2 : & 0
 \end{cases} \label{eq:mr_reward}
