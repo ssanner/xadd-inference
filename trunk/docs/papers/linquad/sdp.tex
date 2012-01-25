@@ -3,17 +3,52 @@
 In this section, we extend the symbolic dynamic programming (SDP) work
 of~\cite{sanner_uai11} to the case of continuously parameterized
 actions for CSA-MDPs.  We present the general SDP framework for value
-iteration in Algorithm~\ref{alg:vi} (\texttt{VI}) and a Q-function
-regression subroutine~\ref{alg:regress} (\texttt{Regress}) where we
+iteration in Algorithm~\ref{alg:vi} (\texttt{VI}) and a regression
+subroutine in Algorithm~\ref{alg:regress} (\texttt{Regress}) where we
 have omitted parameters $\vec{b}$ and $\vec{x}$ from $V$ and $Q$ to
-avoid notational clutter.  We note the single difference between this
-algorithm and that described in~\cite{sanner_uai11} comes in the
+avoid notational clutter.  The difference between this
+SDP algorithm and that in~\cite{sanner_uai11} comes in the
 continuous action parameter maximization in line 7 of \texttt{VI}.
-Before we explain this contribution though, we first recap SDP,
+%Before we explain this contribution though, we 
+But first we recap SDP,
 which uses the \emph{case} representation and operations.
 %solution, which requires that the CSA-MDP and all other
 %functions such as $Q$ and $V$ are represented in \emph{case} form and
 %all operations are \emph{case operations}, defined next.
+
+\subsection{Case Representation and Operators}
+
+From here out, we assume that all symbolic functions
+can be represented in \emph{case} form~\cite{fomdp}:
+{%\footnotesize 
+\begin{align}
+f = 
+\begin{cases}
+  \phi_1: & f_1 \\ 
+ \vdots&\vdots\\ 
+  \phi_k: & f_k \\ 
+\end{cases} \label{eq:case}
+\end{align}
+}
+Here the $\phi_i$ are logical formulae defined over the state
+$(\vec{b},\vec{x})$ that can include arbitrary logical ($\land,\lor,\neg$)
+combinations of (i) boolean variables and (ii) 
+\emph{linear} inequalities ($\geq,>,\leq,<$) 
+over continuous variables.  
+Each $\phi_i$ will be disjoint from the other $\phi_j$ ($j \neq i$); 
+however the $\phi_i$ may not exhaustively cover the state space, hence
+$f$ may only be a \emph{partial function} and may be undefined for some
+variable assignments.
+%\footnote{In the context of SDP, states whose value
+%at horizon $h$ is undefined correspond to states that cannot reach any
+%defined state of the reward in horizon $h$.}
+The $f_i$ may be either linear or quadratic in the continuous parameters
+according to the same restrictions as for 
+$R(\vec{b},\vec{x},a,\vec{y})$.  
+We require $f$ to be continuous 
+(including no discontinuities at partition boundaries); 
+operations preserve this property.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{.5em}
@@ -72,39 +107,6 @@ which uses the \emph{case} representation and operations.
 \decmargin{.5em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Case Representation and Operators}
-
-From here out, we assume that all symbolic functions
-can be represented in \emph{case} form~\cite{fomdp}:
-{%\footnotesize 
-\begin{align}
-f = 
-\begin{cases}
-  \phi_1: & f_1 \\ 
- \vdots&\vdots\\ 
-  \phi_k: & f_k \\ 
-\end{cases} \label{eq:case}
-\end{align}
-}
-Here the $\phi_i$ are logical formulae defined over the state
-$(\vec{b},\vec{x})$ that can include arbitrary logical ($\land,\lor,\neg$)
-combinations of (i) boolean variables and (ii) 
-\emph{linear} inequalities ($\geq,>,\leq,<$) 
-over continuous variables.  
-Each $\phi_i$ will be disjoint from the other $\phi_j$ ($j \neq i$); 
-however the $\phi_i$ may not exhaustively cover the state space, hence
-$f$ may only be a \emph{partial function} and may be undefined for some
-variable assignments.
-%\footnote{In the context of SDP, states whose value
-%at horizon $h$ is undefined correspond to states that cannot reach any
-%defined state of the reward in horizon $h$.}
-The $f_i$ may be either linear or quadratic in the continuous parameters
-according to the same restrictions as for 
-$R(\vec{b},\vec{x},a,\vec{y})$.  
-We require $f$ to be continuous 
-(including no discontinuities at partition boundaries); 
-operations preserve this property.
-
 \emph{Unary operations} such as scalar multiplication $c\cdot f$ (for
 some constant $c \in \mathbb{R}$) or negation $-f$ on case statements
 $f$ are simply applied to each
@@ -148,17 +150,16 @@ $ = $
 }
 \normalsize
 
-Likewise, we can perform $\ominus$ and $\otimes$ by,
+Likewise, we perform $\ominus$ and $\otimes$ by,
 respectively, subtracting or multiplying partition values (as opposed
 to adding them) to obtain the result.  Some partitions resulting from
-the application of the $\oplus$, $\ominus$, and $\otimes$ operators
-may be inconsistent (infeasible); we may simply discard such 
-partitions as they are irrelevant to the function value.
+case operators may be inconsistent (infeasible) and removed
+%.; we may simply discard such 
+%partitions as they are irrelevant to the function value.
 
-For SDP, we'll also need to perform maximization, restriction,
-and substitution on case statements.  
-\emph{Symbolic case maximization} is fairly straightforward
-to define:
+%For SDP, we'll also need to perform maximization, restriction,
+%and substitution on case statements.  
+Next we define \emph{symbolic case maximization}:
 \vspace{-4mm}
 
 {\footnotesize
@@ -250,21 +251,24 @@ since
 negation
 inverts inequalities, e.g., $\neg [x < 2] \equiv [x \geq 2]$
 and disjunctions can be split across multiple non-disjunctive, 
-disjoint case partitions, e.g., {\footnotesize
-\begin{equation*}
-f = 
-\begin{cases}
-a \lor b: & \sqm f_1 \\ 
-\neg a \land \neg b: & \sqm f_2\\ 
-\end{cases} 
-\; \; =  \; \;
-\begin{cases}
-a: & \sqm f_1 \\ 
-\neg a \land b: & \sqm f_1 \\ 
-\neg a \land \neg b: & \sqm f_2\\ 
-\end{cases} \; .
-\end{equation*}}
-\hspace{2mm} Exploiting the commutativity of $\max$, we can first
+disjoint case partitions.
+%, e.g., {\footnotesize
+%\begin{equation*}
+%f = 
+%\begin{cases}
+%a \lor b: & \sqm f_1 \\ 
+%\neg a \land \neg b: & \sqm f_2\\ 
+%\end{cases} 
+%\; \; =  \; \;
+%\begin{cases}
+%a: & \sqm f_1 \\ 
+%\neg a \land b: & \sqm f_1 \\ 
+%\neg a \land \neg b: & \sqm f_2\\ 
+%\end{cases} \; .
+%\end{equation*}}
+%\hspace{2mm} 
+
+Exploiting the commutativity of $\max$, we can first
 rewrite any multivariate $\max_{\vec{y}}$ as a sequence of univariate
 $\max$ operations $\max_{y_1} \cdots \max_{y_{|\vec{y}|}}$; hence it
 suffices to provide just the \emph{univariate} $\max_y$ solution:
@@ -431,18 +435,19 @@ $\UB$, $\LB$, and $\Root$ substitutions.
 %computes the continuous action parameter maximization \emph{symbolically}
 %as a function of the state variables $\vec{b}$ and $\vec{x}$.
 
-\subsection{Extended ADDs (XADDs)}
-
+{\bf Extended ADDs (XADDs)}
+%
 % mention feasibility checking, all ops apply directly
-
-The \emph{extended ADD} (XADD)~\cite{sanner_uai11} extension of
+%
+%The \emph{extended ADD} (XADD)
+~\cite{sanner_uai11} extension of
 ADDs~\cite{bahar93add} provides a compact data structure to support
 case statements and operations.  Using XADDs in SDP as a continuous
 version of the ADD-based SPUDD~\cite{spudd} algorithm for
 discrete MDPs, we maintain compact forms of $Q$ and $V$, e.g., as
 shown in $V^2$ for \MarsRover\ in Figure~\ref{fig:opt_val_pol}.  XADDs
-also permit the use of linear constraint feasibility checkers (e.g.,
-from LP solvers) to prune unreachable paths in the XADD.
+also permit the use of linear constraint feasibility checkers 
+from LP solvers to prune unreachable paths in the XADD.
 
 The only operation that has not been previously defined for XADDs is
 $\max_y$, but this is easy: treating each XADD path from root to
