@@ -130,9 +130,21 @@ b \land x_1 \leq x_2 + 1 : & 1 - x_1 + 2x_2 \\
 or (ii) a piecewise quadratic function of univariate state 
 and a linear function of univariate action parameters 
 as demonstrated in \MarsRover~\eqref{eq:mr_reward}.  
-In the concluding remarks, we discuss the
-computational implications of relaxing the above restrictions on the
-transition and reward functions.
+%While these constraints on the transition and reward functions could
+%be relaxed, 
+These transition and reward constraints will ensure that all derived
+functions in the solution of these CSA-MDPs adhere to the reward 
+constraints.
+%retain boolean or linear conditions.
+
+%ensure piecewise linear boundaries that can be checked for consistency
+%using a linear constraint feasibility checker, which we will later
+%see is crucial for efficiency.
+
+%In the final section, we discuss the
+%computational implications of relaxing the above restrictions on the
+%transition and reward functions.
+
 %For now, with our CSA-MDP defined as above, we
 %proceed to discuss how to solve for it's optimal finite horizon value
 %function and policy.

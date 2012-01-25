@@ -1,38 +1,32 @@
-The most relevant vein of Related work is that of~\cite{feng04}
-and~\cite{li05} which can perform exact dynamic programming on
-DC-MDPs with rectangular piecewise linear reward and transition functions
-that are delta functions.  While SDP can solve these same problems,
-it removes both the rectangularity and piecewise restrictions on the
-reward and value functions, while
-retaining exactness.  
-Heuristic search approaches with formal guarantees 
-like HAO*~\cite{hao09} are an attractive future extension of SDP;
-in fact HAO* currently uses the method of~\cite{feng04}, which could
-be directly replaced with SDP.  While~\cite{penberthy94} has considered
-general piecewise functions with linear boundaries (and in fact,
-we borrow our linear pruning approach from this paper), this work
-only applied to fully deterministic settings, not DC-MDPs.
+This work is an extension of SDP~\cite{sanner_uai11} that handled
+continuous state and \emph{discrete actions}, which itself built on the
+continuous state, discrete action work of~\cite{boyan01,feng04,li05}.
+%There has been prior work on approximate solutions to continuous state
+%MDPs~\cite{munos02,phase07} and even continuous state and action
+%MDPs~\cite{kveton06}, which might inform future approximate extensions
+%of this work.  
+In control theory, linear-quadratic Gaussian (LQG) control~\cite{lqgc}
+using linear dynamics with continuous actions, Gaussian noise, and quadratic
+reward is most closely related.  However, these exact solutions do
+not extend to discrete and continuous systems with \emph{piecewise}
+dynamics or reward as shown in~\eqref{eq:mr_discrete_trans},
+\eqref{eq:mr_cont_trans}, and~\eqref{eq:mr_reward}.
+%Perhaps the most practical extension
+%for future work would to combine SDP with the initial state focused
+%dynamic programming techniques~\cite{hao09} to increase exact solution
+%efficiency when the initial state is known.
+%
+%While it should be theoretically possible to relax some of the 
+%constraints of our setting to nonlinear dynamics or more general
+%nonlinear rewards, we have carefully chosen our restrictions 
+%to ensure \emph{linear piecewise boundaries}, which permit the use
+%of fast linear feasibility checkers (for XADD pruning) that has proved
+%critical for efficiency in problems like \InventoryControl.  Hence we
+%believe this work carefully balances the tradeoff between expressivity
+%and computational efficiency.  
+Combining this work with initial state focused techniques~\cite{hao09}
+and focused approximations that exploit optimal value
+structure~\cite{apricodd} or further
+afield~\cite{munos02,kveton06,phase07} are promising directions for
+future work.
 
-Other work has analyzed limited DC-MDPS having only one continuous
-variable.  Clearly rectangular restrictions are meaningless with
-only one continuous variable, so it is not surprising that more
-progress has been made in this restricted setting.  One continuous
-variable can be useful for optimal solutions to time-dependent MDPs 
-(TMDPs)~\cite{boyan01}.  Or phase transitions can be used to 
-arbitrarily approximate one-dimensional continuous distributions
-leading to a bounded approximation approach for arbitrary single continuous
-variable DC-MDPs~\cite{phase07}.  
-While this work cannot handle arbitrary stochastic
-noise in its continuous distribution, it does exactly solve DC-MDPs
-with multiple continuous dimensions.
-
-Finally, there are a number of general DC-MDP approximation
-approaches that use approximate linear programming~\cite{kveton06}
-or sampling in a reinforcement learning style approach~\cite{munos02}.
-In general, while approximation methods are quite promising in
-practice for DC-MDPS, the objective of this paper was to push
-the boundaries of \emph{exact} solutions; however, in some sense, 
-we believe that more expressive exact solutions may also inform
-better approximations, e.g., by allowing the use of data structures
-with non-rectangular piecewise partitions that allow higher fidelity
-approximations.

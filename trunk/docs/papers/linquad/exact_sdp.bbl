@@ -127,13 +127,6 @@ Meuleau, N.; Benazera, E.; Brafman, R.~I.; Hansen, E.~A.; and Mausam.
   stochastic domains.
 \newblock {\em Journal Artificial Intelligence Research (JAIR)} 34:27--59.
 
-\bibitem[\protect\citeauthoryear{Penberthy and Weld}{1994}]{penberthy94}
-Penberthy, J.~S., and Weld, D.~S.
-\newblock 1994.
-\newblock Temporal planning with continuous change.
-\newblock In {\em National Conference on Artificial Intelligence {AAAI}},
-  1010--1015.
-
 \bibitem[\protect\citeauthoryear{Remi~Munos}{2002}]{munos02}
 Remi~Munos, A.~M.
 \newblock 2002.
@@ -148,11 +141,19 @@ Sanner, S.; Delgado, K.~V.; and {de Barros}, L.~N.
 \newblock In {\em Proceedings of the 27th Conference on Uncertainty in {AI}
   ({UAI-2011})}.
 
-\bibitem[\protect\citeauthoryear{Scarf}{2002}]{Scarf2002}
-Scarf, H.~E.
-\newblock 2002.
-\newblock Inventory theory.
-\newblock {\em Operations Research} 50(1):186--191.
+\bibitem[\protect\citeauthoryear{St-Aubin, Hoey, and
+  Boutilier}{2000}]{apricodd}
+St-Aubin, R.; Hoey, J.; and Boutilier, C.
+\newblock 2000.
+\newblock {APRICODD}: Approximate policy construction using decision diagrams.
+\newblock In {\em {NIPS-2000}},  1089--1095.
+
+\bibitem[\protect\citeauthoryear{Wu, Shi, and Duffie}{2010}]{wusd10}
+Wu, T.; Shi, L.; and Duffie, N.~A.
+\newblock 2010.
+\newblock An hnp-mp approach for the capacitated multi-item lot sizing problem
+  with setup times.
+\newblock {\em IEEE T. Automation Science and Engineering} 7(3):500--511.
 
 \bibitem[\protect\citeauthoryear{Yeh}{1985}]{Yeh1985}
 Yeh, W.~G.
