@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.10.25)  25 JAN 2012 18:39
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.10.25)  25 JAN 2012 18:51
 entering extended mode
  %&-line parsing enabled.
 **sve.tex
@@ -388,7 +388,7 @@ Here is how much of TeX's memory you used:
  6498 multiletter control sequences out of 15000+50000
  34435 words of font info for 73 fonts, out of 3000000 for 9000
  28 hyphenation exceptions out of 8191
- 32i,18n,24p,443b,490s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 32i,18n,24p,571b,490s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.enc}</usr/sha
 re/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-te
 xlive/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/share/texmf-texlive/fonts/
@@ -414,7 +414,7 @@ ic/amsfonts/symbols/msbm10.pfb></usr/share/texmf-texlive/fonts/type1/public/ams
 fonts/symbols/msbm7.pfb></usr/share/texmf-texlive/fonts/type1/urw/times/utmb8a.
 pfb></usr/share/texmf-texlive/fonts/type1/urw/times/utmr8a.pfb></usr/share/texm
 f-texlive/fonts/type1/urw/times/utmri8a.pfb>
-Output written on sve.pdf (7 pages, 375373 bytes).
+Output written on sve.pdf (7 pages, 375462 bytes).
 PDF statistics:
  193 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
