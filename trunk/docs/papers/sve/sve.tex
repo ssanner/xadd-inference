@@ -860,7 +860,7 @@ in exact inference for such graphical models.
 For the {robot localization} task, we plot the posterior over
 the distance $d \in D$ given various observations in Figure~\ref{fig:dist}.
 What is noteworthy here is the interesting multi-modal
-nature of these plots.  Recalling the discussion in the introduction,
+nature of these plots. Recalling the discussion in the introduction,
 the range finder was modeled with various error modes; because of these
 models, the posterior plots demonstrate the different combinatorial
 possibilities that each measurement was accurate or noise with the various
@@ -915,7 +915,7 @@ and $p(x_2|o_1=5,b_1=1)$ (red solid).
 (b) $p(x_3,o_1)$, (c) $p(x_5,o_1)$.  $o$ is on the lower left-edge
 axis, $x$ is on the lower right, and the probability is the $z$ axis.}
 \label{fig:track}
-\vspace{-3mm}
+\vspace{-4mm}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -929,7 +929,7 @@ the complex symbolic manipulations involved, the SVE method should be
 reasonably scalable especially in graphical models with sparse
 structure like this sequential model.
 
-Even though one can use other inference methods such as sampling to calculate the expectation, the interesting thing to observe here in Figure \ref{fig:dist} and \ref{fig:track} is that using SVE we are able to derive the posterior model in a functional form. This is particularly helpful in cases where the objective is to evaluate the behavior of one variable with respect to another one when its value is not observed.
+Even though one can use other inference methods such as sampling to calculate the expectation, the interesting thing to observe here in Figure \ref{fig:dist} and \ref{fig:track} is that using SVE we are able to derive the posterior model in a functional form. This is particularly helpful in cases where the objective is to evaluate the behavior of one variable with respect to another one when its value is not observed. With same analogy we are able to analyze the variable dependencies in a highly complex system with sophisticated distributions.
 
 %One interesting thing to observe here in these experiments is the clear advantage of using 
 
