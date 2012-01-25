@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.10.25)  25 JAN 2012 16:56
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.10.25)  25 JAN 2012 18:39
 entering extended mode
  %&-line parsing enabled.
 **sve.tex
@@ -281,25 +281,25 @@ Overfull \hbox (3.43065pt too wide) in paragraph at lines 144--145
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10.95> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 217.
 
-Underfull \hbox (badness 1824) in paragraph at lines 283--294
+Underfull \hbox (badness 1824) in paragraph at lines 288--300
 \OT1/ptm/m/n/10 as a \OT1/ptm/m/it/10 func-tion \OT1/ptm/m/n/10 of $\OT1/cmr/bx
 /n/10 q$ \OT1/ptm/m/n/10 and $\OT1/cmr/bx/n/10 e$\OT1/ptm/m/n/10 . This can be 
 achieved by
  []
 
 
-Underfull \hbox (badness 2744) in paragraph at lines 283--294
+Underfull \hbox (badness 2744) in paragraph at lines 288--300
 \OT1/ptm/m/n/10 the fol-low-ing com-pu-ta-tion, where for no-ta-tional con-
  []
 
 
-Underfull \hbox (badness 1888) in paragraph at lines 283--294
+Underfull \hbox (badness 1888) in paragraph at lines 288--300
 \OT1/ptm/m/n/10 ve-nience we as-sume vari-ables are re-named s.t. $\OMS/cmsy/m/
 n/10 f\OT1/cmr/bx/n/10 b \OMS/cmsy/m/n/10 [
  []
 
 
-Underfull \hbox (badness 2103) in paragraph at lines 283--294
+Underfull \hbox (badness 2103) in paragraph at lines 288--300
 \OT1/cmr/bx/n/10 x\OMS/cmsy/m/n/10 g n f\OT1/cmr/bx/n/10 q \OMS/cmsy/m/n/10 [ \
 OT1/cmr/bx/n/10 e\OMS/cmsy/m/n/10 g \OT1/cmr/m/n/10 = (\OML/cmm/m/it/10 b[]; []
  ; b[]; x[]; [] ; x[]\OT1/cmr/m/n/10 )$ \OT1/ptm/m/n/10 and $\OT1/cmr/bx/n/10 q
@@ -307,26 +307,26 @@ OT1/cmr/bx/n/10 e\OMS/cmsy/m/n/10 g \OT1/cmr/m/n/10 = (\OML/cmm/m/it/10 b[]; []
  []
 
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <7> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 381.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 392.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <9> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 381.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 392.
 
-Underfull \hbox (badness 10000) detected at line 384
+Underfull \hbox (badness 10000) detected at line 395
 [][]
  []
 
 
-Underfull \hbox (badness 1571) in paragraph at lines 389--399
+Underfull \hbox (badness 1571) in paragraph at lines 400--410
 \OT1/ptm/m/n/10 As dis-cussed in Sec-tion [], piece-wise poly-no-mial func-
  []
 
 [2] [3]
-Overfull \hbox (28.72055pt too wide) in paragraph at lines 606--606
+Overfull \hbox (17.33948pt too wide) in paragraph at lines 620--620
 [] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 731--734
+Underfull \hbox (badness 10000) in paragraph at lines 745--748
 
  []
 
@@ -351,7 +351,7 @@ File: r5.pdf Graphic file (type pdf)
 <r6.pdf, id=52, 520.94624pt x 404.51125pt>
 File: r6.pdf Graphic file (type pdf)
  <use r6.pdf>
-Overfull \hbox (6.65651pt too wide) in paragraph at lines 819--829
+Overfull \hbox (6.65651pt too wide) in paragraph at lines 833--843
  [] 
  []
 
@@ -376,7 +376,11 @@ f> <./radar_x_2_fix.pdf> <./tracker_3d_x3o1_aistat.pdf> <./tracker_3d_x5o1_aist
 at.pdf>])
 [7
 
-] (./sve.aux) ) 
+] (./sve.aux) )
+(\end occurred inside a group at level 1)
+
+### simple group (level 1) entered at line 262 ({)
+### bottom level 
 Here is how much of TeX's memory you used:
  3387 strings out of 495061
  41162 string characters out of 1182620
@@ -384,33 +388,33 @@ Here is how much of TeX's memory you used:
  6498 multiletter control sequences out of 15000+50000
  34435 words of font info for 73 fonts, out of 3000000 for 9000
  28 hyphenation exceptions out of 8191
- 32i,18n,24p,320b,440s stack positions out of 5000i,500n,10000p,200000b,50000s
-{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.enc}</usr/shar
-e/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-tex
-live/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/share/texmf-texlive/fonts/t
-ype1/public/amsfonts/cm/cmbx9.pfb></usr/share/texmf-texlive/fonts/type1/public/
-amsfonts/cm/cmex10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm
-extra/cmex9.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi10
-.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/s
-hare/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texmf-t
-exlive/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/fonts
-/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texmf-texlive/fonts/type1/publi
-c/amsfonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/c
-m/cmr5.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr6.pfb></
-usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/tex
-mf-texlive/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texmf-texlive/fo
-nts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-texlive/fonts/type1/p
-ublic/amsfonts/cm/cmsy5.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfon
-ts/cm/cmsy6.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy7.
-pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/sh
-are/texmf-texlive/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texmf-t
-exlive/fonts/type1/public/amsfonts/cm/cmti7.pfb></usr/share/texmf-texlive/fonts
-/type1/public/amsfonts/cm/cmti9.pfb></usr/share/texmf-texlive/fonts/type1/publi
-c/amsfonts/symbols/msbm10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsf
-onts/symbols/msbm7.pfb></usr/share/texmf-texlive/fonts/type1/urw/times/utmb8a.p
-fb></usr/share/texmf-texlive/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf
--texlive/fonts/type1/urw/times/utmri8a.pfb>
-Output written on sve.pdf (7 pages, 373437 bytes).
+ 32i,18n,24p,443b,490s stack positions out of 5000i,500n,10000p,200000b,50000s
+{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.enc}</usr/sha
+re/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-te
+xlive/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/share/texmf-texlive/fonts/
+type1/public/amsfonts/cm/cmbx9.pfb></usr/share/texmf-texlive/fonts/type1/public
+/amsfonts/cm/cmex10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/c
+mextra/cmex9.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi1
+0.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/
+share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texmf-
+texlive/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/font
+s/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texmf-texlive/fonts/type1/publ
+ic/amsfonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/
+cm/cmr5.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr6.pfb><
+/usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/te
+xmf-texlive/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texmf-texlive/f
+onts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-texlive/fonts/type1/
+public/amsfonts/cm/cmsy5.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfo
+nts/cm/cmsy6.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy7
+.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/s
+hare/texmf-texlive/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texmf-
+texlive/fonts/type1/public/amsfonts/cm/cmti7.pfb></usr/share/texmf-texlive/font
+s/type1/public/amsfonts/cm/cmti9.pfb></usr/share/texmf-texlive/fonts/type1/publ
+ic/amsfonts/symbols/msbm10.pfb></usr/share/texmf-texlive/fonts/type1/public/ams
+fonts/symbols/msbm7.pfb></usr/share/texmf-texlive/fonts/type1/urw/times/utmb8a.
+pfb></usr/share/texmf-texlive/fonts/type1/urw/times/utmr8a.pfb></usr/share/texm
+f-texlive/fonts/type1/urw/times/utmri8a.pfb>
+Output written on sve.pdf (7 pages, 375373 bytes).
 PDF statistics:
  193 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
