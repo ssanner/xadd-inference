@@ -115,12 +115,13 @@ OR~\cite{Mahootchi2009,Yeh1985}.  The key continuous decision is how
 much elapsed time $e$ to
 \emph{drain} (or \emph{not drain}) each reservoir to maximize
 electricity revenue over the decision-stage horizon while avoiding
-reservoir overflow and underflow.  We are unaware of prior work that
-finds an an exact closed-form non-myopic optimal policy for \emph{all}
-(continuous) reservoir levels in this setting.
+reservoir overflow and underflow.  Cast as a CSA-MDP, we 
+believe SDP provides the first approach capable of deriving
+an exact closed-form non-myopic optimal policy
+for all levels.
 
 We examine a 2-reservoir problem with
-respective levels $(l_1,l_2)\in [0,\infty]$ with reward penalties for 
+respective levels $(l_1,l_2)\in [0,\infty]^2$ with reward penalties for 
 overflow and underflow and a reward gain linear in the elapsed time $e$ for
 electricity generated in periods when the $\mathit{drain}(e)$ action
 drains water from $l_2$ to $l_1$ (the other action is 
