@@ -86,13 +86,13 @@ in~\eqref{eq:mr_discrete_trans}.  For the \emph{continuous} variables
 $x_j$ ($1 \leq j \leq m$), we represent the CPFs
 $P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ with \emph{piecewise
 linear equations} (PLEs) satisfying three properties: (i) PLEs are
-first-order \emph{Markov}, meaning that they can only condition on the
-action, current, and previous state variables, (ii) PLEs are
+can only condition on the
+action, current state, and previous state variables, (ii) PLEs are
 deterministic meaning that to be represented by probabilities they
 must be encoded using Dirac $\delta[\cdot]$ functions (example
 forthcoming), and (iii) PLEs are piecewise linear, where the piecewise
-conditions may be arbitrary logical combinations of $\vec{b}$ and
-linear inequalities over $\vec{x}$.  An example PLE has been
+conditions may be arbitrary logical combinations of $\vec{b}$, $\vec{b}'$ 
+and linear inequalities over $\vec{x}$.  An example PLE has been
 provided in~\eqref{eq:mr_cont_trans} where the use of the 
 $\delta[\cdot]$ function ensures that this is a conditional
 probability function that integrates to 1 over $x'$; In more intuitive
