@@ -1,14 +1,15 @@
 \label{sec:sdp}
 
-In this section, we extend the symbolic dynamic programming (SDP) work
-of~\cite{sanner_uai11} to the case of continuously parameterized
-actions for CSA-MDPs.  We present the general SDP framework for value
-iteration in Algorithm~\ref{alg:vi} (\texttt{VI}) and a regression
-subroutine in Algorithm~\ref{alg:regress} (\texttt{Regress}) where we
-have omitted parameters $\vec{b}$ and $\vec{x}$ from $V$ and $Q$ to
-avoid notational clutter.  The difference between this
-SDP algorithm and that in~\cite{sanner_uai11} comes in the
-continuous action parameter maximization in line 7 of \texttt{VI}.
+In this section, we extend the \emph{symbolic dynamic programming}
+(SDP) work of~\cite{sanner_uai11} to the case of continuously
+parameterized actions for CSA-MDPs.  We present the general SDP
+framework for value iteration in Algorithm~\ref{alg:vi} (\texttt{VI})
+and a regression subroutine in Algorithm~\ref{alg:regress}
+(\texttt{Regress}) where we have omitted parameters $\vec{b}$ and
+$\vec{x}$ from $V$ and $Q$ to avoid notational clutter.  The
+difference between this SDP algorithm and that in~\cite{sanner_uai11}
+comes in the continuous action parameter maximization in line 7 of
+\texttt{VI}.
 %Before we explain this contribution though, we 
 But first we recap SDP,
 which uses the \emph{case} representation and operations.
@@ -346,22 +347,19 @@ quadratic) must occur at the critical points of the function ---
 either the upper or lower bounds ($\UB$ and $\LB$) of $y$, 
 or the $\Root$ (i.e., zero) of $\frac{\partial}{\partial y} f_i$ 
 w.r.t.\ $y$ (because $f_i$ is at most quadratic, there exists 
-at most one $\Root$).  Here each of $\UB$, $\LB$, and $\Root$
-is a symbolic function of $\vec{b}$ and $\vec{x}$.  
-Here we show the computation of $\Root$:
+at most one $\Root$).  Each of $\UB$, $\LB$, and $\Root$
+is a symbolic function of $\vec{b}$ and $\vec{x}$; 
+here we show the computation of $\Root$:
 {\footnotesize 
 \begin{align*}
 \frac{\partial}{\partial y} f_i = - 2y - 2d = 0 \;\;\; \Longrightarrow \;\;\; \Root = y = -x
 \end{align*}}
 
-Given the \emph{potential} maxima points of $y = \UB$, $y = \LB$, and $y =
-\Root$ of $\frac{\partial}{\partial y} f_i(\vec{b},\vec{x},y)$ 
-w.r.t. constraints
-$\phi_i(\vec{b},\vec{x},y)$, we remark that each of 
-$\UB$, $\LB$, and $\Root$ is a symbolic function so we must 
-symbolically evaluate which yields the maximizing value $\Max$
-for this case partition:
-{\footnotesize
+Given the \emph{potential} maxima points of $y = \UB$, $y = \LB$, and
+$y = \Root$ of $\frac{\partial}{\partial y} f_i(\vec{b},\vec{x},y)$
+w.r.t. constraints $\phi_i(\vec{b},\vec{x},y)$ --- which are all
+symbolic functions --- we must symbolically evaluate which yields the
+maximizing value $\Max$ for this case partition: {\footnotesize
 \begin{align*}
 \Max =  \sq \begin{cases}
 \mbox{$\exists \Root$}  \sq: \sq & \sqm \casemax( f_i \{ y / \Root \}, f_i \{ y / \UB \}, f_i \{ y / \LB \})\\
@@ -395,9 +393,10 @@ x \leq -8: & \sqm 4 - (x + [10])^2 = -x^2 -20x -96\\
 %x \leq -8: & \sqm -x^2 -20x -96\\ 
 %\end{cases}, 4)
 \end{align*}}
-Substituted values are shown in $[\cdot]$.  
+Substituted values are subject to conditions in the cases 
+being substituted and shown above in $[\cdot]$.  
 When the $\casemax$ is evaluated, the resulting case conditions
-will have quadratic constraints (e.g., $-x^2 +20x -96 > 0$), 
+will have quadratic constraints like $-x^2 +20x -96 > 0$, 
 which must be linearized as previously discussed and shown
 for this example.
 

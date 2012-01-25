@@ -7,7 +7,7 @@ both their state and action representation.  For example, in a
 continuous spatial environment and carry out assigned scientific
 discovery tasks; in \InventoryControl\ problems~\cite{Mahootchi2009}
 for continuous resources such as petroleum products, a business must
-must decide what quantity of each item to order subject to uncertain
+decide what quantity of each item to order subject to uncertain
 demand, (joint) capacity constraints, and reordering costs; and in
 \WaterReservoir\ problems~\cite{reservoir}, a utility must manage continuous
 reservoir water levels in continuous time to avoid underflow 
@@ -23,7 +23,7 @@ transition dynamics and reward (or cost) for such problems
 cannot be piecewise --- a crucial limitation preventing the application
 of such solutions to many planning and operations research problems. 
 
-In this paper, we provide an exact symbolic dynamic programming (SDP)
+In this paper, we provide an exact \emph{symbolic dynamic programming} (SDP)
 solution to a useful subset of continuous state and action Markov
 decision processes (CSA-MDPs) with \emph{multivariate} continuous
 state and actions, discrete noise, \emph{piecewise} linear dynamics,
@@ -104,7 +104,7 @@ for this problem in Figure~\ref{fig:opt_graph}; further, in symbolic
 form, we display both the 1-step time horizon value function (the
 2-step is too large to display) \emph{and} corresponding optimal
 policy in Figure~\ref{fig:opt_val_pol}.  Here, the piecewise nature of
-the transition and reward function lead to piecewise
+the transition and reward function leads to piecewise
 structure in the value function and policy.  Yet despite the intuitive and
 simple nature of this result, we are unaware of prior methods that can
 produce such exact solutions.
