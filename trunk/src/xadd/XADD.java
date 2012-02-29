@@ -37,6 +37,7 @@ import lpsolve.LP;
 import lpsolve.LpSolve;
 import util.IntPair;
 import util.IntTriple;
+import util.MapList;
 import util.Pair;
 import cmdp.HierarchicalParser;
 
@@ -54,6 +55,7 @@ public class XADD {
 	// not at extrema of domain
 
 	public final static boolean USE_MINUS_COMP = false; // Error, all max/min comps reduce to false!
+	public final static boolean MAINTAIN_PAIRWISE_IMPLICATIONS = true;
 	public final static int MAX_BRANCH_COUNT = 1000000;
 
 	public final static double TOL = 1e-10d;
@@ -115,11 +117,18 @@ public class XADD {
 	public HashMap<XADDINode, HashSet<String>> _hmINode2Vars = new HashMap<XADDINode, HashSet<String>>();
 
 	public ArrayList<String> _alBooleanVars = new ArrayList<String>();
-	public ArrayList<String> _alContinuousVars;
+	public HashSet<String>   _hsBooleanVars = new HashSet<String>();
+	private ArrayList<String> _alContinuousVars;
+	private HashSet<String>   _hsContinuousVars;
+	public HashMap<String, Integer> _cvar2ID;
 
 	public HashMap<String, Double> _hmMinVal = new HashMap<String, Double>();
 	public HashMap<String, Double> _hmMaxVal = new HashMap<String, Double>();
 
+	// Implication Cache
+	public MapList _mlImplications = new MapList();
+	public MapList _mlNonImplications = new MapList();
+	
 	// Flush
 	public HashSet<Integer> _hsSpecialNodes = new HashSet<Integer>();
 	public HashMap<XADDNode, Integer> _hmNode2IntNew = new HashMap<XADDNode, Integer>();
@@ -131,14 +140,12 @@ public class XADD {
 		// Ensure that the 0th decision ID is invalid
 		_alOrder.add(new NullDec());
 		_alContinuousVars = new ArrayList<String>();
+		_hsContinuousVars = new HashSet<String>();
+		_cvar2ID = new HashMap<String, Integer>();
 	}
 
 	public ArrayList<String> getContinuousVarList() {
-		return _alContinuousVars;
-	}
-
-	public void setContinuousVarList(ArrayList<String> continuousVarList) {
-		_alContinuousVars = continuousVarList;
+		return (ArrayList<String>)_alContinuousVars.clone();
 	}
 
 	public int getBoolVarIndex(String bool_name) {
@@ -151,7 +158,7 @@ public class XADD {
 
 	// Note: var index can never be 0, negative var index now means negated decision
 	public int getVarIndex(Decision d, boolean create) {
-
+		
 		if (USE_CANONICAL_NODES) {
 			//System.out.println(">> Before canonical: " + d);
 
@@ -181,8 +188,53 @@ public class XADD {
 			return index;
 		else {
 			_alOrder.add(d);
-			return _alOrder.size() - 1;
+			index = _alOrder.size() - 1;
+			// d will be d_{index}
+			
+			// Boolean variables in decisions will be added by BoolDec directly.
+			// Need to explicitly maintain continuous variables for new decisions.
+			if (d instanceof ExprDec) {
+				HashSet<String> all_vars = new HashSet<String>();
+				((ExprDec)d)._expr.collectVars(all_vars);
+				for (String s : all_vars)
+					// Boolean variables would have been added immediately in BoolDec
+					// so are already in _hsBooleanVars
+					if (!_hsBooleanVars.contains(s) && !_hsContinuousVars.contains(s)) {
+						_hsContinuousVars.add(s);
+						_alContinuousVars.add(s);
+					}
+			}
+			
+			return index;
 		}
+	}
+	
+	public String showImplications() {
+		
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("Bool vars: " + _alBooleanVars + "\n");
+		sb.append("Cont vars: " + _alContinuousVars + "\n");
+		sb.append("\nDecision vars:\n");
+		
+		for (int i = 1; i < _alOrder.size(); i++) {
+			Decision d = _alOrder.get(i);
+			if (d instanceof ExprDec)
+				sb.append("[" + i + "]: " + d + "\n");
+		}
+			
+		sb.append("\nImplications:\n");
+		for (Object key : _mlImplications.keySet()) {
+			Integer ikey = (Integer)key;
+			Decision dkey = _alOrder.get(Math.abs(ikey));
+			ArrayList values = _mlImplications.getValues(key);
+			for (Object value : values) {
+				Integer ival = (Integer)value;
+				Decision dval = _alOrder.get(Math.abs(ival));
+				sb.append((ikey < 0 ? "NOT " : "") + dkey + " => " + (ival < 0 ? "NOT " : "") + dval + "\n");
+			}
+		}
+		return sb.toString();
 	}
 
 	public int getTermNode(XADDTNode n) {
@@ -210,6 +262,17 @@ public class XADD {
 			_hmNode2Int.put(node, id);
 			_hmInt2Node.put(id, node);
 			_nodeCounter++;
+			
+			// Add in all new continuous variables
+			HashSet<String> all_vars = new HashSet<String>();
+			node._expr.collectVars(all_vars);
+			for (String s : all_vars)
+				// Boolean variables would have been added immediately in BoolDec
+				// so are already in _hsBooleanVars
+				if (!_hsBooleanVars.contains(s) && !_hsContinuousVars.contains(s)) {
+					_hsContinuousVars.add(s);
+					_alContinuousVars.add(s);
+				}
 		}
 		return id;
 	}
@@ -734,15 +797,8 @@ public class XADD {
 	}
 
 	public IntTriple _tempReduceLPKey = new IntTriple(-1, -1, -1);
-	public HashMap<String, Integer> _cvar2ID = null;
 
-	public int reduceLP(int node_id, List<String> cvars) {
-		if (true /*_cvar2ID == null*/) {
-			_cvar2ID = new HashMap<String, Integer>();
-			int id = 0;
-			for (String cvar : cvars)
-				_cvar2ID.put(cvar, id++);
-		}
+	public int reduceLP(int node_id) {
 		ArrayList<Integer> test_var = new ArrayList<Integer>();
 		ArrayList<Boolean> test_dec = new ArrayList<Boolean>();
 		for (int i = 0; i < _alOrder.size(); i++) {
@@ -750,7 +806,7 @@ public class XADD {
 		}
 		return reduceLP(node_id, test_var, test_dec);
 	}
-
+	
 	private int reduceLP(int node_id, ArrayList<Integer> test_var, ArrayList<Boolean> test_dec) {
 
 		Integer ret = null;
@@ -777,12 +833,39 @@ public class XADD {
 
 		XADDINode inode = (XADDINode) n;
 
-		if (isTestImplied(test_var, test_dec, inode._var, true)) {
+		// Reduce based on pairwise interactions only
+		Boolean var_implication = null;
+		
+		if (MAINTAIN_PAIRWISE_IMPLICATIONS) {
+			
+			// Pairwise implication test only
+			for (int par_dec : test_var) {
+				par_dec = test_dec.get(par_dec) ? par_dec : -par_dec; // Negate if false
+				if (isSingleDecImplied(par_dec, inode._var))
+					var_implication = true;
+				else if (isSingleDecImplied(par_dec, -inode._var))
+					var_implication = false;
+				if (var_implication != null) 
+					break;
+			} 
+		} else {
+			
+			// Full branch implication test
+			if (isTestImplied(test_var, test_dec, inode._var, true)) {
+				var_implication = true;
+			} else if (isTestImplied(test_var, test_dec, inode._var, false)) {
+				var_implication = false;
+			}
+		}
+		
+		// Check for implied branches before doing a full reduce on both branches
+		if (var_implication == Boolean.TRUE) {
 
 			ret = reduceLP(inode._high, test_var, test_dec);
-		} else if (isTestImplied(test_var, test_dec, inode._var, false)) {
+		} else if (var_implication == Boolean.FALSE) {
 
 			ret = reduceLP(inode._low, test_var, test_dec);
+			
 		} else {
 
 			test_var.add(inode._var);
@@ -802,6 +885,53 @@ public class XADD {
 		return ret;
 	}
 
+	// Checks cache for singleton decision variable implications or computes and caches 
+	private boolean isSingleDecImplied(int par_dec, int child_dec) {
+		
+		// See if implication already tested
+		if (_mlImplications.contains(par_dec, child_dec)) {
+			return true;
+		} else if (_mlNonImplications.contains(par_dec, child_dec)) {
+			return false;
+		}
+		
+		// Otherwise, test and cache result
+		boolean par_true = par_dec > 0;
+		boolean child_true = child_dec > 0;
+		int abs_par_dec = Math.abs(par_dec);
+		int abs_child_dec = Math.abs(child_dec);
+	
+		ArrayList<Boolean> test_dec = new ArrayList<Boolean>();
+		for (int i = 0; i < _alOrder.size(); i++) {
+			test_dec.add(null);
+		}
+		
+		// Looking at par_dec => child_dec 
+		test_dec.set(abs_par_dec, par_true);
+		boolean test_implied = false;
+		ArrayList<Integer> al_index2 = new ArrayList<Integer>(Arrays.asList(abs_par_dec));
+		if (isTestImplied(al_index2, test_dec, abs_child_dec, child_true)) {
+			_mlImplications.putValue(par_dec, child_dec);
+			_mlImplications.putValue(-child_dec, -par_dec);
+			test_implied = true;
+		} else {
+			_mlNonImplications.putValue(par_dec, child_dec);
+			_mlNonImplications.putValue(-child_dec, -par_dec);				
+		}
+
+		return test_implied;
+	}
+
+	public void ensureCVarIDsUpToDate() {
+		
+		if (_cvar2ID.size() == _alContinuousVars.size())
+			return;
+
+		_cvar2ID.clear();
+		for (int id = 0; id < _alContinuousVars.size(); id++)
+			_cvar2ID.put(_alContinuousVars.get(id), id);
+	}
+	
 	private boolean isTestImplied(ArrayList<Integer> test_var, ArrayList<Boolean> test_dec, int var_id, boolean dec) {
 
 		if (test_var.size() == 0)
@@ -818,6 +948,7 @@ public class XADD {
 		// that (a > b + c) == false (prove A => B by seeing if A^~B is infeasible)
 
 		// Setup LP
+		ensureCVarIDsUpToDate();
 		int nvars = _cvar2ID.size();
 		double[] obj_coef = new double[nvars]; // default all zeros, which is what we want
 		double[] lb = new double[nvars];
@@ -1502,7 +1633,7 @@ public class XADD {
             //     (don't think this can happen... still in context of unreachable constraints)
             int max_eval = apply(max_eval_upper, max_eval_lower, MAX);
             max_eval = reduceLinearize(max_eval); 
-            max_eval = reduceLP(max_eval, _alContinuousVars); // Result should be canonical
+            max_eval = reduceLP(max_eval); // Result should be canonical
             _log.println("max of LB and UB (reduce/linearize): " + getString(max_eval));
 
             // NOTE: Constraints on root have to be multiplied in here, not at end.  -Scott
@@ -1523,12 +1654,12 @@ public class XADD {
                     max_eval_root = apply(max_eval_root, lb_xadd, PROD);
                 }
                 max_eval_root = reduceLinearize(max_eval_root); 
-                max_eval_root = reduceLP(max_eval_root, _alContinuousVars); // Result should be canonical
+                max_eval_root = reduceLP(max_eval_root); // Result should be canonical
                 
                 _log.println("constrained root substitute: " + getString(max_eval_root));
                 max_eval = apply(max_eval, max_eval_root, MAX);
                 max_eval = reduceLinearize(max_eval); 
-                max_eval = reduceLP(max_eval, _alContinuousVars); // Result should be canonical
+                max_eval = reduceLP(max_eval); // Result should be canonical
                 _log.println("max of constrained root sub and int_eval(LB/UB): " + getString(max_eval));
             }
 
@@ -1547,7 +1678,7 @@ public class XADD {
             _log.println("Before linearize: " + getString(max_eval));
             max_eval = reduceLinearize(max_eval); 
             _log.println("After linearize, before reduceLP: " + getString(max_eval));
-            max_eval = reduceLP(max_eval, _alContinuousVars); // Result should be canonical
+            max_eval = reduceLP(max_eval); // Result should be canonical
             _log.println("After linearize and reduceLP: " + getString(max_eval));
                             
             if (_runningMax == -1) 
@@ -1556,7 +1687,7 @@ public class XADD {
             	_runningMax = apply(_runningMax, max_eval, MAX);
 
             _runningMax = reduceLinearize(_runningMax);
-            _runningMax = reduceLP(_runningMax, _alContinuousVars);
+            _runningMax = reduceLP(_runningMax);
             if (_runningMax != makeCanonical(_runningMax)) {
             	System.err.println("processXADDMax ERROR: encountered non-canonical node that should have been canonical");
             	System.exit(1);
@@ -2255,6 +2386,7 @@ public class XADD {
 		public BoolDec(String var_name) {
 			_sVarName = var_name.intern();
 			_alBooleanVars.add(_sVarName);
+			_hsBooleanVars.add(_sVarName);
 		}
 
 		public int hashCode() {

@@ -27,6 +27,10 @@ import cmdp.HierarchicalParser;
  * TODO: Reintroduce policy annotation
  * TODO: Allow next-state dependent rewards
  * TODO: Allow alternate initialization of V^0 in input file
+ * TODO: Seems to be a 0 always maxed in as minimum value -- see Rover-nonlinear2, always V > 0
+ * TODO: Believe return XADDs from max_y yields 0's where we don't want them 
+ * TODO: For LB < ROOT < UB, might suppress LB < UB constraints
+ * TODO: Allow conditioning reward on next state
  **/
 public class CAMDP {
 
@@ -129,7 +133,6 @@ public class CAMDP {
 		_alContAVars = new ArrayList<String>(Intern(parser.getAVars())); // Retain order given in MDP file
 		_alContAllVars = new ArrayList<String>(_alContSVars);
 		_alContAllVars.addAll(_alContAVars);
-		_context._alContinuousVars = _alContAllVars;
 		
 		// Build cur-state var -> next-state var map
 		_hmPrimeSubs = new HashMap<String,ArithExpr>();
@@ -200,7 +203,7 @@ public class CAMDP {
 				else {
 					_maxDD = _context.apply(_maxDD, regr, XADD.MAX);
 					_maxDD = _context.reduceLinearize(_maxDD);
-					_maxDD = _context.reduceLP(_maxDD, _alContAllVars);
+					_maxDD = _context.reduceLP(_maxDD);
 		            if (_maxDD != _context.makeCanonical(_maxDD)) {
 		            	System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical");
 		            	System.exit(1);
@@ -301,7 +304,7 @@ public class CAMDP {
 	public String toString(boolean display_reward, boolean display_value) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("\nCMDP Definition:\n===============\n");
-		sb.append("CVars:       " + _context._alContinuousVars + " / " + 
+		sb.append("CVars:       " + _context.getContinuousVarList() + " / " + 
 				_alContAllVars + " = " + _hsContSVars + " + " + _hsContAVars + "\n");
 		sb.append("Min-values:  " + _context._hmMinVal + "\n");
 		sb.append("Max-values:  " + _context._hmMaxVal + "\n");
@@ -496,5 +499,7 @@ public class CAMDP {
 		int iter_used = mdp.solve(iter);
 		System.out.println("\nSolution complete, required " + 
 				iter_used + " / " + iter + " iterations.");
+		
+		System.err.println("\n\nIMPLICATIONS:\n" + mdp._context.showImplications());
 	}
 }

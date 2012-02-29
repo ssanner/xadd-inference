@@ -195,7 +195,7 @@ public class CMDP {
 				int regr = regress(_valueDD, me.getValue());
 				
 				if (REDUCE_LP) {
-					regr = _context.reduceLP(regr, _alCVars);
+					regr = _context.reduceLP(regr);
 				}
 				
 				if (DISPLAY_Q) {
@@ -235,7 +235,7 @@ public class CMDP {
 					_context.apply(_maxDD, regr, XADD.MAX));
 			
 				if (REDUCE_LP) {
-					_maxDD = _context.reduceLP(_maxDD, _alCVars);
+					_maxDD = _context.reduceLP(_maxDD);
 				}
 				
 				if(DISPLAY_MAX){
@@ -261,7 +261,7 @@ public class CMDP {
 //				g1.addNodeColor("_temp_", "lightblue");
 //				g1.launchViewer(1300, 770);
 
-				_maxDD = _context.reduceLP(_maxDD, _alCVars);
+				_maxDD = _context.reduceLP(_maxDD);
 //				Graph g2 = _context.getGraph(_maxDD);
 //				g2.addNode("_temp_");
 //				g2.addNodeLabel("_temp_", "After [" + iter + "]");

@@ -29,8 +29,8 @@ public class TestXADD {
 
 	public static void main(String[] args) throws Exception {
 
-		// TestPolyOps();
-		// if (0 <= 1) return;
+		TestPolyOps();
+		if (0 <= 1) return;
 
 		System.out.println(Double.MAX_VALUE + " , " + (-Double.MAX_VALUE));
 		/*
@@ -50,7 +50,7 @@ public class TestXADD {
 		Graph g1 = xadd_context.getGraph(ixadd);
 		g1.launchViewer();
 		
-		int reduce = xadd_context.reduceLP(ixadd,Arrays.asList("x"));
+		int reduce = xadd_context.reduceLP(ixadd);
 		g1 = xadd_context.getGraph(reduce);
 		g1.launchViewer();
 		
@@ -241,13 +241,13 @@ public class TestXADD {
 		int xadd4 = TestBuild(xadd_context, "./src/xadd/test4.xadd");
 		int xadd5 = TestBuild(xadd_context, "./src/xadd/test5.xadd");
 		int xaddrRes = xadd_context.apply(xadd4, xadd5, XADD.MAX);
-		Graph gRes = xadd_context.getGraph(xadd_context.reduceLP(xaddrRes, Arrays.asList("x1", "x2", "r1")));
+		Graph gRes = xadd_context.getGraph(xadd_context.reduceLP(xaddrRes));
 		gRes.launchViewer();
 
 		int xadd_implied = TestBuild(xadd_context, "./src/xadd/implied.xadd");
 		Graph gb = xadd_context.getGraph(xadd_implied);
 		gb.launchViewer();
-		xadd_implied = xadd_context.reduceLP(xadd_implied, Arrays.asList("x1", "x2", "r1"));
+		xadd_implied = xadd_context.reduceLP(xadd_implied);
 		Graph gb2 = xadd_context.getGraph(xadd_implied);
 		gb2.launchViewer();
 		if (true)
@@ -337,7 +337,8 @@ public class TestXADD {
 
 	public static void TestPolyOps() {
 		XADD xadd_context = new XADD();
-		int xadd1 = TestBuild(xadd_context, "src/xadd/test3.xadd");
+		//int xadd1 = TestBuild(xadd_context, "src/xadd/test2.xadd");
+		int xadd1 = TestBuild(xadd_context, "src/xadd/test7.xadd");
 		int xaddr1 = xadd_context.apply(xadd1, xadd1, XADD.SUM);
 		xadd_context.getGraph(xaddr1).launchViewer();
 		int xaddr2 = xadd_context.apply(xadd1, xadd1, XADD.MINUS);
@@ -346,7 +347,8 @@ public class TestXADD {
 		xadd_context.getGraph(xaddr3).launchViewer();
 		int xaddr4 = xadd_context.apply(xaddr3, xaddr3, XADD.PROD);
 		xadd_context.getGraph(xaddr4).launchViewer();
-
+		
+		System.err.println("\n\nIMPLICATIONS:\n" + xadd_context.showImplications());
 	}
 
 
