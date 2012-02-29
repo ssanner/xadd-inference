@@ -105,7 +105,7 @@ public class ComputeQFunction {
 		for (Integer constraint : _camdp._alConstraints)
 			q = _context.apply(q, constraint, XADD.PROD);
 		if (_camdp._alConstraints.size() > 0)
-			q = _context.reduceLP(q, _camdp._alContAllVars);
+			q = _context.reduceLP(q);
 		
 		// Optional Display
 		_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + ", " + a._actionParam + " )\n" + _context.getString(q));
