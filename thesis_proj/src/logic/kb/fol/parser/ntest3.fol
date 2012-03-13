@@ -1,0 +1,1 @@
+(!E ?x:Dog # ?y !E ?z:Cat -star=4+(?y*7/2) ^ A(b(a,b,?x,1,2.3,?x*?y+3))) | #?x:Animal ?x*?y+3 > star+-?y

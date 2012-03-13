@@ -1,0 +1,37 @@
+digraph G { 
+graph [ fontname = "Helvetica",fontsize="16",ratio = "auto",
+        size="7.5,10",ranksep="2.00" ];
+node [fontsize="16"];
+"504" [label="x >= -2",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"509" [label="b",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"508" [label="x <= 2",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"371" [label="x <= 10",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"209" [label="-96 + -20 * x - x * x (y = 10)",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"2" [label="4 (y = -x)",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"1" [label="0 (y = 0)",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"181" [label="-96 + 20 * x - x * x (y = -10)",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"457" [label="x >= -8",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"5" [label="4 - x * x (y = 0)",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"455" [label="x >= -10",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"456" [label="x <= -12",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"400" [label="x <= 12",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"399" [label="x <= 8",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"504" -> "457" [color=black,style=dashed];
+"504" -> "5" [color=black,style=solid];
+"509" -> "1" [color=black,style=solid];
+"509" -> "508" [color=black,style=dashed];
+"508" -> "504" [color=black,style=solid];
+"508" -> "400" [color=black,style=dashed];
+"371" -> "2" [color=black,style=solid];
+"371" -> "181" [color=black,style=dashed];
+"457" -> "2" [color=black,style=solid];
+"457" -> "456" [color=black,style=dashed];
+"455" -> "2" [color=black,style=solid];
+"455" -> "209" [color=black,style=dashed];
+"456" -> "1" [color=black,style=solid];
+"456" -> "455" [color=black,style=dashed];
+"400" -> "1" [color=black,style=dashed];
+"400" -> "399" [color=black,style=solid];
+"399" -> "2" [color=black,style=solid];
+"399" -> "371" [color=black,style=dashed];
+}

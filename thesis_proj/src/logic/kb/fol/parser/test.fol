@@ -1,0 +1,1 @@
+(!E ?x ~!A?y !E ?z A(b(a,b,?x,1,2.3)) ^ B | C(f(?x,?y,a)) <=> a=f(?x,4,5.5)) ^ (!E ?u ~!A?v !E ?w true) | ~false | ~true

@@ -1,0 +1,29 @@
+cvariables (x)
+min-values (-500000)
+max-values (500000)
+bvariables (g)
+ivariables()
+avariables(a)
+
+action move (-1000000<=a<=1000000)
+g' (g ([1.0]) ([x > 20] ([1.0]) ([0.0])) )
+x' ([x+a])
+
+reward (g ([0]) ([x>20]
+					
+           				([a>=0]
+           					([99 - a])
+           					([99 + a]))
+      					([a>=0]
+      						([- a])
+      						([a])))
+      				
+      						
+      				
+      					
+      						
+      )
+endaction
+discount 1.000000
+iterations 8
+

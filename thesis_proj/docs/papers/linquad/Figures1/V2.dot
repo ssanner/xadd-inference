@@ -1,0 +1,44 @@
+digraph G { 
+graph [ fontname = "Helvetica",fontsize="16",ratio = "auto",
+        size="7.5,10",ranksep="2.00" ];
+node [fontsize="16"];
+"262" [label="-2410 + -500*x -25*x*x",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"503" [label="tp",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"473" [label="11.897366596101026 + x >= 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"499" [label="12 + x <= 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"496" [label="-8 + x <= 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"501" [label="2 + x >= 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"502" [label="-2 + x <= 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"495" [label="-10 + x <= 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"498" [label="10 + x>= 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"497" [label="-12 + x<= 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"500" [label="8 + x >= 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1" [label="0",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"494" [label="-11.897366596101026 + x<= 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"199" [label="90",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"231" [label="-2410 + 500*x -25*x*x",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"9" [label="100 -25*x*x",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"_temp_" [label="V^2",fillcolor=lightblue,color=black];
+"503" -> "1" [color=black,style=solid];
+"503" -> "502" [color=black,style=dashed];
+"473" -> "262" [color=black,style=solid];
+"473" -> "1" [color=black,style=dashed];
+"499" -> "1" [color=black,style=solid];
+"499" -> "498" [color=black,style=dashed];
+"496" -> "199" [color=black,style=solid];
+"496" -> "495" [color=black,style=dashed];
+"501" -> "9" [color=black,style=solid];
+"501" -> "500" [color=black,style=dashed];
+"502" -> "501" [color=black,style=solid];
+"502" -> "497" [color=black,style=dashed];
+"495" -> "494" [color=black,style=dashed];
+"495" -> "199" [color=black,style=solid];
+"498" -> "199" [color=black,style=solid];
+"498" -> "473" [color=black,style=dashed];
+"497" -> "1" [color=black,style=dashed];
+"497" -> "496" [color=black,style=solid];
+"500" -> "199" [color=black,style=solid];
+"500" -> "499" [color=black,style=dashed];
+"494" -> "1" [color=black,style=dashed];
+"494" -> "231" [color=black,style=solid];
+}

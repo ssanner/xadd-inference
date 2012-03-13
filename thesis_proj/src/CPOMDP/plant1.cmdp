@@ -1,0 +1,54 @@
+cvariables (f p)
+min-values (0 0)
+max-values (2000 150)
+bvariables ()
+ivariables()
+ovariables(po fo)
+
+action increase
+
+p'  ([p + 12])
+f' ([f+150])
+
+observation
+po  ([0.9 * p + 1])
+fo ([1.1 * f - 15]) 
+
+reward 	([p <= 186]
+				([p>=170]
+					([f<=1120]
+						([f>=530]
+							([100])
+							([0]))
+						([0]))
+					([0]))
+				([0]))     					
+endaction
+
+action decrease
+
+p' ([p-7])
+f' ([f-100])
+
+observation
+po ([1.1 * p - 2])
+fo ([0.9 * f + 20]) 
+
+
+reward 	([p <= 186]
+				([p>=170]
+					([f<=1120]
+						([f>=530]
+							([100])
+							([0]))
+						([0]))
+					([0]))
+				([0]))
+					
+      					
+
+endaction
+
+discount 1.000000
+iterations 12
+

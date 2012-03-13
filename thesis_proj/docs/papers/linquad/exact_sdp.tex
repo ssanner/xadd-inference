@@ -1,0 +1,111 @@
+\documentclass[letterpaper]{article}
+\usepackage{aaai}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage{array}
+\usepackage{amsmath,amssymb}
+\usepackage{epsfig,subfigure}
+\usepackage[vlined,algoruled,titlenumbered,noend]{algorithm2e}
+\frenchspacing
+
+\newcommand{\MarsRover}{\textsc{Mars Rover}}
+\newcommand{\MarsRoverL}{\textsc{Mars Rover Linear}}
+\newcommand{\MarsRoverNL}{\textsc{Mars Rover Nonlinear}}
+\newcommand{\InventoryControl}{\textsc{Inventory Control}}
+\newcommand{\WaterReservoir}{\textsc{Reservoir Management}}
+\newcommand{\MultiWaterReservoir}{\textsc{Multi-Reservoir}}
+\newtheorem*{example*}{Example}
+
+\newcommand{\true}{\mathit{true}}
+\newcommand{\false}{\mathit{false}}
+\newcommand{\casemax}{\mathrm{casemax}}
+\newcommand{\casemin}{\mathrm{casemin}}
+\newcommand{\UB}{\mathit{UB}}
+\newcommand{\LB}{\mathit{LB}}
+\newcommand{\IND}{\mathit{Ind}}
+\newcommand{\CONS}{\mathit{Cons}}
+\newcommand{\Root}{\mathit{Root}}
+\newcommand{\Max}{\mathit{Max}}
+\def\argmax{\operatornamewithlimits{arg\,max}}
+\def\argmin{\operatornamewithlimits{arg\,min}}
+\newcommand{\sq}{\hspace{-1mm}}
+\newcommand{\sqm}{\hspace{-2mm}}
+
+\setcounter{secnumdepth}{0}  
+
+ \begin{document}
+% The file aaai.sty is the style file for AAAI Press 
+% proceedings, working notes, and technical reports.
+%
+\title{Symbolic Dynamic Programming for Continuous State and Action MDPs}
+\author{Anonymous}
+%\author{Zahra Zamani\\
+%NICTA \& the ANU\\
+%Canberra, Australia\\
+%{\tt zahra.zamani@anu.edu.au}
+%\And
+%Scott Sanner\\
+%NICTA \& the ANU\\
+%Canberra, Australia\\
+%{\tt ssanner@nicta.com.au}
+%\And
+%Cheng Feng\\
+%Department of Aeronautics and\\
+%Astronautics, MIT, USA\\
+%{\tt cfang@mit.edu}
+%}
+\maketitle
+\begin{abstract}
+\begin{quote}
+Many real-world decision-theoretic planning problems are naturally
+modeled using both continuous state and action (CSA) spaces, yet
+little work has provided \emph{exact} solutions for the case of
+continuous actions.  In this work, we propose a symbolic dynamic
+programming (SDP) solution to obtain the \emph{optimal closed-form}
+value function and policy for CSA-MDPs with multivariate continuous
+state \emph{and} actions, discrete noise, piecewise linear dynamics,
+and piecewise linear (or restricted piecewise quadratic) reward.  Our
+key contribution over previous SDP work is to show how the continuous
+action maximization step in the dynamic programming backup can be
+evaluated optimally and symbolically --- a task which amounts to
+\emph{symbolic} constrained optimization subject to unknown state
+parameters; we further integrate this technique to work with an
+efficient and compact data structure for SDP --- the extended
+algebraic decision diagram (XADD).  We demonstrate empirical results
+on a didactic nonlinear planning example and two domains from operations
+research to show the \emph{first automated exact solution} to these
+problems.
+\end{quote}
+\end{abstract}
+
+\section{Introduction}
+
+\input introduction.tex
+
+\section{Continuous State and Action MDPs}
+
+\input csamdp.tex
+
+\section{Symbolic Dynamic Programming (SDP)}
+
+\input sdp.tex
+
+\vspace{-3mm}
+\section{Empirical Results}
+
+\input empirical.tex
+
+\vspace{-1mm}
+\section{Related Work and Concluding Remarks}
+
+\input related_work.tex
+
+%\section{Concluding Remarks}
+
+\input conclusion.tex
+
+\bibliography{exact_sdp}
+\bibliographystyle{aaai}
+\end{document}

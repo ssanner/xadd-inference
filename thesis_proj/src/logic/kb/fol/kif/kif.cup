@@ -1,0 +1,149 @@
+/* FOPC Parser - Scott Sanner
+*/
+
+package logic.kb.fol.parser;
+
+import java_cup.runtime.*;
+import java.io.*;
+import java.util.*;
+
+import logic.kb.fol.*;
+
+parser code {:
+	
+	// Just a testing interface (loads formula from file)
+	public static void main(String args[]) {
+
+                Yylex lex = null;
+	        try {
+	           System.out.println("Opening: " + args[0]);
+	           lex = new Yylex(new FileInputStream(args[0]));
+	           parser p = new parser(lex);
+		   Symbol rval = p.parse();
+                   FOPC.Node head = (FOPC.Node)rval.value;
+	           //head.setVarID(new HashMap());
+		   System.out.println("KIF:  " + head.toKIFString());
+		   System.out.println("FOPC: " + head.toFOLString());
+                } catch (Exception e) {
+	           System.out.println("Error on line " + 
+				      ((lex != null) ? ""+lex.yyline() : "") 
+	 			      + ": " + e);
+		   e.printStackTrace();
+                }
+        }
+
+	// The main runtime method to call
+	public static FOPC.Node parse(String s) 
+ 		throws ParseException {
+
+                Yylex  lex  = null;
+		Symbol rval = null;
+	        try {
+	           lex = new Yylex(new StringReader(s));
+	           parser p = new parser(lex);
+		   rval = p.parse();
+
+                } catch (Exception e) {
+	           throw new ParseException(lex.yyline(), e.toString());
+                }
+
+                FOPC.Node head = (FOPC.Node)rval.value;
+		//head.setVarID(new HashMap());
+		return head;
+	}
+
+:}
+
+/* Terminals */
+terminal SEMI, BANG, PLUS, TIMES, LPAREN, RPAREN, DOT, COMMA, LBRACK, QST, COLON,
+         RBRACK, LESS, LESSEQ, GREATER, GREATEREQ, COUNT, AND, NOT, OR, DIV,
+         IMPLY, EQUIV, EQUAL, MOD, TRUE, FALSE, NEQUAL, EXISTS, FORALL, HIGHEST,
+         UMINUS, MINUS; 
+terminal Integer INTEGER;
+terminal Double DOUBLE;
+terminal String IDENT;
+terminal String PFNAME;
+
+/* Non-terminals */
+non terminal FOPC.Node  node;
+non terminal FOPC.Quant       quant, squant;
+non terminal FOPC.TermList    lterm, sterm;
+
+/* Precedence Definitions - Highest at bottom */
+precedence left EXISTS, FORALL, COUNT;
+precedence left EQUIV;
+precedence left IMPLY;
+precedence left OR;
+precedence left AND;
+precedence left NOT;
+precedence left EQUAL, NEQUAL, LESS, LESSEQ, GREATER, GREATEREQ;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIV, MOD;
+precedence left UMINUS;
+precedence left HIGHEST;
+
+/* Productions */
+start with node;
+
+/* SCOTT's NOTES ON PRODUCTIONS... need NODELIST, VARLIST, TERMLIST
+                                   and Java classes/constructors to handle
+node = (conn:and/or nodelist)
+node = (conn:not node)
+node = (quant:exists/forall/count varlist)
+node = (ident termlist)
+node = (=... term term)
+
+*/
+
+node ::=   LPAREN node:n1 AND node:n2      {: RESULT = new FOPC.ConnNode(FOPC.ConnNode.AND,n1,n2);   :}
+         | node:n1 OR node:n2       {: RESULT = new FOPC.ConnNode(FOPC.ConnNode.OR,n1,n2);    :}
+         | node:n1 IMPLY node:n2    {: RESULT = new FOPC.ConnNode(FOPC.ConnNode.IMPLY,n1,n2); :}
+         | node:n1 EQUIV node:n2    {: RESULT = new FOPC.ConnNode(FOPC.ConnNode.EQUIV,n1,n2); :}
+         | TRUE                     {: RESULT = new FOPC.TNode(true);      :}
+         | FALSE                    {: RESULT = new FOPC.TNode(false);     :}
+         | IDENT:p                  {: RESULT = new FOPC.PNode(false,p);   :}
+         | PFNAME:p lterm:l RPAREN  {: RESULT = new FOPC.PNode(false,p,l); :}
+         | PFNAME:p RPAREN          {: RESULT = new FOPC.PNode(false,p);   :}
+         | sterm:s1 EQUAL  sterm:s2 {: RESULT = new FOPC.PNode(false,FOPC.PNode.EQUALS,  s1,s2); :}
+         | sterm:s1 NEQUAL sterm:s2 {: RESULT = new FOPC.PNode(true,FOPC.PNode.EQUALS,   s1,s2); :}
+         | sterm:s1 LESS   sterm:s2 {: RESULT = new FOPC.PNode(false,FOPC.PNode.LESS,    s1,s2); :}
+         | sterm:s1 LESSEQ sterm:s2 {: RESULT = new FOPC.PNode(false,FOPC.PNode.LESSEQ,  s1,s2); :}
+         | sterm:s1 GREATER sterm:s2   {: RESULT = new FOPC.PNode(true,FOPC.PNode.LESSEQ,s1,s2); :}
+         | sterm:s1 GREATEREQ sterm:s2 {: RESULT = new FOPC.PNode(true,FOPC.PNode.LESS,  s1,s2); :}
+         | quant:q node:n           {: RESULT = new FOPC.QNode(q,n);         :}
+         | NOT node:n               {: RESULT = new FOPC.NNode(n);           :}
+         | LPAREN node:n RPAREN     {: RESULT = n;                           :}
+        ;
+
+sterm ::=     sterm:l MINUS sterm:r {: RESULT = new FOPC.TermList(new FOPC.TFunction("f_sub", l, r)); :}
+            | sterm:l PLUS sterm:r  {: RESULT = new FOPC.TermList(new FOPC.TFunction("f_add", l, r)); :}
+            | sterm:l MOD sterm:r   {: RESULT = new FOPC.TermList(new FOPC.TFunction("f_mod", l, r)); :}
+            | sterm:l DIV sterm:r   {: RESULT = new FOPC.TermList(new FOPC.TFunction("f_div", l, r)); :}
+            | sterm:l TIMES sterm:r {: RESULT = new FOPC.TermList(new FOPC.TFunction("f_mul", l, r)); :}
+            | INTEGER:i                 {: RESULT = new FOPC.TermList(new FOPC.TInteger(i));    :}
+            | DOUBLE:d                  {: RESULT = new FOPC.TermList(new FOPC.TScalar(d));     :}
+            | QST IDENT:i               {: RESULT = new FOPC.TermList(new FOPC.TVar(i));        :}
+            | IDENT:i                   {: RESULT = new FOPC.TermList(new FOPC.TFunction(i));   :}
+	    | PFNAME:p lterm:l RPAREN   {: RESULT = new FOPC.TermList(new FOPC.TFunction(p,l)); :}
+            | LPAREN sterm:e RPAREN   {: RESULT = e; :}
+            | LBRACK sterm:e RBRACK   {: RESULT = e; :}
+            | MINUS sterm:t           {: RESULT = new FOPC.TermList(new FOPC.TFunction("f_sub", new FOPC.TermList(new FOPC.TInteger(0)), t)); :} %prec UMINUS
+            | PLUS sterm:t            {: RESULT = t; :} %prec UMINUS
+          ;
+
+lterm ::=  sterm:s                  {: RESULT = s;                      :}
+         | sterm:s COMMA lterm:l    {: RESULT = new FOPC.TermList(s,l); :}
+        ;
+
+quant ::=  squant:s                 {: RESULT = s;                     :}
+         | squant:s quant:q         {: RESULT = new FOPC.Quant(s,q);   :}
+        ;
+
+squant ::= EXISTS QST IDENT:i       {: RESULT = new FOPC.Quant(FOPC.QNode.EXISTS, i); :}
+         | FORALL QST IDENT:i       {: RESULT = new FOPC.Quant(FOPC.QNode.FORALL, i); :}
+         | COUNT QST IDENT:i        {: RESULT = new FOPC.Quant(FOPC.QNode.COUNT, i); :}
+         | EXISTS QST IDENT:i COLON IDENT:t {: RESULT = new FOPC.Quant(FOPC.QNode.EXISTS, i, t); :}
+         | FORALL QST IDENT:i COLON IDENT:t {: RESULT = new FOPC.Quant(FOPC.QNode.FORALL, i, t); :}
+         | COUNT QST IDENT:i COLON IDENT:t  {: RESULT = new FOPC.Quant(FOPC.QNode.COUNT, i, t);  :}
+        ;
+

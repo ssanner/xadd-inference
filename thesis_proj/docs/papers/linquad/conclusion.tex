@@ -1,0 +1,54 @@
+\label{sec:conclusion}
+
+% implications of decisions, possibility of extension
+
+% while not scalable for 100's of items, these represent
+% the first general exact solution methods for capacitated
+% multi-inventory control problems
+
+% have to define exact solution and understand properties
+% before proceeding to approximate as an extension of this
+% work
+
+% bilinear issues
+
+% quadratic quite limited but useful for single continuous
+% resource or continuous time
+
+% symbolic constrained optimization -- other uses
+
+% Future work:
+%
+% - Application to Inventory (makes clear that there are
+%     simplifications possible in current solution), consider
+%     submitting to CPAIOR, Informs?
+% - Exponential Distribution for Stochasticity?
+% - Parameterized linear programming, application to graphical
+%     models or efficient LP solutions, MAP Bayesian approaches
+%     for uniforms?
+% - Affine XADD, useful for mixture of uniforms in Bayesian work.
+% - Efficient linear programming -- exploiting factorized
+%     structure in constraints using variable elimination
+% - Symbolic Policy Iteration for CSA-MDPs (good for Inventory,
+%     what other problems that have a simple policy?  Traffic?)
+% - Theoretical guarantees on (linear) XADD (minimal function, 
+%     canonical?)  Efficient LADD implementation.  Quadratic
+%     linearization would need to come in max step.  Pruning
+%     inside the LADD... implement feasibility checking.
+% - Nonlinear solutions (can we solve any more expressive problems?)
+% - Approximation
+%   * adaptively linearize the problem (especially for nonlinear, 
+%     bilinear)
+%   * XADD approximation?  Othogonal polynomials?
+
+We have presented an SDP solution for continuous state \emph{and}
+action MDPs with the key contribution of \emph{symbolic constrained
+optimization} to solve the continuous action maximization problem.  We
+believe this is the first work to propose optimal closed-form
+solutions to MDPs with \emph{multivariate} continuous state \emph{and}
+actions, discrete noise, \emph{piecewise} linear dynamics, and
+\emph{piecewise} linear (or restricted \emph{piecewise} quadratic)
+reward; further, we believe our experimental results are the first
+exact solutions to these problems to provide a closed-form optimal
+policy for all (continuous) states.
+
