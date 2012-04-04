@@ -55,7 +55,7 @@ public class XADD {
 	// not at extrema of domain
 
 	public final static boolean USE_MINUS_COMP = false; // Error, all max/min comps reduce to false!
-	public final static boolean MAINTAIN_PAIRWISE_IMPLICATIONS = true;
+	public final static boolean MAINTAIN_PAIRWISE_IMPLICATIONS = false;
 	public final static int MAX_BRANCH_COUNT = 1000000;
 
 	public final static double TOL = 1e-10d;
