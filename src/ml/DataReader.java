@@ -10,7 +10,7 @@ public class DataReader {
 	
 	private double[][] _x;	// array of input data
 	private double[] _y;	// array of targets
-	private int N=0, D=0;	// N = number of records; D = input data dimension
+	private int N = 0, D = 0;	// N = number of records; D = input data dimension
 	private String _fileName;
 	
 	// getters
@@ -19,6 +19,14 @@ public class DataReader {
 	public int nRows() { return N; }
 	public int xDim() { return D; }
 	public String fileName() { return _fileName; }
+	
+	
+	public double[] wxy(int i) {
+		double[] wxy_i = new double[D+1];
+		wxy_i[0] = y(i);
+		for (int j=1; j<D+1; j++) wxy_i[j] = x(i,j-1) * y(i);
+		return wxy_i; 
+	}
 	
 	private void readData() {
 		// read all input data to linked list data
@@ -40,22 +48,27 @@ public class DataReader {
 				}
 			}
 		}
-		catch (IOException e) { e.printStackTrace(); } 
+		catch (IOException e) { 
+			N = 0;
+		} 
 		
-		// assign data to array x,y
-		D = D - 1;
-		_x = new double[N][D];
-		_y = new double[N];
-		int i = 0;
-		Iterator<double[]> itr = data.iterator();
-		while (itr.hasNext()) {
-			double[] row = itr.next();
-			for (int j=0; j<D; j++) 
-				_x[i][j] = row[j];
-			_y[i] = row[D];
-			if (_y[i] <= 0) _y[i] = -1;	//forces y[i] = -1 or 1
-			if (_y[i] > 0) _y[i] = 1;
-			i++;
+		if (N>0)
+		{
+			// assign data to array x,y
+			D = D - 1;
+			_x = new double[N][D];
+			_y = new double[N];
+			int i = 0;
+			Iterator<double[]> itr = data.iterator();
+			while (itr.hasNext()) {
+				double[] row = itr.next();
+				for (int j=0; j<D; j++) 
+					_x[i][j] = row[j];
+				_y[i] = row[D];
+				if (_y[i] <= 0) _y[i] = -1;	//forces y[i] = -1 or 1
+				if (_y[i] > 0) _y[i] = 1;
+				i++;
+			}
 		}
 	}
 	
