@@ -33,7 +33,6 @@ public class Visualizer extends JFrame implements KeyListener{
     private double scale;		// graphic scale factor relative to input data range
     private double max1 = 0, max2 = 0; // max value of data dimension x1, x2
 	private double min1 = Double.MAX_VALUE, min2 = Double.MAX_VALUE; // min of x1, x2
-	private int loss = 0;
 	
 	
 	// constructors
@@ -71,19 +70,11 @@ public class Visualizer extends JFrame implements KeyListener{
 			this.x1 = col1;
 			this.x2 = col2;
 			initializeParams();
-			standardizeW();
-			calculateLoss();
 			
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		}
 	}
-	
-	private void standardizeW() {
-		//standardize w0 = -1.0
-		w[x1+1] = - w[x1+1] / w[0];
-		w[x1+2] = - w[x1+2] / w[0];
-		w[0] = - 1.0;
-	}
+
 	
 	// set initial w if required, and find the scale of coordinates
 	private void initializeParams() {
@@ -115,6 +106,10 @@ public class Visualizer extends JFrame implements KeyListener{
     		w[x1+1] = x1m1 - x1m0;
     		w[x2+1] = x2m1 - x2m0;
     		w[0] = -w[x1+1] * (x1m0 + x1m1)/2 - w[x2+1] * (x2m0 + x2m1)/2;
+    		//standardize w0 = 1.0
+    		w[x1+1] = w[x1+1] / w[0];
+    		w[x1+2] = w[x1+2] / w[0];
+    		w[0] = 1.0;
     	}
     	scale = (dim.width - 2 * margin) / Math.max(max1 - min1, max2 - min2);
     }
@@ -149,22 +144,23 @@ public class Visualizer extends JFrame implements KeyListener{
     
     // evaluate loss function of row i with current w
     private int evalLoss(int i) {
-    	double f = w[0] + dr.x(i,x1) * w[x1+1] + dr.x(i,x2)*w[x2+1];
-    	
-    	// only true if w0 < 0, else needs to reverse.
+    	double f = w[0];
+    	for (int j=0; j<dr.xDim(); j++)
+    		f += + dr.x(i,j) * w[j+1];
     	if (f * dr.y(i) < 0) return 1;
     	return 0;
     }
     
-    private void calculateLoss() {
-    	loss = 0;
+    private int f_loss() {
+    	int loss = 0;
     	for (int i=0; i<dr.nRows(); i++)
     		loss += evalLoss(i);
+    	return Math.min(loss, dr.nRows() - loss);
     }
     
     private void drawLoss(Graphics g) {
     	g.setColor(Color.MAGENTA);
-    	g.drawString("LOSS = " + loss, dim.width - margin - 50, dim.height - 20);
+    	g.drawString("LOSS = " + f_loss(), dim.width - margin - 50, dim.height - 20);
     }
     
     private void drawAxes(Graphics g) {
@@ -256,11 +252,9 @@ public class Visualizer extends JFrame implements KeyListener{
 			wchanged = true;
 		}
 		
-		if (wchanged) {
-			standardizeW();
-			calculateLoss();
+		if (wchanged) 
 			this.paint(this.getGraphics());
-		}
+		
 	}
 	
     public static void main(String args[]) {
