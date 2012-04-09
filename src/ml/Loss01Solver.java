@@ -34,27 +34,29 @@ public class Loss01Solver {
 	private DataReader dr;	// reads and stores classification data
 	private String dataFileName;
 	
-	private boolean[] c;	// Truth values of optimal solution, for each data point
-							// c[i] = true, iff sum(x_ij w_ij) * y_i < 0 ( => f_loss(i) = 1)
-	
-	// experiment with search all paths
-	private boolean[] c_min;
-	private int f_min = Integer.MAX_VALUE;
+	private boolean foundSolution;
+	private boolean[] c, c_min;	// current/min truth values of optimal solution, for each data point
+								// c_min[i] = true, iff sum(x_ij w_ij) * y_i < 0 ( => f_loss(i) = 1)
+	private int floss, f_min;	// current/min value of 01 loss function
 	
 	int nw;					// number of parameters w0 ... w_nw
 	private double[] w;		// possible value of w0..wD for optimal solution 
-	private boolean foundSolution;
+
 	double[] obj_coef = new double[nw]; // objective coef matrix
 	
 	private int xadd_id;			// stores the final xadd id 
 	private XADD xadd_context;		// and the xadd context
 
+	
+	
 	// getters
 	public boolean hasSolution() { return foundSolution; }
 	public double[] getSolution() { 
 		if (isValidSolution(w)) return w; 
 		return null;
 	}
+	
+	
 	
 	// helper functions
 	
@@ -83,17 +85,12 @@ public class Loss01Solver {
 			System.out.println("No solution has been found.");
 		else {
 			
-			int cost = 0;
-			System.out.println("Conditions:");
-			for (int i=0; i<dr.nRows(); i++) {
-				System.out.println(row2Expr(i, c[i]));
-				if (c[i]) cost++;
-			}
-			
-			System.out.println("Minimal f_loss value: " + cost);
-			
+			System.out.println("Minimal f_loss value: " + f_min + " attained under conditions:");
+			for (int i=0; i<dr.nRows(); i++) 
+				System.out.println(row2Expr(i, c_min[i]));
+		
 			if (!isValidSolution(w)) 
-				System.out.println("Unable to determine w (possibly infinite solution).");
+				System.out.println("Unable to determine w (unbounded).");
 			else {
 				System.out.print("Possible solution: ");
 				for (int j=0; j<w.length; j++) 
@@ -166,39 +163,25 @@ public class Loss01Solver {
 	}
 	
 	
-	private void findSolution(int r, boolean rTruthValue) {
-		if (r >= dr.nRows()) {
-			foundSolution = true;
-		}
-		else {
-			c[r] = rTruthValue;
-			if (isSolvable(1.0, r) || isSolvable(-1.0, r)) {
-				findSolution(r+1, false);
-				if (!foundSolution)
-					findSolution(r+1, true);
+	private void findSolution(int r) {
+		
+		if (r >= dr.nRows()) { 	
+			if (isSolvable(1.0, r-1) || isSolvable(-1.0, r-1)) {
+				// found a better solution
+				foundSolution = true;
+				f_min = floss;
+				System.arraycopy(c, 0, c_min, 0, c.length);
+				System.out.println("new f_min = " + f_min);
 			}
 		}
-	}
-	
-	private void searchAllSolutions(int r, int floss) {
-		if (floss < f_min) {
-			if (r >= dr.nRows()) {
-				if (floss < f_min && (isSolvable(1.0, r-1) || isSolvable(-1.0, r-1))) {
-					foundSolution = true;
-					for (int i=0; i<c.length; i++) c_min[i] = c[i];
-					f_min = floss;
-					System.out.println("F LOSS VALUE = " + floss);
-					System.out.println("Conditions:");
-					for (int i=0; i<dr.nRows(); i++) {
-						System.out.println(row2Expr(i, c[i]));
-					}
-				}
-			}
-			else {
-				c[r] = false;
-				searchAllSolutions(r+1, floss);
+		else { //search all possible paths
+			findSolution(r+1);
+			if (floss + 1 < f_min) {	//prune paths with floss > f_min
 				c[r] = true;
-				searchAllSolutions(r+1, floss+1);
+				floss++;
+				findSolution(r+1);
+				c[r] = false;
+				floss--;
 			}
 		}
 	}
@@ -209,10 +192,10 @@ public class Loss01Solver {
 	// functions for finding the best possible w
 
 	private double[] getBestW() {
-		double[] bw = calculateW(1.0);
-		if (!isValidSolution(bw))
-			bw = calculateW(-1.0);
-		return bw;
+		double[] bestw = calculateW(1.0);
+		if (!isValidSolution(bestw))
+			bestw = calculateW(-1.0);
+		return bestw;
 	}
 	
 	private double[] calculateW(double w0) {
@@ -225,8 +208,8 @@ public class Loss01Solver {
 		lp._solver.setVerbose(1);
 		lp.addEqConstraint(lp.genUnitVector(0), w0);
 		
-		for (int i=0; i< c.length; i++) {
-			if (c[i]) 
+		for (int i=0; i< c_min.length; i++) {
+			if (c_min[i]) 
 				lp.addLTConstraint(dr.wxy(i), 0.0);
 			else 
 				lp.addGeqConstraint(dr.wxy(i), 0.0);
@@ -252,26 +235,26 @@ public class Loss01Solver {
 		
 		dataFileName = filename;
 		dr = new DataReader(dataFileName);
+		
 		if (dr.nRows() > 0) {
 			
-			c = new boolean[dr.nRows()];
 			nw = dr.xDim() + 1;			// set number of params w
 			obj_coef = new double[nw];
 			for (int j=0; j<nw; j++) 	// set objective = min sum (w_i)
 				obj_coef[j] = 1.0; 
+			
+			// search all possible solutions and store the best
+			foundSolution = false;
 
-			// find solution by visiting only false branch to leaf
-			//findSolution(0, false);
-			//if (!foundSolution) findSolution(0, true);
-			
-			// search all possible solution and store the best
+			c = new boolean[dr.nRows()];
 			c_min = new boolean[dr.nRows()];
-			searchAllSolutions(0, 0);
-			System.out.println("minimal floss: " + f_min);
-			for (int i=0; i<c.length; i++) c[i] = c_min[i];
 			
-			if (foundSolution)
-				w = getBestW();
+			floss = 0;
+			f_min = Integer.MAX_VALUE;
+			
+			findSolution(0);
+			
+			if (foundSolution) w = getBestW();
 		}
 	}
 	
