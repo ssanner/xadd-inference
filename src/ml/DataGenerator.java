@@ -60,10 +60,10 @@ public class DataGenerator {
 		N = nrows;
 		D = xvars;
 		fname = filename;
-		double[] c0 = randomPoint(radius/4d); // center class 0
-		double[] c1 = randomPoint(radius/4d); // center of class 1
-		double[] r0 = randomPoint(radius/4d);	// radius of class 0
-		double[] r1 = randomPoint(radius/4d);	// radius of class 1
+		double[] c0 = randomPoint(radius/3d); // center class 0
+		double[] c1 = randomPoint(radius/3d); // center of class 1
+		double[] r0 = randomPoint(radius/6d);	// radius of class 0
+		double[] r1 = randomPoint(radius/6d);	// radius of class 1
 		
 		try {
 			FileWriter outFile = new FileWriter(fname);

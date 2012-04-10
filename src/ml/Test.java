@@ -19,7 +19,7 @@ public class Test {
 			System.out.println("Generated " + dg.nRows() + " data points to: " + dg.fileName());
 		
 		// run Loss01Solver
-		Loss01Solver ls = new Loss01Solver(dataFileName);
+		Loss01SimpleSolver ls = new Loss01SimpleSolver(dataFileName);
 		if (!ls.hasSolution())
 			System.out.println("Loss01Solver couldn't solve the problem.");
 		else {

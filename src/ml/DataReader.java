@@ -15,6 +15,7 @@ public class DataReader {
 	
 	// getters
 	public double x(int i, int j) { return _x[i][j]; }
+	public double[] x(int i) { return _x[i]; }
 	public double y(int i) { return _y[i]; }
 	public int nRows() { return N; }
 	public int xDim() { return D; }
