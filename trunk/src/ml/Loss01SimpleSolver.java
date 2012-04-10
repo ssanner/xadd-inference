@@ -13,8 +13,23 @@ import lpsolve.LP;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
+import xadd.XADD;
+import xadd.XADD.ArithExpr;
+import xadd.XADD.BoolDec;
+import xadd.XADD.CompExpr;
+import xadd.XADD.Decision;
+import xadd.XADD.DeltaFunctionSubstitution;
+import xadd.XADD.DoubleExpr;
+import xadd.XADD.ExprDec;
+import xadd.XADD.TautDec;
+import xadd.XADD.VarExpr;
+import xadd.XADD.XADDINode;
+import xadd.XADD.XADDLeafMax;
+import xadd.XADD.XADDNode;
+import xadd.XADD.XADDTNode;
+import cmdp.HierarchicalParser;
 
-public class Loss01Solver {
+public class Loss01SimpleSolver {
 
 	private DataReader dr;	// reads and stores classification data
 	private String dataFileName;
@@ -23,14 +38,15 @@ public class Loss01Solver {
 	private boolean[] c, c_min;	// current/min truth values of optimal solution, for each data point
 								// c_min[i] = true, iff sum(x_ij w_ij) * y_i < 0 ( => f_loss(i) = 1)
 	private int floss, f_min;	// current/min value of 01 loss function
-	private ConvexPolytope cp0, cp1;
 	
 	int nw;					// number of parameters w0 ... w_nw
 	private double[] w;		// possible value of w0..wD for optimal solution 
 
-	double[] obj_coef = new double[nw]; // objective coef matrix
+	double[] obj_coef; 		// objective coef matrix
+	double[] ub, lb; 		// upper bound and lower bound of the solution
 	
-
+	private int xadd_id;			// stores the final xadd id 
+	private XADD xadd_context;		// and the xadd context
 
 	
 	
@@ -86,11 +102,51 @@ public class Loss01Solver {
 	}
 	
 	
+	
+	
+	// functions for building XADD
+
+	public void showXADDGraph() {
+		build01LossXADD();
+		Graph g1 = xadd_context.getGraph(xadd_id);
+		g1.launchViewer();
+	}
+	
+	private int buildXADDForRow(int i) {
+		String expr = row2Expr(i, true);
+		ArrayList l = new ArrayList();
+		ArrayList l1 = new ArrayList();
+		ArrayList l2 = new ArrayList();
+		l.add(expr);
+		l1.add("1");
+		l.add(l1);
+		l2.add("0");
+		l.add(l2);
+		int id = xadd_context.buildCanonicalXADD(l);
+		return id;
+	}
+	
+	private void build01LossXADD() {
+		
+		xadd_context = new XADD();
+		
+		xadd_id = buildXADDForRow(0);
+		for (int i=1; i<dr.nRows(); i++) {
+			int id2 = buildXADDForRow(i);
+			xadd_id = xadd_context.apply(xadd_id, id2, XADD.SUM);
+			xadd_id = xadd_context.reduceLP(xadd_id);
+		}
+	}
+	
+	
+	
+	
 	// functions for finding optimal solution
 	
 	private boolean isSolvable(double w0, int r) {
 		
-		LP lp = new LP(nw, obj_coef, LP.MINIMIZE);		//set objective
+		LP lp = new LP(nw, lb, ub, obj_coef, LP.MINIMIZE);
+		//LP lp = new LP(nw, obj_coef, LP.MINIMIZE);		//set objective
 		lp._solver.setVerbose(1);
 		for (int i=0; i<=r; i++) {						//add constraints
 			if (c[i])
@@ -109,77 +165,23 @@ public class Loss01Solver {
 	}
 	
 	
-	
-	// add heuristic: if a pointed is added to cp0 or cp1, we can calculate 
-	// the number of minimum miss classification = points inside pt0, but
-	// has true label=1  +  points inside cp1 but have true label=0.
 	private void findSolution(int r) {
 		
-		if (r >= dr.nRows()) { 			// reached a leaf <=> found better solution, because of the way
-			foundSolution = true;		// cp0, cp1 are constructed with no intersection => solvability
-			f_min = floss;				// is guaranteed!
-			System.arraycopy(c, 0, c_min, 0, c.length);
-			System.out.println("new f_min = " + f_min);
+		if (r >= dr.nRows()) { 	
+			if (isSolvable(1.0, r-1) || isSolvable(-1.0, r-1)) {
+				// found a better solution
+				foundSolution = true;
+				f_min = floss;
+				System.arraycopy(c, 0, c_min, 0, c.length);
+				System.out.println("new f_min = " + f_min);
+			}
 		}
-		
-		else if (cp0.contains(dr.x(r))) { // x_r belong to class 0
-			if (dr.y(r) > 0) { // r is miss classified in this path
-				if (floss + 1 < f_min) {
-					floss ++;
-					c[r] = true;
-					findSolution(r+1);
-					c[r] = false;
-					floss --;
-				}
-			}
-			else
-				findSolution(r+1);
-		}
-		
-		else if (cp1.contains(dr.x(r))) { // x_r belong to class 1
-			if (dr.y(r) < 0) { // r is miss classified in this path
-				if (floss + 1 < f_min) {
-					floss ++;
-					c[r] = true;
-					findSolution(r+1);
-					c[r] = false;
-					floss --;
-				}
-			}
-			else
-				findSolution(r+1);
-		}
-		
-		else { // not sure which class is x_r --> try all paths
-			
-			// assume point r belong to its correct class dr.y(r)
-			if (dr.y(r) > 0) {		// x_r is class 1, add x to polytope 1
-				cp1.addVertix(dr.x(r));
-				findSolution(r+1);
-				cp1.popVertix();
-			}
-			else {					// x_r is class 0, add x to polytope 0
-				cp0.addVertix(dr.x(r));
-				findSolution(r+1);
-				cp0.popVertix();
-			}
-			
-			// assume point r classified incorrectly to class -dr.y(r)
+		else { //search all possible paths
+			findSolution(r+1);
 			if (floss + 1 < f_min) {	//prune paths with floss > f_min
-				floss++;
 				c[r] = true;
-				
-				if (dr.y(r) > 0) {	// x_r miss classified = class 0, add x to polytope 0
-					cp0.addVertix(dr.x(r));
-					findSolution(r+1);
-					cp0.popVertix();
-				}
-				else {				// x_r miss classified = class 1, add x to polytope 1
-					cp1.addVertix(dr.x(r));
-					findSolution(r+1);
-					cp1.popVertix();
-				}
-				
+				floss++;
+				findSolution(r+1);
 				c[r] = false;
 				floss--;
 			}
@@ -204,7 +206,8 @@ public class Loss01Solver {
 		
 		for (int j=0; j<nw; j++) { obj_coef[j] = 1.0; }
 		
-		LP lp = new LP(nw, obj_coef, LP.MINIMIZE);
+		LP lp = new LP(nw, lb, ub, obj_coef, LP.MINIMIZE);
+		//LP lp = new LP(nw,obj_coef, LP.MINIMIZE);
 		lp._solver.setVerbose(1);
 		lp.addEqConstraint(lp.genUnitVector(0), w0);
 		
@@ -231,7 +234,7 @@ public class Loss01Solver {
 	
 	
 	// constructor
-	public Loss01Solver(String filename) {
+	public Loss01SimpleSolver(String filename) {
 		
 		dataFileName = filename;
 		dr = new DataReader(dataFileName);
@@ -240,16 +243,19 @@ public class Loss01Solver {
 			
 			nw = dr.xDim() + 1;			// set number of params w
 			obj_coef = new double[nw];
-			for (int j=0; j<nw; j++) 	// set objective = min sum (w_i)
-				obj_coef[j] = 1.0; 
+			ub = new double[nw];
+			lb = new double[nw];
+			for (int j=0; j<nw; j++) {	// set objective = min sum (w_i)
+				obj_coef[j] = 1.0;
+				lb[j] = -1e4;
+				ub[j] = 1e4;
+			}
 			
 			// search all possible solutions and store the best
 			foundSolution = false;
 
 			c = new boolean[dr.nRows()];
 			c_min = new boolean[dr.nRows()];
-			cp0 = new ConvexPolytope(dr.xDim(), dr.nRows());
-			cp1 = new ConvexPolytope(dr.xDim(), dr.nRows());
 			
 			floss = 0;
 			f_min = Integer.MAX_VALUE;
@@ -263,7 +269,8 @@ public class Loss01Solver {
 	
 	public static void main(String[] args) {
 		String fname = "./src/ml/data_test.txt";
-		Loss01Solver ls = new Loss01Solver(fname);
+		Loss01SimpleSolver ls = new Loss01SimpleSolver(fname);
+		//ls.showXADDGraph();	// will cause calculation of XADD -> slow!
 		ls.showSolution();
 		Visualizer viz = new Visualizer(fname, ls.getSolution());
 		viz.pack();
