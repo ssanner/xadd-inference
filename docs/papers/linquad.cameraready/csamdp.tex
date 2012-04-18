@@ -1,0 +1,187 @@
+\label{sec:csamdp}
+
+%We first introduce our restricted class of 
+%continuous state and action Markov decision
+%processes (CSA-MDPs) followed by a description
+%of the mathematical solution of such problems.
+
+%\subsection{Factored Representation}
+
+In our CSA-MDPs, states are represented by vectors of variables
+$(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$.  We assume
+that each $b_i \in \{ 0,1 \}$ ($1 \leq i \leq n$) is boolean$\,$
+and each $x_j \in \mathbb{R}$ ($1 \leq j \leq
+m$) is continuous.  We also assume a finite set of $p$ actions $A = \{
+a_1(\vec{y}_1), \ldots, a_p(\vec{y}_p) \}$, where 
+$\vec{y}_k \in \mathbb{R}^{|\vec{y}_k|}$ ($1
+\leq k \leq p$) denote continuous parameters for 
+action $a_k$.
+
+A CSA-MDP model requires the following: (i) a joint state transition model
+$P(\vec{b}',\vec{x}'|\cdots,a,\vec{y})$, which specifies the
+probability of the next state $(\vec{b}',\vec{x}')$ conditioned on a
+subset of the previous and next state and action $a(\vec{y})$; (ii) a
+reward function $R(\vec{b},\vec{x},a,\vec{y})$, which specifies the
+immediate reward obtained by taking action $a(\vec{y})$ in state
+$(\vec{b},\vec{x})$; and (iii) a discount factor $\gamma, \; 0 \leq
+\gamma \leq 1$.
+%\footnote{If time is explicitly included as one of the
+%continuous state variables, $\gamma = 1$ is typically used, unless
+%discounting by horizon (different from the state variable time) is
+%still intended.}  
+A policy $\pi$ specifies the action $a(\vec{y}) =
+\pi(\vec{b},\vec{x})$ to take in each state $(\vec{b},\vec{x})$.  Our
+goal is to find an optimal sequence of finite horizon-dependent
+policies
+%\footnote{We assume a finite horizon $H$ in this
+%paper, however in cases where our SDP algorithm converges
+%in finite time, the resulting value function and 
+%corresponding policy are optimal for $H=\infty$. 
+% For finitely bounded value
+%with $\gamma = 1$, the forthcoming SDP algorithm may terminate in
+%finite time, but is not guaranteed to do so; for $\gamma < 1$, an
+%$\epsilon$-optimal policy for arbitrary $\epsilon$ can be computed by
+%SDP in finite time.
+%} 
+$\Pi^* = (\pi^{*,1},\ldots,\pi^{*,H})$ that
+maximizes the expected sum of discounted rewards over a horizon $h \in
+H; H \geq 0$:
+\begin{align}
+V^{\Pi^*}(\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| \vec{b}_0,\vec{x}_0 \right]. \label{eq:vfun_def}
+\end{align}
+Here $r^h$ is the reward obtained at horizon $h$ following $\Pi^*$ where 
+we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
+ 
+CSA-MDPs as defined above are naturally factored~\cite{boutilier99dt}
+in terms of state variables $(\vec{b},\vec{x},\vec{y})$; as such,
+transition structure can be exploited in the form of a dynamic Bayes
+net (DBN)~\cite{dbn} where the conditional probabilities
+$P(b_i'|\cdots)$ and $P(x_j'|\cdots)$ for each next state variable can
+condition on the action, current and next state.  We assume
+there are no \emph{synchronic arcs} (variables that condition on each
+other in the same time slice) within the binary $\vec{b}$ or
+continuous variables $\vec{x}$, but we allow synchronic arcs from
+$\vec{b}$ to $\vec{x}$.\footnote{Synchronic arcs between variables
+within $\vec{b}$ or within $\vec{x}$ can be accommodated if the
+forthcoming Algorithm~\ref{alg:regress} (\texttt{Regress}) is modified
+to multiply and marginalize-out multiple next-state variables in one
+elimination step according to the DBN structure.}  Hence we can factorize 
+the joint transition model as
+{\footnotesize
+\begin{equation}
+P(\vec{b}',\vec{x}'|\vec{b},\vec{x},a,\vec{y}) = 
+\prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}). \nonumber %\label{eq:dbn} 
+\end{equation}}
+% can always linearize a quadratic decision (give example), 
+% more general reward: parameterized quadratically constrained 
+%   quadratic programs
+% transition: stochasticity would mean int_n V(x,n) (= { x + n) P(n)
+
+We call the conditional probabilities
+$P(b_i'|\vec{b},\vec{x},a,\vec{y})$ for \emph{binary} variables $b_i$
+($1 \leq i \leq n$) conditional probability functions (CPFs) --- not
+tabular enumerations --- because in general these functions can
+condition on both discrete and continuous state as
+in~\eqref{eq:mr_discrete_trans}.  For the \emph{continuous} variables
+$x_j$ ($1 \leq j \leq m$), we represent the CPFs
+$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ with \emph{piecewise
+linear equations} (PLEs) satisfying three properties: (i) PLEs 
+can only condition on the
+action, current state, and previous state variables, (ii) PLEs are
+deterministic meaning that to be represented by probabilities they
+must be encoded using Dirac $\delta[\cdot]$ functions (example
+forthcoming), and (iii) PLEs are piecewise linear, where the piecewise
+conditions may be arbitrary logical combinations of $\vec{b}$, $\vec{b}'$ 
+and linear inequalities over $\vec{x}$.  An example PLE has been
+provided in~\eqref{eq:mr_cont_trans} where the use of the 
+$\delta[\cdot]$ function ensures that this is a conditional
+probability function that integrates to 1 over $x'$; In more intuitive
+terms, one can see that this $\delta[\cdot]$ is a simple way to encode
+the PLE transition $x' = \left\{ \ldots \right.$ in the form of 
+$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$.
+
+%It is important at this point to qualify the extent of stochasticity
+%permitted in this restriction of CSA-MDPs.  
+While it will be clear
+that our restrictions do not permit general stochastic transition
+noise (e.g., Gaussian noise as in LQG control), they do permit
+discrete noise in the sense that
+$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ may condition on
+$\vec{b'}$, which are stochastically sampled according to their CPFs.
+We note that this representation effectively allows modeling of
+continuous variable transitions as a mixture of $\delta$ functions,
+which has been used frequently in previous exact continuous state MDP
+solutions~\cite{feng04,hao09}.
+% TODO: Not li05 here (allowed PWC probability), another?
+
+% Future work: To incorporate more general
+% forms of noise would generally lead to increase in order
+% of polynomials
+
+We allow the reward function $R(\vec{b},\vec{x},a,\vec{y})$ to be either
+(i) a general piecewise linear function (boolean or linear conditions
+and linear values) such as
+\begin{align}
+R(\vec{b},\vec{x},a,\vec{y}) = \begin{cases}
+b \land x_1 \leq x_2 + 1 : & 1 - x_1 + 2x_2 \\
+\neg b \lor x_1 > x_2 + 1:     & 3x_1 + 2x_2 \\
+\end{cases} \label{eq:linear_reward}
+\end{align}
+or (ii) a piecewise quadratic function of univariate state 
+and a linear function of univariate action parameters 
+as demonstrated in \MarsRover~\eqref{eq:mr_reward}.  
+%While these constraints on the transition and reward functions could
+%be relaxed, 
+These transition and reward constraints will ensure that all derived
+functions in the solution of these CSA-MDPs adhere to the reward 
+constraints.
+%retain boolean or linear conditions.
+
+%ensure piecewise linear boundaries that can be checked for consistency
+%using a linear constraint feasibility checker, which we will later
+%see is crucial for efficiency.
+
+%In the final section, we discuss the
+%computational implications of relaxing the above restrictions on the
+%transition and reward functions.
+
+%For now, with our CSA-MDP defined as above, we
+%proceed to discuss how to solve for it's optimal finite horizon value
+%function and policy.
+
+\subsection{Solution Methods}
+
+\label{sec:soln}
+
+Now we provide a continuous state generalization of {\it value
+iteration}~\cite{bellman}, which is a dynamic programming algorithm
+for constructing optimal policies.  It proceeds by constructing a
+series of $h$-stage-to-go value functions $V^h(\vec{b},\vec{x})$.
+Initializing $V^0(\vec{b},\vec{x}) = 0$) we define the quality
+$Q_a^{h}(\vec{b},\vec{x},\vec{y})$ of taking action $a(\vec{y})$ in state
+$(\vec{b},\vec{x})$ and acting so as to obtain
+$V^{h-1}(\vec{b},\vec{x})$ thereafter as the following:
+\vspace{-4mm}
+{\footnotesize
+\begin{align}
+& Q_a^{h}(\vec{b},\vec{x},\vec{y}) = \Bigg[ R(\vec{b},\vec{x},a,\vec{y}) + \gamma \cdot \label{eq:qfun} \\ 
+& \sum_{\vec{b}'} \hspace{-1.0mm} \int \hspace{-1.0mm} \left( \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \right) \hspace{-1.0mm} V^{h-1}(\vec{b}',\vec{x}') d\vec{x}'  \hspace{-0.2mm} \Bigg] \nonumber
+\end{align}}
+Given $Q_a^h(\vec{b},\vec{x})$ for each $a \in A$, we can proceed
+to define the $h$-stage-to-go value function as follows:
+\begin{align}
+V^{h}(\vec{b},\vec{x}) & = \max_{a \in A} \max_{\vec{y} \in \mathbb{R}^{|\vec{y}|}} \left\{ Q^{h}_a(\vec{b},\vec{x},\vec{y}) \right\} \label{eq:vfun}
+\end{align}
+
+If the horizon $H$ is finite, then the optimal value function is
+obtained by computing $V^H(\vec{b},\vec{x})$ and the optimal
+horizon-dependent policy $\pi^{*,h}$ at each stage $h$ can be easily
+determined via $\pi^{*,h}(\vec{b},\vec{x}) = \argmax_a
+\argmax_{\vec{y}} Q^h_a(\vec{b},\vec{x},\vec{y})$.  If the horizon $H
+= \infty$ and the optimal policy has finitely bounded value, then
+value iteration can terminate at horizon $h$ if $V^{h} = V^{h-1}$;
+then $V^\infty = V^h$ and $\pi^{*,\infty} = \pi^{*,h}$.
+
+From this \emph{mathematical} definition, we next 
+show how to \emph{compute}~\eqref{eq:qfun} and \eqref{eq:vfun} 
+for the previously defined CSA-MDPs.

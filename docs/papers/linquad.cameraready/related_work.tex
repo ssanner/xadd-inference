@@ -1,0 +1,32 @@
+This work is an extension of SDP~\cite{sanner_uai11} that handled
+continuous state and \emph{discrete actions}, which itself built on the
+continuous state, discrete action work of~\cite{boyan01,feng04,li05}.
+%There has been prior work on approximate solutions to continuous state
+%MDPs~\cite{munos02,phase07} and even continuous state and action
+%MDPs~\cite{kveton06}, which might inform future approximate extensions
+%of this work.  
+In control theory, linear-quadratic Gaussian (LQG) control~\cite{lqgc}
+using linear dynamics with continuous actions, Gaussian noise, and quadratic
+reward is most closely related.  However, these exact solutions do
+not extend to discrete and continuous systems with \emph{piecewise}
+dynamics or reward as shown in~\eqref{eq:mr_discrete_trans},
+\eqref{eq:mr_cont_trans}, and~\eqref{eq:mr_reward}.
+%Perhaps the most practical extension
+%for future work would to combine SDP with the initial state focused
+%dynamic programming techniques~\cite{hao09} to increase exact solution
+%efficiency when the initial state is known.
+%
+%While it should be theoretically possible to relax some of the 
+%constraints of our setting to nonlinear dynamics or more general
+%nonlinear rewards, we have carefully chosen our restrictions 
+%to ensure \emph{linear piecewise boundaries}, which permit the use
+%of fast linear feasibility checkers (for XADD pruning) that has proved
+%critical for efficiency in problems like \InventoryControl.  Hence we
+%believe this work carefully balances the tradeoff between expressivity
+%and computational efficiency.  
+Combining this work with initial state focused techniques~\cite{hao09}
+and focused approximations that exploit optimal value
+structure~\cite{apricodd} or further
+afield~\cite{munos02,kveton06,phase07} are promising directions for
+future work.
+
