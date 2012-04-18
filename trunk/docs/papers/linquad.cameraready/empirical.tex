@@ -1,0 +1,222 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% policy2, v2plot.pdf, v9plot
+% annotation?
+\begin{figure*}[tbp!]
+%\vspace{-2mm}
+\centering
+\includegraphics[width=0.30\textwidth]{Figures/policy-iteration2-3.pdf}
+\includegraphics[width=0.30\textwidth]{Figures/V2.pdf}
+\includegraphics[width=0.30\textwidth]{Figures/V9.pdf}
+\vspace{-2mm}
+\caption{\footnotesize 
+\WaterReservoir: 
+{\it (left)} Policy $\mathit{no}$-$\mathit{drain}(e)=\pi^{2,*}(l_1,l_2)$ 
+showing on the z-axis the elapsed time $e$ that should be executed 
+for $\mathit{no}$-$\mathit{drain}$ conditioned on the state; 
+{\it (middle)} $V^2(l_1,l_2)$; 
+{\it (right)} $V^9(l_1,l_2)$.
+}
+\label{fig:v2plots}
+\vspace{-5mm}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% v9plot.pdf, Q-drain, Q-noDrain.pdf
+%\begin{figure*}[t]
+%\centering
+%\includegraphics[width=0.33\textwidth]{Figures/policy-iteration3-3.pdf}
+%\includegraphics[width=0.33\textwidth]{Figures/V3.pdf}
+%\includegraphics[width=0.33\textwidth]{Figures/V9.pdf}
+%\caption{%\footnotesize 
+%Policy and Value of third iteration (Drain) and value of iteration 9.
+%}
+%\label{fig:v3plots}
+%\vspace{-3mm}
+%\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
+\begin{figure}[tbp!]
+\vspace{-2mm}
+\centering
+%\subfigure{
+\includegraphics[width=0.42\textwidth]{Figures/space1.pdf}\\
+\vspace{-2mm}
+\includegraphics[width=0.42\textwidth]{Figures/time1.pdf}
+%}
+\vspace{-2mm}
+\caption{\footnotesize \InventoryControl: space and elapsed time (between current and previous horizon) vs. horizon.
+% comparing 
+%1,2 or 3 States and actions (SA) with Deterministic (DD) 
+%or Stochastic (SD) demand and no-pruning}.
+}
+\label{fig:invC}
+\vspace{-4mm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\label{sec:results}
+ 
+We evaluated SDP using XADDs on the didactic nonlinear
+\MarsRover\ example and two problems from Operations Research (OR) --- 
+\InventoryControl\ and \WaterReservoir --- described below.\footnote{While 
+space limitations prevent a self-contained
+description of all domains, we note that all Java source code and a
+human/machine readable file format for all domains needed to reproduce
+the results in this paper can be found online at
+\texttt{http://code.google.com/p/xadd-inference}.}
+Space precludes showing 
+more results for \MarsRover\ than in Figures~\ref{fig:opt_graph}
+and~\ref{fig:opt_val_pol}; we note that SDP efficiently solves it
+for arbitrary horizons.
+
+{\bf \InventoryControl:} Inventory control problems (how much of an
+item to reorder subject to capacity constraints, demand, and 
+optimization criteria) date back to the 1950's with
+Scarf's seminal optimal solution to the \emph{single-item capacitated
+inventory control} (SCIC) problem~\cite{Scarf_Karlin58}.
+\emph{Multi-item joint capacitated inventory} (MJCIC) control (upper limits
+on total storage of all items) has proved to be an NP-hard problem and
+as a consequence, most solutions resort to some form of
+approximation~\cite{bitran,wusd10}; indeed, we are unaware of any 
+work which claims to find an exact closed-form non-myopic
+optimal policy for \emph{all} (continuous) inventory states for MJCIC 
+under linear reordering costs and linear holding costs; these 
+problems can be easily modeled as CSA-MDPs and solved optimally
+with SDP.  
+
+We analyze deterministic- and
+stochastic-demand (resp. DD and SD) variants of the SCIC and MJCIC; 
+for each number of items $n \in \{
+1,2,3 \}$ the state (inventory levels) is $\vec{x} \in [0,\infty]^n$
+and the action (reorder amounts) is $\vec{y} \in [0,\infty]^n$.
+There is a high demand variable $d \in \{ \mathit{true},\mathit{false} \}$
+that toggles with probability $0.3$.  
+Orders are made at one month intervals and we solve for a horizon up
+to $h=6$ months.  In a 2-item problem, the transition function 
+for state $x_1$ is
+{\footnotesize
+\vspace{-2mm}
+\begin{align*}
+x'_1 & = \begin{cases}
+d  \wedge (x_1 + a_1 + x_2 - 150 \leq 200) : & x_1 + a_1 - 150 \\
+d  \wedge (x_1 + a_1 + x_2 - 150 \geq 200) : & x_1 - 150  \\
+\neg d \wedge (x_1 + a_1 + x_2 - 50 \leq 200): & x_1 + a_1 - 50    \\
+\neg d \wedge (x_1 + a_1 + x_2 - 50 \geq 200): & x_1 - 50    \\
+\end{cases}
+\end{align*}}
+%This simply indicates that $x'_1$ updates as the current
+%stock plus the reordered amount minus the sold quantity, with
+%the conditions handling cases where the demand could and could
+%not be met.
+
+The reward is the sum $R_1 + R_2$ where $R_i$ 
+specifies the income for demand of inventory item $x_i$ minus a constant
+reordering $\mathit{cost}_i$ per unit ordered:
+{\footnotesize
+\begin{align*}
+R_i & = \begin{cases}
+d \wedge (x_i \geq 150) : & 150 - \mathit{cost}_i*a_i \\
+d \wedge \neg(x_i \geq 150) :&   x_i - \mathit{cost}_i*a_i \\
+\neg d \wedge (x_i \geq 50) :& 50 - \mathit{cost}_i*a_i  \\
+\neg d \wedge \neg(x_i \geq 50) :& x_1 - \mathit{cost}_i*a_i  \\
+\end{cases}
+\end{align*}}
+%end added
+Figure~\ref{fig:invC} shows a time and space analysis.  
+Here, we see that linear feasbility
+checking/pruning in the XADD is crucial -- we cannot solve beyond
+$h=2$ without it for 1 item!  While solving for larger numbers of
+items and SD (rather than DD) both increase time and space, 
+the solutions quickly reach quiescence indicating structural
+convergence.
+
+%{\footnotesize
+%\begin{align*}
+%x'_1 & = \begin{cases}
+%d \wedge (x_1 + a_1 - 150 \leq 200) : & x_1 + a_1 - 150 \\
+%d \wedge (x_1 + a_1 - 150 \geq 200) : & x_1 - 150 \\
+%\neg d \wedge (x_1 + a_1 - 50 \leq 200): & x_1 + a_1 - 50 \\
+%\neg d \wedge (x_1 + a_1 - 50 \geq 200): & x_1 - 50 \\
+%\end{cases}
+%\end{align*}}
+
+{\bf \WaterReservoir:} Reservoir management is also well-studied in
+OR~\cite{Mahootchi2009,Yeh1985}.  The key continuous decision is how
+much elapsed time $e$ to
+\emph{drain} (or \emph{not drain}) each reservoir to maximize
+electricity revenue over the decision-stage horizon while avoiding
+reservoir overflow and underflow.  Cast as a CSA-MDP, we 
+believe SDP provides the first approach capable of deriving
+an exact closed-form non-myopic optimal policy
+for all levels.
+
+We examine a 2-reservoir problem with
+levels $(l_1,l_2)\in [0,\infty]^2$ with reward penalties for 
+overflow and underflow and a reward gain linear in the elapsed time $e$ for
+electricity generated in periods when the $\mathit{drain}(e)$ action
+drains water from $l_2$ to $l_1$ (the other action is 
+$\mathit{no}$-$\mathit{drain}(e)$); we assume deterministic rainfall
+replenishment.  The reward is
+%added
+{\footnotesize
+\begin{align*}
+R & = \begin{cases}
+(l_1 \leq 4500) \wedge (l_2 \leq 4500) \wedge (l_1 \geq 50) &:e\\
+(l_1 \leq 4500) \wedge (l_2 \leq 4500) \wedge \neg (l_1 \geq 50)& :  -100 + e \\
+%(l_1 \leq 4500) \wedge \neg(l_2 \leq 4500): & 0 \\
+%\neg(l_1 \leq 4500) : & 0 \\
+else &: 0\\
+\end{cases}
+\end{align*}}
+The transition function for levels of the $\mathit{drain}$ action are
+{\footnotesize 
+\begin{align*}
+l_1' & =(450 * e + l_1 -1000 * e + 500 * e) \\
+l_2'& =(450 * e + l_2 - 500 * e) \\
+t'& =(t+e),
+\end{align*}}
+while for $\mathit{no}$-$\mathit{drain}$ action, the $\mathit{500 * e}$ term is dropped.
+
+In Figure~\ref{fig:v2plots}, we show a plot of 
+the optimal closed-form policy
+at $h=2$: the solution interleaves $\mathit{drain}(e)$ and 
+$\mathit{no}$-$\mathit{drain}(e)$ where even horizons are the latter;
+here we see that we avoid draining for the longest elapsed time $e$ 
+when $l_2$ is low (wait for rain to replenish) and $l_1$ is high (draining
+water into it could overflow it).  $V^2(l_1,l_2)$ and $V^9(l_1,l_2)$
+show the progression of convergence from horizon $h=2$ to $h=9$ ---
+low levels of $l_1$ and $l_2$ allow the system to generate electricity
+for the longest total elapsed time over 9 decision stages.
+
+
+% or put complete description here: 
+%The transition function is demonstrated below: 
+%{\footnotesize
+%\begin{align*}
+%l_1'  = 400 * e + l_1 -700 * e + 500 * e \\
+%l_2'  = 400 * e + l_2 - 500 * e \\
+%\end{align*}
+%}
+
+%Here we take draining as the act of discharging water levels per
+%time-step from the upper-stream reservoir to the down-stream reservoir
+%($500 * e$). A constant amount of discharge is always considered for
+%the down-stream to ensure all electricity demands are fulfilled.  The
+%amount of rain (r) is considered as a constant which affects both
+%reservoirs at the time of discharge.
+
+%The reward function for both actions considers the safe range of
+%[50,4500] as the safe water levels and assigns a positive reward of
+%$e$ for the action of draining, and no rewards ( but also no penalty)
+%for not draining. If the next state is not in the safe range, a huge
+%penalty of -1+e6 is assigned as the reward.
+%
+%{\footnotesize
+%\begin{align*}
+%(l_1\leq 4500 - 200 * e) \wedge (l_2 \leq 4500 +100 *e) \\
+%\wedge (l_1\geq 50 - 200 * e) \wedge (l_2 \geq 50 +100 *e) : e \\
+%\end{align*}
+%}

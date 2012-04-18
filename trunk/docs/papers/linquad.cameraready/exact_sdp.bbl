@@ -1,0 +1,165 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Arrow, Karlin, and
+  Scarf}{1958}]{Scarf_Karlin58}
+Arrow, K.; Karlin, S.; and Scarf, H.
+\newblock 1958.
+\newblock {\em Studies in the mathematical theory of inventory and production}.
+\newblock Stanford University Press.
+
+\bibitem[\protect\citeauthoryear{Athans}{1971}]{lqgc}
+Athans, M.
+\newblock 1971.
+\newblock The role and use of the stochastic linear-quadratic-gaussian problem
+  in control system design.
+\newblock {\em IEEE Transaction on Automatic Control} 16(6):529--552.
+
+\bibitem[\protect\citeauthoryear{Bahar \bgroup et al.\egroup
+  }{1993}]{bahar93add}
+Bahar, R.~I.; Frohm, E.; Gaona, C.; Hachtel, G.; Macii, E.; Pardo, A.; and
+  Somenzi, F.
+\newblock 1993.
+\newblock {A}lgebraic {D}ecision {D}iagrams and their applications.
+\newblock In {\em {IEEE} /{ACM} International Conference on {CAD}}.
+
+\bibitem[\protect\citeauthoryear{Bellman}{1957}]{bellman}
+Bellman, R.~E.
+\newblock 1957.
+\newblock {\em Dynamic Programming}.
+\newblock Princeton, NJ: Princeton University Press.
+
+\bibitem[\protect\citeauthoryear{Bitran and Yanasse}{1982}]{bitran}
+Bitran, G.~R., and Yanasse, H.
+\newblock 1982.
+\newblock Computational complexity of the capacitated lot size problem.
+\newblock {\em Management Science} 28(10):1271--81.
+
+\bibitem[\protect\citeauthoryear{Boutilier, Dean, and
+  Hanks}{1999}]{boutilier99dt}
+Boutilier, C.; Dean, T.; and Hanks, S.
+\newblock 1999.
+\newblock Decision-theoretic planning: Structural assumptions and computational
+  leverage.
+\newblock {\em {JAIR}} 11:1--94.
+
+\bibitem[\protect\citeauthoryear{Boutilier, Reiter, and Price}{2001}]{fomdp}
+Boutilier, C.; Reiter, R.; and Price, B.
+\newblock 2001.
+\newblock Symbolic dynamic programming for first-order {MDPs}.
+\newblock In {\em {IJCAI-01}},  690--697.
+
+\bibitem[\protect\citeauthoryear{Boyan and Littman}{2001}]{boyan01}
+Boyan, J., and Littman, M.
+\newblock 2001.
+\newblock Exact solutions to time-dependent {MDPs}.
+\newblock In {\em Advances in Neural Information Processing Systems {NIPS-00}},
+   1026--1032.
+
+\bibitem[\protect\citeauthoryear{Bresina \bgroup et al.\egroup
+  }{2002}]{bresina02}
+Bresina, J.~L.; Dearden, R.; Meuleau, N.; Ramkrishnan, S.; Smith, D.~E.; and
+  Washington, R.
+\newblock 2002.
+\newblock Planning under continuous time and resource uncertainty:a challenge
+  for ai.
+\newblock In {\em Uncertainty in Artificial Intelligence (UAI-02)}.
+
+\bibitem[\protect\citeauthoryear{Dean and Kanazawa}{1989}]{dbn}
+Dean, T., and Kanazawa, K.
+\newblock 1989.
+\newblock A model for reasoning about persistence and causation.
+\newblock {\em Computational Intelligence} 5(3):142--150.
+
+\bibitem[\protect\citeauthoryear{Feng \bgroup et al.\egroup }{2004}]{feng04}
+Feng, Z.; Dearden, R.; Meuleau, N.; and Washington, R.
+\newblock 2004.
+\newblock Dynamic programming for structured continuous markov decision
+  problems.
+\newblock In {\em Uncertainty in Artificial Intelligence ({UAI-04})},
+  154--161.
+
+\bibitem[\protect\citeauthoryear{Hoey \bgroup et al.\egroup }{1999}]{spudd}
+Hoey, J.; St-Aubin, R.; Hu, A.; and Boutilier, C.
+\newblock 1999.
+\newblock {SPUDD}: Stochastic planning using decision diagrams.
+\newblock In {\em {UAI-99}},  279--288.
+
+\bibitem[\protect\citeauthoryear{Kveton, Hauskrecht, and
+  Guestrin}{2006}]{kveton06}
+Kveton, B.; Hauskrecht, M.; and Guestrin, C.
+\newblock 2006.
+\newblock Solving factored mdps with hybrid state and action variables.
+\newblock {\em Journal Artificial Intelligence Research (JAIR)} 27:153--201.
+
+\bibitem[\protect\citeauthoryear{Lamond and Boukhtouta}{2002}]{reservoir}
+Lamond, B., and Boukhtouta, A.
+\newblock 2002.
+\newblock Water reservoir applications of markov decision processes.
+\newblock In {\em International Series in Operations Research and Management
+  Science, Springer}.
+
+\bibitem[\protect\citeauthoryear{Li and Littman}{2005}]{li05}
+Li, L., and Littman, M.~L.
+\newblock 2005.
+\newblock Lazy approximation for solving continuous finite-horizon mdps.
+\newblock In {\em National Conference on Artificial Intelligence {AAAI-05}},
+  1175--1180.
+
+\bibitem[\protect\citeauthoryear{Mahootchi}{2009}]{Mahootchi2009}
+Mahootchi, M.
+\newblock 2009.
+\newblock {\em Storage System Management Using Reinforcement Learning
+  Techniques and Nonlinear Models}.
+\newblock Ph.D. Dissertation, University of Waterloo,Canada.
+
+\bibitem[\protect\citeauthoryear{Marecki, Koenig, and Tambe}{2007}]{phase07}
+Marecki, J.; Koenig, S.; and Tambe, M.
+\newblock 2007.
+\newblock A fast analytical algorithm for solving markov decision processes
+  with real-valued resources.
+\newblock In {\em International Conference on Uncertainty in Artificial
+  Intelligence {IJCAI}},  2536--2541.
+
+\bibitem[\protect\citeauthoryear{Meuleau \bgroup et al.\egroup }{2009}]{hao09}
+Meuleau, N.; Benazera, E.; Brafman, R.~I.; Hansen, E.~A.; and Mausam.
+\newblock 2009.
+\newblock A heuristic search approach to planning with continuous resources in
+  stochastic domains.
+\newblock {\em Journal Artificial Intelligence Research (JAIR)} 34:27--59.
+
+\bibitem[\protect\citeauthoryear{Remi~Munos}{2002}]{munos02}
+Remi~Munos, A.~M.
+\newblock 2002.
+\newblock Variable resolution discretization in optimal control.
+\newblock {\em Machine Learning} 49, 2--3:291--323.
+
+\bibitem[\protect\citeauthoryear{Sanner, Delgado, and {de
+  Barros}}{2011}]{sanner_uai11}
+Sanner, S.; Delgado, K.~V.; and {de Barros}, L.~N.
+\newblock 2011.
+\newblock Symbolic dynamic programming for discrete and continuous state mdps.
+\newblock In {\em Proceedings of the 27th Conference on Uncertainty in {AI}
+  ({UAI-2011})}.
+
+\bibitem[\protect\citeauthoryear{St-Aubin, Hoey, and
+  Boutilier}{2000}]{apricodd}
+St-Aubin, R.; Hoey, J.; and Boutilier, C.
+\newblock 2000.
+\newblock {APRICODD}: Approximate policy construction using decision diagrams.
+\newblock In {\em {NIPS-2000}},  1089--1095.
+
+\bibitem[\protect\citeauthoryear{Wu, Shi, and Duffie}{2010}]{wusd10}
+Wu, T.; Shi, L.; and Duffie, N.~A.
+\newblock 2010.
+\newblock An hnp-mp approach for the capacitated multi-item lot sizing problem
+  with setup times.
+\newblock {\em IEEE T. Automation Science and Engineering} 7(3):500--511.
+
+\bibitem[\protect\citeauthoryear{Yeh}{1985}]{Yeh1985}
+Yeh, W.~G.
+\newblock 1985.
+\newblock Reservoir management and operations models: A state-of-the-art
+  review.
+\newblock {\em Water Resources research} 21,12:1797–1818.
+
+\end{thebibliography}

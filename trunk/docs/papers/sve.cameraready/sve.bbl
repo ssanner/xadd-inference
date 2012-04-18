@@ -1,0 +1,108 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Bahar \bgroup et al.\egroup
+  }{1993}]{bahar93add}
+Bahar, R.~I.; Frohm, E.; Gaona, C.; Hachtel, G.; Macii, E.; Pardo, A.; and
+  Somenzi, F.
+\newblock 1993.
+\newblock {A}lgebraic {D}ecision {D}iagrams and their applications.
+\newblock In {\em {IEEE} /{ACM} International Conference on {CAD}}.
+
+\bibitem[\protect\citeauthoryear{Cobb, Shenoy, and
+  Rum\'{\i}}{2006}]{cobb_approx_mtes}
+Cobb, B.~R.; Shenoy, P.~P.; and Rum\'{\i}, R.
+\newblock 2006.
+\newblock Approximating probability density functions in hybrid Bayesian
+  networks with mixtures of truncated exponentials.
+\newblock {\em Statistics and Computing} 16(3):293--308.
+
+\bibitem[\protect\citeauthoryear{Doucet, De~Freitas, and
+  Gordon}{2001}]{particle_filters}
+Doucet, A.; De~Freitas, N.; and Gordon, N., eds.
+\newblock 2001.
+\newblock {\em {Sequential Monte Carlo methods in practice}}.
+\newblock Springer.
+
+\bibitem[\protect\citeauthoryear{Jordan \bgroup et al.\egroup
+  }{1999}]{variational}
+Jordan, M.~I.; Ghahramani, Z.; Jaakkola, T.~S.; and Saul, L.~K.
+\newblock 1999.
+\newblock An introduction to variational methods for graphical models.
+\newblock {\em Mach. Learn.} 37:183--233.
+
+\bibitem[\protect\citeauthoryear{Kschischang, Frey, and
+  Loeliger}{2001}]{factor_graph}
+Kschischang, F.~R.; Frey, B.~J.; and Loeliger, H.~A.
+\newblock 2001.
+\newblock {Factor graphs and the sum-product algorithm}.
+\newblock {\em IEEE Transactions on Information Theory} 47(2):498--519.
+
+\bibitem[\protect\citeauthoryear{Lunn \bgroup et al.\egroup }{2000}]{bugs}
+Lunn, D.; Thomas, A.; Best, N.; and Spiegelhalter, D.
+\newblock 2000.
+\newblock {WinBUGS} -- a bayesian modelling framework: concepts, structure, and
+  extensibility.
+\newblock {\em Statistics and Computing} 10:325--337.
+
+\bibitem[\protect\citeauthoryear{Minka}{2001}]{minka_ep}
+Minka, T.
+\newblock 2001.
+\newblock Expectation propagation for approximate bayesian inference.
+\newblock In {\em {UAI}-01},  362--36.
+
+\bibitem[\protect\citeauthoryear{Moral, Rum{\'\i}, and
+  Salmer{\'o}n}{2001}]{moral_mtes}
+Moral, S.; Rum{\'\i}, R.; and Salmer{\'o}n, A.
+\newblock 2001.
+\newblock Mixtures of truncated exponentials in hybrid {Bayesian} networks.
+\newblock In {\em ECSQARU'01},  156--167.
+
+\bibitem[\protect\citeauthoryear{Moral, Rum{\'\i}, and
+  Salmer{\'o}n}{2003}]{moral_tree_mtes}
+Moral, S.; Rum{\'\i}, R.; and Salmer{\'o}n, A.
+\newblock 2003.
+\newblock Approximating conditional mte distributions by means of mixed trees.
+\newblock In {\em ECSQARU'03},  173--183.
+
+\bibitem[\protect\citeauthoryear{Rum\'{\i} and
+  Salmer\'{o}n}{2005}]{penniless_tree_mte}
+Rum\'{\i}, R., and Salmer\'{o}n, A.
+\newblock 2005.
+\newblock Penniless propagation with mixtures of truncated exponentials.
+\newblock In {\em ECSQARU'05},  39--50.
+
+\bibitem[\protect\citeauthoryear{Sanner, Delgado, and {de
+  Barros}}{2011}]{uai11}
+Sanner, S.; Delgado, K.~V.; and {de Barros}, L.~N.
+\newblock 2011.
+\newblock Symbolic dynamic programming for discrete and continuous state mdps.
+\newblock In {\em {UAI-2011}}.
+
+\bibitem[\protect\citeauthoryear{Thrun \bgroup et al.\egroup
+  }{2000}]{thrun_mcl}
+Thrun, S.; Fox, D.; Burgard, W.; and Dellaert, F.
+\newblock 2000.
+\newblock Robust monte carlo localization for mobile robots.
+\newblock {\em Artificial Intelligence} 128(1-2):99--141.
+
+\bibitem[\protect\citeauthoryear{Weiss and Freeman}{1999}]{Weiss99correctnesof}
+Weiss, Y., and Freeman, W.~T.
+\newblock 1999.
+\newblock Correctnes of belief propagation in gaussian graphical models of
+  arbitrary topology.
+\newblock {\em Neural Computation} 13:2173--2200.
+
+\bibitem[\protect\citeauthoryear{Welch and Bishop}{1995}]{kalman_filter}
+Welch, G., and Bishop, G.
+\newblock 1995.
+\newblock An introduction to the kalman filter.
+\newblock Technical report, University of North Carolina at Chapel Hill, Chapel
+  Hill, NC, USA.
+
+\bibitem[\protect\citeauthoryear{Zhang and Poole}{1996}]{varelim}
+Zhang, N.~L., and Poole, D.
+\newblock 1996.
+\newblock Exploiting causal independence in bayesian network inference.
+\newblock {\em J. Artif. Intell. Res. (JAIR)} 5:301--328.
+
+\end{thebibliography}

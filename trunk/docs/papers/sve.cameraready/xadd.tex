@@ -1,0 +1,98 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+
+\newcommand{\EXP}{\text{EXP}}
+\newcommand{\ind}[1]{\mathbb{I}[#1]}
+
+\begin{document}
+We would like to calculate the following integral for two variables  as:
+\begin{equation}
+\int_{-\infty}^{\infty} \int_{-\infty}^{\infty} \delta(v=x_1)\ind {\wedge_p\ x_2>\phi_p(x_1)} e_1e_2 \ dx_2dx_1
+\end{equation}
+where 
+\begin{eqnarray}
+e_i = \sum_{j=1}^{n_i} c_{i_j}x_i^j + c_{i_0}
+\end{eqnarray}
+which can be written as:
+\begin{equation}
+\int_{l_1}^{u_1} \delta(v=x_1)e_1\left( \int_{l_2}^{u_2} \ind {x_2-\phi(x_1)>0} e_2 \ dx_2\right)dx_1
+\end{equation}
+where $l_1\leq x_1\leq u_1,\ l_2\leq x_2\leq u_2$
+and replacing $x_2=z-\phi(x_1)$ will lead to 
+\begin{equation}
+\int_{l_1}^{u_1} \delta(v=x_1)e_1\left( \sum_{k=1}^{n_i} \frac{c_{i_k}}{i+1}(l_j-u_j)^{i+1} + c_{i_0}(u_j-l_j)  \right) \left|_{\min_p\phi_p(x_1)-u_2}^{\max_p\phi_p(x_1)-l_2} \right. dx_1
+\end{equation}
+this can be written in following cases:
+\begin{equation}
+\label{case1}
+\left\lbrace
+\begin{aligned}
+&\phi_1(x_i)-l_j > \phi_2(x_i)-l_j > 0 \wedge \ldots \wedge \phi_1(x_i)-l_j > \phi_2(x_i)-l_j > 0 \wedge \phi_1(x_i)-u_j > 0  &&:  \sum_{k=1}^{n_i} \frac{c_{i_k}}{i+1}(l_j-u_j)^{i+1} + c_{i_0}(u_j-l_j) \\
+&\phi_1(x_i)-l_j > 0 \wedge \phi_1(x_i)-u_j \leq 0 &&:  \sum_{k=1}^{n_i} \frac{c_{i_k}}{i+1}(l_j-x_i)^{i+1} + c_{i_0}(x_i-l_j) \\
+&\phi_1(x_i)-l_j \leq 0 \wedge \phi_1(x_i)-u_j > 0 &&:  \sum_{k=1}^{n_i} \frac{c_{i_k}}{i+1}(x_i-u_j)^{i+1} + c_{i_0}(u_j-x_i) \\ 
+&\phi_1(x_i)-l_j \leq 0 \wedge \phi_1(x_i)-u_j \leq 0 &&:  0
+\end{aligned}
+\right .
+\end{equation}
+
+
+\newpage
+
+\begin{algorithm}[h!]
+\caption{Integral: This procedure computs the integral}
+\label{alg1}
+\begin{algorithmic}
+\STATE \textbf{Input:} An expression whose integral is required.
+\FORALL {case $\in$ cases}
+\STATE $\EXP(x_i)$:=arrangeExpression(case) \COMMENT{So that the overall statement is segmented}
+\STATE a := computeEXP($\EXP(x_i)$)
+\STATE newcase:=XADD(a)
+\STATE Integral(newcase)
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[h!]
+\caption{computeEXP: Computes the given expression $\EXP(x_i)$}
+\label{alg2}
+\begin{algorithmic}
+%\INPUT: An expression EXP
+\FORALL{ $token(x_i)\in\EXP(x_i)$ }
+\IF {$token(x_i)=\delta(v=f(x_i))$} 
+	\STATE $v:= f(x_i)$
+    \COMMENT{$x_j$ is the variable not in the current integral}
+\ELSE 
+	\STATE append($\delta(v=f(x_j))$)
+\ENDIF
+	\IF {$token(x)=\ind{\phi(x_j)-x>0}$}
+		  \STATE $z:=\phi(x_j)-x_i \Rightarrow x_i = \phi(x_j)-z$
+		  \STATE $e_i = \sum_{k=1}^{n_i} c_{i_k}x_i^k + c_{i_0}$ 
+		  \COMMENT{Replace z into $e_i$ and change the bounds, then build a new case expression}
+		 \STATE append(Equation \ref{case1})	
+	\ENDIF
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+\end{document}
+
+%
+%
+%
+%	  \IF{ $\phi(x_j)-l_i> 0$ \AND $\phi(x_j)-u_i > 0$}
+%			   \STATE $\EXP = \sum_{k=1}^{n_i} \frac{c_{i_k}}{k+1}(l_i-u_i)^{k+1} + c_{i_0}(u_i-l_i)$
+%		  \ELSE 
+%		  	\IF{ $\phi(x_j)-l_i > 0$ \AND $\phi(x_j)-u_i\leq 0$}
+%			  \STATE $\EXP \sum_{k=1}^{n_i} \frac{c_{i_k}}{k+1}(l_i-x_j)^{k+1} + c_{i_0}(x_j-l_i)$
+%		  	\ENDIF
+%		  \ELSE 
+%		  	\IF{ $\phi(x_j)-l_i \leq 0$ \AND $\phi(x_j)-u_i > 0$}
+%			  \STATE $\EXP \sum_{k=1}^{n_i} \frac{c_{i_k}}{k+1}(x_j-u_i)^{k+1} + c_{i_0}(u_i-x_j)$
+%		  	\ENDIF
+%		  \ELSE
+%		  	\STATE $\EXP 0$
+%		\ENDIF
