@@ -30,6 +30,7 @@ public class SVE {
 	public ArrayList<String> _alVariableOrder = null;
 	public XADD _context      = null;
 	public Query _lastQuery   = null;
+	public ArrayList<Integer> _alVariableResultSaveNodes = new ArrayList<Integer>();
 	
 	public SVE(GraphicalModel gm) {
 		_gm = gm;
@@ -129,6 +130,16 @@ public class SVE {
 			factors.addAll(factors_without_var);
 			factors.add(xadd_marginal);
 			System.out.println(" - remaining factors: " + factors.size());
+			
+			// Flush caches
+			_context.clearSpecialNodes();
+			for (Integer xadd : _alVariableResultSaveNodes)
+				_context.addSpecialNode(xadd);
+			for (Factor f : _gm._alFactors)
+				_context.addSpecialNode(f._xadd);
+			for (Factor f : factors)
+				_context.addSpecialNode(f._xadd);
+			_context.flushCaches();
 		}
 		
 		// Done variable elimination, have a set of factors just over query vars,
@@ -149,6 +160,8 @@ public class SVE {
 					q._hmBVarAssign + ", " + q._hmCVarAssign + ")");
 			Export3DData(norm_result, q._sFilename);
 		}
+		
+		_alVariableResultSaveNodes.add(norm_result._xadd);
 		
 		return norm_result;
 	}
@@ -272,6 +285,10 @@ public class SVE {
 	}
 
 	private void Export3DData(Factor norm_result, String filename) {
+		Export3DData(norm_result, null, filename);
+	}
+		
+	private void Export3DData(Factor norm_result, Factor divisor, String filename) {
 		PrintStream ps_x = null;
 		PrintStream ps_y = null;
 		PrintStream ps_z = null;
@@ -317,6 +334,13 @@ public class SVE {
 				static_dvars.put(varX, x);
 				static_dvars.put(varY, y);
 				double z = norm_result._localContext.evaluate(norm_result._xadd, static_bvars, static_dvars);
+				if (divisor != null) {
+					//System.out.println(static_bvars + " " + static_dvars);
+					//System.out.println(divisor._localContext.getString(divisor._xadd));
+					z /= divisor._localContext.evaluate(divisor._xadd, static_bvars, static_dvars);
+					if (Double.isInfinite(z) || Double.isNaN(z) || z < 0d)
+						z = 0d;
+				}
 				static_dvars.remove(varX);
 				static_dvars.remove(varY);
 
@@ -347,8 +371,8 @@ public class SVE {
 		//Query q = new Query("./src/sve/test.query");
 		//Factor result = sve.infer(q);
 		
-		TestLocalization();
-		//TestRadar();
+		//TestLocalization();
+		TestRadar();
 	}
 
 	public static void TestLocalization() {
@@ -379,19 +403,32 @@ public class SVE {
 		//gm.instantiateGMTemplate(q._hmVar2Expansion);
 		//System.out.println(gm);
 
-		Query q1 = new Query("./src/sve/radar.query.1");
+		Query q1 = new Query("./src/sve/radar.query.5");
 		Factor result1 = sve.infer(q1, CreateRadarVariableOrder(q1));
 
-		Query q2 = new Query("./src/sve/radar.query.2");
+		Query q2 = new Query("./src/sve/radar.query.4");
 		Factor result2 = sve.infer(q2, CreateRadarVariableOrder(q2));
+		
+		if (true) {
+			sve.Export3DData(result2, result1, "./src/sve/radar.query.6");
+		}
 	}
 	
 	public static ArrayList<String> CreateRadarVariableOrder(Query q) {
 		ArrayList<String> var_order = new ArrayList<String>();
+//		for (Integer i : q._hmVar2Expansion.get("i")) {
+//			var_order.add("b_" + i);
+//			var_order.add("o_" + i);
+//			var_order.add("x_" + i);
+//		}
+		for (Integer i : q._hmVar2Expansion.get("i")) {
+			var_order.add("o_" + i);
+		}
 		for (Integer i : q._hmVar2Expansion.get("i")) {
 			var_order.add("b_" + i);
+		}
+		for (Integer i : q._hmVar2Expansion.get("i")) {
 			var_order.add("x_" + i);
-			var_order.add("o_" + i);
 		}
 		return var_order;
 	}
