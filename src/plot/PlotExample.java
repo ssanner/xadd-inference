@@ -56,7 +56,7 @@ public class PlotExample extends JFrame {
 	public static void main(String[] args) {
 	
 		XYPlotExample();
-		//ContourPlotExample();		
+		ContourPlotExample();		
 	}
 
 	public static void XYPlotExample() {
