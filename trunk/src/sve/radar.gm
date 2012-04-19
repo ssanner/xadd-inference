@@ -4,7 +4,7 @@ max-values (20 20)
 bvariables (b_i)
 
 b_i' (b_i 
-        ([0.8])
+        ([1.0])
         ([0.2]))
 
 b_1 ([0.2])
