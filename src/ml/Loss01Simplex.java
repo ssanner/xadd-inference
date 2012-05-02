@@ -1,7 +1,10 @@
 /**
  * Simplex like method to solve loss 01 optimally
- * at each step, want to swap one point if loss reduced                                                       
- *
+ * at each step, want to swap one point if loss reduced.                                                       
+ * Heuristic: start with D points nearest to the hyperplane
+ * defined by SVM. Then consider replacing points nearest to 
+ * the current hyperplane.
+ * 
  * @author Tan T. Nguyen (tan1889@gmail.com)
  * @version 30/4/2012
  *
@@ -27,14 +30,30 @@ import org.apache.commons.math3.linear.RealVector;
 
 
 public class Loss01Simplex {
-
+	
+	private final static double delta = 1e-6;
 	private DataReader dr;	// reads and stores classification data
 	private String dataFileName;
-	private double[] w;		// possible value of w0..wD for optimal solution, bias = wD
-	private int loss;  		// value of loss function
-	private SortedSet<fval> f;		// stores sorted function evaluation values 
+	private Solution solution;
+//	private double[] w;		// possible value of w0..wD for optimal solution, bias = wD
+//	private int loss;  		// value of loss function
+//	private SortedSet<fval> f;		// stores sorted function evaluation values 
 	private Set<Integer> S;	// set of current selected points forming the hyperplane
 	
+	
+	// stores a solution
+	private final class Solution {
+		public final double[] w;
+		public final int loss;
+		public final SortedSet<fval> f;
+		Solution(double[] w, int loss, SortedSet<fval> f) { 
+			this.w = w; 
+			this.loss = loss; 
+			this.f = f;
+		}
+	}
+		
+	// comparable class to store function evaluation in SortedSet.
 	private final class fval implements Comparable<fval> {
 		public final double val;
 		public final int idx;
@@ -46,8 +65,10 @@ public class Loss01Simplex {
 			else return idx - f2.idx;
 		}
 	}
+	
 
-	public double[] getWeights() { return w; }
+	// returns feature weights of the solution
+	public double[] getWeights() { return solution.w; }
 	
     private String dbl2Str(double x) {
     	DecimalFormat df = new DecimalFormat("0.000");
@@ -55,6 +76,7 @@ public class Loss01Simplex {
     	return s;
     }
 	
+    // print out loss value & corresponding weights
     public void printSolution() {
     	printSolution("Minimal");
     }
@@ -62,16 +84,16 @@ public class Loss01Simplex {
 	private void printSolution(String prefix) {
 		if (prefix != null && prefix != "")
 			System.out.print(prefix + " ");
-		System.out.print("Loss= " + loss);
+		System.out.print("Loss= " + solution.loss);
 		System.out.print("   (");
-		for (int j=0; j<w.length-1; j++) 
-			System.out.print("w" + (j+1) + "= " + dbl2Str(w[j]) + ", ");
-		System.out.println("bias= " + dbl2Str(w[w.length -1]) + ")");
+		for (int j=0; j<solution.w.length-1; j++) 
+			System.out.print("w" + (j+1) + "= " + dbl2Str(solution.w[j]) + ", ");
+		System.out.println("bias= " + dbl2Str(solution.w[solution.w.length -1]) + ")");
 	}
 	
     
     // calculate total loss corresponding to weights w1, write function values to f1
-    private int calTotalLoss(double[] w1, SortedSet<fval> f1) {
+    private int calculateLoss(double[] w1, SortedSet<fval> f1) {
     	int totalLoss = 0;
     	f1.clear();
     	for (int i=0; i<dr.nRows(); i++) {
@@ -85,6 +107,13 @@ public class Loss01Simplex {
     	return Math.min(totalLoss, dr.nRows() - totalLoss); // can alwaf1 reverse sign of all weighhts
     }
 	
+    private Solution getSolutionFromWeights(double[] w) {
+    	SortedSet<fval> f = new TreeSet<fval>();
+		int loss = calculateLoss(w, f);
+		return new Solution(w, loss, f);
+    }
+    
+    // find the SVM solution, assign to w, f, loss
 	private void findBestSVM() {
 		Problem prob = new Problem();
 		prob.l = dr.nRows();
@@ -104,30 +133,39 @@ public class Loss01Simplex {
 		Parameter param = new Parameter(SolverType.L1R_L2LOSS_SVC, 1, 0.01);
 
 		Model model = Linear.train(prob, param);
-		w = model.getFeatureWeights();
-		f = new TreeSet<fval>();
-		loss = calTotalLoss(w, f);
+		solution = getSolutionFromWeights(model.getFeatureWeights());
 		printSolution("SVM:");
 	}
 	
-	private double[] calWeightsFromPoints(Set<Integer> S) {
+	// solve the matrix equation and return weights vector corresponding to
+	// a set of D points from the data inputs.
+	private Solution getBestSolutionFromS() {
         double [] rhs = new double[dr.xDim()];	// bias = 1, rhs = -1
 		double [][] xvals = new double[dr.xDim()][dr.xDim()]; // matrix of x_i in S
 		Iterator<Integer> it = S.iterator();
 		for (int i=0; i<dr.xDim(); i++) {
-			rhs[i] = -1d;	// bias = -1
+			rhs[i] = -1d;	//bias =1 => rhs = -1
 			xvals[i] = dr.x(it.next());
 		}
         RealMatrix X = new Array2DRowRealMatrix(xvals);
         DecompositionSolver solver = new LUDecomposition(X).getSolver();
         RealVector b = new ArrayRealVector(rhs);
-        RealVector v = solver.solve(b);
-        double[] res = new double[dr.xDim() + 1];
-        System.arraycopy(v.toArray(), 0, res, 0, dr.xDim());
-        res[dr.xDim()] = 1d;
-        return res;
+        RealVector w = solver.solve(b);
+        
+        double[] w1 = new double[dr.xDim() + 1];
+        System.arraycopy(w.toArray(), 0, w1, 0, dr.xDim());
+        w1[dr.xDim()] = 1d - delta;
+        double[] w2 = w1.clone();
+        w2[dr.xDim()] = 1d + delta;
+        
+        Solution s1 = getSolutionFromWeights(w1);
+        Solution s2 = getSolutionFromWeights(w2);
+        if (s1.loss < s2.loss) return s1;
+        return s2;
 	}
 	
+	
+	// convert a int set to an int array 
 	private int[] set2Array(Set<Integer> set) {
 		int[] a = new int[set.size()];   
 		int i = 0;   for (Integer val : set) 
@@ -135,48 +173,48 @@ public class Loss01Simplex {
 		return a; 
 	}
 	
+	// start from D points nearest to SVM hyperplane, tweak this set 
+	// until no further tweak would reduce loss => found minimal loss
 	private void minimizeLoss() {
-		// add D points nearest to SVM plane to S
-		Iterator<fval> itf = f.iterator();
+		// INIT: add D points nearest to SVM plane to S
+		Iterator<fval> it = solution.f.iterator();
 		S = new HashSet<Integer>();
 		for (int i=0; i<dr.xDim(); i++) 
-			S.add(itf.next().idx);
-		w = calWeightsFromPoints(S);
-		loss = calTotalLoss(w, f);
+			S.add(it.next().idx);
+		// update w, loss, f
+		solution = getBestSolutionFromS();
 		printSolution("Simplex initial:");
 		
 		boolean swapped;
+	
 		do {
 			swapped = false;
-			itf = f.iterator();
+			it = solution.f.iterator();
 			int[] arrS = set2Array(S);
 			
-			while (!swapped && itf.hasNext()) {
-				int i1 = itf.next().idx;
+			while (!swapped && it.hasNext()) {
+				int i1 = it.next().idx;	// possible point to swap
 				if (!S.contains(i1)) {
 					for (int j=0; j<dr.xDim(); j++) {
-						S.remove(arrS[j]); S.add(i1); 
-						double[] w1 = calWeightsFromPoints(S);
-						SortedSet<fval> f1 = new TreeSet<fval>();
-						int loss1 = calTotalLoss(w1, f1);
-						if (loss1 < loss) {
-							loss = loss1;
-							w = w1;
-							f = f1;
+						S.remove(arrS[j]); S.add(i1); // swap two points from/to S
+						Solution s2 = getBestSolutionFromS();
+						
+						if (s2.loss < solution.loss) {
+							// swap reduces loss => do it and break to another swap
+							solution = s2;
 							swapped = true;
 							printSolution("Simplex new:");
 							break;
 						}
 						else {
+							// swap doesn't reduce loss => undo swap
 							S.remove(i1); S.add(arrS[j]); 
 						}
 					}
 				}
 					
 			}
-		} while (swapped);
-		
-
+		} while (swapped); //only stop when no point is swapped => found minimum loss
 	}
 	
 	
@@ -190,8 +228,7 @@ public class Loss01Simplex {
 			findBestSVM();	// find best SVM solution (assign to w, loss, f)
 			if (dr.nRows() > dr.xDim() -1) 
 				minimizeLoss();
-			// now can't swap anymore => set right class & find one from optSolutions, 
-			// preference to class 1
+			printSolution();
 		}
 	}
 	
@@ -199,7 +236,6 @@ public class Loss01Simplex {
 	public static void main(String[] args) {
 		String fname = "./src/ml/data_test.txt";
 		Loss01Simplex ls = new Loss01Simplex(fname);
-		ls.printSolution();
 		Visualizer viz = new Visualizer(fname, ls.getWeights());
 		viz.pack();
 		viz.setVisible(true);

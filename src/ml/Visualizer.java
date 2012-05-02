@@ -209,7 +209,7 @@ public class Visualizer extends JFrame implements KeyListener{
     		}
     		else {
     			g.setColor(Color.RED);
-    			g.drawOval(getW(dr.x(i, x1)), getH(dr.x(i, x2)), 4, 4);
+    			g.drawRoundRect(getW(dr.x(i, x1)) -2, getH(dr.x(i, x2)) -2, 4, 4, 2, 2);
     		}
     	}
     }

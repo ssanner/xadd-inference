@@ -87,7 +87,7 @@ public class DataGenerator {
 	}
 
 	public static void main(String[] args) {
-		DataGenerator dg = new DataGenerator(2000, 2, "./src/ml/data_test.txt");
+		DataGenerator dg = new DataGenerator(30, 2, "./src/ml/data_test.txt");
 		System.out.println("Successfully generated " + dg.nRows() + " rows to: " + dg.fileName());
 		Visualizer viz = new Visualizer("./src/ml/data_test.txt", 0, 1);
 		viz.pack();
