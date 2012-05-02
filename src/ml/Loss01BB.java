@@ -14,7 +14,7 @@ import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
 
-public class Loss01Solver {
+public class Loss01BB {
 
 	private DataReader dr;	// reads and stores classification data
 	private String dataFileName;
@@ -231,7 +231,7 @@ public class Loss01Solver {
 	
 	
 	// constructor
-	public Loss01Solver(String filename) {
+	public Loss01BB(String filename) {
 		
 		dataFileName = filename;
 		dr = new DataReader(dataFileName);
@@ -263,7 +263,7 @@ public class Loss01Solver {
 	
 	public static void main(String[] args) {
 		String fname = "./src/ml/data_test.txt";
-		Loss01Solver ls = new Loss01Solver(fname);
+		Loss01BB ls = new Loss01BB(fname);
 		ls.showSolution();
 		Visualizer viz = new Visualizer(fname, ls.getSolution());
 		viz.pack();

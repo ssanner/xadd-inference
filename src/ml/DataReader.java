@@ -9,14 +9,14 @@ import java.util.Iterator;
 public class DataReader {
 	
 	private double[][] _x;	// array of input data
-	private double[] _y;	// array of targets
+	private int[] _y;	// array of targets
 	private int N = 0, D = 0;	// N = number of records; D = input data dimension
 	private String _fileName;
 	
 	// getters
 	public double x(int i, int j) { return _x[i][j]; }
 	public double[] x(int i) { return _x[i]; }
-	public double y(int i) { return _y[i]; }
+	public int y(int i) { return _y[i]; }
 	public int nRows() { return N; }
 	public int xDim() { return D; }
 	public String fileName() { return _fileName; }
@@ -58,16 +58,15 @@ public class DataReader {
 			// assign data to array x,y
 			D = D - 1;
 			_x = new double[N][D];
-			_y = new double[N];
+			_y = new int[N];
 			int i = 0;
 			Iterator<double[]> itr = data.iterator();
 			while (itr.hasNext()) {
 				double[] row = itr.next();
-				for (int j=0; j<D; j++) 
-					_x[i][j] = row[j];
-				_y[i] = row[D];
-				if (_y[i] <= 0) _y[i] = -1;	//forces y[i] = -1 or 1
-				if (_y[i] > 0) _y[i] = 1;
+				for (int j=1; j<=D; j++) 
+					_x[i][j-1] = row[j];
+				if (row[0] <= 0) _y[i] = -1;		//forces y[i] = -1 or 1
+				if (row[0] > 0) _y[i] = 1;
 				i++;
 			}
 		}
