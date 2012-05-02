@@ -40,6 +40,7 @@ public class Loss01Simplex {
 //	private SortedSet<fval> f;		// stores sorted function evaluation values 
 	private Set<Integer> S;	// set of current selected points forming the hyperplane
 	
+	private Visualizer viz;
 	
 	// stores a solution
 	private final class Solution {
@@ -94,17 +95,28 @@ public class Loss01Simplex {
     
     // calculate total loss corresponding to weights w1, write function values to f1
     private int calculateLoss(double[] w1, SortedSet<fval> f1) {
-    	int totalLoss = 0;
+    	int totalLoss = 0, onBoundary=0;
     	f1.clear();
     	for (int i=0; i<dr.nRows(); i++) {
     		double y = w1[w1.length -1]; 	// init y to bias
     		for (int j=0; j<dr.xDim(); j++)
         		y += dr.x(i,j) * w1[j];
+    		// consider points very closed boundary to be correctly classified
+    		if (Math.abs(y) < 1e-7) {
+    			y = 0;
+    			onBoundary++;
+    		}
     		f1.add(new fval(y, i));
     		if (y * dr.y(i) < 0) 	// misclassification
     			totalLoss++;
     	}
-    	return Math.min(totalLoss, dr.nRows() - totalLoss); // can alwaf1 reverse sign of all weighhts
+    	if (totalLoss > dr.nRows() - onBoundary - totalLoss) {
+    		//reverse w will result in better totalLoss
+    		totalLoss = dr.nRows() - onBoundary - totalLoss;
+    		for (int i=0; i<w1.length; i++)
+    			w1[i] = -w1[i];
+    	}
+    	return totalLoss; 
     }
 	
     private Solution getSolutionFromWeights(double[] w) {
@@ -150,27 +162,48 @@ public class Loss01Simplex {
         RealMatrix X = new Array2DRowRealMatrix(xvals);
         DecompositionSolver solver = new LUDecomposition(X).getSolver();
         RealVector b = new ArrayRealVector(rhs);
-        RealVector w = solver.solve(b);
+        RealVector w;
+        try { w = solver.solve(b); }
+        catch (Exception e) {
+        	return new Solution(null, Integer.MAX_VALUE, null);
+        }
         
-        double[] w1 = new double[dr.xDim() + 1];
-        System.arraycopy(w.toArray(), 0, w1, 0, dr.xDim());
+        // check best solution among w with bias = 1, 1-delta, 1+delta
+        double[] w0 = new double[dr.xDim() + 1];
+        System.arraycopy(w.toArray(), 0, w0, 0, dr.xDim());
+        w0[dr.xDim()] = 1d;
+        double[] w1 = w0.clone();
         w1[dr.xDim()] = 1d - delta;
-        double[] w2 = w1.clone();
+        double[] w2 = w0.clone();
         w2[dr.xDim()] = 1d + delta;
         
+        Solution s0 = getSolutionFromWeights(w0);
         Solution s1 = getSolutionFromWeights(w1);
-        Solution s2 = getSolutionFromWeights(w2);
-        if (s1.loss < s2.loss) return s1;
-        return s2;
+        if (s0.loss > s1.loss) s0 = s1;
+        s1 = getSolutionFromWeights(w2);
+        if (s0.loss > s1.loss) s0 = s1;
+    
+        return s0;
 	}
 	
 	
-	// convert a int set to an int array 
+	// convert an int set to an int array 
 	private int[] set2Array(Set<Integer> set) {
-		int[] a = new int[set.size()];   
-		int i = 0;   for (Integer val : set) 
-			a[i++] = val;   
-		return a; 
+		int[] arr = new int[set.size()];   
+		int i = 0;   
+		for (Integer val : set) 
+			arr[i++] = val;   
+		return arr; 
+	}
+	
+	// convert fval to array of indices in ascending order of f.val 
+	private int[] getfvalIndices(SortedSet<fval> f) {
+		int[] arr = new int[f.size()];   
+		int i=0;
+		Iterator<fval> it = f.iterator();
+		while (it.hasNext()) 
+			arr[i++] = it.next().idx;  
+		return arr; 
 	}
 	
 	// start from D points nearest to SVM hyperplane, tweak this set 
@@ -181,34 +214,32 @@ public class Loss01Simplex {
 		S = new HashSet<Integer>();
 		for (int i=0; i<dr.xDim(); i++) 
 			S.add(it.next().idx);
-		// update w, loss, f
-		solution = getBestSolutionFromS();
-		printSolution("Simplex initial:");
 		
 		boolean swapped;
 	
 		do {
 			swapped = false;
-			it = solution.f.iterator();
-			int[] arrS = set2Array(S);
+			int[] idxX = getfvalIndices(solution.f);	//indices in ascending order of length to current hyperplane
+			int[] idxS = set2Array(S);	//indices of elements in current selected points forming hyperplane
 			
-			while (!swapped && it.hasNext()) {
-				int i1 = it.next().idx;	// possible point to swap
-				if (!S.contains(i1)) {
-					for (int j=0; j<dr.xDim(); j++) {
-						S.remove(arrS[j]); S.add(i1); // swap two points from/to S
+			for (int i=0; i<idxX.length; i++) {
+				if (!S.contains(idxX[i])) {
+					for (int j=0; j<idxS.length; j++) {
+						S.remove(idxS[j]); S.add(idxX[i]); // swap two points from/to S
 						Solution s2 = getBestSolutionFromS();
-						
+						//viz.updateW(s2.w);
 						if (s2.loss < solution.loss) {
-							// swap reduces loss => do it and break to another swap
+							// swap reduces loss => do it
 							solution = s2;
 							swapped = true;
+							idxS[j] = idxX[i];
 							printSolution("Simplex new:");
+							viz.updateW(solution.w);
 							break;
 						}
 						else {
 							// swap doesn't reduce loss => undo swap
-							S.remove(i1); S.add(arrS[j]); 
+							S.remove(idxX[i]); S.add(idxS[j]); 
 						}
 					}
 				}
@@ -223,12 +254,18 @@ public class Loss01Simplex {
 		
 		dataFileName = filename;
 		dr = new DataReader(dataFileName);
+		viz = new Visualizer(filename);
+		viz.pack();
+		viz.setVisible(true);
 		
 		if (dr.nRows() > 0) {
 			findBestSVM();	// find best SVM solution (assign to w, loss, f)
+		
 			if (dr.nRows() > dr.xDim() -1) 
 				minimizeLoss();
+			
 			printSolution();
+			viz.resetW(solution.w);
 		}
 	}
 	
@@ -236,9 +273,7 @@ public class Loss01Simplex {
 	public static void main(String[] args) {
 		String fname = "./src/ml/data_test.txt";
 		Loss01Simplex ls = new Loss01Simplex(fname);
-		Visualizer viz = new Visualizer(fname, ls.getWeights());
-		viz.pack();
-		viz.setVisible(true);
+		
 	}
 
 }

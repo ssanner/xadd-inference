@@ -21,6 +21,7 @@ import java.awt.event.KeyListener;
 import java.awt.geom.Line2D;
 import java.text.DecimalFormat;
 import java.util.Random;
+import java.util.SortedSet;
 
 import javax.swing.JFrame;
 import javax.swing.Timer;
@@ -32,7 +33,7 @@ public class Visualizer extends JFrame implements KeyListener{
 	private Dimension dim = new Dimension(700, 700);
     private DataReader dr;
     private double[] w; 	// model parameters w0, w1, w2, ... if all zeros then auto initiate
-    private double bias;	// bias is always the last element of w.
+    private double[] w_old = null;
     private int x1, x2;		// id of column of data corresponding to dimension x1, x2 on the graph
     private int tm = 80;	// top margin of the canvas
     private int lm = 60;	// left margin
@@ -79,7 +80,6 @@ public class Visualizer extends JFrame implements KeyListener{
 			this.w = w;
 			x1 = col1;
 			x2 = col2;
-			bias = w[dr.xDim()]; // bias is last element of w
 			initializeParams();
 			
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -98,7 +98,7 @@ public class Visualizer extends JFrame implements KeyListener{
     		if (dr.x(i, x2) < min2) min2 = dr.x(i, x2);
     	}
     	
-    	if (bias==0.0 && w[x1]==0.0 && w[x2]==0.0) {
+    	if (w[dr.xDim()]==0.0 && w[x1]==0.0 && w[x2]==0.0) {
     		Problem prob = new Problem();
     		prob.l = dr.nRows();
     		prob.n = dr.xDim()+1;
@@ -118,19 +118,31 @@ public class Visualizer extends JFrame implements KeyListener{
 
     		Model model = Linear.train(prob, param);
     		w = model.getFeatureWeights();
-    		bias = w[w.length -1];
     	}
     	scaleW = (dim.width -lm -rm) / (max1 - min1);
     	scaleH = (dim.height -tm -bm) / (max2 - min2);
     }
 	
+	public void updateW(double[] w_new) {
+		w_old = w;
+		this.w = w_new;
+		this.paint(this.getGraphics());
+	}
+	
+	public void resetW(double[] w_new) {
+		w_old = null;
+		this.w = w_new;
+		this.paint(this.getGraphics());
+	}
 
 	
     public void paint(Graphics g) {
     	drawAxes(g);
     	drawHeader(g);
         drawDataPoints(g);
-        drawBoundaryLine(g);
+        drawBoundaryLine(g, w, Color.CYAN);
+        if (w_old != null)
+        	drawBoundaryLine(g, w_old, Color.LIGHT_GRAY);
     }
     
     
@@ -152,20 +164,26 @@ public class Visualizer extends JFrame implements KeyListener{
     	return s;
     }
     
-    // evaluate loss function of row i with current w
-    private int evalLoss(int i) {
-    	double f = bias;
-    	for (int j=0; j<dr.xDim(); j++)
-    		f += dr.x(i,j) * w[j];
-    	if (f * dr.y(i) < 0) return 1;
-    	return 0;
-    }
-    
-    private int f_loss() {
-    	int loss = 0;
-    	for (int i=0; i<dr.nRows(); i++)
-    		loss += evalLoss(i);
-    	return Math.min(loss, dr.nRows() - loss);
+    // calculate total loss 
+    private int calculateLoss() {
+    	int totalLoss = 0, onBoundary=0;
+    	for (int i=0; i<dr.nRows(); i++) {
+    		double y = w[w.length -1]; 	// init y to bias
+    		for (int j=0; j<dr.xDim(); j++)
+        		y += dr.x(i,j) * w[j];
+    		// consider points very closed boundary to be correctly classified
+    		if (Math.abs(y) < 1e-7) {
+    			y = 0;
+    			onBoundary++;
+    		}
+    		if (y * dr.y(i) < 0) 	// misclassification
+    			totalLoss++;
+    	}
+    	if (totalLoss > dr.nRows() - onBoundary - totalLoss) {
+    		//reverse w will result in better totalLoss
+    		totalLoss = dr.nRows() - onBoundary - totalLoss;
+    	}
+    	return totalLoss; 
     }
     
     private void drawMarker(Graphics g, double val, int axis) {
@@ -191,13 +209,13 @@ public class Visualizer extends JFrame implements KeyListener{
     
     private void drawHeader(Graphics g) {
     	g.setColor(Color.MAGENTA);
-    	g.drawString("w0: " + dbl2Str(bias) + "   w1: " + dbl2Str(w[x1]) 
+    	g.drawString("w0: " + dbl2Str(w[dr.xDim()]) + "   w1: " + dbl2Str(w[x1]) 
     			+ "   w2: " + dbl2Str(w[x2]) 
     			+ "   [Use QA WS ED to tweak]", lm -am, header);
     	g.setColor(Color.ORANGE);
     	g.drawString(dr.nRows() + " POINTS", dim.width - 230, header);
     	g.setColor(Color.BLUE);
-    	g.drawString("LOSS = " + f_loss(), dim.width - rm - 50, header);
+    	g.drawString("LOSS = " + calculateLoss(), dim.width - rm - 50, header);
     }
     
     private void drawDataPoints(Graphics g) {
@@ -214,42 +232,42 @@ public class Visualizer extends JFrame implements KeyListener{
     	}
     }
     
-    private void drawBoundaryLine(Graphics g) {
+    private void drawBoundaryLine(Graphics g, double[] w, Color c) {
     	int a1, b1, a2, b2;
     	if (Math.abs(w[x1]) < 1e-6) { // w1=0 => horizontal line
     		a1 = getW(min1);
     		a2 = getW(max1); 
-    		b1 = b2 = getH(-bias/w[x2]);
+    		b1 = b2 = getH(-w[dr.xDim()]/w[x2]);
     	}
     	else if (Math.abs(w[x2]) < 1e-6) { // w2=0 => vertical line
-    		a1 = a2 = getW(-bias/w[x1]);
+    		a1 = a2 = getW(-w[dr.xDim()]/w[x1]);
     		b1 = getH(max2);
     		b2 = getH(min2); 
     	}
     	else {
     		a1 = getW(min1);
-    		b1 = getH((-bias-w[x1]*min1)/w[x2]);
+    		b1 = getH((-w[dr.xDim()]-w[x1]*min1)/w[x2]);
     		if (b1 > getH(min2)) {
     			b1 = getH(min2);
-    			a1 = getW((-bias-w[x2]*min2)/w[x1]);
+    			a1 = getW((-w[dr.xDim()]-w[x2]*min2)/w[x1]);
     		}
     		if (b1 < getH(max2)) {
     			b1 = getH(max2);
-    			a1 = getW((-bias-w[x2]*max2)/w[x1]);
+    			a1 = getW((-w[dr.xDim()]-w[x2]*max2)/w[x1]);
     		}
     		
     		a2 = getW(max1);
-    		b2 = getH((-bias-w[x1]*max1)/w[x2]);
+    		b2 = getH((-w[dr.xDim()]-w[x1]*max1)/w[x2]);
     		if (b2 > getH(min2)) {
     			b2 = getH(min2);
-    			a2 = getW((-bias-w[x2]*min2)/w[x1]);
+    			a2 = getW((-w[dr.xDim()]-w[x2]*min2)/w[x1]);
     		}
     		if (b2 < getH(max2)) {
     			b2 = getH(max2);
-    			a2 = getW((-bias-w[x2]*max2)/w[x1]);
+    			a2 = getW((-w[dr.xDim()]-w[x2]*max2)/w[x1]);
     		}
     	}
-    	g.setColor(Color.CYAN);
+    	g.setColor(c);
     	g.drawLine(a1, b1, a2, b2);
     }
 
@@ -271,11 +289,11 @@ public class Visualizer extends JFrame implements KeyListener{
 		boolean wchanged = false;
 		
 		if (c == 'q' || c == 'Q') {
-			bias += incrW(bias);
+			w[dr.xDim()] += incrW(w[dr.xDim()]);
 			wchanged = true;
 		}
 		else if (c == 'a' || c == 'A') {
-			bias -= incrW(bias);
+			w[dr.xDim()] -= incrW(w[dr.xDim()]);
 			wchanged = true;
 		}
 		else if (c == 'w' || c == 'W') {
