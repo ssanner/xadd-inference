@@ -30,10 +30,10 @@ public class DataGenerator {
 	
 	// convert vector x and target y to a string in csv data format
 	private String point2Str(double[] x, int y) {
-		String s = "";
+		String s = "-1";
+		if (y > 0) s = "+1";
 		for (int j=0; j<x.length; j++) 
-			s += dbl2Str(x[j]) + ",";
-		s += y;
+			s += ", " + dbl2Str(x[j]);
 		return s;
 	}
 	
@@ -62,8 +62,8 @@ public class DataGenerator {
 		fname = filename;
 		double[] c0 = randomPoint(radius/3d); // center class 0
 		double[] c1 = randomPoint(radius/3d); // center of class 1
-		double[] r0 = randomPoint(radius/6d);	// radius of class 0
-		double[] r1 = randomPoint(radius/6d);	// radius of class 1
+		double[] r0 = randomPoint(radius/4d);	// radius of class 0
+		double[] r1 = randomPoint(radius/4d);	// radius of class 1
 		
 		try {
 			FileWriter outFile = new FileWriter(fname);
@@ -87,7 +87,7 @@ public class DataGenerator {
 	}
 
 	public static void main(String[] args) {
-		DataGenerator dg = new DataGenerator(20, 2, "./src/ml/data_test.txt");
+		DataGenerator dg = new DataGenerator(2000, 2, "./src/ml/data_test.txt");
 		System.out.println("Successfully generated " + dg.nRows() + " rows to: " + dg.fileName());
 		Visualizer viz = new Visualizer("./src/ml/data_test.txt", 0, 1);
 		viz.pack();

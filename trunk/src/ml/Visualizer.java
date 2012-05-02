@@ -1,3 +1,13 @@
+/**
+ * Visualize data points and boundary line for a given 2 dimensions 
+ * of a data with classification target. Data coordinates & range are 
+ * scaled & change automatically to fit the canvas.
+ * 
+ * @author Tan T. Nguyen
+ * @version 30/4/2012
+ * 
+ **/
+
 package ml;
 
 import java.awt.Color;
@@ -15,22 +25,22 @@ import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 
+import de.bwaldvogel.liblinear.*;
 
-/**
- * Visualize data points and boundary line for a given 2 dimensions 
- * of a data with classification target. Data coordinates & range are 
- * scaled & change automatically to fit the canvas.
- * @author Tan T. Nguyen
- */
 public class Visualizer extends JFrame implements KeyListener{
     
 	private Dimension dim = new Dimension(700, 700);
     private DataReader dr;
-    private double[] w; // model parameters w0, w1, w2, ... if all zeros then auto initiate
-    private int x1, x2;	// id of column of data for dimension x1, x2 on the graph
-    private int margin = 50;	// left, right, top, bottom margin of canvas
-    private double[] incr = { 0.01, 0.005, 0.005 }; // increase w0, w1, w2 by this much when tweaked
-    private double scale;		// graphic scale factor relative to input data range
+    private double[] w; 	// model parameters w0, w1, w2, ... if all zeros then auto initiate
+    private double bias;	// bias is always the last element of w.
+    private int x1, x2;		// id of column of data corresponding to dimension x1, x2 on the graph
+    private int tm = 80;	// top margin of the canvas
+    private int lm = 60;	// left margin
+    private int bm = 40;	// bottom margin
+    private int rm = 40;	// right margin
+    private int am = 10;	// margins from boundary of the axis's square
+    private int header = 60;// position of header text
+    private double scaleW, scaleH; // scale of canvas vs data range
     private double max1 = 0, max2 = 0; // max value of data dimension x1, x2
 	private double min1 = Double.MAX_VALUE, min2 = Double.MAX_VALUE; // min of x1, x2
 	
@@ -67,8 +77,9 @@ public class Visualizer extends JFrame implements KeyListener{
 			if (w == null)
 				w = new double[dr.xDim() + 1];
 			this.w = w;
-			this.x1 = col1;
-			this.x2 = col2;
+			x1 = col1;
+			x2 = col2;
+			bias = w[dr.xDim()]; // bias is last element of w
 			initializeParams();
 			
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -78,75 +89,74 @@ public class Visualizer extends JFrame implements KeyListener{
 	
 	// set initial w if required, and find the scale of coordinates
 	private void initializeParams() {
-    	double x1m0=0, x1m1=0, x2m0=0, x2m1=0; // x1m0 = means of all x1 in class 0
 
-    	int n0=0, n1=0; // n0 = number of rows in class 0
     	for (int i=0; i<dr.nRows(); i++) {
-    		if (dr.y(i) <= 0) { //class 0
-    			n0++;
-    			x1m0 += dr.x(i, x1);
-    			x2m0 += dr.x(i, x2);
-    		}
-    		else {
-    			n1++;
-    			x1m1 += dr.x(i, x1);
-    			x2m1 += dr.x(i, x2);
-    		}
     		// find min max
     		if (dr.x(i, x1) > max1) max1 = dr.x(i, x1);
     		if (dr.x(i, x1) < min1) min1 = dr.x(i, x1);
     		if (dr.x(i, x2) > max2) max2 = dr.x(i, x2);
     		if (dr.x(i, x2) < min2) min2 = dr.x(i, x2);
     	}
-    	x1m0 = x1m0 / n0;
-    	x2m0 = x2m0 / n0;
-    	x1m1 = x1m1 / n1;
-    	x2m1 = x2m1 / n1;
-    	if (w[0]==0.0 && w[x1+1]==0.0 && w[x2+1]==0.0) {
-    		w[x1+1] = x1m1 - x1m0;
-    		w[x2+1] = x2m1 - x2m0;
-    		w[0] = -w[x1+1] * (x1m0 + x1m1)/2 - w[x2+1] * (x2m0 + x2m1)/2;
-    		//standardize w0 = 1.0
-    		w[x1+1] = w[x1+1] / w[0];
-    		w[x1+2] = w[x1+2] / w[0];
-    		w[0] = 1.0;
+    	
+    	if (bias==0.0 && w[x1]==0.0 && w[x2]==0.0) {
+    		Problem prob = new Problem();
+    		prob.l = dr.nRows();
+    		prob.n = dr.xDim()+1;
+    		prob.bias = 1d;
+    		prob.y = new int[prob.l];
+    		prob.x = new FeatureNode[prob.l][prob.n];
+    		for (int i=0; i<dr.nRows(); i++) {
+    			prob.y[i] = dr.y(i);
+    			for (int j=0; j<dr.xDim(); j++) {
+    				prob.x[i][j] = new FeatureNode(j+1, dr.x(i,j));
+    			}
+    			// add additional input feature for bias:
+    			prob.x[i][dr.xDim()] = new FeatureNode(dr.xDim()+1, 1d);	
+    		}
+    		
+    		Parameter param = new Parameter(SolverType.L1R_L2LOSS_SVC, 1, 0.01);
+
+    		Model model = Linear.train(prob, param);
+    		w = model.getFeatureWeights();
+    		bias = w[w.length -1];
     	}
-    	scale = (dim.width - 2 * margin) / Math.max(max1 - min1, max2 - min2);
+    	scaleW = (dim.width -lm -rm) / (max1 - min1);
+    	scaleH = (dim.height -tm -bm) / (max2 - min2);
     }
 	
 
 	
     public void paint(Graphics g) {
     	drawAxes(g);
+    	drawHeader(g);
         drawDataPoints(g);
         drawBoundaryLine(g);
-        drawLoss(g);
     }
     
     
     // change original x1 coordinate to width coordinate of canvas 
     private int getW(double x1) {
-    	double width = margin - min1 * scale + x1 * scale;
+    	double width = lm - min1 * scaleW + x1 * scaleW;
     	return (int) width;
     }
     
     // change original x2 coordinate to height coordinate of canvas 
     private int getH(double x2) {
-    	double height = margin + max2 * scale - x2 * scale;
+    	double height = tm + max2 * scaleH - x2 * scaleH;
     	return (int) height;
     }
     
     private String dbl2Str(double x) {
-    	DecimalFormat df = new DecimalFormat("0.00");
+    	DecimalFormat df = new DecimalFormat("0.000");
     	String s = (df.format(x));
     	return s;
     }
     
     // evaluate loss function of row i with current w
     private int evalLoss(int i) {
-    	double f = w[0];
+    	double f = bias;
     	for (int j=0; j<dr.xDim(); j++)
-    		f += + dr.x(i,j) * w[j+1];
+    		f += dr.x(i,j) * w[j];
     	if (f * dr.y(i) < 0) return 1;
     	return 0;
     }
@@ -158,30 +168,36 @@ public class Visualizer extends JFrame implements KeyListener{
     	return Math.min(loss, dr.nRows() - loss);
     }
     
-    private void drawLoss(Graphics g) {
-    	g.setColor(Color.MAGENTA);
-    	g.drawString("LOSS = " + f_loss(), dim.width - margin - 50, dim.height - 20);
+    private void drawMarker(Graphics g, double val, int axis) {
+    	if (axis == 1) { //x1 = W
+    		g.drawLine(getW(val), dim.height -bm +am -2, getW(val), dim.height -bm + am +2);
+    		g.drawString(dbl2Str(val), getW(val) - 10 , dim.height -bm +am + 15);
+    	}
+    	else {
+    		g.drawLine(lm -am -2, getH(val), lm -am +2, getH(val));
+    		g.drawString(dbl2Str(val), 8 , getH(val) +4);
+    	}
     }
     
     private void drawAxes(Graphics g) {
     	g.clearRect(0, 0, dim.width, dim.height);
     	g.setColor(Color.GRAY);
-    	g.drawLine(margin, dim.height/2, dim.width - margin, dim.height/2);
-    	g.drawLine(dim.width/2, margin, dim.width/2, dim.height - margin);
-    	g.drawLine(getW(min1), dim.height/2 - 2, getW(min1), dim.height/2 + 2);
-    	g.drawString(dbl2Str(min1), getW(min1) - 10 , dim.height/2 + 15);
-    	g.drawLine(getW(max1), dim.height/2 - 2, getW(max1), dim.height/2 + 2);
-    	g.drawString(dbl2Str(max1), getW(max1) - 10 , dim.height/2 + 15);
-    	g.drawLine(dim.width/2 - 2, getH(max2), dim.width/2 + 2, getH(max2));
-    	g.drawString(dbl2Str(max2), dim.width/2 + 6 , getH(max2) + 4);  
-    	g.drawLine(dim.width/2 - 2, getH(min2), dim.width/2 + 2, getH(min2));
-    	g.drawString(dbl2Str(min2), dim.width/2 + 6 , getH(min2) + 4);
-    	g.setColor(Color.BLACK);
-    	g.drawString("w0: " + dbl2Str(w[0]) + "     w1: " + dbl2Str(w[x1+1]) 
-    			+ "     w2: " + dbl2Str(w[x2+1]) 
-    			+ "     [Use QA WS ED to tweak]", margin, dim.height - 20);
+    	g.drawRect(lm -am, tm -am, dim.width -lm -rm +2*am, dim.height -tm -bm +2*am);
+    	for (double r=0.0; r<=1; r+=0.2) {
+    		drawMarker(g, min1 + r*(max1-min1), 1);
+    		drawMarker(g, min2 + r*(max2-min2), 2);
+    	}
+    }
+    
+    private void drawHeader(Graphics g) {
+    	g.setColor(Color.MAGENTA);
+    	g.drawString("w0: " + dbl2Str(bias) + "   w1: " + dbl2Str(w[x1]) 
+    			+ "   w2: " + dbl2Str(w[x2]) 
+    			+ "   [Use QA WS ED to tweak]", lm -am, header);
     	g.setColor(Color.ORANGE);
-    	g.drawString(dr.nRows() + " POINTS", dim.width - 230, dim.height - 20);
+    	g.drawString(dr.nRows() + " POINTS", dim.width - 230, header);
+    	g.setColor(Color.BLUE);
+    	g.drawString("LOSS = " + f_loss(), dim.width - rm - 50, header);
     }
     
     private void drawDataPoints(Graphics g) {
@@ -200,19 +216,40 @@ public class Visualizer extends JFrame implements KeyListener{
     
     private void drawBoundaryLine(Graphics g) {
     	int a1, b1, a2, b2;
-    	if (Math.abs(w[x2+1]) > 1e-6) {
+    	if (Math.abs(w[x1]) < 1e-6) { // w1=0 => horizontal line
     		a1 = getW(min1);
-    		b1 = getH((-w[0]-w[x1+1]*min1)/w[x2+1]);
-    		a2 = getW(max1);
-    		b2 = getH((-w[0]-w[x1+1]*max1)/w[x2+1]);
+    		a2 = getW(max1); 
+    		b1 = b2 = getH(-bias/w[x2]);
+    	}
+    	else if (Math.abs(w[x2]) < 1e-6) { // w2=0 => vertical line
+    		a1 = a2 = getW(-bias/w[x1]);
+    		b1 = getH(max2);
+    		b2 = getH(min2); 
     	}
     	else {
-    		a1 = a2 = getW(-w[0]/w[x1+1]);
-    		b1 = getH(max2);
-    		b2 = getH(min2);
+    		a1 = getW(min1);
+    		b1 = getH((-bias-w[x1]*min1)/w[x2]);
+    		if (b1 > getH(min2)) {
+    			b1 = getH(min2);
+    			a1 = getW((-bias-w[x2]*min2)/w[x1]);
+    		}
+    		if (b1 < getH(max2)) {
+    			b1 = getH(max2);
+    			a1 = getW((-bias-w[x2]*max2)/w[x1]);
+    		}
     		
+    		a2 = getW(max1);
+    		b2 = getH((-bias-w[x1]*max1)/w[x2]);
+    		if (b2 > getH(min2)) {
+    			b2 = getH(min2);
+    			a2 = getW((-bias-w[x2]*min2)/w[x1]);
+    		}
+    		if (b2 < getH(max2)) {
+    			b2 = getH(max2);
+    			a2 = getW((-bias-w[x2]*max2)/w[x1]);
+    		}
     	}
-    	g.setColor(Color.GREEN);
+    	g.setColor(Color.CYAN);
     	g.drawLine(a1, b1, a2, b2);
     }
 
@@ -222,33 +259,39 @@ public class Visualizer extends JFrame implements KeyListener{
 	@Override
 	public void keyReleased(KeyEvent e) { }
 
+	private double incrW(double val) {
+		double incr = Math.abs(val * 0.002); // change by 0.2%
+		if (incr < 0.005) incr = 0.005; // minimal change = 0.005
+		return incr;
+	}
+	
 	@Override
 	public void keyTyped(KeyEvent e) {
 		char c = e.getKeyChar();
 		boolean wchanged = false;
 		
 		if (c == 'q' || c == 'Q') {
-			w[0] += incr[0];
+			bias += incrW(bias);
 			wchanged = true;
 		}
 		else if (c == 'a' || c == 'A') {
-			w[0] -= incr[0];
+			bias -= incrW(bias);
 			wchanged = true;
 		}
 		else if (c == 'w' || c == 'W') {
-			w[x1+1] += incr[1];
-		wchanged = true;
+			w[x1] += incrW(w[x1]);
+			wchanged = true;
 		}
 		else if (c == 's' || c == 'S') {
-			w[x1+1] -= incr[1];
+			w[x1] -= incrW(w[x1]);
 			wchanged = true;
 		}
 		else if (c == 'e' || c == 'E') {
-			w[x2+1] += incr[2];
+			w[x2] += incrW(w[x2]);
 			wchanged = true;
 		}
 		else if (c == 'd' || c == 'D') {
-			w[x2+1] -= incr[2];
+			w[x2] -= incrW(w[x2]);
 			wchanged = true;
 		}
 		
@@ -258,7 +301,7 @@ public class Visualizer extends JFrame implements KeyListener{
 	}
 	
     public static void main(String args[]) {
-    	Visualizer viz = new Visualizer("./src/ml/data.txt");
+    	Visualizer viz = new Visualizer("./src/ml/data_test.txt");
     	viz.pack();
     	viz.setVisible(true);
     }
