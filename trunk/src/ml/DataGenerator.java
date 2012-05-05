@@ -83,11 +83,10 @@ public class DataGenerator {
 		catch (IOException e){
 			e.printStackTrace();
 		}
-
 	}
 
 	public static void main(String[] args) {
-		DataGenerator dg = new DataGenerator(40, 2, "./src/ml/data_test.txt");
+		DataGenerator dg = new DataGenerator(1000, 2, "./src/ml/data_test.txt");
 		System.out.println("Successfully generated " + dg.nRows() + " rows to: " + dg.fileName());
 		Visualizer viz = new Visualizer("./src/ml/data_test.txt", 0, 1);
 		viz.pack();

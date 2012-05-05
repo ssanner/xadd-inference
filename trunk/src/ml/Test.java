@@ -4,34 +4,41 @@ import java.text.DecimalFormat;
 
 
 /**
- * Automatically generate data, run Loss01Solver on them, then visualize result.
+ * Automatically generate data, run Loss01Simplex and Loss01BB
+ * and compare the result. Stop when the result is different.
  * @author Tan T. Nguyen
  * 
  */
+
 public class Test {
     
 	public static void main(String[] args) {
 		String dataFileName = "./src/ml/data_test.txt";
+		final int maxTests = 1000;
+		final int nPoints = 16;
 		
-		// write 10 2D data points to dataFileName
-		DataGenerator dg = new DataGenerator(16, 2, dataFileName);
-		if (dg.dataGenerated()) 
-			System.out.println("Generated " + dg.nRows() + " data points to: " + dg.fileName());
+//		int diff = 0;
 		
-		// run Loss01Solver
-		Loss01SimpleSolver ls = new Loss01SimpleSolver(dataFileName);
-		if (!ls.hasSolution())
-			System.out.println("Loss01Solver couldn't solve the problem.");
-		else {
-			double[] w = ls.getSolution();
-			ls.showSolution();
+		for (int i=0; i<maxTests; i++) {
 			
-			// visualize the result if 2D data
-			Visualizer viz = new Visualizer(dataFileName, 0, 1, w);
-			viz.pack();
-			viz.setVisible(true);
+			DataGenerator dg = new DataGenerator(nPoints, 2, dataFileName);
+			Loss01BB ls = new Loss01BB(dataFileName);
 			
-		}	
+			if (ls.getLossSimplex() > ls.getLoss()) {
+				System.out.println("Test #" + i + ": lossBB= " + ls.getLoss() 
+						+ " < lossSimplex= " + ls.getLossSimplex());
+				Visualizer viz = new Visualizer(dataFileName, 0, 1);
+				viz.pack();
+				viz.setVisible(true);
+				viz.updateW(ls.getWeightsSimplex());
+				viz.updateW(ls.getWeights());
+				break;
+//				diff++;
+			}	
+			else 
+				System.out.println("Test #" + i + ": lossBB = lossSimplex.");
+		}
+//		System.out.println("Number of diff: " + diff + " / " + maxTests);
 	}
 
 }

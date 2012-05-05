@@ -30,6 +30,7 @@ import de.bwaldvogel.liblinear.*;
 
 public class Visualizer extends JFrame implements KeyListener{
     
+	private final static double zeroThreshold = 1e-7; // number < epsilon <=> number=0.0
 	private Dimension dim = new Dimension(700, 700);
     private DataReader dr;
     private double[] w; 	// model parameters w0, w1, w2, ... if all zeros then auto initiate
@@ -114,6 +115,7 @@ public class Visualizer extends JFrame implements KeyListener{
     			prob.x[i][dr.xDim()] = new FeatureNode(dr.xDim()+1, 1d);	
     		}
     		
+    		Linear.disableDebugOutput();
     		Parameter param = new Parameter(SolverType.L1R_L2LOSS_SVC, 1, 0.01);
 
     		Model model = Linear.train(prob, param);
@@ -172,7 +174,7 @@ public class Visualizer extends JFrame implements KeyListener{
     		for (int j=0; j<dr.xDim(); j++)
         		y += dr.x(i,j) * w[j];
     		// consider points very closed boundary to be correctly classified
-    		if (Math.abs(y) < 1e-7) {
+    		if (Math.abs(y) < zeroThreshold) {
     			y = 0;
     			onBoundary++;
     		}
@@ -201,7 +203,7 @@ public class Visualizer extends JFrame implements KeyListener{
     	g.clearRect(0, 0, dim.width, dim.height);
     	g.setColor(Color.GRAY);
     	g.drawRect(lm -am, tm -am, dim.width -lm -rm +2*am, dim.height -tm -bm +2*am);
-    	for (double r=0.0; r<=1; r+=0.2) {
+    	for (double r=0.0; r<=1; r+=0.1) {
     		drawMarker(g, min1 + r*(max1-min1), 1);
     		drawMarker(g, min2 + r*(max2-min2), 2);
     	}

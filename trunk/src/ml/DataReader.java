@@ -24,8 +24,9 @@ public class DataReader {
 	
 	public double[] wxy(int i) {
 		double[] wxy_i = new double[D+1];
-		wxy_i[0] = y(i);
-		for (int j=1; j<D+1; j++) wxy_i[j] = x(i,j-1) * y(i);
+		wxy_i[D] = y(i);  // bias term
+		for (int j=0; j<D; j++) 
+			wxy_i[j] = x(i,j) * y(i);
 		return wxy_i; 
 	}
 	
