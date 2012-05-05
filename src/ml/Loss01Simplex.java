@@ -1,6 +1,6 @@
 /**
- * Simplex like method to solve loss 01 optimally
- * at each step, want to swap one point if loss reduced.                                                       
+ * Simplex like method to solve loss 01 optimally.
+ * At each step, want to swap one point if loss reduced.                                                       
  * Heuristic: start with D points nearest to the hyperplane
  * defined by SVM. Then consider replacing points nearest to 
  * the current hyperplane.
@@ -31,15 +31,14 @@ import org.apache.commons.math3.linear.RealVector;
 
 public class Loss01Simplex {
 	
-	private final static double delta = 1e-6;
+	private final static double zeroThreshold = 1e-7; // |number| < epsilon <=> number=0.0
 	private DataReader dr;	// reads and stores classification data
 	private String dataFileName;
 	private Solution solution;
-//	private double[] w;		// possible value of w0..wD for optimal solution, bias = wD
-//	private int loss;  		// value of loss function
-//	private SortedSet<fval> f;		// stores sorted function evaluation values 
 	private Set<Integer> S;	// set of current selected points forming the hyperplane
 	
+	private boolean showViz;
+	private boolean showLog;
 	private Visualizer viz;
 	
 	// stores a solution
@@ -68,8 +67,10 @@ public class Loss01Simplex {
 	}
 	
 
-	// returns feature weights of the solution
+	// getters
 	public double[] getWeights() { return solution.w; }
+	public int getLoss() { return solution.loss; }
+	public int[] getOrderedIndices() { return getfvalIndices(solution.f); }
 	
     private String dbl2Str(double x) {
     	DecimalFormat df = new DecimalFormat("0.000");
@@ -79,10 +80,12 @@ public class Loss01Simplex {
 	
     // print out loss value & corresponding weights
     public void printSolution() {
-    	printSolution("Minimal");
+    	if (!showLog) return;
+    	printSolution("Simplex Minimal");
     }
     
 	private void printSolution(String prefix) {
+		if (!showLog) return;
 		if (prefix != null && prefix != "")
 			System.out.print(prefix + " ");
 		System.out.print("Loss= " + solution.loss);
@@ -102,7 +105,7 @@ public class Loss01Simplex {
     		for (int j=0; j<dr.xDim(); j++)
         		y += dr.x(i,j) * w1[j];
     		// consider points very closed boundary to be correctly classified
-    		if (Math.abs(y) < 1e-7) {
+    		if (Math.abs(y) < zeroThreshold) {
     			y = 0;
     			onBoundary++;
     		}
@@ -142,9 +145,11 @@ public class Loss01Simplex {
 			prob.x[i][dr.xDim()] = new FeatureNode(dr.xDim()+1, 1d);	
 		}
 		
-		Parameter param = new Parameter(SolverType.L1R_L2LOSS_SVC, 1, 0.01);
-
+		Parameter param = new Parameter(SolverType.L1R_L2LOSS_SVC, 1, 0.01); //.L1R_LR
+		
+		Linear.disableDebugOutput();
 		Model model = Linear.train(prob, param);
+		
 		solution = getSolutionFromWeights(model.getFeatureWeights());
 		printSolution("SVM:");
 	}
@@ -168,22 +173,12 @@ public class Loss01Simplex {
         	return new Solution(null, Integer.MAX_VALUE, null);
         }
         
-        // check best solution among w with bias = 1, 1-delta, 1+delta
+        // because onBoundary points doesn't count to loss => no need to check + - delta
         double[] w0 = new double[dr.xDim() + 1];
         System.arraycopy(w.toArray(), 0, w0, 0, dr.xDim());
         w0[dr.xDim()] = 1d;
-        double[] w1 = w0.clone();
-        w1[dr.xDim()] = 1d - delta;
-        double[] w2 = w0.clone();
-        w2[dr.xDim()] = 1d + delta;
+        return getSolutionFromWeights(w0);
         
-        Solution s0 = getSolutionFromWeights(w0);
-        Solution s1 = getSolutionFromWeights(w1);
-        if (s0.loss > s1.loss) s0 = s1;
-        s1 = getSolutionFromWeights(w2);
-        if (s0.loss > s1.loss) s0 = s1;
-    
-        return s0;
 	}
 	
 	
@@ -228,13 +223,15 @@ public class Loss01Simplex {
 						S.remove(idxS[j]); S.add(idxX[i]); // swap two points from/to S
 						Solution s2 = getBestSolutionFromS();
 						//viz.updateW(s2.w);
+						
 						if (s2.loss < solution.loss) {
 							// swap reduces loss => do it
 							solution = s2;
 							swapped = true;
 							idxS[j] = idxX[i];
-							printSolution("Simplex new:");
-							viz.updateW(solution.w);
+							printSolution(" * Simplex new:");
+							if (showViz)
+								viz.updateW(solution.w);
 							break;
 						}
 						else {
@@ -248,32 +245,50 @@ public class Loss01Simplex {
 		} while (swapped); //only stop when no point is swapped => found minimum loss
 	}
 	
-	
-	// constructor
-	public Loss01Simplex(String filename) {
-		
+	private void solveLoss01(String filename, boolean showVisualizer, boolean showLog) {
+
+		this.showViz = showVisualizer;
+		this.showLog = showLog;
 		dataFileName = filename;
 		dr = new DataReader(dataFileName);
-		viz = new Visualizer(filename);
-		viz.pack();
-		viz.setVisible(true);
-		
+
 		if (dr.nRows() > 0) {
+
+			if (showViz) {
+				viz = new Visualizer(filename);
+				viz.pack();
+				viz.setVisible(true);
+			}
+
 			findBestSVM();	// find best SVM solution (assign to w, loss, f)
-		
+
 			if (dr.nRows() > dr.xDim() -1) 
 				minimizeLoss();
-			
+
 			printSolution();
-			viz.resetW(solution.w);
+
+			if (showViz)
+				viz.resetW(solution.w);
 		}
 	}
 	
 	
+	// constructors
+	Loss01Simplex(String filename) {
+		solveLoss01(filename, false, false);
+	}
+	
+	Loss01Simplex(String filename, boolean showVisualizer) {
+		solveLoss01(filename, showVisualizer, false);
+	}
+	
+	Loss01Simplex(String filename, boolean showVisualizer, boolean showLog) {
+		solveLoss01(filename, showVisualizer, showLog);
+	}
+	
 	public static void main(String[] args) {
 		String fname = "./src/ml/data_test.txt";
-		Loss01Simplex ls = new Loss01Simplex(fname);
-		
+		Loss01Simplex ls = new Loss01Simplex(fname, true, true);
 	}
 
 }
