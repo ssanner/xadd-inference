@@ -37,11 +37,13 @@ public class CAMDP {
 	/* Constants */
 	public final static String RESULTS_DIR = "results"; // Diagnostic output destination
 	
-	public final static boolean DISPLAY_PREMAX_Q = true;
-	public final static boolean DISPLAY_POSTMAX_Q = true;
+	public final static boolean DISPLAY_PREMAX_Q = false;
+	public final static boolean DISPLAY_POSTMAX_Q = false;
 	public final static boolean DISPLAY_V = true;
 	public final static boolean DISPLAY_MAX = false;
 
+	//to check for redundancy as well as consistency 
+	public boolean REDUNDANDY_CHECK = true;
 	/* Maintain an explicit policy? */
 	public final static boolean MAINTAIN_POLICY = false;
 	
@@ -133,7 +135,7 @@ public class CAMDP {
 		_alContAVars = new ArrayList<String>(Intern(parser.getAVars())); // Retain order given in MDP file
 		_alContAllVars = new ArrayList<String>(_alContSVars);
 		_alContAllVars.addAll(_alContAVars);
-		
+		//_context._hmContinuousVars = _alContAllVars;
 		// Build cur-state var -> next-state var map
 		_hmPrimeSubs = new HashMap<String,ArithExpr>();
 		for (String var : _hsContSVars) 
@@ -146,7 +148,7 @@ public class CAMDP {
 		
 		// Setup a logger
 		try {
-			_logStream = new PrintStream(new FileOutputStream(_logFileRoot + ".log"));
+			_logStream = new PrintStream(new FileOutputStream(/*"timeSpace.txt"));*/_logFileRoot + ".log"));
 		} catch (FileNotFoundException e) {
 			System.err.println(e);
 			e.printStackTrace();
@@ -193,17 +195,33 @@ public class CAMDP {
 
 				// Regress the current value function through each action (finite number of continuous actions)
 				int regr = _qfunHelper.regress(_valueDD, me.getValue());
+				regr  = _context.reduceRound(regr);
 				if (DISPLAY_POSTMAX_Q)
-					doDisplay(regr, _logFileRoot + ": Q^" + _nCurIter + "(" + me.getKey() + ")");
+					//doDisplay(regr, _logFileRoot + ": Q^" + _nCurIter + "(" + me.getKey() + ")");
 	
 				// Take the max over this action and the previous action 
 				//(can have continuous parameters which represents many discrete actions)
+				///////ADD THIS TO SCOTT'S CODE
+				regr = _context.makeCanonical(regr);
 				if (_maxDD == null)
+				{
 					_maxDD = regr;
+					if (REDUNDANDY_CHECK)
+						_maxDD = _context.reduceLP(_maxDD,true);
+					else
+					_maxDD = _context.reduceLP(_maxDD);
+
+				}
+
 				else {
 					_maxDD = _context.apply(_maxDD, regr, XADD.MAX);
 					_maxDD = _context.reduceLinearize(_maxDD);
+					//_logStream.println("Number of nodes before reducing redundant paths: "+_context.getNodeCount(_maxDD));
+					if (REDUNDANDY_CHECK)
+						_maxDD = _context.reduceLP(_maxDD,true);
+					else
 					_maxDD = _context.reduceLP(_maxDD);
+					//_logStream.println("Number of nodes after reducing redundant paths: "+_context.getNodeCount(_maxDD));
 		            if (_maxDD != _context.makeCanonical(_maxDD)) {
 		            	System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical");
 		            	System.exit(1);
@@ -216,8 +234,9 @@ public class CAMDP {
 			}
 
 			_valueDD = _maxDD;
-			_logStream.println("- V^" + _nCurIter + _context.getString(_valueDD));
-			doDisplay(_valueDD, _logFileRoot + ": V^"+_nCurIter);
+			//_logStream.println("- V^" + _nCurIter + _context.getString(_valueDD));
+			//doDisplay(_valueDD, _logFileRoot + ": V^"+_nCurIter);
+			doDisplay(_valueDD, "V^"+_nCurIter+".dot");
 			
 			//////////////////////////////////////////////////////////////////////////
 			// Value iteration statistics
@@ -304,7 +323,7 @@ public class CAMDP {
 	public String toString(boolean display_reward, boolean display_value) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("\nCMDP Definition:\n===============\n");
-		sb.append("CVars:       " + _context.getContinuousVarList() + " / " + 
+		sb.append("CVars:       " + /*_context.getContinuousVarList() + */" / " + 
 				_alContAllVars + " = " + _hsContSVars + " + " + _hsContAVars + "\n");
 		sb.append("Min-values:  " + _context._hmMinVal + "\n");
 		sb.append("Max-values:  " + _context._hmMaxVal + "\n");
@@ -348,6 +367,7 @@ public class CAMDP {
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "gold1");
+		g.genDotFile(label);
 		g.launchViewer(1300, 770);
 	}
 
@@ -500,6 +520,6 @@ public class CAMDP {
 		System.out.println("\nSolution complete, required " + 
 				iter_used + " / " + iter + " iterations.");
 		
-		System.err.println("\n\nIMPLICATIONS:\n" + mdp._context.showImplications());
+		//System.err.println("\n\nIMPLICATIONS:\n" + mdp._context.showImplications());
 	}
 }
