@@ -213,7 +213,7 @@ public class LP {
 				System.out
 						.println("WARNING: Internal Calculations vs. LpSolve Mismatch");
 				System.out.println("         " + _dObjValue + " vs. "
-						+ _solver.getObjective());
+						+ _solver.getObjective() + "\n         ** Can ignore if problem was infeasible.");
 			}
 
 		} catch (LpSolveException e) {
@@ -230,8 +230,10 @@ public class LP {
 	public double computeObjective() {
 		double obj_val = 0.0d;
 		for (int i = 0; i < _x.length; i++) {
+			//System.out.println("obj_val += " + _x[i] + " * " + _obj[i]);
 			obj_val += _x[i] * _obj[i];
 		}
+		//System.out.println("obj_val = " + obj_val);
 		return obj_val;
 	}
 
@@ -281,6 +283,8 @@ public class LP {
 
 	public static void main(String[] args) {
 
+		System.out.println("JVM - " + System.getProperty("sun.arch.data.model") + "-bit");
+		
 		// How many vars
 		int nvars = 3;
 
