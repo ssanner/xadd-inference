@@ -16,6 +16,7 @@ public class WinUNIX {
 	
 	public static int SYSTEM = UNDEFINED;
 	
+	public static String SAT_EXE = null;
 	public static String GVIZ_EXE = null;
 	public static String GVIZ_CMD = null;
 	public static String GVIZ_CMD_CLOSE = null;
@@ -36,6 +37,7 @@ public class WinUNIX {
 		
 		if (SYSTEM == WINDOWS) {
 			
+			SAT_EXE  = "minisat114.exe";
 			GVIZ_EXE = "dot.exe -Tdot";
 			GVIZ_CMD = "CMD /C dot.exe -Tdot";
 			GVIZ_CMD_CLOSE = "";
@@ -45,6 +47,7 @@ public class WinUNIX {
 
 		} else if (SYSTEM == LINUX_LIKE) {
 			
+			SAT_EXE  = "minisat114";
 			GVIZ_EXE = "dot -Tdot";
 			GVIZ_CMD = "/bin/sh 'dot -Tdot";
 			GVIZ_CMD_CLOSE = "'";
