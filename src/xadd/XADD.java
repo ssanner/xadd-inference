@@ -106,9 +106,6 @@ public class XADD {
 	public HashMap<IntPair, Integer> _hmReduceLeafOpCache = new HashMap<IntPair, Integer>();
 	public HashMap<IntPair, Integer> _hmReduceAnnotateCache = new HashMap<IntPair, Integer>();
 	public HashMap<IntTriple, Integer> _hmApplyCache = new HashMap<IntTriple, Integer>();
-	public HashMap<IntTriple, Integer> _hmApplyCache0 = new HashMap<IntTriple, Integer>();
-	public HashMap<IntTriple, Integer> _hmApplyCache1 = new HashMap<IntTriple, Integer>();
-	public HashMap<IntTriple, Integer> _hmApplyCache2 = new HashMap<IntTriple, Integer>();
 	public HashMap<XADDINode, HashSet<String>> _hmINode2Vars = new HashMap<XADDINode, HashSet<String>>();
 	public HashMap<Integer, Pair<XADDNode, XADDNode>> _hmLinearDecisions = new HashMap<Integer, Pair<XADDNode, XADDNode>>();
 
@@ -581,28 +578,29 @@ public class XADD {
 		_hmReduceCache.put(new IntTriple(node_id, var_id, op), ret);
 		return ret;
 	}
+	
+
 	// NOTE: can only linearize decisions that have one quadratic variable,
 	//       otherwise have to complete the square symbolically and take
 	//       a symbolic square root of an XADD... OK except that no longer
 	//       a polynomial for purposes of current code.
 	public int reduceLinearize(int node_id) {
 		node_id = reduceLinearizeInt(node_id);
-		return makeCanonical(node_id); // Nodes may have gotten out of order
+		return makeCanonical(node_id); // Redundant for current code, but may add new linearizations
 	}
 
-	public int reduceLinearizeInt(int node_id) {
+	private int reduceLinearizeInt(int node_id) {
 
 		Integer ret = null;
 		XADDNode n = _hmInt2Node.get(node_id);
 		if (n == null) {
-			System.out.println("ERROR: " + node_id
-					+ " expected in node cache, but not found!");
-			new Exception().printStackTrace();
+			System.out.println("ERROR: " + node_id + " expected in node cache, but not found!");
+					new Exception().printStackTrace();
 			System.exit(1);
 		}
 
 		// A terminal node should be reduced (and cannot be restricted)
-		// by default if hashing and equality testing are working in getTNode
+		//by default if hashing and equality testing are working in getTNode
 		if (n instanceof XADDTNode) {
 			return node_id; // Assuming that to have a node id means canonical
 		}
@@ -610,13 +608,13 @@ public class XADD {
 		// If its an internal node, check the reduce cache
 		_tempReduceKey.set(node_id, -1, LINEARIZE);
 		if ((ret = _hmReduceCache.get(_tempReduceKey)) != null) {
-			// System.out.println("In cache, returning: " + qret);
+			//System.out.println("In cache, returning: " + qret);
 			return ret;
 		}
 
 		XADDINode inode = (XADDINode) n;
 
-		int low = reduceLinearizeInt(inode._low);
+		int low  = reduceLinearizeInt(inode._low);
 		int high = reduceLinearizeInt(inode._high);
 
 		Decision d = _alOrder.get(inode._var);
@@ -626,22 +624,14 @@ public class XADD {
 		if (xadd_dec_true == null)
 			ret = getINode(inode._var, low, high);
 		else {
-			int xadd_dec_false = applyInt(getTermNode(ONE), xadd_dec_true,
-					MINUS); // can use applyInt rather than apply
-			int true_half = applyInt(xadd_dec_true, high, PROD); // Note: this
-			// enforces
-			// canonicity
-			// so
-			int false_half = applyInt(xadd_dec_false, low, PROD); // can use
-			// applyInt
-			// rather
-			// than
-			// apply
+			int xadd_dec_false = applyInt(getTermNode(ONE), xadd_dec_true, MINUS); // can use applyInt rather than apply
+			int true_half = applyInt(xadd_dec_true, high, PROD); // Note: this enforces canonicity so
+			int false_half = applyInt(xadd_dec_false, low, PROD); // can use applyInt rather than apply
 			ret = applyInt(true_half, false_half, SUM);
 		}
 
 		// Put return value in cache and return
-		_hmReduceCache.put(new IntTriple(node_id, -1, LINEARIZE), ret);
+		_hmReduceCache.put(new IntTriple(node_id,-1,LINEARIZE), ret);
 		return ret;
 	}
 
@@ -651,8 +641,8 @@ public class XADD {
 		if (!(d instanceof ExprDec))
 			return null;
 
-		ExprDec e = (ExprDec) d;
-		OperExpr lhs = (OperExpr) e._expr._lhs;
+		ExprDec e = (ExprDec)d;
+		OperExpr lhs = (OperExpr)e._expr._lhs;
 		if (lhs._type != SUM)
 			return null;
 
@@ -672,17 +662,17 @@ public class XADD {
 			// Set coefficients
 			for (ArithExpr a : lhs._terms) {
 
-				if (a instanceof OperExpr && ((OperExpr) a)._type == PROD) {
+				if (a instanceof OperExpr && ((OperExpr)a)._type == PROD) {
 
 					// Count order of polynomial in var
 					int count_var = 0;
 					Double coef = null;
-					for (ArithExpr a_sub : ((OperExpr) a)._terms) {
+					for (ArithExpr a_sub : ((OperExpr)a)._terms) {
 						if (a_sub.equals(varExpr))
 							count_var++;
 						else if (a_sub instanceof DoubleExpr)
-							coef = ((coef == null) ? ((DoubleExpr) a_sub)._dConstVal
-									: coef * ((DoubleExpr) a_sub)._dConstVal);
+							coef = ((coef == null) ? ((DoubleExpr)a_sub)._dConstVal
+									: coef * ((DoubleExpr)a_sub)._dConstVal);
 						else {
 							all_var = false;
 							break;
@@ -703,53 +693,76 @@ public class XADD {
 				} else if (a instanceof VarExpr) {
 					linear_coef += 1d;
 				} else if (a instanceof DoubleExpr) {
-					const_coef += ((DoubleExpr) a)._dConstVal;
+					const_coef += ((DoubleExpr)a)._dConstVal;
 				}
 			}
 
 			// If this is a quadratic expression in one variable, we can
-			// linerize and return the true indicator XADD for it
+			// linearize and return the true indicator XADD for it
 			if (all_var && !higher_order && quad_coef != null) {
 
-				// Build XADD for new decision true indicator and return
+				//Build XADD for new decision true indicator and return
 				// ax^2 + bx + c COMP 0
 				// => x^2 + b/a*x COMP -c/a
-				// let d = b/a and e = -c/a
-				// if (a < 0) COMP = flip(COMP)
+				//      let d = b/a and e = -c/a
+				//      if (a < 0) COMP = flip(COMP)
 				// => x^2 + d*x + (d/2)^2 COMP (d/2)^2 + e
 				// => (x + d/2)^2 COMP (d/2)^2 + e
-				// => (x + d/2) COMP SQRT((d/2)^2 + e)
-				// ^ (x + d/2) flip(COMP) -SQRT((d/2)^2 + e)
+				// => [if ((d/2)^2 + e) >= 0]
+				//      (x + d/2) COMP SQRT((d/2)^2 + e)
+				//      LOG_SYMB (x + d/2) flip(COMP) -SQRT((d/2)^2 + e)
+				//    [else]
+				//      substitute x/0 then makeCanonical 
+				//      (to find out whether true or false since for any x, always on same side)
+				//
+				// LOG_SYMB:
+				//   COMP=>,>= / a > 0: LOG_SYMB = OR
+				//   COMP=<,<= / a > 0: LOG_SYMB = AND
+				//   COMP=>,>= / a < 0: LOG_SYMB = AND
+				//   COMP=<,<= / a < 0: LOG_SYMB = OR
+				boolean is_and = (quad_coef < 0 && (e._expr._type == GT || e._expr._type == GT_EQ))
+							  || (quad_coef > 0 && (e._expr._type == LT || e._expr._type == LT_EQ));
+				
 				double var_d = linear_coef / quad_coef;
 				double var_e = -const_coef / quad_coef;
 
-				// Build expressions for first and second inequality
+				//Build expressions for first and second inequality
 				int comp_oper = e._expr._type;
 				if (quad_coef < 0)
 					comp_oper = CompExpr.flipCompOper(comp_oper);
 				int flip_comp_oper = CompExpr.flipCompOper(comp_oper);
-				OperExpr lhs_expr = new OperExpr(SUM, new VarExpr(var),
-						new DoubleExpr(var_d / 2d));
-				double rhs_const = Math.sqrt(var_e + var_d * var_d / 4d);
-				int var1_id = getVarIndex(new ExprDec(new CompExpr(comp_oper,
-						lhs_expr, new DoubleExpr(rhs_const))), true);
-				int var2_id = getVarIndex(new ExprDec(new CompExpr(
-						flip_comp_oper, lhs_expr, new DoubleExpr(-rhs_const))),
-						true);
+				OperExpr lhs_expr = new OperExpr(SUM, new VarExpr(var), new DoubleExpr(var_d / 2d));
+				double rhs_pre_sqrt = var_e + var_d * var_d / 4d;
+				if (rhs_pre_sqrt < 0) {
+					// Check for imaginary roots... quadratic never crosses zero
+					HashMap<String,ArithExpr> subst = new HashMap<String,ArithExpr>();
+					subst.put(var, ZERO);
+					TautDec new_dec = (TautDec)(new ExprDec(e._expr.substitute(subst)).makeCanonical());
+					return getTermNode(new_dec._bTautology ? ONE : ZERO); // will be multiplied by true branch
+				}
+				double rhs_const = Math.sqrt(rhs_pre_sqrt);
+				int var1_id = getVarIndex(new ExprDec(new CompExpr(comp_oper, lhs_expr, new 
+						DoubleExpr(rhs_const))), true);
+				int var2_id = getVarIndex(new ExprDec(new CompExpr(flip_comp_oper, lhs_expr, new 
+						DoubleExpr(-rhs_const))), true);
 
 				// Build XADD indicator from expressions
-				// Note: disjunction 'a v b = 1 - (1 - a)*(1 - b)
+				// Note: disjunction a v b = 1 - (1 - a)*(1 - b)
+				int ret_xadd = -1;
 				int T_ZERO = getTermNode(ZERO);
 				int T_ONE = getTermNode(ONE);
-				int expr1_xadd = getINode(var1_id, /* low */T_ONE, /* high */
-						T_ZERO);
-				int expr2_xadd = getINode(var2_id, /* low */T_ONE, /* high */
-						T_ZERO);
-				int ret_xadd = apply(T_ONE,
-						apply(expr1_xadd, expr2_xadd, PROD), MINUS);
-				/*System.out.println("LINEARIZE -- started with: " + e
-						+ "... returning\n" + getString(ret_xadd));*/
-				// System.exit(1);
+				if (is_and) {
+					int expr1_xadd = getINode(var1_id, /* low */T_ZERO, /* high */T_ONE);
+					int expr2_xadd = getINode(var2_id, /* low */T_ZERO, /* high */T_ONE);
+					ret_xadd = apply(expr1_xadd, expr2_xadd, PROD);				
+				} else {
+					int expr1_xadd = getINode(var1_id, /* low */T_ONE, /* high */T_ZERO);
+					int expr2_xadd = getINode(var2_id, /* low */T_ONE, /* high */T_ZERO);
+					ret_xadd = apply(T_ONE, apply(expr1_xadd, expr2_xadd, PROD), MINUS);
+				}
+				System.out.println("LINEARIZE -- started with: " + e + "... returning\n" + 
+						getString(ret_xadd));
+				//System.exit(1);
 				return ret_xadd;
 			}
 		} // Done processing 'var'
@@ -788,6 +801,8 @@ public class XADD {
 		_hmReduceAnnotateCache.put(new IntPair(node_id, annotation.hashCode()), ret);
 		return ret;
 	}
+	
+	// TODO: rounding should be done recursively on expressions
 	//rounding the final result xadd to reduce the number of nodes
 	public int reduceRound(int node_id) {
 
@@ -2196,6 +2211,8 @@ else
 				//_log.println("max of constrained root sub and int_eval(LB/UB): " + getString(max_eval));
 			}
 
+			// NOTE TO ZAHRA: BUGS HERE SINCE USING 0-1 INDICATOR PRODUCT DURING MAX OPERATION
+			//                I RECALL WE FIXED THIS... CAN YOU INCORPORATE THOSE FIXES?
 			// Finally, multiply in boolean decisions and irrelevant comparison expressions
 			// to the XADD and add it to the running sum
 			for (Map.Entry<Decision, Boolean> me : max_var_indep_decisions.entrySet()) {
@@ -5029,9 +5046,6 @@ else
 		// _hmReduceLPCache.clear();
 		_hmReduceLeafOpCache.clear();
 		_hmApplyCache.clear();
-		_hmApplyCache0.clear();
-		_hmApplyCache1.clear();
-		_hmApplyCache2.clear();
 		_hmINode2Vars.clear();
 		_hmLinearDecisions.clear();
 		_hmReduceAnnotateCache.clear();
