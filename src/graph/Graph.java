@@ -606,6 +606,10 @@ public class Graph {
 		launchViewer(800, 600, 100, 100, 20);
 	}
 	
+	public void launchViewer(String name) {
+		launchViewer(800, 600, 100, 100, 20, name);
+	}
+	
 	public void launchViewer(int width, int height) {
 		try {
 			launchViewer(width, height, 0, 0, 20);
@@ -613,6 +617,16 @@ public class Graph {
 			System.err.println(t);
 			t.printStackTrace(System.err);
 		}
+	}
+		
+	public void launchViewer(int w, int h, int x_off, int y_off, int text_h,String window) {
+		genFormatDotFile(VIEWER_FILE);
+		DotViewer dv = new DotViewer(window) {
+			public void nodeClicked(String name) {
+			}
+		};
+		dv.setWindowSizing(w, h, x_off, y_off, text_h);
+		dv.showWindow(VIEWER_FILE);
 	}
 		
 	public void launchViewer(int w, int h, int x_off, int y_off, int text_h) {

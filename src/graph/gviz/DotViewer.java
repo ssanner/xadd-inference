@@ -29,6 +29,7 @@ public abstract class DotViewer
     public int x_offset = 100; 
     public int y_offset = 100;
     public int text_height = 75;
+    public String window_name = "Graph Viewer";
 
     static {
 	// JFrame.setDefaultLookAndFeelDecorated(true);
@@ -40,7 +41,11 @@ public abstract class DotViewer
 	// Initially use defaults for window sizing
     }
 
-    public void setWindowSizing(int w, int h, int x_off, int y_off, int text_h) {
+    public DotViewer(String w_name) {
+    	window_name = w_name;
+	}
+
+	public void setWindowSizing(int w, int h, int x_off, int y_off, int text_h) {
 	width = w;
 	height = h;
 	x_offset = x_off;
@@ -81,7 +86,7 @@ public abstract class DotViewer
 	graph.setEditable(true);
 	graph.setErrorWriter(new PrintWriter(System.err,true));
 
-	frame = new DotViewerFrame(graph, this, width, height, x_offset, y_offset, text_height);
+	frame = new DotViewerFrame(graph, this, width, height, x_offset, y_offset, text_height,window_name);
 	frame.show();
 	frame.repaint();
     }
@@ -182,10 +187,17 @@ public abstract class DotViewer
 	JButton zoom_half  = null;
 	JPanel panel = null;
   
+//	public DotViewerFrame(Graph graph, DotViewer dot_viewer, 
+//		      int width, int height, int offset_x, int offset_y,
+//		      int text_height) {
+//		DotViewerFrame(graph, dot_viewer, width, height, offset_x, offset_y, 
+//				text_height, "Graph Viewer");
+//	}
+	
 	public DotViewerFrame(Graph graph, DotViewer dot_viewer, 
 			      int width, int height, int offset_x, int offset_y,
-			      int text_height) {
-	    super("Graph Viewer");
+			      int text_height, String name) {
+	    super(name);
 
 	    dv = dot_viewer;
 

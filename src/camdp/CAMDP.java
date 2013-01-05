@@ -43,7 +43,12 @@ public class CAMDP {
 	public final static boolean DISPLAY_MAX = false;
 
 	//to check for redundancy as well as consistency 
-	public boolean REDUNDANDY_CHECK = true;
+	public static boolean REDUNDANDY_CHECK = false;
+	public static boolean APPROX_PRUNING = true;
+	public double APPROX_ERROR = 0.0d;
+	public boolean APPROX_ALWAYS = false;
+	public boolean COMPARE_OPTIMAL = false;
+	public ArrayList<Integer> optimalDD = new ArrayList<Integer>();
 	/* Maintain an explicit policy? */
 	public final static boolean MAINTAIN_POLICY = false;
 	
@@ -52,8 +57,8 @@ public class CAMDP {
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
 
 	/* For printing */
-	public static DecimalFormat _df = new DecimalFormat("#.###");
-	public static PrintStream _logStream = null;
+	public static DecimalFormat _df = new DecimalFormat("#.########");
+	public PrintStream _logStream = null;	
 	
 	/* Static variables */
 	public static long _lTime; // For timing purposes
@@ -117,8 +122,7 @@ public class CAMDP {
 		// Setup CAMDP according to parsed file contents
 		ParseCAMDP parser = new ParseCAMDP(this);
 		parser.buildCAMDP(input);
-		_context._hmMaxVal = parser._maxCVal;
-		_context._hmMinVal = parser._minCVal;
+		_context.addContinuousVarsBounds(parser._minCVal,parser._maxCVal);
 		_context._alBooleanVars = parser.getBVars();
 		_alConstraints = parser.getConstraints();
 		_nMaxIter = parser.getIterations();
@@ -161,7 +165,7 @@ public class CAMDP {
 	////////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * CMDP inference methods
+	 * CAMDP inference methods
 	 **/
 	public int solve(int max_iter)
 	{
@@ -170,6 +174,8 @@ public class CAMDP {
 		_nCurIter = 0;
 		if (max_iter < 0)
 			max_iter = _nMaxIter;
+		
+		double totalTime=0d;
 		long[] time = new long[max_iter + 1];
 		int[] num_nodes = new int[max_iter + 1]; 
 		int[] num_branches = new int[max_iter + 1]; 
@@ -197,44 +203,49 @@ public class CAMDP {
 				int regr = _qfunHelper.regress(_valueDD, me.getValue());
 				regr  = _context.reduceRound(regr);
 				if (DISPLAY_POSTMAX_Q)
-					//doDisplay(regr, _logFileRoot + ": Q^" + _nCurIter + "(" + me.getKey() + ")");
+					doDisplay(regr, _logFileRoot + ": Q^" + _nCurIter + "(" + me.getKey() + ")");
 	
 				// Take the max over this action and the previous action 
 				//(can have continuous parameters which represents many discrete actions)
 				///////ADD THIS TO SCOTT'S CODE
 				regr = _context.makeCanonical(regr);
 				if (_maxDD == null)
-				{
 					_maxDD = regr;
-					if (REDUNDANDY_CHECK)
-						_maxDD = _context.reduceLP(_maxDD,true);
-					else
+				else{
+					_maxDD = _context.apply(_maxDD, regr, XADD.MAX);
+				}
+				if (REDUNDANDY_CHECK)
+					_maxDD = _context.reduceLP(_maxDD,true);
+				else
 					_maxDD = _context.reduceLP(_maxDD);
-
+				if (APPROX_ALWAYS) {
+					_maxDD = _context.linPruneRel(_maxDD, APPROX_ERROR);
 				}
 
-				else {
-					_maxDD = _context.apply(_maxDD, regr, XADD.MAX);
-					_maxDD = _context.reduceLinearize(_maxDD);
-					//_logStream.println("Number of nodes before reducing redundant paths: "+_context.getNodeCount(_maxDD));
-					if (REDUNDANDY_CHECK)
-						_maxDD = _context.reduceLP(_maxDD,true);
-					else
-					_maxDD = _context.reduceLP(_maxDD);
-					//_logStream.println("Number of nodes after reducing redundant paths: "+_context.getNodeCount(_maxDD));
-		            if (_maxDD != _context.makeCanonical(_maxDD)) {
+				if (_maxDD != _context.makeCanonical(_maxDD)) {
 		            	System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical");
 		            	System.exit(1);
-		            }
+		        }
+				if(DISPLAY_MAX){
+					displayGraph(_maxDD, "maxPruned-" + _nCurIter+" e"+APPROX_ERROR+"a"+me.getKey());
 				}
 				if(DISPLAY_MAX)
 					displayGraph(_maxDD, "max-" + _nCurIter);
 
 				flushCaches();
 			}
-
-			_valueDD = _maxDD;
-			//_logStream.println("- V^" + _nCurIter + _context.getString(_valueDD));
+			
+			_valueDD = _context.reduceLP(_maxDD);//_maxDD;
+			if (APPROX_PRUNING) {
+				System.out.println("Approx Iter"+ _nCurIter);
+				_valueDD = _context.linPruneRel(_valueDD, APPROX_ERROR);
+				System.out.println("Approx Finish"+ _nCurIter);
+				//_valueDD = _context.makeCanonical(_valueDD);
+				//displayGraph(_valueDD, "valPruned-" + _nCurIter+" e"+APPROX_ERROR);
+			}
+			
+			System.out.println("Iter:" + _nCurIter+" Complete");
+			//_logStream.println("Iter complete:" + _nCurIter + _context.getString(_valueDD));
 			//doDisplay(_valueDD, _logFileRoot + ": V^"+_nCurIter);
 			doDisplay(_valueDD, "V^"+_nCurIter+".dot");
 			
@@ -309,6 +320,8 @@ public class CAMDP {
 		if (_valueDD!=null){
 			_context.addSpecialNode(_valueDD); 
 		}
+		if (optimalDD!=null)
+			_context._hsSpecialNodes.addAll(optimalDD);
 		_context.flushCaches();
 
 		_logStream.println("After flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
@@ -342,7 +355,7 @@ public class CAMDP {
 
 		if (display_value) {
 			Graph g = _context.getGraph(_valueDD);
-			//g.launchViewer(1300, 770);
+			g.launchViewer(1300, 770);
 		}
 
 		return sb.toString();
@@ -391,7 +404,7 @@ public class CAMDP {
 	public void display3D(int xadd_id, String label) {
 		
 		// If DISPLAY_3D is enabled, it is expected that necessary parameters 
-		// have been placed in a _problemFile + ".2d"
+		// have been placed in a _problemFile + ".3d"
 		FileOptions opt = new FileOptions(_problemFile + ".3d");
 
 		System.out.println("Plotting 3D...");
@@ -422,7 +435,7 @@ public class CAMDP {
 					line = line.trim();
 					if (line.length() == 0)
 						continue;
-					String[] split = line.split("\t");
+					String[] split = line.split("\t");//SCOTT-could be " ", easier to recognize
 					String label = split[0].trim();
 					if (label.equalsIgnoreCase("var")) {
 						// Line format: var name lb inc ub
@@ -442,7 +455,7 @@ public class CAMDP {
 				}
 			} catch (Exception e) {
 				System.err.println(e + "\nContent at current line: '" + line + "'");
-				System.err.println("ERROR: could not read 2d file: " + filename + ", exiting.");
+				System.err.println("ERROR: could not read 3d file: " + filename + ", exiting.");
 			}		
 		}
 	}
@@ -463,6 +476,12 @@ public class CAMDP {
 		return total - free + ":" + total;
 	}
 
+	public static int usedMem() {
+		long total = RUNTIME.totalMemory();
+		long free  = RUNTIME.freeMemory();
+		return (int) ((total - free)/1000000);
+	}
+	
 	////////////////////////////////////////////////////////////////////////////
 	// Testing Interface
 	////////////////////////////////////////////////////////////////////////////
@@ -488,12 +507,20 @@ public class CAMDP {
 	}
 	
 	public static void Usage() {
-		System.out.println("\nUsage: MDP-filename #iter display-2D? display-3D?");
+		System.out.println("\nUsage: MDP-filename #iter display-2D? display-3D? [dApproxPrune]");
 		System.exit(1);
 	}
 
+	public void setApproxTest(double eps, PrintStream log, boolean always,ArrayList<Integer> opt) {
+		APPROX_ERROR = eps;
+		_logStream = log;
+		APPROX_ALWAYS = always;
+		optimalDD=opt;
+		COMPARE_OPTIMAL = true;
+	}
+	
 	public static void main(String args[]) {
-		if (args.length != 4) {
+		if (args.length < 4 || args.length >5) {
 			Usage();
 		}
 
@@ -513,13 +540,18 @@ public class CAMDP {
 		CAMDP mdp = new CAMDP(filename);
 		mdp.DISPLAY_2D = Boolean.parseBoolean(args[2]);
 		mdp.DISPLAY_3D = Boolean.parseBoolean(args[3]);
+		if (args.length == 5){
+			mdp.APPROX_ERROR = Double.parseDouble(args[4]);
+		}
+		//System.out.println(mdp.toString(false, false));
 		System.out.println(mdp.toString(false, false));
 		//System.in.read();
 
 		int iter_used = mdp.solve(iter);
-		System.out.println("\nSolution complete, required " + 
-				iter_used + " / " + iter + " iterations.");
-		
-		//System.err.println("\n\nIMPLICATIONS:\n" + mdp._context.showImplications());
+//		System.out.println("\nSolution complete, required " + 
+//				iter_used + " / " + iter + " iterations.");
+		//mdp._context.showCacheSize();
+		mdp.flushCaches();
+		System.out.println("CAMDP-FINISH");
 	}
 }

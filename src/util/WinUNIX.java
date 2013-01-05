@@ -13,6 +13,7 @@ public class WinUNIX {
 	public static final int UNDEFINED   = 0;
 	public static final int LINUX_LIKE  = 1;
 	public static final int WINDOWS     = 2;
+	public static final int MAC_OS  = 3;
 	
 	public static int SYSTEM = UNDEFINED;
 	
@@ -29,11 +30,12 @@ public class WinUNIX {
 	public static String OS_NAME  = System.getProperty("os.name");
 
 	static {
-		
 		if (OS_NAME.toLowerCase().startsWith("windows"))
 			SYSTEM = WINDOWS;
-		else
-			SYSTEM = LINUX_LIKE;
+		else if (OS_NAME.toLowerCase().startsWith("mac os"))
+				SYSTEM = MAC_OS;
+		else 
+				SYSTEM = LINUX_LIKE;
 		
 		if (SYSTEM == WINDOWS) {
 			
@@ -47,15 +49,27 @@ public class WinUNIX {
 
 		} else if (SYSTEM == LINUX_LIKE) {
 			
-			SAT_EXE  = "minisat114";
-			GVIZ_EXE = "dot -Tdot";
+			SAT_EXE  = "minisat/minisat";
+			GVIZ_EXE = "/usr/bin/dot -Tdot";
 			GVIZ_CMD = "/bin/sh 'dot -Tdot";
 			GVIZ_CMD_CLOSE = "'";
-			GVIZ2_EXE = "neato -Tdot";
+			GVIZ2_EXE = "/usr/bin/neato -Tdot";
 			GVIZ2_CMD = "/bin/sh 'neato -Tdot";
 			GVIZ2_CMD_CLOSE = "'";
 
-		} else {
+		}
+		else if (SYSTEM == MAC_OS) {
+				SAT_EXE  = "/Users/ludygrv/Dropbox/Disciplinas/2sem/LABIA/LOGIC1/" +
+						"minisat/minisat";
+				GVIZ_EXE = "/usr/local/bin/dot -Tdot";
+				GVIZ_CMD = "/bin/sh 'dot -Tdot";
+				GVIZ_CMD_CLOSE = "'";
+				GVIZ2_EXE = "/usr/local/bin/neato -Tdot";
+				GVIZ2_CMD = "/bin/sh 'neato -Tdot";
+				GVIZ2_CMD_CLOSE = "'";
+
+		}
+		else {
 			System.out.println("util.WinUNIX: Unrecognized OS.");
 			System.exit(1);
 		}
