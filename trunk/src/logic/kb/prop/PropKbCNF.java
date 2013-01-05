@@ -453,7 +453,7 @@ public class PropKbCNF {
 	// kb to keep track of literal->id mappings. Should
 	// add undo here. :)
 	public void addFormula(PropFormula.Term formula) {
-		System.out.println("Adding: " + formula);
+		//System.out.println("Adding: " + formula);
 		_cnfCurrentKb.addAll(ConvertCNF(formula));
 	}
 
@@ -622,7 +622,7 @@ public class PropKbCNF {
 		}
 
 		public String toString() {
-			return "" + _bVal; // Ugly, but works :)
+			return Boolean.toString(_bVal); 
 		}
 
 		// Perform structural comparison
@@ -893,8 +893,8 @@ public class PropKbCNF {
 	           // Open files for reading and writing
 	           //BufferedReader fis_reader = new BufferedReader(_rReader);
 
-	    	 System.out.println("RUNNING:" + WinUNIX.SAT_EXE + ", executable exists: " + new File(WinUNIX.SAT_EXE).exists());
-	    	 System.out.println("Query: " + query);
+	    	 //System.out.println("RUNNING:" + WinUNIX.SAT_EXE + ", executable exists: " + new File(WinUNIX.SAT_EXE).exists());
+	    	 //System.out.println("Query: " + query);
 	           Process p = Runtime.getRuntime().exec(WinUNIX.SAT_EXE);
 	           BufferedReader process_out = new BufferedReader(new
 	        		  InputStreamReader(p.getInputStream()));
@@ -921,7 +921,12 @@ public class PropKbCNF {
 	           process_out.close();
 	           return result;
 
-	       } catch (IOException | InterruptedException ioe) {
+	       } catch (IOException ioe) {
+	           System.out.println("ERROR in PropKbCNF.querySATSolver:\n" + 
+	        		   "Check WinUNIX.java executable (and 'cygwin1.dll', 'cygz.dll' for Cygwin)\n" + 
+	        		   ioe);
+	           return false;
+	       } catch (InterruptedException ioe) {
 	           System.out.println("ERROR in PropKbCNF.querySATSolver:\n" + 
 	        		   "Check WinUNIX.java executable (and 'cygwin1.dll', 'cygz.dll' for Cygwin)\n" + 
 	        		   ioe);

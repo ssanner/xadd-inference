@@ -65,6 +65,12 @@ public class CMDP {
 	
 	/* Constants */
 	public final static boolean REDUCE_LP = true;
+	public final static boolean APPROX_PRUNNING = true;
+	public static boolean APPROX_ALWAYS = false; //approximate every regression
+	public static boolean COMPARE_OPTIMAL = false; //approximate every regression
+	public double APPROX_ERROR = 0.00d;
+	public PrintStream _logStream = null;
+	public ArrayList<Integer> optimalDD = new ArrayList<Integer>();
 	
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = true;
@@ -117,7 +123,7 @@ public class CMDP {
 	 **/
 	public CMDP(String filename) {
 		this(HierarchicalParser.ParseFile(filename));
-		NAME_FILE_3D=NAME_FILE_3D+filename.substring(12,filename.indexOf("."))+".dat";
+		//NAME_FILE_3D=NAME_FILE_3D+filename.substring(12,filename.indexOf("."))+".dat";
 	}
 
 	/**
@@ -153,6 +159,7 @@ public class CMDP {
 		
 		// Other initialization -- iteration statistics
 		int iter = 0;
+		int totalTime = 0;
 		long[] time = new long[max_iter + 1];
 		int[] num_nodes = new int[max_iter + 1]; 
 		int[] num_branches = new int[max_iter + 1]; 
@@ -197,6 +204,10 @@ public class CMDP {
 				if (REDUCE_LP) {
 					regr = _context.reduceLP(regr);
 				}
+				if (APPROX_PRUNNING && APPROX_ALWAYS) {
+					regr = _context.linPruneRel(regr,APPROX_ERROR);
+					//System.out.println("Prune complete " + regr);
+				}
 				
 				if (DISPLAY_Q) {
 					Graph g = _context.getGraph(regr);
@@ -237,6 +248,9 @@ public class CMDP {
 				if (REDUCE_LP) {
 					_maxDD = _context.reduceLP(_maxDD);
 				}
+				if (APPROX_PRUNNING) {
+					_maxDD = _context.linPruneRel(_maxDD,APPROX_ERROR);
+				}
 				
 				if(DISPLAY_MAX){
 				    Graph g = _context.getGraph(_maxDD);
@@ -251,41 +265,32 @@ public class CMDP {
 			    flushCaches();
 
 			}
-
-			if (REDUCE_LP) {
-//				Graph g1 = _context.getGraph(_maxDD);
-//				g1.addNode("_temp_");
-//				g1.addNodeLabel("_temp_", "Before [" + iter + "]");
-//				g1.addNodeShape("_temp_", "square");
-//				g1.addNodeStyle("_temp_", "filled");
-//				g1.addNodeColor("_temp_", "lightblue");
-//				g1.launchViewer(1300, 770);
-
-				_maxDD = _context.reduceLP(_maxDD);
-//				Graph g2 = _context.getGraph(_maxDD);
-//				g2.addNode("_temp_");
-//				g2.addNodeLabel("_temp_", "After [" + iter + "]");
-//				g2.addNodeShape("_temp_", "square");
-//				g2.addNodeStyle("_temp_", "filled");
-//				g2.addNodeColor("_temp_", "lightblue");
-//				g2.launchViewer(1300, 770);
-			}
 			
 			// ////////////////////////////////////////////////////////////
 			// Discount the max'ed value function backup and add in reward
 			// ////////////////////////////////////////////////////////////
-			
-			//_valueDD = _context.apply(_rewardDD, 
-			//			_context.scalarOp(_maxDD, _bdDiscount.doubleValue(), XADD.PROD), 
-			//			XADD.SUM);
 			_valueDD = _maxDD;
 			time[iter] = GetElapsedTime();
+			totalTime += time[iter];
 			num_nodes[iter] = _context.getNodeCount(_valueDD);
 			num_branches[iter] = _context.getBranchCount(_valueDD);
-			System.out.println("Value function size @ end of iteration " + iter + 
-					": " + num_nodes[iter] + " nodes = " + 
-					num_branches[iter] + " cases" + " in " + time[iter] + " ms");
-
+			double maxDif = 0d;
+			if (COMPARE_OPTIMAL){
+				if(APPROX_ERROR == 0d){
+					if(optimalDD.size() < max_iter) {
+						optimalDD = new ArrayList<Integer>(max_iter+1);
+						for(int i=0;i<=max_iter;i++) optimalDD.add(null);
+					}
+				optimalDD.set(iter,_valueDD);
+				}
+				maxDif = _context.linMaxDiff(optimalDD.get(iter), _valueDD);
+			}
+			//APPROX_TEST: format iter, node, branches, time, MaxVal, Mem
+			_logStream.format("%d %d %d %d %f %d %d %f \n", iter, num_nodes[iter], 
+					num_branches[iter], time[iter],
+					_context.linMaxVal(_valueDD), totalTime, 
+					usedMem(), maxDif);
+			///////////////////////////////////////////////////////////
 			if (DISPLAY_V) {
 				System.out.print("Displaying value function... ");
 				Graph g = _context.getGraph(_valueDD);
@@ -325,21 +330,39 @@ public class CMDP {
 	}
 
 	public void flushCaches() {
+		flushCaches(new ArrayList<Integer>());
+	}
+	
+	public void flushCaches(boolean certain) {
+		flushCaches(new ArrayList<Integer>(), certain);
+	}
+	
+	public void flushCaches(List<Integer> special_nodes){
+		flushCaches(special_nodes, false);
+	}
+	
+	public void flushCaches(List<Integer> special_nodes,boolean certain) {
 		if (((double)RUNTIME.freeMemory() / 
-		     (double)RUNTIME.totalMemory()) > FLUSH_PERCENT_MINIMUM) {
-			System.out.println("No need to flush caches.");
-		    return; // Still enough free mem to exceed minimum requirements
+				(double)RUNTIME.totalMemory()) > FLUSH_PERCENT_MINIMUM 
+				&& !certain) {
+			//System.out.println("No need to flush caches.");
+			return; // Still enough free mem to exceed minimum requirements
 		}
-		System.out.println("Before flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
-				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
-				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
 
+		// Commence cache flushing
+//		_logStream.println("Before flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
+//				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
+//				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
+
+		// TODO: Maybe keeping these is worthwhile?
+		_hmRegrKey2Node.clear();
+		
 		_context.clearSpecialNodes();
 		
 		for (Action a : _hmName2Action.values()) {
-		    _context.addSpecialNode(a._reward);
-		    for (Integer xadd : a._hmVar2DD.values())
-		    	_context.addSpecialNode(xadd);
+			_context.addSpecialNode(a._reward);
+			for (Integer xadd : a._hmVar2DD.values())
+				_context.addSpecialNode(xadd);
 		}
 		if (_prevDD!=null){
 			_context.addSpecialNode(_prevDD);
@@ -350,15 +373,10 @@ public class CMDP {
 		if (_valueDD!=null){
 			_context.addSpecialNode(_valueDD); 
 		}
+		if (optimalDD != null)
+			_context._hsSpecialNodes.addAll(optimalDD);
 		_context.flushCaches();
-		
-		_hmRegrKey2Node.clear();
-		
-		System.out.println("After flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " + 
-				_df.format(RUNTIME.freeMemory()/10e6d) + " MB = " + 
-				_df.format(100d*RUNTIME.freeMemory()/(double)RUNTIME.totalMemory()) + "% available memory");
-   }
-
+	}
 	/**
 	 * Regress a DD through an action
 	 **/
@@ -641,7 +659,7 @@ public class CMDP {
 			String val = ((ArrayList) o).get(index).toString();
 			if (!val.trim().equalsIgnoreCase("x")) try {
 				double min_val = Double.parseDouble(val);
-				_context._hmMinVal.put(var, min_val);
+				_context.addContinuousVarMinBound(var, min_val);
 			} catch (NumberFormatException nfe) {
 				System.out.println("\nIllegal min-value: " + var + " = " + val + " @ index " + index);
 				System.exit(1);
@@ -657,7 +675,7 @@ public class CMDP {
 			String val = ((ArrayList) o).get(index).toString();
 			if (!val.trim().equalsIgnoreCase("x")) try {
 				double max_val = Double.parseDouble(val);
-				_context._hmMaxVal.put(var, max_val);
+				_context.addContinuousVarMaxBound(var, max_val);
 			} catch (NumberFormatException nfe) {
 				System.out.println("\nIllegal max-value: " + var + " = " + val + " @ index " + index);
 				System.exit(1);
@@ -807,11 +825,10 @@ public class CMDP {
              }
              System.out.println(">> Evaluations");
              for(int i=0;i<size3D;i++){
-                 out.append(X.get(i).toString()+" ");
-                 out.append(Y.get(i).toString()+" ");
                  for(int j=0;j<size3D;j++){
+                     out.append(X.get(i).toString()+" ");
+                     out.append(Y.get(j).toString()+" ");
                 	 
-             
   		     		HashMap<String,Double> cont_assign = new HashMap<String,Double>();
   		     		
   		     		for (Map.Entry<String,Double> me : _context._hmMinVal.entrySet()) {
@@ -828,25 +845,12 @@ public class CMDP {
               		}
 
              		out.append(z.toString()+" ");
-                   /*
-             		cont_assign.put(xVar,  200.0d/3.0d);
-              		cont_assign.put(yVar,  100.0d/3.0d);
-              		z=_context.evaluate(XDD, bool_assign, cont_assign);
-             		System.out.println("Eval: [" + bool_assign + "], [" + cont_assign + "]"
-             						   + ": " + z);		
-
-             		out.append(z.toString()+" ");
-              		*/
-              		
-             		
+             		out.newLine();
                  }
-                 out.newLine();
+                 out.append("\n");
              }
             //out.append(System.getProperty("line.separator"));
              out.close();
-             
-             
-             
          } catch (IOException e) {
          	System.out.println("Problem with the creation 3D file");
          	System.exit(0);
@@ -898,9 +902,15 @@ public class CMDP {
 	}
 
 	public static String MemDisplay() {
+		long total = RUNTIME.totalMemory()/1000000;
+		long free = RUNTIME.freeMemory()/1000000;
+		return total - free + "M:" + total+"M";
+	}
+	
+	public static int usedMem() {
 		long total = RUNTIME.totalMemory();
-		long free = RUNTIME.freeMemory();
-		return total - free + ":" + total;
+		long free  = RUNTIME.freeMemory();
+		return (int) ((total - free)/1000000);
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -919,7 +929,7 @@ public class CMDP {
 	 * Basic testing interface.
 	 **/
 	public static void main(String args[]) {
-		if (args.length < 2 || args.length > 7) {
+		if (args.length < 2 || args.length > 8) {
 			usage();
 		}
 
@@ -948,11 +958,12 @@ public class CMDP {
 			System.exit(1);
 		}
 		
-		if (PRINT3DFILE & args.length==7){ 
+		if (PRINT3DFILE & args.length>=7){ 
 			  rover = Boolean.parseBoolean(args[3]);
 			  varX = args[4];
 			  varY = args[5];
 			  size3D= Double.parseDouble(args[6]);
+			  if (args.length >7)NAME_FILE_3D = args[7]+".dat"; 
 		}
 		else{
 			if (PRINT3DFILE){
@@ -965,11 +976,20 @@ public class CMDP {
 		}
 			
 		// Build a CMDP, display, solve
+		System.out.println(filename);
 		CMDP mdp1 = new CMDP(filename);
-		System.out.println(mdp1.toString(false, false));
-		//System.exit(1);
+		//System.out.println(mdp1.toString(false, false));
+		mdp1._logStream = System.out;
 		
 		int  iter1 = mdp1.solve(iter);
 		long time1 = mdp1.GetElapsedTime();
+	}
+	
+	public void setApproxTest(double eps, PrintStream log, boolean always,ArrayList<Integer> opt) {
+		APPROX_ERROR = eps;
+		_logStream = log;
+		APPROX_ALWAYS = always;
+		optimalDD=opt;
+		COMPARE_OPTIMAL = true;
 	}
 }

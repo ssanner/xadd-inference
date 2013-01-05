@@ -61,6 +61,7 @@ public class LP {
 			// Create a new Cplex object and get license
 			_nVars = nvars;
 			_solver = LpSolve.makeLp(0, nvars);
+			_solver.setVerbose(LpSolve.CRITICAL);
 			_nConsAdded = 0;
 
 			// Initialize the objective
@@ -91,8 +92,8 @@ public class LP {
 				}
 			}
 			for (int i = 0; i < nvars; i++) {
-				// addGeqConstraint(genUnitVector(i), lb[i]);
-				// addLeqConstraint(genUnitVector(i), ub[i]);
+				//addGeqConstraint(genUnitVector(i), lb[i]);
+				//addLeqConstraint(genUnitVector(i), ub[i]);
 				_solver.setLowbo(i + 1, lb[i]);
 				_solver.setUpbo(i + 1, ub[i]);
 			}
@@ -175,7 +176,7 @@ public class LP {
 	
 	public void addLTConstraint(double[] coefs, double rhs_value) {
 
-		// 2x + 3y < 5
+		// 2x + 3y < 5 (this is crazy, multiply by -1 doesn`t change the strictness of equality! (using an epsilon does) )
 		// (-1)(2x + 3y) >= 5(-1)
 		// -2x - 3y >= -5
 		try {

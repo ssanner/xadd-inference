@@ -175,14 +175,14 @@ public class ParseCAMDP {
 					o = i.next();
 					reward = (ArrayList) o; 
 					reward_2 = _camdp._context.buildCanonicalXADD(reward);
-					int T_ZERO = _camdp._context.getTermNode(ZERO);
-					int T_ONE = _camdp._context.getTermNode(ONE);
-					int var = _camdp._context.getVarIndex(_camdp._context.new BoolDec(BVars.get(0)), false);
-					int ind_true = _camdp._context.getINode(var,  T_ZERO,  T_ONE);
-					int ind_false = _camdp._context.getINode(var,  T_ONE,  T_ZERO);
+					//int T_ZERO = _camdp._context.getTermNode(ZERO);
+					//int T_ONE = _camdp._context.getTermNode(ONE);
+					//int var = _camdp._context.getVarIndex(_camdp._context.new BoolDec(BVars.get(0)), false);
+					//int ind_true = _camdp._context.getINode(var,  T_ZERO,  T_ONE);
+					//int ind_false = _camdp._context.getINode(var,  T_ONE,  T_ZERO);
 					//int true_half = _context.applyInt(ind_true, reward_toGoal, _context.PROD,-1); // Note: this enforces canonicity so
 					//int reward_d = _context.apply(reward_2,reward_toGoal, _context.SUM,-1);
-					int false_half = _camdp._context.applyInt(ind_false, reward_2, _camdp._context.PROD); // can use applyInt rather than apply
+					//int false_half = _camdp._context.applyInt(ind_false, reward_2, _camdp._context.PROD); // can use applyInt rather than apply
 					//reward_dd = _context.applyInt(true_half, false_half, _context.SUM,-1);
 					reward_dd = _camdp._context.applyInt(reward_2, reward_toGoal, _camdp._context.SUM);
 				}
