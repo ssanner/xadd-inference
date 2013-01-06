@@ -44,7 +44,7 @@ public class TestXADDDist {
 
 		// Setup static vars
 		HashMap<String, Double> dvars = new HashMap<String, Double>();
-		dvars.put("k", 0d);
+		dvars.put("k", 12d);
 		dvars.put("x1", 0d);
 		HashMap<String, Boolean> bvars = new HashMap<String, Boolean>();
 		bvars.put("f", true);
@@ -89,6 +89,15 @@ public class TestXADDDist {
 		xadd_context.getGraph(xadd2u).launchViewer();
 		PlotXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, bvars, dvars, "y",
 				"Uniform Mix");
+		Plot3DXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, -20d, 0.25d, 20d,
+				bvars, dvars, "y", "x1",
+				"Uniform Mix");
+		//public static void Plot3DXADD(XADD context, int xadd, double low_x,
+		//		double inc_x, double high_x, double low_y, double inc_y,
+		//		double high_y, HashMap<String, Boolean> static_bvars,
+		//		HashMap<String, Double> static_dvars, String xVar, String yVar,
+		//		String title) {
+
 		System.out.println("U Norm: "
 				+ TestNormalize(xadd_context, xadd2u, bvars, dvars, "y")
 				+ "\n\n\n");
@@ -118,10 +127,14 @@ public class TestXADDDist {
 	public static double TestNormalize(XADD context, int xadd,
 			HashMap<String, Boolean> static_bvars,
 			HashMap<String, Double> static_dvars, String int_var) {
-		int xadd_int = context.computeDefiniteIntegral(xadd, int_var);
+		int xadd_defint = context.computeDefiniteIntegral(xadd, int_var);
 		// System.out.println("Int result: " + context.getString(xadd_int));
+		//int xadd_indef = context.reduceProcessXADDLeaf(xadd,
+		//		context.new XADDLeafIndefIntegral(int_var), /*canonical_reorder*/false);
+		//context.getGraph(xadd_indef).launchViewer();
+		context.getGraph(xadd_defint).launchViewer();
 		System.out.println("Evaluating @ " + static_bvars + " " + static_dvars);
-		return context.evaluate(xadd_int, static_bvars, static_dvars);
+		return context.evaluate(xadd_defint, static_bvars, static_dvars);
 	}
 
 	public static void PlotXADD(XADD context, int xadd, double low, double inc,
@@ -200,6 +213,97 @@ public class TestXADDDist {
 	}
 
 	public static void Plot3DXADD(XADD context, int xadd, double low_x,
+			double inc_x, double high_x, double low_y, double inc_y,
+			double high_y, HashMap<String, Boolean> static_bvars,
+			HashMap<String, Double> static_dvars, String xVar, String yVar,
+			String title) {
+		
+		static_dvars = new HashMap<String, Double>(static_dvars);
+		PrintStream ps = null;
+		String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "") + ".txt"; 
+		title = RemovePathAndExt(title);
+		try {
+			ps = new PrintStream(new FileOutputStream(filename));
+		} catch (Exception e) {
+			System.err.println("Could not open " + filename + " for data export.");
+			ps = new DevNullPrintStream();
+		}
+
+		// Create a Simple 2D XY plot window.
+		ArrayList<Double> alX = new ArrayList<Double>();
+		for (double x = low_x; x <= high_x; x += inc_x)
+			alX.add(x);
+		ArrayList<Double> alY = new ArrayList<Double>();
+		for (double y = low_y; y <= high_y; y += inc_y)
+			alY.add(y);
+
+		double[][] xArr = new double[alY.size()][alX.size()];
+		double[][] yArr = new double[alY.size()][alX.size()];
+		double[][] zArr = new double[alY.size()][alX.size()];
+		for (int i = 0; i < alY.size(); i++) {
+			for (int j = 0; j < alX.size(); j++) {
+
+				double x = alX.get(j);
+				double y = alY.get(i);
+
+				static_dvars.put(xVar, x);
+				static_dvars.put(yVar, y);
+				double z = context.evaluate(xadd, static_bvars, static_dvars);
+				if (Double.isInfinite(z)) z=-300;
+				static_dvars.remove(xVar);
+				static_dvars.remove(yVar);
+
+				//if (z > 0.1d)
+				//	System.out.println("f(" + x + "," + y + ") = " + z);
+				ps.println(x + "\t" + y + "\t" + z);
+				xArr[i][j] = x;
+				yArr[i][j] = y;
+				zArr[i][j] = z; //x + y; //z;
+			}
+		}
+		ps.close();
+		
+//		for (int i=0;i<alY.size();i++)
+//		{
+//			for (int j=0;j<alX.size();j++)
+//				System.out.print(" " + zArr[i][j]);
+//			System.out.println();
+//		}
+		//String title = "f(" + xVar + "," + yVar + ") @ " + static_bvars + " " + static_dvars;
+		Plot2D aPlot = new ContourPlot(xArr, yArr, zArr, 12, false, title, 
+				xVar, yVar, null, null);
+
+		// Colorize the contours.
+		((ContourPlot) aPlot).colorizeContours(Color.blue, Color.red);
+
+		// Create a run that contains the original XY data points we just put
+		// contours through.
+		// We'll plot it with symbols so we can see the location of the original
+		// data points.
+		PlotSymbol symbol = new CircleSymbol();
+		symbol.setBorderColor(Color.gray);
+		symbol.setSize(4);
+		PlotRun run = new PlotRun();
+		for (int i = 0; i < alY.size(); i++) {
+			for (int j = 0; j < alX.size(); j++) {
+				run.add(new PlotDatum(xArr[i][j], yArr[i][j], false, symbol));
+			}
+		}
+
+		// Add this new run of points to the plot.
+		//aPlot.getRuns().add(run);
+
+		// Now proceed with creating the plot window.
+		PlotPanel panel = new PlotPanel(aPlot);
+		panel.setBackground(Color.white);
+		PlotExample window = new PlotExample(title, panel);
+		window.setSize(500, 300);
+		window.setLocation(100, 100);
+		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		window.show();
+	}
+
+	public static void Plot3DXADDv2 (XADD context, int xadd, double low_x,
 			double inc_x, double high_x, double low_y, double inc_y,
 			double high_y, HashMap<String, Boolean> static_bvars,
 			HashMap<String, Double> static_dvars, String xVar, String yVar,
