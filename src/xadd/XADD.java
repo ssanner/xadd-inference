@@ -3427,13 +3427,11 @@ else
 
 	public class XADDLeafDefIntegral extends XADDLeafIndefIntegral {
 		int _runningSum; // XADD for the running sum of all leaf substitutions
-		double _integrationVarCoef;
 
 		public final static boolean DEBUG_XADD_DEF_INTEGRAL = false;
 
 		public XADDLeafDefIntegral(String integration_var) {
 			super(integration_var);
-			_integrationVarCoef = Double.NEGATIVE_INFINITY;
 
 			// Start with the zero XADD
 			_runningSum = getTermNode(ZERO);
@@ -3501,8 +3499,8 @@ else
 				}
 
 				// We have coef*x + expr COMP_OPER 0
-				boolean flip_comparison = (_integrationVarCoef < 0d)&& (comp._type != EQ) && (comp._type != NEQ);
-				ArithExpr new_rhs = (ArithExpr) new OperExpr(MINUS, ZERO,new OperExpr(PROD, new DoubleExpr(	1d / _integrationVarCoef), lhs_isolated)).makeCanonical();
+				boolean flip_comparison = (var_coef < 0d)&& (comp._type != EQ) && (comp._type != NEQ);
+				ArithExpr new_rhs = (ArithExpr) new OperExpr(MINUS, ZERO,new OperExpr(PROD, new DoubleExpr(	1d / var_coef), lhs_isolated)).makeCanonical();
 
 				// Divide through by coef (pos or neg)
 				// - if coef neg, flip expression
