@@ -18,7 +18,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
@@ -100,7 +99,7 @@ public class TestXADDDist {
 				"Uniform Mix");
 		
 		// 3D Surface
-		Plot3DSurfXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, -20d, 0.25d, 20d,
+		Plot3DSurfXADD(xadd_context, xadd2u, -20d, 20d, -20d, 20d, 40,
 				bvars, dvars, "y", "x1",
 				"Uniform Mix");
 
@@ -227,7 +226,7 @@ public class TestXADDDist {
 		
 		static_dvars = new HashMap<String, Double>(static_dvars);
 		PrintStream ps = null;
-		String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "") + ".txt"; 
+		String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "").replace(".dot",".txt"); 
 		title = RemovePathAndExt(title);
 		try {
 			ps = new PrintStream(new FileOutputStream(filename));
@@ -247,8 +246,8 @@ public class TestXADDDist {
 		double[][] xArr = new double[alY.size()][alX.size()];
 		double[][] yArr = new double[alY.size()][alX.size()];
 		double[][] zArr = new double[alY.size()][alX.size()];
-		for (int i = 0; i < alY.size(); i++) {
-			for (int j = 0; j < alX.size(); j++) {
+		for (int j = 0; j < alX.size(); j++) {
+			for (int i = 0; i < alY.size(); i++) {
 
 				double x = alX.get(j);
 				double y = alY.get(i);
@@ -267,6 +266,7 @@ public class TestXADDDist {
 				yArr[i][j] = y;
 				zArr[i][j] = z; //x + y; //z;
 			}
+			ps.println();
 		}
 		ps.close();
 		
@@ -277,52 +277,71 @@ public class TestXADDDist {
 //			System.out.println();
 //		}
 		//String title = "f(" + xVar + "," + yVar + ") @ " + static_bvars + " " + static_dvars;
-		Plot2D aPlot = new ContourPlot(xArr, yArr, zArr, 12, false, title, 
-				xVar, yVar, null, null);
+//		Plot2D aPlot = new ContourPlot(xArr, yArr, zArr, 12, false, title, 
+//				xVar, yVar, null, null);
 
 		// Colorize the contours.
-		((ContourPlot) aPlot).colorizeContours(Color.blue, Color.red);
+//		((ContourPlot) aPlot).colorizeContours(Color.blue, Color.red);
 
 		// Create a run that contains the original XY data points we just put
 		// contours through.
 		// We'll plot it with symbols so we can see the location of the original
 		// data points.
-		PlotSymbol symbol = new CircleSymbol();
-		symbol.setBorderColor(Color.gray);
-		symbol.setSize(4);
-		PlotRun run = new PlotRun();
-		for (int i = 0; i < alY.size(); i++) {
-			for (int j = 0; j < alX.size(); j++) {
-				run.add(new PlotDatum(xArr[i][j], yArr[i][j], false, symbol));
-			}
-		}
+//		PlotSymbol symbol = new CircleSymbol();
+//		symbol.setBorderColor(Color.gray);
+//		symbol.setSize(4);
+//		PlotRun run = new PlotRun();
+//		for (int i = 0; i < alY.size(); i++) {
+//			for (int j = 0; j < alX.size(); j++) {
+//				run.add(new PlotDatum(xArr[i][j], yArr[i][j], false, symbol));
+//			}
+//		}
 
 		// Add this new run of points to the plot.
 		//aPlot.getRuns().add(run);
 
 		// Now proceed with creating the plot window.
-		PlotPanel panel = new PlotPanel(aPlot);
-		panel.setBackground(Color.white);
-		PlotExample window = new PlotExample(title, panel);
-		window.setSize(500, 300);
-		window.setLocation(100, 100);
-		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		window.show();
+//		PlotPanel panel = new PlotPanel(aPlot);
+//		panel.setBackground(Color.white);
+//		PlotExample window = new PlotExample(title, panel);
+//		window.setSize(500, 300);
+//		window.setLocation(100, 100);
+//		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+//		window.show();
+	}
+	
+	public static void Plot3DSurfXADD (XADD context, int xadd,
+			double low_x, double inc_x, double high_x, double low_y, double inc_y, double high_y,
+			HashMap<String, Boolean> static_bvars, HashMap<String, Double> static_dvars,
+			String xVar, String yVar, String title) {
+		int sampleX= (int) Math.round( (high_x-low_x)/inc_x);
+		int sampleY= (int) Math.round( (high_y-low_y)/inc_y);
+		if (sampleX != sampleY){
+			System.out.println("samples X and Y must be equal for Surface Plot, using X samples");
+		}
+			Plot3DSurfXADD ( context, xadd, low_x, high_x, low_y, high_y, (int) Math.ceil( (high_x-low_x)/inc_x),
+				static_bvars, static_dvars,	xVar, yVar, title); 
 	}
 
-	public static void Plot3DSurfXADD (XADD context, int xadd, double low_x,
-			double inc_x, double high_x, double low_y, double inc_y,
-			double high_y, HashMap<String, Boolean> static_bvars,
-			HashMap<String, Double> static_dvars, String xVar, String yVar,
-			String title) {
+	public static void Plot3DSurfXADD (XADD context, int xadd,
+			double low_x, double high_x, double low_y, double high_y, int nSamples,
+			HashMap<String, Boolean> static_bvars, HashMap<String, Double> static_dvars,
+			String xVar, String yVar, String title) {
 		
-		ArrayList<Float> alX = new ArrayList<Float>();
-		for (float x = (float)low_x; x <= high_x; x += inc_x)
-			alX.add(x);
-		ArrayList<Float> alY = new ArrayList<Float>();
-		for (float y = (float)low_y; y <= high_y; y += inc_y)
-			alY.add(y);
-
+		ArrayList<Float> alX = new ArrayList<Float>(nSamples);
+		float inc_x = (float) (high_x-low_x)/nSamples;
+		float temp_x = (float) low_x;
+		for (int i=0;i<nSamples; i++){
+			temp_x += inc_x;
+			alX.add(temp_x);
+		}
+		ArrayList<Float> alY = new ArrayList<Float>(nSamples);
+		float inc_y = (float) (high_y-low_y)/nSamples;
+		float temp_y = (float) low_y;
+		for (int i=0;i<nSamples; i++){
+			temp_y += inc_y;
+			alY.add(temp_y);
+		}
 		if (alX.size() != alY.size()) {
 			System.err.println("ERROR: Surface plotting requires the same number of samples along the x and y axes");
 			return;
