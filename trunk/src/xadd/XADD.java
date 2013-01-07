@@ -551,13 +551,7 @@ public class XADD {
 			HashMap<Integer, Integer> subst_cache) {
 
 		Integer ret = null;
-		XADDNode n = _hmInt2Node.get(node_id);
-		if (n == null) {
-			System.out.println("ERROR: " + node_id
-					+ " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode n = getExistNode(node_id);
 
 		// A terminal node should be reduced (and cannot be restricted)
 		// by default if hashing and equality testing are working in getTNode
@@ -605,11 +599,11 @@ public class XADD {
 		
 		if (CHECK_LOCAL_ORDERING) {
 			// Check ordering
-			XADDNode new_node = _hmInt2Node.get(ret);
+			XADDNode new_node = getExistNode(ret);
 			if (new_node instanceof XADDINode) {
 				XADDINode new_inode = (XADDINode) new_node;
 				int var_id = new_inode._var;
-				XADDNode low_n = _hmInt2Node.get(new_inode._low);
+				XADDNode low_n = getExistNode(new_inode._low);
 				if (low_n instanceof XADDINode) {
 					XADDINode low_ni = (XADDINode) low_n;
 					if (var_id > low_ni._var) {
@@ -620,7 +614,7 @@ public class XADD {
 						// System.exit(1);
 					}
 				}
-				XADDNode high_n = _hmInt2Node.get(new_inode._high);
+				XADDNode high_n = getExistNode(new_inode._high);
 				if (high_n instanceof XADDINode) {
 					XADDINode high_ni = (XADDINode) high_n;
 					if (var_id > high_ni._var) {
@@ -689,10 +683,20 @@ public class XADD {
 		return getVarIndex(d, false);
 	}
 
+	//
 	public XADDNode getNode(int node_id) {
 		return _hmInt2Node.get(node_id);
 	}
 
+	public XADDNode getExistNode(int node_id) {
+		XADDNode n = _hmInt2Node.get(node_id);
+		if (n==null){
+			System.err.println("Unexpected Missing node: "+node_id);
+			new Exception().printStackTrace();
+		}
+		return n;
+	}
+	
 	public String getString(int id) {
 		return getString(id, true);
 	}
@@ -700,23 +704,18 @@ public class XADD {
 	//collect XADD Variables present within a node
 
 	public HashSet<String> collectVars(int id) {
-		XADDNode n = _hmInt2Node.get(id);
-		if (n == null) {
-			System.out.println("ERROR: " + id + " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode n = getExistNode(id);
 		return n.collectVars();
 	}
 	
 	// Returns all variables in this XADD
 	public int getBranchCount(int id) {
-		XADDNode root = _hmInt2Node.get(id);
+		XADDNode root = getExistNode(id);
 		return root.countBranches();
 	}
 
 	public int getNodeCount(int id) {
-		XADDNode root = _hmInt2Node.get(id);
+		XADDNode root = getExistNode(id);
 		return root.collectNodes().size();
 	}
 
@@ -748,8 +747,8 @@ public class XADD {
 		}
 
 		// Can we create a terminal node here?
-		XADDNode n1 = _hmInt2Node.get(a1);
-		XADDNode n2 = _hmInt2Node.get(a2);
+		XADDNode n1 = getExistNode(a1);
+		XADDNode n2 = getExistNode(a2);
 		ret = computeTermNode(a1, n1, a2, n2, op);
 		if (ret == null) {
 
@@ -863,7 +862,7 @@ public class XADD {
 	public Double evaluate(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign) {
 
 		// Get root
-		XADDNode n = _hmInt2Node.get(node_id);
+		XADDNode n = getExistNode(node_id);
 
 		// Traverse decision diagram until terminal found
 		while (n instanceof XADDINode) {
@@ -886,7 +885,7 @@ public class XADD {
 				return null;
 
 			// Advance down to next node
-			n = _hmInt2Node.get(branch_high ? inode._high : inode._low);
+			n = getExistNode(branch_high ? inode._high : inode._low);
 		}
 
 		// Now at a terminal node so evaluate expression
@@ -982,12 +981,8 @@ else
 		}
 
 		Integer ret = null;
-		XADDNode n = _hmInt2Node.get(node_id);
-		if (n == null) {
-			System.out.println("ERROR: " + node_id	+ " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode n = getExistNode(node_id);
+
 
 		// A terminal node should be reduced (and cannot be restricted)
 		// by default if hashing and equality testing are working in getTNode
@@ -1054,12 +1049,7 @@ else
 	private int reduceLinearizeInt(int node_id) {
 
 		Integer ret = null;
-		XADDNode n = _hmInt2Node.get(node_id);
-		if (n == null) {
-			System.out.println("ERROR: " + node_id + " expected in node cache, but not found!");
-					new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode n = getExistNode(node_id);
 
 		// A terminal node should be reduced (and cannot be restricted)
 		//by default if hashing and equality testing are working in getTNode
@@ -1238,12 +1228,7 @@ else
 	public int annotateXADD(int node_id, Object annotation)
 	{
 		Integer ret = null;
-		XADDNode node = _hmInt2Node.get(node_id);
-		if (node == null) {
-			System.out.println("ERROR: " + node_id + " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode node = getExistNode(node_id);
 
 		// Directly annotate terminal nodes only 
 		if ((node instanceof XADDTNode)) {
@@ -1271,13 +1256,7 @@ else
 	public int reduceRound(int node_id) {
 
 		Integer ret = null;
-		XADDNode n = _hmInt2Node.get(node_id);
-		if (n == null) {
-			System.out.println("ERROR: " + node_id
-					+ " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode n = getExistNode(node_id);
 
 		if (n instanceof XADDTNode) 
 		{
@@ -1322,7 +1301,7 @@ else
 			node_id = reduceLPv2(node_id, new HashSet<Integer>(), performRedundancy);
 		}
 		if (USE_REDUCE_LPv1){
-			System.out.print("using LP1!");
+			//System.out.print("using LP1!");
 			node_id = reduceLPv1(node_id, performRedundancy);
 		}
 		return node_id;
@@ -1415,7 +1394,7 @@ else
 	}
 	private int getDecisionList(int node_id,ArrayList<Integer> _decisionList,ArrayList<Integer> test_var) {
 		Integer ret = null;
-		XADDNode n = _hmInt2Node.get(node_id);
+		XADDNode n = getExistNode(node_id);
 		if (n instanceof XADDTNode) {
 			//add this path to the set of intermediate paths
 			ArrayList<Integer> temp = new ArrayList<Integer>();
@@ -1447,12 +1426,7 @@ else
 	{
 
 		Integer ret = null;
-		XADDNode n = _hmInt2Node.get(node_id);
-		if (n == null) {
-			System.out.println("ERROR: " + node_id + " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode n = getExistNode(node_id);
 
 		// A terminal node should be reduced (and cannot be restricted)
 		// by default if hashing and equality testing are working in getTNode
@@ -1620,12 +1594,7 @@ else
 	@SuppressWarnings("unchecked")
 	private int reduceRedundancy(int tree, HashMap <Integer,ArrayList<ArrayList<Integer>>> formulas, PropKbCNF kb/*, HashMap<Integer,Boolean> marked_nodes*/) {
 		Integer ret = null;
-		XADDNode n = _hmInt2Node.get(tree);
-		if (n == null) {
-			System.out.println("ERROR: " + tree + " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode n = getExistNode(tree);
 
 		if (n instanceof XADDTNode) {
 			return tree; // Assuming that to have a node id means canonical
@@ -1864,12 +1833,7 @@ else
 	{
 
 		Integer ret = null;
-		XADDNode n = _hmInt2Node.get(node_id);
-		if (n == null) {
-			System.out.println("ERROR: " + node_id + " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode n = getExistNode(node_id);
 
 		// A terminal node should be reduced (and cannot be restricted)
 		// by default if hashing and equality testing are working in getTNode
@@ -1897,8 +1861,8 @@ else
 		} else if (isTestImpliedv2(test_dec, -1*inode._var)) {
 			var_implication = false;
 		} else if (redundancy){
-			XADDNode lowNode = _hmInt2Node.get(inode._low);
-			XADDNode highNode = _hmInt2Node.get(inode._high);
+			XADDNode lowNode = getExistNode(inode._low);
+			XADDNode highNode = getExistNode(inode._high);
 			if (lowNode instanceof XADDINode){
 				XADDINode iLowNode = (XADDINode) lowNode;
 				if ( iLowNode._low == inode._high){
@@ -2264,12 +2228,7 @@ else
 			//System.err.println("linMaxMin WARNING: " + id + " different from reduceLP");
 			id=reduceLP(id);
 		}
-		XADDNode r = _hmInt2Node.get(id);
-		if (r == null) {
-			System.out.println("ERROR: " + id + " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode r = getExistNode(id);
 		if (r instanceof XADDTNode) {
 			ArithExpr expr = ((XADDTNode) r)._expr;
 			return (restrictedMax(expr, domain,isMax)).sol_value; //nothing to prune on single leaf
@@ -2310,7 +2269,7 @@ else
 			return ret;		//already checked node
 		}
 		
-		XADDNode n1 = _hmInt2Node.get(id);
+		XADDNode n1 = getExistNode(id);
 		if  (n1 instanceof XADDTNode){
 			//System.out.println("Not remaped leaf! "+id+" keep equal");
 			_hmRemap.put(id,id);
@@ -2723,8 +2682,8 @@ else
 	//atempts to merge linearly apporximable leafs
 	private PruneResult tryMergeLin(int id1,int id2, double error){
 		//id1 and id2 must be terminal nodes!
-		XADDTNode l1 = (XADDTNode) _hmInt2Node.get(id1);
-		XADDTNode l2 = (XADDTNode) _hmInt2Node.get(id2);
+		XADDTNode l1 = (XADDTNode) getExistNode(id1);
+		XADDTNode l2 = (XADDTNode) getExistNode(id2);
 		ArrayList<HashSet<Integer>> paths1 = _hmDecList.get(id1);
 		ArrayList<HashSet<Integer>> paths2 = _hmDecList.get(id2);
 
@@ -2822,12 +2781,7 @@ else
 	//performs approximation and pruning of unnecessary decision in a XADD, assumes prune memory is clear
 	public int pruneUnionPath(int root_id, double allowError){
 
-		XADDNode r = _hmInt2Node.get(root_id);
-		if (r == null) {
-			System.out.println("ERROR: " + root_id + " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode r = getExistNode(root_id);
 		if (r instanceof XADDTNode) return root_id; //nothing to prune on single leaf
 		
 		//create the initial path, all other will extend from this (adding decisions)
@@ -2842,7 +2796,7 @@ else
 			if( PRUNE_UNION_DBG){
 				if (node_dec == _alOrder.size()) {
 					System.out.println("Leaf Node: "+node_id
-							+" expr = "+((XADDTNode)_hmInt2Node.get(node_id))._expr
+							+" expr = "+((XADDTNode)getExistNode(node_id))._expr
 							+" DecSet = "+ _hmDecList.get(node_id));
 				}
 				else {
@@ -2852,12 +2806,7 @@ else
 				}
 			}
 
-			XADDNode n = _hmInt2Node.get(node_id);
-			if (n == null) {
-				System.out.println("ERROR: " + node_id + " expected in node cache, but not found!");
-				new Exception().printStackTrace();
-				System.exit(1);
-			}
+			XADDNode n = getExistNode(node_id);
 			if (n instanceof XADDTNode){
 				Iterator<IntPair> qIt = _pqOpenNodes.iterator();
 				HashSet<IntPair> solved = new HashSet<IntPair>();
@@ -2867,7 +2816,7 @@ else
 					IntPair leaf = qIt.next();
 					if (leaf._i1 !=_alOrder.size() ) System.out.println("Invalid ordering!");
 					if (PRUNE_UNION_DBG) {System.out.println("n ="+node_id+" comp "+leaf._i2 
-							+ " " +( (XADDTNode) _hmInt2Node.get(leaf._i2))._expr
+							+ " " +( (XADDTNode) getExistNode(leaf._i2))._expr
 							+ " DecSet = "+ _hmDecList.get(leaf._i2));}
 					PruneResult res = tryMergeLin(node_id,leaf._i2, error);
 					if (res != null){
@@ -2879,13 +2828,13 @@ else
 						node_id = res.new_id; //continue merging from the new node!
 						if (PRUNE_UNION_DBG){
 							System.out.println("Merge!\nJoin: "+leaf._i2
-									+"expr = "+((XADDTNode)_hmInt2Node.get(leaf._i2))._expr
+									+"expr = "+((XADDTNode)getExistNode(leaf._i2))._expr
 									+"DecSet = "+ _hmDecList.get(leaf._i2));
 							System.out.println("With: "+old_id
-									+"expr = "+((XADDTNode)_hmInt2Node.get(old_id))._expr
+									+"expr = "+((XADDTNode)getExistNode(old_id))._expr
 									+"DecSet = "+ _hmDecList.get(old_id));
 							System.out.println("Merged (rem.error="+error+") \nNode: "+node_id
-									+"expr = "+((XADDTNode)_hmInt2Node.get(node_id))._expr
+									+"expr = "+((XADDTNode)getExistNode(node_id))._expr
 									+"DecSet = "+ _hmDecList.get(node_id));
 						}
 					}
@@ -2899,12 +2848,12 @@ else
 				addParDec(node._low,-1*node._var,node_id);
 				addParDec(node._high,node._var,node_id);
 				
-				XADDNode low_child = _hmInt2Node.get(node._low);
+				XADDNode low_child = getExistNode(node._low);
 				IntPair entry;
 				if (low_child instanceof XADDTNode){ entry = new IntPair(_alOrder.size(),node._low);}
 				else { entry = new IntPair( ((XADDINode)low_child)._var, node._low);}
 				if (!_pqOpenNodes.contains(entry)) _pqOpenNodes.offer(entry);
-				XADDNode high_child = _hmInt2Node.get(node._high);
+				XADDNode high_child = getExistNode(node._high);
 				if (high_child instanceof XADDTNode){ entry = new IntPair(_alOrder.size(),node._high);}
 				else { entry = new IntPair( ((XADDINode)high_child)._var, node._high);}
 				if (!_pqOpenNodes.contains(entry)) _pqOpenNodes.offer(entry);				
@@ -2979,7 +2928,7 @@ else
 		if (_hmInt2NodeNew.containsKey(id)) {
 			return;
 		}
-		Object node = _hmInt2Node.get(id);
+		Object node = getExistNode(id);
 		if (node instanceof XADDINode) {
 			_hmInt2NodeNew.put(id, (XADDINode) node);
 			_hmNode2IntNew.put((XADDINode) node, id);
@@ -3102,14 +3051,14 @@ else
 	public Graph getGraph(int id) {
 		Graph g = new Graph(true /* directed */, false /* bottom-to-top */,
 				false /* left-to-right */, true /* multi-links */);
-		XADDNode root = _hmInt2Node.get(id);
+		XADDNode root = getExistNode(id);
 		root.toGraph(g, id);
 		return g;
 	}
 	
 	//Create string version of XADD
 	public String getString(int id, boolean format) {
-		XADDNode root = _hmInt2Node.get(id);
+		XADDNode root = getExistNode(id);
 		int num_nodes = getNodeCount(id);
 		if (num_nodes > 40)
 			return "[XADD " + id + " contains " + num_nodes + " nodes... too large to print]";
@@ -3836,13 +3785,7 @@ else
 		// decision_values);
 
 		Integer ret = null;
-		XADDNode n = _hmInt2Node.get(id);
-		if (n == null) {
-			System.out.println("ERROR: " + id
-					+ " expected in node cache, but not found!");
-			new Exception().printStackTrace();
-			System.exit(1);
-		}
+		XADDNode n = getExistNode(id);
 
 		// A terminal node should be reduced (and cannot be restricted)
 		// by default if hashing and equality testing are working in getTNode
@@ -4058,8 +4001,8 @@ else
 				return;
 
 			nodes.add(this);
-			_hmInt2Node.get(_low).collectNodes(nodes);
-			_hmInt2Node.get(_high).collectNodes(nodes);
+			getExistNode(_low).collectNodes(nodes);
+			getExistNode(_high).collectNodes(nodes);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -4072,8 +4015,8 @@ else
 				return;
 			}
 
-			XADDNode low = _hmInt2Node.get(_low);
-			XADDNode high = _hmInt2Node.get(_high);
+			XADDNode low = getExistNode(_low);
+			XADDNode high = getExistNode(_high);
 			Decision d = _alOrder.get(_var);
 			d.collectVars(vars);
 			low.collectVars(vars);
@@ -4105,7 +4048,7 @@ else
 			g.addNodeStyle(this_node, "filled");
 
 			// Children
-			XADDNode low = _hmInt2Node.get(_low);
+			XADDNode low = getExistNode(_low);
 			if (low != null) {
 				String low_node = Integer.toString(_low);
 				g.addUniLink(this_node, low_node, "black", "dashed",
@@ -4113,7 +4056,7 @@ else
 				low.toGraph(g, _low);
 			}
 
-			XADDNode high = _hmInt2Node.get(_high);
+			XADDNode high = getExistNode(_high);
 			if (high != null) {
 				String high_node = Integer.toString(_high);
 				g.addUniLink(this_node, high_node, "black", "solid",
@@ -4154,11 +4097,11 @@ else
 
 		@Override
 		public int countBranches() {
-			int low_count = _hmInt2Node.get(_low).countBranches();
+			int low_count = getExistNode(_low).countBranches();
 			if (low_count > MAX_BRANCH_COUNT || low_count == -1)
 				return -1;
 
-			int high_count = _hmInt2Node.get(_high).countBranches();
+			int high_count = getExistNode(_high).countBranches();
 			if (high_count > MAX_BRANCH_COUNT || high_count == -1)
 				return -1;
 

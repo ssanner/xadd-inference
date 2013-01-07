@@ -25,8 +25,11 @@ import java.text.*;
 import java.util.regex.*;
 import java.util.*;
 
+import camdp.CAMDP.FileOptions;
+
 
 import util.IntTriple;
+import xadd.TestXADDDist;
 import xadd.XADD;
 import xadd.XADD.ArithExpr;
 import xadd.XADD.BoolDec;
@@ -62,15 +65,24 @@ public class CMDP {
 	//       and summed out, (3) any ivariable simply has to be summed out. 
 	
 	// TODO: Integrate LP-Solve
+	//Constants
+	public final static int MAXIMUM_ITER = 10000;
 	
-	/* Constants */
-	public final static boolean REDUCE_LP = true;
-	public final static boolean APPROX_PRUNNING = true;
-	public static boolean APPROX_ALWAYS = false; //approximate every regression
-	public static boolean COMPARE_OPTIMAL = false; //approximate every regression
-	public double APPROX_ERROR = 0.00d;
-	public PrintStream _logStream = null;
-	public ArrayList<Integer> optimalDD = new ArrayList<Integer>();
+	//Prune and Linear Flags
+	public static boolean REDUCE_LP = true;
+	public static boolean LINEAR_PROBLEM = true;
+	public static boolean REDUNDANCY_CHECK = true;
+	public static boolean APPROX_PRUNING = true;
+	public static double APPROX_ERROR = 0.0d;
+	public boolean APPROX_ALWAYS = false;
+	public boolean COMPARE_OPTIMAL = false;
+	
+	//Optimal solution maintenance
+	public static ArrayList<Integer> optimalDD = new ArrayList<Integer>();
+	public static double []optimalMaxValues = new double[MAXIMUM_ITER];
+	
+	//TestLog
+	public PrintStream _testLogStream = null;
 	
 	public final static boolean DISPLAY_Q = false;
 	public final static boolean DISPLAY_V = true;
@@ -113,6 +125,8 @@ public class CMDP {
 	public ArrayList<Integer> _alConstraints;
 	
 	public HashMap<IntTriple,Integer> _hmRegrKey2Node;
+
+	private String _problemFile=null;
 	
 	////////////////////////////////////////////////////////////////////////////
 	// Constructors
@@ -123,7 +137,8 @@ public class CMDP {
 	 **/
 	public CMDP(String filename) {
 		this(HierarchicalParser.ParseFile(filename));
-		//NAME_FILE_3D=NAME_FILE_3D+filename.substring(12,filename.indexOf("."))+".dat";
+		NAME_FILE_3D=filename+".dat";
+		_problemFile=filename;
 	}
 
 	/**
@@ -180,8 +195,8 @@ public class CMDP {
 			ResetTimer();
 
 			// Error decreasing?
-			System.out.println("Iteration #" + iter + ", " + MemDisplay()
-					+ " bytes, " + GetElapsedTime() + " ms");
+//			System.out.println("Iteration #" + iter + ", " + MemDisplay()
+//					+ " bytes, " + GetElapsedTime() + " ms");
 
 			// Prime diagram
 			_prevDD = _valueDD;
@@ -202,9 +217,9 @@ public class CMDP {
 				int regr = regress(_valueDD, me.getValue());
 				
 				if (REDUCE_LP) {
-					regr = _context.reduceLP(regr);
+					regr = _context.reduceLP(regr, REDUNDANCY_CHECK);
 				}
-				if (APPROX_PRUNNING && APPROX_ALWAYS) {
+				if (APPROX_PRUNING && APPROX_ALWAYS) {
 					regr = _context.linPruneRel(regr,APPROX_ERROR);
 					//System.out.println("Prune complete " + regr);
 				}
@@ -223,19 +238,19 @@ public class CMDP {
 
 				///////////////////////////////////////////////////////////////
 				// Estimating number of cases
-				double num_cases_in_regr = num_cases[iter - 1];
+				//double num_cases_in_regr = num_cases[iter - 1];
 				//System.out.println("Test 1: " + num_cases_in_regr);
-				for (Map.Entry<String,Integer> me2 : me.getValue()._hmVar2DD.entrySet()) {
-					num_cases_in_regr *= _context.getBranchCount(me2.getValue()); // From regr
+				//for (Map.Entry<String,Integer> me2 : me.getValue()._hmVar2DD.entrySet()) {
+					//num_cases_in_regr *= _context.getBranchCount(me2.getValue()); // From regr
 					//System.out.println("Test 2: " + num_cases_in_regr);
-					if (_alBVars.contains(me2.getKey()) && num_cases_in_regr > 1)
-						num_cases_in_regr /= 2; // Sum out a variable
+					//if (_alBVars.contains(me2.getKey()) && num_cases_in_regr > 1)
+					//num_cases_in_regr /= 2; // Sum out a variable
 					//System.out.println("Test 3: " + num_cases_in_regr);
-				}
-				num_cases_in_regr *= _context.getBranchCount( me.getValue()._reward);
+				//}
+				//num_cases_in_regr *= _context.getBranchCount( me.getValue()._reward);
 				//System.out.println("Test 4: " + num_cases_in_regr);
 				//System.out.println("Test 5: " + num_cases[iter]);
-				num_cases[iter] *= num_cases_in_regr; // From max
+				//num_cases[iter] *= num_cases_in_regr; // From max
 				//System.out.println("Test 6: " + num_cases[iter]);
 				///////////////////////////////////////////////////////////////
 				
@@ -246,10 +261,7 @@ public class CMDP {
 					_context.apply(_maxDD, regr, XADD.MAX));
 			
 				if (REDUCE_LP) {
-					_maxDD = _context.reduceLP(_maxDD);
-				}
-				if (APPROX_PRUNNING) {
-					_maxDD = _context.linPruneRel(_maxDD,APPROX_ERROR);
+					_maxDD = _context.reduceLP(_maxDD, REDUNDANCY_CHECK);
 				}
 				
 				if(DISPLAY_MAX){
@@ -270,29 +282,65 @@ public class CMDP {
 			// Discount the max'ed value function backup and add in reward
 			// ////////////////////////////////////////////////////////////
 			_valueDD = _maxDD;
+			if (REDUCE_LP) {
+				_maxDD = _context.reduceLP(_maxDD, REDUNDANCY_CHECK);
+			}
+			if (APPROX_PRUNING) {
+				long appTime = GetElapsedTime();
+				_valueDD = _context.linPruneRel(_valueDD, APPROX_ERROR);
+				long endTime = GetElapsedTime() - appTime;
+				System.out.println("Approx Finish"+ iter+ " Iter took: "+appTime+ " pruning: "+endTime);
+			}
+			
 			time[iter] = GetElapsedTime();
 			totalTime += time[iter];
 			num_nodes[iter] = _context.getNodeCount(_valueDD);
 			num_branches[iter] = _context.getBranchCount(_valueDD);
-			double maxDif = 0d;
-			if (COMPARE_OPTIMAL){
-				if(APPROX_ERROR == 0d){
-					if(optimalDD.size() < max_iter) {
-						optimalDD = new ArrayList<Integer>(max_iter+1);
-						for(int i=0;i<=max_iter;i++) optimalDD.add(null);
+
+			double maxVal = 0d;
+			double maxRelErr = 0d;
+			if (LINEAR_PROBLEM) {
+				maxVal = _context.linMaxVal(_valueDD);
+				optimalMaxValues[iter] = maxVal;
+				if (COMPARE_OPTIMAL){
+					if(APPROX_ERROR == 0d){ //Exact solution
+						if(optimalDD.size() < max_iter) {
+							optimalDD = new ArrayList<Integer>(max_iter+1);
+							for(int i=0;i<=max_iter;i++) optimalDD.add(null);
+						}
+						optimalDD.set(iter,_valueDD);
 					}
-				optimalDD.set(iter,_valueDD);
+				maxRelErr = (_context.linMaxDiff(optimalDD.get(iter), _valueDD))/optimalMaxValues[iter];
 				}
-				maxDif = _context.linMaxDiff(optimalDD.get(iter), _valueDD);
 			}
-			//APPROX_TEST: format iter, node, branches, time, MaxVal, Mem
-			_logStream.format("%d %d %d %d %f %d %d %f \n", iter, num_nodes[iter], 
-					num_branches[iter], time[iter],
-					_context.linMaxVal(_valueDD), totalTime, 
-					usedMem(), maxDif);
-			///////////////////////////////////////////////////////////
+			
+			if(PRINT3DFILE){
+	        	System.out.print("Creating data file... ");
+	        	create3DDataFile(_valueDD, varX, varY, _problemFile + "V"+iter+".dat");
+	        	System.out.println("done.");
+	        }
+			
+			//APPROX_TEST LOG, outputs: iter, #node, #branches, #UsedMem(MB), IterTime, TotTime, MaxVal, RelErr
+			_testLogStream.format("%d %d %d %d %d %d %f %f\n", iter, num_nodes[iter], 
+			num_branches[iter], usedMem(), 
+			time[iter], totalTime,
+			_context.linMaxVal(_valueDD), maxRelErr );
+			//////////////////////////////////////////////////////////////////////////
+			if (_prevDD == _valueDD) {
+				System.out.println("CAMDP: Converged to solution early,  at iteration "+iter);
+				int it = iter;
+				while (++it < max_iter){
+					_testLogStream.format("%d %d %d %d %d %d %f %f\n", it, num_nodes[iter], 
+					num_branches[iter], usedMem(),
+					time[iter],totalTime,
+					_context.linMaxVal(_valueDD), maxRelErr );
+				}
+				break;
+			}
+
+			//////////////////////////////////////////////////////////
 			if (DISPLAY_V) {
-				System.out.print("Displaying value function... ");
+				//System.out.print("Displaying value function... ");
 				Graph g = _context.getGraph(_valueDD);
 				g.addNode("_temp_");
 				g.addNodeLabel("_temp_", "V^" + iter);
@@ -302,29 +350,33 @@ public class CMDP {
 
 				// g.genDotFile(type + "value.dot");
 				g.launchViewer(1300, 770);
-				System.out.println("done.");
+				//System.out.println("done.");
 			}
 		}
         if(PRINT3DFILE){
-        	System.out.print("Creating data file... ");
-        	create3DDataFile(_valueDD,varX,varY); 
-			System.out.println("done.");
+        	//System.out.print("Creating data file... ");
+        	create3DDataFile(_valueDD, varX, varY);
+        	//System.out.println("done.");
+        	
+        	//System.out.print("Showing 3Dviz");
+        	display3D(_valueDD, "Value-"+iter+"-"+Math.round(100*APPROX_ERROR));
+        	//System.out.println("done.");
         }
 		
 		// Flush caches and return number of iterations
         flushCaches();	
         
-        System.out.println("\nValue iteration complete!");
-        System.out.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
-        System.out.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
-        
-        System.out.println("\nIteration Results summary");
-        for (int i = 1; i <= max_iter; i++) {
-        	String branch_count = num_branches[i] >= 0 
-        		? "" + num_branches[i]
-        		: " > " + XADD.MAX_BRANCH_COUNT; 
-        	System.out.println("Iter " + i + ": nodes = " + num_nodes[i] + "\tbranches = " + branch_count + "\tcases = " + num_cases[i] + "\ttime = " + time[i] + " ms");
-        }
+//        System.out.println("\nValue iteration complete!");
+//        System.out.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
+//        System.out.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
+//        
+//        System.out.println("\nIteration Results summary");
+//        for (int i = 1; i <= max_iter; i++) {
+//        	String branch_count = num_branches[i] >= 0 
+//        		? "" + num_branches[i]
+//        		: " > " + XADD.MAX_BRANCH_COUNT; 
+//        	System.out.println("Iter " + i + ": nodes = " + num_nodes[i] + "\tbranches = " + branch_count + "\tcases = " + num_cases[i] + "\ttime = " + time[i] + " ms");
+//        }
         
 		return iter;
 	}
@@ -406,11 +458,11 @@ public class CMDP {
 			}
 		}
 
-		System.out.println("\n" + a._sName);
-		System.out.println("BVars: " + bvar_dds.keySet());
-		System.out.println("CVars: " + cvar_names);
-		System.out.println("Node:  " + node_list);
-		System.out.println("Subst: " + subst);
+//		System.out.println("\n" + a._sName);
+//		System.out.println("BVars: " + bvar_dds.keySet());
+//		System.out.println("CVars: " + cvar_names);
+//		System.out.println("Node:  " + node_list);
+//		System.out.println("Subst: " + subst);
 		
 		// Note: following is the regression procedure
 		//
@@ -456,11 +508,11 @@ public class CMDP {
 				temp_node_list.set(0, node_list.get(i));
 				temp_subst.set(0, subst.get(i)); // This is null, right?
 				temp_cvar_names.set(0, cvar_names.get(i));
-				System.out.println("*** Regressing " + temp_cvar_names + ", size before: " + _context.getNodeCount(q));
+//				System.out.println("*** Regressing " + temp_cvar_names + ", size before: " + _context.getNodeCount(q));
 				q = regress(temp_node_list, temp_cvar_names, temp_subst, 0, q);//regress(_valueDD, a);
-				System.out.println("*** - size before makeCanonical: " + _context.getNodeCount(q));
+//				System.out.println("*** - size before makeCanonical: " + _context.getNodeCount(q));
 				q = _context.makeCanonical(q);
-				System.out.println("*** - size after: " + _context.getNodeCount(q));
+//				System.out.println("*** - size after: " + _context.getNodeCount(q));
 				
 				_hmRegrKey2Node.put(regr_key, q);
 			}
@@ -473,8 +525,8 @@ public class CMDP {
 			String var_prime = e.getKey();
 			int var_id = _context.getVarIndex( _context.new BoolDec(var_prime), false);
 			Integer dd_mult = e.getValue();
-			System.out.println("- Summing out: " + var_prime + "/" + 
-					           var_id + " in\n" + _context.getString(dd_mult));
+//			System.out.println("- Summing out: " + var_prime + "/" + 
+//					           var_id + " in\n" + _context.getString(dd_mult));
 			q = _context.apply(q, dd_mult, XADD.PROD);
 			
 			// Following is a safer way to marginalize in the event that two branches
@@ -711,7 +763,7 @@ public class CMDP {
 
 			// o == "action"
 			String aname = (String) i.next();
-			System.out.println("action: "+aname);
+			//System.out.println("action: "+aname);
 			HashMap<String,ArrayList> cpt_map = new HashMap<String,ArrayList>();
 
 			o = i.next();
@@ -725,15 +777,29 @@ public class CMDP {
 				System.out.println("Missing reward declaration for action: "+aname +" "+ o);
 				System.exit(1);
 			}
+
+			//new parser format : has + for ANDing rewards
 			o=i.next();
 			ArrayList reward = (ArrayList) o;
-
+			int _runningSum=0;
 			int reward_dd = _context.buildCanonicalXADD(reward);
-			//Graph g = _context.getGraph(_rewardDD);
-			//g.launchViewer(1300, 770);
-
+			//new parser format : has + for ANDing rewards
+			 o = i.next();
+			 while (!((String) o).equalsIgnoreCase("endaction"))
+			{
+				int reward_2=0;
+				if (((String) o).equalsIgnoreCase("+"))
+				{
+					o = i.next();
+					reward = (ArrayList) o; 
+					reward_2 = _context.buildCanonicalXADD(reward);
+					reward_dd = _context.applyInt(reward_2, reward_dd, _context.SUM);
+				}
+				o=i.next();
+			}
+			//o=i.next();
+			
 			_hmName2Action.put(aname, new Action(this, aname, cpt_map, reward_dd));
-			o=i.next(); // endaction
 			
 		}
 
@@ -784,11 +850,15 @@ public class CMDP {
 	/*
 	 * Set the value of the other continous variables with the maxValue, without boolean assigments 
 	 */
-	
 	public void create3DDataFile(Integer XDD, String xVar, String yVar) {
+		create3DDataFile(XDD, xVar, yVar, NAME_FILE_3D);
+	}
+	
+	
+	public void create3DDataFile(Integer XDD, String xVar, String yVar, String outputFile) {
 		try {
      		
-            BufferedWriter out = new BufferedWriter(new FileWriter(NAME_FILE_3D));
+            BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
             
             HashMap<String,Boolean> bool_assign = new HashMap<String,Boolean>();
             	
@@ -823,7 +893,7 @@ public class CMDP {
             	 xval=xval+incX;
             	 yval=yval+incY;
              }
-             System.out.println(">> Evaluations");
+             //System.out.println(">> Evaluations");
              for(int i=0;i<size3D;i++){
                  for(int j=0;j<size3D;j++){
                      out.append(X.get(i).toString()+" ");
@@ -855,6 +925,66 @@ public class CMDP {
          	System.out.println("Problem with the creation 3D file");
          	System.exit(0);
          }
+	}
+	
+	public class FileOptions {
+		public ArrayList<String> _var = new ArrayList<String>();
+		public ArrayList<Double> _varLB = new ArrayList<Double>();
+		public ArrayList<Double> _varInc = new ArrayList<Double>();
+		public ArrayList<Double> _varUB = new ArrayList<Double>();
+		public HashMap<String,Boolean> _bassign = new HashMap<String, Boolean>();
+		public HashMap<String,Double>  _dassign = new HashMap<String, Double>();
+		public FileOptions(String filename) {
+			String line = null;
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(filename));
+				while ((line = br.readLine()) != null) {
+					line = line.trim();
+					if (line.length() == 0)
+						continue;
+					String[] split = line.split(" ");//SCOTT-could be " ", easier to recognize and write
+					String label = split[0].trim();
+					if (label.equalsIgnoreCase("var")) {
+						// Line format: var name lb inc ub
+						_var.add(split[1].trim());
+						_varLB.add(Double.parseDouble(split[2]));
+						_varInc.add(Double.parseDouble(split[3]));
+						_varUB.add(Double.parseDouble(split[4]));
+					} else if (label.equalsIgnoreCase("bassign")) {
+						// Line format: bassign name {true,false}
+						_bassign.put(split[1].trim(), Boolean.parseBoolean(split[2]));
+					} else if (label.equalsIgnoreCase("cassign")) {
+						// Line format: cassign name double
+						_dassign.put(split[1].trim(), Double.parseDouble(split[2]));
+					} else {
+						throw new Exception("ERROR: Unexpected line label '" + label + "', not {var, bassign, dassign}");
+					}
+				}
+			} catch (Exception e) {
+				System.err.println(e + "\nContent at current line: '" + line + "'");
+				System.err.println("ERROR: could not read 3d file: " + filename + ", exiting.");
+			}		
+		}
+	}
+	
+	public void display3D(int xadd_id, String label) {
+		
+		// If DISPLAY_3D is enabled, it is expected that necessary parameters 
+		// have been placed in a _problemFile + ".3d"
+		FileOptions opt = new FileOptions(_problemFile + ".3d");
+
+//		System.out.println("Plotting 3D...");
+//		System.out.println("varX: " + opt._var.get(0) + ", [" + opt._varLB.get(0) + ", " + 
+//				opt._varInc.get(0) + ", " + opt._varUB.get(0) + "]");
+//		System.out.println("varY: " + opt._var.get(1) + ", [" + opt._varLB.get(1) + ", " + 
+//				opt._varInc.get(1) + ", " + opt._varUB.get(1) + "]");
+//		System.out.println("bassign: " + opt._bassign);
+//		System.out.println("dassign: " + opt._dassign);
+
+		TestXADDDist.Plot3DSurfXADD(_context, xadd_id, 
+				opt._varLB.get(0), opt._varInc.get(0), opt._varUB.get(0), 
+				opt._varLB.get(1), opt._varInc.get(1), opt._varUB.get(1), 
+				opt._bassign, opt._dassign, opt._var.get(0), opt._var.get(1), label);
 	}
 	
 	
@@ -963,7 +1093,8 @@ public class CMDP {
 			  varX = args[4];
 			  varY = args[5];
 			  size3D= Double.parseDouble(args[6]);
-			  if (args.length >7)NAME_FILE_3D = args[7]+".dat"; 
+			  if (args.length >7) APPROX_ERROR = Double.parseDouble(args[7]);
+			  //if (args.length >7)NAME_FILE_3D = args[7]+".dat"; 
 		}
 		else{
 			if (PRINT3DFILE){
@@ -979,17 +1110,16 @@ public class CMDP {
 		System.out.println(filename);
 		CMDP mdp1 = new CMDP(filename);
 		//System.out.println(mdp1.toString(false, false));
-		mdp1._logStream = System.out;
+		mdp1._testLogStream = System.out;
 		
 		int  iter1 = mdp1.solve(iter);
-		long time1 = mdp1.GetElapsedTime();
+		mdp1.flushCaches(true);
 	}
 	
-	public void setApproxTest(double eps, PrintStream log, boolean always,ArrayList<Integer> opt) {
+	public void setApproxTest(double eps, PrintStream log, boolean always) {
 		APPROX_ERROR = eps;
-		_logStream = log;
+		_testLogStream = log;
 		APPROX_ALWAYS = always;
-		optimalDD=opt;
 		COMPARE_OPTIMAL = true;
 	}
 }
