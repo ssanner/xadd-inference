@@ -15,7 +15,6 @@ package xadd;
 
 import graph.Graph;
 
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -56,7 +55,9 @@ public class XADD {
 	public final static boolean CHECK_REDUNDANCY = true; // Test only consistency or also redundancy
 	public final static boolean USE_REDUCE_LPv1 = false; //maplist, full redundancy older version
 	public final static boolean USE_REDUCE_LPv2 = true; //hashSet, direct redundancy new version
-
+	private static final boolean UNDERCONSTRAINED_REFINEMENT = true; //solve underconstrained problem in linear approx
+	
+	private static final boolean EXPLICIT_BOUND_CONSTRAINTS = false; //Add bounds as explicit constraints (should not be necessary_
 	//NOTE TO SCOTT: I dont know what this is, should be fixed or removed
 	public final static boolean USE_MINUS_COMP = false;
 	
@@ -69,8 +70,6 @@ public class XADD {
 	public final static boolean DEBUG_EVAL_RANGE = false;
 	public final static boolean DEBUG_CONSTRAINTS = false;
 	public final static boolean HANDLE_NONLINEAR = false;
-	public final static boolean CHECK_PATH_REDUNDANCY=true;
-	public final static boolean MAINTAIN_PAIRWISE_IMPLICATIONS = true;
 
 	// Operator constants
 	public final static int UND = 0;
@@ -117,6 +116,7 @@ public class XADD {
 	//Pruning constants
 	public final static double PRUNE_ERROR = 0.05;//standard 5%error aproximation
 	public final static double PRUNE_MIN_ITER_IMP = 1e-10; //Stop Condition for linear pruning algorithm
+	private static final double UNDERCONSTRAINED_ALLOW_REL_ERROR = 0.01; //Error difference allowed for underconstrained solution 
 	
 	//XADD Variable Maintenance
 	public HashSet<String> _hsBooleanVars = new HashSet<String>();
@@ -170,8 +170,8 @@ public class XADD {
 	public HashMap<Integer, XADDNode> _hmInt2NodeNew = new HashMap<Integer, XADDNode>();
 		
 	//Debug flags 
-	PrintStream ignoreStream=null;
-	//PrintStream ignoreStream = new DevNullPrintStream();//new DevNullPrintStream(); //used to ignore lpSolve output
+	
+	PrintStream ignoreStream = new DevNullPrintStream();//used to ignore lpSolve output
 	PrintStream outStream=System.out; 
 	public final static boolean PRUNE_PATH_DBG = false;
 	public final static boolean PRUNE_MERGE_DBG = false;
@@ -179,8 +179,10 @@ public class XADD {
 	public final static boolean PRUNE_REMAP_DBG = false;
 	public final static boolean NON_LIN_WARN = false;
 	
-	
+	private static final boolean UNDERCONSTRAINED_DBG = false;
 	//Temporary Variables - are scattered because they should only be used locally
+
+	
 	
 	
 				/////////////////////////////////////////////////////////
@@ -199,11 +201,6 @@ public class XADD {
 		_hsContinuousVars = new HashSet<String>();
 		//_hmContinuousVars = new ArrayList<String>();
 		_cvar2ID = new HashMap<String, Integer>();
-		try {
-			ignoreStream = new PrintStream("trash.txt");
-		} catch (FileNotFoundException e) {
-			//e.printStackTrace();
-		}
 	}
 		
 	//Adding XADD Variables
@@ -277,9 +274,9 @@ public class XADD {
 	public int getVarIndex(Decision d, boolean create) {
 
 		if (USE_CANONICAL_NODES) {
-			// System.out.println(">> Before canonical: " + d);
+			//System.out.println(">> Before canonical: " + d);
 			d = d.makeCanonical();
-			// System.out.println(">> After canonical: " + d);
+			//System.out.println(">> After canonical: " + d);
 		}
 		int index = _alOrder.indexOf(d);
 		// If not found, try negating d
@@ -1843,7 +1840,7 @@ else
 
 		// Finally add the negated decision to test
 		addConstraint(lp, var_id, !dec);
-
+		addBoundConstraints(lp);
 		// Solve and get decision
 		silentSolvelp(lp);
 		
@@ -1882,7 +1879,12 @@ else
 
 		XADDINode inode = (XADDINode) n;
 
+		//boolean variables are independent 
 		if (! (_alOrder.get(inode._var)instanceof ExprDec)){
+			if (! (_alOrder.get(inode._var)instanceof BoolDec)){
+				System.err.println("unexpected decision in reduce_LP: "+_alOrder.get(inode._var));
+			}
+			
 			int low = reduceLPv2(inode._low, test_dec, redundancy);
 			int high = reduceLPv2(inode._high, test_dec, redundancy);
 			return getINode(inode._var, low, high);
@@ -1982,14 +1984,7 @@ else
 			addDecision(lp, decision);
 		}
 		//Adding box constraints
-		double var[] = new double[nvars];
-		for(int i=0;i<nvars;i++){var[i]=0;}
-		for(int i=0;i<nvars;i++){
-			var[i]=1;
-			lp.addGeqConstraint(var, lowerBounds[i]);
-			lp.addLeqConstraint(var, upperBounds[i]);
-			var[i]=0;
-		}
+		addBoundConstraints(lp);
 		addDecision(lp,-dec);
 
 		
@@ -2056,13 +2051,7 @@ else
 			addDecision(lp2, decision);
 		}
 		//Adding box constraints
-		for(int i=0;i<nvars;i++){var[i]=0;}
-		for(int i=0;i<nvars;i++){
-			var[i]=1;
-			lp2.addGeqConstraint(var, lowerBounds[i]);
-			lp2.addLeqConstraint(var, upperBounds[i]);
-			var[i]=0;
-		}
+		addBoundConstraints(lp2);
 
 		// Solve and get decision
 		soln = silentSolvelp(lp2);
@@ -2226,6 +2215,18 @@ else
 			return -1; // Unknown constraint type
 		}
 	}
+	private void addBoundConstraints(LP lp){
+		if (!EXPLICIT_BOUND_CONSTRAINTS) return;
+		int nvars = lowerBounds.length;
+		double var[] = new double[nvars];
+		for(int i=0;i<nvars;i++){var[i]=0;}
+		for(int i=0;i<nvars;i++){
+			var[i]=1;
+			lp.addGeqConstraint(var, lowerBounds[i]);
+			lp.addLeqConstraint(var, upperBounds[i]);
+			var[i]=0;
+		}
+	}
 	private double []silentSolvelp(LP lp){
 		System.setOut(ignoreStream);
 		double[] soln = lp.solve();
@@ -2260,7 +2261,7 @@ else
 	
 	public double linMaxMinVal(int id,HashSet<Integer> domain, boolean isMax){
 		while( id != reduceLP(id) ){
-			//System.err.println("linMaxMin ERROR: " + id + " different from reduceLP");
+			//System.err.println("linMaxMin WARNING: " + id + " different from reduceLP");
 			id=reduceLP(id);
 		}
 		XADDNode r = _hmInt2Node.get(id);
@@ -2342,10 +2343,11 @@ else
 		
 	public int linPrune(int id, double allowError){
 		if (allowError < PRECISION) return id;
-		if( id != reduceLP(id) ){
-			System.err.println("linPrune "+ allowError+" ERROR: " + id + " different from reduceLP");
+		while( id != reduceLP(id) ){
+			//System.err.println("linPrune WARNING: " + id + " different from reduceLP");
+			id=reduceLP(id);
 		}
-		if (PRUNE_MERGE_DBG) System.out.println("Pruning "+id);
+		if (PRUNE_MERGE_DBG || UNDERCONSTRAINED_DBG) System.out.println("Pruning "+id+" with allowError = "+allowError);
 		pruneClear();
 		pruneUnionPath(id, allowError);
 		int pruned = remap(id);
@@ -2377,7 +2379,7 @@ else
 		if (childPaths == null){ childPaths = new ArrayList<HashSet<Integer>>();} //new leaf
 		for(HashSet<Integer> path: parentPaths){
 			HashSet<Integer> extendPath = new HashSet<Integer>(path);
-			extendPath.add(dec);
+			if (_alOrder.get(Math.abs(dec) )instanceof ExprDec) {extendPath.add(dec);}
 			childPaths.add(extendPath);
 		}
 		_hmDecList.put(node,childPaths);
@@ -2403,14 +2405,7 @@ else
 		for (Integer decision : domain) {
 			addDecision(lp, decision);
 		}
-		double var[] = new double[nvars];
-		for(int i=0;i<nvars;i++){var[i]=0;}
-		for(int i=0;i<nvars;i++){
-			var[i]=1;
-			lp.addGeqConstraint(var, lowerBounds[i]);
-			lp.addLeqConstraint(var, upperBounds[i]);
-			var[i]=0;
-		}
+		addBoundConstraints(lp);
 		
 		// Solve and get decision
 		double[] soln = silentSolvelp(lp);
@@ -2590,6 +2585,141 @@ else
 		return new OptimResult(opt_val,soln);
 	}
 	
+	//Return function that minimizes error in a finite set of points
+	private OptimResult minimizeSumError(double coefs1[], double _dCoef1, ArrayList<HashSet<Integer>> paths1,
+						  double coefs2[], double _dCoef2, ArrayList<HashSet<Integer>> paths2,
+						  ArrayList<HashSet<PointKey>> points, double errorLimit)
+	{
+		//In how many points are we calculating the error 
+		int nPoints =0;
+		
+		//Must order points to associate with errorvar (maybe unnecessary)
+		ArrayList<ArrayList<PointKey>> orderedPoints = new ArrayList<ArrayList<PointKey>>();
+		for(HashSet<PointKey> pathPoints: points){
+			ArrayList<PointKey> pathPointList = new ArrayList<PointKey>();
+			nPoints += pathPoints.size();
+			for (PointKey pt: pathPoints){
+				pathPointList.add(pt);}
+			orderedPoints.add(pathPointList);
+		}
+
+		int functionVars = _cvar2ID.size() + 1;
+		int linVars = functionVars + nPoints; //the constant of f and the error variables
+		
+		if (UNDERCONSTRAINED_DBG){
+			System.out.format("Minimize Sum Err, npoints = %d, nlinVars = %d, error lim = %f\n",
+					nPoints, linVars, errorLimit);
+			System.out.println("Functions: f1 = ("+_dCoef1+", "+LP.PrintVector(coefs1));
+			System.out.println("Functions: f2 = ("+_dCoef2+", "+LP.PrintVector(coefs2));
+		}
+		
+		//Objective function is min sum of ErrPoints (others have 0 coeff)
+		double[] obj_coef = new double[linVars]; // objective function min sum of Errors
+		int obj_i=0;
+		for(;obj_i<functionVars;obj_i++) {obj_coef[obj_i] = 0;}
+		for (;obj_i<linVars;obj_i++) { obj_coef[obj_i] = 1;}
+		
+		//Coefs have no Bounds, but errors must be positive
+		double[] upBound = new double[linVars]; 
+		double[] loBound = new double[linVars];  
+		int bound_i=0;
+		for(;bound_i<functionVars;bound_i++) { upBound[bound_i] = INF; loBound[bound_i] = NEG_INF;}
+		for (;bound_i<linVars;bound_i++) { upBound[bound_i] = INF; loBound[bound_i] = 0d;}
+	
+		LP lp = new LP(linVars, loBound, upBound, obj_coef, LP.MINIMIZE);
+		
+		
+		//add all points as constraints
+		
+		//create a joint double structure with info of both functions f1 and f2 to change automatically
+		double coefConj[][] = new double[2][];
+		double dCoefConj[] = new double[2];
+		coefConj[0] = coefs1;
+		coefConj[1] = coefs2;
+		dCoefConj[0] = _dCoef1;
+		dCoefConj[1] = _dCoef2;
+		
+		double[] temp_constr_coef = new double[linVars];
+		double[] fValues = new double[linVars];
+		
+		int nPaths = paths1.size()+paths2.size();
+		int errorVarID = functionVars;// the first position of errorVars
+		for(int j=0;j<2*nPaths;j++) //the min and max err regions, now joint
+		{
+			//see to which leaf function this path corresponds to 
+			int leafFun = ( (j%nPaths) <paths1.size())? 0 :1;
+			
+			//fi - f* points 
+			for(PointKey pk: (points.get(j))) 
+			{
+				//for each point: 3 constraints:
+				// errorVar smaller than errorLimit
+				// errorVar greater than PointError
+				// errorVar greater than -1*PointError (in case point error becomes neg)
+				
+				//eVar < #limit
+				for(int i=0;i<linVars;i++) temp_constr_coef[i] = 0;
+				temp_constr_coef[errorVarID] = 1;
+				lp.addLeqConstraint(temp_constr_coef, errorLimit);
+				
+				//eVar > (fi-f*)(p) => eVar + f*(p) > fi(p)
+				//temp_constr is currently 1 on errorVar and 0 elsewhere, as wanted
+				
+				temp_constr_coef[0] = 1; // f* constant term
+				double rhs = dCoefConj[leafFun]; //calculate fi(p)
+				double _dCoords[] = pk.getCoords(); //point coordinates
+				
+				// other coefficients, the constant term uses position 0
+				for(int i=0;i<functionVars-1;i++){
+					double p_i = _dCoords[i];
+					temp_constr_coef[i+1] = p_i; // coef of f*(p)	
+					rhs += coefConj[leafFun][i] * p_i; //calculate fi(p)
+				}
+				fValues[errorVarID] = rhs;
+				lp.addGeqConstraint(temp_constr_coef, rhs);
+				
+				//eVar > -(fi-f*)(p) => eVar - f*(p) > -fi(p)
+				//temp_constr is currently 1 on errorVar and 0 on all other errorVars, as wanted
+				temp_constr_coef[0] = -1; // f* constant term
+				rhs = -dCoefConj[leafFun]; //calculate -fi(p)
+				_dCoords = pk.getCoords(); //point coordinates
+				
+				// other coefficients, the constant term uses position 0
+				for(int i=0;i<functionVars-1;i++){
+					double p_i = _dCoords[i];
+					temp_constr_coef[i+1] = -p_i; // coef of -f*(p)	
+					rhs += -1* coefConj[leafFun][i] * p_i; //calculate -fi(p)
+				}
+				lp.addGeqConstraint(temp_constr_coef, rhs);
+				
+				//go to next point
+				errorVarID++;
+			}
+		}
+		
+		double[] soln = silentSolvelp(lp);
+		double opt_val = lp._dObjValue; 
+		
+		if (lp._status == LpSolve.INFEASIBLE){
+			System.err.println("Optimization MinimSumError Error: Infeasible Min!");
+			System.out.println("Minimizing sum Errors: previous optimal Error: "+errorLimit);
+			System.out.println("Minimizing sum Errors: previous fValues:" + LP.PrintVector(fValues));
+			return null;
+			}
+		if (lp._status == LpSolve.UNBOUNDED){
+			System.err.println("Optimization MinimSumError Error: Unbounded Min!");
+			opt_val = Double.NEGATIVE_INFINITY;
+			return null;}
+		if (UNDERCONSTRAINED_DBG){
+			System.out.println("Minimizing sum Errors: optimal Error: "+(opt_val)+" with function "+LP.PrintVector(soln));
+			System.out.println("Minimizing sum Errors: fvalues:" + LP.PrintVector(fValues));
+		}
+		lp.free();
+		return new OptimResult(opt_val,soln);
+	}
+
+	
+	
 	//atempts to merge linearly apporximable leafs
 	private PruneResult tryMergeLin(int id1,int id2, double error){
 		//id1 and id2 must be terminal nodes!
@@ -2653,7 +2783,34 @@ else
 	   } while ( Math.abs(oldMinError - minError) > PRUNE_MIN_ITER_IMP 
 			   || Math.abs(oldMaxError - maxError) > PRUNE_MIN_ITER_IMP);
 	   
-	   if (maxError < error){
+       	if (maxError < error){
+       		
+       		if (UNDERCONSTRAINED_REFINEMENT){
+       			if (UNDERCONSTRAINED_DBG){
+       				System.out.format("Minimize Sum Err, nlinVars = %d, error lim = %f\n",
+       						nvars, maxError);
+       				System.out.println("Functions: 1st -Merge = ("+_dMrgCoef+", "+ Arrays.toString(mrgCoefs) );
+       			}
+	       		OptimResult res = minimizeSumError(coefs1, _dCoef1,paths1,
+	       										coefs2, _dCoef2, paths2, points, maxError*(1+0.5*UNDERCONSTRAINED_ALLOW_REL_ERROR) );
+	       		
+	       	   double underMaxError = NEG_INF; 
+	 		   _dMrgCoef = res.solution[0];
+	 		   int i=0;
+	 		   for(;i<nvars;i++){ mrgCoefs[i] = res.solution[i+1];}
+	 		   //other positions contain error in each point
+	 		   for(i++;i<res.solution.length;i++){ underMaxError = Math.max(underMaxError, res.solution[i]);}
+	 		  
+	 		   if (UNDERCONSTRAINED_DBG){
+     				System.out.format("Minimize Sum Err, nlinVars = %d, undeErrpr = %f, error lim = %f\n",
+     						res.solution.length, underMaxError, maxError);
+     				System.out.println("Functions: 2nd -Merge = ("+_dMrgCoef+", "+ Arrays.toString(mrgCoefs) );
+     			}
+	 		   
+	 		   if (underMaxError > maxError*(1+UNDERCONSTRAINED_ALLOW_REL_ERROR) ){
+	       			System.out.println("Unconstrained solution violates error:"+ underMaxError +" > "+ maxError);
+	       		}
+       		}
 	        int new_node = getTermNode(
 	        		getExprFromCoefficients(_dMrgCoef,mrgCoefs));
 	        mergeDec(new_node,id1,id2);
@@ -2738,6 +2895,7 @@ else
 			}
 			else{
 				XADDINode node = (XADDINode) n;
+				
 				addParDec(node._low,-1*node._var,node_id);
 				addParDec(node._high,node._var,node_id);
 				
@@ -2782,7 +2940,6 @@ else
 
 		// Can always clear these
 		_hmReduceCache.clear();
-		// _hmReduceLPCache.clear();
 		_hmReduceLeafOpCache.clear();
 		_hmApplyCache.clear();
 		_hmINode2Vars.clear();
@@ -2791,6 +2948,13 @@ else
 		_hmImplications.clear();
 		_hmNonImplications.clear();
 
+		_mlImplications.clear();
+		_mlNonImplications.clear();
+		_mlImplicationsChild.clear();
+		_mlIntermediate.clear();
+		_hmIntermediate.clear();
+		
+		pruneClear();
 		// Set up temporary alternates to these HashMaps
 		_hmNode2IntNew = new HashMap<XADDNode, Integer>();
 		_hmInt2NodeNew = new HashMap<Integer, XADDNode>();
@@ -2803,6 +2967,9 @@ else
 		_hmNode2Int = _hmNode2IntNew;
 		_hmInt2Node = _hmInt2NodeNew;
 
+		//_hmNode2Int.clear();
+		//_hmInt2Node.clear();
+		
 		Runtime.getRuntime().gc();
 
 	}
@@ -2824,8 +2991,6 @@ else
 
 		}
 	}
-	
-	
 	
 	///////////////////////////////////////
 	//        Auxiliary Methods          //
@@ -2962,6 +3127,17 @@ else
 			System.out.println("INODE CACHE 2:  " + _hmInt2Node.size());
 			System.out.println("VAR CACHE 2:    " + _hmINode2Vars.size());
 			System.out.println("PRUNE CACHE:    " + _hmRemap.size());
+			if (USE_REDUCE_LPv1){
+				System.out.format("REDUCE_LP1 CACHES: Imp = %d, NonImp = %d, Child = %d, Intermed = %d\n",
+							_mlImplications.keySet().size(),
+							_mlNonImplications.keySet().size(),
+							_mlImplicationsChild.keySet().size(),
+							_mlIntermediate.keySet().size() );
+			}
+			if (USE_REDUCE_LPv2){
+				System.out.format("REDUCE_LP2 CACHE: Imp = %d, NonImp = %d\n",
+						_hmImplications.size(), _hmNonImplications.size());
+			}
 		}
 
 	public void clearMarks() {
@@ -4496,6 +4672,7 @@ else
 			*/
 			ArithExpr new_lhs = ArithExpr.op(new_expr._lhs, new_expr._rhs, MINUS);
 			new_lhs = (ArithExpr) new_lhs.makeCanonical();
+			if (NORMALIZE_DECISIONS) new_lhs = (ArithExpr) new_lhs.normalize();
 			new_expr = new CompExpr(new_expr._type, new_lhs, ZERO);
 			return new_expr;
 		}
@@ -5360,6 +5537,9 @@ else
 				if (!(_terms.get(0) instanceof DoubleExpr))
 					return false;
 
+				if ( Math.abs(((DoubleExpr)_terms.get(0))._dConstVal) < PRECISION)
+					return false;
+				
 				for (int i = 1; i < _terms.size(); i++) {
 					if (!(_terms.get(i) instanceof VarExpr))
 						return false;
@@ -5593,6 +5773,10 @@ else
 		public ArithExpr normalize() {
 			double normConst=0;
 			DoubleExpr normal = (DoubleExpr) ONE;
+			if ( _terms.get(0).equals(ONE)) {
+				//System.out.println("alreadyNormal "+ this);
+				return this;
+			}
 			int newType = _type;
 			ArrayList<ArithExpr> newTerms = new ArrayList<ArithExpr>();
 			if (_type != SUM && _type != PROD){
@@ -6159,8 +6343,7 @@ else
 	//Priority Queue Comparator
 	public class IntPair12Comparator implements Comparator<IntPair>
 	{
-		@Override
-	    public int compare(IntPair x, IntPair y)
+		public int compare(IntPair x, IntPair y)
 	    {
 			if (x._i1 < y._i1) return -1;
 	        if (x._i1 > y._i1) return 1;
