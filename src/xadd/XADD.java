@@ -35,16 +35,6 @@ import util.DevNullPrintStream;
 import util.IntPair;
 import util.IntTriple;
 import util.MapList;
-import xadd.legacy_aaai.XADD.ArithExpr;
-import xadd.legacy_aaai.XADD.BoolDec;
-import xadd.legacy_aaai.XADD.CoefExprPair;
-import xadd.legacy_aaai.XADD.CompExpr;
-import xadd.legacy_aaai.XADD.Decision;
-import xadd.legacy_aaai.XADD.DoubleExpr;
-import xadd.legacy_aaai.XADD.ExprDec;
-import xadd.legacy_aaai.XADD.OperExpr;
-import xadd.legacy_aaai.XADD.VarExpr;
-import xadd.legacy_aaai.XADD.XADDLeafOperation;
 import cmdp.HierarchicalParser;
 
 /**
@@ -187,7 +177,6 @@ public class XADD {
 	public final static boolean PRUNE_MERGE_DBG = false;
 	public final static boolean PRUNE_UNION_DBG = false;
 	public final static boolean PRUNE_REMAP_DBG = false;
-	public final static boolean NON_LIN_WARN = false;
 	
 	private static final boolean UNDERCONSTRAINED_DBG = false;
 	//Temporary Variables - are scattered because they should only be used locally
@@ -1222,8 +1211,8 @@ else
 					int expr2_xadd = getINode(var2_id, /* low */T_ONE, /* high */T_ZERO);
 					ret_xadd = apply(T_ONE, apply(expr1_xadd, expr2_xadd, PROD), MINUS);
 				}
-				System.out.println("LINEARIZE -- started with: " + e + "... returning\n" + 
-						getString(ret_xadd));
+				//System.out.println("LINEARIZE -- started with: " + e + "... returning\n" + 
+				//		getString(ret_xadd));
 				//System.exit(1);
 				return ret_xadd;
 			}
@@ -1451,19 +1440,19 @@ else
 
 		// top-bottom do total implication, just store the implications (do nothing in singleImplied)
 		// bottom-up do pairwise comparison
-		//if (MAINTAIN_PAIRWISE_IMPLICATIONS) {
-
-		// Pairwise implication test only
-
-		for (int par_dec : test_var) {
-			par_dec = test_dec.get(par_dec) ? par_dec : -par_dec; // Negate if false
-			if (isSingleDecImplied(par_dec, inode._var)); 
-			//var_implication = true;
-			else if (isSingleDecImplied(par_dec, -inode._var));
-			//var_implication = false;
-			//if (var_implication != null) 	break;
-		} 
-		//} else {
+//			//if (MAINTAIN_PAIRWISE_IMPLICATIONS) {
+//	
+//			// Pairwise implication test only
+//	
+//			for (int par_dec : test_var) {
+//				par_dec = test_dec.get(par_dec) ? par_dec : -par_dec; // Negate if false
+//				if (isSingleDecImplied(par_dec, inode._var)); 
+//				//var_implication = true;
+//				else if (isSingleDecImplied(par_dec, -inode._var));
+//				//var_implication = false;
+//				//if (var_implication != null) 	break;
+//			} 
+//			//} else {
 
 		// Full branch implication test
 		if (isTestImpliedv1(test_var, test_dec, inode._var, true)) {
@@ -1471,7 +1460,6 @@ else
 		} else if (isTestImpliedv1(test_var, test_dec, inode._var, false)) {
 			var_implication = false;
 		}
-		//}
 
 		// Check for implied branches before doing a full reduce on both branches
 		if (var_implication == Boolean.TRUE) {
@@ -2984,14 +2972,12 @@ else
 		} else
 			error = 3;
 
+		// This error is really important to flag... should not disable.
+		// If it occurs, the resulting constraint could be used improperly.
 		if (error > 0 ){
-			if (NON_LIN_WARN) {
-			System.out.println("[" + error
-					+ "] SetCoef: Unexpected LHS constraint term: " + e);
-			throw new Exception("[" + error
-					+ "] SetCoef:Unexpected LHS constraint term: " + e); // .printStackTrace(System.out);
-			// System.exit(1);
-			}
+			System.err.println("WARNING: XADD.SetCoef ERROR [" + error + "] -- unexpected LHS constraint term: " + e);
+			System.err.println("BOGUS CONSTRAINT MAY BE RETURNED");
+			new Exception().printStackTrace(System.err);
 		}
 
 		return accum;
@@ -3337,8 +3323,8 @@ else
                     int lb_xadd = getVarNode(new ExprDec(ce), 0d, 1d);
                     max_eval_root = apply(max_eval_root, lb_xadd, PROD);
                 }
-                max_eval_root = reduceLinearize(max_eval_root); 
-                max_eval_root = reduceLP(max_eval_root); // Result should be canonical
+                //max_eval_root = reduceLinearize(max_eval_root); 
+                //max_eval_root = reduceLP(max_eval_root); // Result should be canonical
                 
                 _log.println("constrained root substitute: " + getString(max_eval_root));
                 max_eval = apply(max_eval, max_eval_root, MAX);
