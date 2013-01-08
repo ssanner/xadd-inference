@@ -16,10 +16,10 @@ import java.util.Iterator;
 import sve.GraphicalModel.Factor;
 
 import cmdp.HierarchicalParser;
-import xadd.TestXADDDist;
 import xadd.XADD;
 import xadd.XADD.ArithExpr;
 import xadd.XADD.VarExpr;
+import xadd.XADDUtils;
 
 public class SVE {
 
@@ -232,9 +232,9 @@ public class SVE {
 		String var = norm_result._vars.iterator().next();
 		double min_val = norm_result._localContext._hmMinVal.get(var);
 		double max_val = norm_result._localContext._hmMaxVal.get(var);
-		TestXADDDist.PlotXADD(norm_result._localContext, norm_result._xadd, 
+		XADDUtils.PlotXADD(norm_result._localContext, norm_result._xadd, 
 				min_val, 0.1d, max_val, var, title);
-		double integral = TestXADDDist.TestNormalize(norm_result._localContext, norm_result._xadd, var);
+		double integral = XADDUtils.TestNormalize(norm_result._localContext, norm_result._xadd, var);
 		if (Math.abs(integral - 1d) > 0.001d) 
 			System.err.println("WARNING: distribition does not integrate out to 1: " + integral);
 	}
@@ -247,7 +247,7 @@ public class SVE {
 		double max_val_x = norm_result._localContext._hmMaxVal.get(varX);
 		double min_val_y = norm_result._localContext._hmMinVal.get(varY);
 		double max_val_y = norm_result._localContext._hmMaxVal.get(varY);
-		TestXADDDist.Plot3DXADD(norm_result._localContext, norm_result._xadd, 
+		XADDUtils.Plot3DSurfXADD(norm_result._localContext, norm_result._xadd, 
 				min_val_x, 0.5d, max_val_x,
 				min_val_y, 0.5d, max_val_y, 
 				varX, varY, title);

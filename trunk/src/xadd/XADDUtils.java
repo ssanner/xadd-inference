@@ -32,7 +32,7 @@ import net.ericaro.surfaceplotter.surface.ArraySurfaceModel;
 import plot.PlotExample;
 import util.DevNullPrintStream;
 
-public class TestXADDDist {
+public class XADDUtils {
 
 	/**
 	 * @param args
@@ -164,7 +164,7 @@ public class TestXADDDist {
 			HashMap<String, Double> static_dvars, String xVar, String title) {
 		
 		PrintStream ps = null;
-		String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "") + ".txt";
+		String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "").replace(".dot","") + ".txt";
 		title = RemovePathAndExt(title);
 		try {
 			ps = new PrintStream(new FileOutputStream(filename));
@@ -218,7 +218,7 @@ public class TestXADDDist {
 		window.show();
 		
 		// Export png (not publication quality, but more quickly viewed)
-		ExportPanelToPNG(panel, filename + ".png");
+		ExportPanelToPNG(panel, filename.replace(".txt", ".png"));
 	}
 
 	public static void Plot3DXADD(XADD context, int xadd, double low_x,
@@ -322,9 +322,18 @@ public class TestXADDDist {
 		window.show();
 		
 		// Export png (not publication quality, but more quickly viewed)
-		ExportPanelToPNG(panel, filename + ".png");
+		ExportPanelToPNG(panel, filename.replace(".txt", ".png"));
 	}
 	
+	public static void Plot3DSurfXADD(XADD context, int xadd, double low_x,
+			double inc_x, double high_x, double low_y, double inc_y,
+			double high_y, String xVar, String yVar, String title) {
+
+		Plot3DSurfXADD(context, xadd, low_x, inc_x, high_x, low_y, inc_y, high_y,
+				new HashMap<String, Boolean>(), new HashMap<String, Double>(),
+				xVar, yVar, title);
+	}
+
 	public static void Plot3DSurfXADD (XADD context, int xadd,
 			double low_x, double inc_x, double high_x, double low_y, double inc_y, double high_y,
 			HashMap<String, Boolean> static_bvars, HashMap<String, Double> static_dvars,
@@ -363,7 +372,7 @@ public class TestXADDDist {
 		}
 		
 		PrintStream ps = null;
-		String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "") + ".txt"; 
+		String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "").replace(".dot","") + ".txt"; 
 		title = RemovePathAndExt(title);
 		try {
 			ps = new PrintStream(new FileOutputStream(filename));
@@ -417,10 +426,10 @@ public class TestXADDDist {
 		jf.setVisible(true);
 
 		// Export svg
-		ExportSurfPaneltoSVG(jsp, filename + ".svg");
+		ExportSurfPaneltoSVG(jsp, filename.replace(".txt", ".svg"));
 		
 		// Export png (not publication quality, but more quickly viewed)
-		ExportPanelToPNG(jsp, filename + ".png");
+		ExportPanelToPNG(jsp, filename.replace(".txt", ".png"));
 	}
 
 	public static void ExportSurfPaneltoSVG(JSurfacePanel jsp, String filename) {
@@ -449,12 +458,18 @@ public class TestXADDDist {
 	
 	public static String RemovePathAndExt(String label) {
 		String[] split = label.split("[\\\\/]");
+		//for (String s : split) System.out.print("'" + s + "' ");
 		label = split[split.length - 1];
 		split = label.split("[\\.:]");
-		if (split.length == 2)
-			label = split[0];
-		else if (split.length > 2)
-			label = split[0] + ":" + split[2];
-		return label;
+		//for (String s : split) System.out.print("'" + s + "' ");
+//		if (split.length == 2)
+//			label = split[0];
+//		else if (split.length > 2)
+//			label = split[0] + ":" + split[2];
+//		return label;
+		if (split.length - 1 < 0)
+			return split[0];
+		else
+			return split[split.length - 1];
 	}
 }

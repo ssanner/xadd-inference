@@ -110,7 +110,7 @@ public class ComputeQFunction {
 		// Optional Display
 		_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + ", " + a._actionParam + " )\n" + _context.getString(q));
 		if (CAMDP.DISPLAY_PREMAX_Q)
-			_camdp.displayGraph(q, "Q^" + _camdp._nCurIter + "(" + a._sName + ", " + a._actionParam + " )");
+			_camdp.doDisplay(q, "Q-" + a._sName + "-" + a._actionParam + "^" + _camdp._nCurIter + "-" + Math.round(100*_camdp.APPROX_ERROR));
 		
 		// Continuous action parameter maximization
 		for (int i=0; i < a._actionParam.size(); i++) {
