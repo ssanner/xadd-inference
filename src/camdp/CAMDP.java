@@ -47,7 +47,6 @@ public class CAMDP {
 	
 	//Prune and Linear Flags
 	public static boolean LINEAR_PROBLEM = true;
-	public static boolean REDUNDANCY_CHECK = true;
 	public static boolean APPROX_PRUNING = true;
 	public double APPROX_ERROR = 0.0d;
 	public boolean APPROX_ALWAYS = false;
@@ -227,7 +226,7 @@ public class CAMDP {
 				else{
 					_maxDD = _context.apply(_maxDD, regr, XADD.MAX);
 				}
-				_maxDD = _context.reduceLP(_maxDD, REDUNDANCY_CHECK);
+				_maxDD = _context.reduceLP(_maxDD); // Rely on flag XADD.CHECK_REDUNDANCY
 				if (APPROX_ALWAYS) {
 					_maxDD = _context.linPruneRel(_maxDD, APPROX_ERROR);
 				}
