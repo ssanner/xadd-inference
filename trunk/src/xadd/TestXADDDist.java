@@ -13,13 +13,17 @@ import jahuwaldt.plot.SimplePlotXY;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import net.ericaro.surfaceplotter.JSurfacePanel;
@@ -96,12 +100,17 @@ public class TestXADDDist {
 		// 3D Contour
 		Plot3DXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, -20d, 0.25d, 20d,
 				bvars, dvars, "y", "x1",
-				"Uniform Mix");
+				"Uniform Mix Contour");
 		
-		// 3D Surface
+//		// 3D Surface by specific grids -- for compatibility with Contour plot
+//		Plot3DSurfXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, -20d, 0.25d, 20d, 
+//				bvars, dvars, "y", "x1",
+//				"Uniform Mix Surface");
+		
+		// Or by number of samples per dimension (since must match)
 		Plot3DSurfXADD(xadd_context, xadd2u, -20d, 20d, -20d, 20d, 40,
 				bvars, dvars, "y", "x1",
-				"Uniform Mix");
+				"Uniform Mix Surface");
 
 		// Ensure distribution is normalized
 		System.out.println("U Norm: "
@@ -207,6 +216,9 @@ public class TestXADDDist {
 		window.setLocation(50, 50);
 		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		window.show();
+		
+		// Export png (not publication quality, but more quickly viewed)
+		ExportPanelToPNG(panel, filename + ".png");
 	}
 
 	public static void Plot3DXADD(XADD context, int xadd, double low_x,
@@ -226,7 +238,7 @@ public class TestXADDDist {
 		
 		static_dvars = new HashMap<String, Double>(static_dvars);
 		PrintStream ps = null;
-		String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "").replace(".dot",".txt"); 
+		String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "").replace(".dot","") + ".txt";; 
 		title = RemovePathAndExt(title);
 		try {
 			ps = new PrintStream(new FileOutputStream(filename));
@@ -277,37 +289,40 @@ public class TestXADDDist {
 //			System.out.println();
 //		}
 		//String title = "f(" + xVar + "," + yVar + ") @ " + static_bvars + " " + static_dvars;
-//		Plot2D aPlot = new ContourPlot(xArr, yArr, zArr, 12, false, title, 
-//				xVar, yVar, null, null);
+		Plot2D aPlot = new ContourPlot(xArr, yArr, zArr, 12, false, title, 
+				xVar, yVar, null, null);
 
 		// Colorize the contours.
-//		((ContourPlot) aPlot).colorizeContours(Color.blue, Color.red);
+		((ContourPlot) aPlot).colorizeContours(Color.blue, Color.red);
 
 		// Create a run that contains the original XY data points we just put
 		// contours through.
 		// We'll plot it with symbols so we can see the location of the original
 		// data points.
-//		PlotSymbol symbol = new CircleSymbol();
-//		symbol.setBorderColor(Color.gray);
-//		symbol.setSize(4);
-//		PlotRun run = new PlotRun();
-//		for (int i = 0; i < alY.size(); i++) {
-//			for (int j = 0; j < alX.size(); j++) {
-//				run.add(new PlotDatum(xArr[i][j], yArr[i][j], false, symbol));
-//			}
-//		}
+		PlotSymbol symbol = new CircleSymbol();
+		symbol.setBorderColor(Color.gray);
+		symbol.setSize(4);
+		PlotRun run = new PlotRun();
+		for (int i = 0; i < alY.size(); i++) {
+			for (int j = 0; j < alX.size(); j++) {
+				run.add(new PlotDatum(xArr[i][j], yArr[i][j], false, symbol));
+			}
+		}
 
 		// Add this new run of points to the plot.
 		//aPlot.getRuns().add(run);
 
 		// Now proceed with creating the plot window.
-//		PlotPanel panel = new PlotPanel(aPlot);
-//		panel.setBackground(Color.white);
-//		PlotExample window = new PlotExample(title, panel);
-//		window.setSize(500, 300);
-//		window.setLocation(100, 100);
-//		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-//		window.show();
+		PlotPanel panel = new PlotPanel(aPlot);
+		panel.setBackground(Color.white);
+		PlotExample window = new PlotExample(title, panel);
+		window.setSize(500, 300);
+		window.setLocation(100, 100);
+		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		window.show();
+		
+		// Export png (not publication quality, but more quickly viewed)
+		ExportPanelToPNG(panel, filename + ".png");
 	}
 	
 	public static void Plot3DSurfXADD (XADD context, int xadd,
@@ -319,8 +334,8 @@ public class TestXADDDist {
 		if (sampleX != sampleY){
 			System.out.println("samples X and Y must be equal for Surface Plot, using X samples");
 		}
-			Plot3DSurfXADD ( context, xadd, low_x, high_x, low_y, high_y, (int) Math.ceil( (high_x-low_x)/inc_x),
-				static_bvars, static_dvars,	xVar, yVar, title); 
+		Plot3DSurfXADD ( context, xadd, low_x, high_x, low_y, high_y, (int) Math.ceil( (high_x-low_x)/inc_x),
+			static_bvars, static_dvars,	xVar, yVar, title); 
 	}
 
 	public static void Plot3DSurfXADD (XADD context, int xadd,
@@ -402,15 +417,36 @@ public class TestXADDDist {
 		jf.setVisible(true);
 
 		// Export svg
+		ExportSurfPaneltoSVG(jsp, filename + ".svg");
+		
+		// Export png (not publication quality, but more quickly viewed)
+		ExportPanelToPNG(jsp, filename + ".png");
+	}
+
+	public static void ExportSurfPaneltoSVG(JSurfacePanel jsp, String filename) {
 		try {
-			File svg_file = new File(filename + ".svg");
+			File svg_file = new File(filename);
 			jsp.getSurface().doExportSVG(svg_file);
 			System.out.println("Exported SVG file: " + svg_file.getAbsolutePath());
 		} catch (Exception e) {
 			System.err.println("Could not open " + filename + " for SVG export.");
+		}	
+	}
+	
+	public static void ExportPanelToPNG(JPanel panel, String filename) {
+		BufferedImage bi = new BufferedImage(panel.getSize().width, panel.getSize().height, BufferedImage.TYPE_INT_ARGB); 
+		Graphics g = bi.createGraphics();
+		panel.paint(g);  //this == JComponent
+		g.dispose();
+		try {
+			File png_file = new File(filename);
+			ImageIO.write(bi, "png", png_file);
+			System.out.println("Exported PNG file: " + png_file.getAbsolutePath());
+		} catch (Exception e) {
+			System.err.println("Could not export: " + filename);
 		}
 	}
-
+	
 	public static String RemovePathAndExt(String label) {
 		String[] split = label.split("[\\\\/]");
 		label = split[split.length - 1];

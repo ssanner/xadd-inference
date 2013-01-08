@@ -505,8 +505,9 @@ public class CAMDP {
 					line = line.trim();
 					if (line.length() == 0)
 						continue;
-					String[] split = line.split(" ");
+					String[] split = line.split("\\s+"); // Luis: need general whitespace regex since previous files use \t 
 					String label = split[0].trim();
+					//System.out.println("Label: '" + label + "'");
 					if (label.equalsIgnoreCase("var")) {
 						// Line format: var name lb inc ub
 						_var.add(split[1].trim());
@@ -525,7 +526,7 @@ public class CAMDP {
 				}
 			} catch (Exception e) {
 				System.err.println(e + "\nContent at current line: '" + line + "'");
-				System.err.println("ERROR: could not read 3d file: " + filename + ", exiting.");
+				System.err.println("ERROR: could not read file: " + filename + ", exiting.");
 			}		
 		}
 	}
