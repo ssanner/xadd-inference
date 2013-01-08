@@ -3301,7 +3301,7 @@ else
             // ??? need to avoid case where max leads to an illegal pruning -- occurs???
             //     e.g., could an unreachable constant prune out another reachable node?
             //     (don't think this can happen... still in context of unreachable constraints)
-            int max_eval = apply(max_eval_upper, max_eval_lower, MAX);
+            int max_eval = apply(max_eval_upper, max_eval_lower, MAX); // TODO: handle MIN_MAX, also change var names
             max_eval = reduceLinearize(max_eval); 
             max_eval = reduceLP(max_eval); // Result should be canonical
             _log.println("max of LB and UB (reduce/linearize): " + getString(max_eval));
@@ -3316,18 +3316,18 @@ else
                 for (ArithExpr ub : upper_bound) {
                     CompExpr ce = new CompExpr(LT_EQ, root, ub);
                     int ub_xadd = getVarNode(new ExprDec(ce), 0d, 1d);
-                    max_eval_root = apply(max_eval_root, ub_xadd, PROD);
+                    max_eval_root = apply(max_eval_root, ub_xadd, PROD); // TODO: Correct constraint multiplication
                 }
                 for (ArithExpr lb : lower_bound) {
                     CompExpr ce = new CompExpr(GT, root, lb);
                     int lb_xadd = getVarNode(new ExprDec(ce), 0d, 1d);
-                    max_eval_root = apply(max_eval_root, lb_xadd, PROD);
+                    max_eval_root = apply(max_eval_root, lb_xadd, PROD); // TODO: Correct constraint multiplication
                 }
                 //max_eval_root = reduceLinearize(max_eval_root); 
                 //max_eval_root = reduceLP(max_eval_root); // Result should be canonical
                 
                 _log.println("constrained root substitute: " + getString(max_eval_root));
-                max_eval = apply(max_eval, max_eval_root, MAX);
+                max_eval = apply(max_eval, max_eval_root, MAX); // TODO: handle MIN_MAX, also change var names
                 max_eval = reduceLinearize(max_eval); 
                 max_eval = reduceLP(max_eval); // Result should be canonical
                 _log.println("max of constrained root sub and int_eval(LB/UB): " + getString(max_eval));
@@ -3335,13 +3335,14 @@ else
 
             _log.println("max_eval before decisions (after sub root): " + getString(max_eval));
 
+            // TODO: edit running sum comments
             // Finally, multiply in boolean decisions and irrelevant comparison expressions
             // to the XADD and add it to the running sum
             for (Map.Entry<Decision, Boolean> me : max_var_indep_decisions.entrySet()) {
                     double high_val = me.getValue() ? 1d : 0d;
                     double low_val = me.getValue() ? 0d : 1d;
                     _log.println("max_eval with decisions: " + me.getKey());
-                    max_eval = apply(max_eval, getVarNode(me.getKey(), low_val, high_val), PROD);
+                    max_eval = apply(max_eval, getVarNode(me.getKey(), low_val, high_val), PROD); // TODO: Correct constraint multiplication
             }
             _log.println("max_eval with decisions: " + getString(max_eval));
             
@@ -3354,7 +3355,7 @@ else
             if (_runningMax == -1) 
             	_runningMax = max_eval;
             else 
-            	_runningMax = apply(_runningMax, max_eval, MAX);
+            	_runningMax = apply(_runningMax, max_eval, MAX); // TODO: handle MIN_MAX, also change var names
 
             _runningMax = reduceLinearize(_runningMax);
             _runningMax = reduceLP(_runningMax);

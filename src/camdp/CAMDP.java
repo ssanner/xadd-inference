@@ -10,8 +10,8 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
 import util.IntTriple;
-import xadd.TestXADDDist;
 import xadd.XADD;
+import xadd.XADDUtils;
 import xadd.XADD.*;
 import cmdp.HierarchicalParser;
 
@@ -215,11 +215,10 @@ public class CAMDP {
 				int regr = _qfunHelper.regress(_valueDD, me.getValue());
 				regr  = _context.reduceRound(regr);
 				if (DISPLAY_POSTMAX_Q)
-					doDisplay(regr, _logFileRoot + ": Q^" + _nCurIter + "(" + me.getKey() + ")");
+					doDisplay(regr, "Q-" + me.getKey() + "^" +_nCurIter + "-" + Math.round(100*APPROX_ERROR));
 	
 				// Take the max over this action and the previous action 
 				//(can have continuous parameters which represents many discrete actions)
-				///////ADD THIS TO SCOTT'S CODE
 				regr = _context.makeCanonical(regr);
 				if (_maxDD == null)
 					_maxDD = regr;
@@ -236,7 +235,7 @@ public class CAMDP {
 		            	System.exit(1);
 		        }
 				if(DISPLAY_MAX)
-					displayGraph(_maxDD, "max-" + _nCurIter);
+					doDisplay(_maxDD, "QMax^"+_nCurIter+"-"+Math.round(100*APPROX_ERROR));
 
 				flushCaches();
 			}
@@ -252,8 +251,7 @@ public class CAMDP {
 			
 			System.out.println("Iter:" + _nCurIter+" Complete");
 			_logStream.println("Iter complete:" + _nCurIter + _context.getString(_valueDD));
-			//doDisplay(_valueDD, _logFileRoot + ": V^"+_nCurIter);
-			doDisplay(_valueDD, "V^"+_nCurIter+"-"+Math.round(100*APPROX_ERROR)+".dot");
+			doDisplay(_valueDD, "V^"+_nCurIter+"-"+Math.round(100*APPROX_ERROR));
 			
 			//////////////////////////////////////////////////////////////////////////
 			// Value iteration statistics
@@ -441,13 +439,13 @@ public class CAMDP {
 		Graph g = _context.getGraph(xadd_id);
 		String[] split = label.split("[\\\\/]");
 		label = split[split.length - 1];
-		label = label.replace(".camdp", "").replace(".cmdp", "");
+		label = label.replace(".csamdp", "").replace(".camdp", "").replace(".cmdp", "");
 		g.addNode("_temp_");
 		g.addNodeLabel("_temp_", label);
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "gold1");
-		g.genDotFile(label);
+		g.genDotFile(_logFileRoot + "." + label + ".dot");
 		g.launchViewer(1300, 770);
 	}
 
@@ -465,9 +463,9 @@ public class CAMDP {
 			System.out.println("dassign: " + opt._dassign);
 		}
 		
-		TestXADDDist.PlotXADD(_context, xadd_id, 
+		XADDUtils.PlotXADD(_context, xadd_id, 
 				opt._varLB.get(0), opt._varInc.get(0), opt._varUB.get(0), 
-				opt._bassign, opt._dassign, opt._var.get(0), label);
+				opt._bassign, opt._dassign, opt._var.get(0), _logFileRoot + "." + label);
 	}
 	
 	public void display3D(int xadd_id, String label) {
@@ -476,16 +474,18 @@ public class CAMDP {
 		// have been placed in a _problemFile + ".3d"
 		FileOptions opt = new FileOptions(_problemFile + ".3d");
 
-		System.out.println("Plotting 3D...");
-		System.out.println("var: " + opt._var.get(1) + ", [" + opt._varLB.get(1) + ", " + 
-				opt._varInc.get(1) + ", " + opt._varUB.get(1) + "]");
-		System.out.println("bassign: " + opt._bassign);
-		System.out.println("dassign: " + opt._dassign);
+		if (!SILENT_PLOT) {
+			System.out.println("Plotting 3D...");
+			System.out.println("var: " + opt._var.get(1) + ", [" + opt._varLB.get(1) + ", " + 
+					opt._varInc.get(1) + ", " + opt._varUB.get(1) + "]");
+			System.out.println("bassign: " + opt._bassign);
+			System.out.println("dassign: " + opt._dassign);
+		}
 
-		TestXADDDist.Plot3DSurfXADD(_context, xadd_id, 
+		XADDUtils.Plot3DSurfXADD(_context, xadd_id, 
 				opt._varLB.get(0), opt._varInc.get(0), opt._varUB.get(0), 
 				opt._varLB.get(1), opt._varInc.get(1), opt._varUB.get(1), 
-				opt._bassign, opt._dassign, opt._var.get(0), opt._var.get(1), label);
+				opt._bassign, opt._dassign, opt._var.get(0), opt._var.get(1), _logFileRoot + "." + label);
 	}
 	
 	// A helper class to load options for 2D and 3D plotting for specific problems
