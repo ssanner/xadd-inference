@@ -121,7 +121,7 @@ public class CAMDP {
 		
 		// Basic initializations
 		_problemFile = file_source;
-		_logFileRoot = InsertDirectory(_problemFile, RESULTS_DIR).replace("-", "_");
+		_logFileRoot = InsertDirectory(_problemFile, RESULTS_DIR);
 		_context = new XADD();
 		_prevDD = _maxDD = _valueDD = null;
 		_bdDiscount = new BigDecimal("" + (-1));
@@ -162,6 +162,7 @@ public class CAMDP {
 		// Setup a logger
 		try {
 			_logStream = new PrintStream(new FileOutputStream(/*"timeSpace.txt"));*/_logFileRoot + ".log"));
+			_logStream.println(this.toString());
 			//Default log to stdout
 			_testLogStream = System.out;
 		} catch (FileNotFoundException e) {
@@ -236,6 +237,7 @@ public class CAMDP {
 		        }
 				if(DISPLAY_MAX)
 					doDisplay(_maxDD, "QMax^"+_nCurIter+"-"+Math.round(100*APPROX_ERROR));
+				_logStream.println("Running max in iter " + _nCurIter + ":" + _context.getString(_maxDD));
 
 				flushCaches();
 			}
@@ -395,14 +397,13 @@ public class CAMDP {
 
 
 	public String toString() {
-		return toString(false, false);
+		return toString(true, false);
 	}
 
 	public String toString(boolean display_reward, boolean display_value) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("\nCMDP Definition:\n===============\n");
-		sb.append("CVars:       " + /*_context.getContinuousVarList() + */" / " + 
-				_alContAllVars + " = " + _hsContSVars + " + " + _hsContAVars + "\n");
+		sb.append("CVars:       " + _alContAllVars + " = " + _hsContSVars + " + " + _hsContAVars + "\n");
 		sb.append("Min-values:  " + _context._hmMinVal + "\n");
 		sb.append("Max-values:  " + _context._hmMaxVal + "\n");
 		sb.append("BVars:       " + _context._alBooleanVars + "/" + _hsBoolSVars + "\n");
@@ -445,7 +446,8 @@ public class CAMDP {
 		g.addNodeShape("_temp_", "square");
 		g.addNodeStyle("_temp_", "filled");
 		g.addNodeColor("_temp_", "gold1");
-		g.genDotFile(_logFileRoot + "." + label + ".dot");
+		String safe_filename = label.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "");
+		g.genDotFile(_logFileRoot + "." + safe_filename + ".dot");
 		g.launchViewer(1300, 770);
 	}
 
@@ -560,8 +562,13 @@ public class CAMDP {
 		try {
 			File f = new File(filename);
 			String parent = f.getParent();
-			return (parent == null ? "" : parent) + File.separator + add_dir + 
-				File.separator + f.getName();
+			String dir_path = (parent == null ? "" : parent) + File.separator + add_dir;
+			File dir = new File(dir_path);
+			if (dir.exists() && !dir.isDirectory())
+				throw new Exception("'" + dir + "' is a file, cannot change it to a directory for logging.");
+			if (!dir.exists())
+				dir.mkdir();
+			return dir_path + File.separator + f.getName();
 		} catch (Exception e) {
 			System.err.println("Could not insert directory '" + add_dir + "' into '" + filename + "' to produce output files.");
 			System.exit(1);
