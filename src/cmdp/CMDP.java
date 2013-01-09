@@ -29,12 +29,12 @@ import camdp.CAMDP.FileOptions;
 
 
 import util.IntTriple;
-import xadd.TestXADDDist;
 import xadd.XADD;
 import xadd.XADD.ArithExpr;
 import xadd.XADD.BoolDec;
 import xadd.XADD.DoubleExpr;
 import xadd.XADD.XADDINode;
+import xadd.XADDUtils;
 
 // DD & FBR interfaces
 
@@ -235,24 +235,6 @@ public class CMDP {
 					// g.genDotFile(type + "value.dot");
 					g.launchViewer(1300, 770);
 				}
-
-				///////////////////////////////////////////////////////////////
-				// Estimating number of cases
-				//double num_cases_in_regr = num_cases[iter - 1];
-				//System.out.println("Test 1: " + num_cases_in_regr);
-				//for (Map.Entry<String,Integer> me2 : me.getValue()._hmVar2DD.entrySet()) {
-					//num_cases_in_regr *= _context.getBranchCount(me2.getValue()); // From regr
-					//System.out.println("Test 2: " + num_cases_in_regr);
-					//if (_alBVars.contains(me2.getKey()) && num_cases_in_regr > 1)
-					//num_cases_in_regr /= 2; // Sum out a variable
-					//System.out.println("Test 3: " + num_cases_in_regr);
-				//}
-				//num_cases_in_regr *= _context.getBranchCount( me.getValue()._reward);
-				//System.out.println("Test 4: " + num_cases_in_regr);
-				//System.out.println("Test 5: " + num_cases[iter]);
-				//num_cases[iter] *= num_cases_in_regr; // From max
-				//System.out.println("Test 6: " + num_cases[iter]);
-				///////////////////////////////////////////////////////////////
 				
 				// ////////////////////////////////////////////////////////////
 				// Take the max over this action and the previous action
@@ -981,7 +963,7 @@ public class CMDP {
 //		System.out.println("bassign: " + opt._bassign);
 //		System.out.println("dassign: " + opt._dassign);
 
-		TestXADDDist.Plot3DSurfXADD(_context, xadd_id, 
+		XADDUtils.Plot3DSurfXADD(_context, xadd_id, 
 				opt._varLB.get(0), opt._varInc.get(0), opt._varUB.get(0), 
 				opt._varLB.get(1), opt._varInc.get(1), opt._varUB.get(1), 
 				opt._bassign, opt._dassign, opt._var.get(0), opt._var.get(1), label);
@@ -1059,6 +1041,11 @@ public class CMDP {
 	 * Basic testing interface.
 	 **/
 	public static void main(String args[]) {
+		
+		System.err.println("NOTE: camdp.CAMDP can now parse and solve CMDPs and has better logging");
+		System.err.println("      and diagnostic output.  This solver has now been deprecated.");
+		System.exit(1);
+		
 		if (args.length < 2 || args.length > 8) {
 			usage();
 		}

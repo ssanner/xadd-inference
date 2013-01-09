@@ -103,7 +103,7 @@ public class ComputeQFunction {
 
     	// Ensure Q-function is properly constrained and minimal (e.g., subject to constraints)
 		for (Integer constraint : _camdp._alConstraints)
-			q = _context.apply(q, constraint, XADD.PROD);
+			q = _context.apply(q, constraint, XADD.PROD); // TODO: Examine application of constraints
 		if (_camdp._alConstraints.size() > 0)
 			q = _context.reduceLP(q);
 		
@@ -113,19 +113,25 @@ public class ComputeQFunction {
 			_camdp.doDisplay(q, "Q-" + a._sName + "-" + a._actionParam + "^" + _camdp._nCurIter + "-" + Math.round(100*_camdp.APPROX_ERROR));
 		
 		// Continuous action parameter maximization
-		for (int i=0; i < a._actionParam.size(); i++) {
-			String var = a._actionParam.get(i);
-			double lb  = a._contBounds.get(i*2);
-			double ub  = a._contBounds.get(i*2+1);
-
-			_camdp._logStream.println("- Maxing out var '" + var + "': [" + lb + "," + ub + "]");
-			q = maxOutVar(q, var, lb, ub);
-			_camdp._logStream.println("-->: " + _context.getString(q));
-			
-			// Can be computational expensive (max-out) so flush caches if needed
-			_camdp.flushCaches(Arrays.asList(q) /* additional node to save */);
+		if (a._actionParam.size() == 0) {
+			// No action params to maximize over
+			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " ):\n" + " No action parameters to max over, skipping.");
+		} else {
+			// Max out each action param in turn
+			for (int i=0; i < a._actionParam.size(); i++) {
+				String var = a._actionParam.get(i);
+				double lb  = a._contBounds.get(i*2);
+				double ub  = a._contBounds.get(i*2+1);
+	
+				_camdp._logStream.println("- Maxing out var '" + var + "': [" + lb + "," + ub + "]");
+				q = maxOutVar(q, var, lb, ub);
+				_camdp._logStream.println("-->: " + _context.getString(q));
+				
+				// Can be computational expensive (max-out) so flush caches if needed
+				_camdp.flushCaches(Arrays.asList(q) /* additional node to save */);
+			}
+			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " )\n" + _context.getString(q));
 		}
-		_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " )\n" + _context.getString(q));
 
 		return q;
 	}

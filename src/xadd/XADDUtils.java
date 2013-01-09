@@ -14,6 +14,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,8 +24,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.WindowConstants;
 
 import net.ericaro.surfaceplotter.JSurfacePanel;
@@ -413,13 +417,24 @@ public class XADDUtils {
 		jsp.setTitleText(title);
 
 		JFrame jf = new JFrame(title);
-		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		ArraySurfaceModel sm = new ArraySurfaceModel();
 		sm.setValues(xArr[0][0],xArr[alY.size()-1][alX.size()-1],
 				yArr[0][0],yArr[alY.size()-1][alX.size()-1],alX.size(), zArr, null);
+		sm.setDisplayXY(true);
+		sm.setDisplayZ(true);
+		sm.setDisplayGrids(true);
 		jsp.setModel(sm);
 
+		// Add export button
+		JToolBar toolbar = new JToolBar();
+		JButton button = new JButton();
+		button.setText("Re-export SVG and PNG to " + filename.replace(".txt", "") + "{.png,.svg}");
+		button.addActionListener(new ExportActionListener(jsp, filename));
+		toolbar.add(button);
+		
+		jf.getContentPane().add(toolbar, BorderLayout.NORTH);
 		jf.getContentPane().add(jsp, BorderLayout.CENTER);
 		jf.getContentPane().setPreferredSize(new Dimension(580, 560));
 		jf.pack();
@@ -432,11 +447,28 @@ public class XADDUtils {
 		ExportPanelToPNG(jsp, filename.replace(".txt", ".png"));
 	}
 
+	// Export button support for 3D view
+	public static class ExportActionListener implements ActionListener {
+		String _filename = null;
+		JSurfacePanel _jsp = null;
+		public ExportActionListener(JSurfacePanel jsp, String fname) {
+			_jsp = jsp;
+			_filename = fname;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// Export to PNG and SVG
+			System.out.println("Re-exporting SVG and PNG to '" + _filename.replace(".txt", "") + "{.png,.svg}'");
+			ExportSurfPaneltoSVG(_jsp, _filename.replace(".txt", ".svg"));
+			ExportPanelToPNG(_jsp, _filename.replace(".txt", ".png"));
+		}		
+	}
+	
 	public static void ExportSurfPaneltoSVG(JSurfacePanel jsp, String filename) {
 		try {
 			File svg_file = new File(filename);
 			jsp.getSurface().doExportSVG(svg_file);
-			System.out.println("Exported SVG file: " + svg_file.getAbsolutePath());
+			//System.out.println("Exported SVG file: " + svg_file.getAbsolutePath());
 		} catch (Exception e) {
 			System.err.println("Could not open " + filename + " for SVG export.");
 		}	
@@ -445,15 +477,16 @@ public class XADDUtils {
 	public static void ExportPanelToPNG(JPanel panel, String filename) {
 		BufferedImage bi = new BufferedImage(panel.getSize().width, panel.getSize().height, BufferedImage.TYPE_INT_ARGB); 
 		Graphics g = bi.createGraphics();
-		panel.paint(g);  //this == JComponent
-		g.dispose();
+		panel.paint(g);  // seems this is a non-blocking call
 		try {
+			Thread.sleep(500); // allow paint to complete
 			File png_file = new File(filename);
 			ImageIO.write(bi, "png", png_file);
-			System.out.println("Exported PNG file: " + png_file.getAbsolutePath());
+			//System.out.println("Exported PNG file: " + png_file.getAbsolutePath());
 		} catch (Exception e) {
 			System.err.println("Could not export: " + filename);
 		}
+		g.dispose();
 	}
 	
 	public static String RemovePathAndExt(String label) {

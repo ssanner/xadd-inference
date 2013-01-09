@@ -105,13 +105,17 @@ public class ParseCAMDP {
 		o = i.next();
 		IVars = (ArrayList<String>) ((ArrayList) o).clone();
 
-		
+		// avariable declarations are optional to allow parsing of non-continuously parameterized action cmdps
 		o = i.next();
+		Object push_back = null;
 		if (!(o instanceof String) || !((String) o).equalsIgnoreCase("avariables")) {
-			exit("Missing avariable declarations: " + o);
+			System.out.println("Missing avariable declarations before " + o + "... assuming there are no continuously parameterized actions.");
+			AVars = new ArrayList<String>();
+			push_back = o;
+		} else {
+			o = i.next();
+			AVars = (ArrayList<String>) ((ArrayList) o).clone();
 		}
-		o = i.next();
-		AVars = (ArrayList<String>) ((ArrayList) o).clone();
 
 		ArrayList<String> contVars = new ArrayList<String>();
 		contVars.addAll(CVars);
@@ -120,7 +124,8 @@ public class ParseCAMDP {
 		// Set up actions
 		while (true) 
 		{
-			o = i.next();
+			o = push_back == null ? i.next() : push_back; // Could have a saved object if avariable declaration was missing
+			push_back = null; // Whether or not it was used, clear it
 			if (!(o instanceof String)
 					|| !((String) o).equalsIgnoreCase("action")) {
 				break;
@@ -129,27 +134,18 @@ public class ParseCAMDP {
 			// o == "action" + continuous action
 			String aname = (String) i.next();
 			o= i.next();
-			ArrayList<String> temp=null;
 			
-			//for more than one continuous parameter for each action
-			boolean checkNoparam = false;
-			for (int k=0;k<CVars.size();k++)
-			{
-				while (!(o.equals(CVars.get(k)+"'")))
-						{
-							
-							temp=(ArrayList<String>) ((ArrayList) o).clone();
-							checkNoparam = true;
-							break;
-						}
-				if (checkNoparam) break;
-			}
-			//if it is a continuous action (has avariables) then it either has bounds in the paranthesis or we add bounds
-			if (AVars.size()>0)
-				parseActionParam(temp);
+			// o is either empty, "()", or "( lb <= var <= ub ... )", e.g.
+			// [-1000000, <, =, a, <, =, 1000000]
+			// []
+			// k'
+			if (o instanceof ArrayList) {
+				// Non-empty parameter list
+				parseActionParam((ArrayList)o);
+				o = i.next(); // Advance to next token				
+			} // otherwise there was no parameter list and o contains beginning of CPF
+			
 			HashMap<String,ArrayList> cpt_map = new HashMap<String,ArrayList>();
-
-			o = i.next();
 			while (!((String) o).equalsIgnoreCase("reward")) {//endaction
 				cpt_map.put((String) o, (ArrayList) i.next());
 				o = i.next();
@@ -157,15 +153,14 @@ public class ParseCAMDP {
 
 			// Set up reward
 			if (!(o instanceof String) || !((String) o).equalsIgnoreCase("reward")) {
-				System.out.println("Missing reward declaration for action: "+aname +" "+ o);
-				System.exit(1);
+				exit("Missing reward declaration for action: "+aname +" "+ o);
 			}
-			//new parser format : has + for ANDing rewards
+			//new parser format : has + for summing rewards
 			o=i.next();
 			ArrayList reward = (ArrayList) o;
-			int _runningSum=0,reward_dd = 0;
+			int reward_dd = 0;
 			int reward_toGoal = _camdp._context.buildCanonicalXADD(reward);
-			//new parser format : has + for ANDing rewards
+			//new parser format : has + for summing rewards
 			 o = i.next();
 			 while (!((String) o).equalsIgnoreCase("endaction"))
 			{
@@ -480,27 +475,17 @@ public class ParseCAMDP {
 	
 	
 	private void parseActionParam(ArrayList<String> params) {
-		//parsing stage 1: 
-		//Assume only either both numerical(not non-numerical) bounds are given or none
-		int breakpoint =-1;
-		for (int i=0;i<AVars.size();i++)
-			if (params.contains(AVars.get(i)))
-			{
-				contParam.add(i*2, new Double(params.get(breakpoint+1)));
-				for (int j=breakpoint+1;j<params.size();j++)
-					if (params.get(j).equals("^")){
-						breakpoint = j;
-						break;
-					}
-					else breakpoint = params.size();
-				contParam.add((i*2)+1, new Double(params.get(breakpoint-1)));
-			}
-			else if (params.size()==0) //no bounds defined, add explicitly
-			{
-				contParam.add(0, -1000000.0);
-				contParam.add(1, 1000000.0);
-			}
-		
+		// All actions required to have bounds, e.g.
+		// [0, <, =, a1, <, =, 200, ^, 0, <, =, a2, <, =, 200]
+		// [-1000000, <, =, a, <, =, 1000000]
+		for (int var_index = 3; var_index < params.size(); var_index += 8) {
+			String var_name = params.get(var_index);
+			int avar_index = AVars.indexOf(var_name);
+			if (avar_index < 0)
+				exit("Expected an action-variable, but got: '" + var_name + "'");
+			contParam.add(avar_index*2,     new Double(params.get(var_index - 3)) /* LB */);
+			contParam.add((avar_index*2)+1, new Double(params.get(var_index + 3)) /* UB */);
+		}		
 	}
 	
 	public void exit(String msg) {
