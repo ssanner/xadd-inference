@@ -270,13 +270,19 @@ public class XADD {
 			//System.out.println(">> Before canonical: " + d);
 			d = d.makeCanonical();
 			//System.out.println(">> After canonical: " + d);
+			if (d instanceof ExprDec && !((ExprDec) d)._expr._rhs.equals(ZERO)) {
+				System.err.println("Expected RHS 0 in canonical ExprDec, but got: " + d);
+				System.exit(1);
+			}
 		}
 		int index = _alOrder.indexOf(d);
 		// If not found, try negating d
 		if (index < 0 && d instanceof ExprDec) 
 		{
 			CompExpr comp = ((ExprDec) d)._expr;
-			CompExpr neg_comp = new CompExpr(CompExpr.flipCompOper(comp._type),	comp._lhs, comp._rhs);
+			// Don't flip inequality since only using <, instead negate (Luis's idea)
+			// CompExpr neg_comp = new CompExpr(CompExpr.flipCompOper(comp._type), comp._lhs, comp._rhs);
+			CompExpr neg_comp = new CompExpr(comp._type, ArithExpr.op(comp._lhs, NEG_ONE, PROD), comp._rhs);
 			Decision neg_d = new ExprDec(neg_comp).makeCanonical();
 
 			index = _alOrder.indexOf(neg_d);
@@ -434,7 +440,20 @@ public class XADD {
 	// Convert a diagram with decision nodes that are potentially out of order
 	// to one with nodes in order using the "apply trick"
 	public int makeCanonical(int node_id) {
+		// NOTE: while both approaches 1 and 2 produce the same result, the empty substitution
+		//       incurred by approach 1 seems to fortuitously perturb expression and decision
+		//       order in a way that leads to a noticeable speedup on some problems.  It also
+		//       saves us from keep another cache around, which saves space.
 		
+		// CANONIZATION APPROACH 1
+		return reduceSub(node_id, new HashMap<String, ArithExpr>(), new HashMap<Integer, Integer>());
+		
+		// CANONIZATION APPROACH 2
+		//_hmReduceCanonCache.clear();
+		//return makeCanonicalInt(node_id);
+	}
+	
+	public int makeCanonicalInt(int node_id) {
 		Integer ret = null;
 		XADDNode n = getExistNode(node_id);
 
@@ -451,12 +470,19 @@ public class XADD {
 		XADDINode inode = (XADDINode) n;
 
 		// Recursively ensure canonicity for subdiagrams
-		int low = makeCanonical(inode._low);
-		int high = makeCanonical(inode._high);
+		int low = makeCanonicalInt(inode._low);
+		int high = makeCanonicalInt(inode._high);
 
-		// Enforce canonicity via the "apply trick" at this level.  Note: var
-		// decision expressions must be canonical to get assigned an ID in _alOrder.
-		ret = getINodeCanon(inode._var, low, high);
+		// Enforce canonicity via the "apply trick" at this level.  
+		//
+		// Note: var decision expressions should be canonical to get 
+		// assigned an ID in _alOrder, but sometimes they can be further
+		// reduced to a tautological decision and this will check for it.
+		int var = inode._var;
+		Decision d = _alOrder.get(var);
+		if (d instanceof ExprDec)
+			var = getVarIndex(d, true);
+		ret = getINodeCanon(var, low, high);
 		
 		// Error check
 		if (CHECK_LOCAL_ORDERING)
@@ -3196,6 +3222,8 @@ public class XADD {
             //     (don't think this can happen... still in context of unreachable constraints)
             int max_eval = apply(max_eval_upper, max_eval_lower, MAX); // TODO: handle MIN_MAX, also change var names
             max_eval = reduceLinearize(max_eval); 
+            
+            // TODO: investigate... sometimes we are getting a quadratic decision below that should have been linearized!
             max_eval = reduceLP(max_eval); // Result should be canonical
             if (VERBOSE_MIN_MAX) _log.println("max of LB and UB (reduce/linearize): " + getString(max_eval));
 
@@ -4059,12 +4087,9 @@ public class XADD {
 			Decision d = this;
 			if (d instanceof ExprDec) {
 				ExprDec e = (ExprDec) d;
-				// if the decision of the divisor is positive, the decision d's
-				// sign does not change, else flip the decision type.
+				// TODO: If there are divisors, multiply through and handle negative operands
 				CompExpr new_comp = (CompExpr) e._expr.makeCanonical();
 				d = new ExprDec(new_comp);
-				// if there were divisors, add the decisions based on the
-				// expressions
 			}
 
 			// Check for tautology (or inconsistency)
@@ -4212,32 +4237,35 @@ public class XADD {
 				return new CompExpr(type, lhs, rhs);
 		}
 
+		// This ignores the difference between strict and non-strict inequality... technically
+		// requires a continuous function, or if piecewise, could have errors at piece boundaries.
 		public Expr makeCanonical() {
 
 			// 1. Expressions all zero on RHS of comparisons and restrict
 			// symbols:
 			// a < b : b > a
 			// a <= b : b >= a 
-			// CANONICAL_DIVISOR.clear();
+
+			// Enforce all inequalities to be >
 			CompExpr new_expr = new CompExpr(_type, _lhs, _rhs);
 			switch (new_expr._type) {
-			case LT:
+			case GT_EQ:
 				new_expr._type = GT;
-				// Swap lhs and rhs
-				new_expr._lhs = _rhs;
-				new_expr._rhs = _lhs;
+				// Do not swap lhs and rhs -- just collapsing >= to >
 				break;
+			case LT:
 			case LT_EQ:
 				new_expr._type = GT;
-				// Swap lhs and rhs
+				// Swap lhs and rhs to counter the inequality switch
 				new_expr._lhs = _rhs;
 				new_expr._rhs = _lhs;
 				break;
+			case EQ:
 			case NEQ:
-				System.err.println("Dangerous NEQ EXPR!");
+				System.err.println("WARNING: XADDs should not use NEQ/EQ EXPR... can substitute on EQ: " + new_expr);
 				break;
 			}
-
+			
 //			// TREATMENT OF DIVISION -- NOT CURRENTLY BEING USED BUT LEAVING IN
 //			// SINCE CRUCIAL IF WORKING WITH POLYNOMIAL FRACTIONS IN FUTURE
 //
