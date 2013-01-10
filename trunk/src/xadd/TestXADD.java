@@ -43,7 +43,7 @@ public class TestXADD {
 		 * // Build and display an XADD
 		 */
 		XADD xadd_context = new XADD();
-		
+
 		//////////////////////
 		int ixadd = TestBuild(xadd_context, "./src/xadd/test7.xadd");
 		
@@ -299,7 +299,7 @@ public class TestXADD {
 
 	public static void TestParse(String s) {
 		s = s.substring(1, s.length() - 1);
-		CompExpr e = CompExpr.parse(s);
+		CompExpr e = CompExpr.ParseCompExpr(s);
 		System.out.println("CompExpr for  '" + s + "': " + e);
 		ArithExpr a = ArithExpr.parse(s);
 		System.out.println("ArithExpr for '" + s + "': " + a + "\n");
@@ -316,22 +316,16 @@ public class TestXADD {
 			System.out.println("EX != EX * EX: " + ArithExpr.op(a, a, XADD.PROD).equals(a));
 			System.out.println("EX+EX:" + sub + "/" + a2 + ": " + ArithExpr.op(a, a, XADD.SUM).substitute(subst));
 		} else if (e != null) {
-			System.out.println("EX == EX: " + CompExpr.parse(s).equals(e));
+			System.out.println("EX == EX: " + CompExpr.ParseCompExpr(s).equals(e));
 			System.out.println("EX:" + sub + "/" + a2 + ": " + e.substitute(subst));
 		}
 	}
 
 	public static int TestBuild(XADD xadd_context, String filename) {
-		ArrayList l = HierarchicalParser.ParseFile(filename);
-		System.out.println("Parsed file contents for '" + filename + "': " + l.get(0) + "\n");
-		int dd1 = xadd_context.buildCanonicalXADD((ArrayList) l.get(0));
-		//Graph g1 = xadd_context.getGraph(dd1);
-		//g1.launchViewer();
-		
-		// int dd2 = xadd_context.apply(dd1, dd1, XADD.SUM);
-		// Graph g2 = xadd_context.getGraph(dd2); g2.launchViewer();
-		// int dd3 = xadd_context.apply(dd1, dd1, XADD.PROD);
-		// Graph g3 = xadd_context.getGraph(dd3); g3.launchViewer();
+		int dd1 = xadd_context.buildCanonicalXADDFromFile(filename);
+		xadd_context.showGraph(dd1, "Parsed Graph: " + filename);
+		//xadd_context.showGraph(xadd_context.apply(dd1, dd1, XADD.SUM),  "Parsed Graph, Sum");
+		//xadd_context.showGraph(xadd_context.apply(dd1, dd1, XADD.PROD), "Parsed Graph, Prod");
 		return dd1;
 	}
 

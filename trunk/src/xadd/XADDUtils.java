@@ -41,7 +41,7 @@ public class XADDUtils {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 
 		XADD xadd_context = new XADD();
 		// Put all boolean variables first to avoid reordering clashes
@@ -95,7 +95,6 @@ public class XADDUtils {
 				"./src/xadd/uniform_mix.xadd");
 		//int xadd2u = TestXADD.TestBuild(xadd_context,
 		//		"./src/xadd/triangle_mix.xadd");
-		xadd_context.getGraph(xadd2u).launchViewer();
 
 		// 2D
 		PlotXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, bvars, dvars, "y",
