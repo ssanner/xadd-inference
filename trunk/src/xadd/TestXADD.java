@@ -28,6 +28,31 @@ public class TestXADD {
 	// //////////////////////////////////////////////////////////////
 
 	public static void main(String[] args) throws Exception {
+		XADD xadd_context = new XADD();
+		int expr1 = TestBuild(xadd_context, "./src/xadd/xadd_sq_test.xadd");
+		int reduced_e1 = xadd_context.reduceLP(expr1);
+		xadd_context.getGraph(reduced_e1).launchViewer();
+		
+		// Reducing with LP constraint checking
+		XADDUtils.PlotXADD(xadd_context, reduced_e1, -10, 0.1, -5, "x", "Reduced expression");
+		
+		// Squaring
+		int sq_expr1 = xadd_context.apply(reduced_e1, reduced_e1, XADD.PROD); 
+		XADDUtils.PlotXADD(xadd_context, sq_expr1, -10, 0.1, -5, "x", "Squared expression");
+		
+		// Indefinite integral
+		int int_sq_expr1 = xadd_context.reduceProcessXADDLeaf(sq_expr1,
+				xadd_context.new XADDLeafIndefIntegral("x"), /*canonical_reorder*/false);
+		xadd_context.getGraph(int_sq_expr1).launchViewer();
+		XADDUtils.PlotXADD(xadd_context, int_sq_expr1, -10, 0.1, -5, "x", "Integral squared expression");
+		
+		// Definite integral
+		int def_int_sq_expr1 = xadd_context.computeDefiniteIntegral(sq_expr1, "x");
+		xadd_context.getGraph(def_int_sq_expr1).launchViewer();
+		System.out.println(xadd_context.getString(def_int_sq_expr1));
+	}
+	
+	public static void main2(String[] args) throws Exception {
 
 		TestPolyOps();
 		if (0 <= 1) return;
@@ -301,10 +326,10 @@ public class TestXADD {
 		s = s.substring(1, s.length() - 1);
 		CompExpr e = CompExpr.ParseCompExpr(s);
 		System.out.println("CompExpr for  '" + s + "': " + e);
-		ArithExpr a = ArithExpr.parse(s);
+		ArithExpr a = ArithExpr.ParseArithExpr(s);
 		System.out.println("ArithExpr for '" + s + "': " + a + "\n");
 		VarExpr sub = new VarExpr("a");
-		ArithExpr a2 = ArithExpr.parse("[c + a]");
+		ArithExpr a2 = ArithExpr.ParseArithExpr("[c + a]");
 		HashMap<String, ArithExpr> subst = new HashMap<String, ArithExpr>();
 		subst.put("a", a2);
 		if (a != null) {
@@ -312,7 +337,7 @@ public class TestXADD {
 			System.out.println("EX - EX = " + ArithExpr.op(a, a, XADD.MINUS));
 			System.out.println("EX * EX = " + ArithExpr.op(a, a, XADD.PROD));
 			System.out.println("EX / EX = " + ArithExpr.op(a, a, XADD.DIV));
-			System.out.println("EX == EX: " + ArithExpr.parse(s).equals(a));
+			System.out.println("EX == EX: " + ArithExpr.ParseArithExpr(s).equals(a));
 			System.out.println("EX != EX * EX: " + ArithExpr.op(a, a, XADD.PROD).equals(a));
 			System.out.println("EX+EX:" + sub + "/" + a2 + ": " + ArithExpr.op(a, a, XADD.SUM).substitute(subst));
 		} else if (e != null) {

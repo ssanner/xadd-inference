@@ -11,6 +11,10 @@ package xadd;
 
 import graph.Graph;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -2955,23 +2959,134 @@ public class XADD {
 		g2.launchViewer(1300, 770);
 	}
 
-//	// Export XADD in DAG format (not as tree)
-//	public void exportXADD(int id, PrintStream ps) {
-//		Graph g = new Graph(true /* directed */, false /* bottom-to-top */,
-//				false /* left-to-right */, true /* multi-links */);
-//		XADDNode root = getExistNode(id);
-//		root.toGraph(g, id);
-//		return g;
-//	}
-//	
-//	// Read XADD in DAG format (not from tree... order does not matter, will build canonical XADD internally)
-//	public int importXADD(InputStream is) {
-//		Graph g = new Graph(true /* directed */, false /* bottom-to-top */,
-//				false /* left-to-right */, true /* multi-links */);
-//		XADDNode root = getExistNode(id);
-//		root.toGraph(g, id);
-//		return g;
-//	}
+	public void exportXADDToFile(int id, String filename) {
+		PrintStream ps = null;
+		try {
+			ps = new PrintStream(new FileOutputStream(filename));
+			exportXADD(id, ps);
+			ps.close();
+		} catch (Exception e) {
+			System.err.println("WARNING: could not export XADD to " + filename);
+			ps.close();
+		}
+	}
+	
+	// Export XADD in DAG format (not as tree)
+	public void exportXADD(int id, PrintStream ps) {
+		HashSet<Integer> nodes_explored = new HashSet<Integer>();
+		HashSet<Integer> dec_explored   = new HashSet<Integer>();
+		exportXADDInt(id, ps, nodes_explored, dec_explored);
+		ps.println("F\t" + nodes_explored.size() + "\t" + dec_explored.size() + "\t(#nodes and #decisions)");
+	}
+	
+	// Exports XADD node structure, children before parents
+	private void exportXADDInt(int id, PrintStream ps, HashSet<Integer> nodes_explored, HashSet<Integer> dec_explored) {
+		
+		if (nodes_explored.contains(id))
+			return;
+		nodes_explored.add(id);
+		
+		XADDNode node = getExistNode(id);
+		if (node instanceof XADDTNode) {
+			
+			// Export terminal node contents
+			XADDTNode tnode = (XADDTNode)node;
+			ps.println("T\t" + id + "\t" + tnode._expr + "\t" + tnode._annotate);
+			
+		} else if (node instanceof XADDINode) {
+			
+			XADDINode inode = (XADDINode)node;
+			
+			// Export children first
+			exportXADDInt(inode._low,  ps, nodes_explored, dec_explored);
+			exportXADDInt(inode._high, ps, nodes_explored, dec_explored);
+			
+			Decision d = _alOrder.get(inode._var);
+			
+			// Export decision contents (only first time decision encountered)
+			if (!dec_explored.contains(inode._var)) {
+				dec_explored.add(inode._var);
+				if (d instanceof BoolDec) {
+					BoolDec b = (BoolDec)d;
+					ps.println("B\t" + inode._var + "\t" + b._sVarName);
+				} else if (d instanceof ExprDec) {
+					ExprDec e = (ExprDec)d;
+					ps.println("E\t" + inode._var + "\t" + e._expr);
+				} else {
+					System.err.println("ERROR: could not export unknown XADD decision type: " + d);
+					System.exit(1);
+				}
+			}
+			
+			// Export internal node structure
+			ps.println("I\t" + id + "\t" + inode._var + "\t" + inode._low + "\t" + inode._high);
+			
+		} else {
+			System.err.println("ERROR: could not export unknown XADD node type:" + node);
+			System.exit(1);
+		}
+	}
+
+	public int importXADDFromFile(String filename) { 
+		BufferedReader br = null;
+		int ret = -1;
+		try {
+			br = new BufferedReader(new FileReader(filename));
+			ret = importXADD(br);
+			br.close();
+		} catch (Exception e) {
+			System.err.println("WARNING: could not export XADD to " + filename);
+			try { br.close(); } catch (Exception e2) {}
+		}
+		return ret;
+	}
+	
+	// Read XADD in DAG format (not from tree... dec order does not matter, will build canonical XADD internally)
+	public int importXADD(BufferedReader br) throws Exception {
+		// Go through each line, instantiating the appropriate node
+		// Need to maintain a remap from what the file ID is and what the new XADD is
+		HashMap<Integer,Integer> old2new_node = new HashMap<Integer,Integer>();
+		HashMap<Integer,Integer> old2new_dec  = new HashMap<Integer,Integer>();
+		String line = null;
+		int file_id = -1, xadd_id = -1;
+		while ((line = br.readLine()) != null && !line.startsWith("F")) {
+			String[] split = line.split("\t");
+			file_id = new Integer(split[1]);
+			if (split[0].equals("T")) {
+				//T	2	0	null
+				//T	234	(-0.5 + (0.01 * x2))	null
+				ArithExpr expr = ArithExpr.ParseArithExpr(split[2]);
+				Object annotation = (split[3].equals("null") ? null : split[3]);
+				xadd_id = getTermNode(expr, annotation);
+				old2new_node.put(file_id, xadd_id);
+				
+			} else if (split[0].equals("B")) {
+				//B	1	tp
+				xadd_id = getVarIndex(new BoolDec(split[2]), true);
+				old2new_dec.put(file_id, xadd_id);
+				
+			} else if (split[0].equals("E")) {
+				//E	39	(-1 + (0.000217 * x1) + (0.000435 * x2)) > 0
+				CompExpr comp_expr = CompExpr.ParseCompExpr(split[2]);
+				xadd_id = getVarIndex(new ExprDec(comp_expr), true);
+				old2new_dec.put(file_id, xadd_id);
+				
+			} else if (split[0].equals("I")) {
+				
+				// We assume all children and decisions are exported before parents, 
+				// hence we've built the children, we just have to translate IDs
+				
+				//	file_id	var	low	high
+				//I	1186	3	709	1185
+				int var  = old2new_dec.get(new Integer(split[2]));
+				int low  = old2new_node.get(new Integer(split[3]));
+				int high = old2new_node.get(new Integer(split[4]));
+				xadd_id = getINodeCanon(var, low, high); // Corrects for ordering w.r.t. this XADD
+				old2new_node.put(file_id, xadd_id);
+			}
+		}
+		return old2new_node.get(file_id); // Return XADD ID of last node ID which must be XADD root
+	}
 
 	//Create string version of XADD
 	public String getString(int id, boolean format) {
@@ -3769,7 +3884,7 @@ public class XADD {
 			g.addNodeShape(this_node, "box");
 			g.addNodeStyle(this_node, "filled");
 		}
-
+		
 		public String toString(int depth) {
 			return "( ["/* "#" + _hmNode2Int.get(this) + ": " */
 					+ _expr.toString() + "] )";
@@ -4585,7 +4700,7 @@ public class XADD {
 
 		public abstract String toString(boolean format);
 
-		public static ArithExpr parse(String s) {
+		public static ArithExpr ParseArithExpr(String s) {
 			try {
 				FOPC.Node res = FOPC.parse(s + " = 0");
 				// if (res != null) System.out.println("==> " + res.toFOLString());

@@ -348,8 +348,8 @@ public class ParseCAMDP {
 				//Indicator for D>=0
 				
 				String d0_lhs = "-ay*"+obstacle.getXpoint1()+"+(ay*x)-(ax*y)+ax*"+obstacle.getYpoint1();
-				ArithExpr arith_d0_lhs = ArithExpr.parse(d0_lhs);
-				CompExpr comp_d0 = new CompExpr(_camdp._context.GT_EQ, arith_d0_lhs, ArithExpr.parse("0"));
+				ArithExpr arith_d0_lhs = ArithExpr.ParseArithExpr(d0_lhs);
+				CompExpr comp_d0 = new CompExpr(_camdp._context.GT_EQ, arith_d0_lhs, ArithExpr.ParseArithExpr("0"));
 				ExprDec expr_d0 = _camdp._context.new ExprDec(comp_d0);
 				obstacleXADD = _camdp._context.getVarNode(expr_d0, 0, 1);
 				obstacleXADD = _camdp._context.makeCanonical(obstacleXADD);
@@ -358,9 +358,9 @@ public class ParseCAMDP {
 				//obstacleXADD = _context.makeCanonical(obstacleXADD);
 				//Indicator for D<=1
 				String d1_lhs = "-ay*"+obstacle.getXpoint1()+"+(ay*x)-(ax*y)+ax*"+obstacle.getYpoint1();
-				ArithExpr arith_d1_lhs = ArithExpr.parse(d1_lhs);
+				ArithExpr arith_d1_lhs = ArithExpr.ParseArithExpr(d1_lhs);
 				String d1_rhs = "ay*("+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+")+(-ax*("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+"))";
-				ArithExpr arith_d1_rhs = ArithExpr.parse(d1_rhs);
+				ArithExpr arith_d1_rhs = ArithExpr.ParseArithExpr(d1_rhs);
 				CompExpr comp_d1 = new CompExpr(_camdp._context.LT_EQ, arith_d1_lhs, arith_d1_rhs);
 				ExprDec expr_d1 = _camdp._context.new ExprDec(comp_d1);
 				//_context.getVarNode(expr_d1, 0, 1);
@@ -370,8 +370,8 @@ public class ParseCAMDP {
 				String c0_lhs = "(x*("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) -("+obstacle.getXpoint1()+"*("+
 						obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) - (y*("+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+"))+(("
 						+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+")*"+obstacle.getYpoint1()+")";
-				ArithExpr arith_c0_lhs = ArithExpr.parse(c0_lhs);
-				CompExpr comp_c0 = new CompExpr(_camdp._context.GT_EQ, arith_c0_lhs, ArithExpr.parse("0"));
+				ArithExpr arith_c0_lhs = ArithExpr.ParseArithExpr(c0_lhs);
+				CompExpr comp_c0 = new CompExpr(_camdp._context.GT_EQ, arith_c0_lhs, ArithExpr.ParseArithExpr("0"));
 				ExprDec expr_c0 = _camdp._context.new ExprDec(comp_c0);
 				
 				//_context.getVarNode(expr_c0, 0, 1);
@@ -381,9 +381,9 @@ public class ParseCAMDP {
 				String c1_lhs = "(x*("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) -("+obstacle.getXpoint1()+"*("+
 						obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) - (y*("+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+"))+(("
 				+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+")*"+obstacle.getYpoint1()+")";
-				ArithExpr arith_c1_lhs = ArithExpr.parse(c1_lhs);
+				ArithExpr arith_c1_lhs = ArithExpr.ParseArithExpr(c1_lhs);
 				String c1_rhs = "ay*("+obstacle.getXpoint2()+"-"+obstacle.getXpoint1()+")+(-ax*("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+"))";
-				ArithExpr arith_c1_rhs = ArithExpr.parse(c1_rhs);
+				ArithExpr arith_c1_rhs = ArithExpr.ParseArithExpr(c1_rhs);
 				CompExpr comp_c1 = new CompExpr(_camdp._context.LT_EQ, arith_c1_lhs, arith_c1_rhs);
 				ExprDec expr_c1 = _camdp._context.new ExprDec(comp_c1);
 				
@@ -426,8 +426,8 @@ public class ParseCAMDP {
 				//Indicator for D>=0
 				
 				String d0_lhs = "x +" + (obstacle.getXpoint1()*(-1));
-				ArithExpr arith_d0_lhs = ArithExpr.parse(d0_lhs);
-				CompExpr comp_d0 = new CompExpr(_camdp._context.GT_EQ, arith_d0_lhs, ArithExpr.parse("0"));
+				ArithExpr arith_d0_lhs = ArithExpr.ParseArithExpr(d0_lhs);
+				CompExpr comp_d0 = new CompExpr(_camdp._context.GT_EQ, arith_d0_lhs, ArithExpr.ParseArithExpr("0"));
 				ExprDec expr_d0 = _camdp._context.new ExprDec(comp_d0);
 				obstacleXADD = _camdp._context.getVarNode(expr_d0, 0, 1);
 				obstacleXADD = _camdp._context.makeCanonical(obstacleXADD);
@@ -436,9 +436,9 @@ public class ParseCAMDP {
 				//obstacleXADD = _context.makeCanonical(obstacleXADD);
 				//Indicator for D<=1
 				//String d1_lhs = "x";
-				ArithExpr arith_d1_lhs = ArithExpr.parse(d0_lhs);
+				ArithExpr arith_d1_lhs = ArithExpr.ParseArithExpr(d0_lhs);
 				String d1_rhs = obstacle.getXpoint2()+"-"+obstacle.getXpoint1();
-				ArithExpr arith_d1_rhs = ArithExpr.parse(d1_rhs);
+				ArithExpr arith_d1_rhs = ArithExpr.ParseArithExpr(d1_rhs);
 				CompExpr comp_d1 = new CompExpr(_camdp._context.LT_EQ, arith_d1_lhs, arith_d1_rhs);
 				ExprDec expr_d1 =_camdp._context.new ExprDec(comp_d1);
 				//_context.getVarNode(expr_d1, 0, 1);
@@ -448,8 +448,8 @@ public class ParseCAMDP {
 				String d = "("+d0_lhs +") /("+ d1_rhs+")";
 				//String c0_lhs = obstacle.getYpoint2()+"-y";
 				String c0_lhs = obstacle.getYpoint1()+"+ ((" + d + ") *"+ "("+obstacle.getYpoint2()+"-"+obstacle.getYpoint1()+")) - y"; 
-				ArithExpr arith_c0_lhs = ArithExpr.parse(c0_lhs);
-				CompExpr comp_c0 = new CompExpr(_camdp._context.GT_EQ, arith_c0_lhs, ArithExpr.parse("0"));
+				ArithExpr arith_c0_lhs = ArithExpr.ParseArithExpr(c0_lhs);
+				CompExpr comp_c0 = new CompExpr(_camdp._context.GT_EQ, arith_c0_lhs, ArithExpr.ParseArithExpr("0"));
 				ExprDec expr_c0 = _camdp._context.new ExprDec(comp_c0);
 				
 				//_context.getVarNode(expr_c0, 0, 1);
@@ -458,9 +458,9 @@ public class ParseCAMDP {
 				//Indicator for C<=1
 				//String c1_lhs = obstacle.getYpoint2()+"-y";
 				
-				ArithExpr arith_c1_lhs = ArithExpr.parse(c0_lhs);
+				ArithExpr arith_c1_lhs = ArithExpr.ParseArithExpr(c0_lhs);
 				String c1_rhs = "ay";
-				ArithExpr arith_c1_rhs = ArithExpr.parse(c1_rhs);
+				ArithExpr arith_c1_rhs = ArithExpr.ParseArithExpr(c1_rhs);
 				CompExpr comp_c1 = new CompExpr(_camdp._context.LT_EQ, arith_c1_lhs, arith_c1_rhs);
 				ExprDec expr_c1 = _camdp._context.new ExprDec(comp_c1);
 				
