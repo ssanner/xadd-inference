@@ -9,6 +9,7 @@ import logic.kb.fol.FOPC;
 import xadd.XADD;
 import xadd.XADD.*;
 
+// Parses a tree-based written input format allowing operations and pre-defined functions at leaves
 public class XADDParseUtils {
 
 	public final static DecimalFormat _df = new DecimalFormat("#.########################");	
@@ -33,6 +34,8 @@ public class XADDParseUtils {
 			}
 			return n;
 		} else if (l.size() == 3) {
+			// TODO: could also allow arithmetic expressions internally here
+			
 			// Internal node
 			String expr = ((String) l.get(0));
 			Decision d = null;

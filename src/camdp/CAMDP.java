@@ -428,12 +428,19 @@ public class CAMDP {
 	}
 
 	public void doDisplay(int xadd_id, String label) {
+		exportXADD(xadd_id, label); // Exports DAG, can read in later and view using XADDViewer
 		if (DISPLAY_V) 
 			displayGraph(xadd_id, label);
 		if (DISPLAY_2D)
 			display2D(xadd_id, label);
 		if (DISPLAY_3D) 
 			display3D(xadd_id, label);
+	}
+	
+	public void exportXADD(int xadd_id, String label) {
+		label = label.replace(".csamdp", "").replace(".camdp", "").replace(".cmdp", "")
+				.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "");
+		_context.exportXADDToFile(xadd_id, _logFileRoot + "." + label + ".xadd");
 	}
 	
 	public void displayGraph(int xadd_id, String label) {
