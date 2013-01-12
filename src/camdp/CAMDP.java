@@ -440,7 +440,20 @@ public class CAMDP {
 	public void exportXADD(int xadd_id, String label) {
 		label = label.replace(".csamdp", "").replace(".camdp", "").replace(".cmdp", "")
 				.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "");
-		_context.exportXADDToFile(xadd_id, _logFileRoot + "." + label + ".xadd");
+		String xadd_filename = _logFileRoot + "." + label + ".xadd";
+		_context.exportXADDToFile(xadd_id, xadd_filename);
+		
+		// Copy over plotting options if they exist
+		File file2D = new File(_problemFile + ".2d");
+		if (file2D.exists()) {
+			FileOptions opt = new FileOptions(_problemFile + ".2d");
+			opt.exportToFile(xadd_filename + ".2d");
+		}
+		File file3D = new File(_problemFile + ".3d");
+		if (file3D.exists()) {
+			FileOptions opt = new FileOptions(_problemFile + ".3d");
+			opt.exportToFile(xadd_filename + ".3d");
+		}
 	}
 	
 	public void displayGraph(int xadd_id, String label) {
@@ -498,13 +511,14 @@ public class CAMDP {
 	}
 	
 	// A helper class to load options for 2D and 3D plotting for specific problems
-	public class FileOptions {
+	public static class FileOptions {
 		public ArrayList<String> _var = new ArrayList<String>();
 		public ArrayList<Double> _varLB = new ArrayList<Double>();
 		public ArrayList<Double> _varInc = new ArrayList<Double>();
 		public ArrayList<Double> _varUB = new ArrayList<Double>();
 		public HashMap<String,Boolean> _bassign = new HashMap<String, Boolean>();
 		public HashMap<String,Double>  _dassign = new HashMap<String, Double>();
+		public FileOptions() { }
 		public FileOptions(String filename) {
 			String line = null;
 			try {
@@ -536,6 +550,26 @@ public class CAMDP {
 				System.err.println(e + "\nContent at current line: '" + line + "'");
 				System.err.println("ERROR: could not read file: " + filename + ", exiting.");
 			}		
+		}
+		
+		public void exportToFile(String outfile) {
+			try {
+				PrintStream ps = new PrintStream(new FileOutputStream(outfile));
+				for (int i = 0; i < _var.size(); i++) {
+					String var = _var.get(i);
+					double lb  = _varLB.get(i);
+					double inc = _varInc.get(i);
+					double ub  = _varUB.get(i);
+					ps.println("var\t" + var + "\t" + lb + "\t" + inc + "\t" + ub);
+				}
+				for (Map.Entry<String, Boolean> me : _bassign.entrySet())
+					ps.println("bassign\t" + me.getKey() + "\t" + me.getValue());
+				for (Map.Entry<String, Double> me : _dassign.entrySet())
+					ps.println("dassign\t" + me.getKey() + "\t" + me.getValue());				
+				ps.close();					
+			} catch (Exception e) {
+				System.err.println("WARNING: could not export " + outfile);
+			}
 		}
 	}
 	
