@@ -430,7 +430,7 @@ public class XADDUtils {
 		JToolBar toolbar = new JToolBar();
 		JButton button = new JButton();
 		button.setText("Re-export SVG and PNG to " + filename.replace(".txt", "") + "{.png,.svg}");
-		button.addActionListener(new ExportActionListener(jsp, filename));
+		button.addActionListener(new ExportActionListener(jsp, filename.replace(".txt", "")));
 		toolbar.add(button);
 		
 		jf.getContentPane().add(toolbar, BorderLayout.NORTH);
@@ -458,8 +458,8 @@ public class XADDUtils {
 		public void actionPerformed(ActionEvent e) {
 			// Export to PNG and SVG
 			System.out.println("Re-exporting SVG and PNG to '" + _filename.replace(".txt", "") + "{.png,.svg}'");
-			ExportSurfPaneltoSVG(_jsp, _filename.replace(".txt", ".svg"));
-			ExportPanelToPNG(_jsp, _filename.replace(".txt", ".png"));
+			ExportSurfPaneltoSVG(_jsp, _filename + ".svg");
+			ExportPanelToPNG(_jsp, _filename + ".png");
 		}		
 	}
 	
