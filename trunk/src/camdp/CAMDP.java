@@ -84,6 +84,9 @@ public class CAMDP {
 	public HashSet<String> _hsContSVars;
 	public HashSet<String> _hsContAVars;
 
+	public HashSet<String> _hsBoolNSVars; // Next state vars
+	public HashSet<String> _hsContNSVars; // Next state vars
+
 	public ArrayList<String> _alBoolSVars; // Retain order given in MDP file
 	public ArrayList<String> _alContSVars; // Retain order given in MDP file
 	public ArrayList<String> _alContAVars; // Retain order given in MDP file
@@ -150,12 +153,20 @@ public class CAMDP {
 		_alContAllVars.addAll(_alContAVars);
 		//_context._hmContinuousVars = _alContAllVars;
 		// Build cur-state var -> next-state var map
+		_hsBoolNSVars = new HashSet<String>();
+		_hsContNSVars = new HashSet<String>();
 		_hmPrimeSubs = new HashMap<String,ArithExpr>();
-		for (String var : _hsContSVars) 
-			_hmPrimeSubs.put(var, new XADD.VarExpr(var + "'"));
-		for (String var : _hsBoolSVars) 
-			_hmPrimeSubs.put(var, new XADD.VarExpr(var + "'"));
-		
+		for (String var : _hsContSVars) {
+			String prime_var = var + "'";
+			_hmPrimeSubs.put(var, new XADD.VarExpr(prime_var));
+			_hsContNSVars.add(prime_var);
+		}
+		for (String var : _hsBoolSVars) { 
+			String prime_var = var + "'";
+			_hmPrimeSubs.put(var, new XADD.VarExpr(prime_var));
+			_hsBoolNSVars.add(prime_var);
+		}
+
 		// This helper class performs the regression
 		_qfunHelper = new ComputeQFunction(_context, this);
 		
@@ -218,23 +229,17 @@ public class CAMDP {
 				if (DISPLAY_POSTMAX_Q)
 					doDisplay(regr, "Q-" + me.getKey() + "^" +_nCurIter + "-" + Math.round(100*APPROX_ERROR));
 	
-				// Take the max over this action and the previous action 
-				//(can have continuous parameters which represents many discrete actions)
-				regr = _context.makeCanonical(regr);
-				if (_maxDD == null)
-					_maxDD = regr;
-				else{
-					_maxDD = _context.apply(_maxDD, regr, XADD.MAX);
-				}
+				// Maintain running max over different actions
+				_maxDD = (_maxDD == null) ? regr : _context.apply(_maxDD, regr, XADD.MAX);
 				_maxDD = _context.reduceLP(_maxDD); // Rely on flag XADD.CHECK_REDUNDANCY
-				if (APPROX_ALWAYS) {
-					_maxDD = _context.linPruneRel(_maxDD, APPROX_ERROR);
-				}
 
-				if (_maxDD != _context.makeCanonical(_maxDD)) {
-		            	System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical");
-		            	System.exit(1);
-		        }
+				// Optional post-max approximation 
+				if (APPROX_ALWAYS)
+					_maxDD = _context.linPruneRel(_maxDD, APPROX_ERROR);
+
+				// Error checking and logging
+				if (_maxDD != _context.makeCanonical(_maxDD))
+					ExitOnError("CAMDP VI ERROR: encountered non-canonical node that should have been canonical");
 				if(DISPLAY_MAX)
 					doDisplay(_maxDD, "QMax^"+_nCurIter+"-"+Math.round(100*APPROX_ERROR));
 				_logStream.println("Running max in iter " + _nCurIter + ":" + _context.getString(_maxDD));
@@ -242,7 +247,12 @@ public class CAMDP {
 				flushCaches();
 			}
 			
-			_valueDD = _context.reduceLP(_maxDD);//_maxDD;
+			// SPS: Oddly, this error is thrown and I don't know why since LP pruning
+			//      should have been done immediately above... for now always reducing
+			//if (_maxDD != _context.reduceLP(_maxDD))
+			//	ExitOnError("CAMDP VI ERROR: encountered non-reduced value function");
+
+			_valueDD = _context.reduceLP(_maxDD);
 			if (APPROX_PRUNING) {
 				long appTime = GetElapsedTime();
 				_valueDD = _context.linPruneRel(_valueDD, APPROX_ERROR);
@@ -323,6 +333,11 @@ public class CAMDP {
 		return _nCurIter;
 	}
 
+	public static void ExitOnError(String msg) {
+		System.err.println(msg);
+		System.exit(1);
+	}
+	
 	////////////////////////////////////////////////////////////////////////////
 	// Miscellaneous
 	////////////////////////////////////////////////////////////////////////////
