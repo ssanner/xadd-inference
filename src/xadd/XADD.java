@@ -689,7 +689,9 @@ public class XADD {
 	public IntTriple _tempApplyKey = new IntTriple(-1, -1, -1);
 	public int apply(int a1, int a2, int op) {
 		int ret = applyInt(a1, a2, op);
-		return makeCanonical(ret);
+		if (op == MIN || op == MAX)
+			ret = makeCanonical(ret);
+		return ret;
 	}
 	
 	public int applyInt(int a1, int a2, int op) {

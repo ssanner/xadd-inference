@@ -27,23 +27,31 @@ public class ComputeQFunction {
 	public int regress(int vfun, CAction a) {
       
 		XADDNode n = _context.getNode(vfun);
+				
+		// Prime the value function 
+		int q = _context.substitute(vfun, _camdp._hmPrimeSubs); // Prime
+		_camdp._logStream.println("- Primed value function:\n" + _context.getString(q));
 		
 		// What state variables in vfun do we have to regress?  
 		// Note: no action params in vfun.
-		HashSet<String> state_vars_in_vfun  = n.collectVars();
-		_camdp._logStream.println("** Regressing " + a._sName + "\n- State vars in vfun: " + state_vars_in_vfun);
-		
-		// Prime the value function
-		int q = _context.substitute(vfun, _camdp._hmPrimeSubs); 
-		_camdp._logStream.println("- Primed value function:\n" + _context.getString(q));
+		HashSet<String> next_state_vars_to_regress  = _context.collectVars(q);
+		_camdp._logStream.println("** Regressing " + a._sName + "\n- State vars in vfun to regress: " + next_state_vars_to_regress);
 
+		// Discount; add reward *if* it contains primed vars that need to be regressed
+		q = _context.scalarOp(q, _camdp._bdDiscount.doubleValue(), XADD.PROD); // Discount
+		if (!a._hsRewardPrimedVars.isEmpty()) {
+			q = _context.apply(a._reward, q, XADD.SUM); // Add reward
+			next_state_vars_to_regress.addAll(a._hsRewardPrimedVars);
+			_camdp._logStream.println("- Next state vars in reward: " + a._hsRewardPrimedVars);
+		}
+		_camdp._logStream.println("- All next state vars to regress: " + next_state_vars_to_regress);
+			
 		// Regress continuous variables first in order given in 
-		for (String var : state_vars_in_vfun) {
-			if (!_camdp._hsContSVars.contains(var))
+		for (String var_prime : next_state_vars_to_regress) {
+			if (!_camdp._hsContNSVars.contains(var_prime))
 				continue; // Not regressing boolean variables yet, skip
 
 			// Get cpf for continuous var'
-			String var_prime = var + "'";
 			int var_id = _context.getVarIndex( _context.new BoolDec(var_prime), false);
 			Integer dd_conditional_sub = a._hmVar2DD.get(var_prime);
 
@@ -67,12 +75,11 @@ public class ComputeQFunction {
 		}
 		
 		// Regress boolean variables second
-		for (String var : state_vars_in_vfun) {
-			if (!_camdp._hsBoolSVars.contains(var))
+		for (String var_prime : next_state_vars_to_regress) {
+			if (!_camdp._hsBoolNSVars.contains(var_prime))
 				continue; // Continuous variables already regressed, skip
 		
 			// Get cpf for boolean var'
-			String var_prime = var + "'";
 			int var_id = _context.getVarIndex( _context.new BoolDec(var_prime), false);
 			Integer dd_cpf = a._hmVar2DD.get(var_prime);
 			
@@ -96,10 +103,10 @@ public class ComputeQFunction {
 		//      ... 
 		// }
 			
-		// Multiply in discount and add reward
-    	q = _context.apply(a._reward,  
-				_context.scalarOp(q, _camdp._bdDiscount.doubleValue(), XADD.PROD), 
-				XADD.SUM);	
+		// NOTE: if reward was not added in prior to regression, it must be 
+		// added in now...
+		if (a._hsRewardPrimedVars.isEmpty())
+			q = _context.apply(a._reward, q, XADD.SUM);	
 
     	// Ensure Q-function is properly constrained and minimal (e.g., subject to constraints)
 		for (Integer constraint : _camdp._alConstraints)

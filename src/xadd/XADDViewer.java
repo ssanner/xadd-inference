@@ -2,11 +2,7 @@ package xadd;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -16,10 +12,11 @@ import javax.swing.JToolBar;
 
 import net.ericaro.surfaceplotter.JSurfacePanel;
 import net.ericaro.surfaceplotter.surface.ArraySurfaceModel;
-import util.DevNullPrintStream;
 
 import camdp.CAMDP.FileOptions;
 
+// TODO: Check for reading of XADDs in Tree LISP-like format
+// TODO: Provide option for displaying XADD graphs
 public class XADDViewer {
 
 	/**

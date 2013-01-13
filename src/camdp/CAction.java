@@ -3,6 +3,8 @@ package camdp;
 import java.util.*;
 
 import xadd.XADD;
+import xadd.XADD.BoolDec;
+import xadd.XADD.DeltaFunctionSubstitution;
 
 
 public class CAction {
@@ -12,6 +14,7 @@ public class CAction {
 	public ArrayList<Double> _contBounds = new ArrayList<Double>(2);
 	public HashMap<String, Integer> _hmVar2DD;
 	public Integer _reward;
+	public HashSet<String> _hsRewardPrimedVars;
 	public ArrayList<String> _contState;
 	public ArrayList<String> _actionParam;
 	public ArrayList<String> _boolVars;
@@ -28,6 +31,7 @@ public class CAction {
 		_sName = name;
 		_hmVar2DD = new HashMap<String, Integer>();
 		_reward = reward;
+		_hsRewardPrimedVars = null;
 		_contState = cont;
 		_actionParam = aVars;
 		_contBounds = params;
@@ -73,9 +77,20 @@ public class CAction {
 				_hmVar2DD.put(var, xadd);
 				}
 		}
-				
+	
+		// Check the reward for next-state variables... if present, pre-compute
+		// the regression of this reward
+		_hsRewardPrimedVars = CollectPrimedVars(_camdp._context.collectVars(_reward));
 	}
 
+	public static HashSet<String> CollectPrimedVars(HashSet<String> vars) {
+		HashSet<String> primed_vars = new HashSet<String>();
+		for (String var : vars)
+			if (var.endsWith("'")) 
+				primed_vars.add(var);
+		return primed_vars;
+	}
+	
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(_sName + " ( ");
@@ -89,7 +104,8 @@ public class CAction {
 		}
 		
 		XADD.XADDNode r = _camdp._context.getNode(_reward);
-		sb.append("*****\nReward: " + r.collectVars() + ":\n" + 
+		sb.append("*****\nReward: " + r.collectVars() + 
+				  " (primed vars: " + _hsRewardPrimedVars + "):\n" +  
 				  _camdp._context.getString(_reward) + "\n");
 		
 		sb.append("*****\n");
