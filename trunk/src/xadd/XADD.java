@@ -4127,8 +4127,8 @@ public class XADD {
 
 		public BoolDec(String var_name) {
 			_sVarName = var_name.intern();
-			_alBooleanVars.add(_sVarName);
-			_hsBooleanVars.add(_sVarName);
+			if (_hsBooleanVars.add(_sVarName)) // false if already in set
+				_alBooleanVars.add(_sVarName);
 		}
 
 		public int hashCode() {

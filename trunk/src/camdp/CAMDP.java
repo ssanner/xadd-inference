@@ -31,6 +31,8 @@ import cmdp.HierarchicalParser;
  * TODO: Believe return XADDs from max_y yields 0's where we don't want them 
  * TODO: For LB < ROOT < UB, might suppress LB < UB constraints
  * TODO: Allow conditioning reward on next state
+ * TODO: Action and next-state dependent reward expectations can be pre-computed and added  
+ *       in after value function regression but before continuous parameter maximization.
  **/
 public class CAMDP {
 
@@ -82,15 +84,15 @@ public class CAMDP {
 	public XADD _context = null;
 	public HashSet<String> _hsBoolSVars;
 	public HashSet<String> _hsContSVars;
+	public HashSet<String> _hsBoolIVars;
+	public HashSet<String> _hsContIVars;
 	public HashSet<String> _hsContAVars;
 
 	public HashSet<String> _hsBoolNSVars; // Next state vars
 	public HashSet<String> _hsContNSVars; // Next state vars
 
-	public ArrayList<String> _alBoolSVars; // Retain order given in MDP file
-	public ArrayList<String> _alContSVars; // Retain order given in MDP file
-	public ArrayList<String> _alContAVars; // Retain order given in MDP file
-	public ArrayList<String> _alContAllVars; // Retain order given in MDP file
+	public HashSet<String> _hsBoolAllVars; // Retain order given in MDP file
+	public HashSet<String> _hsContAllVars; // Retain order given in MDP file
 	
 	public Integer _valueDD; // The resulting value function once this CMDP has
 	public Integer _maxDD;
@@ -135,7 +137,6 @@ public class CAMDP {
 		ParseCAMDP parser = new ParseCAMDP(this);
 		parser.buildCAMDP(input);
 		_context.addContinuousVarsBounds(parser._minCVal,parser._maxCVal);
-		_context._alBooleanVars = parser.getBVars();
 		_alConstraints = parser.getConstraints();
 		_nMaxIter = parser.getIterations();
 		_bdDiscount = parser.getDiscount();
@@ -145,12 +146,14 @@ public class CAMDP {
 		// Setup variable sets and lists
 		_hsBoolSVars = new HashSet<String>(Intern(parser.getBVars()));
 		_hsContSVars = new HashSet<String>(Intern(parser.getCVars()));
+		_hsBoolIVars = new HashSet<String>(Intern(parser.getIBVars()));
+		_hsContIVars = new HashSet<String>(Intern(parser.getICVars()));
 		_hsContAVars = new HashSet<String>(Intern(parser.getAVars()));
-		_alBoolSVars = new ArrayList<String>(Intern(parser.getBVars())); // Retain order given in MDP file
-		_alContSVars = new ArrayList<String>(Intern(parser.getCVars())); // Retain order given in MDP file
-		_alContAVars = new ArrayList<String>(Intern(parser.getAVars())); // Retain order given in MDP file
-		_alContAllVars = new ArrayList<String>(_alContSVars);
-		_alContAllVars.addAll(_alContAVars);
+		_hsBoolAllVars = new HashSet<String>(_hsBoolSVars);
+		_hsBoolAllVars.addAll(_hsBoolIVars);
+		_hsContAllVars = new HashSet<String>(_hsContSVars);
+		_hsContAllVars.addAll(_hsContAVars);
+		_hsContAllVars.addAll(_hsContIVars);
 		//_context._hmContinuousVars = _alContAllVars;
 		// Build cur-state var -> next-state var map
 		_hsBoolNSVars = new HashSet<String>();
@@ -213,7 +216,8 @@ public class CAMDP {
 		{
 			++_nCurIter;
 			ResetTimer();
-			_logStream.println("Iteration #" + _nCurIter + ", " + MemDisplay() + " bytes, " + GetElapsedTime() + " ms");
+			_logStream.println(ASCII_BAR + "\nITERATION #" + _nCurIter + ", " + 
+							   MemDisplay() + " bytes, " + GetElapsedTime() + " ms\n" + ASCII_BAR);
 			_logStream.flush();
 			
 			// Prime diagram
@@ -248,7 +252,8 @@ public class CAMDP {
 			}
 			
 			// SPS: Oddly, this error is thrown and I don't know why since LP pruning
-			//      should have been done immediately above... for now always reducing
+			//      should have been done immediately above... it seems reducing more
+			//      than once can reduce more?  For now always reducing.
 			//if (_maxDD != _context.reduceLP(_maxDD))
 			//	ExitOnError("CAMDP VI ERROR: encountered non-reduced value function");
 
@@ -418,10 +423,12 @@ public class CAMDP {
 	public String toString(boolean display_reward, boolean display_value) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("\nCMDP Definition:\n===============\n");
-		sb.append("CVars:       " + _alContAllVars + " = " + _hsContSVars + " + " + _hsContAVars + "\n");
+		sb.append("BVars:       " + _hsBoolAllVars + " = S:" + _hsBoolSVars + " + I:" + _hsBoolIVars + " = XADD (all vars): " + _context._alBooleanVars + "\n");
+		sb.append("NS BVars:    " + _hsBoolNSVars + "\n");
+		sb.append("CVars:       " + _hsContAllVars + " = S:" + _hsContSVars + " + A:" + _hsContAVars + " + I:" + _hsContIVars + "\n");
+		sb.append("NS CVars:    " + _hsContNSVars + "\n");
 		sb.append("Min-values:  " + _context._hmMinVal + "\n");
 		sb.append("Max-values:  " + _context._hmMaxVal + "\n");
-		sb.append("BVars:       " + _context._alBooleanVars + "/" + _hsBoolSVars + "\n");
 		sb.append("Order:       " + _context._alOrder + "\n");
 		sb.append("Iterations:  " + _nMaxIter + "\n");
 		sb.append("Constraints (" + _alConstraints.size() + "):\n");
@@ -689,4 +696,6 @@ public class CAMDP {
 		mdp._context.showCacheSize();
 		System.out.println("CAMDP-FINISH");
 	}
+	
+	public final static String ASCII_BAR = "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"; // Display shortcut
 }
