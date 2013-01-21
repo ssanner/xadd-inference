@@ -224,9 +224,15 @@ public class ComputeQFunction {
 	}
 		
 	public int maxOutVar(int ixadd, String var, double lb, double ub) {
-		XADDLeafMax max = _context.new XADDLeafMax(var, lb, ub, _camdp._logStream);
+		XADDLeafMinOrMax max = _context.new XADDLeafMinOrMax(var, lb, ub, true /* is_max */, _camdp._logStream);
 		ixadd  = _context.reduceProcessXADDLeaf(ixadd, max, false);
-		return max._runningMax;
+		return max._runningResult;
+	}
+	
+	public int minOutVar(int ixadd, String var, double lb, double ub) {
+		XADDLeafMinOrMax min = _context.new XADDLeafMinOrMax(var, lb, ub, false /* is_max */, _camdp._logStream);
+		ixadd  = _context.reduceProcessXADDLeaf(ixadd, min, false);
+		return min._runningResult;
 	}
 
 	private void displayCyclesAndExit(Graph g, CAction a) {

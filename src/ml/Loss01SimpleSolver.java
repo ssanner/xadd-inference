@@ -24,7 +24,7 @@ import xadd.XADD.ExprDec;
 import xadd.XADD.TautDec;
 import xadd.XADD.VarExpr;
 import xadd.XADD.XADDINode;
-import xadd.XADD.XADDLeafMax;
+import xadd.XADD.XADDLeafMinOrMax;
 import xadd.XADD.XADDNode;
 import xadd.XADD.XADDTNode;
 import cmdp.HierarchicalParser;
