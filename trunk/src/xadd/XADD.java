@@ -3217,19 +3217,23 @@ public class XADD {
 	// the LB, UB or any root of the polynomial.
 	////////////////////////////////////////////////////////////////////////////////
 
-	public class XADDLeafMax extends XADDLeafOperation {
+	public class XADDLeafMinOrMax extends XADDLeafOperation {
 
-		public int _runningMax; // XADD for the running max of all leaf substitutions
+		public int _runningResult; // XADD for the running max of all leaf substitutions
 		double _lowerBound, _upperBound;
-		String _maxVar;
+		String _minOrMaxVar;
+		String _sOpName;
+		boolean _bIsMax;
 		ArrayList<String> _contVars;
 		PrintStream _log = null;
 		
-		public XADDLeafMax(String max_var, double lower_bound, double upper_bound, PrintStream ps) {
-			_maxVar = max_var.intern(); 
+		public XADDLeafMinOrMax(String min_or_max_var, double lower_bound, double upper_bound, boolean is_max, PrintStream ps) {
+			_minOrMaxVar = min_or_max_var.intern(); 
+			_bIsMax = is_max;
+			_sOpName = _bIsMax ? "MAX" : "MIN";
 			_lowerBound = lower_bound;
 			_upperBound = upper_bound;
-			_runningMax = -1;
+			_runningResult = -1;
 			_log = ps;
 		}
 
@@ -3240,7 +3244,7 @@ public class XADD {
 
         public int processXADDLeaf(ArrayList<Decision> decisions, ArrayList<Boolean> decision_values, ArithExpr leaf_val) 
         {
-            if (VERBOSE_MIN_MAX) _log.println("=============================");
+            if (VERBOSE_MIN_MAX) _log.println("=============== leaf: " + _sOpName + "================");
             if (VERBOSE_MIN_MAX) _log.println("Current node: " + leaf_val);
             if (VERBOSE_MIN_MAX) _log.println("Decisions to get to get here: " + decisions + " = " + decision_values + "\n===\n");
 
@@ -3251,7 +3255,7 @@ public class XADD {
 			upper_bound.add(new DoubleExpr(_upperBound));
 
         	// Multiply these in later
-            HashMap<Decision, Boolean> max_var_indep_decisions = new HashMap<Decision, Boolean>();
+            HashMap<Decision, Boolean> target_var_indep_decisions = new HashMap<Decision, Boolean>();
 
             // First compute the upper and lower bounds and var-independent constraints
 			// from the decisions
@@ -3260,7 +3264,7 @@ public class XADD {
                 Boolean is_true = decision_values.get(i);
                 CompExpr comp = null;
                 if (d instanceof BoolDec) {
-                        max_var_indep_decisions.put(d, is_true);
+                        target_var_indep_decisions.put(d, is_true);
                         continue;
                 } else if (d instanceof ExprDec) {
                         ExprDec ed = (ExprDec) d;
@@ -3277,14 +3281,14 @@ public class XADD {
                 }
 
                 // Takes ArithExpr expr1 linear in var, returns (coef,expr2) where expr1 = coef*x + expr2
-				CoefExprPair p = comp._lhs.removeVarFromExpr(_maxVar); 
+				CoefExprPair p = comp._lhs.removeVarFromExpr(_minOrMaxVar); 
 				ArithExpr lhs_isolated = p._expr;
 				double    var_coef     = p._coef;
-				if (VERBOSE_MIN_MAX) _log.println("Pre: " + comp + " == " + is_true + ", int var [" + _maxVar + "]"
-						+ "\nLHS isolated: " + lhs_isolated + "\n ==>  " + var_coef + " * " + _maxVar + ((var_coef == 0d) ? " [independent]" : ""));
+				if (VERBOSE_MIN_MAX) _log.println("Pre: " + comp + " == " + is_true + ", int var [" + _minOrMaxVar + "]"
+						+ "\nLHS isolated: " + lhs_isolated + "\n ==>  " + var_coef + " * " + _minOrMaxVar + ((var_coef == 0d) ? " [independent]" : ""));
 
 				if (var_coef == 0d) {
-					max_var_indep_decisions.put(d, is_true);
+					target_var_indep_decisions.put(d, is_true);
 					continue;
 				}
 
@@ -3313,7 +3317,7 @@ public class XADD {
 					upper_bound.add(new_rhs);
 				else {
 					_log.println("Cannot currently handle: "
-							+ new CompExpr(comp_oper, new VarExpr(_maxVar), new_rhs));
+							+ new CompExpr(comp_oper, new VarExpr(_minOrMaxVar), new_rhs));
 					_log.println("Note: = triggers substitution, not sure how to handle ~=");
 					new Exception().printStackTrace();
 					System.exit(1);
@@ -3342,7 +3346,7 @@ public class XADD {
 				for (ArithExpr e2 : lower_bound) {
 					CompExpr ce = new CompExpr(GT, e1, e2);
 					ExprDec ed = new ExprDec(ce);
-					max_var_indep_decisions.put(ed, Boolean.TRUE);
+					target_var_indep_decisions.put(ed, Boolean.TRUE);
 				}
 			}
 
@@ -3353,29 +3357,29 @@ public class XADD {
 			// Determine whether we need to handle the quadratic case, if so,
 			// root will be set to a non-null evaluation
 			ArithExpr root = null;
-			int highest_order = leaf_val.determineHighestOrderOfVar(_maxVar);
+			int highest_order = leaf_val.determineHighestOrderOfVar(_minOrMaxVar);
 			if (highest_order > 2) {
-				_log.println("XADDLeafMax: Cannot currently handle expressions higher than order 2 in " + _maxVar + ": " + leaf_val);
+				_log.println("XADDLeafMax: Cannot currently handle expressions higher than order 2 in " + _minOrMaxVar + ": " + leaf_val);
 				System.exit(1);					
 			} else if (highest_order == 2) {
-				ArithExpr first_derivative = leaf_val.differentiateExpr(_maxVar);
+				ArithExpr first_derivative = leaf_val.differentiateExpr(_minOrMaxVar);
 
                 // Takes ArithExpr expr1 linear in var, returns (coef,expr2) where expr1 = coef*x + expr2
 				// setting expr1 = coef*x + expr2 = 0 then x = -expr2/coef
-				CoefExprPair p2 = first_derivative.removeVarFromExpr(_maxVar);
+				CoefExprPair p2 = first_derivative.removeVarFromExpr(_minOrMaxVar);
 				
 				root = (ArithExpr)(new OperExpr(MINUS, ZERO, new OperExpr(PROD, new DoubleExpr(
 									           1d / p2._coef), p2._expr)).makeCanonical());
 			}
             
 			// Substitute lower and upper bounds into leaf
-            int max_eval_lower = substituteXADDforVarInArithExpr(leaf_val, _maxVar, xadd_lower_bound);
-            int max_eval_upper = substituteXADDforVarInArithExpr(leaf_val, _maxVar, xadd_upper_bound);
+            int eval_lower = substituteXADDforVarInArithExpr(leaf_val, _minOrMaxVar, xadd_lower_bound);
+            int eval_upper = substituteXADDforVarInArithExpr(leaf_val, _minOrMaxVar, xadd_upper_bound);
 
             // Display lower and upper bound substitution
             if (VERBOSE_MIN_MAX) _log.println("** Substitute in: " + leaf_val);
-            if (VERBOSE_MIN_MAX) _log.println("** Lower bound sub:\n" + getString(max_eval_lower));
-            if (VERBOSE_MIN_MAX) _log.println("** Upper bound sub:\n" + getString(max_eval_upper));
+            if (VERBOSE_MIN_MAX) _log.println("** Lower bound sub:\n" + getString(eval_lower));
+            if (VERBOSE_MIN_MAX) _log.println("** Upper bound sub:\n" + getString(eval_upper));
             
             // We don't know which of UB/LB substitution is maximal so we take the "case"-max
             // ... if there were nonlinearities in leaf, then substitution leads to nonlinear
@@ -3385,76 +3389,79 @@ public class XADD {
             // ??? need to avoid case where max leads to an illegal pruning -- occurs???
             //     e.g., could an unreachable constant prune out another reachable node?
             //     (don't think this can happen... still in context of unreachable constraints)
-            int max_eval = apply(max_eval_upper, max_eval_lower, MAX); // TODO: handle MIN_MAX, also change var names
-            max_eval = reduceLinearize(max_eval); 
+            int min_max_eval = apply(eval_upper, eval_lower, _bIsMax ? MAX : MIN); // handle min and max
+            min_max_eval = reduceLinearize(min_max_eval); 
             
             // TODO: investigate... sometimes we are getting a quadratic decision below that should have been linearized!
-            max_eval = reduceLP(max_eval); // Result should be canonical
-            if (VERBOSE_MIN_MAX) _log.println("max of LB and UB (reduce/linearize): " + getString(max_eval));
+            min_max_eval = reduceLP(min_max_eval); // Result should be canonical
+            if (VERBOSE_MIN_MAX) _log.println(_sOpName + " of LB and UB (reduce/linearize): " + getString(min_max_eval));
 
             // NOTE: Constraints on root have to be multiplied in here, not at end.  -Scott
             if (root != null) {
             	
-                int max_eval_root = substituteXADDforVarInArithExpr(leaf_val, _maxVar, getTermNode(root));
-                if (VERBOSE_MIN_MAX) _log.println("root substitute: " + getString(max_eval_root));
+                int eval_root = substituteXADDforVarInArithExpr(leaf_val, _minOrMaxVar, getTermNode(root));
+                if (VERBOSE_MIN_MAX) _log.println("root substitute: " + getString(eval_root));
                 
                 // Now incorporate constraints into int_eval, make result canonical
                 for (ArithExpr ub : upper_bound) {
                     CompExpr ce = new CompExpr(LT_EQ, root, ub);
-                    int ub_xadd = getVarNode(new ExprDec(ce), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                    int ub_xadd = _bIsMax 
+                    		? getVarNode(new ExprDec(ce), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)  // +inf gets min'ed to eval_root
+                    		: getVarNode(new ExprDec(ce), Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY); // -inf gets max'ed to eval_root
                     // For discussion of following operation, see independent decisions modification stage below  
-                     max_eval_root = apply(ub_xadd, max_eval_root, MIN); 
+                     eval_root = apply(ub_xadd, eval_root, _bIsMax ? MIN : MAX); // NOTE: this is correct, it is not reversed 
                 }
                 for (ArithExpr lb : lower_bound) {
                     CompExpr ce = new CompExpr(GT, root, lb);
-                    int lb_xadd = getVarNode(new ExprDec(ce), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                    int lb_xadd = _bIsMax 
+                    		? getVarNode(new ExprDec(ce), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)  // +inf gets min'ed to eval_root
+                    		: getVarNode(new ExprDec(ce), Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY); // -inf gets max'ed to eval_root
                     // For discussion of following operation, see independent decisions modification stage below  
-                    max_eval_root = apply(lb_xadd, max_eval_root, MIN);
+                    eval_root = apply(lb_xadd, eval_root, _bIsMax ? MIN : MAX); // NOTE: this is correct, it is not reversed 
                 }
                 //max_eval_root = reduceLinearize(max_eval_root); // Removed previously
                 //max_eval_root = reduceLP(max_eval_root); // Result should be canonical
                 
-                if (VERBOSE_MIN_MAX) _log.println("constrained root substitute: " + getString(max_eval_root));
-                max_eval = apply(max_eval, max_eval_root, MAX); // TODO: handle MIN_MAX, also change var names
-                max_eval = reduceLinearize(max_eval); 
-                max_eval = reduceLP(max_eval); // Result should be canonical
-                if (VERBOSE_MIN_MAX) _log.println("max of constrained root sub and int_eval(LB/UB): " + getString(max_eval));
+                if (VERBOSE_MIN_MAX) _log.println("constrained root substitute: " + getString(eval_root));
+                min_max_eval = apply(min_max_eval, eval_root, _bIsMax ? MAX : MIN); // handle min or max
+                min_max_eval = reduceLinearize(min_max_eval); 
+                min_max_eval = reduceLP(min_max_eval); // Result should be canonical
+                if (VERBOSE_MIN_MAX) _log.println(_sOpName + " of constrained root sub and int_eval(LB/UB): " + getString(min_max_eval));
             }
 
-            if (VERBOSE_MIN_MAX) _log.println("max_eval before decisions (after sub root): " + getString(max_eval));
+            if (VERBOSE_MIN_MAX) _log.println(_sOpName + "_eval before decisions (after sub root): " + getString(min_max_eval));
 
-            // TODO: edit running sum comments
             // Finally, incorporate boolean decisions and irrelevant comparison expressions
             // to the XADD and add it to the running sum
-            for (Map.Entry<Decision, Boolean> me : max_var_indep_decisions.entrySet()) {
-                    double high_val = me.getValue() ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-                    double low_val  = me.getValue() ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-                    int max_constraint = getVarNode(me.getKey(), low_val, high_val);
-                    if (VERBOSE_MIN_MAX) _log.println("max_eval with decisions: " + me.getKey() + " [" + me.getValue() + "] -->\n" + getString(max_constraint));
+            for (Map.Entry<Decision, Boolean> me : target_var_indep_decisions.entrySet()) {
+                    double high_val = ((me.getValue() && _bIsMax) || (!me.getValue() && !_bIsMax)) ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                    double low_val  = ((me.getValue() && _bIsMax) || (!me.getValue() && !_bIsMax)) ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+                    int indep_constraint = getVarNode(me.getKey(), low_val, high_val);
+                    if (VERBOSE_MIN_MAX) _log.println("max_eval with decisions: " + me.getKey() + " [" + me.getValue() + "] -->\n" + getString(indep_constraint));
                     // Note: need to make function -INF when constraints violated: min(f,(v -inf +inf)) = (v -inf f)
-                     max_eval = apply(max_constraint, max_eval, MIN);
+                    min_max_eval = apply(indep_constraint, min_max_eval, _bIsMax ? MIN : MAX); // NOTE: this is correct, it is not reversed 
             }
             
-            if (VERBOSE_MIN_MAX) _log.println("Final max_eval before linearize: " + getString(max_eval));
-            max_eval = reduceLinearize(max_eval);
-            if (VERBOSE_MIN_MAX) _log.println("After linearize, before reduceLP: " + getString(max_eval));
-            max_eval = reduceLP(max_eval); // Result should be canonical
-            if (VERBOSE_MIN_MAX) _log.println("After linearize and reduceLP: " + getString(max_eval));
+            if (VERBOSE_MIN_MAX) _log.println("Final " + _sOpName + "_eval before linearize: " + getString(min_max_eval));
+            min_max_eval = reduceLinearize(min_max_eval);
+            if (VERBOSE_MIN_MAX) _log.println("After linearize, before reduceLP: " + getString(min_max_eval));
+            min_max_eval = reduceLP(min_max_eval); // Result should be canonical
+            if (VERBOSE_MIN_MAX) _log.println("After linearize and reduceLP: " + getString(min_max_eval));
                             
-            if (_runningMax == -1) 
-            	_runningMax = max_eval;
+            if (_runningResult == -1) 
+            	_runningResult = min_max_eval;
             else 
-            	_runningMax = apply(_runningMax, max_eval, MAX); // TODO: handle MIN_MAX, also change var names
+            	_runningResult = apply(_runningResult, min_max_eval, _bIsMax ? MAX : MIN); // handle min or max
 
-            _runningMax = reduceLinearize(_runningMax);
-            _runningMax = reduceLP(_runningMax);
-            if (_runningMax != makeCanonical(_runningMax)) {
-            	System.err.println("processXADDMax ERROR: encountered non-canonical _runningMax that should have been canonical");
-            	System.err.println(getString(_runningMax));
-            	System.err.println(getString(makeCanonical(_runningMax)));
-            	System.exit(1);
+            _runningResult = reduceLinearize(_runningResult);
+            _runningResult = reduceLP(_runningResult);
+            if (_runningResult != makeCanonical(_runningResult)) {
+            	System.err.println("processXADDMinOrMax ERROR: encountered non-canonical _runningResult that should have been canonical, continuing.");
+            	System.err.println(getString(_runningResult));
+            	System.err.println(getString(makeCanonical(_runningResult)));
+            	//System.exit(1);
             }
-            if (VERBOSE_MIN_MAX) _log.println("running max result: " + getString(_runningMax));
+            if (VERBOSE_MIN_MAX) _log.println("running " + _sOpName + " result: " + getString(_runningResult));
 
 			// All return information is stored in _runningMax so no need to return
 			// any information here... just keep diagram as is
@@ -3782,8 +3789,8 @@ public class XADD {
 
 		// A terminal node should be reduced (and cannot be restricted)
 		// by default if hashing and equality testing are working in getTNode
-		if ((n instanceof XADDTNode) && (leaf_op instanceof XADDLeafMax)) {
-			return ((XADDLeafMax) leaf_op).processXADDLeaf(decisions,
+		if ((n instanceof XADDTNode) && (leaf_op instanceof XADDLeafMinOrMax)) {
+			return ((XADDLeafMinOrMax) leaf_op).processXADDLeaf(decisions,
 					decision_values, ((XADDTNode) n)._expr); // Assuming that to have
 			// a node id means
 			// canonical
