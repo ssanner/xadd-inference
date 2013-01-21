@@ -242,8 +242,15 @@ public class CAMDP {
 					_maxDD = _context.linPruneRel(_maxDD, APPROX_ERROR);
 
 				// Error checking and logging
-				if (_maxDD != _context.makeCanonical(_maxDD))
-					ExitOnError("CAMDP VI ERROR: encountered non-canonical node that should have been canonical");
+				int canon_max_dd = _context.makeCanonical(_maxDD);
+				if (_maxDD != canon_max_dd) {
+					System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical... could be rounding, continuing.");
+					_context.getGraph(_maxDD).launchViewer("ERROR diagram 1: original maxDD");
+					_context.getGraph(canon_max_dd).launchViewer("ERROR diagram 2: makeCanonical(maxDD)");
+					_maxDD = canon_max_dd;
+					//ExitOnError("CAMDP VI ERROR: encountered non-canonical node that should have been canonical:\n" + 
+					//			_context.getString(_maxDD) + "\nvs.\n" + _context.getString(_maxDD));
+				}
 				if(DISPLAY_MAX)
 					doDisplay(_maxDD, "QMax^"+_nCurIter+"-"+Math.round(100*APPROX_ERROR));
 				_logStream.println("Running max in iter " + _nCurIter + ":" + _context.getString(_maxDD));

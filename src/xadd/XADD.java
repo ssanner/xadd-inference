@@ -68,7 +68,7 @@ public class XADD {
 	public final static boolean DEBUG_EVAL_RANGE = false;
 	public final static boolean DEBUG_CONSTRAINTS = false;
 	public final static boolean HANDLE_NONLINEAR = false;
-	public final static boolean VERBOSE_MIN_MAX = false;
+	public final static boolean VERBOSE_MIN_MAX = true;
 
 	// Operator constants
 	public final static int UND = 0;
@@ -102,13 +102,13 @@ public class XADD {
 	public final static ArithExpr ZERO = new DoubleExpr(0d);
 	public final static ArithExpr ONE = new DoubleExpr(1d);
 	public final static ArithExpr NEG_ONE = new DoubleExpr(-1d);
+	public final static ArithExpr POS_INF = new DoubleExpr(Double.POSITIVE_INFINITY);
+	public final static ArithExpr NEG_INF = new DoubleExpr(Double.NEGATIVE_INFINITY);
 	
 	//Precision constants 
-	public final static double INF = 1e10;//Double.MAX_VALUE;
-	public final static double NEG_INF = -INF;
-	public final static ArithExpr INF_EXP = new DoubleExpr(INF);
-	public final static ArithExpr NEG_INF_EXP = new DoubleExpr(NEG_INF);
 	public final static double PRECISION = 1e-10;
+	public final static double DEFAULT_UPPER_BOUND = 1e+10d;
+	public final static double DEFAULT_LOWER_BOUND = -DEFAULT_UPPER_BOUND; 
 	public final static int ROUND_PRECISION = 1000000;
 	private static final double IMPLIED_PRECISION = 1e-6; //Precision for removing unreliably feasible constraints 
 	
@@ -253,13 +253,13 @@ public class XADD {
 			String cvar = me.getKey();
 			Double bound = this._hmMinVal.get(cvar);
 			if (bound == null) { 
-				bound = NEG_INF;
+				bound = DEFAULT_LOWER_BOUND;
 				this._hmMinVal.put(cvar, bound);
 			}
 			this.lowerBounds[me.getValue()] = bound;
 			bound = this._hmMaxVal.get(cvar);
 			if (bound==null) { 
-				bound = INF;
+				bound = DEFAULT_UPPER_BOUND;
 				this._hmMaxVal.put(cvar,bound);
 			}
 			this.upperBounds[me.getValue()] = bound;
@@ -323,10 +323,11 @@ public class XADD {
 	public int getTermNode(ArithExpr e) {
 		return getTermNode(e, null);
 	}	
+	
 	// Note: var index can never be 0, negative var index now means negated decision
 	public int getTermNode(XADDTNode n) {
 			return getTermNode(n._expr, n._annotate); 
-		}
+	}
 	
 	public XADDTNode _tempTNode = new XADDTNode(null,null);
 	public int getTermNode(ArithExpr e, Object annotation) {
@@ -352,7 +353,7 @@ public class XADD {
 				// so are already in _hsBooleanVars
 				if (!_hsBooleanVars.contains(s) && !_hsContinuousVars.contains(s)) {
 					addContinuousVar(s);
-				}
+			}
 		}
 		return id;
 	}
@@ -409,8 +410,9 @@ public class XADD {
 		int ind_false = getINode(var, /* low */T_ONE, /* high */T_ZERO);
 		int true_half = applyInt(ind_true, high, PROD); 
 		// this enforces canonicity so can use applyInt rather than apply
-		int false_half = applyInt(ind_false, low, PROD); 
-		return applyInt(true_half, false_half, SUM);
+		int false_half = applyInt(ind_false, low, PROD);
+		int result = applyInt(true_half, false_half, SUM);
+		return result;
 }
 	
 	public int getVarNode(Decision d, double low_val, double high_val) {
@@ -502,7 +504,7 @@ public class XADD {
 		return reduceSub(node_id, subst, new HashMap<Integer, Integer>());
 	}
 
-	// Substitution has to enforces order if it is violated, hence the
+	// Substitution has to enforce order if it is violated, hence the
 	// additional call to getInodeCanon.
 	public int reduceSub(int node_id, HashMap<String, ArithExpr> subst,
 			HashMap<Integer, Integer> subst_cache) {
@@ -760,10 +762,80 @@ public class XADD {
 		return ret;
 	}
 	
-	// Computes a terminal node value if possible, assume
-	public Integer computeTermNode(int a1, XADDNode n1, int a2, XADDNode n2,
-			int op) {
+	// Computes a terminal node value if possible
+	public Integer computeTermNode(int a1, XADDNode n1, int a2, XADDNode n2, int op) {
 
+		// Check for identities if first operand is terminal
+		if (n1 instanceof XADDTNode) {
+
+			XADDTNode xa1 = (XADDTNode) n1;
+
+			// 0 * anything (even infinity) = 0 
+			if (op == PROD && xa1._expr.equals(ZERO))
+				return getTermNode(ZERO);
+			
+			// Check for identity operation value for n1
+			if ((op == SUM && xa1._expr.equals(ZERO))
+					|| (op == PROD && xa1._expr.equals(ONE))) {
+				return a2;
+			}
+			
+			// Infinity identities
+			// NOTE: * and / can only be evaluated on leaf since 0*inf = 0, but for x!=0 x*inf = inf
+			if (xa1._expr.equals(POS_INF)) {
+				// +inf op a2
+				if (op == SUM || op == MINUS || op == MAX 
+						 || ((op == PROD || op == DIV) && (n2 instanceof XADDTNode) && !((XADDTNode) n2).equals(ZERO)))
+					return getTermNode(POS_INF);
+				else if (op == MIN)
+					return a2;
+			} else if (xa1._expr.equals(NEG_INF)) {
+				// -inf op a2
+				if (op == SUM || op == MINUS || op == MIN
+						|| ((op == PROD || op == DIV) && (n2 instanceof XADDTNode) && !((XADDTNode) n2).equals(ZERO)))
+					return getTermNode(NEG_INF);
+				else if (op == MAX)
+					return a2;
+			}
+		}
+		
+		// Check for identities if second operand is terminal
+		if (n2 instanceof XADDTNode) {
+
+			XADDTNode xa2 = (XADDTNode) n2;
+
+			// anything (even infinity) * 0 = 0
+			if (op == PROD && xa2._expr.equals(ZERO))
+				return getTermNode(ZERO);
+
+			// Check for identity operation value for n2
+			if ((op == SUM && xa2._expr.equals(ZERO))
+					|| (op == PROD && xa2._expr.equals(ONE)) 
+					|| (op == MINUS && xa2._expr.equals(ZERO))
+					|| (op == DIV && xa2._expr.equals(ONE))) {
+				return a1;
+			}
+
+			// Infinity identities
+			if (xa2._expr.equals(POS_INF)) {
+				// a1 op +inf 
+				if (op == SUM || op == MAX || (op == PROD && (n1 instanceof XADDTNode) && !((XADDTNode) n1).equals(ZERO)))
+					return getTermNode(POS_INF);
+				// Not sure how to handle minus and div, ignoring for now
+				else if (op == MIN)
+					return a1;
+			} else if (xa2._expr.equals(NEG_INF)) {
+				// a1 op -inf 
+				if (op == SUM || op == MIN || (op == PROD && (n1 instanceof XADDTNode) && !((XADDTNode) n1).equals(ZERO)))
+					return getTermNode(NEG_INF);
+				// Not sure how to handle minus and div, ignoring for now
+				else if (op == MAX)
+					return a1;
+			}
+		}
+		
+		// Handle result if both operands are terminals and one of the special 
+		// identities above did not hold
 		if ((n1 instanceof XADDTNode) && (n2 instanceof XADDTNode)) 
 		{
 			XADDTNode xa1 = (XADDTNode) n1;
@@ -772,8 +844,8 @@ public class XADD {
 			// Operations: +,-,*,/
 			if ((op != MAX) && (op != MIN)) {
 				 return getTermNode(new OperExpr(op, xa1._expr, xa2._expr));
-
 			}
+			
 			CompExpr comp = new CompExpr(LT_EQ, xa1._expr, xa2._expr);
 			Decision d = new ExprDec(comp);
 
@@ -787,30 +859,6 @@ public class XADD {
 			// Operations: min/max -- return a decision node
 			return getINode(var_index, op == MAX ? node1 : node2,
 					op == MAX ? node2 : node1);
-		}
-
-		if (n1 instanceof XADDTNode) {
-			// If we get here a2 must be XADDINode
-			XADDTNode xa1 = (XADDTNode) n1;
-
-			// Check for identity operation value for n1
-			if ((op == SUM && xa1._expr.equals(ZERO))
-					|| (op == PROD && xa1._expr.equals(ONE))) {
-				return a2;
-			}
-		}
-
-		if (n2 instanceof XADDTNode) {
-			// If we get here a1 must be XADDINode
-			XADDTNode xa2 = (XADDTNode) n2;
-
-			// Check for identity operation value for n2
-			if ((op == SUM && xa2._expr.equals(ZERO))
-					|| (op == PROD && xa2._expr.equals(ONE))
-					|| (op == MINUS && xa2._expr.equals(ZERO))
-					|| (op == DIV && xa2._expr.equals(ONE))) {
-				return a1;
-			}
 		}
 
 		return null;
@@ -2139,8 +2187,8 @@ public class XADD {
 		}
 		else{ //Inode
 			XADDINode node = (XADDINode) r;
-			double lowM = NEG_INF;
-			double highM = NEG_INF;
+			double lowM  = DEFAULT_LOWER_BOUND; 
+			double highM = DEFAULT_LOWER_BOUND;
 			if (_alOrder.get(node._var) instanceof ExprDec){
 				domain.add(-1*node._var);
 				lowM = linMaxMinVal(node._low,domain,isMax);
@@ -2383,7 +2431,7 @@ public class XADD {
 		for (int i = 1;i<linVars;i++) { obj_coef[i] = 0;}
 		double[] upBound = new double[linVars]; // objective function min e
 		double[] loBound = new double[linVars]; // objective function min e
-		for (int i = 0;i<linVars;i++) { upBound[i] = INF; loBound[i] = NEG_INF;}
+		for (int i = 0;i<linVars;i++) { upBound[i] = DEFAULT_UPPER_BOUND; loBound[i] = DEFAULT_LOWER_BOUND;}
 		LP lp = new LP(linVars, loBound, upBound, obj_coef, LP.MINIMIZE);
 		
 		//add all points as constraints
@@ -2481,8 +2529,8 @@ public class XADD {
 		double[] upBound = new double[linVars]; 
 		double[] loBound = new double[linVars];  
 		int bound_i=0;
-		for(;bound_i<functionVars;bound_i++) { upBound[bound_i] = INF; loBound[bound_i] = NEG_INF;}
-		for (;bound_i<linVars;bound_i++) { upBound[bound_i] = INF; loBound[bound_i] = 0d;}
+		for(;bound_i<functionVars;bound_i++) { upBound[bound_i] = DEFAULT_UPPER_BOUND; loBound[bound_i] = DEFAULT_LOWER_BOUND;}
+		for (;bound_i<linVars;bound_i++) { upBound[bound_i] = DEFAULT_UPPER_BOUND; loBound[bound_i] = 0d;}
 	
 		LP lp = new LP(linVars, loBound, upBound, obj_coef, LP.MINIMIZE);
 		
@@ -2650,7 +2698,7 @@ public class XADD {
 	       		OptimResult res = minimizeSumError(coefs1, _dCoef1,paths1,
 	       										coefs2, _dCoef2, paths2, points, maxError*(1+0.5*UNDERCONSTRAINED_ALLOW_REL_ERROR) );
 	       		
-	       	   double underMaxError = NEG_INF; 
+	       	   double underMaxError = DEFAULT_LOWER_BOUND; 
 	 		   _dMrgCoef = res.solution[0];
 	 		   int i=0;
 	 		   for(;i<nvars;i++){ mrgCoefs[i] = res.solution[i+1];}
@@ -3233,7 +3281,7 @@ public class XADD {
 				ArithExpr lhs_isolated = p._expr;
 				double    var_coef     = p._coef;
 				if (VERBOSE_MIN_MAX) _log.println("Pre: " + comp + " == " + is_true + ", int var [" + _maxVar + "]"
-						+ "\nLHS isolated: " + lhs_isolated + "\n ==>  " + var_coef + " * " + _maxVar);
+						+ "\nLHS isolated: " + lhs_isolated + "\n ==>  " + var_coef + " * " + _maxVar + ((var_coef == 0d) ? " [independent]" : ""));
 
 				if (var_coef == 0d) {
 					max_var_indep_decisions.put(d, is_true);
@@ -3350,18 +3398,20 @@ public class XADD {
                 int max_eval_root = substituteXADDforVarInArithExpr(leaf_val, _maxVar, getTermNode(root));
                 if (VERBOSE_MIN_MAX) _log.println("root substitute: " + getString(max_eval_root));
                 
-                // Now multiply in constraints into int_eval, make result canonical
+                // Now incorporate constraints into int_eval, make result canonical
                 for (ArithExpr ub : upper_bound) {
                     CompExpr ce = new CompExpr(LT_EQ, root, ub);
-                    int ub_xadd = getVarNode(new ExprDec(ce), 0d, 1d);
-                    max_eval_root = apply(max_eval_root, ub_xadd, PROD); // TODO: Correct constraint multiplication
+                    int ub_xadd = getVarNode(new ExprDec(ce), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                    // For discussion of following operation, see independent decisions modification stage below  
+                     max_eval_root = apply(ub_xadd, max_eval_root, MIN); 
                 }
                 for (ArithExpr lb : lower_bound) {
                     CompExpr ce = new CompExpr(GT, root, lb);
-                    int lb_xadd = getVarNode(new ExprDec(ce), 0d, 1d);
-                    max_eval_root = apply(max_eval_root, lb_xadd, PROD); // TODO: Correct constraint multiplication
+                    int lb_xadd = getVarNode(new ExprDec(ce), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                    // For discussion of following operation, see independent decisions modification stage below  
+                    max_eval_root = apply(lb_xadd, max_eval_root, MIN);
                 }
-                //max_eval_root = reduceLinearize(max_eval_root); 
+                //max_eval_root = reduceLinearize(max_eval_root); // Removed previously
                 //max_eval_root = reduceLP(max_eval_root); // Result should be canonical
                 
                 if (VERBOSE_MIN_MAX) _log.println("constrained root substitute: " + getString(max_eval_root));
@@ -3374,18 +3424,19 @@ public class XADD {
             if (VERBOSE_MIN_MAX) _log.println("max_eval before decisions (after sub root): " + getString(max_eval));
 
             // TODO: edit running sum comments
-            // Finally, multiply in boolean decisions and irrelevant comparison expressions
+            // Finally, incorporate boolean decisions and irrelevant comparison expressions
             // to the XADD and add it to the running sum
             for (Map.Entry<Decision, Boolean> me : max_var_indep_decisions.entrySet()) {
-                    double high_val = me.getValue() ? 1d : 0d;
-                    double low_val = me.getValue() ? 0d : 1d;
-                    if (VERBOSE_MIN_MAX) _log.println("max_eval with decisions: " + me.getKey());
-                    max_eval = apply(max_eval, getVarNode(me.getKey(), low_val, high_val), PROD); // TODO: Correct constraint multiplication
+                    double high_val = me.getValue() ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                    double low_val  = me.getValue() ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+                    int max_constraint = getVarNode(me.getKey(), low_val, high_val);
+                    if (VERBOSE_MIN_MAX) _log.println("max_eval with decisions: " + me.getKey() + " [" + me.getValue() + "] -->\n" + getString(max_constraint));
+                    // Note: need to make function -INF when constraints violated: min(f,(v -inf +inf)) = (v -inf f)
+                     max_eval = apply(max_constraint, max_eval, MIN);
             }
-            if (VERBOSE_MIN_MAX) _log.println("max_eval with decisions: " + getString(max_eval));
             
-            if (VERBOSE_MIN_MAX) _log.println("Before linearize: " + getString(max_eval));
-            max_eval = reduceLinearize(max_eval); 
+            if (VERBOSE_MIN_MAX) _log.println("Final max_eval before linearize: " + getString(max_eval));
+            max_eval = reduceLinearize(max_eval);
             if (VERBOSE_MIN_MAX) _log.println("After linearize, before reduceLP: " + getString(max_eval));
             max_eval = reduceLP(max_eval); // Result should be canonical
             if (VERBOSE_MIN_MAX) _log.println("After linearize and reduceLP: " + getString(max_eval));
@@ -3398,7 +3449,9 @@ public class XADD {
             _runningMax = reduceLinearize(_runningMax);
             _runningMax = reduceLP(_runningMax);
             if (_runningMax != makeCanonical(_runningMax)) {
-            	System.err.println("processXADDMax ERROR: encountered non-canonical node that should have been canonical");
+            	System.err.println("processXADDMax ERROR: encountered non-canonical _runningMax that should have been canonical");
+            	System.err.println(getString(_runningMax));
+            	System.err.println(getString(makeCanonical(_runningMax)));
             	System.exit(1);
             }
             if (VERBOSE_MIN_MAX) _log.println("running max result: " + getString(_runningMax));
@@ -3617,7 +3670,7 @@ public class XADD {
 					System.err.println("Constraints: " + decisions);
 					System.err.println("Assignments: " + decision_values);
 				}
-				xadd_lower_bound = getTermNode(NEG_INF_EXP);
+				xadd_lower_bound = getTermNode(NEG_INF);
 			} else {
 				if (DEBUG_XADD_DEF_INTEGRAL)
 					System.out.println("Lower bounds: " + lower_bound);
@@ -3640,7 +3693,7 @@ public class XADD {
 					System.err.println("Constraints: " + decisions);
 					System.err.println("Assignments: " + decision_values);
 				}
-				xadd_upper_bound = getTermNode(INF_EXP);
+				xadd_upper_bound = getTermNode(POS_INF);
 			} else {
 				if (DEBUG_XADD_DEF_INTEGRAL)
 					System.out.println("Upper bounds: " + upper_bound);
@@ -5673,11 +5726,15 @@ public class XADD {
 		}
 
 		public String toString() {
+			if (Double.isInfinite(_dConstVal) || Double.isNaN(_dConstVal))
+				return Double.toString(_dConstVal);
 			return _df.format(_dConstVal);
 		}
 
 		@Override
 		public String toString(boolean format) {
+			if (Double.isInfinite(_dConstVal) || Double.isNaN(_dConstVal))
+				return Double.toString(_dConstVal);
 			return _df_unformatted.format(_dConstVal);
 		}
 
@@ -5711,18 +5768,27 @@ public class XADD {
 		}
 
 		public Expr makeCanonical() {
+			if (Double.isInfinite(_dConstVal) || Double.isNaN(_dConstVal) || this == ONE || this == ZERO || this == NEG_ONE)
+				return this;
 			this.round();
+			//DoubleExpr dexpr = new DoubleExpr(_dConstVal);
+			//dexpr.round();
 			return this;
 		}
 		
 		public ArithExpr normalize(){
-			//System.out.println("Not nice to normalize single DoubleExpr, will become a TautDec");
-			if (_dConstVal>0)
+			if (Double.isInfinite(_dConstVal) || Double.isNaN(_dConstVal) || this == ONE || this == NEG_ONE) // ZERO?
+				return this;
+			// TODO: Luis, can we guarantee that normalization is always correct?  What happens if the constant term is 0???
+			if (_dConstVal > 0)
 				return ONE;
-			else return new DoubleExpr(-1.0);
+			else 
+				return NEG_ONE;
 		}
 		
 		public void round() {
+			if (Double.isInfinite(_dConstVal) || Double.isNaN(_dConstVal) || this == ONE || this == ZERO || this == NEG_ONE)
+				return;
 			_dConstVal = (Math.round(_dConstVal*ROUND_PRECISION)*1d)/ROUND_PRECISION;
 		}
 

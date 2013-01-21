@@ -25,9 +25,12 @@ public class TestXADD {
 	/**
 	 * @param args
 	 */
-	// //////////////////////////////////////////////////////////////
-
+	
 	public static void main(String[] args) throws Exception {
+		main3(args);
+	}
+	
+	public static void main3(String[] args) throws Exception {
 		XADD xadd_context = new XADD();
 		int expr1 = TestBuild(xadd_context, "./src/xadd/xadd_sq_test.xadd");
 		int reduced_e1 = xadd_context.reduceLP(expr1);
@@ -51,8 +54,34 @@ public class TestXADD {
 		xadd_context.getGraph(def_int_sq_expr1).launchViewer();
 		System.out.println(xadd_context.getString(def_int_sq_expr1));
 	}
-	
+
 	public static void main2(String[] args) throws Exception {
+		double POS_INF = Double.POSITIVE_INFINITY;
+		double NEG_INF = Double.NEGATIVE_INFINITY;
+		double NAN = Double.NaN;
+		System.out.println(0d * POS_INF);
+		System.out.println(new Double(POS_INF).equals(POS_INF));
+		System.out.println(POS_INF == POS_INF);
+		System.out.println(POS_INF);
+		System.out.println(NEG_INF);
+		System.out.println(NAN);
+		System.out.println(POS_INF * POS_INF);
+		System.out.println(POS_INF - POS_INF);
+		System.out.println(POS_INF - 0d);
+		System.out.println(POS_INF - NEG_INF);
+		System.out.println(POS_INF > 0);
+		System.out.println(POS_INF < 0);
+		System.out.println(2d + POS_INF);
+		System.out.println(2d - POS_INF);
+		System.out.println(POS_INF - 2d);
+		System.out.println(2d * POS_INF);
+		System.out.println(2d / POS_INF);
+		System.out.println(POS_INF / 2d);
+		System.out.println(Math.max(2d, POS_INF));
+		System.out.println(Math.min(2d, POS_INF));
+	}
+	
+	public static void main1(String[] args) throws Exception {
 
 		TestPolyOps();
 		if (0 <= 1) return;
