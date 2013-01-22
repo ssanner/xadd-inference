@@ -27,12 +27,20 @@ public class XADDParseUtils {
 			// Work around a parser issue with singleton vars in brackets
 			if (s.startsWith("["))
 				s = s.substring(1, s.length() - 1);
-			int n = ParseIntoXADD(context, s);
-			if (n < 0) {
-				System.err.println("Failed to parse: '" + s + "'");
-				System.exit(1);
+			
+			s = s.trim();
+			if (s.equalsIgnoreCase("legal") || s.equalsIgnoreCase("neg-inf") || s.equalsIgnoreCase("-Infinity")) {
+				return context.getTermNode(context.NEG_INF);
+			} else if (s.equalsIgnoreCase("illegal") || s.equalsIgnoreCase("pos-inf") || s.equalsIgnoreCase("Infinity")) {
+				return context.getTermNode(context.POS_INF);
+			} else {
+				int n = ParseIntoXADD(context, s);
+				if (n < 0) {
+					System.err.println("Failed to parse: '" + s + "'");
+					System.exit(1);
+				}
+				return n;
 			}
-			return n;
 		} else if (l.size() == 3) {
 			// TODO: could also allow arithmetic expressions internally here
 			

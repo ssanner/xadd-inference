@@ -27,7 +27,7 @@ public class TestXADD {
 	 */
 	
 	public static void main(String[] args) throws Exception {
-		main3(args);
+		main2(args);
 	}
 	
 	public static void main3(String[] args) throws Exception {
@@ -69,8 +69,6 @@ public class TestXADD {
 		System.out.println(POS_INF - POS_INF);
 		System.out.println(POS_INF - 0d);
 		System.out.println(POS_INF - NEG_INF);
-		System.out.println(POS_INF > 0);
-		System.out.println(POS_INF < 0);
 		System.out.println(2d + POS_INF);
 		System.out.println(2d - POS_INF);
 		System.out.println(POS_INF - 2d);
@@ -79,6 +77,8 @@ public class TestXADD {
 		System.out.println(POS_INF / 2d);
 		System.out.println(Math.max(2d, POS_INF));
 		System.out.println(Math.min(2d, POS_INF));
+		System.out.println(POS_INF > 0);
+		System.out.println(POS_INF < 0);
 	}
 	
 	public static void main1(String[] args) throws Exception {

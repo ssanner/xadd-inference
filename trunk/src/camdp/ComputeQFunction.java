@@ -80,39 +80,78 @@ public class ComputeQFunction {
 			q = _context.apply(a._reward, q, XADD.SUM);
 			_camdp._logStream.println("- Added in reward post-marginalization with no interm/next state vars.");
 		}
-
-    	// Ensure Q-function is properly constrained and minimal (e.g., subject to constraints)
-		if (_camdp._alConstraints.size() > 0) {
-			System.err.println("WARNING: constraint application currently not verified");
-			for (Integer constraint : _camdp._alConstraints)
-				q = _context.apply(q, constraint, XADD.PROD); // TODO: Examine application of constraints
-			q = _context.reduceLP(q);
-		}
 		
 		// Optional Display
-		_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + ", " + a._actionVars + " )\n" + _context.getString(q));
+		_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + ", " + a._actionParams + " )\n" + _context.getString(q));
 		if (CAMDP.DISPLAY_PREMAX_Q)
-			_camdp.doDisplay(q, "Q-" + a._sName + "-" + a._actionVars + "^" + _camdp._nCurIter + "-" + Math.round(100*_camdp.APPROX_ERROR));
+			_camdp.doDisplay(q, "Q-" + a._sName + "-" + a._actionParams + "^" + _camdp._nCurIter + "-" + Math.round(100*_camdp.APPROX_ERROR));
 		
-		// Continuous action parameter maximization
-		if (a._actionVars.size() == 0) {
+		// Noise handling
+		if (a._noiseVars.size() == 0) {
 			// No action params to maximize over
-			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " ):\n" + " No action parameters to max over, skipping.");
+			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " ):\n" + " No noise parameters to max over, skipping this step.");
+		} else {
+			// Max in noise constraints and min out each noise parameter in turn
+			// NOTE: we can do this because noise parameters can only reference state variables 
+			//       (not currently allowing them to condition on intermediate or other noise vars)
+			//       hence legal values of noise var determined solely by the factor for that var
+			HashSet<String> q_vars = _context.collectVars(q);
+			for (String nvar : a._noiseVars) {
+	
+				if (!q_vars.contains(nvar)) {
+					_camdp._logStream.println("- Skipping noise var '" + nvar + "', which does not occur in q: " + _context.collectVars(q));
+					continue;
+				}
+				
+				_camdp._logStream.println("- Minimizing over noise param '" + nvar + "'");
+				int noise_factor = a._hmNoise2DD.get(nvar);
+				q = _context.apply(noise_factor, q, XADD.MAX); // Max in the noise so illegal states get replace by +inf, otherwise q replaces -inf
+				q = minOutVar(q, nvar, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+				_camdp._logStream.println("-->: " + _context.getString(q));
+				
+				// Can be computational expensive (max-out) so flush caches if needed
+				_camdp.flushCaches(Arrays.asList(q) /* additional node to save */);
+			}
+			_camdp._logStream.println("- Done noise parameter minimization");
+			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " )" + _context.collectVars(q) + "\n" + _context.getString(q));
+		}
+		 
+		// Continuous action parameter maximization
+		if (a._actionParams.size() == 0) {
+			// No action params to maximize over
+			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " ):\n" + " No action parameters to max over, skipping this step.");
 		} else {
 			// Max out each action param in turn
-			for (int i=0; i < a._actionVars.size(); i++) {
-				String avar = a._actionVars.get(i);
+			HashSet<String> q_vars = _context.collectVars(q);
+			for (int i=0; i < a._actionParams.size(); i++) {
+				String avar = a._actionParams.get(i);
 				double lb   = a._hmAVar2LB.get(avar);
 				double ub   = a._hmAVar2UB.get(avar);
 	
-				_camdp._logStream.println("- Maxing out var '" + avar + "': [" + lb + "," + ub + "]");
+				if (!q_vars.contains(avar)) {
+					_camdp._logStream.println("- Skipping var '" + avar + "': [" + lb + "," + ub + "], which does not occur in q: " + _context.collectVars(q));
+					continue;
+				}
+				
+				_camdp._logStream.println("- Maxing out action param '" + avar + "': [" + lb + "," + ub + "]");
 				q = maxOutVar(q, avar, lb, ub);
 				_camdp._logStream.println("-->: " + _context.getString(q));
 				
 				// Can be computational expensive (max-out) so flush caches if needed
 				_camdp.flushCaches(Arrays.asList(q) /* additional node to save */);
 			}
+			_camdp._logStream.println("- Done action parameter maximization");
 			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " )\n" + _context.getString(q));
+		}
+
+    	// Ensure Q-function is properly constrained and minimal (e.g., subject to constraints)
+		// TODO: Examine following application of constraints before using.
+		if (_camdp._alConstraints.size() > 0) {
+			System.err.println("WARNING: constraint application currently not verified");
+			System.exit(1);
+			for (Integer constraint : _camdp._alConstraints)
+				q = _context.apply(q, constraint, XADD.PROD); 
+			q = _context.reduceLP(q);
 		}
 
 		return q;
@@ -121,7 +160,7 @@ public class ComputeQFunction {
 	public int regressCVars(int q, CAction a, String var) {
 		
 		// Get cpf for continuous var'
-		int var_id = _context.getVarIndex( _context.new BoolDec(var), false);
+		int var_id = _context._cvar2ID.get(var);
 		Integer dd_conditional_sub = a._hmVar2DD.get(var);
 
 		_camdp._logStream.println("- Integrating out: " + var + "/" + var_id /* + " in\n" + _context.getString(dd_conditional_sub)*/);
@@ -173,6 +212,7 @@ public class ComputeQFunction {
 		already_seen.addAll( _camdp._hsContSVars );
 		already_seen.addAll( _camdp._hsBoolSVars );
 		already_seen.addAll( _camdp._hsContAVars ); 
+		already_seen.addAll( _camdp._hsNoiseVars ); 
 		
 		for (String var : vars)
 			buildDBNDependencyDAGInt(a, var, g, already_seen);

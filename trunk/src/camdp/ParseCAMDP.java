@@ -19,6 +19,7 @@ public class ParseCAMDP {
 	ArrayList<String> BVars = new ArrayList<String>();
 	ArrayList<String> NSCVars = new ArrayList<String>();
 	ArrayList<String> NSBVars = new ArrayList<String>();
+	ArrayList<String> NoiseVars = new ArrayList<String>();
 	ArrayList<String> ICVars = new ArrayList<String>();
 	ArrayList<String> IBVars = new ArrayList<String>();
 	ArrayList<String> AVars = new ArrayList<String>();
@@ -28,7 +29,7 @@ public class ParseCAMDP {
 	ArrayList<Integer> constraints = new ArrayList<Integer>();
 	BigDecimal discount;
 	Integer iterations;
-	HashMap<String, CAction> hashmap = new HashMap<String, CAction>();
+	HashMap<String, CAction> _name2Action = new HashMap<String, CAction>();
 	
 	public ParseCAMDP(CAMDP camdp)
 	{
@@ -98,7 +99,17 @@ public class ParseCAMDP {
 			_camdp._context.getVarIndex(_camdp._context.new BoolDec(var + "'"), true);
 		}
 
+		// Noise vars -- defined after state variables if present
 		o = i.next();
+		if ((o instanceof String) && ((String) o).equalsIgnoreCase("nvariables")) {
+			o = i.next();
+			NoiseVars = (ArrayList<String>) ((ArrayList) o).clone();
+			o = i.next();	
+		} else {
+			System.out.println("Missing nvariable declarations after state vars... assuming only discrete noise on continuous transitions.");
+			NoiseVars = new ArrayList<String>();
+		}
+
 		if (!(o instanceof String)) {
 			exit("Expected identifier {icvariables,ibvariables} but got " + o);
 		} else if (((String) o).equalsIgnoreCase("ivariables")) {
@@ -210,39 +221,46 @@ public class ParseCAMDP {
 			
 			// This handles intermediate and next-state var CPFs
 			HashMap<String,ArrayList> cpt_map = new HashMap<String,ArrayList>();
-			while (!((String) o).equalsIgnoreCase("reward")) {//endaction
+			while (!((String) o).equalsIgnoreCase("reward") && !((String) o).equalsIgnoreCase("noise")) {
 				cpt_map.put((String) o, (ArrayList) i.next());
 				o = i.next();
 			}
 
+			// Handle noise
+			HashMap<String,ArrayList> noise_map = new HashMap<String,ArrayList>();
+			if ((o instanceof String) && ((String) o).equalsIgnoreCase("noise")) {
+				while (!((String) o).equalsIgnoreCase("reward")) {
+					o = i.next();
+					if (!(o instanceof String)) {
+						exit("Expected noise variable header or 'reward' but got: " + o);
+					}
+					noise_map.put((String) o, (ArrayList) i.next());
+					o = i.next();
+				}
+			} else if (NoiseVars.size() > 0) {
+				exit("Expected noise declaration for noise vars: " + NoiseVars);
+			}
+			
 			// Set up reward
 			if (!(o instanceof String) || !((String) o).equalsIgnoreCase("reward")) {
 				exit("Missing reward declaration for action: "+aname +" "+ o);
 			}
-			//new parser format : has + for summing rewards
-			o=i.next();
-			ArrayList reward = (ArrayList) o;
-			int reward_dd = 0;
-			int reward_toGoal = _camdp._context.buildCanonicalXADD(reward);
-			//new parser format : has + for summing rewards
-			 o = i.next();
-			 while (!((String) o).equalsIgnoreCase("endaction"))
-			{
-				int reward_2=0;
-				if (((String) o).equalsIgnoreCase("+"))
-				{
-					o = i.next();
-					reward = (ArrayList) o; 
-					reward_2 = _camdp._context.buildCanonicalXADD(reward);
-					reward_dd = _camdp._context.applyInt(reward_2, reward_toGoal, _camdp._context.SUM);
-				}
-				o=i.next();
+
+			// new parser format : has + for summing rewards
+			int reward_dd = _camdp._context.buildCanonicalXADD((ArrayList) i.next());
+			o = i.next();
+			while (!((String) o).equalsIgnoreCase("endaction")) {
+				if (((String) o).equalsIgnoreCase("+")) {
+					int reward_summand = _camdp._context.buildCanonicalXADD((ArrayList) i.next());
+					reward_dd = _camdp._context.applyInt(reward_dd, reward_summand, _camdp._context.SUM);
+				} else
+					exit("No endaction, expected a '+' in " + aname);
+				o = i.next();
 			}
-				
-			if (reward_dd>0)
-				hashmap.put(aname, new CAction(_camdp, aname, contParam, cpt_map, reward_dd, CVars, BVars, ICVars, IBVars, AVars, NSCVars, NSBVars));
-			else 
-				hashmap.put(aname, new CAction(_camdp, aname, contParam, cpt_map, reward_toGoal, CVars, BVars, ICVars, IBVars, AVars, NSCVars, NSBVars));
+
+			_name2Action.put(aname, new CAction(_camdp, aname, contParam,
+					cpt_map, reward_dd, CVars, BVars, ICVars, IBVars,
+					AVars, NSCVars, NSBVars, noise_map, NoiseVars));
 			
 		} // endaction
 
@@ -311,7 +329,7 @@ public class ParseCAMDP {
 	}
 	
 	public void exit(String msg) {
-		System.out.println(msg);
+		System.err.println(msg);
 		System.exit(1);
 	}
 
@@ -351,6 +369,10 @@ public class ParseCAMDP {
 		return NSBVars;
 	}
 
+	public ArrayList<String> getNoiseVars() {
+		return NoiseVars;
+	}
+
 	public ArrayList<Integer> getConstraints() {
 		return constraints;
 	}
@@ -364,12 +386,7 @@ public class ParseCAMDP {
 	}
 
 	public HashMap<String, CAction> getHashmap() {
-		return hashmap;
+		return _name2Action;
 	}
-
-	
-	
-	
-	
 	
 }

@@ -87,6 +87,8 @@ public class CAMDP {
 	public HashSet<String> _hsBoolIVars;
 	public HashSet<String> _hsContIVars;
 	public HashSet<String> _hsContAVars;
+	
+	public HashSet<String> _hsNoiseVars;
 
 	public HashSet<String> _hsBoolNSVars; // Next state vars
 	public HashSet<String> _hsContNSVars; // Next state vars
@@ -149,6 +151,7 @@ public class CAMDP {
 		_hsBoolIVars = new HashSet<String>(Intern(parser.getIBVars()));
 		_hsContIVars = new HashSet<String>(Intern(parser.getICVars()));
 		_hsContAVars = new HashSet<String>(Intern(parser.getAVars()));
+		_hsNoiseVars = new HashSet<String>(Intern(parser.getNoiseVars()));
 		_hsBoolAllVars = new HashSet<String>(_hsBoolSVars);
 		_hsBoolAllVars.addAll(_hsBoolIVars);
 		_hsContAllVars = new HashSet<String>(_hsContSVars);
@@ -434,6 +437,7 @@ public class CAMDP {
 		sb.append("NS BVars:    " + _hsBoolNSVars + "\n");
 		sb.append("CVars:       " + _hsContAllVars + " = S:" + _hsContSVars + " + A:" + _hsContAVars + " + I:" + _hsContIVars + "\n");
 		sb.append("NS CVars:    " + _hsContNSVars + "\n");
+		sb.append("Noise vars:  " + _hsNoiseVars + "\n");
 		sb.append("Min-values:  " + _context._hmMinVal + "\n");
 		sb.append("Max-values:  " + _context._hmMaxVal + "\n");
 		sb.append("Order:       " + _context._alOrder + "\n");

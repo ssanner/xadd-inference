@@ -4,13 +4,7 @@ src/camdp/ex/Rover-nonlinear2.cmdp 5 true false
 
 src/camdp/ex/Rover-linear.cmdp 5 true false
 
-src/camdp/ex/Rover-linear-min-test.cmdp 5 true false
-
-src/camdp/ex/Rover-nonlinear2-min-test.cmdp 5 true false
-
 src/camdp/ex/reservoir-refinement4corr.cmdp 5 false true
-
-src/camdp/ex/reservoir-refinement5.cmdp 2 false true
 
 src/camdp/ex/reservoir-refinement5.rew-mod.cmdp 5 false true
 
@@ -23,4 +17,8 @@ src/camdp/ex/inventory2-4.cmdp 5 false true
 
 
 
+
+src/camdp/ex/Rover-linear-min-test.cmdp 5 true false
+
+src/camdp/ex/Rover-nonlinear2-min-test.cmdp 5 true false
 
