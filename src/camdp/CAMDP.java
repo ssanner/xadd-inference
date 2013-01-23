@@ -232,7 +232,7 @@ public class CAMDP {
 
 				// Regress the current value function through each action (finite number of continuous actions)
 				int regr = _qfunHelper.regress(_valueDD, me.getValue());
-				regr  = _context.reduceRound(regr);
+				//regr  = _context.reduceRound(regr);
 				if (DISPLAY_POSTMAX_Q)
 					doDisplay(regr, "Q-" + me.getKey() + "^" +_nCurIter + "-" + Math.round(100*APPROX_ERROR));
 	
@@ -314,7 +314,7 @@ public class CAMDP {
 					time[_nCurIter], totalTime,
 					_context.linMaxVal(_valueDD), maxRelErr );
 			//////////////////////////////////////////////////////////////////////////
-			if (_prevDD == _valueDD) {
+			if (_prevDD.equals(_valueDD) ) {
 				System.out.println("CAMDP: Converged to solution early,  at iteration "+_nCurIter);
 				int it = _nCurIter;
 				while (++it < max_iter){
@@ -501,7 +501,7 @@ public class CAMDP {
 		g.addNodeColor("_temp_", "gold1");
 		String safe_filename = label.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "");
 		g.genDotFile(_logFileRoot + "." + safe_filename + ".dot");
-		g.launchViewer(1300, 770);
+		g.launchViewer(label);
 	}
 
 	public void display2D(int xadd_id, String label) {
