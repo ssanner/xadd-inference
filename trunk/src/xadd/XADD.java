@@ -55,6 +55,7 @@ public class XADD {
 	public final static boolean CHECK_REDUNDANCY = true; // Test only consistency or also redundancy
 	public final static boolean USE_REDUCE_LPv1 = false; //maplist, full redundancy older version
 	public final static boolean USE_REDUCE_LPv2 = true; //hashSet, direct redundancy new version
+	public final static boolean SKIP_TEST2 = false; //Skip Minimal region removal
 	private static final boolean UNDERCONSTRAINED_REFINEMENT = true; //solve underconstrained problem in linear approx
 	
 	private static final boolean ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP = false; //Add bounds as explicit constraints (should not be necessary)
@@ -95,8 +96,8 @@ public class XADD {
 
 	// Printing constants
 	public final static String STRING_TAB = "   ";
-	public final static DecimalFormat _df = new DecimalFormat("#.########################");
-	public final static DecimalFormat _df_unformatted = new DecimalFormat("#.########################");
+	public final static DecimalFormat _df = new DecimalFormat("#.########");
+	public final static DecimalFormat _df_unformatted = new DecimalFormat("#.########");
 	
 	//Expr constants
 	public final static ArithExpr ZERO = new DoubleExpr(0d);
@@ -110,11 +111,11 @@ public class XADD {
 	public final static double DEFAULT_UPPER_BOUND = 1e+10d;
 	public final static double DEFAULT_LOWER_BOUND = -DEFAULT_UPPER_BOUND; 
 	public final static int ROUND_PRECISION = 1000000;
-	private static final double IMPLIED_PRECISION = 1e-6; //Precision for removing unreliably feasible constraints 
+	private static final double IMPLIED_PRECISION = 1e-4; //Precision for removing unreliably feasible constraints 
 	
 	//Pruning constants
 	public final static double PRUNE_MIN_ITER_IMP = 1e-10; //Stop Condition for linear pruning algorithm
-	private static final double UNDERCONSTRAINED_ALLOW_REL_ERROR = 0.01; //Error difference allowed for underconstrained solution 
+	private static final double UNDERCONSTRAINED_ALLOW_REL_ERROR = 0.05; //Error difference allowed for underconstrained solution 
 	
 	//XADD Variable Maintenance
 	public HashSet<String> _hsBooleanVars = new HashSet<String>();
@@ -162,6 +163,12 @@ public class XADD {
 	public HashMap<Integer, ArrayList<HashSet<Integer>>> _hmDecList = new HashMap<Integer,ArrayList<HashSet<Integer>>>();
 	Comparator<IntPair> queueComp = new IntPair12Comparator();
 	public PriorityQueue<IntPair> _pqOpenNodes = new PriorityQueue<IntPair>(10,queueComp);
+	
+	
+	//Local Variables Maintenance
+	private int nLocalCVars = 0;
+	private int localID2cVarID[];
+	private int cVarID2localID[];
 	
 	// Flush
 	public HashSet<Integer> _hsSpecialNodes = new HashSet<Integer>();
@@ -910,6 +917,72 @@ public class XADD {
 		return e.evaluate(cont_assign);
 	}
 	
+	public void localSetup(int localRoot){
+		XADDNode r = getExistNode(localRoot);
+		HashSet<String> pruneVars = r.collectVars();
+		pruneVars.removeAll(_alBooleanVars);
+		nLocalCVars = pruneVars.size();
+		localID2cVarID = new int[nLocalCVars];
+		cVarID2localID = new int[_cvar2ID.size()];
+		for(int k=0;k<_cvar2ID.size(); k++){ cVarID2localID[k]=-1;} //Flag invalid Vars
+		int i=0;
+		for(String var: pruneVars){
+			
+			localID2cVarID[i] = _cvar2ID.get(var);
+			cVarID2localID[_cvar2ID.get(var)] = i;
+			i++;
+		}
+	}
+	
+	public void localClear(){
+		nLocalCVars = -1;
+		localID2cVarID = null;
+		cVarID2localID = null;
+	}
+	
+	public double[] assign2Local(double assign[]) {
+		return assign2Local(assign, false);
+	}
+	
+	public double[] assign2Local(double assign[], boolean ignore) {
+		double local[] = new double[nLocalCVars];
+		for(int i=0; i< _cvar2ID.size();i++){
+			int ind = cVarID2localID[i];
+			if (ind >= 0) {
+				local[ind] = assign[i];	
+			}
+			else if (Math.abs(assign[i]) > PRECISION && !ignore) {
+				System.err.println("Warning: Transforming assign to local ignores some nonzero variables!");
+			}
+		}
+		return local;
+	}
+	
+	public double[] local2Assign(double local[]) {
+		double assign[] = new double[_cvar2ID.size()];
+		for(int i=0; i< _cvar2ID.size();i++){
+			int ind = cVarID2localID[i];
+			if (ind > 0) {
+				assign[i] = local[ind];	
+			}
+			else {
+				assign[i]=0d;
+			}
+		}
+		return local;
+	}
+	
+	public double localEvaluateExpr(ArithExpr e, double localAssign[]) {
+		HashMap<String, Double> cont_assign = new HashMap<String,Double>();
+		for(int i=0; i< _cvar2ID.size();i++){
+			cont_assign.put(_alContinuousVars.get(i),0d);
+		}
+		for(int i=0;i<nLocalCVars;i++){
+			cont_assign.put(_alContinuousVars.get( localID2cVarID[i]),localAssign[i]);
+		}
+		return e.evaluate(cont_assign);
+	}
+	
 	
 	///////////////////////////////////////
 	//        Reduce  Methods           //
@@ -1262,6 +1335,7 @@ public class XADD {
 	}
 
 	public int reduceLP(int node_id, boolean performRedundancy) {
+		localSetup(node_id);
 		if (USE_REDUCE_LPv2){
 			node_id = reduceLPv2(node_id, new HashSet<Integer>(), performRedundancy);
 		}
@@ -1269,6 +1343,8 @@ public class XADD {
 			//System.out.print("using LP1!");
 			node_id = reduceLPv1(node_id, performRedundancy);
 		}
+		localClear();
+		
 		return node_id;
 	}
 	
@@ -1733,22 +1809,10 @@ public class XADD {
 		// infeasible)
 
 		// Setup LP
-		int nvars = _cvar2ID.size();
+		int nvars = nLocalCVars;
 		double[] obj_coef = new double[nvars]; // default all zeros, which is
 		// what we want
-		double[] lb = new double[nvars];
-		double[] ub = new double[nvars];
-		for (Map.Entry<String, Integer> me : _cvar2ID.entrySet()) {
-			String cvar = me.getKey();
-			Integer cvar_id = me.getValue();
-			Double d_lb = this._hmMinVal.get(cvar);
-			lb[cvar_id] = d_lb != null ? d_lb : -1e10d;
-			Double d_ub = this._hmMaxVal.get(cvar);
-			ub[cvar_id] = d_ub != null ? d_ub : 1e10d;
-			obj_coef[cvar_id] = 1d;
-		}
-
-		LP lp = new LP(nvars, lb, ub, obj_coef, LP.MAXIMIZE);
+		LP lp = new LP(nvars, assign2Local(lowerBounds), assign2Local(upperBounds), obj_coef, LP.MAXIMIZE);
 
 		// Now add all constraints
 		for (Integer constraint_id : test_var) {
@@ -1757,7 +1821,7 @@ public class XADD {
 
 		// Finally add the negated decision to test
 		addConstraint(lp, var_id, !dec);
-		addBoundConstraints(lp);
+		addLocalBoundConstraints(lp);
 		// Solve and get decision
 		silentSolvelp(lp);
 		
@@ -1864,186 +1928,162 @@ public class XADD {
 		return ret;
 	}
 	
-	private boolean isTestImpliedv2(HashSet<Integer> test_dec, int dec) {
-		return isTestImpliedv2( test_dec, dec, true);
+	
+	private void showDec(int dec){
+		Decision temp = _alOrder.get(Math.abs(dec));
+        System.out.println("dec = "+dec+" : "+temp);
 	}
 	
-	@SuppressWarnings("unchecked")
-	private boolean isTestImpliedv2(HashSet<Integer> test_dec, int dec, boolean deep) {
-
-		if (!(_alOrder.get(Math.abs(dec)) instanceof ExprDec)) return false;
-
-		HashSet<Integer> impliedSet = _hmImplications.get(test_dec);
-		if (impliedSet != null && impliedSet.contains(dec)) return true;
-		
-		HashSet<Integer> nonImpliedSet = _hmNonImplications.get(test_dec);
-		if (nonImpliedSet != null && nonImpliedSet.contains(dec)) return false;
-		
-		if (DEBUG_CONSTRAINTS) {
-			System.out.println("===================\nisTestImplied "+"Test Implied "+(deep?"deep":"shallow")+" : "+ dec+" "+ _alOrder.get(Math.abs(dec)) + " = " + Boolean.toString(dec>0?true:false) );
-			System.out.println(test_dec); 
-		}
-
-		int nvars = _cvar2ID.size();
-		double[] obj_coef = new double[nvars]; 
-		//Test 1: 
-		//A => B iff A^~B is infeasible) -maximize arbitrary 1 function
-
-		// Setup LP
-		for(int i=0;i<nvars;i++) obj_coef[i] = 1;
-		LP lp = new LP(nvars, lowerBounds, upperBounds, obj_coef, LP.MAXIMIZE);
-		// Now add all constraints
-		for (Integer decision : test_dec) {
-			addDecision(lp, decision);
-		}
-		//Adding box constraints
-		addBoundConstraints(lp);
-		addDecision(lp,-dec);
-
-		
-		double[] soln = silentSolvelp(lp);
-		
-		if (lp._status == LpSolve.INFEASIBLE) {
-			if (DEBUG_CONSTRAINTS) {
-				System.out.println("Test Implied "+(deep?"deep":"shallow")+": "+test_dec+" incompatible with: "+-dec);
-			}
-			lp.free();
-			if (impliedSet == null) {
-				impliedSet = new HashSet<Integer>();
-				_hmImplications.put( (HashSet<Integer>)test_dec.clone(), impliedSet);
-			}
-			impliedSet.add(dec);
-			return true;
-		}
-		//cannot change objective so make new lp 
-		lp.free();
-		
-		
-		if (DEBUG_CONSTRAINTS){
-			System.out.println("Not Implied by test 1: Solution: " + LP.PrintVector(lp._x));
-			Decision temp = _alOrder.get(Math.abs(dec));
-			System.out.print("dec = "+dec+" : "+temp);
-			if (temp instanceof ExprDec)
-				System.out.println(" evals to :"+ evaluateExpr( ((ExprDec)temp)._expr._lhs ,lp._x));
-			else System.out.println();
-			for(Integer td: test_dec){
-				Decision temp2 = _alOrder.get(Math.abs(td));
-				System.out.print("dec = "+td+" : "+temp2);
-				if (temp2 instanceof ExprDec)
-					System.out.println(" evals to :"+ evaluateExpr( ((ExprDec)temp2)._expr._lhs ,lp._x));
-				else System.out.println();
-			}
-		}
-		
-		
-		
-		//Test 2
-		//set the objective as the negation of the decision to be tested
-		for(int i=0;i<nvars;i++) obj_coef[i] = 0;
-		
-		boolean negate = dec>0?false:true;		
-		Decision d = _alOrder.get(Math.abs(dec));
-		CompExpr dExpr = ((ExprDec) d)._expr;		
-		ArithExpr obj = dExpr._lhs;
-		if (dExpr._rhs != ZERO)
-			obj = ArithExpr.op(obj, dExpr._rhs, MINUS);
-		double const_coef = 0d;
-		try{
-			const_coef = setCoefficients(obj,obj_coef); //keep const coef to compare with optimal
-		}catch (Exception e){
-			System.err.println("couldn't find coef for: "+obj+" Exception = "+e);
-			System.exit(1);
-		}
-		int optDir = 0;
-		optDir = (dExpr._type == GT || dExpr._type == GT_EQ)? LP.MINIMIZE: LP.MAXIMIZE;
-		if (negate) optDir = LP.MINIMIZE + LP.MAXIMIZE - optDir;
-		LP lp2 = new LP(nvars, lowerBounds, upperBounds, obj_coef, optDir);
-		
-		// Now add all constraints
-		for (Integer decision : test_dec) {
-			addDecision(lp2, decision);
-		}
-		//Adding box constraints
-		addBoundConstraints(lp2);
-
-		// Solve and get decision
-		soln = silentSolvelp(lp2);
-		
-		
-		if (lp2._status == LpSolve.INFEASIBLE) {
-			System.out.println("Test Implied "+(deep?"deep":"shallow")+": Infeasible parent region: "+test_dec+" Current: "+dExpr);
-			HashSet<Integer> iterateHere = new HashSet<Integer>();
-			iterateHere.addAll(test_dec);
-			for(Integer deci: iterateHere){
-				test_dec.remove(deci);
-				System.out.print("Testing dec = "+deci+" : "+_alOrder.get(Math.abs(deci)));
-				System.out.println(" in domain:"+test_dec);
-				isTestImpliedv2(test_dec,-deci);
-				test_dec.add(deci);
-			}
-			System.exit(1);
-		}
-		double optimal = lp2._dObjValue + const_coef;
-		boolean implied = false;
-		if ( optDir == LP.MAXIMIZE){
-			if ( optimal < IMPLIED_PRECISION) implied = true;//negations maximum is 0, so impossible
-		}
-		else{
-			if ( optimal > -IMPLIED_PRECISION) implied = true;//negations minimum is 0, so impossible
-		}
-	
-		if (DEBUG_CONSTRAINTS){
-			System.out.println("Implied only by test 2? "+implied+" Solution: " + LP.PrintVector(lp2._x));
-			Decision temp = _alOrder.get(Math.abs(dec));
-			System.out.print("dec = "+dec+" : "+temp);
-			if (temp instanceof ExprDec)
-				System.out.println(" evals to :"+ evaluateExpr( ((ExprDec)temp)._expr._lhs ,lp2._x));
-			else System.out.println();
-			for(Integer td: test_dec){
-				Decision temp2 = _alOrder.get(Math.abs(td));
-				System.out.print("dec = "+td+" : "+temp2);
-				if (temp2 instanceof ExprDec)
-					System.out.println(" evals to :"+ evaluateExpr( ((ExprDec)temp2)._expr._lhs ,lp2._x));
-				else System.out.println();
-			}
-		}
-		lp2.free();
-		
-		if (!implied && deep){
-			HashSet<Integer> It = (HashSet<Integer>) test_dec.clone();
-			test_dec.add(-dec);
-			for(Integer td: It){
-				Decision temp2 = _alOrder.get(Math.abs(td));
-				if ( (temp2 instanceof ExprDec) &&
-		( (td >0 && evaluateExpr( ((ExprDec)temp2)._expr._lhs ,soln) < IMPLIED_PRECISION) ||
-		  (td <0 && evaluateExpr( ((ExprDec)temp2)._expr._lhs ,soln) > -IMPLIED_PRECISION)) ){
-					test_dec.remove(td);
-					implied = isTestImpliedv2(test_dec,-td,false);
-					test_dec.add(td);
-				}
-				if (implied) break; 
-			}
-			test_dec.remove(-dec);
-		}
-		
-		if (implied) {
-			if (impliedSet == null) {
-				impliedSet = new HashSet<Integer>();
-				_hmImplications.put((HashSet<Integer>) test_dec.clone(), impliedSet);
-			}
-			impliedSet.add(dec);
-			
-		}
-		else{
-			if (nonImpliedSet == null) {
-				nonImpliedSet = new HashSet<Integer>();
-				_hmNonImplications.put((HashSet<Integer>) test_dec.clone(), nonImpliedSet);
-			}
-			nonImpliedSet.add(dec);
-		}
-		return implied;
+	private void showDecList(HashSet<Integer> test_dec){
+		System.out.println("Showing decisions "+test_dec);
+		for(Integer dec: test_dec)
+			showDec(dec);
 	}
+	
+	private void showDecEval(int dec, double soln[]){
+		Decision temp = _alOrder.get(Math.abs(dec));
+        System.out.print("dec = "+dec+" : "+temp);
+        if (temp instanceof ExprDec)
+            System.out.println(" evals to :"+ localEvaluateExpr( ((ExprDec)temp)._expr._lhs , soln));
+        else System.out.println();
+	}
+	
+	private void showDecListEval(HashSet<Integer> test_dec, double soln[]){
+		String assignment = getExprFromCoefficientsLocal(0,soln).toString().replace('*','=');
+		System.out.println("Showing decisions "+test_dec+" evaluated at "+ assignment);
+		for(Integer dec: test_dec)
+			showDecEval(dec,soln);
+	}
+	
+    private boolean isTestImpliedv2(HashSet<Integer> test_dec, int dec) {
 
+        if (!(_alOrder.get(Math.abs(dec)) instanceof ExprDec)) return false;
+
+        HashSet<Integer> impliedSet = _hmImplications.get(test_dec);
+        if (impliedSet != null && impliedSet.contains(dec)) return true;
+        
+        HashSet<Integer> nonImpliedSet = _hmNonImplications.get(test_dec);
+        if (nonImpliedSet != null && nonImpliedSet.contains(dec)) return false;
+        
+        if (DEBUG_CONSTRAINTS) {
+            System.out.println("===================\nisTestImpliedv2 "+"Checking if "+ dec+" "+ _alOrder.get(Math.abs(dec)) + " = " + (dec>0?"true":"false") +" implied by:" );
+            showDecList(test_dec); 
+        }
+        if (!test_dec.add(-dec)) System.err.println("Warning: checking if decision implies its negation! - "+test_dec);
+        boolean implied = isInfeasible(test_dec);
+        test_dec.remove(-dec);
+        if (implied){
+        	if (impliedSet == null) {
+	            impliedSet = new HashSet<Integer>();
+	            _hmImplications.put( (HashSet<Integer>)test_dec.clone(), impliedSet);
+	        }
+	        impliedSet.add(dec);
+        } else{
+	          if (nonImpliedSet == null) {
+	              nonImpliedSet = new HashSet<Integer>();
+	              _hmNonImplications.put((HashSet<Integer>) test_dec.clone(), nonImpliedSet);
+	          }
+	          nonImpliedSet.add(dec);
+	    }
+        return implied;
+    }
+	
+    private boolean isInfeasible(HashSet<Integer> test_dec) {
+        
+        boolean infeasible = false;
+        
+    	int nvars = nLocalCVars;
+        double[] obj_coef = new double[nvars]; 
+        //Test 1: 
+        //A => B iff A^~B is infeasible) -maximize arbitrary 1 function
+
+        // Setup LP
+        for(int i=0;i<nvars;i++) obj_coef[i] = 1;
+        LP lp = new LP(nvars, assign2Local(lowerBounds, true), assign2Local(upperBounds, true), obj_coef, LP.MAXIMIZE);
+        // Now add all constraints
+        for (Integer decision : test_dec) {
+            addDecision(lp, decision);
+        }
+        //Adding box constraints
+        addLocalBoundConstraints(lp);
+
+        double soln[] = silentSolvelp(lp);
+        
+        if (lp._status == LpSolve.INFEASIBLE) {
+            if (DEBUG_CONSTRAINTS) { System.out.println("Infeasible: "+test_dec); }
+            infeasible = true;
+        }
+        lp.free();
+        
+        if (!infeasible && DEBUG_CONSTRAINTS){
+            System.out.println("Not Infeasible by test 1:");
+            showDecListEval(test_dec,lp._x);
+        }
+        
+        if (infeasible || SKIP_TEST2) return infeasible;
+        
+        //Test 2 - strict feasibility
+        // for each constraint c + f*x > 0 the slack is the greatest value S>0 s.t. c + f*x - S >= 0   
+        // for each constraint c + f*x < 0 the slack is the greatest value S>0 s.t. c + f*x + S <= 0
+        // set the objective as the smallest of the slacks from all constraints.
+	    double objCoef2[] = new double[nvars+1];
+	    double lower2[] = new double[nvars+1];
+	    double upper2[] = new double[nvars+1];
+	      
+	    for(int i=0;i<nvars;i++) {
+	        objCoef2[i] = 0;
+	        lower2[i] = lowerBounds[localID2cVarID[i] ];
+	        upper2[i] = upperBounds[localID2cVarID[i] ];
+	    }	
+	    objCoef2[nvars]=1;
+	    lower2[nvars] = 0; //S >0
+	    upper2[nvars] = DEFAULT_UPPER_BOUND;
+	      
+	    LP lp2 = new LP(nvars+1, lower2, upper2, objCoef2, LP.MAXIMIZE);
+	      
+	    double constrCoef2[] = new double[nvars+1];
+	    double constC = 0d;
+	    for(Integer decision: test_dec){
+	    	for(int k=0;k<nvars+1;k++) constrCoef2[k] = 0d;
+	    	
+	    	Decision d = _alOrder.get(Math.abs(decision));
+	    	if (!(d instanceof ExprDec) ) continue;
+	    	ArithExpr exp = ((CompExpr) ((ExprDec) d)._expr )._lhs;
+	    	constC = setCoefficientsLocal( exp, constrCoef2);
+	    	if (decision >0){ 
+	    		constrCoef2[nvars] = -1; // c + f*x > 0 => f*x - S > -c
+	    		lp2.addGeqConstraint(constrCoef2, -constC);
+	    	}
+	    	else{
+	    		constrCoef2[nvars] = 1; // c + f*x < 0 => f*x + S < -c
+	    		lp2.addLeqConstraint(constrCoef2, -constC);
+	    	}
+	    }
+
+	    double soln2[] = new double[nvars+1];
+	    soln2 = silentSolvelp(lp2);
+	    double maxSlack = lp2._dObjValue;
+
+	    if (lp2._status == LpSolve.INFEASIBLE) {
+	    	System.err.println("Infeasible at test 2? should have failed the first test!");
+	    	showDecListEval(test_dec,soln2);
+	    	infeasible = true;
+	    } else if (maxSlack < IMPLIED_PRECISION){
+	    	if (DEBUG_CONSTRAINTS){
+	    		System.out.println("Implied only by test 2: Slack = "+soln2[nvars]);
+	    		//remove slack from soln2 to be a local assign sol
+	    		double sol[] = new double[nvars];
+	    		for(int k=0;k<nvars;k++) sol[k] = soln2[k];
+	    		showDecListEval(test_dec,sol);
+	    	}
+	    	infeasible = true;
+	    }
+	    lp2.free();
+    	return infeasible;
+    }
+
+    
+    
 	// Lp usage methods
 	private void addDecision(LP lp, int dec) {
 		if (dec >0)
@@ -2055,16 +2095,17 @@ public class XADD {
 	private void addConstraint(LP lp, int constraint_id, boolean dec) {
 
 //		if (DEBUG_CONSTRAINTS)
-//			System.out.println("Adding constraint id [" + constraint_id
-//					+ "] = " + dec);
+//			System.out.println("Adding constraint id [" + constraint_id+ "] = " + dec);
 
 		Decision d = _alOrder.get(constraint_id);
 		if (d instanceof ExprDec) {
 			ExprDec e = (ExprDec) d;
-			/*if (!(e._expr._rhs instanceof DoubleExpr)
+			if (!(e._expr._rhs instanceof DoubleExpr)
 					|| ((DoubleExpr) e._expr._rhs)._dConstVal != 0d) {
 				System.out.println("WARNING: Unexpected RHS constraint value: "
-						+ e._expr._rhs);*/
+						+ e._expr._rhs + " skipping...");
+				return;
+			}
 			// take these out so it does not terminal upon bilinear
 			// decisions
 			// new Exception().printStackTrace(System.out);
@@ -2072,42 +2113,38 @@ public class XADD {
 			//}
 			// From here we just need convert LHS to coefficients and construct
 			// correct constraint from CompExpr type
-			double[] coefs = new double[_cvar2ID.size()];
+			double[] coefs = new double[nLocalCVars];
 
-			try {
-				double const_coef = setCoefficients(e._expr._lhs, coefs); // move to
-				// RHS => -
-				int type = dec ? e._expr._type : invertType(e._expr._type);
+			double const_coef = setCoefficientsLocal(e._expr._lhs, coefs); // move to
+			// RHS => -
+			int type = dec ? e._expr._type : invertType(e._expr._type);
 
-//				if (DEBUG_CONSTRAINTS)
-//					System.out.println("- adding "+type+" cons: " + const_coef + " + "
-//							+ LP.PrintVector(coefs) + " <=> "
-//							+ (dec ? "" : "!") + e._expr);
+//			if (DEBUG_CONSTRAINTS){
+//				System.out.println("- adding "+type+" cons: " + const_coef + " + "
+//						+ LP.PrintVector(coefs) + " <=> "
+//						+ (dec ? "" : "!") + e._expr);
+//			}
 
-				switch (type) {
-				case GT:
-					lp.addGTConstraint(coefs, -const_coef);
-					break;
-				case GT_EQ:
-					lp.addGeqConstraint(coefs, -const_coef);
-					break;
-				case LT:
-					lp.addLTConstraint(coefs, -const_coef);
-					break;
-				case LT_EQ:
-					lp.addLeqConstraint(coefs, -const_coef);
-					break;
-				case EQ:
-					lp.addEqConstraint(coefs, -const_coef);
-					break;
-				case NEQ:
-					break; // Can't add an NEQ constraint
-				default:
-					break; // Unknown constraint type
-				}
-			} catch (Exception e2) {
-				System.err.println("Could not add constraint: " + e2
-						+ "\n... skipping");
+			switch (type) {
+			case GT:
+				lp.addGTConstraint(coefs, -const_coef);
+				break;
+			case GT_EQ:
+				lp.addGeqConstraint(coefs, -const_coef);
+				break;
+			case LT:
+				lp.addLTConstraint(coefs, -const_coef);
+				break;
+			case LT_EQ:
+				lp.addLeqConstraint(coefs, -const_coef);
+				break;
+			case EQ:
+				lp.addEqConstraint(coefs, -const_coef);
+				break;
+			case NEQ:
+				break; // Can't add an NEQ constraint
+			default:
+				break; // Unknown constraint type
 			}
 		}
 	}
@@ -2131,15 +2168,18 @@ public class XADD {
 		}
 	}
 	
-	private void addBoundConstraints(LP lp){
+	private void addLocalBoundConstraints(LP lp){
 		if (!ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP) return;
-		int nvars = lowerBounds.length;
+		int nvars = nLocalCVars;
 		double var[] = new double[nvars];
+		double lb[] = assign2Local(lowerBounds, true);
+		double ub[] = assign2Local(upperBounds, true);
+		
 		for(int i=0;i<nvars;i++){var[i]=0;}
 		for(int i=0;i<nvars;i++){
 			var[i]=1;
-			lp.addGeqConstraint(var, lowerBounds[i]);
-			lp.addLeqConstraint(var, upperBounds[i]);
+			lp.addGeqConstraint(var, lb[i]);
+			lp.addLeqConstraint(var, ub[i]);
 			var[i]=0;
 		}
 	}
@@ -2160,12 +2200,12 @@ public class XADD {
 	//Linear Functions//
 	public double linMaxVal(int id)
 	{
-		return linMaxMinVal(id, new HashSet<Integer>(),true);
+		return linMaxMinVal(id, true);
 	}
 	
 	public double linMinVal(int id)
 	{
-		return linMaxMinVal(id, new HashSet<Integer>(),false);
+		return linMaxMinVal(id, false);
 	}
 	
 	public double linMaxDiff(int id1, int id2)
@@ -2175,11 +2215,18 @@ public class XADD {
 		return Math.max(linMaxVal(dif1),linMaxVal(dif2));
 	}
 	
-	public double linMaxMinVal(int id,HashSet<Integer> domain, boolean isMax){
-		while( id != reduceLP(id) ){
-			//System.err.println("linMaxMin WARNING: " + id + " different from reduceLP");
-			id=reduceLP(id);
-		}
+	public double linMaxMinVal(int id, boolean isMax){
+//		while( id != reduceLP(id) ){
+//			System.err.println("linMaxMin WARNING: " + id + " different from reduceLP");
+//			id=reduceLP(id);
+//		}
+		localSetup(id);
+		double d = linMaxMinValInt(id, new HashSet<Integer>(), isMax);
+		localClear();
+		return d;
+	}
+	
+	public double linMaxMinValInt(int id,HashSet<Integer> domain, boolean isMax){
 		XADDNode r = getExistNode(id);
 		if (r instanceof XADDTNode) {
 			ArithExpr expr = ((XADDTNode) r)._expr;
@@ -2191,15 +2238,15 @@ public class XADD {
 			double highM = DEFAULT_LOWER_BOUND;
 			if (_alOrder.get(node._var) instanceof ExprDec){
 				domain.add(-1*node._var);
-				lowM = linMaxMinVal(node._low,domain,isMax);
+				lowM = linMaxMinValInt(node._low,domain,isMax);
 				domain.remove(-1*node._var);
 				domain.add(node._var);
-				highM = linMaxMinVal(node._high,domain,isMax);
+				highM = linMaxMinValInt(node._high,domain,isMax);
 				domain.remove(node._var);
 			}
 			else{
-				lowM = linMaxMinVal(node._low,domain,isMax);
-				highM = linMaxMinVal(node._high,domain,isMax);
+				lowM = linMaxMinValInt(node._low,domain,isMax);
+				highM = linMaxMinValInt(node._high,domain,isMax);
 			}
 
 			return isMax? Math.max(lowM, highM): Math.min(lowM, highM);
@@ -2293,10 +2340,10 @@ public class XADD {
 
 	//Maximize a Linear function
 	private OptimResult restrictedMax(ArithExpr e, HashSet<Integer> domain, boolean isMax){
-		double[] coefs = new double[_cvar2ID.size()];
+		double[] coefs = new double[nLocalCVars];
 		//if (e instanceof DoubleExpr) return new OptimResult( ((DoubleExpr)e)._dConstVal, coefs); 
 		try {
-			double const_coef = setCoefficients(e, coefs); // move to
+			double const_coef = setCoefficientsLocal(e, coefs); // move to
 			return restrictedMax(coefs,const_coef,domain, isMax);
 		}catch (Exception e2) {
             System.err.println("Error on restrictMax: Expr"+e+"in "+domain+" error"+ e2);
@@ -2305,13 +2352,13 @@ public class XADD {
 	}
 	
 	private OptimResult restrictedMax(double f[],double c, HashSet<Integer> domain, boolean isMax){
-		int nvars = _cvar2ID.size();
-		LP lp = new LP(nvars, lowerBounds, upperBounds, f, isMax? LP.MAXIMIZE: LP.MINIMIZE);
+		int nvars = nLocalCVars;
+		LP lp = new LP(nvars, assign2Local(lowerBounds,true), assign2Local(upperBounds,true), f, isMax? LP.MAXIMIZE: LP.MINIMIZE);
 		//Now add all constraints
 		for (Integer decision : domain) {
 			addDecision(lp, decision);
 		}
-		addBoundConstraints(lp);
+		addLocalBoundConstraints(lp);
 		
 		// Solve and get decision
 		double[] soln = silentSolvelp(lp);
@@ -2339,9 +2386,9 @@ public class XADD {
 	//Maximize difference of functions
 	private OptimResult restrictedError(double fplus[],double cplus, double fminus[], double cminus, HashSet<Integer> domain){
 		// Setup LP
-		int nvars = _cvar2ID.size();
+		int nvars = nLocalCVars;
 		double[] obj_coef = new double[nvars]; // objective function
-		for (int var_id=0;var_id<_alContinuousVars.size();var_id++) {
+		for (int var_id=0;var_id< nvars;var_id++) {
 			obj_coef[var_id] = fplus[var_id] - fminus[var_id];
 		}
 		return restrictedMax(obj_coef, cplus-cminus,domain, true);
@@ -2425,7 +2472,7 @@ public class XADD {
 						  double coefs2[], double _dCoef2, ArrayList<HashSet<Integer>> paths2,
 						  ArrayList<HashSet<PointKey>> points)
 	{
-		int linVars = _cvar2ID.size() + 2; //the constant of f and one extra minimization var
+		int linVars = nLocalCVars + 2; //the constant of f and one extra minimization var
 		double[] obj_coef = new double[linVars]; // objective function min e
 		obj_coef[0]=1;
 		for (int i = 1;i<linVars;i++) { obj_coef[i] = 0;}
@@ -2454,7 +2501,7 @@ public class XADD {
 				constr_coef[1] = 1;
 				double rhs = dCoefConj[leafFun];
 				double _dCoords[] = pk.getCoords();
-				for(int i=0;i<_cvar2ID.size();i++){
+				for(int i=0;i<nLocalCVars;i++){
 					double p_i = _dCoords[i];
 					constr_coef[i+2] = p_i;	
 					rhs += coefConj[leafFun][i] * p_i;
@@ -2468,7 +2515,7 @@ public class XADD {
 				constr_coef[1] = -1;
 				double rhs = -dCoefConj[leafFun];
 				double _dCoords[] = pk.getCoords();
-				for(int i=0;i<_cvar2ID.size();i++){
+				for(int i=0;i< nLocalCVars;i++){
 					double p_i = _dCoords[i];
 					constr_coef[i+2] = -p_i;	
 					rhs += -1* (coefConj[leafFun][i] * p_i);
@@ -2509,7 +2556,7 @@ public class XADD {
 			orderedPoints.add(pathPointList);
 		}
 
-		int functionVars = _cvar2ID.size() + 1;
+		int functionVars = nLocalCVars + 1;
 		int linVars = functionVars + nPoints; //the constant of f and the error variables
 		
 		if (UNDERCONSTRAINED_DBG){
@@ -2608,8 +2655,8 @@ public class XADD {
 		
 		if (lp._status == LpSolve.INFEASIBLE){
 			System.err.println("Optimization MinimSumError Error: Infeasible Min!");
-			System.out.println("Minimizing sum Errors: previous optimal Error: "+errorLimit);
-			System.out.println("Minimizing sum Errors: previous fValues:" + LP.PrintVector(fValues));
+			System.err.println("Minimizing sum Errors: previous optimal Error: "+errorLimit);
+			System.err.println("Minimizing sum Errors: previous fValues:" + LP.PrintVector(fValues));
 			return null;
 			}
 		if (lp._status == LpSolve.UNBOUNDED){
@@ -2632,7 +2679,7 @@ public class XADD {
 		ArrayList<HashSet<Integer>> paths1 = _hmDecList.get(id1);
 		ArrayList<HashSet<Integer>> paths2 = _hmDecList.get(id2);
 
-		int nvars = _alContinuousVars.size();
+		int nvars = nLocalCVars;
 		double coefs1[] = new double[nvars];
 		double coefs2[] = new double[nvars];
 		double mrgCoefs[] = new double[nvars];
@@ -2640,8 +2687,8 @@ public class XADD {
 		double _dCoef2;
 		double _dMrgCoef;
        	try{
-			_dCoef1 = setCoefficients(l1._expr, coefs1);
-			_dCoef2 = setCoefficients(l2._expr, coefs2);
+			_dCoef1 = setCoefficientsLocal(l1._expr, coefs1);
+			_dCoef2 = setCoefficientsLocal(l2._expr, coefs2);
 			for(int i=0;i<nvars;i++) {
 				mrgCoefs[i] = (coefs1[i] + coefs2[i])/2d;}
 			_dMrgCoef = (_dCoef1 + _dCoef2)/2d;
@@ -2698,25 +2745,28 @@ public class XADD {
 	       		OptimResult res = minimizeSumError(coefs1, _dCoef1,paths1,
 	       										coefs2, _dCoef2, paths2, points, maxError*(1+0.5*UNDERCONSTRAINED_ALLOW_REL_ERROR) );
 	       		
-	       	   double underMaxError = DEFAULT_LOWER_BOUND; 
-	 		   _dMrgCoef = res.solution[0];
-	 		   int i=0;
-	 		   for(;i<nvars;i++){ mrgCoefs[i] = res.solution[i+1];}
-	 		   //other positions contain error in each point
-	 		   for(i++;i<res.solution.length;i++){ underMaxError = Math.max(underMaxError, res.solution[i]);}
-	 		  
-	 		   if (UNDERCONSTRAINED_DBG){
-     				System.out.format("Minimize Sum Err, nlinVars = %d, undeErrpr = %f, error lim = %f\n",
-     						res.solution.length, underMaxError, maxError);
-     				System.out.println("Functions: 2nd -Merge = ("+_dMrgCoef+", "+ Arrays.toString(mrgCoefs) );
-     			}
-	 		   
-	 		   if (underMaxError > maxError*(1+UNDERCONSTRAINED_ALLOW_REL_ERROR) ){
-	       			System.out.println("Unconstrained solution violates error:"+ underMaxError +" > "+ maxError);
-	       		}
+	       	   if (res != null){
+	       		   double underMaxError = DEFAULT_LOWER_BOUND; 
+	       	   
+		 		   _dMrgCoef = res.solution[0];
+		 		   int i=0;
+		 		   for(;i<nvars;i++){ mrgCoefs[i] = res.solution[i+1];}
+		 		   //other positions contain error in each point
+		 		   for(i++;i<res.solution.length;i++){ underMaxError = Math.max(underMaxError, res.solution[i]);}
+		 		  
+		 		   if (UNDERCONSTRAINED_DBG){
+	     				System.out.format("Minimize Sum Err, nlinVars = %d, undeErrpr = %f, error lim = %f\n",
+	     						res.solution.length, underMaxError, maxError);
+	     				System.out.println("Functions: 2nd -Merge = ("+_dMrgCoef+", "+ Arrays.toString(mrgCoefs) );
+	     			}
+		 		   
+		 		   if (underMaxError > maxError*(1+UNDERCONSTRAINED_ALLOW_REL_ERROR) ){
+		       			System.out.println("Unconstrained solution violates error:"+ underMaxError +" > "+ maxError);
+		       		}
+	       	   }
        		}
 	        int new_node = getTermNode(
-	        		getExprFromCoefficients(_dMrgCoef,mrgCoefs));
+	        		getExprFromCoefficientsLocal(_dMrgCoef,mrgCoefs));
 	        mergeDec(new_node,id1,id2);
 	        return new PruneResult(new_node,minError);
 		}
@@ -2729,6 +2779,8 @@ public class XADD {
 		XADDNode r = getExistNode(root_id);
 		if (r instanceof XADDTNode) return root_id; //nothing to prune on single leaf
 		
+		localSetup(root_id);
+
 		//create the initial path, all other will extend from this (adding decisions)
 		ArrayList<HashSet<Integer>> rootPathList = new ArrayList<HashSet<Integer>>();
 		rootPathList.add( new HashSet<Integer>());
@@ -2806,6 +2858,8 @@ public class XADD {
 			}
 			current = _pqOpenNodes.poll();
 		}
+		
+		localClear();
 		return root_id;
 	}
 	
@@ -2931,8 +2985,51 @@ public class XADD {
 		return accum;
 	}
 
+	//Set Coefficients PrunVar
+	private double setCoefficientsLocal(ArithExpr e, double[] coefs){
+		int error = 0;
+		int index = 0;
+		double accum = 0d;
+		if (e instanceof OperExpr) {
+			OperExpr o = ((OperExpr) e);
+			if (o._type == PROD) {
+				if (o._terms.size() != 2)
+					error = 1;
+				else {
+					index = cVarID2localID[_cvar2ID.get(((VarExpr) o._terms.get(1))._sVarName)];
+					if (index < 0) {
+						System.err.println("WARNING: XADD.SetCoefPrunVar ERROR: Unexpected Variable "+((VarExpr)o._terms.get(1))._sVarName+" in Expr "+ e);
+						System.err.print("Expected Vars: ");
+						for(int k=0;k< nLocalCVars;k++){ System.err.print( _alContinuousVars.get(localID2cVarID[k]) + " ");}
+					}
+					coefs[index] = ((DoubleExpr) o._terms.get(0))._dConstVal;
+				}
+			} else if (o._type == SUM) {
+				for (ArithExpr e2 : o._terms)
+					accum += setCoefficientsLocal(e2, coefs);
+			} else
+				error = 2;
+		} else if (e instanceof DoubleExpr) {
+			accum += ((DoubleExpr) e)._dConstVal;
+		} else
+			error = 3;
+
+		// This error is really important to flag... should not disable.
+		// If it occurs, the resulting constraint could be used improperly.
+		if (error > 0 ){
+			System.err.println("WARNING: XADD.SetCoefPrunVar ERROR [" + error + "] -- unexpected LHS constraint term: " + e);
+			System.err.println("BOGUS CONSTRAINT MAY BE RETURNED");
+			new Exception().printStackTrace(System.err);
+		}
+
+		return accum;
+	}
+	
+	
+	
+	
 	// Converts an array of coefficients and a constant to an expression
-	private ArithExpr getExprFromCoefficients(double dCoef, double[] coefs)
+	private ArithExpr getExprFromCoefficientsLocal(double dCoef, double[] coefs)
 	{
 		ArithExpr constExpr = new DoubleExpr(dCoef);
 		ArrayList<ArithExpr> varTerms = new ArrayList<ArithExpr>();
@@ -2941,7 +3038,7 @@ public class XADD {
 			double c = coefs[i];
 			if (c ==0) continue;
 			ArithExpr coef = new DoubleExpr(c);
-			ArithExpr var = new VarExpr(_alContinuousVars.get(i));
+			ArithExpr var = new VarExpr(_alContinuousVars.get(localID2cVarID[i]));
 			varTerms.add(new OperExpr(PROD,coef,var));
 		}
 		return new OperExpr(SUM,varTerms);
@@ -4197,7 +4294,7 @@ public class XADD {
 
 		public boolean equals(Object o) {
 			if (o instanceof BoolDec)
-				return ((BoolDec) o)._sVarName == _sVarName;
+				return ((BoolDec) o)._sVarName.equals(_sVarName);
 			else
 				return false;
 		}
@@ -4580,7 +4677,10 @@ public class XADD {
 
 			ArithExpr new_lhs = ArithExpr.op(new_expr._lhs, new_expr._rhs, MINUS);
 			new_lhs = (ArithExpr) new_lhs.makeCanonical();
-			if (NORMALIZE_DECISIONS) new_lhs = (ArithExpr) new_lhs.normalize();
+			if (NORMALIZE_DECISIONS) {
+				new_lhs = (ArithExpr) new_lhs.normalize();
+				ArithExpr.round(new_lhs);
+			}
 			new_expr = new CompExpr(new_expr._type, new_lhs, ZERO);
 			return new_expr;
 		}
@@ -5158,6 +5258,7 @@ public class XADD {
 					// First term can be a constant so long as more than one
 					// term
 					if (i == 0 && (_terms.get(0) instanceof DoubleExpr)) {
+						((DoubleExpr)_terms.get(0)).round();
 						if (Math.abs(((DoubleExpr) _terms.get(0))._dConstVal) <= PRECISION)
 							return false;
 						else
@@ -5188,6 +5289,7 @@ public class XADD {
 				if (!(_terms.get(0) instanceof DoubleExpr))
 					return false;
 
+				((DoubleExpr)_terms.get(0)).round();
 				if ( Math.abs(((DoubleExpr)_terms.get(0))._dConstVal) < PRECISION)
 					return false;
 				
@@ -5748,7 +5850,13 @@ public class XADD {
 		public boolean equals(Object o) {
 			if (o instanceof DoubleExpr) {
 				DoubleExpr d = (DoubleExpr) o;
-				return this._dConstVal == d._dConstVal;
+				if (this._dConstVal == d._dConstVal) return true;
+				else {
+					Double dif = this._dConstVal - d._dConstVal;
+					if ((Double.isInfinite(dif) ||
+							Double.isNaN(dif))) return false;
+					return Math.abs(this._dConstVal- d._dConstVal) < PRECISION;
+				}
 			} else
 				return false;
 		}

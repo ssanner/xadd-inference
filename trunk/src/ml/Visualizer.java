@@ -273,10 +273,10 @@ public class Visualizer extends JFrame implements KeyListener{
     	g.drawLine(a1, b1, a2, b2);
     }
 
-	@Override
+
 	public void keyPressed(KeyEvent e) { }
 
-	@Override
+
 	public void keyReleased(KeyEvent e) { }
 
 	private double incrW(double val) {
@@ -285,7 +285,7 @@ public class Visualizer extends JFrame implements KeyListener{
 		return incr;
 	}
 	
-	@Override
+
 	public void keyTyped(KeyEvent e) {
 		char c = e.getKeyChar();
 		boolean wchanged = false;
