@@ -18,7 +18,7 @@ import xadd.XADD.XADDINode;
 import xadd.XADD.XADDNode;
 import xadd.XADD.XADDTNode;
 
-public class LinearPrunningMethod extends LinearXADDMethod {
+public class LinearPruningMethod extends LinearXADDMethod {
     
 	//Prunning Precision constants
 	private final static double PRUNE_MIN_ITER_IMP = 1e-10; //Stop Condition for linear pruning algorithm
@@ -40,7 +40,7 @@ public class LinearPrunningMethod extends LinearXADDMethod {
     Comparator<IntPair> queueComp = new IntPair12Comparator();
     public PriorityQueue<IntPair> _pqOpenNodes = new PriorityQueue<IntPair>(10,queueComp);
 
-    public LinearPrunningMethod(int localRoot, XADD global) {
+    public LinearPruningMethod(int localRoot, XADD global) {
 		super(localRoot, global);
 	}
 

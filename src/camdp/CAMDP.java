@@ -374,6 +374,8 @@ public class CAMDP {
 				_context.addSpecialNode(a._reward);
 				for (Integer xadd : a._hmVar2DD.values())
 					_context.addSpecialNode(xadd);
+				for (Integer xadd : a._hmNoise2DD.values())
+					_context.addSpecialNode(xadd);
 			}
 			for (Integer node : special_nodes)
 				_context.addSpecialNode(node);
@@ -405,6 +407,8 @@ public class CAMDP {
 		for (CAction a : _hmName2Action.values()) {
 			_context.addSpecialNode(a._reward);
 			for (Integer xadd : a._hmVar2DD.values())
+				_context.addSpecialNode(xadd);
+			for (Integer xadd : a._hmNoise2DD.values())
 				_context.addSpecialNode(xadd);
 		}
 		if (_prevDD!=null){

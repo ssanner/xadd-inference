@@ -186,6 +186,8 @@ public class XADDUtils {
 			double x = alX.get(i);
 			static_dvars.put(xVar, x);
 			double y = context.evaluate(xadd, static_bvars, static_dvars);
+			if (Double.isInfinite(y))
+				y = -10d;
 			static_dvars.remove(xVar);
 
 			ps.println(x + "\t" + y);

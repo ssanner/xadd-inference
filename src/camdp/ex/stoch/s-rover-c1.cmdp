@@ -3,16 +3,21 @@ min-values (-500000)
 max-values (500000)
 bvariables (tp)
 nvariables (n)
-ivariables ()
+icvariables ()
+min-values ()
+max-values ()
+ibvariables ()
 avariables (a)
 
-action move (-10 < =a < =10)
+action move (-10 <= a <= 10)
 
-tp'([x>=30]
+tp'(tp
 	  ([1.0])
-	  (tp
-		  ([1.0])
-		  ([0.0])))
+	  ([x>=-10]
+	     ([x<=10]
+		   ([1.0])
+		   ([0.0]))
+		 ([0.0])))
 	
 x' ([x + a + n])
 
@@ -24,11 +29,15 @@ n ([n <=5]
 		([illegal]))
 	([illegal]))
 	
-reward (tp'
-         (tp
-           ([-1])
-           ([10]))
-         ([-1]))
+reward ([x<=-40]
+         ([-Infinity])
+         ([x>=40]
+            ([-Infinity])
+		       (tp'
+		         (tp
+		           ([-1])
+		           ([10]))
+		         ([-1])) ))
 
 endaction
 
