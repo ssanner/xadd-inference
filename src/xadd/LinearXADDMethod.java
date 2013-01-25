@@ -193,12 +193,10 @@ public class LinearXADDMethod{
     
     protected double []silentSolvelp(LP lp){
     	//Debuging Streams
-	    PrintStream ignoreStream = new DevNullPrintStream(); //used to ignore lpSolve output
-	    PrintStream outStream=System.out;
+	    //PrintStream ignoreStream = new DevNullPrintStream(); //used to ignore lpSolve output
+	    //PrintStream outStream=System.out;
         
-	    System.setOut(ignoreStream);
         double[] soln = lp.solve();
-        System.setOut(outStream);
         return soln;
     }
     

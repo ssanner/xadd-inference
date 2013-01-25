@@ -199,7 +199,6 @@ public class LP {
 		ResetTimer();
 
 		try {
-
 			_status = _solver.solve();
 			if (SHOW_SOLVER_RESULT)
 				System.out.println("Solver result [" + _status + "]: "
@@ -210,9 +209,8 @@ public class LP {
 
 			// Compute and check the objective value for this solution
 			_dObjValue = computeObjective();
-			if (Math.abs(_dObjValue - _solver.getObjective()) > 1e-6d) {
-				System.out
-						.println("WARNING: Internal Calculations vs. LpSolve Mismatch");
+			if (_status != LpSolve.INFEASIBLE && Math.abs(_dObjValue - _solver.getObjective()) > 1e-6d) {
+				System.out.println("WARNING: Internal Calculations vs. LpSolve Mismatch");
 				System.out.println("         " + _dObjValue + " vs. "
 						+ _solver.getObjective() + "\n         ** Can ignore if problem was infeasible.");
 			}
