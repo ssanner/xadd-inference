@@ -12,10 +12,10 @@ import java.util.*;
 import cmdp.HierarchicalParser;
 
 import xadd.XADD;
-import xadd.XADD.ArithExpr;
+import xadd.ExprLib.ArithExpr;
 import xadd.XADD.BoolDec;
-import xadd.XADD.DoubleExpr;
-import xadd.XADD.VarExpr;
+import xadd.ExprLib.DoubleExpr;
+import xadd.ExprLib.VarExpr;
 
 public class GraphicalModel {
 
@@ -154,7 +154,7 @@ public class GraphicalModel {
 				exit("Could not get XADD variable index for " + var);
 			int high_branch = cpt_id;
 			int low_branch = _context.apply(
-					_context.getTermNode(XADD.ONE), high_branch, XADD.MINUS);
+					_context.ONE, high_branch, XADD.MINUS);
 			cpt_id = _context.getINode(var_index, low_branch, high_branch);
 			cpt_id = _context.makeCanonical(cpt_id);
 		}

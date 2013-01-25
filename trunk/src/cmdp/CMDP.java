@@ -30,9 +30,10 @@ import camdp.CAMDP.FileOptions;
 
 import util.IntTriple;
 import xadd.XADD;
-import xadd.XADD.ArithExpr;
+import xadd.ExprLib.ArithExpr;
 import xadd.XADD.BoolDec;
-import xadd.XADD.DoubleExpr;
+import xadd.ExprLib.DoubleExpr;
+import xadd.ExprLib.VarExpr;
 import xadd.XADD.XADDINode;
 import xadd.XADDUtils;
 
@@ -422,14 +423,14 @@ public class CMDP {
 		HashMap<String,Integer> bvar_dds = new HashMap<String,Integer>();
 		HashMap<String,ArithExpr> prime_subs = new HashMap<String,ArithExpr>();
 		ArrayList<XADD.XADDNode> node_list = new ArrayList<XADD.XADDNode>();
-		ArrayList<XADD.ArithExpr> subst = new ArrayList<XADD.ArithExpr>();
+		ArrayList<ArithExpr> subst = new ArrayList<ArithExpr>();
 		
 		// This relies on the fact all necessary variables have been properly
 		// defined and that there are no name clashes between continuous vars
 		// and boolean vars.
 		for (String var : vars) {
 			String var_prime = var + "'";
-			prime_subs.put(var, new XADD.VarExpr(var_prime));
+			prime_subs.put(var, new VarExpr(var_prime));
 			Integer dd = a._hmVar2DD.get(var_prime);
 			if (_alBVars.contains(var)) {
 				bvar_dds.put(var_prime, dd); // Note: var is unprimed
@@ -549,7 +550,7 @@ public class CMDP {
 	// or simply making substitutions if all variables to branch on are exhausted
 	// TODO: Deal with non-canonical XADD result (call reduce)
 	public int regress(ArrayList<XADD.XADDNode> node_list, 
-		ArrayList<String> var_names, ArrayList<XADD.ArithExpr> subst, 
+		ArrayList<String> var_names, ArrayList<ArithExpr> subst, 
 		int index, int vfun) {
 		
 		// Check if at terminal
@@ -578,7 +579,7 @@ public class CMDP {
 	// a substitution... subst recorded then regress called with advance
 	// to next variable transition
 	public int regress2(XADD.XADDNode cur, ArrayList<XADD.XADDNode> node_list, 
-			ArrayList<String> var_names, ArrayList<XADD.ArithExpr> subst, 
+			ArrayList<String> var_names, ArrayList<ArithExpr> subst, 
 			int index, int vfun) {
 		
 		if (cur instanceof XADD.XADDINode) {

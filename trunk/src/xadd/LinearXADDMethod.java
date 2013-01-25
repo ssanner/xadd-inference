@@ -1,3 +1,14 @@
+//////////////////////////////////////////////////////////////////////
+//
+// Extended Algebraic Decision Diagrams Package
+// Class defining local variables to one XADD DAG
+// and Methods for using the Linear Programming solver LPsolve
+//
+// @author Scott Sanner (ssanner@gmail.com)
+// @author Zahra Zamani
+// @author Luis Vianna
+//////////////////////////////////////////////////////////////////////
+
 package xadd;
 
 import java.io.PrintStream;
@@ -9,13 +20,15 @@ import lpsolve.LP;
 import lpsolve.LpSolve;
 
 import util.DevNullPrintStream;
-import xadd.XADD.ArithExpr;
-import xadd.XADD.OperExpr;
-import xadd.XADD.CompExpr;
+import xadd.ExprLib.ArithExpr;
+import xadd.ExprLib.ArithOperation;
+import xadd.ExprLib.CompOperation;
+import xadd.ExprLib.OperExpr;
+import xadd.ExprLib.CompExpr;
 import xadd.XADD.Decision;
-import xadd.XADD.DoubleExpr;
+import xadd.ExprLib.DoubleExpr;
 import xadd.XADD.ExprDec;
-import xadd.XADD.VarExpr;
+import xadd.ExprLib.VarExpr;
 import xadd.XADD.XADDINode;
 import xadd.XADD.XADDNode;
 import xadd.XADD.XADDTNode;
@@ -129,7 +142,7 @@ public class LinearXADDMethod{
 
             double const_coef = setCoefficientsLocal(e._expr._lhs, coefs); // move to
             // RHS => -
-            int type = dec ? e._expr._type : CompExpr.flipCompOper(e._expr._type);
+            CompOperation type = dec ? e._expr._type : CompExpr.flipCompOper(e._expr._type);
 
 //	          if (DEBUG_CONSTRAINTS){
 //	              System.out.println("- adding "+type+" cons: " + const_coef + " + "
@@ -138,22 +151,22 @@ public class LinearXADDMethod{
 //	          }
 
             switch (type) {
-            case XADD.GT:
+            case GT:
                 lp.addGTConstraint(coefs, -const_coef);
                 break;
-            case XADD.GT_EQ:
+            case GT_EQ:
                 lp.addGeqConstraint(coefs, -const_coef);
                 break;
-            case XADD.LT:
+            case LT:
                 lp.addLTConstraint(coefs, -const_coef);
                 break;
-            case XADD.LT_EQ:
+            case LT_EQ:
                 lp.addLeqConstraint(coefs, -const_coef);
                 break;
-            case XADD.EQ:
+            case EQ:
                 lp.addEqConstraint(coefs, -const_coef);
                 break;
-            case XADD.NEQ:
+            case NEQ:
                 break; // Can't add an NEQ constraint
             default:
                 break; // Unknown constraint type
@@ -197,7 +210,7 @@ public class LinearXADDMethod{
         double accum = 0d;
         if (e instanceof OperExpr) {
             OperExpr o = ((OperExpr) e);
-            if (o._type == XADD.PROD) {
+            if (o._type == ArithOperation.PROD) {
                 if (o._terms.size() != 2)
                     error = 1;
                 else {
@@ -209,7 +222,7 @@ public class LinearXADDMethod{
                     }
                     coefs[index] = ((DoubleExpr) o._terms.get(0))._dConstVal;
                 }
-            } else if (o._type == XADD.SUM) {
+            } else if (o._type == ArithOperation.SUM) {
                 for (ArithExpr e2 : o._terms)
                     accum += setCoefficientsLocal(e2, coefs);
             } else
@@ -241,9 +254,9 @@ public class LinearXADDMethod{
             if (c ==0) continue;
             ArithExpr coef = new DoubleExpr(c);
             ArithExpr var = new VarExpr(globalContinuousVarList.get(localID2cVarID[i]));
-            varTerms.add(new OperExpr(XADD.PROD,coef,var));
+            varTerms.add(new OperExpr(ArithOperation.PROD,coef,var));
         }
-        return new OperExpr(XADD.SUM,varTerms);
+        return new OperExpr(ArithOperation.SUM,varTerms);
     }
     
     //Linear Functions//

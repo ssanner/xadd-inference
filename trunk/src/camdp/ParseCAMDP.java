@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import xadd.XADD;
-import xadd.XADD.ArithExpr;
-import xadd.XADD.DoubleExpr;
+import xadd.ExprLib.ArithExpr;
+import xadd.ExprLib.DoubleExpr;
 
 public class ParseCAMDP {
 	

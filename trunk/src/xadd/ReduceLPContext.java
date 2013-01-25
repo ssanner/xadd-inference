@@ -1,3 +1,14 @@
+//////////////////////////////////////////////////////////////////////
+//
+// Extended Algebraic Decision Diagrams Package
+// Linear Pruning of infeasible paths and 
+// Removal of redundant decisions
+//
+// @author Scott Sanner (ssanner@gmail.com)
+// @author Zahra Zamani
+// @author Luis Vianna
+//////////////////////////////////////////////////////////////////////
+
 package xadd;
 
 import java.util.ArrayList;
@@ -10,9 +21,9 @@ import lpsolve.LP;
 import lpsolve.LpSolve;
 
 import util.MapList;
-import xadd.XADD.ArithExpr;
+import xadd.ExprLib.ArithExpr;
 import xadd.XADD.BoolDec;
-import xadd.XADD.CompExpr;
+import xadd.ExprLib.CompExpr;
 import xadd.XADD.Decision;
 import xadd.XADD.ExprDec;
 import xadd.XADD.XADDNode;
