@@ -395,8 +395,6 @@ public class TestXADD {
 		xadd_context.getGraph(xaddr3).launchViewer();
 		int xaddr4 = xadd_context.apply(xaddr3, xaddr3, XADD.PROD);
 		xadd_context.getGraph(xaddr4).launchViewer();
-		
-		System.err.println("\n\nIMPLICATIONS:\n" + xadd_context.showImplications());
 	}
 
 
