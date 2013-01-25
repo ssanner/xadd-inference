@@ -144,15 +144,14 @@ public class ComputeQFunction {
 			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " )\n" + _context.getString(q));
 		}
 
-    	// Ensure Q-function is properly constrained and minimal (e.g., subject to constraints)
-		// TODO: Examine following application of constraints before using.
-		if (_camdp._alConstraints.size() > 0) {
-			System.err.println("WARNING: constraint application currently not verified");
-			System.exit(1);
-			for (Integer constraint : _camdp._alConstraints)
-				q = _context.apply(q, constraint, XADD.PROD); 
-			q = _context.reduceLP(q);
-		}
+		// Constraints not currently allowed, should be applied to the reward as -Infinity
+		//if (_camdp._alConstraints.size() > 0) {
+		//	System.err.println("WARNING: constraint application currently not verified");
+		//	System.exit(1);
+		//	for (Integer constraint : _camdp._alConstraints)
+		//		q = _context.apply(q, constraint, XADD.PROD); 
+		//	q = _context.reduceLP(q);
+		//}
 
 		return q;
 	}

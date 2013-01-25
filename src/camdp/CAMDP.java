@@ -12,26 +12,20 @@ import java.text.DecimalFormat;
 import util.IntTriple;
 import xadd.XADD;
 import xadd.XADDUtils;
-import xadd.XADD.*;
 import xadd.ExprLib.*;
 import cmdp.HierarchicalParser;
 
 /**
  * Main Continuous State and Action MDP (CAMDP) dynamic programming solution class
+ * (handles discrete actions, continuous actions, and continuous noise)
  * 
  * @version 1.0
  * @author Zahra Zamani
  * @author Scott Sanner
  * @language Java (JDK 1.5)
  * 
- * TODO: Dump dot file
  * TODO: Reintroduce policy annotation
- * TODO: Allow next-state dependent rewards
  * TODO: Allow alternate initialization of V^0 in input file
- * TODO: Seems to be a 0 always maxed in as minimum value -- see Rover-nonlinear2, always V > 0
- * TODO: Believe return XADDs from max_y yields 0's where we don't want them 
- * TODO: For LB < ROOT < UB, might suppress LB < UB constraints
- * TODO: Allow conditioning reward on next state
  * TODO: Action and next-state dependent reward expectations can be pre-computed and added  
  *       in after value function regression but before continuous parameter maximization.
  **/
@@ -66,7 +60,6 @@ public class CAMDP {
 	public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
 	public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
 	
-
 	/* For printing */
 	public static DecimalFormat _df = new DecimalFormat("#.########");
 	public PrintStream _logStream = null;
@@ -107,7 +100,9 @@ public class CAMDP {
 	public HashMap<String,ArithExpr>  _hmPrimeSubs;
 	public HashMap<String,CAction>    _hmName2Action;
 	public HashMap<IntTriple,Integer> _hmContRegrCache;
-	public ArrayList<Integer>         _alConstraints;
+	
+	// Constraints not currently allowed, should be applied to the reward as -Infinity
+	//public ArrayList<Integer>         _alConstraints; 
 	
 	public ComputeQFunction _qfunHelper = null;
 
@@ -140,7 +135,7 @@ public class CAMDP {
 		ParseCAMDP parser = new ParseCAMDP(this);
 		parser.buildCAMDP(input);
 		_context.addContinuousVarsBounds(parser._minCVal,parser._maxCVal);
-		_alConstraints = parser.getConstraints();
+		//_alConstraints = parser.getConstraints();
 		_nMaxIter = parser.getIterations();
 		_bdDiscount = parser.getDiscount();
 		_hmName2Action = parser.getHashmap();
@@ -446,10 +441,10 @@ public class CAMDP {
 		sb.append("Max-values:  " + _context._hmMaxVal + "\n");
 		sb.append("Order:       " + _context._alOrder + "\n");
 		sb.append("Iterations:  " + _nMaxIter + "\n");
-		sb.append("Constraints (" + _alConstraints.size() + "):\n");
-		for (Integer cons : _alConstraints) {
-			sb.append("- " + _context.getString(cons) + "\n");
-		}
+		//sb.append("Constraints (" + _alConstraints.size() + "):\n");
+		//for (Integer cons : _alConstraints) {
+		//	sb.append("- " + _context.getString(cons) + "\n");
+		//}
 		sb.append("Actions (" + _hmName2Action.size() + "):\n");
 		for (CAction a : _hmName2Action.values()) {
 			sb.append("\n==> " + a);

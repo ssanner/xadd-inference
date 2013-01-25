@@ -9,6 +9,7 @@ import jahuwaldt.plot.PlotRun;
 import jahuwaldt.plot.PlotRunList;
 import jahuwaldt.plot.PlotSymbol;
 import jahuwaldt.plot.SimplePlotXY;
+import jahuwaldt.plot.XSymbol;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -162,6 +163,7 @@ public class XADDUtils {
 				xVar, title);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static void PlotXADD(XADD context, int xadd, double low, double inc,
 			double high, HashMap<String, Boolean> static_bvars,
 			HashMap<String, Double> static_dvars, String xVar, String title) {
@@ -176,43 +178,74 @@ public class XADDUtils {
 			ps = new DevNullPrintStream();
 		}
 		
-		// Create a Simple 2D XY plot window.
+		// Generate (x,y) pairs in alX and alY, also track count of infinite points
 		ArrayList<Double> alX = new ArrayList<Double>();
+		ArrayList<Double> alY = new ArrayList<Double>();
 		for (double x = low; x <= high; x += inc)
 			alX.add(x);
-		double[] xArr = new double[alX.size()];
-		double[] yArr = new double[alX.size()];
+		double min_y_val = Double.POSITIVE_INFINITY;
+		double max_y_val = Double.NEGATIVE_INFINITY;
+		int num_inf_points = 0;
+		
 		for (int i = 0; i < alX.size(); i++) {
+			
 			double x = alX.get(i);
 			static_dvars.put(xVar, x);
 			double y = context.evaluate(xadd, static_bvars, static_dvars);
-			if (Double.isInfinite(y))
-				y = -10d;
 			static_dvars.remove(xVar);
 
+			alY.add(y);			
 			ps.println(x + "\t" + y);
-			xArr[i] = x;
-			yArr[i] = y;
 			
+			if (Double.isInfinite(y))
+				num_inf_points++;
+			else {
+				// Record min max values if not infinite
+				if (y < min_y_val)
+					min_y_val = y;
+				if (y > max_y_val)
+					max_y_val = y;
+			}
 		}
 		ps.close();
+		
+		// Go over points separate into infinity and non-infinity lines
+		double[] xArr = new double[alX.size() - num_inf_points];
+		double[] yArr = new double[alX.size() - num_inf_points];
+		double[] xArrInf = new double[num_inf_points];
+		double[] yArrInf = new double[num_inf_points];
+		int index = 0;
+		int index_inf = 0;
+		for (int i = 0; i < alX.size(); i++) {
+			double x = alX.get(i);
+			double y = alY.get(i);
+			if (Double.isInfinite(y)) {
+				xArrInf[index_inf] = x;
+				yArrInf[index_inf] = (y > 0d ? max_y_val : min_y_val);
+				index_inf++;
+			} else {
+				xArr[index] = x;
+				yArr[index] = y;
+				index++;
+			}
+		}
 		
 		Plot2D aPlot = new SimplePlotXY(xArr, yArr, title, xVar + " @ "
 				+ static_bvars + " " + static_dvars, "f(" + xVar + ")", null,
 				null, null/* new jahuwaldt.plot.CircleSymbol() *//* new XSymbol() */);
 
-		// Color line red
+		// Plot non-infinity as red without markers
 		PlotRunList runs = aPlot.getRuns();
 		PlotRun run = (PlotRun) runs.get(0);
 		run.setLineColor(Color.red);
 
+		// Plot infinity values as X's at the minimum or maximum y value
+		PlotRun run2 = new PlotRun(xArrInf, yArrInf, false, new XSymbol());
+		runs.add(run2);
+
 		// Make the horizontal axis a log axis.
 		// PlotAxis xAxis = aPlot.getHorizontalAxis();
 		// xAxis.setScale(new Log10AxisScale());
-
-		// Create a 2nd run and add it to the plot.
-		// PlotRunList runs = aPlot.getRuns();
-		// runs.add(new PlotRun(xArr, yArrAlt, true, new SquareSymbol()));
 
 		PlotPanel panel = new PlotPanel(aPlot);
 		panel.setBackground(Color.white);

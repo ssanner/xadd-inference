@@ -24,11 +24,18 @@ import xadd.XADD.BoolDec;
 
 /**
  * Class for action representation/construction.
- * 
+ *  
+ ******************************************************************************************
+ ******************************************************************************************
+ ********* THIS CLASS IS NOW DEPRECATED, FUNCTIONALITY SUBSUMED BY camdp.CAction ********** 
+ ******************************************************************************************
+ ******************************************************************************************
+ *
  * @version 1.0
  * @author Scott Sanner
  * @language Java (JDK 1.3)
  **/
+@Deprecated
 public class Action {
 	/* Local constants */
 
