@@ -26,7 +26,7 @@ public class ParseCAMDP {
 	public HashMap<String, Double> _minCVal = new HashMap<String, Double>();
 	public HashMap<String, Double> _maxCVal = new HashMap<String, Double>();
 	ArrayList<Double> contParam = new ArrayList<Double>(2);
-	ArrayList<Integer> constraints = new ArrayList<Integer>();
+//	ArrayList<Integer> constraints = new ArrayList<Integer>();
 	BigDecimal discount;
 	Integer iterations;
 	HashMap<String, CAction> _name2Action = new HashMap<String, CAction>();
@@ -265,23 +265,25 @@ public class ParseCAMDP {
 		} // endaction
 
 		// Check for constraints declaration (can be multiple)
-		constraints =new ArrayList<Integer>();
+//		constraints =new ArrayList<Integer>();
 		while (true) {
-			if (!(o instanceof String)
-					|| !((String) o).equalsIgnoreCase("constraint")) {
+			if (!(o instanceof String) || !((String) o).equalsIgnoreCase("constraint")) {
 				break;
 			}
 
-			o=i.next(); // get dd
-			ArrayList next_constraint = (ArrayList) o;
-			int next_constraint_dd = _camdp._context.buildCanonicalXADD(next_constraint);
-			constraints.add(next_constraint_dd);
-			
-			o = i.next(); // get endconstraint
-			o = i.next(); // get constraint or discount
+			// Constraints exist!
+			exit("Constraints are no longer accepted in input files.\nConstraints should be applied directly to the reward to yield -Infinity for illegal states.");
+
+//			o=i.next(); // get dd
+//			ArrayList next_constraint = (ArrayList) o;
+//			int next_constraint_dd = _camdp._context.buildCanonicalXADD(next_constraint);
+//			constraints.add(next_constraint_dd);
+//			
+//			o = i.next(); // get endconstraint
+//			o = i.next(); // get constraint or discount
 		}
+
 		// Read discount and tolerance
-		//o = i.next();
 		if (!(o instanceof String)
 				|| !((String) o).equalsIgnoreCase("discount")) {
 			System.out.println("Missing discount declaration: " + o);
@@ -373,9 +375,9 @@ public class ParseCAMDP {
 		return NoiseVars;
 	}
 
-	public ArrayList<Integer> getConstraints() {
-		return constraints;
-	}
+//	public ArrayList<Integer> getConstraints() {
+//		return constraints;
+//	}
 
 	public BigDecimal getDiscount() {
 		return discount;

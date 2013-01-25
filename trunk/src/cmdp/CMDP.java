@@ -39,13 +39,19 @@ import xadd.XADDUtils;
 
 // DD & FBR interfaces
 
-/**
- * Main CMDP inference class
+/** CMDP
  * 
+ ******************************************************************************************
+ ******************************************************************************************
+ ********** THIS CLASS IS NOW DEPRECATED, FUNCTIONALITY SUBSUMED BY camdp.CAMDP *********** 
+ ******************************************************************************************
+ ******************************************************************************************
+ *
  * @version 1.0
  * @author Scott Sanner
  * @language Java (JDK 1.5)
  **/
+@Deprecated
 public class CMDP {
 
 	// TODO: Handle reduce variable ordering correctly on substitution... write a 
