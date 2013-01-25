@@ -363,25 +363,9 @@ public class CAMDP {
 		flushCaches(special_nodes,false);
 	}
 	public void flushCaches(List<Integer> special_nodes, boolean forceFlush) {
-		if (forceFlush){
-			_context.clearSpecialNodes();
-			for (CAction a : _hmName2Action.values()) {
-				_context.addSpecialNode(a._reward);
-				for (Integer xadd : a._hmVar2DD.values())
-					_context.addSpecialNode(xadd);
-				for (Integer xadd : a._hmNoise2DD.values())
-					_context.addSpecialNode(xadd);
-			}
-			for (Integer node : special_nodes)
-				_context.addSpecialNode(node);
-			if (optimalDD!=null)
-				_context._hsSpecialNodes.addAll(optimalDD);
-			_context.flushCaches();
-			return;
-		}
 		
 		if (((double)RUNTIME.freeMemory() / 
-				(double)RUNTIME.totalMemory()) > FLUSH_PERCENT_MINIMUM) {
+				(double)RUNTIME.totalMemory()) > FLUSH_PERCENT_MINIMUM && !forceFlush) {
 			//System.out.println("No need to flush caches.");
 			return; // Still enough free mem to exceed minimum requirements
 		}
@@ -406,16 +390,16 @@ public class CAMDP {
 			for (Integer xadd : a._hmNoise2DD.values())
 				_context.addSpecialNode(xadd);
 		}
-		if (_prevDD!=null){
+		if (_prevDD!=null && !forceFlush){
 			_context.addSpecialNode(_prevDD);
 		}
-		if (_maxDD!=null){
+		if (_maxDD!=null && !forceFlush){
 			_context.addSpecialNode(_maxDD);
 		}
-		if (_valueDD!=null){
+		if (_valueDD!=null && !forceFlush){
 			_context.addSpecialNode(_valueDD); 
 		}
-		if (optimalDD!=null)
+		if (optimalDD!=null) //keep even at forceFlush, because we want to measure the error
 			_context._hsSpecialNodes.addAll(optimalDD);
 		_context.flushCaches();
 

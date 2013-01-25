@@ -1,4 +1,4 @@
-package camdp.linprunetest;
+package camdp;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;
