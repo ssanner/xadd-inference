@@ -24,16 +24,16 @@ public class AproxTest {
 	}
 	
 	public static void usage(){
-		System.out.println("Usage: 5 or 6 params:\n AproxTest filename logdir isCAMDP? iter Napprox ApproxStepSize\n");
-		System.exit(1);
+		System.out.println("Usage: 4 to 6 params:\n AproxTest filename logdir iter Napprox [ApproxStepSize 2D or 3D]\n");
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		if (args.length < 5 || args.length > 7) {
+		if (args.length < 4 || args.length > 7) {
 			usage();
+			System.exit(1);
 		}
 
 		// Parse problem filename
@@ -45,55 +45,36 @@ public class AproxTest {
 		}
 		PrintStream out = System.out;
 		
-		//Parse CAMDP
-		boolean isCAMDP = Boolean.parseBoolean(args[2]);
-		boolean valuePlot = false;
 		// Parse iterations
 		int iter = -1;
 		int nApproxSteps = -1;
 		double approxStepSize = 0.1d;
+		int valuePlot = 0;
 		try {
-			iter = Integer.parseInt(args[3]);
-			nApproxSteps = Integer.parseInt(args[4]);
-			if (args.length >5) approxStepSize = Double.parseDouble(args[5]);
-			if (args.length >6) valuePlot = (Integer.parseInt(args[6]))>0;
-			if ((nApproxSteps) * approxStepSize > 1) System.err.format("\nIllegal approx step %f or number %d \n",
+			iter = Integer.parseInt(args[2]);
+			nApproxSteps = Integer.parseInt(args[3]);
+			if (args.length >= 5) approxStepSize = Double.parseDouble(args[4]);
+			if (args.length >= 6) valuePlot = Integer.parseInt(args[5]);
+			if ((nApproxSteps) * approxStepSize > 1) System.err.format("\nIllegal approx step %f or number %d\n",
 														approxStepSize, nApproxSteps);;
 		} catch (NumberFormatException nfe) {
-				System.err.println("\nIllegal iteration or step values\n");
+				System.err.println("\nIllegal iteration, approx or display values\n");
 				System.exit(1);
 		}
 		
-		//Solve with different approximation levels a CAMDP
-		if (isCAMDP){
-			//Build a CAMDP, display, solve
-			CAMDP camdp = new CAMDP(filename);
-			camdp.DISPLAY_2D = valuePlot;
-			camdp.DISPLAY_3D = false;
+		CAMDP camdp = new CAMDP(filename);
+		if (valuePlot == 2)
+			camdp.DISPLAY_2D = true;
+		if (valuePlot == 3)
+			camdp.DISPLAY_3D = true;
 			
-			for(int approx=0; approx<=nApproxSteps;approx++){
-				double error = approx*approxStepSize;
-				System.out.format("Solving %s with %d iter, %f error\n",filename,iter,error);
-				if (printToFile) out = makeLog(filename, error, resultsDir);
-				camdp.setApproxTest(error, out, false);
-				int iter_used = camdp.solve(iter);
-				camdp.flushCaches(true);
-			}
-		}
-		
-		//Solve with different approximation levels a CMDP
-		else{
-			// Build a CMDP
-			CMDP cmdp = new CMDP(filename);
-	
-			for(int approx=0; approx<=nApproxSteps;approx++){
-				double error = approx*approxStepSize;
-				System.out.format("Solving %s with %d iter, %f error\n",filename,iter,error);
-				if (printToFile) out = makeLog(filename, error, resultsDir);
-				cmdp.setApproxTest(error, out, false);
-				int iter_used = cmdp.solve(iter);
-				cmdp.flushCaches(true);
-			}
+		for(int approx=0; approx<=nApproxSteps;approx++){
+			double error = approx*approxStepSize;
+			System.out.format("Solving %s with %d iter, %f error\n",filename,iter,error);
+			if (printToFile) out = makeLog(filename, error, resultsDir);
+			camdp.setApproxTest(error, out, false);
+			int iter_used = camdp.solve(iter);
+			camdp.flushCaches(true);
 		}
 		System.out.println("Approx Test, Over!");
 		System.exit(0);

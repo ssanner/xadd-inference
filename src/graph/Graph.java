@@ -1217,7 +1217,7 @@ public class Graph {
 				q.add(v);
 		}
 		if (q.size() == 0)
-			return true; // Cycle found – all vertices have in-bound edges
+			return true; // Cycle found not all vertices have in-bound edges
 
 		// Remove all edges from fringe_nodes and add the destinations of
 		// those edges if they themselves become fringe nodes.  If every

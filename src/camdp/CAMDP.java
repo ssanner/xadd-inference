@@ -291,17 +291,14 @@ public class CAMDP {
 			double maxRelErr = 0d;
 			if (LINEAR_PROBLEM) {
 				maxVal = _context.linMaxVal(_valueDD);
-				optimalMaxValues[_nCurIter] = maxVal;
+				optimalMaxValues[_nCurIter-1] = maxVal;
 				if (COMPARE_OPTIMAL){
 					if(APPROX_ERROR == 0d){ //Exact solution
-						if(optimalDD.size() < max_iter) {
-							optimalDD = new ArrayList<Integer>(max_iter+1);
-							for(int i=0;i<=max_iter;i++) optimalDD.add(null);
-						}
-					optimalDD.set(_nCurIter,_valueDD);
-					
+						if (optimalDD.size() != _nCurIter-1)
+							System.err.println("Incorrect optimalDD:"+optimalDD+" "+_nCurIter);
+						optimalDD.add(_valueDD);
 					}
-				maxRelErr = (_context.linMaxDiff(optimalDD.get(_nCurIter), _valueDD))/optimalMaxValues[_nCurIter];
+					maxRelErr = (_context.linMaxDiff(optimalDD.get(_nCurIter-1), _valueDD))/optimalMaxValues[_nCurIter-1];
 				}
 			}
 			_logStream.println("Value function size @ end of iteration " + _nCurIter + 
