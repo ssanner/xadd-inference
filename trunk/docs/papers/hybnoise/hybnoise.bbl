@@ -1,0 +1,10 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Sanner \bgroup \em et al.\egroup
+  }{2011}]{sanner_uai11}
+Scott Sanner, Karina~Valdivia Delgado, and Leliane~Nunes {de Barros}.
+\newblock Symbolic dynamic programming for discrete and continuous state mdps.
+\newblock In {\em Proceedings of the 27th Conference on Uncertainty in {AI}
+  ({UAI-2011})}, Barcelona, 2011.
+
+\end{thebibliography}
