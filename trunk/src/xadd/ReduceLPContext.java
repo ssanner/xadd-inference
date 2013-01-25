@@ -171,7 +171,7 @@ public class ReduceLPContext {
 	            for (int i = 0; i < context._alOrder.size(); i++) {
 	                test_dec.add(null);
 	            }
-	            context.showGraph(tree, "V^ After consistency check and before Redundancy check");
+	            //context.showGraph(tree, "V^ After consistency check and before Redundancy check");
 	            //put formula for root node
 	            path.add(0);
 	            path_no.add(path);
@@ -508,7 +508,7 @@ public class ReduceLPContext {
 	        int nvars = nLocalCVars;
 	        double[] obj_coef = new double[nvars]; // default all zeros, which is
 	        // what we want
-	        LP lp = new LP(nvars, assign2Local(context.lowerBounds), assign2Local(context.upperBounds), obj_coef, LP.MAXIMIZE);
+	        LP lp = new LP(nvars, assign2Local(context.lowerBounds,true), assign2Local(context.upperBounds,true), obj_coef, LP.MAXIMIZE);
 	
 	        // Now add all constraints
 	        for (Integer constraint_id : test_var) {
@@ -733,7 +733,7 @@ public class ReduceLPContext {
 	
 	        if (lp2._status == LpSolve.INFEASIBLE) {
 	            System.err.println("Infeasible at test 2? should have failed the first test!");
-	            showDecListEval(test_dec,soln2);
+	            showDecListEval(test_dec,soln);
 	            infeasible = true;
 	        } else if (maxSlack < IMPLIED_PRECISION){
 	            if (DEBUG_CONSTRAINTS){
