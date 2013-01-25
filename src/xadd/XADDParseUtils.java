@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import cmdp.HierarchicalParser;
 
 import logic.kb.fol.FOPC;
+import xadd.ExprLib.*;
 import xadd.XADD;
 import xadd.XADD.*;
 
@@ -30,9 +31,9 @@ public class XADDParseUtils {
 			
 			s = s.trim();
 			if (s.equalsIgnoreCase("legal") || s.equalsIgnoreCase("neg-inf") || s.equalsIgnoreCase("-Infinity")) {
-				return context.getTermNode(context.NEG_INF);
+				return context.NEG_INF;
 			} else if (s.equalsIgnoreCase("illegal") || s.equalsIgnoreCase("pos-inf") || s.equalsIgnoreCase("Infinity")) {
-				return context.getTermNode(context.POS_INF);
+				return context.POS_INF;
 			} else {
 				int n = ParseIntoXADD(context, s);
 				if (n < 0) {

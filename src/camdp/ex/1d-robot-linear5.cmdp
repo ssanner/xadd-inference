@@ -1,0 +1,39 @@
+cvariables (x)
+min-values (-500000)
+max-values (500000)
+bvariables (slip)
+nvariables ()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables(a)
+
+action move (-1000000<=a<=1000000)
+slip' (slip ([0.0]) ([0.4]))
+
+x' ([a>-100]
+	([a<100]
+		(slip'
+			([x+2*a])
+			([x+a])
+		)
+		([x])
+	)
+	([x])
+   )		
+
+reward	([x>0]
+		([a>=0]
+        	   	([x - a])
+           		([x + a])
+           	)
+           	([a>=0]
+      			([- a])
+      			([a])
+      		)
+	)		
+endaction
+discount 1.000000
+iterations 8
+

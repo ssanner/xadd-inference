@@ -17,8 +17,9 @@ import sve.GraphicalModel.Factor;
 
 import cmdp.HierarchicalParser;
 import xadd.XADD;
-import xadd.XADD.ArithExpr;
-import xadd.XADD.VarExpr;
+import xadd.ExprLib.DoubleExpr;
+import xadd.ExprLib.ArithExpr;
+import xadd.ExprLib.VarExpr;
 import xadd.XADDUtils;
 
 public class SVE {
@@ -96,7 +97,7 @@ public class SVE {
 				} else if (q._hmCVarAssign.containsKey(var)) {
 					// Continuous assignment -- add substitution
 					double dassign = q._hmCVarAssign.get(var);
-					subst.put(var, new XADD.DoubleExpr(dassign));
+					subst.put(var, new DoubleExpr(dassign));
 				}				
 			}
 			instantiated_f = _context.substitute(instantiated_f, subst);
@@ -180,7 +181,7 @@ public class SVE {
 	}
 	
 	private Factor multiplyFactors(ArrayList<Factor> factors) {
-		int mult_xadd = _context.getTermNode(XADD.ONE);
+		int mult_xadd = _context.ONE;
 		for (Factor f : factors)
 			mult_xadd = _context.applyInt(mult_xadd, f._xadd, XADD.PROD);
 		return _gm.new Factor(mult_xadd);

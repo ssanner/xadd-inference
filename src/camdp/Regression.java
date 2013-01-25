@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import xadd.XADD;
-import xadd.XADD.ArithExpr;
+import xadd.ExprLib.ArithExpr;
 
 public class Regression {
 	
@@ -20,7 +20,7 @@ public class Regression {
 	// or simply making substitutions if all variables to branch on are exhausted
 	// TODO: Deal with non-canonical XADD result (call reduce)
 	public int regress(ArrayList<XADD.XADDNode> node_list, 
-		ArrayList<String> var_names, ArrayList<XADD.ArithExpr> subst, 
+		ArrayList<String> var_names, ArrayList<ArithExpr> subst, 
 		int index, int vfun) {
 		
 		// Check if at terminal
@@ -49,7 +49,7 @@ public class Regression {
 	// a substitution... subst recorded then regress called with advance
 	// to next variable transition
 	public int regress2(XADD.XADDNode cur, ArrayList<XADD.XADDNode> node_list, 
-			ArrayList<String> var_names, ArrayList<XADD.ArithExpr> subst, 
+			ArrayList<String> var_names, ArrayList<ArithExpr> subst, 
 			int index, int vfun) {
 		
 		if (cur instanceof XADD.XADDINode) {

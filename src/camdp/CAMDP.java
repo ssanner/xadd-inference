@@ -13,6 +13,7 @@ import util.IntTriple;
 import xadd.XADD;
 import xadd.XADDUtils;
 import xadd.XADD.*;
+import xadd.ExprLib.*;
 import cmdp.HierarchicalParser;
 
 /**
@@ -164,12 +165,12 @@ public class CAMDP {
 		_hmPrimeSubs = new HashMap<String,ArithExpr>();
 		for (String var : _hsContSVars) {
 			String prime_var = var + "'";
-			_hmPrimeSubs.put(var, new XADD.VarExpr(prime_var));
+			_hmPrimeSubs.put(var, new VarExpr(prime_var));
 			_hsContNSVars.add(prime_var);
 		}
 		for (String var : _hsBoolSVars) { 
 			String prime_var = var + "'";
-			_hmPrimeSubs.put(var, new XADD.VarExpr(prime_var));
+			_hmPrimeSubs.put(var, new VarExpr(prime_var));
 			_hsBoolNSVars.add(prime_var);
 		}
 
@@ -212,7 +213,7 @@ public class CAMDP {
 		//////////////////////////////////////////////////////////////////////////
 		
 		// Initialize value function to zero
-		_valueDD = _context.getTermNode(XADD.ZERO);
+		_valueDD = _context.ZERO;
 
 		// Perform value iteration for specified number of iterations, or until convergence detected
 		while (_nCurIter < max_iter) 
@@ -315,6 +316,8 @@ public class CAMDP {
 				System.out.println("CAMDP: Converged to solution early,  at iteration "+_nCurIter);
 				int it = _nCurIter;
 				while (++it < max_iter){
+					optimalMaxValues[it] = optimalMaxValues[_nCurIter];
+					optimalDD.add(_valueDD);
 					_testLogStream.format("%d %d %d %d %d %d %f %f\n", it, num_nodes[_nCurIter], 
 						num_branches[_nCurIter], usedMem(),
 						time[_nCurIter],totalTime,
@@ -332,7 +335,7 @@ public class CAMDP {
 		// Performance Logging
 		_logStream.println("\nValue iteration complete!");
 		_logStream.println(max_iter + " iterations took " + GetElapsedTime() + " ms");
-		_logStream.println("Canonical / non-canonical: " + XADD.OperExpr.ALREADY_CANONICAL + " / " + XADD.OperExpr.NON_CANONICAL);
+		_logStream.println("Canonical / non-canonical: " + OperExpr.ALREADY_CANONICAL + " / " + OperExpr.NON_CANONICAL);
 
 		_logStream.println("\nIteration Results summary");
 		for (int i = 1; i <= max_iter; i++) {

@@ -7,14 +7,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import xadd.XADD.ArithExpr;
+import xadd.ExprLib.ArithExpr;
+import xadd.ExprLib.ArithOperation;
 import xadd.XADD.BoolDec;
-import xadd.XADD.CompExpr;
+import xadd.ExprLib.CompExpr;
 import xadd.XADD.Decision;
 import xadd.XADD.DeltaFunctionSubstitution;
-import xadd.XADD.DoubleExpr;
+import xadd.ExprLib.DoubleExpr;
 import xadd.XADD.ExprDec;
-import xadd.XADD.VarExpr;
+import xadd.ExprLib.VarExpr;
 import xadd.XADD.XADDINode;
 import xadd.XADD.XADDLeafMinOrMax;
 import xadd.XADD.XADDTNode;
@@ -214,7 +215,7 @@ public class TestXADD {
 		int x1_d = TestBuild(xadd_context, "./src/xadd/test4.xadd");
 		int d = TestBuild(xadd_context, "./src/xadd/test5.xadd");
 		HashMap<String, ArithExpr> hm = new HashMap<String, ArithExpr>();
-		hm.put("x1", new XADD.DoubleExpr(5d));
+		hm.put("x1", new DoubleExpr(5d));
 		int d2 = xadd_context.substitute(x1_d, hm);
 		System.out.println(xadd_context.getString(d));
 		System.out.println(xadd_context.getString(d2));
@@ -362,13 +363,13 @@ public class TestXADD {
 		HashMap<String, ArithExpr> subst = new HashMap<String, ArithExpr>();
 		subst.put("a", a2);
 		if (a != null) {
-			System.out.println("EX + EX = " + ArithExpr.op(a, a, XADD.SUM));
-			System.out.println("EX - EX = " + ArithExpr.op(a, a, XADD.MINUS));
-			System.out.println("EX * EX = " + ArithExpr.op(a, a, XADD.PROD));
-			System.out.println("EX / EX = " + ArithExpr.op(a, a, XADD.DIV));
+			System.out.println("EX + EX = " + ArithExpr.op(a, a, ArithOperation.SUM));
+			System.out.println("EX - EX = " + ArithExpr.op(a, a, ArithOperation.MINUS));
+			System.out.println("EX * EX = " + ArithExpr.op(a, a, ArithOperation.PROD));
+			System.out.println("EX / EX = " + ArithExpr.op(a, a, ArithOperation.DIV));
 			System.out.println("EX == EX: " + ArithExpr.ParseArithExpr(s).equals(a));
-			System.out.println("EX != EX * EX: " + ArithExpr.op(a, a, XADD.PROD).equals(a));
-			System.out.println("EX+EX:" + sub + "/" + a2 + ": " + ArithExpr.op(a, a, XADD.SUM).substitute(subst));
+			System.out.println("EX != EX * EX: " + ArithExpr.op(a, a, ArithOperation.PROD).equals(a));
+			System.out.println("EX+EX:" + sub + "/" + a2 + ": " + ArithExpr.op(a, a, ArithOperation.SUM).substitute(subst));
 		} else if (e != null) {
 			System.out.println("EX == EX: " + CompExpr.ParseCompExpr(s).equals(e));
 			System.out.println("EX:" + sub + "/" + a2 + ": " + e.substitute(subst));
