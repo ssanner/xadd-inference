@@ -80,6 +80,8 @@ public class TestXADD {
 		System.out.println(Math.min(2d, POS_INF));
 		System.out.println(POS_INF > 0);
 		System.out.println(POS_INF < 0);
+		System.out.println(POS_INF > POS_INF);
+		System.out.println(POS_INF >= POS_INF);
 	}
 	
 	public static void main1(String[] args) throws Exception {

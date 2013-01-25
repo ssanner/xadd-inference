@@ -1,4 +1,4 @@
-package linPruneTest;
+package camdp.linprunetest;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import cmdp.CMDP;
 import camdp.CAMDP;
 
-public class AproxTest {
+public class ApproxTest {
 
 	public static PrintStream makeLog(String filename, double error, String dir) {
 		String []f1 = filename.split("\\.");
