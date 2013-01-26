@@ -3,14 +3,13 @@ We first formally introduce the framework of Robust Continuous State and Action 
 \subsection{Factored Representation}
 
 %If we assume noise is a state variable the next state of noise is ambiguous, add noise to transition function
-A RCSA-MDP is modelled using state variables $(\vec{b},\vec{x}) = ( b_1,\ldots,b_a,x_{1},\ldots,x_b )$ where each $b_i \in \{ 0,1 \}$ ($1 \leq i \leq a$) represents discrete boolean variables $\,$
-and each $x_j \in \mathbb{R}$ ($1 \leq j \leq b$) is continuous.  
+A RCSA-MDP is modelled using state variables $(\vec{b},\vec{x}) = ( b_1,\ldots,b_a,x_{1},\ldots,x_c )$ where each $b_i \in \{ 0,1 \}$ ($1 \leq i \leq a$) represents discrete boolean variables $\,$
+and each $x_j \in \mathbb{R}$ ($1 \leq j \leq c$) is continuous.  
 Both discrete and continuous actions are represented by the set $A = \{a_1(\vec{y}_1), \ldots, a_p(\vec{y}_d) \}$, where  $\vec{y}_k \in \mathbb{R}^{|\vec{y}_k|}$ ($1\leq k \leq d$) denote continuous parameters for action $a_k$.
 
 %describe each function and how it is represented then talk about goal
-Given a state $(\vec{b},\vec{x})$ and an executed action $a(\vec{y})$ at this state, a joint state transition model
-$P(\vec{b}',\vec{x}'| \vec{b},\vec{x},a,\vec{y})$ specifies the probability of the next state $(\vec{b}',\vec{x}')$ and a
-reward function $R(\vec{b},\vec{x},a,\vec{y})$ specifies the immediate reward at this state.  To model uncertainty in RCSA-MDPs we assume an error $\epsilon$ bounded by some convex region on the state. A noise model $N(\vec{x})$ is defined on the continuous variables. 
+Given a state $(\vec{b},\vec{x})$ and an executed action $a(\vec{y})$ at this state, a
+reward function $R(\vec{b},\vec{x},a,\vec{y})$ specifies the immediate reward at this state. The probability of the next state $(\vec{b}',\vec{x}')$ is defined by a joint state transition model $P(\vec{b}',\vec{x}'| \vec{b},\vec{x},a,\vec{y},\Theta\vec{\epsilon})$ which depends on the current state, action and noise model $\Theta\vec{\epsilon}$. Uncertainty in RCSA-MDPs is modelled using variables $\vec{\epsilon} = \epsilon_1, \ldots , \epsilon_c$ where each noise variable (i.e. stochastic )$\epsilon_j$ is bounded by some convex region on a continuous state variable $x_j$. Non-deterministic constraint functions define the possible values for each $\epsilon_j$ where we assume $+ \infty$ for all illegal values of noise and $-\infty$ for legal values. We show later how this general representation allows RSCA-MDPs to account for minimum noise in any problem. 
 
 A policy $\pi(\vec{b},\vec{x})$ at this state specifies the action $a(\vec{y}) =
 \pi(\vec{b},\vec{x})$ to take at this state.  An optimal sequence of finite horizon policies $\Pi^* = (\pi^{*,1},\ldots,\pi^{*,H})$ is desired such that given the initial state $(\vec{b}_0,\vec{x}_0)$ at $h=0$ and  a discount factor $\gamma, \; 0 \leq \gamma \leq 1$, the expected sum of discounted rewards over horizon $h \in H ;H \geq 0$ is maximized: 
@@ -38,16 +37,16 @@ other in the same time slice) from $\vec{b}$ to $\vec{x}$ but not within the bin
 %\vspace{5mm} 
 {\footnotesize
 \begin{align}
- P(\vec{b}',\vec{x}'|\vec{b},\vec{x}, a,\vec{y}) = \prod_{i=1}^n P(b_i'|\vec{b},\vec{x} ,a,\vec{y}) 
-\prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) N(\vec{x}).  \nonumber
+ P(\vec{b}',\vec{x}'|\vec{b},\vec{x}, a,\vec{y},\vec{\epsilon}) = \prod_{i=1}^n P(b_i'|\vec{b},\vec{x} ,a,\vec{y}) 
+\prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \vec{\epsilon}).  \nonumber
 \end{align}
 }
 %Note that uncertainty is modelled based only on the previous noise variable. 
 
 For binary variables $b_i$ ($1 \leq i \leq a$) the conditional probability $P(b_i'|\vec{b},\vec{x},a,\vec{y})$ is defined as 
-conditional probability functions (CPFs).  For continuous variables $x_j$ ($1 \leq j \leq b$), the CPFs
-$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ are represented with \emph{piecewise linear equations} (PLEs) that condition on the
-action, current state, and previous state variables with piecewise conditions that may be arbitrary logical combinations of $\vec{b}$, $\vec{b}'$  and linear inequalities over $\vec{x}$ .  The noise function $N(\vec{x})$ is in form of a bounded error depending only on the current state. 
+conditional probability functions (CPFs).  For continuous variables $x_j$ ($1 \leq j \leq c$), the CPFs
+$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y},\vec{\epsilon})$ are represented with \emph{piecewise linear equations} (PLEs) that condition on the
+noise, action, current state, and previous state variables with piecewise conditions that may be arbitrary logical combinations of $\vec{b}$, $\vec{b}'$  and linear inequalities over $\vec{x}$ .  The noise function $\vec{\epsilon}$ is in form of a bounded error depending only on the current state. 
 
 As a simple example, consider the following CPF forms for discrete and continuous variables: 
 
