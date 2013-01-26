@@ -4,7 +4,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 
-import cmdp.CMDP;
 import camdp.CAMDP;
 
 public class ApproxTest {

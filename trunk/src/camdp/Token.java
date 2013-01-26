@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////////
 
 // Package definition
-package cmdp;
+package camdp;
 
 // Packages to import
 import java.io.*;

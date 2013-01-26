@@ -9,7 +9,7 @@ import graph.Graph;
 
 import java.util.*;
 
-import cmdp.HierarchicalParser;
+import camdp.HierarchicalParser;
 
 import xadd.XADD;
 import xadd.ExprLib.ArithExpr;

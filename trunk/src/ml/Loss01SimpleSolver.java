@@ -27,7 +27,7 @@ import xadd.XADD.XADDINode;
 import xadd.XADD.XADDLeafMinOrMax;
 import xadd.XADD.XADDNode;
 import xadd.XADD.XADDTNode;
-import cmdp.HierarchicalParser;
+import camdp.HierarchicalParser;
 
 public class Loss01SimpleSolver {
 

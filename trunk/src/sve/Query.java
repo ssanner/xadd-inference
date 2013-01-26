@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import cmdp.HierarchicalParser;
+import camdp.HierarchicalParser;
 
 public class Query {
 

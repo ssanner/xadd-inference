@@ -26,7 +26,7 @@ import java.util.Map;
 import logic.kb.fol.FOPC;
 import util.IntPair;
 import util.IntTriple;
-import cmdp.HierarchicalParser;
+import camdp.HierarchicalParser;
 import xadd.ExprLib;
 import xadd.ExprLib.ArithExpr;
 import xadd.ExprLib.CoefExprPair;
