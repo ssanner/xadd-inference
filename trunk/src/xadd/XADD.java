@@ -1728,6 +1728,8 @@ public class XADD {
             min_max_eval = reduceLinearize(min_max_eval); 
             
             // TODO: investigate... sometimes we are getting a quadratic decision below that should have been linearized!
+            // TODO: Yes, in the simple Rover-nonlinear2 we get non linear constraints! !!
+            // this -> showGraph(min_max_eval, "afterLinearize"); shows nonlinear XADDs after Linearize,
             min_max_eval = reduceLP(min_max_eval); // Result should be canonical
             if (VERBOSE_MIN_MAX) _log.println(_sOpName + " of LB and UB (reduce/linearize): " + getString(min_max_eval));
 

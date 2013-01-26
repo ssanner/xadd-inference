@@ -301,10 +301,13 @@ public class CAMDP {
 					num_branches[_nCurIter] + " cases" + " in " + time[_nCurIter] + " ms");
 			
 			//APPROX_TEST LOG, outputs: iter, #node, #branches, #UsedMem(MB), IterTime, TotTime, MaxVal, RelErr
-			_testLogStream.format("%d %d %d %d %d %d %f %f\n", _nCurIter, num_nodes[_nCurIter], 
+			
+			if (LINEAR_PROBLEM && APPROX_PRUNING) {
+				_testLogStream.format("%d %d %d %d %d %d %f %f\n", _nCurIter, num_nodes[_nCurIter], 
 					num_branches[_nCurIter], usedMem(), 
 					time[_nCurIter], totalTime,
 					_context.linMaxVal(_valueDD), maxRelErr );
+			}
 			//////////////////////////////////////////////////////////////////////////
 			if (_prevDD.equals(_valueDD) ) {
 				System.out.println("CAMDP: Converged to solution early,  at iteration "+_nCurIter);

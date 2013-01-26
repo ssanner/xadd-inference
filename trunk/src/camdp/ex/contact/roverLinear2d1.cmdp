@@ -1,0 +1,86 @@
+cvariables (x y)
+min-values (-200 -200)
+max-values (200 200)
+bvariables (tp1)
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables(ax ay)
+
+action move (-30 < = ax < = 30 ^ -30 < = ay < = 30)
+
+tp1' (tp1
+	([1.0])
+	([x<=40]
+		([x>=-60]
+			([y>70]
+				([1.0])
+				([0.0])
+			)
+			([0])
+		)
+		([0])
+	)
+)
+	
+x' ([ax > 0]
+	([ay>0]
+		([ax + ay < 10]
+			([x+ax])
+			([x])
+		)
+		([ax - ay < 10]
+			([x+ax])
+			([x])
+		)
+	)
+	([ay>0]
+		([-ax + ay < 10]
+			([x+ax])
+			([x])
+		)
+		([-ax - ay < 10]
+			([x+ax])
+			([x])
+		)
+	)
+)
+
+y' ([ax > 0]
+	([ay>0]
+		([ax + ay < 10]
+			([y+ay])
+			([y])
+		)
+		([ax - ay < 10]
+			([y+ay])
+			([y])
+		)
+	)
+	([ay>0]
+		([-ax + ay < 10]
+			([y+ay])
+			([y])
+		)
+		([-ax - ay < 10]
+			([y+ay])
+			([y])
+		)
+	)
+)
+		
+reward 
+(tp1'
+	(tp1
+		([0])
+           	([50 + y])
+        )
+        ([-1])
+)
+
+endaction
+
+discount 1.000000
+iterations 8
+
