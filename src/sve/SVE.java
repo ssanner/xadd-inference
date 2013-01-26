@@ -15,7 +15,7 @@ import java.util.Iterator;
 
 import sve.GraphicalModel.Factor;
 
-import cmdp.HierarchicalParser;
+import camdp.HierarchicalParser;
 import xadd.XADD;
 import xadd.ExprLib.DoubleExpr;
 import xadd.ExprLib.ArithExpr;

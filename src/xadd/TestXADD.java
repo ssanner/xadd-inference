@@ -19,7 +19,7 @@ import xadd.ExprLib.VarExpr;
 import xadd.XADD.XADDINode;
 import xadd.XADD.XADDLeafMinOrMax;
 import xadd.XADD.XADDTNode;
-import cmdp.HierarchicalParser;
+import camdp.HierarchicalParser;
 
 public class TestXADD {
 

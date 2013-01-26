@@ -3,7 +3,7 @@ package xadd;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
-import cmdp.HierarchicalParser;
+import camdp.HierarchicalParser;
 
 import logic.kb.fol.FOPC;
 import xadd.ExprLib.*;
