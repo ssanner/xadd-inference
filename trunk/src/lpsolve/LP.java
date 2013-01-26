@@ -209,7 +209,7 @@ public class LP {
 
 			// Compute and check the objective value for this solution
 			_dObjValue = computeObjective();
-			if (_status != LpSolve.INFEASIBLE && Math.abs(_dObjValue - _solver.getObjective()) > 1e-6d) {
+			if (_status != LpSolve.INFEASIBLE && Math.abs(_dObjValue - _solver.getObjective()) > 1e-4d) {
 				System.out.println("WARNING: Internal Calculations vs. LpSolve Mismatch");
 				System.out.println("         " + _dObjValue + " vs. "
 						+ _solver.getObjective() + "\n         ** Can ignore if problem was infeasible.");

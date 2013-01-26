@@ -1,24 +1,24 @@
-src/cmdp/ex/knapsackM.cmdp 3 false true
+src/camdp/ex/discact/knapsackM.cmdp 3 false true
 
-src/camdp/ex/Rover-nonlinear2.cmdp 5 true false
+src/camdp/ex/contact/Rover-nonlinear2.cmdp 5 true false
 
-src/camdp/ex/Rover-linear.cmdp 5 true false
+src/camdp/ex/contact/Rover-linear.cmdp 5 true false
 
-src/camdp/ex/reservoir-refinement4corr.cmdp 5 false true
+src/camdp/ex/contact/reservoir-refinement4corr.cmdp 5 false true
 
-src/camdp/ex/reservoir-refinement5.rew-mod.cmdp 5 false true
+src/camdp/ex/contact/reservoir-refinement5.rew-mod.cmdp 5 false true
 
-src/camdp/ex/reservoir-test-interm-dbn.cmdp 2 false true
+src/camdp/ex/contact/reservoir-test-interm-dbn.cmdp 2 false true
 
-src/camdp/ex/reservoir-refinement6.cmdp 5 false true
+src/camdp/ex/contact/reservoir-refinement6.cmdp 5 false true
 
-src/camdp/ex/inventory2-4.cmdp 5 false true
-
-
+src/camdp/ex/contact/inventory2-4.cmdp 5 false true
 
 
 
-src/camdp/ex/Rover-linear-min-test.cmdp 5 true false
 
-src/camdp/ex/Rover-nonlinear2-min-test.cmdp 5 true false
+
+src/camdp/ex/contact/Rover-linear-min-test.cmdp 5 true false
+
+src/camdp/ex/contact/Rover-nonlinear2-min-test.cmdp 5 true false
 

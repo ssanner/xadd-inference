@@ -39,7 +39,7 @@ public class ParseCAMDP {
 	public void buildCAMDP(ArrayList input) {
 
 		if (input == null) {
-			System.out.println("Empty input file!");
+			System.out.println("Missing or empty input file!");
 			System.exit(1);
 		}
 
