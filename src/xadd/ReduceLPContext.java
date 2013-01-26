@@ -35,8 +35,9 @@ public class ReduceLPContext {
 	//ReduceLP Flags
 	private final static boolean DEFAULT_CHECK_REDUNDANCY = true; // Test only consistency or also redundancy
 	private final static boolean USE_REDUCE_LPv1 = false; //maplist, full redundancy older version
-	private final static boolean USE_REDUCE_LPv2 = true; //hashSet, direct redundancy new version
+	private final static boolean USE_REDUCE_LPv2 = true; //hashSet, result implied redundancy new version
 	private final static boolean SKIP_TEST2 = false; //Skip Minimal region removal
+	public static final boolean SINGLE_PATH_IMPLIED_RESULT = false; //Stop search if need to check more than one path
 	
 	private static final boolean ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP = false; //Add bounds as explicit constraints (should not be necessary)
 	//Debug Flags
@@ -538,10 +539,8 @@ public class ReduceLPContext {
 	    //ReduceLPVersion 2- Direct Redundancy Check
 	    private int reduceLPv2(int node_id, HashSet<Integer> test_dec, boolean redundancy) 
 	    {
-	
-	        Integer ret = null;
 	        XADDNode n = context.getExistNode(node_id);
-	
+
 	        // A terminal node should be reduced (and cannot be restricted)
 	        // by default if hashing and equality testing are working in getTNode
 	        if (n instanceof XADDTNode) {
@@ -550,7 +549,7 @@ public class ReduceLPContext {
 	
 	        XADDINode inode = (XADDINode) n;
 	
-	        //boolean variables are independent 
+	        //boolean variables are independent, no redundancy or infeasibility possible
 	        if (! ( context._alOrder.get(inode._var)instanceof ExprDec)){
 	            if (! (context._alOrder.get(inode._var)instanceof BoolDec)){
 	                System.err.println("unexpected decision in reduce_LP: "+context._alOrder.get(inode._var));
@@ -560,73 +559,90 @@ public class ReduceLPContext {
 	            int high = reduceLPv2(inode._high, test_dec, redundancy);
 	            return context.getINode(inode._var, low, high);
 	        }
-	        // Reduce based on pairwise interactions only
-	        Boolean var_implication = null;
+	        
 	        // Full branch implication test
 	        if (isTestImpliedv2(test_dec, inode._var)) {
-	            var_implication = true;
+	        	return reduceLPv2(inode._high, test_dec, redundancy);
 	        } else if (isTestImpliedv2(test_dec, -1*inode._var)) {
-	            var_implication = false;
-	        } else if (redundancy){
-	            XADDNode lowNode = context.getExistNode(inode._low);
-	            XADDNode highNode = context.getExistNode(inode._high);
-	            if (lowNode instanceof XADDINode){
-	                XADDINode iLowNode = (XADDINode) lowNode;
-	                if ( iLowNode._low == inode._high){
-	                    test_dec.add(inode._var);
-	                    if (isTestImpliedv2(test_dec, -iLowNode._var)){
-	                        //return only the false branch (which includes the true)
-	                        var_implication = false;}
-	                    test_dec.remove(inode._var);
-	                }
-	                else if ( iLowNode._high == inode._high){
-	                    test_dec.add(inode._var);
-	                    if (isTestImpliedv2(test_dec, iLowNode._var)){
-	                        //return only the false branch (which includes the true)
-	                        var_implication = false;}
-	                    test_dec.remove(inode._var);
-	                }
-	            }
-	            else if (highNode instanceof XADDINode){
-	                XADDINode iHighNode = (XADDINode) highNode;
-	                if ( iHighNode._low == inode._low){
-	                    test_dec.add(-1*inode._var);
-	                    if (isTestImpliedv2(test_dec, -iHighNode._var)){
-	                        //return only the true branch (which includes the false)
-	                        var_implication = true;}
-	                    test_dec.remove(-1*inode._var);
-	                }
-	                else if ( iHighNode._high == inode._low){
-	                    test_dec.add(-1*inode._var);
-	                    if (isTestImpliedv2(test_dec, iHighNode._var)){
-	                        //return only the false branch (which includes the false)
-	                        var_implication = true;}
-	                    test_dec.remove(-1*inode._var);
-	                }
-	            }
-	        }
-	
-	        // Check for implied branches before doing a full reduce on both branches
-	        if (var_implication == Boolean.TRUE) {
-	            ret = reduceLPv2(inode._high, test_dec, redundancy);
-	        } else if (var_implication == Boolean.FALSE) {
-	            ret = reduceLPv2(inode._low, test_dec, redundancy);
-	        } else {
-	            test_dec.add(-1*inode._var);
-	            int low = reduceLPv2(inode._low, test_dec, redundancy);
-	            test_dec.remove(-1*inode._var);
-	            test_dec.add(inode._var);
-	            int high = reduceLPv2(inode._high, test_dec, redundancy);
-	            test_dec.remove(inode._var);
-	            // Standard Reduce: getInode will handle the case of low == high
-	            ret = context.getINode(inode._var, low, high);
-	        }
-	        return ret;
+	        	return reduceLPv2(inode._low, test_dec, redundancy);
+	        } 
+	    	
+	        //make subtree reducing before redundancy 
+	        test_dec.add(-1*inode._var);
+            int low = reduceLPv2(inode._low, test_dec, redundancy);
+            test_dec.remove(-1*inode._var);
+            test_dec.add(inode._var);
+            int high = reduceLPv2(inode._high, test_dec, redundancy);
+            test_dec.remove(inode._var);
+            
+            //After reducing subtrees check if this node became redundant
+            if (redundancy){
+	        	
+            	//1 check if true branch is implied in the low branch if current decision is true
+            	test_dec.add(inode._var);
+    			boolean lowReplace = isResultImplied(test_dec, low, high);
+    			test_dec.remove(inode._var);
+    			
+    			if (lowReplace) return low;
+    			
+    			//2 check if false branch is implied in the true branch if current decision is false
+    			test_dec.add(-inode._var);
+    			boolean highReplace = isResultImplied(test_dec, high, low);
+    			test_dec.remove(-inode._var);
+    			
+    			if (highReplace) return high;
+            }
+    
+            //Standard Reduce: getInode will handle the case of low == high
+            return context.getINode(inode._var, low, high);
+        }
+	    
+	    //Redundancy simplification 2 - search for node check if one node is the impliedResult on the other branch.
+	    // The complete test (v3?) would be to test if one subtree can replace the other (considering the decision to be removed) - requires 
+	    // am XADD equavalence underconstraints test.
+	    //Call to check if given the test_dec decisions subtree always reaches "goal", which means that
+	    // if the node above the subtree is chosing between subtree or goal, we can leave subtree in its place (it will reach still 
+	    // reach goal whenever the first decision would take it to goal.
+	    private boolean isResultImplied(HashSet<Integer> test_dec, int subtree, int goal) {
+	    	
+	    	if (subtree == goal) return true;
+	    	
+	    	XADDNode subtreeNode = context.getExistNode(subtree);
+            XADDNode goalNode = context.getExistNode(goal);
+	    	
+            if (subtreeNode instanceof XADDINode){
+	    		XADDINode iSubtreeNode = (XADDINode) subtreeNode;
+	    		
+	    		if (goalNode instanceof XADDINode){
+	    			//use variable ordering to stop useless searches
+	    			if (iSubtreeNode._var >= ((XADDINode) goalNode)._var) return false;
+	    		}	
+	    		
+	    		if (isTestImpliedv2(test_dec, -iSubtreeNode._var)){
+	    			return isResultImplied(test_dec, iSubtreeNode._low, goal);
+    			}
+    			if (isTestImpliedv2(test_dec, iSubtreeNode._var)){
+    				return isResultImplied(test_dec, iSubtreeNode._high, goal);
+    			}
+    			
+    			if ( !SINGLE_PATH_IMPLIED_RESULT){
+	    			test_dec.add(-iSubtreeNode._var);
+	    			boolean impliedInLow = isResultImplied(test_dec, iSubtreeNode._low, goal);
+	    			test_dec.remove(-iSubtreeNode._var);
+	    			
+	    			//if one brach failed no need to test the other one
+	    			if (!impliedInLow) return false;
+	    			
+	    			test_dec.add(iSubtreeNode._var);
+	    			boolean impliedInHigh = isResultImplied(test_dec, iSubtreeNode._high, goal);
+	    			test_dec.remove(iSubtreeNode._var);
+    			
+	    			return impliedInHigh;
+    			}
+	    	}
+            return false; //if TNode, only the == check can make it true
 	    }
-	    
-	    
-
-	    
+	    		
 	    private boolean isTestImpliedv2(HashSet<Integer> test_dec, int dec) {
 	
 	        if (!(context._alOrder.get(Math.abs(dec)) instanceof ExprDec)) return false;
