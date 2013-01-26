@@ -1,0 +1,58 @@
+% small intro to this section, can be omitted along with the subsection's name
+We first formally introduce the framework of Robust Continuous State and Action Markov decision processes (RCSA-MDPs) extended from CSA-MDPs ~\cite{sdp_aaai}. The optimal solution is then defined by a Robust Dynamic Programming (RDP) approach. 
+\subsection{Factored Representation}
+
+%If we assume noise is a state variable the next state of noise is ambiguous, add noise to transition function
+A RCSA-MDP is modelled using state variables $(\vec{b},\vec{x}) = ( b_1,\ldots,b_a,x_{1},\ldots,x_b )$ where each $b_i \in \{ 0,1 \}$ ($1 \leq i \leq a$) represents discrete boolean variables $\,$
+and each $x_j \in \mathbb{R}$ ($1 \leq j \leq b$) is continuous.  
+Both discrete and continuous actions are represented by the set $A = \{a_1(\vec{y}_1), \ldots, a_p(\vec{y}_d) \}$, where  $\vec{y}_k \in \mathbb{R}^{|\vec{y}_k|}$ ($1\leq k \leq d$) denote continuous parameters for action $a_k$.
+
+%describe each function and how it is represented then talk about goal
+Given a state $(\vec{b},\vec{x})$ and an executed action $a(\vec{y})$ at this state, a joint state transition model
+$P(\vec{b}',\vec{x}'| \vec{b},\vec{x},a,\vec{y})$ specifies the probability of the next state $(\vec{b}',\vec{x}')$ and a
+reward function $R(\vec{b},\vec{x},a,\vec{y})$ specifies the immediate reward at this state.  To model uncertainty in RCSA-MDPs we assume an error $\epsilon$ bounded by some convex region on the state. A noise model $N(\vec{x})$ is defined on the continuous variables. 
+
+A policy $\pi(\vec{b},\vec{x})$ at this state specifies the action $a(\vec{y}) =
+\pi(\vec{b},\vec{x})$ to take at this state.  An optimal sequence of finite horizon policies $\Pi^* = (\pi^{*,1},\ldots,\pi^{*,H})$ is desired such that given the initial state $(\vec{b}_0,\vec{x}_0)$ at $h=0$ and  a discount factor $\gamma, \; 0 \leq \gamma \leq 1$, the expected sum of discounted rewards over horizon $h \in H ;H \geq 0$ is maximized: 
+\begin{align}
+V^{\Pi^*}(\vec{b},\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| \vec{b}_0,\vec{x}_0\right].
+\end{align}
+where $r^h$ is the reward obtained at horizon $h$ following the optimal policy. 
+
+%\footnote{We assume a finite horizon $H$ in this
+%paper, however in cases where our SDP algorithm converges
+%in finite time, the resulting value function and 
+%corresponding policy are optimal for $H=\infty$. 
+% For finitely bounded value
+%with $\gamma = 1$, the forthcoming SDP algorithm may terminate in
+%finite time, but is not guaranteed to do so; for $\gamma < 1$, an
+%$\epsilon$-optimal policy for arbitrary $\epsilon$ can be computed by
+%SDP in finite time.
+%} 
+ 
+Similar to the dynamic Bayes net (DBN) structure of CSA-MDPs ~\cite{sdp_aaai} 
+we assume \emph{synchronic arcs} (variables that condition on each
+other in the same time slice) from $\vec{b}$ to $\vec{x}$ but not within the binary $\vec{b}$ or continuous variables $\vec{x}$.Thus the factorized joint transition model is defined as
+%is this definition correct?  no arcs from n ->x? 
+
+%\vspace{5mm} 
+{\footnotesize
+\begin{align}
+ P(\vec{b}',\vec{x}'|\vec{b},\vec{x}, a,\vec{y}) = \prod_{i=1}^n P(b_i'|\vec{b},\vec{x} ,a,\vec{y}) 
+\prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) N(\vec{x}).  \nonumber
+\end{align}
+}
+%Note that uncertainty is modelled based only on the previous noise variable. 
+
+For binary variables $b_i$ ($1 \leq i \leq a$) the conditional probability $P(b_i'|\vec{b},\vec{x},a,\vec{y})$ is defined as 
+conditional probability functions (CPFs).  For continuous variables $x_j$ ($1 \leq j \leq b$), the CPFs
+$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ are represented with \emph{piecewise linear equations} (PLEs) that condition on the
+action, current state, and previous state variables with piecewise conditions that may be arbitrary logical combinations of $\vec{b}$, $\vec{b}'$  and linear inequalities over $\vec{x}$ .  The noise function $N(\vec{x})$ is in form of a bounded error depending only on the current state. 
+
+As a simple example, consider the following CPF forms for discrete and continuous variables: 
+
+We allow the reward function $R(\vec{b},\vec{x},a,\vec{y})$ to be a general piecewise linear function (boolean or linear conditions
+and linear values) or a piecewise quadratic function of univariate state and a linear function of univariate action parameters. 
+These constraints ensure piecewise linear boundaries that can be checked for consistency using a linear constraint feasibility checker, which we will later see is crucial for efficiency.
+
+\subsection{Robust Dynamic Programming}

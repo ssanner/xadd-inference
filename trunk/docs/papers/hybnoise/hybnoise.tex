@@ -1,6 +1,7 @@
 \documentclass{article}
 % The file ijcai13.sty is the style file for IJCAI-13 (same as ijcai07.sty).
 \usepackage{ijcai13}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
 
 % Use the postscript times font!
 \usepackage{times}
@@ -32,22 +33,20 @@ leliane@ime.usp.br}
 \maketitle
 
 \begin{abstract}
-TODO: emphasize solution is exact, optimal according to adversarial semantics
-as used in robust optimization.  First results for hybrid systems with piecewise
-linear dynamics and state-dependent noise --- something that is typically
-not handled in control theory, much less with these expressive dynamics.
-Reference to chance constraints?
+%TODO: emphasize solution is exact, optimal according to adversarial semantics as used in robust optimization.  First results for hybrid systems with piecewise linear dynamics and state-dependent noise --- something that is typically not handled in control theory, much less with these expressive dynamics. Reference to chance constraints?
+Continuous spaces  with stochastic dynamics can represent a rich class of real world problems. While decision theoretic planning provides optimal solutions to restricted continuous domains, fully stochastic continuous states with continuous action spaces have not been solved without approximating techniques. Here we propose a symbolic dynamic programming (SDP) approach to provide an optimal closed-form solution for Stochastic Discrete and Continuous MDPs with piecewise linear dynamics. We show how noisy states are symbolically modelled and intuitively minimized in the value iteration algorithm with unknown state parameters. The proposed algorithm uses the extended algebraic decision diagrams (XADDs) as an efficient data structure for SDPs to demonstrate empirical results on problems such as the Inventory Control. The results show the existence of the first fully automated exact solution to the stochastic noisy continuous problem definitions. 
+
 \end{abstract}
 
 \section{Introduction}
 
 \input introduction.tex
 
-\section{Continuous State and Action MDPs}
+\section{Robust Continuous State and Action MDPs}
 
 \input csamdp.tex
 
-\section{Symbolic Dynamic Programming (SDP)}
+\section{Symbolic Dynamic Programming (SDP)} %Symbolic Solutions for RCSA-MDPs
 
 \input sdp.tex
 
