@@ -1,9 +1,9 @@
-In order to compute the equations above, we propose a \emph{Robust symbolic dynamic programming} approach similar to ~\cite{sanner_uai11}.  This requires a general value iteration in Algorithm~\ref{alg:vi} (\texttt{VI})
+
+In order to compute the equations above, we propose a \emph{Robust symbolic dynamic programming} approach similar to ~\cite{sanner_uai11}.  This requires a general value iteration proposed in Algorithm~\ref{alg:vi} (\texttt{VI})
 and a regression subroutine in Algorithm~\ref{alg:regress}
 (\texttt{Regress}) %where we have omitted parameters $\vec{b}$ and $\vec{x}$ from $V$ and $Q$ to avoid notational clutter. 
 %Note that the noise variables are defined and minimized in the 
-%Before we explain this contribution though, we ~\ref{alg:vi} Algorithm. 
-In general Symbolic Dynamic Programming (SDP) uses the \emph{case} representation. All operations required for computing $Q$ and $V$ functions are \emph{case operations} and defined next. We then move to the Robust SDP solution. 
+Before this RSDP approach we introduce the appropriate representation of \emph{case} statements. All operations required for computing $Q$ and $V$ functions are \emph{case operations} which are defined next. 
 
 \subsection{Case Representation and Operators}
 
@@ -41,7 +41,6 @@ $R(\vec{b},\vec{x},a,\vec{y})$and to be continuous at partition boundaries.
        $h:=h+1$\;
        \ForEach {$a(\vec{y}) \in A$}{
               $Q_a^{h}(\vec{y})\,:=\,$\regress{$V^{h-1},a,\vec{y}$}\;
-               $Q_a^{h}(\vec{y},\vec{\epsilon}) := \casemax_{\vec{epsilon}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// $\max$-in noise variables}\;
 				$Q_a^{h}(\vec{y}) := \min_{\vec{epsilon}} \, Q_a^{h}(\vec{y},\vec{\epsilon})$ $\,$ \emph{// Stochastic $\min$}\;
 				$Q_a^{h} := \max_{\vec{y}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// Continuous $\max$}\;
               $V^{h} := \casemax_a \, Q_a^{h}$ $\,$ \emph{// $\casemax$ all $Q_a$}\;
@@ -79,6 +78,9 @@ $R(\vec{b},\vec{x},a,\vec{y})$and to be continuous at partition boundaries.
          $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 1}$\\
          \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 0}$\;
     }
+     \For {all $\epsilon_k$ in $Q$}{
+         $Q_a^{h}(\vec{y},\vec{\epsilon}) := \casemax_{\vec{epsilon}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// $\max$-in noise variables}\;
+	}
     \Return{$R(\vec{b},\vec{x},a,\vec{y}) \oplus (\gamma \otimes Q)$} \;
 }
 \caption{\footnotesize \texttt{Regress}($V,a,\vec{y}$) $\longrightarrow$ $Q$ \label{alg:regress}}
@@ -196,3 +198,5 @@ To implement the case statements efficiently with continuous variables, extended
 %The only operation that has not been previously defined for XADDs is $\max_y$, but this is easy: treating each XADD path from root to leaf node as a single case partition with conjunctive constraints,  $\max_y$ is performed at each leaf subject to these constraints and all path $\max_y$'s are then accumulated via the $\casemax$ operation to obtain the final result.
 
 \subsection{Symbolic Robust Dynamic Programming}
+
+
