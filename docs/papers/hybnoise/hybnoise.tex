@@ -20,7 +20,7 @@
 \def\argmin{\operatornamewithlimits{arg\,min}}
 
 % See ../linquad.cameraready/exact_sdp.tex for AAAI-12 Latex source
-\title{	Robust Solutions for Hybrid MDPs with State-dependent Noise }
+\title{	Robust Optimization for Hybrid MDPs with State-dependent Noise }
 \author{Zahra Zamani\\
 ANU \& NICTA\\
 Canberra, Australia\\
@@ -46,9 +46,44 @@ leliane@ime.usp.br}
 \maketitle
 
 \begin{abstract}
-%TODO: emphasize solution is exact, optimal according to adversarial semantics as used in robust optimization.  First results for hybrid systems with piecewise linear dynamics and state-dependent noise --- something that is typically not handled in control theory, much less with these expressive dynamics. Reference to chance constraints?
-Continuous spaces  with stochastic dynamics can represent a rich class of real world problems. While decision theoretic planning provides optimal solutions to restricted continuous domains, fully stochastic continuous states with continuous action spaces have not been solved without approximating techniques. Here we propose a symbolic dynamic programming (SDP) approach to provide an optimal closed-form solution for Stochastic Discrete and Continuous MDPs with piecewise linear dynamics. We show how noisy states are symbolically modelled and intuitively minimized in the value iteration algorithm with unknown state parameters. The proposed algorithm uses the extended algebraic decision diagrams (XADDs) as an efficient data structure for SDPs to demonstrate empirical results on problems such as the Inventory Control. The results show the existence of the first fully automated exact solution to the stochastic noisy continuous problem definitions. 
+%TODO: emphasize solution is exact, optimal according to adversarial
+%semantics as used in robust optimization.  First results for hybrid
+%systems with piecewise linear dynamics and state-dependent noise ---
+%something that is typically not handled in control theory, much less
+%with these expressive dynamics. Reference to chance constraints?
 
+Recent advances in solutions to hybrid MDPs with discrete and
+continuous state and action spaces have significantly extended the
+class of MDPs for which exact solutions can be derived, albeit at the
+expense of a restricted transition noise model.  In this paper, we
+work around limitations of previous solutions by adopting a robust
+optimization approach in which Nature is allowed to adversarially
+determine transition noise within automatically-derived confidence
+intervals.  This allows one to derive an optimal policy with an
+arbitrary (user-specified) level of success probability and
+significantly extends the class of transition noise models for which
+hybrid MDPs can be solved.  This work also significantly extends
+results for the related ``chance-constrained'' approach in stochastic
+hybrid control to accommodate state-dependent noise.  We demonstrate
+our approach working on a variety of hybrid MDPs taken from AI
+planning, operations research, and control theory, noting that this is
+the first time optimal robust solutions have been automatically
+derived for such problems.
+
+%Continuous spaces with stochastic dynamics can represent a rich class
+%of real world problems. While decision theoretic planning provides
+%optimal solutions to restricted continuous domains, fully stochastic
+%continuous states with continuous action spaces have not been solved
+%without approximating techniques. Here we propose a symbolic dynamic
+%programming (SDP) approach to provide an optimal closed-form solution
+%for Stochastic Discrete and Continuous MDPs with piecewise linear
+%dynamics. We show how noisy states are symbolically modelled and
+%intuitively minimized in the value iteration algorithm with unknown
+%%state parameters. The proposed algorithm uses the extended algebraic
+%decision diagrams (XADDs) as an efficient data structure for SDPs to
+%demonstrate empirical results on problems such as the Inventory
+%Control. The results show the existence of the first fully automated
+%exact solution to the stochastic noisy continuous problem definitions.
 \end{abstract}
 
 \section{Introduction}
