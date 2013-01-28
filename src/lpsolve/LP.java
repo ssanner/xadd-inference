@@ -18,7 +18,7 @@ public class LP {
 	public static final boolean SHOW_ADDED_CONSTRAINTS = false;
 	public static final boolean SHOW_SOLVER_RESULT = false;
 	
-	public static final boolean USE_EPSILON_ON_INVERSION = true;
+	public static final boolean USE_EPSILON_ON_INVERSION = false;
 	public static final double  EPSILON = 1e-6d;
 	
 	public static final int MAXIMIZE = 1;
@@ -209,8 +209,12 @@ public class LP {
 
 			// Compute and check the objective value for this solution
 			_dObjValue = computeObjective();
-			if (_status != LpSolve.INFEASIBLE && Math.abs(_dObjValue - _solver.getObjective()) > 1e-4d) {
-				System.out.println("WARNING: Internal Calculations vs. LpSolve Mismatch");
+			double diff = Math.abs(_dObjValue - _solver.getObjective());
+			// This warning shows often in maximization of error when the obj is above 1E10, then the error indeed is above 1E-4,
+			// this could be avoided using relative error with the line below.
+			//if ( Math.abs(_solver.getObjective()) > 1d ) diff = diff/Math.abs(_solver.getObjective());
+			if (_status != LpSolve.INFEASIBLE && diff > 1e-4d) {
+				System.out.println("WARNING: Internal Calculations vs. LpSolve Mismatch: Dif "+ diff +" Sol = "+ LP.PrintVector(_x));
 				System.out.println("         " + _dObjValue + " vs. "
 						+ _solver.getObjective() + "\n         ** Can ignore if problem was infeasible.");
 			}

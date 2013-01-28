@@ -33,6 +33,7 @@ public class LinearApproximationMethod extends LinearXADDMethod {
 	//Prunning Precision constants
 	private final static double PRUNE_MIN_ITER_IMP = 1e-10; //Stop Condition for linear pruning algorithm
     private static final double UNDERCONSTRAINED_ALLOW_REL_ERROR = 0.05; //Error difference allowed for underconstrained solution
+    private static final double SINGLE_MERGE_PART = 0.2; //Error difference allowed for underconstrained solution
     
     //Prunning Flags
     private static final boolean UNDERCONSTRAINED_REFINEMENT = true; //solve underconstrained problem in linear approx
@@ -561,10 +562,14 @@ public class LinearApproximationMethod extends LinearXADDMethod {
             }
 
             XADDNode n = context.getExistNode(node_id);
-            if (n instanceof XADDTNode){
+            
+            //Possibly mergeable TNode, for now, all except the Infinites
+            if (n instanceof XADDTNode && (node_id != context.POS_INF) && (node_id != context.NEG_INF) ){
                 Iterator<IntPair> qIt = _pqOpenNodes.iterator();
                 HashSet<IntPair> solved = new HashSet<IntPair>();
-                double error = allowError;
+                double allMergeError = allowError;
+                double singleMergeError = allowError * SINGLE_MERGE_PART;
+               
                 while(qIt.hasNext()){
                     //tryMerge(n,leaf.leaf.next())
                     IntPair leaf = qIt.next();
@@ -572,14 +577,20 @@ public class LinearApproximationMethod extends LinearXADDMethod {
                     if (PRUNE_UNION_DBG) {System.out.println("n ="+node_id+" comp "+leaf._i2 
                             + " " +( (XADDTNode) context.getExistNode(leaf._i2))._expr
                             + " DecSet = "+ _hmDecList.get(leaf._i2));}
-                    PruneResult res = tryMergeLin(node_id,leaf._i2, error);
+                    
+                    PruneResult res = tryMergeLin(node_id,leaf._i2, Math.min(allMergeError, singleMergeError) );
+                    
+                    
                     if (res != null){
-                        error -= res.mergeError;
+                    	//Merge succesful
+                    	
+                        allMergeError -= res.mergeError;
                         solved.add(leaf);
                         _hmRemap.put(node_id, res.new_id);
                         _hmRemap.put(leaf._i2, res.new_id);
                         int old_id = node_id;
                         node_id = res.new_id; //continue merging from the new node!
+                        
                         if (PRUNE_UNION_DBG){
                             System.out.println("Merge!\nJoin: "+leaf._i2
                                     +"expr = "+((XADDTNode)context.getExistNode(leaf._i2))._expr
@@ -587,7 +598,7 @@ public class LinearApproximationMethod extends LinearXADDMethod {
                             System.out.println("With: "+old_id
                                     +"expr = "+((XADDTNode)context.getExistNode(old_id))._expr
                                     +"DecSet = "+ _hmDecList.get(old_id));
-                            System.out.println("Merged (rem.error="+error+") \nNode: "+node_id
+                            System.out.println("Merged (rem.error="+allMergeError+" single="+singleMergeError+ ") \nNode: "+node_id
                                     +"expr = "+((XADDTNode)context.getExistNode(node_id))._expr
                                     +"DecSet = "+ _hmDecList.get(node_id));
                         }
@@ -596,7 +607,7 @@ public class LinearApproximationMethod extends LinearXADDMethod {
                 _pqOpenNodes.removeAll(solved);
                 _hmRemap.put(node_id, node_id);
             }
-            else{
+            else if (n instanceof XADDINode){ // if not TNode must be a INode
                 XADDINode node = (XADDINode) n;
                 
                 addParDec(node._low,-1*node._var,node_id);

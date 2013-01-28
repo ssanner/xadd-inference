@@ -72,7 +72,11 @@ public class ApproxTest {
 			System.out.format("Solving %s with %d iter, %f error\n",filename,iter,error);
 			if (printToFile) out = makeLog(filename, error, resultsDir);
 			camdp.setApproxTest(error, out, false);
-			int iter_used = camdp.solve(iter);
+			try {
+				int iter_used = camdp.solve(iter);
+			}catch (Exception e){
+				e.printStackTrace();
+			}
 			camdp.flushCaches(true);
 		}
 		System.out.println("Approx Test, Over!");
