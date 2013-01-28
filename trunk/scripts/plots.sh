@@ -34,6 +34,15 @@ awkcomm="/%/{if(M<"$niter"){sub("'"%",""'");M=M+1}}{print}"
 awk $awkcomm < tempfile > $temptex
 rm tempfile
 
-mv ../src/camdp/ex/$dirname/results/$shortname*.txt ../results/$name
-cd ../results/$name
+cd ..
+home=$(pwd)
+resultsdir="./src/camdp/ex/$dirname/results"
+echo $home $resultsdir
+cd $resultsdir
+Vtext=($(ls $shortname*.txt))
+for file in "${Vtext[@]}"; do
+	$home/scripts/change3d.sh $file $home/results/$name/$file
+done  
+#mv $home/src/camdp/ex/$dirname/results/$shortname*.txt $home/results/$name
+cd $home/results/$name
 gnuplot $shortname$plot

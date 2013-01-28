@@ -8,7 +8,7 @@ max-values ()
 ibvariables()
 avariables(ax)
 
-action move (-30 < = ax < = 30)
+action move (-300 < = ax < = 300)
 
 tp1' (tp1
 	([1.0])
@@ -58,8 +58,8 @@ reward
 )
 +
 ([ax>0]
-	([-0.1*ax])
-	([0.1*ax])
+	([-1*ax])
+	([1*ax])
 )
 
 endaction

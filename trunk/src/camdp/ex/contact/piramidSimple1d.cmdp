@@ -1,0 +1,39 @@
+cvariables (x y)
+min-values (-200 -200)
+max-values (200 200)
+bvariables ()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables(ax ay)
+
+action move (-10 < = ax < = 10 ^ -10 < = ay < = 10)
+	
+x' ([x + ax < 200]
+	([ x + ax ])
+	([x])
+)
+
+y' ([y + ay < 200]
+	([y + ay])
+	([y])
+)
+		
+reward 
+([x > 170]
+	([ y > 170]
+		([x < y]
+			([ 0.3*x])
+			([ 0.3*y])
+		)
+		([-1])
+	)
+	([-1])
+)
+
+endaction
+
+discount 1.000000
+iterations 8
+

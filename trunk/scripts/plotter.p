@@ -24,7 +24,8 @@ set linestyle  9 lt std_type lc 9 lw std_width pt 9
 set linestyle  10 lt std_type lc rgb "#33AA33" lw std_width pt 10
 set linestyle  11 lt std_type lc rgb "purple" lw std_width pt 11
 
-set term postscript eps font "Times-Roman,12"
+set term postscript eps font "Times-Roman,12" color
+set palette model RGB
 
 f(x) = step*x
 if ( 0>1){
@@ -55,11 +56,12 @@ if (valplot > 0) {
 				using 1:2 title sprintf("eps = %03d%",ap) \
 				ls eps+1 w l
 			} else { if (valplot == 3) {
+				set palette color
 				splot for [eps=0:Ncur]\
 					(ap = f(eps), \
 					sprintf("%s.cmdp.V_%d-%03d.txt",filename,V,ap))\
 					using 1:2:3 title sprintf("eps = %03d%",ap)\
-				ls eps+1 w l
+				w pm3d
 			} else {print("Wrong display val number")}
 			}	
 		}
