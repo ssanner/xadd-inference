@@ -1,0 +1,6 @@
+var	time	-5000	1000	60000
+var	energy	-5	1	50
+bassign	p1	true
+bassign	p2	false
+bassign	takenp1	false
+bassign	takenp2	false

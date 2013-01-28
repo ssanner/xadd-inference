@@ -642,6 +642,11 @@ public class XADD {
 		XADDNode root = getExistNode(id);
 		return root.countBranches();
 	}
+	
+	public int getLeafCount(int id) {
+		XADDNode root = getExistNode(id);
+		return root.countLeaves(id,new HashSet<Integer>());
+	}
 
 	public int getNodeCount(int id) {
 		XADDNode root = getExistNode(id);
@@ -2206,6 +2211,8 @@ public class XADD {
 		}
 
 		public abstract int countBranches();
+		
+		public abstract int countLeaves(int id, HashSet<Integer> m);
 
 		public abstract String toString(int depth);
 
@@ -2297,6 +2304,14 @@ public class XADD {
 		@Override
 		public int countBranches() {
 			return 1;
+		}
+		
+		public int countLeaves(int id,HashSet<Integer> marked) {
+			if (marked.contains(id)) return 0;
+			else {
+				marked.add(id);
+				return 1;
+			}
 		}
 
 	}
@@ -2438,6 +2453,16 @@ public class XADD {
 			if (total > MAX_BRANCH_COUNT)
 				return -1;
 
+			return total;
+		}
+		
+		public int countLeaves(int id, HashSet<Integer> marked) {
+			if (marked.contains(id)) return 0;
+			int low_count = getExistNode(_low).countLeaves(_low, marked);
+			int high_count = getExistNode(_high).countLeaves(_high, marked);
+			int total = low_count + high_count;
+			
+			marked.add(id);
 			return total;
 		}
 

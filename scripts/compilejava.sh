@@ -3,7 +3,7 @@
 ORI=$(pwd)
 
 #this could be modified to compile and run diferent files
-MAIN="linPruneTest/AproxTest"
+MAIN="camdp/ApproxTest"
 
 echo "Start - $MAIN"
 

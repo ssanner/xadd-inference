@@ -201,7 +201,8 @@ public class CAMDP {
 		
 		int totalTime=0;
 		long[] time = new long[max_iter + 1];
-		int[] num_nodes = new int[max_iter + 1]; 
+		int[] num_nodes = new int[max_iter + 1];
+		int[] num_leaves = new int[max_iter + 1];
 		int[] num_branches = new int[max_iter + 1];
 		
 		//////////////////////////////////////////////////////////////////////////
@@ -229,7 +230,7 @@ public class CAMDP {
 				int regr = _qfunHelper.regress(_valueDD, me.getValue());
 				//regr  = _context.reduceRound(regr);
 				if (DISPLAY_POSTMAX_Q)
-					doDisplay(regr, "Q-" + me.getKey() + "^" +_nCurIter + "-" + Math.round(100*APPROX_ERROR));
+					doDisplay(regr, "Q-" + me.getKey() + "^" +_nCurIter + "-" + String.format("%03d",Math.round(1000*APPROX_ERROR)) );
 	
 				// Maintain running max over different actions
 				_maxDD = (_maxDD == null) ? regr : _context.apply(_maxDD, regr, XADD.MAX);
@@ -250,7 +251,7 @@ public class CAMDP {
 					//			_context.getString(_maxDD) + "\nvs.\n" + _context.getString(_maxDD));
 				}
 				if(DISPLAY_MAX)
-					doDisplay(_maxDD, "QMax^"+_nCurIter+"-"+Math.round(100*APPROX_ERROR));
+					doDisplay(_maxDD, "QMax^"+_nCurIter+"-"+String.format("%03d",Math.round(1000*APPROX_ERROR)));
 				_logStream.println("Running max in iter " + _nCurIter + ":" + _context.getString(_maxDD));
 
 				flushCaches();
@@ -273,13 +274,14 @@ public class CAMDP {
 			
 			System.out.println("Iter:" + _nCurIter+" Complete");
 			_logStream.println("Iter complete:" + _nCurIter + _context.getString(_valueDD));
-			doDisplay(_valueDD, "V^"+_nCurIter+"-"+Math.round(100*APPROX_ERROR));
+			doDisplay(_valueDD, "V^"+_nCurIter+"-"+String.format("%03d",Math.round(1000*APPROX_ERROR)));
 			
 			//////////////////////////////////////////////////////////////////////////
 			// Value iteration statistics
 			time[_nCurIter] = GetElapsedTime();
 			totalTime += time[_nCurIter];
 			num_nodes[_nCurIter] = _context.getNodeCount(_valueDD);
+			num_leaves[_nCurIter] = _context.getLeafCount(_valueDD);
 			num_branches[_nCurIter] = _context.getBranchCount(_valueDD);
 		
 			double maxVal = 0d;
@@ -303,8 +305,8 @@ public class CAMDP {
 			//APPROX_TEST LOG, outputs: iter, #node, #branches, #UsedMem(MB), IterTime, TotTime, MaxVal, RelErr
 			
 			if (LINEAR_PROBLEM && APPROX_PRUNING) {
-				_testLogStream.format("%d %d %d %d %d %d %f %f\n", _nCurIter, num_nodes[_nCurIter], 
-					num_branches[_nCurIter], usedMem(), 
+				_testLogStream.format("%d %d %d %d %d %d %d %f %f\n", _nCurIter, num_nodes[_nCurIter], 
+						num_leaves[_nCurIter], num_branches[_nCurIter], usedMem(), 
 					time[_nCurIter], totalTime,
 					_context.linMaxVal(_valueDD), maxRelErr );
 			}
@@ -315,7 +317,7 @@ public class CAMDP {
 				while (++it < max_iter){
 					optimalMaxValues[it] = optimalMaxValues[_nCurIter];
 					optimalDD.add(_valueDD);
-					_testLogStream.format("%d %d %d %d %d %d %f %f\n", it, num_nodes[_nCurIter], 
+					_testLogStream.format("%d %d %d %d %d %d %d %f %f\n", it, num_nodes[_nCurIter], num_leaves[_nCurIter], 
 						num_branches[_nCurIter], usedMem(),
 						time[_nCurIter],totalTime,
 						_context.linMaxVal(_valueDD), maxRelErr );

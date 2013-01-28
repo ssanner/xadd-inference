@@ -1,0 +1,74 @@
+\documentclass[a4paper,10pt,fleqn]{article} 
+
+\usepackage{tikz}
+\usepackage[brazil]{babel} 
+
+\newcommand{\filename}{FILENAME}
+\newcommand\draw[1]{
+	\begin{figure}[!ht]
+	\centering
+	\includegraphics[scale = 1]{#1}
+	\end{figure}
+	\newline
+}
+
+\newif\ifdrawvalue
+\begin{document} 
+ 
+\section{Pictures}
+
+\drawvaluetrue
+
+\ifdrawvalue
+Value Function:
+%\draw{\filename-V1.eps}
+%\draw{\filename-V2.eps}
+%\draw{\filename-V3.eps}
+%\draw{\filename-V4.eps}
+%\draw{\filename-V5.eps}
+%\draw{\filename-V6.eps}
+%\draw{\filename-V7.eps}
+%\draw{\filename-V8.eps}
+%\draw{\filename-V9.eps}
+%\draw{\filename-V10.eps}
+%\draw{\filename-V11.eps}
+%\draw{\filename-V12.eps}
+%\draw{\filename-V13.eps}
+%\draw{\filename-V14.eps}
+%\draw{\filename-V15.eps}
+%\draw{\filename-V16.eps}
+%\draw{\filename-V17.eps}
+%\draw{\filename-V18.eps}
+%\draw{\filename-V19.eps}
+%\draw{\filename-V20.eps}
+%\draw{\filename-V21.eps}
+%\draw{\filename-V22.eps}
+%\draw{\filename-V23.eps}
+%\draw{\filename-V24.eps}
+%\draw{\filename-V25.eps}
+%\draw{\filename-V26.eps}
+%\draw{\filename-V27.eps}
+%\draw{\filename-V28.eps}
+%\draw{\filename-V29.eps}
+%\draw{\filename-V30.eps}
+%\draw{\filename-V31.eps}
+%\draw{\filename-V32.eps}
+%\draw{\filename-V33.eps}
+%\draw{\filename-V34.eps}
+%\draw{\filename-V35.eps}
+%\draw{\filename-V36.eps}
+%\draw{\filename-V37.eps}
+\newline
+\fi
+
+Comparison Images:
+\draw{\filename-Nodes.eps}
+\draw{\filename-Leaves.eps}
+\draw{\filename-Branches.eps}
+\draw{\filename-Memory.eps}
+\draw{\filename-Time.eps}
+\draw{\filename-TotTime.eps}
+\draw{\filename-MaxVal.eps}
+\draw{\filename-MaxErr.eps}
+  
+\end{document} 
