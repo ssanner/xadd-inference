@@ -24,10 +24,7 @@ combinations of boolean variables and \emph{linear} inequalities ($\geq,>,\leq,<
 over continuous variables.  
 %Each $\phi_i$ will be disjoint from the other $\phi_j$ ($j \neq i$);  however the $\phi_i$ may not exhaustively cover the state space, hence $f$ may only be a \emph{partial function} and may be undefined for some variable assignments.
 
-The $f_i$ may be either linear or quadratic in the continuous parameters according to the same restrictions as for 
-$R(\vec{b},\vec{x},a,\vec{y})$and to be continuous at partition boundaries. 
-
-
+The $f_i$ may be either linear or quadratic in the continuous parameters with no discontinuities at partition boundaries. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{.5em}
 \linesnumbered
@@ -40,8 +37,8 @@ $R(\vec{b},\vec{x},a,\vec{y})$and to be continuous at partition boundaries.
    \While{$h < H$}{
        $h:=h+1$\;
        \ForEach {$a(\vec{y}) \in A$}{
-              $Q_a^{h}(\vec{y})\,:=\,$\regress{$V^{h-1},a,\vec{y}$}\;
-				$Q_a^{h}(\vec{y}) := \min_{\vec{epsilon}} \, Q_a^{h}(\vec{y},\vec{\epsilon})$ $\,$ \emph{// Stochastic $\min$}\;
+              $Q_a^{h}(\vec{y},\vec{\epsilon})\,:=\,$\regress{$V^{h-1},a,\vec{y}$}\;
+				$Q_a^{h}(\vec{y}) := \min_{\vec{\epsilon}} \, Q_a^{h}(\vec{y},\vec{\epsilon})$ $\,$\emph{//Stochastic $\min$}\;
 				$Q_a^{h} := \max_{\vec{y}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// Continuous $\max$}\;
               $V^{h} := \casemax_a \, Q_a^{h}$ $\,$ \emph{// $\casemax$ all $Q_a$}\;
               $\pi^{*,h} := \argmax_{(a,\vec{y})} \, Q_a^{h}(\vec{y})$\;
@@ -78,8 +75,9 @@ $R(\vec{b},\vec{x},a,\vec{y})$and to be continuous at partition boundaries.
          $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 1}$\\
          \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 0}$\;
     }
+        \emph{// $\max$-in noise variables}\\
      \For {all $\epsilon_k$ in $Q$}{
-         $Q_a^{h}(\vec{y},\vec{\epsilon}) := \casemax_{\vec{epsilon}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// $\max$-in noise variables}\;
+         $Q_a^{h}(\vec{y},\vec{\epsilon}) := \casemax_{\epsilon_k} \, ( Q_a^{h}(\vec{y}), f(x_j', \epsilon_k))$ $\,$ \;
 	}
     \Return{$R(\vec{b},\vec{x},a,\vec{y}) \oplus (\gamma \otimes Q)$} \;
 }
@@ -89,12 +87,13 @@ $R(\vec{b},\vec{x},a,\vec{y})$and to be continuous at partition boundaries.
 \decmargin{.5em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-For any \emph{Unary operations} such as scalar multiplication $c\cdot f$ (for
-a constant $c \in \mathbb{R}$) and negation $-f$ on case statements
-$f$, the operation is simply applied to each
-$f_i$ ($1 \leq i \leq k$). \emph{Binary operation} on two case statementsare done by taking the cross-product
-of the logical partitions of the two case statement and perform the
-corresponding operation on the resulting paired partitions.  As a  example the ``cross-sum'' $\oplus$ of two cases are defined as below
+\emph{Unary operations} such as scalar multiplication $c\cdot f$ %(for a constant $c \in \mathbb{R}$) 
+and negation $-f$ on case statements $f$ is performed by appling the operation to each
+$f_i$ ($1 \leq i \leq k$). 
+\emph{Binary operation} on two case statements are done by taking the cross-product
+of the logical partitions of the two case statement and performing the
+corresponding operation on the resulting paired partitions.  
+The ``cross-sum'' $\oplus$ of two cases are defined as below:
 
 {\footnotesize 
 \begin{center}
@@ -130,13 +129,10 @@ $ = $
 
 The other operations of $\ominus$ and $\otimes$ are performed by subtracting or multiplying partition values.  Note that some partitions may become inconsistent (infeasible)  which are removed from the final result. 
 
-The other operations required for RSDP are restriction, substitution and maximization on case statements.  
+%The other operations required for RSDP are restriction, substitution and maximization on case statements.  
+\texttt{Regression} is defined separately for discrete and continuous variables.\emph{Boolean restriction} $f|_{b=v}$ assigns the value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$. \emph{Continuous integration} such as $\int Q(x'_j) \otimes P(x'_j|\cdots) dx'_j$ in line 5 is performed symbolically to obtain $\int f(x'_j) \otimes \delta[x_j' - h(\vec{z})] dx'_j = f(x'_j) \{ x'_j / h(\vec{z}) \}$. Here $P(x_j'|\cdots)$ is in the form of $\delta[x_j' - h(\vec{z})]$ ($h(\vec{z})$ which is a case statement and $\vec{z}$ does not contain $x'_j$. Note that the latter operation in the result indicates that any occurrence of $x'_j$ in $f(x'_j)$ is \emph{symbolically substituted} with the case statement $h(\vec{z})$.
+Full specification of these two operation is defined in~\cite{sanner_uai11}. 
 
-\texttt{Regression} is defined separately for discrete and continuous variables.\emph{Boolean restriction} $f|_{b=v}$ assigns the value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$ such as lines 7--8. \emph{Continuous integration} $\int Q(x'_j) \otimes P(x'_j|\cdots) dx'_j$  us performed in line 5 where $P(x_j'|\cdots)$
-is in the form of $\delta[x_j' - h(\vec{z})]$ ($h(\vec{z})$ is a case statement and $\vec{z}$ does not contain
-$x'_j$) and the result from integration is $\int f(x'_j) \otimes \delta[x_j' - h(\vec{z})] dx'_j = f(x'_j) \{ x'_j / h(\vec{z}) \}$. Note that the latter operation indicates that any occurrence of $x'_j$ in
-$f(x'_j)$ is \emph{symbolically substituted} with the case statement
-$h(\vec{z})$.  Full specification of this operation is defined in~\cite{sanner_uai11}. 
 A \emph{symbolic case maximization} on two case statements is performed below:
 \vspace{-4mm}
 
@@ -184,19 +180,28 @@ For continuous maximization according to ~\cite{sdp_aaai} the $\max_y$ for each 
 is computed individually that is $\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$.
 In $\phi_i$ each conjoined constraint serves as either the upper bound on $y$, lower bound on $y$ or independent of $y$. The $\casemax$ ($\casemin$) operator is then used to determine the highest lower bound $\LB$
 (lowest upper bound $\UB$) for multiple symbolic upper and lower bounds on $y$.
-Apart from the lower and upper bound the roots of $\frac{\partial}{\partial y} f_i$ 
-w.r.t.\ $y$  are also potential maxima points. These points are then symbolically evaluated to find which yields the
+Apart from the lower and upper bound, the roots of $\frac{\partial}{\partial y} f_i$ 
+w.r.t.\ $y$ are also potential maxima points. These points are then symbolically evaluated to find which yields the
 maximizing value $\Max$.  Independent constraints and additional constraints that arise from the
-symbolic nature of the $\UB$, $\LB$, and $\Root$ are incorporated in the final result.
-
+symbolic nature of the $\UB$, $\LB$, and $\Root$ are also incorporated in the final result.
 To complete the maximization for an entire case statement $f$, the
-above procedure is applied to each case partition of $f$ and then $\casemax$ all
-of these results.  
+above procedure is applied to each case partition of $f$ and the continuous maximization on $f$ is the $\casemax$ of all individual results.  
 
-To implement the case statements efficiently with continuous variables, extended Algebraic Decision diagrams (XADDs) are used from ~\cite{sanner_uai11} which is extended from ADDs ~\cite{bahar93add}. Unreachable paths can be pruned in XADDs using LP solvers and all operations including the continuous minimization explained in the next section can be defined using XADDs. 
+To implement the case statements efficiently with continuous variables, extended Algebraic Decision diagrams (XADDs) are used from ~\cite{sanner_uai11} which is extended from ADDs ~\cite{bahar93add}. Unreachable paths can be pruned in XADDs using LP solvers and all operations including the continuous minimization explained in the next section can be defined using XADDs.
+In the next section we show how to solve RDP symbolically using case statements.  
 
 %The only operation that has not been previously defined for XADDs is $\max_y$, but this is easy: treating each XADD path from root to leaf node as a single case partition with conjunctive constraints,  $\max_y$ is performed at each leaf subject to these constraints and all path $\max_y$'s are then accumulated via the $\casemax$ operation to obtain the final result.
 
 \subsection{Symbolic Robust Dynamic Programming}
 
+Algorithm ~\ref{alg:vi} (\texttt{VI}) outlines the main steps of a symbolic RDP approach. Here we use the RCSA-MDP and case statement definitions to define the optimal value function $V^h$ at horizon $h$ as defined in section 2.2. 
+For every action, the function $Q^h_a$ is computed. Line 6 refers to Algorithm~\ref{alg:regress}
+(\texttt{Regress}) which has the following steps: 
+(i) Substituting the next states in the value function.
+(ii) Performing Regression for continuous variable $x$ in line 5 and boolean variable $b$ in lines 8--9.
+(iii) Maximizing this result with the noise function in line 12. This step incorporates the noise variables into the regressed Q-function implicitly. Since the noise variable assigns -$\infty$ for legal values inside the boundary range +$\infty$ for illegal values, multiplying the noise can invert the infinities therefore we maximize in the noise variables to account for all possible noise. 
 
+The regressed stochastic $Q_a^{h}(\vec{y},\vec{\epsilon})$ is then minimized over the noise variables $\vec{\epsilon}$. This continuous minimization is similar to that of continuous maximization explained in the previous section. The minima points of upper and lower bounds on $\epsilon_k$ are evaluated for the minimum possible value of noise. The $\LB \leq \UB$ constraint and the constraints independent of $\epsilon_k$ are also considered for the minimization on a single partition. The final result is a $\casemin$ on all the individual minimum results. 
+
+%more on continuous minimization here 
+The resulting Q-value with minimal noise is then maximized over the discrete and continuous action set. 
