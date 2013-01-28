@@ -12,16 +12,28 @@ niter=$4
 valueplot=$5
 
 plot="plotter.p"
+tex="plottest.tex"
 end="/g"
 
-comm1="s/FILENAME/"$name$end
-comm2="s/NCURVES/"$ncur$end
-comm3="s/APROX_STEP/"$step$end
-comm4="s/MAXITER/"$niter$end
-comm5="s/VALUEPLOT/"$valueplot$end
+dirname=`echo $name | sed "s/\/.*//g"`
+echo "Directory is $dirname."
+shortname=`echo $name | sed 's/.*\///'`
+echo "File is $shortname."
 
-sed -e $comm1 -e $comm2 -e $comm3 -e $comm4 -e $comm5 <$plot >../results/$name/$name$plot 
+comm1="s/FILENAME/$shortname$end"
+comm2="s/NCURVES/$ncur$end"
+comm3="s/APROX_STEP/$step$end"
+comm4="s/MAXITER/$niter$end"
+comm5="s/VALUEPLOT/$valueplot$end"
 
-mv ../src/camdp/ex/results/$name*.txt ../results/$name
+sed -e $comm1 -e $comm2 -e $comm3 -e $comm4 -e $comm5 <$plot >../results/$name/$shortname$plot 
+
+temptex="../results/$name/$shortname$tex"
+sed -e $comm1  <$tex > tempfile
+awkcomm="/%/{if(M<"$niter"){sub("'"%",""'");M=M+1}}{print}"
+awk $awkcomm < tempfile > $temptex
+rm tempfile
+
+mv ../src/camdp/ex/$dirname/results/$shortname*.txt ../results/$name
 cd ../results/$name
-gnuplot $name$plot
+gnuplot $shortname$plot

@@ -12,7 +12,7 @@ public class ApproxTest {
 		String []f1 = filename.split("\\.");
 		String []longname = (f1[0]).split("/");
 		String name = longname[longname.length-1];
-		String approx = String.format("%02d", Math.round(100*error) );
+		String approx = String.format("%03d", Math.round(1000*error) );
 		String logName = dir+"/"+name+"_"+approx+".log";
 		try{
 			return new PrintStream(new FileOutputStream(logName));
