@@ -18,6 +18,7 @@ f =
 \end{cases} \label{eq:case}
 \end{align}
 }
+%how to put noise in here
 where $\phi_i$ are logical formulae defined over the state
 $(\vec{b},\vec{x})$ and can include arbitrary logical ($\land,\lor,\neg$)
 combinations of boolean variables and \emph{linear} inequalities ($\geq,>,\leq,<$) 
@@ -37,8 +38,8 @@ The $f_i$ may be either linear or quadratic in the continuous parameters with no
    \While{$h < H$}{
        $h:=h+1$\;
        \ForEach {$a(\vec{y}) \in A$}{
-              $Q_a^{h}(\vec{y},\vec{\epsilon})\,:=\,$\regress{$V^{h-1},a,\vec{y}$}\;
-				$Q_a^{h}(\vec{y}) := \min_{\vec{\epsilon}} \, Q_a^{h}(\vec{y},\vec{\epsilon})$ $\,$\emph{//Stochastic $\min$}\;
+              $Q_a^{h}(\vec{y},\vec{n})\,:=\,$\regress{$V^{h-1},a,\vec{y}$}\;
+				$Q_a^{h}(\vec{y}) := \min_{\vec{n}} \, Q_a^{h}(\vec{y},\vec{n})$ $\,$\emph{//Stochastic $\min$}\;
 				$Q_a^{h} := \max_{\vec{y}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// Continuous $\max$}\;
               $V^{h} := \casemax_a \, Q_a^{h}$ $\,$ \emph{// $\casemax$ all $Q_a$}\;
               $\pi^{*,h} := \argmax_{(a,\vec{y})} \, Q_a^{h}(\vec{y})$\;
@@ -68,18 +69,20 @@ The $f_i$ may be either linear or quadratic in the continuous parameters with no
     $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
     \emph{// Continuous regression marginal integration}\\
     \For {all $x'_j$ in $Q$}{
-         $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y},\vec{\epsilon}) \, d_{x'_j}$\;
+         $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y},\vec{n}) \, d_{x'_j}$\;
     }
     \emph{// Discrete regression marginal summation}\\
     \For {all $b'_i$ in $Q$}{
          $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 1}$\\
-         \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 0}$\;
+         \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y},\vec{n}) \right]|_{b_i' = 0}$\;
     }
-        \emph{// $\max$-in noise variables}\\
-     \For {all $\epsilon_k$ in $Q$}{
-         $Q_a^{h}(\vec{y},\vec{\epsilon}) := \casemax_{\epsilon_k} \, ( Q_a^{h}(\vec{y}), f(x_j', \epsilon_k))$ $\,$ \;
+    $Q := R(\vec{b},\vec{x},a,\vec{y}) \oplus (\gamma \otimes Q)$
+     
+     \emph{// $\max$-in noise variables}\\
+     \For {all $n_k$ in $Q$}{
+         $Q_a^{h}(\vec{y},\vec{n}) := \casemax_{n_k} \, ( Q, N(n_k, b'_i,x_j'))$ $\,$ \;
 	}
-    \Return{$R(\vec{b},\vec{x},a,\vec{y}) \oplus (\gamma \otimes Q)$} \;
+    \Return{$Q$} \;
 }
 \caption{\footnotesize \texttt{Regress}($V,a,\vec{y}$) $\longrightarrow$ $Q$ \label{alg:regress}}
 \vspace{-1mm}
@@ -129,9 +132,8 @@ $ = $
 
 The other operations of $\ominus$ and $\otimes$ are performed by subtracting or multiplying partition values.  Note that some partitions may become inconsistent (infeasible)  which are removed from the final result. 
 
-%The other operations required for RSDP are restriction, substitution and maximization on case statements.  
-\texttt{Regression} is defined separately for discrete and continuous variables.\emph{Boolean restriction} $f|_{b=v}$ assigns the value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$. \emph{Continuous integration} such as $\int Q(x'_j) \otimes P(x'_j|\cdots) dx'_j$ in line 5 is performed symbolically to obtain $\int f(x'_j) \otimes \delta[x_j' - h(\vec{z})] dx'_j = f(x'_j) \{ x'_j / h(\vec{z}) \}$. Here $P(x_j'|\cdots)$ is in the form of $\delta[x_j' - h(\vec{z})]$ ($h(\vec{z})$ which is a case statement and $\vec{z}$ does not contain $x'_j$. Note that the latter operation in the result indicates that any occurrence of $x'_j$ in $f(x'_j)$ is \emph{symbolically substituted} with the case statement $h(\vec{z})$.
-Full specification of these two operation is defined in~\cite{sanner_uai11}. 
+The other operations required for RSDP are restriction, substitution and maximization on case statements.  
+\texttt{Regression} is defined separately for discrete and continuous variables.\emph{Boolean restriction} $f|_{b=v}$ assigns the value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$. \emph{Continuous integration} such as $\int Q(x'_j) \otimes P(x'_j|\cdots) dx'_j$ in line 5 is performed symbolically to obtain $\int f(x'_j) \otimes \delta[x_j' - h(\vec{z})] dx'_j = f(x'_j) \{ x'_j / h(\vec{z}) \}$. Here $P(x_j'|\cdots)$ is in the form of $\delta[x_j' - h(\vec{z})]$ ($h(\vec{z})$ which is a case statement and $\vec{z}$ does not contain $x'_j$. Note that the latter operation in the result indicates that any occurrence of $x'_j$ in $f(x'_j)$ is \emph{symbolically substituted} with the case statement $h(\vec{z})$. Full specification of these two operation is defined in~\cite{sanner_uai11}. 
 
 A \emph{symbolic case maximization} on two case statements is performed below:
 \vspace{-4mm}
@@ -194,14 +196,18 @@ In the next section we show how to solve RDP symbolically using case statements.
 
 \subsection{Symbolic Robust Dynamic Programming}
 
-Algorithm ~\ref{alg:vi} (\texttt{VI}) outlines the main steps of a symbolic RDP approach. Here we use the RCSA-MDP and case statement definitions to define the optimal value function $V^h$ at horizon $h$ as defined in section 2.2. 
-For every action, the function $Q^h_a$ is computed. Line 6 refers to Algorithm~\ref{alg:regress}
+In this section we use the RCSA-MDP and case statement definitions to define the optimal value function $V^h$ at horizon $h$ as defined in section 2.2. Algorithm ~\ref{alg:vi} (\texttt{VI}) outlines the main steps of a symbolic RDP approach.
+
+Initially the value function $V^h$ is assigned to 0. For every horizon the $h$-stage-to-go value functions $V^h(\vec{b},\vec{x})$ is computed as described in the following.  
+For every action, the function $Q^h_a$ is computed. Line 6 refers to Algorithm~\ref{alg:regress} which has the main steps below:
 (\texttt{Regress}) which has the following steps: 
 (i) Substituting the next states in the value function.
 (ii) Performing Regression for continuous variable $x$ in line 5 and boolean variable $b$ in lines 8--9.
-(iii) Maximizing this result with the noise function in line 12. This step incorporates the noise variables into the regressed Q-function implicitly. Since the noise variable assigns -$\infty$ for legal values inside the boundary range +$\infty$ for illegal values, multiplying the noise can invert the infinities therefore we maximize in the noise variables to account for all possible noise. 
+(iii) Multiplying the regression by the discount factor and adding the reward function.
+(iii) Maximizing this result with the noise function in line 13. This step incorporates noise into the regressed Q-function consequently for each noise variable. Each noise variable assigns -$\infty$ for legal values inside the boundary range +$\infty$ for illegal values defined by the noise model $N(\vec{n},\vec{b},\vec{x})$.By maximizing in $n_k$ all illegal values will remain +$\infty$ since this is the maximum value compared to any other value and all legal values will be replaced by the regressed $Q$-value defined in step (iii) (-$\infty$ is less than any other $Q$-value so it is omitted in the maximization). 
 
-The regressed stochastic $Q_a^{h}(\vec{y},\vec{\epsilon})$ is then minimized over the noise variables $\vec{\epsilon}$. This continuous minimization is similar to that of continuous maximization explained in the previous section. The minima points of upper and lower bounds on $\epsilon_k$ are evaluated for the minimum possible value of noise. The $\LB \leq \UB$ constraint and the constraints independent of $\epsilon_k$ are also considered for the minimization on a single partition. The final result is a $\casemin$ on all the individual minimum results. 
+Naturally a noisy process aims to minimize the noise in time to reach robustness Thus the regressed stochastic $Q_a^{h}(\vec{y},\vec{n})$ is now minimized over the noise variables $\vec{n}$ in line 7. Intuitively this continuous minimization will never choose +$\infty$ as there is always some value smaller which insures that the transitioned model never chooses illegal values. All legal $Q$-values are considered in the minimization step to find the value corresponding to the minimum noise.  
+This continuous minimization is similar to that of continuous maximization explained in the previous section. The minima points of upper and lower bounds on $n_k$ are evaluated for the minimum possible value of noise. The $\LB \leq \UB$ constraint and the constraints independent of $n_k$ are also considered for the minimization on a single partition. The final result is a $\casemin$ on all the individual minimum results. 
 
-%more on continuous minimization here 
-The resulting Q-value with minimal noise is then maximized over the discrete and continuous action set. 
+%more on continuous minimization here with an example
+The resulting Q-value with minimal noise is maximized over the continuous action parameter in line 8; a symbolic continuous maximization operation.  A discrete $\casemax$ on the set of discrete actions  for all $Q$-functions defines the final $V$ and the optimal policy is defined as the $\argmax$  over the set of discrete and continuous actions on $Q$. 
