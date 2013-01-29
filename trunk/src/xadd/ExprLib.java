@@ -385,8 +385,10 @@ public abstract class ExprLib{
 			ArithExpr new_lhs = ArithExpr.op(new_expr._lhs, new_expr._rhs, ArithOperation.MINUS);
 			new_lhs = (ArithExpr) new_lhs.makeCanonical();
 			if (XADD.NORMALIZE_DECISIONS) {
-				new_lhs = (ArithExpr) new_lhs.normalize();
-				ArithExpr.round(new_lhs);
+				if (new_lhs instanceof OperExpr){
+					new_lhs = ((OperExpr) new_lhs).normalize();
+					ArithExpr.round(new_lhs);
+				}
 			}
 			new_expr = new CompExpr(new_expr._type, new_lhs, ZERO);
 			return new_expr;
@@ -564,8 +566,6 @@ public abstract class ExprLib{
 
 //Arithmetic Expressions
 public abstract static class ArithExpr extends Expr {
-
-	public abstract ArithExpr normalize();
 
 	public abstract String toString(boolean format);
 
@@ -1233,8 +1233,8 @@ public static class OperExpr extends ArithExpr {
 
 	public ArithExpr normalize() {
 		double normConst=0;
-		DoubleExpr normal = (DoubleExpr) ONE;
-		if ( _terms.get(0).equals(ONE)) {
+		ArithExpr normal = ONE;
+		if ( _terms.get(0).equals(ONE) || _terms.get(0).equals(NEG_ONE)) {
 			//System.out.println("alreadyNormal "+ this);
 			return this;
 		}
@@ -1242,23 +1242,33 @@ public static class OperExpr extends ArithExpr {
 		ArrayList<ArithExpr> newTerms = new ArrayList<ArithExpr>();
 		if (_type != ArithOperation.SUM && _type != ArithOperation.PROD){
 			System.out.println("Uncanonical normalize!!, not SUM or PROD");
-			System.exit(1);
+			//System.exit(1);
+			return this;
 		}
 		ArithExpr t1 = _terms.get(0);
 		if (t1 instanceof DoubleExpr){
 			normConst = ((DoubleExpr) t1)._dConstVal;
+			if (normConst < 0){
+				normal = NEG_ONE;
+				normConst = -normConst;
+			}
 		}
 		else {
 			ArithExpr t2 = ((OperExpr)t1)._terms.get(0);
 			if (t2 instanceof DoubleExpr){
 				normConst = ((DoubleExpr) t2)._dConstVal;
+				if (normConst <0){
+					normConst = -normConst;
+					normal = NEG_ONE;
+				}
+				ArrayList<ArithExpr> nterms = (ArrayList<ArithExpr>) ((OperExpr)t1)._terms.clone();
+				nterms.set(0, normal);
+				normal = new OperExpr(((OperExpr)t1)._type, nterms);
 			}
+			
 			else System.out.println("not even t2 is Double: suspicious:"+normConst);
 		}
-		if (normConst < 0){
-			normal = new DoubleExpr(-1);
-			normConst = -normConst;
-		}
+
 		if (Math.abs(normConst -1)<XADD.PRECISION){
 			return this;
 		}
@@ -1267,6 +1277,9 @@ public static class OperExpr extends ArithExpr {
 			for(int i=1;i<_terms.size();i++){
 				if (_terms.get(i) instanceof DoubleExpr){
 					System.err.println("two numbers on sum?");
+				}
+				if (_terms.get(i) instanceof VarExpr){
+					System.err.println("lost var in normalize: skipping"+ this);
 				}
 				if (_terms.get(i) instanceof OperExpr){
 					OperExpr op1 = ( (OperExpr)_terms.get(i) ); //op1 must be PROD
@@ -1597,16 +1610,6 @@ public static class OperExpr extends ArithExpr {
 			//DoubleExpr dexpr = new DoubleExpr(_dConstVal);
 			//dexpr.round();
 			return this;
-		}
-		
-		public ArithExpr normalize(){
-			if (Double.isInfinite(_dConstVal) || Double.isNaN(_dConstVal) || this == ONE || this == NEG_ONE) // ZERO?
-				return this;
-			// TODO: Luis, can we guarantee that normalization is always correct?  What happens if the constant term is 0???
-			if (_dConstVal > 0)
-				return ONE;
-			else 
-				return NEG_ONE;
 		}
 		
 		public void round() {
