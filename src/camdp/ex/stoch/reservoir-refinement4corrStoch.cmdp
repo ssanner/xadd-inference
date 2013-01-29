@@ -1,0 +1,63 @@
+cvariables (x1 x2)
+min-values (0 0)
+max-values (5000 5000)
+bvariables ()
+nvariables (n)
+ivariables()
+avariables(e)
+
+action drain (0 <= e<= 100)
+
+x1' ([450 * e + n  + x1 -1000 * e + 500 * e])
+
+x2' ([450 * e + n + x2 - 500 * e])
+
+noise
+
+n ([n <=50]
+	([n>=-50]
+		([legal])
+		([illegal]))
+	([illegal]))
+
+
+reward 	([x1<=4500]
+				([x2<=4500]
+					([x1>=50]
+							([e])
+			
+							([-100 + e] ))
+				([0] ))
+			([0]))
+								
+					
+endaction
+
+action no-drain (0 <= e <= 100)
+
+x1' ([450 * e + n + x1 -1000 * e])
+x2' ([450 * e + n + x2])
+
+noise
+
+n ([n <=50]
+	([n>=-50]
+		([legal])
+		([illegal]))
+	([illegal]))
+
+
+
+reward 	([x1<=4500]
+				([x2<=4500]
+						([x1>=50]
+							([e])
+							([-100 + e] ))
+				([0] ))
+			([0]))					
+					
+endaction
+
+
+discount 1.000000
+iterations 4

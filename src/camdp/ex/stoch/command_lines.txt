@@ -1,1 +1,7 @@
-src/camdp/ex/stoch/s-rover-c1.cmdp 5 true false
+src/camdp/ex/stoch/s-rover-c1.cmdp 4 true false
+src/camdp/ex/stoch/reservoir-refinement4corrStoch.cmdp 4 false true
+src/camdp/ex/stoch/2d-robot-linear3Stoch.cmdp 4 false true
+
+
+
+
