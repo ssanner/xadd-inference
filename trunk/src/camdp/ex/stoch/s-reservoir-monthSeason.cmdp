@@ -1,0 +1,111 @@
+cvariables (x1 x2)
+min-values (-10000000 -10000000)
+max-values (10000000 10000000)
+bvariables (s)
+nvariables (n)
+ivariables()
+avariables()
+
+action drain ()
+s'(s
+	  ([1.0])
+      ([0.0])
+     )
+
+x1' (s
+		([400 * 4.1 + n *4.1 + x1 -700 * 4.1 + 500 * 4.1])
+		([300 * 4.1 + n *4.1 + x1 -700 * 4.1 + 500 * 4.1])
+	)	
+x2' (s
+		([400 * 4.1 + n *4.1 + x2 - 500 * 4.1])
+		([300 * 4.1 + n *4.1 + x2 - 500 * 4.1])
+	)	         
+noise
+
+n ( s 
+	([n <= 25]
+		([n >= -25]
+			([legal])
+			([illegal]))
+		([illegal])
+	)
+	([n <= 5]
+		([n >= -5]
+			([legal])
+			([illegal]))
+		([illegal])
+	)
+)	
+
+reward 	([x1'<=4500]
+				 ([x2'<=4500]
+					 ([x1'>=200]
+						([x2'>=200]
+							 ([x1<=4500]
+									 ([x2<=4500]
+										([x1>=200]
+											 ([x2>=200]
+												 ([5.1])
+												([-Infinity] ))
+											 ([-Infinity]))
+									 ([-Infinity] ))
+								([-Infinity]))					
+							 ([-Infinity] ))
+						([-Infinity]))
+				 ([-Infinity] ))
+			 ([-Infinity]))					
+endaction
+
+
+action no-drain ()
+s'(s
+	  ([1.0])
+      ([0.0])
+     )
+
+x1' (s
+		([400 * 4.1 + n * 4.1+ x1 -700 * 4.1])
+		([300 * 4.1 + n * 4.1+ x1 -700 * 4.1])
+	)	
+x2' (s
+		([400 * 4.1 + n * 4.1 + x2])
+ 		([300 * 4.1 + n * 4.1 + x2])
+ 	)	
+noise
+
+n ( s 
+	([n <= 25]
+		([n >= -25]
+			([legal])
+			([illegal]))
+		([illegal])
+	)
+	([n <= 5]
+		([n >= -5]
+			([legal])
+			([illegal]))
+		([illegal])
+	)
+)	
+
+reward 	([x1'<=4500]
+				([x2'<=4500]
+					 ([x1'>=200]
+						 ([x2'>=200]
+							([x1<=4500]
+									 ([x2<=4500]
+										 ([x1>=200]
+											([x2>=200]
+												 ([4.1])
+												 ([-Infinity] ))
+											([-Infinity]))
+									 ([-Infinity] ))
+								 ([-Infinity]))					
+							([-Infinity] ))
+						 ([-Infinity]))
+				 ([-Infinity] ))
+			([-Infinity]))					
+endaction
+
+discount 1.000000
+iterations 12

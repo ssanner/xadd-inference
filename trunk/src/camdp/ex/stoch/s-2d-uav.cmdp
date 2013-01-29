@@ -1,0 +1,57 @@
+cvariables (x y)
+min-values (0 0)
+max-values (130 130)
+bvariables (g)
+nvariables (n)
+ivariables()
+avariables(ax ay)
+
+action move (-30<=ax<=30 ^ -30<=ay<=30)
+g' (g 
+	([1.0]) 
+	([x' > 100] 
+		([y'>100]
+			([1.0])
+			([0.0]))
+		([0.0])))
+	
+x' ([ax + ay < 30]
+      ([x+ax+n])
+      ([x]))
+y' ([ax + ay < 30]
+      ([y+ay+n])
+      ([y]))
+
+noise
+
+n ( [x>30]
+      ([y<70]
+          ([n <=10]
+	        ([n>=-10] 
+		        ([legal])
+                ([illegal]))
+            ([illegal]))    
+          ([n <=5]
+	        ([n>=-5] 
+		        ([legal])
+                ([illegal]))
+            ([illegal]))    
+       )    
+       ([n <=5]
+	        ([n>=-5] 
+		        ([legal])
+                ([illegal]))
+            ([illegal]))    
+   )       
+
+reward (g'
+         (g
+           ([-1])
+           ([x+y]))
+         ([-1]))
+
+endaction
+
+discount 1.00000
+iterations 4
+

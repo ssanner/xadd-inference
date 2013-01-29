@@ -1,0 +1,48 @@
+cvariables (x1)
+min-values (0)
+max-values (200)
+bvariables (d)
+nvariables (n)
+icvariables ()
+min-values ()
+max-values ()
+ibvariables()
+avariables(a1)
+
+action order (0 <= a1 <= 200)
+
+d' (d ([0.7])([0.3]))
+x1' (d  
+		([-150 + x1 + a1 <=100]
+			([-150 + x1 + a1 + n])
+			([-150 + x1]))
+		([-50 + x1 + a1 <= 100]
+			([-50 + x1 + a1 + n ])
+			([-50 + x1])))
+			
+noise
+
+n ([n <=30]
+	([n>=-30]
+		([legal])
+		([illegal]))
+	([illegal]))
+
+
+reward ( [x1' >= 0]
+	        (d
+				([x1 >= 150]
+					([150 - 0.5 * (x1' - x1)])
+					([ x1 - 0.5 * (x1' - x1)] ))
+				([x1 >= 50]
+					([50 - 0.5 * (x1' - x1)  ])
+					([ x1 - 0.5 * (x1' - x1) ] ))
+			)
+            ([-Infinity])		
+        )
+      					
+endaction
+
+discount 1.000000
+iterations 12
+
