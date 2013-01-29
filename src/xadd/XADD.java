@@ -1787,7 +1787,7 @@ public class XADD {
             
             if (VERBOSE_MIN_MAX) _log.println("Final " + _sOpName + "_eval before linearize: " + getString(min_max_eval));
             min_max_eval = reduceLinearize(min_max_eval);
-            if (VERBOSE_MIN_MAX) _log.println("After linearize, before reduceLP: " + getString(min_max_eval));
+            if (VERBOSE_MIN_MAX) _log.println("After linearize, before reduceLP: id =" +min_max_eval+"\n"+ getString(min_max_eval));
             min_max_eval = reduceLP(min_max_eval); // Result should be canonical
             if (VERBOSE_MIN_MAX) _log.println("After linearize and reduceLP: " + getString(min_max_eval));
                             

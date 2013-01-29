@@ -83,9 +83,9 @@ public class ComputeQFunction {
 		
 		// Optional Display
 		_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + ", " + a._actionParams + " )\n" + _context.getString(q));
-		if (CAMDP.DISPLAY_PREMAX_Q)
-			_camdp.doDisplay(q, "Q-" + a._sName + "-" + a._actionParams + "^" + _camdp._nCurIter + "-" + Math.round(100*_camdp.APPROX_ERROR));
-		
+		if (CAMDP.DISPLAY_PREMAX_Q){
+			_camdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "^" + _camdp._nCurIter + "-" + Math.round(1000*_camdp.APPROX_ERROR));
+		}
 		// Noise handling
 		if (a._noiseVars.size() == 0) {
 			// No action params to maximize over
@@ -136,9 +136,13 @@ public class ComputeQFunction {
 				_camdp._logStream.println("- Maxing out action param '" + avar + "': [" + lb + "," + ub + "]");
 				q = maxOutVar(q, avar, lb, ub);
 				_camdp._logStream.println("-->: " + _context.getString(q));
+
 				
 				// Can be computational expensive (max-out) so flush caches if needed
 				_camdp.flushCaches(Arrays.asList(q) /* additional node to save */);
+				if (CAMDP.DISPLAY_PREMAX_Q){
+					_camdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "-End^" + _camdp._nCurIter + "-" + Math.round(1000*_camdp.APPROX_ERROR));
+				}
 			}
 			_camdp._logStream.println("- Done action parameter maximization");
 			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " )\n" + _context.getString(q));

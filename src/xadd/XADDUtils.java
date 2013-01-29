@@ -314,7 +314,7 @@ public class XADDUtils {
 				ps.println(x + "\t" + y + "\t" + z);
 				xArr[i][j] = x;
 				yArr[i][j] = y;
-				zArr[i][j] = z; //x + y; //z;
+				zArr[j][i] = z; //x + y; //z;
 			}
 			ps.println();
 		}
@@ -441,14 +441,14 @@ public class XADDUtils {
 				ps.println(x + "\t" + y + "\t" + z);
 				xArr[i][j] = x;
 				yArr[i][j] = y;
-				zArr[i][j] = z; //x + y; //z;
+				zArr[j][i] = z; //x + y; //z;
 			}
 		}
 		ps.close();
 		
 		// Create a Simple 2D XY plot window.
 		JSurfacePanel jsp = new JSurfacePanel();
-		jsp.setTitleText(title);
+		jsp.setTitleText(title + " X = "+ xVar+ " Y = "+ yVar);
 
 		JFrame jf = new JFrame(title);
 		jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

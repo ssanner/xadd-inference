@@ -28,7 +28,7 @@ public class TestXADD {
 	 */
 	
 	public static void main(String[] args) throws Exception {
-		main2(args);
+		main1(args);
 	}
 	
 	public static void main3(String[] args) throws Exception {
@@ -389,15 +389,15 @@ public class TestXADD {
 	public static void TestPolyOps() {
 		XADD xadd_context = new XADD();
 		//int xadd1 = TestBuild(xadd_context, "src/xadd/test2.xadd");
-		int xadd1 = TestBuild(xadd_context, "src/xadd/test7.xadd");
+		int xadd1 = TestBuild(xadd_context, "src/xadd/ex/test7.xadd");
 		int xaddr1 = xadd_context.apply(xadd1, xadd1, XADD.SUM);
-		xadd_context.getGraph(xaddr1).launchViewer();
+		xadd_context.getGraph(xaddr1).launchViewer("SUM");
 		int xaddr2 = xadd_context.apply(xadd1, xadd1, XADD.MINUS);
-		xadd_context.getGraph(xaddr2).launchViewer();
+		xadd_context.getGraph(xaddr2).launchViewer("MINUS");
 		int xaddr3 = xadd_context.apply(xadd1, xadd1, XADD.PROD);
-		xadd_context.getGraph(xaddr3).launchViewer();
+		xadd_context.getGraph(xaddr3).launchViewer("SQUARE");
 		int xaddr4 = xadd_context.apply(xaddr3, xaddr3, XADD.PROD);
-		xadd_context.getGraph(xaddr4).launchViewer();
+		xadd_context.getGraph(xaddr4).launchViewer("4 POWER!");
 	}
 
 
