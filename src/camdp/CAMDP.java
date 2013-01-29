@@ -295,7 +295,10 @@ public class CAMDP {
 							System.err.println("Incorrect optimalDD:"+optimalDD+" "+_nCurIter);
 						optimalDD.add(_valueDD);
 					}
-					maxRelErr = (_context.linMaxDiff(optimalDD.get(_nCurIter-1), _valueDD))/optimalMaxValues[_nCurIter-1];
+					if (optimalDD.size() > _nCurIter-1){
+						maxRelErr = (_context.linMaxDiff(optimalDD.get(_nCurIter-1), _valueDD))/optimalMaxValues[_nCurIter-1];
+					}
+					else maxRelErr = -1;
 				}
 			}
 			_logStream.println("Value function size @ end of iteration " + _nCurIter + 
@@ -690,8 +693,8 @@ public class CAMDP {
 //		System.out.println("\nSolution complete, required " + 
 //				iter_used + " / " + iter + " iterations.");
 		//mdp._context.showCacheSize();
-		mdp.flushCaches(true);
-		mdp._context.showCacheSize();
+//		mdp.flushCaches(true);
+//		mdp._context.showCacheSize();
 		System.out.println("CAMDP-FINISH");
 	}
 	

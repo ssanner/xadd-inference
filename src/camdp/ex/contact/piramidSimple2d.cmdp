@@ -8,7 +8,7 @@ max-values ()
 ibvariables()
 avariables(ax ay)
 
-action takepic (0 < = ax < = 0 ^ 0 < = ay < = 0)
+action takepic (-1 < = ax < = 1 ^ -1 < = ay < = 1)
 
 x' ([x])
 

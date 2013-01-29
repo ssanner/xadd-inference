@@ -60,7 +60,7 @@ then
 	cd $ORI
 	MAINCLASS=`echo $MAIN | tr '/' '.'`
 	echo "RUNNING: $MAINCLASS $PARAMS"	
-	java -cp $BIN_DIR:$CLASSPATH $MAINCLASS $PARAMS
+	java -Xmx2000M -cp $BIN_DIR:$CLASSPATH $MAINCLASS $PARAMS
 	echo "Run Ok"
 fi
 
