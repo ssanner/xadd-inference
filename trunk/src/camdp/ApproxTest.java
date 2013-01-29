@@ -74,10 +74,12 @@ public class ApproxTest {
 			camdp.setApproxTest(error, out, false);
 			try {
 				int iter_used = camdp.solve(iter);
-			}catch (Exception e){
+			}catch (OutOfMemoryError e){
+				System.err.println("Catch blow up!");
 				e.printStackTrace();
 			}
 			camdp.flushCaches(true);
+			out.close();
 		}
 		System.out.println("Approx Test, Over!");
 		System.exit(0);

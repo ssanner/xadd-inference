@@ -1237,7 +1237,8 @@ public class XADD {
 	// Linear XADD Prunning
 	public int linPruneRel(int node_id, double error) {
 		LinearApproximationMethod linPrune = new LinearApproximationMethod(node_id, this);
-		return linPrune.linPruneRel(node_id, error);
+		node_id = linPrune.linPruneRel(node_id, error);
+		return reduceLP(node_id);
 	}
 	
 	// Linear Maximization

@@ -1,6 +1,6 @@
 cvariables (x y)
-min-values (-200 -200)
-max-values (200 200)
+min-values (-50 -50)
+max-values (50 50)
 bvariables ()
 icvariables()
 min-values ()
@@ -8,40 +8,63 @@ max-values ()
 ibvariables()
 avariables(ax ay)
 
-action move (-10 < = ax < = 10 ^ -10 < = ay < = 10)
+action takepic (-1 < = ax < = 1 ^ -1 < = ay < = 1)
+
+x' ([x])
+
+y' ([y])
+
+reward 
+([x + y > 75]
+	([ -0.4 + 0.005*(x + y)])
+	([x - y > 75]
+		([ -0.4 + 0.005*(x - y)])	
+		([0])
+	)
+)
+
+endaction 
+
+action move (-8 < = ax < = 8 ^ -8 < = ay < = 8)
 	
-x' ([x + ax < 200]
-	([ x + ax ])
+x' ([x + ax < 50]
+	([ay>0]
+		([ax + ay < 8]
+			([ x + ax ])
+			([x])
+		)
+		([ax - ay < 8]
+			([ x + ax ])
+			([x])
+		)
+	)
 	([x])
 )
 
-y' ([y + ay < 200]
-	([y + ay])
+y' ([y + ay < 50]
+	([ay>0]
+		([ax + ay < 8]
+			([ y + ay ])
+			([y])
+		)
+		([ax - ay < 8]
+			([ y + ay ])
+			([y])
+		)
+	)
 	([y])
 )
 		
 reward 
-([x > 170]
-	([ y > 170]
-		([x > 185]
-			([ y > 185]
-				([x < y]
-					([ 2 + 0.3*x])
-					([ 2 + 0.3*y])
-				)
-				([x < y]
-					([ 0.3*x])
-					([ 0.3*y])
-				)
-			)
-			([x < y]
-				([ 0.3*x])
-				([ 0.3*y])
-			)
-		)
-		([-1])
+([ ax > 0]
+	([ ay > 0]
+		([ 0.00 -0.0*ax -0.0*ay])
+		([ 0.00 -0.0*ax + 0.0*ay])
 	)
-	([-1])
+	([ ay > 0]
+		([ 0.00 + 0.0*ax - 0.0*ay])
+		([ 0.00 + 0.0*ax + 0.0*ay])
+	)
 )
 
 endaction
