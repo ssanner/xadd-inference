@@ -1,0 +1,6 @@
+var	x1	-1000 100 5000
+var	x2	-1000 100 5000
+bassign	h false
+bassign	e false
+bassign	b false
+
