@@ -1,0 +1,283 @@
+
+In order to compute the equations above, we propose a \emph{Robust symbolic dynamic programming} (RSDP) approach similar to ~\cite{sanner_uai11}.  This requires a value iteration algorithm proposed in ~\ref{alg:vi} (\texttt{VI})
+and a regression subroutine in Algorithm~\ref{alg:regress}
+In general we define symbolic functions to be represented in \emph{case} form~\cite{fomdp}:
+{%\footnotesize 
+\begin{align}
+f = 
+\begin{cases}
+  \phi_1: & f_1 \\ 
+ \vdots&\vdots\\ 
+  \phi_k: & f_k \\ 
+\end{cases} \label{eq:case}
+\end{align}
+}
+%how to put noise in here
+where $\phi_i$ are logical formulae defined over the state
+$(\vec{b},\vec{x})$ and can include arbitrary logical ($\land,\lor,\neg$)
+combinations of boolean variables and \emph{linear} inequalities ($\geq,>,\leq,<$) 
+over continuous variables.  
+The $f_i$ may be either linear or quadratic in the continuous parameters with no discontinuities at partition boundaries. The transition and reward functions of the Rover example are all symbolic function examples. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{.5em}
+\linesnumbered
+\begin{algorithm}[t!]
+\vspace{-.5mm}
+\dontprintsemicolon
+\SetKwFunction{regress}{Regress}
+\Begin{
+   $V^0:=0, h:=0$\;
+   \While{$h < H$}{
+       $h:=h+1$\;
+       \ForEach {$a(\vec{y}) \in A$}{
+              $Q_a^{h}(\vec{y},\vec{n})\,:=\,$\regress{$V^{h-1},a,\vec{y}$}\;
+				$Q_a^{h}(\vec{y}) := \min_{\vec{n}} \, Q_a^{h}(\vec{y},\vec{n})$ $\,$\emph{//Stochastic $\min$}\;
+				$Q_a^{h} := \max_{\vec{y}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// Continuous $\max$}\;
+              $V^{h} := \casemax_a \, Q_a^{h}$ $\,$ \emph{// $\casemax$ all $Q_a$}\;
+              $\pi^{*,h} := \argmax_{(a,\vec{y})} \, Q_a^{h}(\vec{y})$\;
+       }
+       \If{$V^h = V^{h-1}$}
+           {break $\,$ \emph{// Terminate if early convergence}\;}
+   }
+     \Return{$(V^h,\pi^{*,h})$} \;
+}
+\caption{\footnotesize \texttt{VI}(CSA-MDP, $H$) $\longrightarrow$ $(V^h,\pi^{*,h})$ \label{alg:vi}}
+\vspace{-1mm}
+\end{algorithm}
+\decmargin{.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{.5em}
+\linesnumbered
+\begin{algorithm}[t!]
+\vspace{-.5mm}
+\dontprintsemicolon
+\SetKwFunction{remapWithPrimes}{Prime}
+%\SetKwFunction{sumout}{sumout}
+
+
+\Begin{
+    $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
+    \emph{// Continuous regression marginal integration}\\
+    \For {all $x'_j$ in $Q$}{
+         $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y},\vec{n}) \, d_{x'_j}$\;
+    }
+    \emph{// Discrete regression marginal summation}\\
+    \For {all $b'_i$ in $Q$}{
+         $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y},\vec{n}) \right]|_{b_i' = 1}$\\
+         \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y},\vec{n}) \right]|_{b_i' = 0}$\;
+    }
+    $Q := R(\vec{b},\vec{x},a,\vec{y}) \oplus (\gamma \cdot Q)$
+     
+     \emph{// $\max$-in noise variables}\\
+     \For {all $n_k$ in $Q$}{
+         $Q_a^{h}(\vec{y},\vec{n}) := \casemax_{n_k} \, ( Q, N(n_k, b'_i,x_j'))$ $\,$ \;
+	}
+    \Return{$Q$} \;
+}
+\caption{\footnotesize \texttt{Regress}($V,a,\vec{y}$) $\longrightarrow$ $Q$ \label{alg:regress}}
+\vspace{-1mm}
+\end{algorithm}
+\decmargin{.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+While explaining the steps of the \texttt{VI} algorithm we show that all operations required to compute the optimal policy is supported by case representation and defined symbolically. 
+
+Initially the value function $V^h$ is assigned to 0. For every horizon the $h$-stage-to-go value functions $V^h(\vec{b},\vec{x})$ is computed. To follow the steps, we use the second iteration of the Rover example here. For simplification, we omit the boolean variable $b$ of taking a picture and only use one noisy continuous variable $x$. We now perform steps 1--4 for $h=2$.
+
+\begin{itemize}
+\item[(1)] For every action, the function $Q^h_a$ is computed. Line 6 refers to Algorithm~\ref{alg:regress} which has the main steps below:
+
+(1a) Priming the current state variables ($b_i,x_j$) to build the next states ($b_i',x_j'$) in the value function. This indicates that any occurrence of the current state in $V^h$ is \emph{symbolically substituted} with the next state variables that is $V'^h= V^h \sigma$ where $\sigma = \lbrace b_i \setminus b_i' , x_j \setminus x_j' \rbrace$ for all values of $i$ and $j$. For the second iteration this step is equal to the following: 
+
+\begin{align}
+Q = V^{'1} =  
+\begin{cases}
+  -40 \leq x' \leq 40: & 10 \\ 
+ x>40 \lor x'<-40 : & -\infty \\ 
+\end{cases} \nonumber
+\end{align}
+
+(1b) Performing Regression for continuous variable $x$ in line 5 and boolean variable $b$ in lines 8--9. \emph{Boolean restriction} $f|_{b=v}$ assigns the value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$. 
+
+The Binary operators of $\oplus$ and $\otimes$ ( also $\ominus$ not defined here)  on two case statements are done by taking the cross-product of the logical partitions of the two case statement and performing the corresponding operation on the resulting paired partitions. The cross-sum is defined as below:
+{\footnotesize 
+\begin{center}
+\begin{tabular}{r c c c l}
+&
+\hspace{-6mm} 
+  $\begin{cases}
+    \phi_1: & f_1 \\ 
+    \phi_2: & f_2 \\ 
+  \end{cases}$
+$\oplus$
+&
+\hspace{-4mm}
+  $\begin{cases}
+    \psi_1: & g_1 \\ 
+    \psi_2: & g_2 \\ 
+  \end{cases}$
+&
+\hspace{-2mm} 
+$ = $
+&
+\hspace{-2mm}
+  $\begin{cases}
+  \phi_1 \wedge \psi_1: & f_1 + g_1 \\ 
+  \phi_1 \wedge \psi_2: & f_1 + g_2 \\ 
+  \phi_2 \wedge \psi_1: & f_2 + g_1 \\ 
+  \phi_2 \wedge \psi_2: & f_2 + g_2 \\ 
+  \end{cases}$
+\end{tabular}
+\end{center}
+}
+\normalsize
+The other operations of $\ominus$ and $\otimes$ are performed by subtracting or multiplying partition values.  Note that some partitions may become inconsistent (infeasible)  which are removed from the final result. 
+
+\emph{Continuous integration} of $\int Q(x'_j) \otimes P(x'_j|\cdots) dx'_j$ where results in the following according to the rules of integration: 
+\begin{align}
+\int f(x'_j) \otimes \delta[x_j' - h(\vec{z})] dx'_j = f(x'_j) \{ x'_j / h(\vec{z}) \}\nonumber
+\end{align}
+ Here $P(x_j'|\cdots)$ is in the form of $\delta[x_j' - h(\vec{z})]$ ($h(\vec{z})$ which is a case statement and $\vec{z}$ does not contain $x'_j$). The latter operation in the result indicates that any occurrence of $x'_j$ in $f(x'_j)$ is substituted with the case statement $h(\vec{z})$. For our example this step results in the following intermediate $Q$-value: 
+{\footnotesize 
+\begin{center}
+\begin{tabular}{r c c c l}
+\hspace{-6mm} 
+$
+\begin{cases}
+  -40 \leq x' \leq 40: & 10 \\ 
+ x>40 \lor x'<-40 : & -\infty \\ 
+\end{cases} $
+$\otimes$
+$ \delta \left( x' - (x+n+a) \right) $
+$ = $
+\\
+  $\begin{cases}
+  -40 \leq (x+a+n) \leq 40: & 10 \\ 
+ (x+n+a)>40 \lor (x+n+a)<-40 : & -\infty \\ 
+  \end{cases}$
+\end{tabular}
+\end{center}
+}
+\normalsize
+
+(1c) Multiplying the regression by the discount factor and adding the reward function in line 10. \emph{Unary operations} such as scalar multiplication $\gamma \cdot Q$ %(for a constant $c \in \mathbb{R}$) 
+(and also negation $-Q$) on case statements $Q$ is performed by applying the operation to each $Q_i$ ($1 \leq i \leq k$) while adding the reward is a binary $\oplus$: 
+{\footnotesize
+\begin{align}
+Q = V^{'1} =  
+\begin{cases}
+  -40 \leq (x+n+a) \leq 40: & 20 \\ 
+   (x+n+a)>40 \lor (x+n+a)<-40 : & -\infty \\ 
+ x>40 \lor x<-40 : & -\infty \\ 
+\end{cases} \nonumber
+\end{align}
+}
+(1d) Maximizing this result with the noise function in line 13. This step incorporates noise into the regressed Q-function consequently for each noise variable. Each noise variable assigns -$\infty$ for legal values inside the boundary range +$\infty$ for illegal values defined by the noise model $N(\vec{n},\vec{b},\vec{x})$. By maximizing in $n_k$ all illegal values will remain +$\infty$ since this is the maximum value compared to any other value and all legal values will be replaced by the regressed $Q$-value defined in step (1c) -$\infty$ is less than any other $Q$-value so it is omitted in the maximization. The Rover example is redefined with this noise variable as below:
+{\footnotesize
+\begin{align}
+Q =  
+\begin{cases}
+-5 \leq n \leq 5 :& +\infty \\
+ (-40 \leq (x+n+a) \leq 40) \land \neg(-5 \leq n \leq 5) : & 20 \\ 
+ \neg(-40 \leq (x+n+a) \leq 40)  \land \neg(-5 \leq n \leq 5): & -\infty \\ 
+ (x>40 \lor  x<-40) \land (-5 \leq n \leq 5): & +\infty \\ 
+ (x>40 \lor  x<-40) \land \neg(-5 \leq n \leq 5): & -\infty \\ 
+\end{cases} \nonumber
+\end{align}
+}
+\item[(2)] Naturally a noisy process aims to minimize the noise to reach robustness Thus the regressed stochastic $Q_a^{h}(\vec{y},\vec{n})$ from Algorithm~\ref{alg:regress} is now minimized over the noise variables $\vec{n}$ in line 7. Intuitively this continuous minimization will never choose +$\infty$ as there is always some value smaller which insures that the transitioned model never chooses illegal values. All legal $Q$-values are considered in the minimization step to find the value corresponding to the minimum noise.  Each partition $i$ of this intermediate $Q$ is considered for a continuous minimization separately with the final result a $\casemin$ on all the individual minimum results $\casemin_i \min_n \phi_i(\vec{b},\vec{x},\vec{n}) f_i(\vec{b},\vec{x},\vec{n})$.  We demonstrate the steps of this algorithm for the second partition of $Q$ defined as:
+\begin{align}
+\min_n (-40 \leq (x+n+a) \leq 40) \land \neg(-5 \leq n \leq 5) :  20\nonumber
+\end{align} 
+
+For each partition the logical constraints are used to derive the (a) lower bound on $n$ ($LB =$ -5, $- 40 - a -x$); (b) upper bound on $n$ ($UB =$ 5, $40 - a-x$)  and (c) constraints independent of $n$ (IND). In case of several bounds on $n$ the maximum of all lower bounds and the minimum of all upper bounds is desired. A \emph{symbolic case maximization} on two case statements of ($\phi_i:f_i$) and ($\psi_i,g_i$) where ($i \in \lbrace 1,2\rbrace$) is performed below.
+{\footnotesize
+\begin{align}
+\casemax =
+ \begin{cases}
+  \phi_1 \wedge \psi_1 \wedge f_1 > g_1    : & \hspace{-2mm} f_1 \\ 
+  \phi_1 \wedge \psi_1 \wedge f_1 \leq g_1 : & \hspace{-2mm} g_1 \\ 
+  \phi_1 \wedge \psi_2 \wedge f_1 > g_2    : & \hspace{-2mm}f_1 \\ 
+  \phi_1 \wedge \psi_2 \wedge f_1 \leq g_2 : & \hspace{-2mm} g_2 \\ 
+ % \vdots & \vdots
+ \phi_2 \wedge \psi_1 \wedge f_2 > g_1    : & \hspace{-2mm} f_2 \\ 
+ \phi_2 \wedge \psi_1 \wedge f_2 \leq g_1 : & \hspace{-2mm} g_1 \\ 
+ \phi_2 \wedge \psi_2 \wedge f_2 > g_2    : & \hspace{-2mm} f_2 \\ 
+ \phi_2 \wedge \psi_2 \wedge f_2 \leq g_2 : & \hspace{-2mm} g_2 \\ 
+  \end{cases} \nonumber
+\end{align}
+}
+Thus the bounds are defined as below: 
+
+\begin{center}
+\begin{tabular}{r c c c l}
+&
+$
+LB =  
+\begin{cases}
+ a + x < -35 : & -40 - x -a \\ 
+ a + x \geq -35 : & -5 \\ 
+\end{cases} 
+$
+\\
+&
+$ UB =  
+\begin{cases}
+ a + x < 35 : & 5 \\ 
+ a + x \geq -35 : & 40 -a-x \\ 
+\end{cases} 
+$
+\end{tabular}
+\end{center}
+
+The minima points of upper and lower bounds are evaluated for the leaf value which equals to substituting the bounds instead of the noise variable $n$ in the leaf function. The minimum of these two evaluations are then stored, note that in our example the leaf is a constant $20$ value which is not effected by this step. 
+
+Natural constraints on bounds $\LB \leq \UB$ and the $IND$ constraints are also considered for the minimization on a single partition to obtain: 
+{\footnotesize
+\begin{align}
+Q =  
+\begin{cases}
+(-40 \leq x\leq 40) \land ( -45 \leq (x+a) \leq 45 ):&  20 \\
+(-40 \leq x\leq 40) \land \neg ( -45 \leq (x+a) \leq 45 ):&  + \infty \\ 
+ (x>40 \lor  x<-40) : & +\infty \\ 
+\end{cases} \nonumber
+\end{align}
+}
+The final result of a continuous minimization is a $\casemin$ over all partitions which results in the following Q-value:
+{\footnotesize
+\begin{align}
+Q =  
+\begin{cases}
+(-40 \leq x\leq 40) \land ( -35 \leq (x+a) \leq 35 ):&  20 \\
+(-40 \leq x\leq 40) \land \neg( -35 \leq (x+a) \leq 35 ):&  - \infty \\ 
+ (x>40 \lor  x<-40) : & -\infty \\ 
+\end{cases} \nonumber
+\end{align}
+}
+\item[3] The resulting Q-value with minimal noise is maximized over the continuous action parameter in line 8; a symbolic continuous maximization operation, the major contribution of ~\cite{sdp_aaai}. The resulting $Q^h_a$ can be determined as the following:
+\begin{align}
+Q =  
+\begin{cases}
+(-40 \leq x\leq 40) :&  20 \\
+ (x>40 \lor  x<-40) : & -\infty \\ 
+\end{cases} \nonumber
+\end{align}
+
+%For continuous maximization according to ~\cite{sdp_aaai} the $\max_y$ for each case partition
+%is computed individually that is $\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$.
+%In $\phi_i$ each conjoined constraint serves as either the upper bound on $y$, lower bound on $y$ or independent of $y$. The $\casemax$ ($\casemin$) operator is then used to determine the highest lower bound $\LB$
+%(lowest upper bound $\UB$) for multiple symbolic upper and lower bounds on $y$.
+%Apart from the lower and upper bound, the roots of $\frac{\partial}{\partial y} f_i$ 
+%w.r.t.\ $y$ are also potential maxima points. These points are then symbolically evaluated to find which yields the
+%maximizing value $\Max$.  Independent constraints and additional constraints that arise from the
+%symbolic nature of the $\UB$, $\LB$, and $\Root$ are also incorporated in the final result.
+%To complete the maximization for an entire case statement $f$, the
+%above procedure is applied to each case partition of $f$ and the continuous maximization on $f$ is the $\casemax$ of all individual results.  
+
+\item[4] A discrete $\casemax$ on the set of discrete actions  for all $Q$-functions defines the final $V$ and the optimal policy is defined as the $\argmax$  over the set of discrete and continuous actions on $Q$. In our example the final value $V^h = Q^h$  because there is only one single discrete action. 
+
+\end{itemize}
+To implement the case statements efficiently with continuous variables, extended Algebraic Decision diagrams (XADDs) are used from ~\cite{sanner_uai11} which is extended from ADDs ~\cite{bahar93add}. Unreachable paths can be pruned in XADDs using LP solvers and all operations including the continuous minimization can be defined using XADDs by treating each path from root to leaf node as a single case partition with conjunctive constraints,  $\min_n$ is performed at each leaf subject to these constraints and all path $\min_n$'s are then accumulated via the $\casemin$ operation to obtain the final result.
+

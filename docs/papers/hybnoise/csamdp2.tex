@@ -1,0 +1,104 @@
+% small intro to this section, can be omitted along with the subsection's name
+We first formally introduce the framework of Robust Hybrid (discrete and continuous) Markov decision processes (RH-MDPs) extended from CSA-MDPs ~\cite{sdp_aaai}. The optimal solution for this model is then defined by a Robust Dynamic Programming (RDP) approach. 
+\subsection{Factored Representation}
+
+%If we assume noise is a state variable the next state of noise is ambiguous, add noise to transition function
+A RH-MDP is modelled using state variables $(\vec{b},\vec{x}) = ( b_1,\ldots,b_a,x_{1},\ldots,x_c )$ where each $b_i \in \{ 0,1 \}$ ($1 \leq i \leq a$) represents discrete boolean variables $\,$
+and each $x_j \in \mathbb{R}$ ($1 \leq j \leq c$) is continuous.  To model uncertainty in RH-MDPs we assume intermediate noise $\vec{n} = n_1, \ldots , n_e$ where each $n_l \in \mathbb{R}$ ($1 \leq l \leq e$) is a continuous noise variable which can be state dependent.  Both discrete and continuous actions are represented by the set $A = \{a_1(\vec{y}_1), \ldots, a_p(\vec{y}_d) \}$, where  $\vec{y}_k \in \mathbb{R}^{|\vec{y}_k|}$ ($1\leq k \leq d$) denote continuous parameters for action $a_k$. 
+
+%describe each function and how it is represented then talk about goal
+Given a state $(\vec{b},\vec{x})$ and an executed action $a(\vec{y})$ at this state, a
+reward function $R(\vec{b},\vec{x},a,\vec{y})$ specifies the immediate reward at this state. The probability of the next state $(\vec{b}',\vec{x}')$ is defined by a joint state transition model $P(\vec{b}',\vec{x}'| \vec{b},\vec{x},a,\vec{y},\vec{n})$ which depends on the current state, action and noise variables. We assume stochasticity in RH-MDPs using a state dependent noise function $N(\vec{n},\vec{b},\vec{x})$ where each noise variable (i.e. stochastic ) $n_l$ is bounded by some convex region on state variables $(\vec{b},\vec{x})$. Non-deterministic constraint functions define the possible values for each $n_L$ where we assume $+\infty$ for all illegal values of noise and $-\infty$ for legal values. We show later how this general representation allows RH-MDPs to naturally determine the minimum noise in any problem. 
+
+A policy $\pi(\vec{b},\vec{x})$ at this state specifies the action $a(\vec{y}) =
+\pi(\vec{b},\vec{x})$ to take at this state.  An optimal sequence of finite horizon policies $\Pi^* = (\pi^{*,1},\ldots,\pi^{*,H})$ is desired such that given the initial state $(\vec{b}_0,\vec{x}_0)$ at $h=0$ and  a discount factor $\gamma, \; 0 \leq \gamma \leq 1$, the expected sum of discounted rewards over horizon $h \in H ;H \geq 0$ is maximized: 
+\begin{align}
+V^{\Pi^*}(\vec{b},\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| \vec{b}_0,\vec{x}_0\right].
+\end{align}
+where $r^h$ is the reward obtained at horizon $h$ following the optimal policy. 
+
+%\footnote{We assume a finite horizon $H$ in this
+%paper, however in cases where our SDP algorithm converges
+%in finite time, the resulting value function and 
+%corresponding policy are optimal for $H=\infty$. 
+% For finitely bounded value
+%with $\gamma = 1$, the forthcoming SDP algorithm may terminate in
+%finite time, but is not guaranteed to do so; for $\gamma < 1$, an
+%$\epsilon$-optimal policy for arbitrary $\epsilon$ can be computed by
+%SDP in finite time.
+%} 
+ 
+Similar to the dynamic Bayes net (DBN) structure of CSA-MDPs ~\cite{sdp_aaai} 
+we assume \emph{synchronic arcs} (variables that condition on each
+other in the same time slice) from $\vec{b}$ to $\vec{x}$ and from the noise variables $\vec{n}$ to both $\vec{b}$ and $\vec{x}$ but not within the binary $\vec{b}$ or continuous variables $\vec{x}$.Thus the factorized joint transition model is defined as
+%is this definition correct?  what a function of noise to be maximized into this probability, should I use casemax here?
+
+%\vspace{5mm} 
+{\footnotesize
+\begin{align}
+& P(\vec{b}',\vec{x}'|\vec{b},\vec{x}, a,\vec{y},\vec{n}) = \nonumber  \\
+& %\casemax(
+\prod_{i=1}^a P(b_i'|\vec{b},\vec{x} ,a,\vec{y},\vec{n}) 
+\prod_{j=1}^c P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y},\vec{n})
+%\prod_{k=1}^e f(x_j', \epsilon_k).  \nonumber
+\end{align}
+}
+%Note that uncertainty is modelled based only on the previous noise variable. 
+
+For binary variables $b_i$ ($1 \leq i \leq a$) the conditional probability $P(b_i'|\vec{b},\vec{x},a,\vec{y},\vec{n})$ is defined as 
+conditional probability functions (CPFs) which are not tabular.  For continuous variables $x_j$ ($1 \leq j \leq c$), the CPFs $P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y},\vec{n})$ are represented with \emph{piecewise linear equations} (PLEs) that condition on the action, noise, current state, and previous state variables with piecewise conditions that may be arbitrary logical combinations of $\vec{b}$, $\vec{b}'$  and linear inequalities over $\vec{x}$. 
+
+We allow the reward function $R(\vec{b},\vec{x},a,\vec{y})$ to be a general piecewise linear function (boolean or linear conditions
+and linear values) or a piecewise quadratic function of univariate state (current state or the next state) and a linear function of univariate action parameters. These constraints ensure piecewise linear boundaries that can be checked for consistency using a linear constraint feasibility checker, which we will later see is crucial for efficiency.
+
+As a simple example, we consider the following rover problem to demonstrate the conditional probability forms for discrete and continuous variables as well as the noise function: 
+\begin{example*}[Rover]
+A Rover state consists of its continuous position $x$ along a
+given route.  In a given time step, the rover may move a 
+continuous distance $a \in [-10,10]$.  The rover receives its greatest
+reward for taking a picture in the region of $x \in [-40,40]$. Sensory noise $n$ on the rover results in a noisy transition to the next state. This noise is bounded $n \in [-5,5]$ on the current location of the rover.
+Taking a picture $b=1$ where $b \in \{0,1\}$ occurs only if it has not been performed previously. 
+\end{example*}
+We define the rover  as a RH-MDP using the following piecewise dynamics and reward:
+
+\begin{align} 
+\hspace{-2.8mm} & P(b' =1|x,b,n) = 
+\begin{cases}
+b \lor (x \geq -10 \land x \leq 10): & \hspace{-2mm} 1.0\\
+\neg b \land (x < -10 \lor x > 10):  & \hspace{-2mm} 0.0
+\end{cases} \label{eq:mr_discrete_trans} \\
+\hspace{-2.8mm} & P(x'|x,a,n)  = \delta \left( x' - (x+n+a) \right) \label{eq:mr_cont_trans} \\
+\hspace{-2.8mm} & R(x,b) = \begin{cases}
+x > 40 \lor x < -40 : & -\infty \\
+b' \land \neg b \land x \geq -2 \land x \leq 2 : & 10 \\
+b' \land b \land x \geq -2 \land x \leq 2 : & -1\\
+\neg b' \land x \geq -2 \land x \leq 2 : & -1\\
+\end{cases} 
+\end{align}
+ Where the $\delta[\cdot]$ function ensures that the continuous CPF over $x'$ integrates to 1.
+ 
+\subsection{Robust Dynamic Programming}
+
+Given the general dynamic programming approach for obtaining the optimal policy, we extend the value iteration algorithm ~\cite{bellman} to a Robust dynamic programming algorithm for continuous states and actions. Initializing $V^0(\vec{b},\vec{x}) = 0$) the algorithm builds the $h$-stage-to-go value functions $V^h(\vec{b},\vec{x})$.
+
+The quality $Q_a^{h}(\vec{b},\vec{x},\vec{y},\vec{n})$ of taking action $a(\vec{y})$ in state $(\vec{b},\vec{x})$ with noise parameters $\vec{n}$ and acting so as to obtain $V^{h-1}(\vec{b},\vec{x})$ is defined as the following:
+\vspace{-4mm}
+{\footnotesize
+\begin{align}
+& Q_a^{h}(\vec{b},\vec{x},\vec{y},\vec{n}) = \max_{n_1,\ldots, n_l} N(\vec{n},\vec{b},\vec{x}) \cdot \Bigg[ R(\vec{b},\vec{x},a,\vec{y}) + \gamma \cdot \sum_{\vec{b}'} \hspace{-1.0mm} \int \hspace{-1.0mm} \nonumber \\
+&\Bigg( \prod_{i=1}^a P(b_i'|\vec{b},\vec{x},a,\vec{y},\vec{n})     
+\prod_{j=1}^c P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y},\vec{n}) \Bigg)  \hspace{-1.0mm} V^{h-1}(\vec{b}',\vec{x}') d\vec{x}' \Bigg] \hspace{-0.2mm} \label{eq:qfun} 
+\end{align}}
+Here the noise function $N(\vec{n},\vec{b},\vec{x})$ is is used to in-cooperate the noise variable $n_1,\ldots,n_l$ maximally in the original Q-value definition of value iteration. Given $Q_a^h(\vec{b},\vec{x},\vec{y},\vec{n})$ for each $a \in A$, we can proceed to define the $h$-stage-to-go value function so as to minimize the noise as follows:
+\begin{align}
+V^{h}(\vec{b},\vec{x}) & = \max_{a \in A} \max_{\vec{y} \in \mathbb{R}^{|\vec{y}|}} \min_{\vec{n} \mathbb{R}^{|\vec{n}|}} \left\{ Q^{h}_a(\vec{b},\vec{x},\vec{y},\vec{n}) \right\} \label{eq:vfun}
+\end{align}
+
+The optimal policy in horizon $h$ is also determined using the $Q$-function as below: 
+\begin{align}
+\pi^{*,h}(\vec{b},\vec{x}) = \argmax_a  \argmax_{\vec{y}}  \argmin_{\vec{n}}  Q^h_a(\vec{b},\vec{x},\vec{y},\vec{n})
+\end{align}
+
+For finite-horizon RH-MDPs the optimal value function and policy are obtained up to horizon H.  For infinite horizons, the optimal policy has finitely bounded value and value iteration terminates when two values are equal in consequent horizons ($V^{h} = V^{h-1}$). In this case $V^\infty = V^h$ and $\pi^{*,\infty} = \pi^{*,h}$.
+
+Next  we compute ~\eqref{eq:qfun} and \eqref{eq:vfun} using symbolic methods.
