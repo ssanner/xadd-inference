@@ -1,1 +1,89 @@
-\cite{sanner_uai11}
+% Robust Optimization Hybrid MDPs
+
+Many real-world sequential decision-making problems are naturally
+modeled with both discrete and continuous (hybrid) state and action
+spaces.  When state transitions are stochastic, these problems can be
+modeled as hybrid Markov Decision Processes (MDPs), which have been
+studied extensively in AI
+planning~\cite{boyan01,feng04,li05,kveton06,phase07,hao09,zamani_aaai12}
+as well as control theory~\cite{} and operations
+research~\cite{puterman}.  However, all previous solutions to hybrid
+MDPs either take an approximation approach or restrict stochastic
+noise on continuous transitions to be state-independent or discretized
+(i.e., requiring continuous transitions to be a finite mixture over
+deterministic transitions).
+% Not mentioning initial state dependence of many control solutions,
+% will mention these limitations and inability to handle 
+% controllability in Related Work.
+
+Unfortunately, each of these assumptions can be quite limiting in
+practice when strong \emph{a priori} guarantees on performance are
+required in the face of general forms of state-dependent noise.  For
+example, in a \textsc{UAV Navigation} problem~\cite{}, a human
+controller must be aware of all positions from which a UAV with a
+given amount of fuel reserves can return to its landing strip with
+high probability of success given known areas of (state-dependent)
+turbulence.  In a \textsc{Space Telescope Control} problem~\cite{},
+one must carefully manage inertial moments and rotational velocities
+as the telescope maneuvers between different angular orientations and
+zoom positions, where noise increases when the telescope is in
+unstable positions (extended zooms).  And lastly, in
+a \textsc{Reservoir Control} problem, one must manage reservoir levels
+to maintain energy production and stream water levels while avoiding
+overflow and underflow subject to uncertain season-dependent rainfall.
+In all of these problems, there is no room for error: a UAV crash, a
+satellite spinning out of control, or a flooded reservoir can all
+cause substantial monetary, physical, and/or environmental damage.
+What is needed are robust solutions to these problems that optimize
+their objective (maximizing operating time, minmizing energy use and
+down-time, maximizing potential energy) while not exceeding a
+prespecified margin of error.
+
+
+For example, in a MARS ROVER problem (Bresina et al.
+2002), a rover must navigate within a continuous spatial environment and carry out assigned scientiﬁc discovery tasks;
+in INVENTORY CONTROL problems (Mahootchi 2009) for
+continuous resources such as petroleum products, a business
+must decide what quantity of each item to order subject to
+uncertain demand, (joint) capacity constraints, and reordering costs; and in RESERVOIR MANAGEMENT problems (Lamond and Boukhtouta 2002), a utility must manage continuous reservoir water levels in continuous time to avoid underﬂow while maximizing electricity generation revenue. 
+
+
+have some element of continuous state
+
+  Hybrid MDPs are an important model for domains with stochasicity.
+
+- Boyan and Littman, Dearden, Sanner 2011 and 
+  Zamani 2012~\cite{sanner_uai11} have successively
+  advanced domains for which exact solutions can be found.  But all
+  require a heavily restricted stochastic noise model, namely that
+  continuous transitions have a finite number of stochastic outcomes,
+  e.g., this prevents uniform or Gaussian noise.  Unfortunately,
+  relaxing this assumption in existing work is not possible since
+  it leads to integrals that cannot be computed in closed-form and
+  maximization over arbitrary non-convex surfaces that is intractable 
+  in the general case.
+
+- We model confidence intervals on 
+  (multivariate) noise distributions and take a union bound to
+  derive a probability of overall success.  
+
+- In addition, we can automatically derive confidence intervals given
+  an input distribution for an arbitrary noise distribution.
+
+- We demonstrate that under a robust optimization approach where 
+  Nature is allowed to adversarially determine transition noise within
+  automatically-derived confidence intervals
+
+- Unlike previous work
+  in chance-constrained control however, we permit state-dependent
+  noise and we do not require an initial state and instead
+  can derive an optimal policy
+  for the entire state space using receding horizon control, and we
+  can answer fundamental questions regarding controllability under
+  state-dependent noise that could not be answered by previous work.
+
+- This work presents novel solutions to previously unsolved problems
+  in AI planning, operations research and control and we demonstrate
+  on those problems.
+
+

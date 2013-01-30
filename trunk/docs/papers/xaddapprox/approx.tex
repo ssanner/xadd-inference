@@ -138,7 +138,7 @@ where $\phi_i \cap \phi_j = \emptyset$ if $i \neq j$
 A clear example of a function where approximation can be helpful is a regular difference step function, as the one in picture \ref{stepf}. 
 \begin{figure}[!h]
 \center
-\includegraphics[scale=0.9]{Figures/step.png}
+\fbox{Missing}%\includegraphics[scale=0.9]{Figures/step.png}
 \caption{A linearizable step function.}
 \label{stepf} 
 \end{figure}
@@ -146,7 +146,7 @@ A clear example of a function where approximation can be helpful is a regular di
 For this function it seems clear that with a small error, a much simpler representation can be achieved by modifying the linear function and merging the regions. We would like to represent it concisely as in figure \ref{steplin}.
 \begin{figure}[h]
 \center
-\includegraphics[scale=0.9]{Figures/steplin.png}
+\fbox{Missing}%\includegraphics[scale=0.9]{Figures/steplin.png}
 \caption{An approximation reducing the number of cases.}
 \label{steplin} 
 \end{figure}
@@ -157,21 +157,21 @@ Considering the complexity of comparing multiple functions our approach would be
 \begin{minipage}{.7\textwidth}
   \centering
   \subfigure[Original] {
-	\includegraphics[scale=0.75]{Figures/step1.png}
+	\fbox{Missing}%\includegraphics[scale=0.75]{Figures/step1.png}
 	\label{step1}
   }
 \end{minipage}
 \begin{minipage}{.7\textwidth}
 \centering
 \subfigure[Step1] {
-	 \includegraphics[scale=0.75]{Figures/step12.png}
+	 \fbox{Missing}%\includegraphics[scale=0.75]{Figures/step12.png}
 	\label{step2} 
 }
 \end{minipage}
 \begin{minipage}{.7\textwidth}
 \centering
 \subfigure[Step2]{
-	 \includegraphics[scale=0.75]{Figures/step123.png}
+	 \fbox{Missing}%\includegraphics[scale=0.75]{Figures/step123.png}
 	 \label{step2}
 }
 \end{minipage}
@@ -182,7 +182,7 @@ Considering the complexity of comparing multiple functions our approach would be
 Therefore, while making experiments it became clear that when merging linear functions with the same angular coefficient, as the step function case, the problem of minimizing the maximal error has various solutions, out of which our algorithm will arbitrarily choose one. An example is depicted in figure \ref{steplin2}. Both functions $f_1(x)$ and $f_2(x)$ approximate the step function optimally according to the maximum error so either may be chosen by our algorithm.This reveals that the problem specified earlier, of finding the best linear case approximation for two linear case functions is possibly underspecified.  Its is suggested that since $f_2(x)$ yields a smaller average error than $f_1(x)$ it could be used to improve the approximation. Minimizing other forms of errors would avoid this underspecification. Another concern is if choosing the appropriate optimal function will lead to a better total error, as the propagations of errors for successive merges may not provide the overall best approximation.
 \begin{figure}[h]
 \center
-\includegraphics[scale=0.9]{Figures/step2lin.png}
+\fbox{Missing}%\includegraphics[scale=0.9]{Figures/step2lin.png}
 \caption{Two optimal MaxError approximations.}
 \label{steplin2} 
 \end{figure}

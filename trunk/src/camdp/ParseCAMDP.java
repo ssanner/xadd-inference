@@ -230,7 +230,8 @@ public class ParseCAMDP {
 			HashMap<String,ArrayList> noise_map = new HashMap<String,ArrayList>();
 			if ((o instanceof String) && ((String) o).equalsIgnoreCase("noise")) {
 				while (!((String) o).equalsIgnoreCase("reward")) {
-					o = i.next();
+					if (((String) o).equalsIgnoreCase("noise"))
+						o = i.next();
 					if (!(o instanceof String)) {
 						exit("Expected noise variable header or 'reward' but got: " + o);
 					}
