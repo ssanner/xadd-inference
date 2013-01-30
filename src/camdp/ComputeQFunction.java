@@ -247,6 +247,9 @@ public class ComputeQFunction {
 			if (!child_var.equals(parent_var) || _camdp._hsContIVars.contains(parent_var) || _camdp._hsContNSVars.contains(parent_var)) {
 				g.addUniLink(child_var, parent_var);
 				//System.out.println("Adding link " + child_var + " --> " + parent_var);
+			} else if(child_var.equals(parent_var)){ 
+				// SUSPICIOUS CODE :p (avoid removing variables that dont have dependencies
+				g.addNode(parent_var);
 			}
 			buildDBNDependencyDAGInt(a, child_var, g, already_seen);
 		}

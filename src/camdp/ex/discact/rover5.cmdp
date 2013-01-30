@@ -1,6 +1,6 @@
 cvariables (time energy )
-min-values (0 0)
-max-values (57600 20)
+min-values (-10000 -100)
+max-values (576000 200)
 bvariables (p5 p4 p3 p2 p1 takenp5 takenp4 takenp3 takenp2 takenp1 )
 ivariables()
 action movep1p2
