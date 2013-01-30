@@ -1,14 +1,14 @@
 cvariables (x)
 min-values (-2000)
 max-values (2000)
-bvariables (tp1 tp2 tp3)
+bvariables (tp1 tp2 tp3 tp4)
 icvariables()
 min-values ()
 max-values ()
 ibvariables()
 avariables(ax)
 
-action move (-30 < = ax < = 30)
+action move (-300 < = ax < = 300)
 
 tp1' (tp1
 	([1.0])
@@ -36,6 +36,17 @@ tp3' (tp3
 	([1.0])
 	([x>-10]
 		([x<10]
+			([1.0])
+			([0.0])
+		)
+		([0])
+	)
+)
+
+tp4' (tp4
+	([1.0])
+	([x> 90]
+		([x< 110]
 			([1.0])
 			([0.0])
 		)
@@ -77,6 +88,17 @@ reward
 	        )
         )
         ([-0.5])
+)
++
+(tp4'
+	(tp4
+		([1.4])
+		([x>100]
+	           	([20 - 0.2*(x - 100)])
+	              	([20 - 0.2*(100 - x)])
+	        )
+        )
+        ([-3])
 )
 +
 ([ax>0]
