@@ -1,0 +1,74 @@
+cvariables (x y)
+min-values (-100 -100)
+max-values (200 200)
+bvariables (l)
+nvariables (nx ny)
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables(ax ay)
+
+action move (-40<=ax<=40 ^ -40<=ay<=40)
+l' (l 
+	([1.0]) 
+	([x + y > 200] 
+		([1.0])
+		([0.0])))
+	
+x' ([x + ax + nx])
+y' ([y + ay + ny])
+
+noise
+
+nx ([y > 50 + x]
+          ([nx <=20]
+	        ([nx>=-20] 
+		        ([legal])
+                ([illegal]))
+            ([illegal]))    
+          ([nx <=5]
+	        ([nx>=-5] 
+		        ([legal])
+                ([illegal]))
+            ([illegal]))    
+       )    
+       
+ny ([y > 50 + x]
+          ([ny <=20]
+	        ([ny>=-20] 
+		        ([legal])
+                ([illegal]))
+            ([illegal]))    
+          ([ny <=5]
+	        ([ny >=-5] 
+		        ([legal])
+                ([illegal]))
+            ([illegal]))    
+       )    
+
+reward   ([x < 130]
+             ([y < 130]
+                ([x > 0]
+                  ([y > 0]
+                  ([x' < 130]
+             ([y' < 130]
+                ([x' > 0]
+                  ([y' > 0]
+       (l'
+           ([0])
+           ([-20]))
+       ([-Infinity]))
+       ([-Infinity]))
+       ([-Infinity]))
+       ([-Infinity]))
+        ([-Infinity]))
+       ([-Infinity]))
+       ([-Infinity]))
+       ([-Infinity]))    
+
+endaction
+
+discount 1.00000
+iterations 4
+

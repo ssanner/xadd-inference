@@ -1,0 +1,58 @@
+cvariables (x y e)
+min-values (-100 -100 -1000)
+max-values (200 200 2000)
+bvariables (g)
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables(ax ay)
+
+action move (-20<=ax<=20 ^ -20<=ay<=20)
+g' (g 
+	([1.0]) 
+	([x' + y' > 200] 
+		([1.0])
+		([0.0])))
+	
+x' ([e' > 0]
+      ([x + ax])
+      ([x]))
+y' ([e' > 0]
+      ([y + ay])
+      ([y]))
+e' ([ax > 0]
+     ([ay > 0]
+       ([e - ax - ay])
+       ([e - ax + ay]))
+     ([ay > 0]
+       ([e + ax - ay])
+       ([e + ax + ay])))
+
+reward   ([x < 130]
+             ([y < 130]
+                ([x > 0]
+                  ([y > 0]
+                  ([x' < 130]
+             ([y' < 130]
+                ([x' > 0]
+                  ([y' > 0]
+       (g'
+         (g
+           ([e' - e])
+           ([100 + e' - e]))
+         ([e' - e]))
+       ([-Infinity]))
+       ([-Infinity]))
+       ([-Infinity]))
+       ([-Infinity]))
+        ([-Infinity]))
+       ([-Infinity]))
+       ([-Infinity]))
+       ([-Infinity]))    
+
+endaction
+
+discount 1.00000
+iterations 4
+

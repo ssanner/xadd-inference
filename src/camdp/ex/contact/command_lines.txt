@@ -14,7 +14,7 @@ src/camdp/ex/contact/reservoir-refinement6.cmdp 5 false true
 
 src/camdp/ex/contact/inventory2-4.cmdp 5 false true
 
-
+src/camdp/ex/contact/piramid2d.cmdp 5 false true
 
 
 

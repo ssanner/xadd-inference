@@ -566,7 +566,7 @@ public class CAMDP {
 						// Line format: cassign name double
 						_dassign.put(split[1].trim(), Double.parseDouble(split[2]));
 					} else {
-						throw new Exception("ERROR: Unexpected line label '" + label + "', not {var, bassign, dassign}");
+						throw new Exception("ERROR: Unexpected line label '" + label + "', not {var, bassign, cassign}");
 					}
 				}
 			} catch (Exception e) {
