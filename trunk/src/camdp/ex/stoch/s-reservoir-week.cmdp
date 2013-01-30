@@ -1,7 +1,7 @@
 cvariables (x1 x2)
-min-values (-10000000 -10000000)
-max-values (10000000 10000000)
-bvariables (s)
+min-values (-10000 -10000)
+max-values (50000 50000)
+bvariables (r)
 nvariables (n)
 icvariables ()
 min-values ()
@@ -10,22 +10,19 @@ ibvariables ()
 avariables ()
 
 action drain ()
-s'(s
-	  ([1.0])
-      ([0.0])
-     )
+r' (r ([0.6])([0.2]))
 
-x1' (s
+x1' (r
 		([400 * 4.1 + n *4.1 + x1 -700 * 4.1 + 500 * 4.1])
 		([300 * 4.1 + n *4.1 + x1 -700 * 4.1 + 500 * 4.1])
 	)	
-x2' (s
+x2' (r
 		([400 * 4.1 + n *4.1 + x2 - 500 * 4.1])
 		([300 * 4.1 + n *4.1 + x2 - 500 * 4.1])
 	)	         
 
 noise
-n ( s 
+n ( r 
 	([n <= 100]
 		([n >= -100]
 			([legal])
@@ -61,22 +58,19 @@ endaction
 
 
 action no-drain ()
-s'(s
-	  ([1.0])
-      ([0.0])
-     )
+r' (r ([0.6])([0.2]))
 
-x1' (s
+x1' (r
 		([400 * 4.1 + n * 4.1+ x1 -700 * 4.1])
 		([300 * 4.1 + n * 4.1+ x1 -700 * 4.1])
 	)	
-x2' (s
+x2' (r
 		([400 * 4.1 + n * 4.1 + x2])
  		([300 * 4.1 + n * 4.1 + x2])
  	)	
 noise
 
-n ( s 
+n ( r 
 	([n <= 100]
 		([n >= -100]
 			([legal])
