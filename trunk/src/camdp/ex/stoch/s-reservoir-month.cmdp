@@ -1,6 +1,6 @@
 cvariables (x1 x2)
-min-values (-10000000 -10000000)
-max-values (10000000 10000000)
+min-values (-10000 -10000)
+max-values (10000 10000)
 bvariables ()
 nvariables (n)
 ivariables()
@@ -59,7 +59,7 @@ reward 	([x1'<=4500]
 									 ([x2<=4500]
 										 ([x1>=200]
 											([x2>=200]
-												 ([5.1])
+												 ([4.1])
 												 ([-Infinity] ))
 											([-Infinity]))
 									 ([-Infinity] ))

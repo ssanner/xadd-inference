@@ -22,13 +22,13 @@ y' ([y + ay + ny])
 noise
 
 nx ([nx <= 0.1*x]
-	        ([nx >= -0.1*x] 
+	        ([nx >= 0] 
 		        ([legal])
                 ([illegal]))
             ([illegal]))  
 
 ny ([ny <= 0.1*(130-y)]
-	        ([ny >= -0.1*(130-y)] 
+	        ([ny >= 0] 
 		        ([legal])
                 ([illegal]))
             ([illegal]))  
