@@ -60,7 +60,7 @@ public class XADD {
 	public final static boolean SHOW_DECISION_EVAL = false;
 	public final static boolean DEBUG_EVAL_RANGE = false;
 	public final static boolean HANDLE_NONLINEAR = false;
-	public final static boolean VERBOSE_MIN_MAX = true;
+	public final static boolean VERBOSE_MIN_MAX = false;
 
 	// Operator constants
 	public final static int UND = 0;
