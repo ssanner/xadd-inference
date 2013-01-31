@@ -46,12 +46,6 @@ leliane@ime.usp.br}
 \maketitle
 
 \begin{abstract}
-%TODO: emphasize solution is exact, optimal according to adversarial
-%semantics as used in robust optimization.  First results for hybrid
-%systems with piecewise linear dynamics and state-dependent noise ---
-%something that is typically not handled in control theory, much less
-%with these expressive dynamics. Reference to chance constraints?
-
 Recent advances in solutions to hybrid MDPs with discrete and
 continuous state and action spaces have significantly extended the
 class of MDPs for which exact solutions can be derived, albeit at the
@@ -69,7 +63,7 @@ our approach working on a variety of hybrid MDPs taken from AI
 planning, operations research, and control theory, noting that this is
 the first time optimal robust solutions have been automatically
 derived for such problems.
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Continuous spaces with stochastic dynamics can represent a rich class
 %of real world problems. While decision theoretic planning provides
 %optimal solutions to restricted continuous domains, fully stochastic
@@ -84,17 +78,18 @@ derived for such problems.
 %demonstrate empirical results on problems such as the Inventory
 %Control. The results show the existence of the first fully automated
 %exact solution to the stochastic noisy continuous problem definitions.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \end{abstract}
 
 \section{Introduction}
 
 \input introduction.tex
 
-\section{Robust Hybrid MDPs} %Continuous State and Action MDPs}
+\section{Hybrid MDPs (MDPs)} 
 
 \input csamdp2.tex
 
-\section{Symbolic Dynamic Programming (SDP)} %Symbolic Solutions for RCSA-MDPs
+\section{Robust Symbolic Dynamic Programming (RSDP)} 
 
 \input sdp2.tex
 
