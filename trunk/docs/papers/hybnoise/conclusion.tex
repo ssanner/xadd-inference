@@ -1,0 +1,30 @@
+% In results, need to point out that for larger problems, reasonable
+% discretizations into 100 intervals per variable could lead to
+% (10^2)^6 = 10^12 = 1 trillion states that would prohibit the
+% application of even one Bellman backup.  This solution is exact to
+% arbitrary precision and does not introduce additional errors owing
+% to discretization noise.
+%
+% Future work: hierarchy and decompositions with bounds, RTDP, 
+%              UCT and sampling, determinization-discretization 
+%              guided solutions, maintaining upper and lower bounds
+%              and refining solutions, nonlinear by adaptive 
+%              linearization, bounded approximations, extensions 
+%              beyond piecewise linear to bilinear, quadratic, and 
+%              beyond.
+
+This work has combined symbolic techniques and data structures from
+the HMDP literature in AI with techniques from chance-constrained
+control theory to provide optimal robust solutions to a range of
+problems with general continuous transitions and state-dependent noise
+for which no general exact closed-form solutions previously existed.
+Using these techniques we were able to find optimal policies and
+answer questions of robust controllability for a variety of highly
+risk-sensitive applications from AI planning, control theory, and
+operations research such as \textsc{UAV Navigation}, \textsc{Space
+  Telescope Control}, and \textsc{Reservoir Control}.  Among many
+potential avenues for future work, combining this receding horizon
+control approach with focused search techniques as in HAO*~\cite{hao}
+should preserve our strong robust optimality guarantees while
+substantially increasing the scalability of our approach in exchange
+for restricting solution optimality to a known set of initial states.
