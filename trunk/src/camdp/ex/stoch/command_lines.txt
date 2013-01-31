@@ -1,6 +1,5 @@
 ====ijcai==============
 src/camdp/ex/stoch/s-2d-uav-bounded-region-noise.cmdp 8 false true
-src/camdp/ex/stoch/s-telescopeAction5Linear.cmdp 8 false true
-src/camdp/ex/stoch/s-reservoir-SeasonChange8N.cmdp 8 false true
+src/camdp/ex/stoch/s-telescopeAction5Linear.cmdp 8 false true            ITERATION 1 infinity
 src/camdp/ex/stoch/s-reservoir-SeasonChange8New.cmdp 8 false true
 =================================
