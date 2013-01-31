@@ -1,7 +1,7 @@
 cvariables (x1 x2)
 min-values (-1000 -1000)
 max-values (5000 5000)
-bvariables (d e)
+bvariables (d)
 ivariables()
 avariables()
 

@@ -1,15 +1,12 @@
 \label{sec:sdp}
 
 In this section, we describe the \emph{symbolic dynamic programming}
-(SDP) work of~\cite{sanner_aaai12} to the case of continuously
-parameterized actions for CSA-MDPs.  We present the general SDP
+(SDP) work of~\cite{sanner_uai12} and its extension to the case of continuously
+parameterized actions by ~\cite{sanner_aaai12}.  We present the general SDP
 framework for value iteration in Algorithm~\ref{alg:vi} (\texttt{VI})
 and a regression subroutine in Algorithm~\ref{alg:regress}
 (\texttt{Regress}) where we have omitted parameters $\vec{b}$ and
-$\vec{x}$ from $V$ and $Q$ to avoid notational clutter.  The
-difference between this SDP algorithm and that in~\cite{sanner_uai11}
-comes in the continuous action parameter maximization in line 7 of
-\texttt{VI}.
+$\vec{x}$ from $V$ and $Q$ to avoid notational clutter.  .
 %Before we explain this contribution though, we 
 But first we recap SDP,
 which uses the \emph{case} representation and operations.
@@ -34,22 +31,13 @@ f =
 Here the $\phi_i$ are logical formulae defined over the state
 $(\vec{b},\vec{x})$ that can include arbitrary logical ($\land,\lor,\neg$)
 combinations of (i) boolean variables and (ii) 
-\emph{linear} inequalities ($\geq,>,\leq,<$) 
+\emph{linear} strict inequalities ($>,<$) \footnote{ For purposes of evaluating
+a linear function $f$ within a region, it does not matter whether a bound is inclusive ($\leq$ or $\geq$) or exclusive ($<$ or $>$), since it can be arbitrarily near the bounds; for precise evaluation at the bounds, $f$ is required to be continuous, in which case both partitions will give the same result.}
 over continuous variables.  
-Each $\phi_i$ will be disjoint from the other $\phi_j$ ($j \neq i$); 
-however the $\phi_i$ may not exhaustively cover the state space, hence
-$f$ may only be a \emph{partial function} and may be undefined for some
-variable assignments.
-%\footnote{In the context of SDP, states whose value
-%at horizon $h$ is undefined correspond to states that cannot reach any
-%defined state of the reward in horizon $h$.}
-The $f_i$ may be either linear or quadratic in the continuous parameters
-according to the same restrictions as for 
-$R(\vec{b},\vec{x},a,\vec{y})$.  
-We require $f$ to be continuous 
-(including no discontinuities at partition boundaries); 
-operations preserve this property.
+The $\phi_i$ are disjoint from each other;  however they may not exhaustively cover the state space, in which case $f$ is a \emph{partial function}, undefined for some
+variable assignments. For $f$ to represent a piecewise linear function, all $f_i$ must be linear in the continuous parameters.
 
+In the context of SDP, we need to perform operations on symbolic functions represented in case form. The operations we need are: scalar multiplication, addition, subtraction and multiplication of symbolic functions, case maximization, boolean restriction and continuous integration. Next we explain how these operations are defined.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{.5em}
@@ -58,6 +46,7 @@ operations preserve this property.
 \vspace{-.5mm}
 \dontprintsemicolon
 \SetKwFunction{regress}{Regress}
+\SetKwFunction{approximate}{Approximate}
 \Begin{
    $V^0:=0, h:=0$\;
    \While{$h < H$}{
@@ -68,12 +57,13 @@ operations preserve this property.
               $V^{h} := \casemax_a \, Q_a^{h}$ $\,$ \emph{// $\casemax$ all $Q_a$}\;
               $\pi^{*,h} := \argmax_{(a,\vec{y})} \, Q_a^{h}(\vec{y})$\;
        }
+       $V^h = $\approximate{$V^{h}$}\;
        \If{$V^h = V^{h-1}$}
            {break $\,$ \emph{// Terminate if early convergence}\;}
    }
      \Return{$(V^h,\pi^{*,h})$} \;
 }
-\caption{\footnotesize \texttt{VI}(CSA-MDP, $H$) $\longrightarrow$ $(V^h,\pi^{*,h})$ \label{alg:vi}}
+\caption{\footnotesize \texttt{VI}(Hybrid-MDP, $H$) $\longrightarrow$ $(V^h,\pi^{*,h})$ \label{alg:vi}}
 \vspace{-1mm}
 \end{algorithm}
 \decmargin{.5em}
@@ -152,16 +142,13 @@ $ = $
 \normalsize
 
 Likewise, we perform $\ominus$ and $\otimes$ by,
-respectively, subtracting or multiplying partition values (as opposed
-to adding them) to obtain the result.  Some partitions resulting from
-case operators may be inconsistent (infeasible) and removed. 
-%.; we may simply discard such 
-%partitions as they are irrelevant to the function value.
+respectively, subtracting or multiplying partition values to obtain the result. 
+As linear inequalities can be inconsistent (infeasible) some of the generated partitions will be removed from the result. 
 
 %For SDP, we'll also need to perform maximization, restriction,
 %and substitution on case statements.  
 Next we define \emph{symbolic case maximization}:
-\vspace{-4mm}
+\vspace{-2mm}
 
 {\footnotesize
 \begin{center}
@@ -169,15 +156,15 @@ Next we define \emph{symbolic case maximization}:
 &
 \hspace{-7mm} $\casemax \Bigg(
   \begin{cases}
-    \phi_1: \hspace{-2mm} & \hspace{-2mm} f_1 \\ 
-    \phi_2: \hspace{-2mm} & \hspace{-2mm} f_2 \\ 
+    \phi_1: \hspace{-2mm} & \hspace{-1mm} f_1 \\ 
+    \phi_2: \hspace{-2mm} & \hspace{-1mm} f_2 \\ 
   \end{cases}$
 $,$
 &
 \hspace{-4mm}
   $\begin{cases}
-    \psi_1: \hspace{-2mm} & \hspace{-2mm} g_1 \\ 
-    \psi_2: \hspace{-2mm} & \hspace{-2mm} g_2 \\ 
+    \psi_1: \hspace{-2mm} & \hspace{-1mm} g_1 \\ 
+    \psi_2: \hspace{-2mm} & \hspace{-1mm} g_2 \\ 
   \end{cases} \Bigg)$
 &
 \hspace{-4mm} 
@@ -198,264 +185,84 @@ $ = $
 \end{tabular}
 \end{center}
 } If all $f_i$ and $g_i$ are linear,
-the $\casemax$ result is clearly still linear.  If the $f_i$ or $g_i$
-are quadratic according to the previous reward restriction, it will
-shortly become obvious that the expressions $f_i > g_i$ or $f_i \leq
-g_i$ will be at most univariate quadratic and any such constraint
-can be \emph{linearized} into a combination of at most 
-two linear inequalities (unless tautologous or inconsistent) 
-by completing the square (e.g., 
-%$x^2 + 8x > 0 \equiv [x + 4]^2 > 4 \equiv [x \leq -2] \lor [x > 6]$
-$-x^2 + 20x - 96 > 0 \equiv [x - 10]^2 \leq 4 \equiv [x > 8] \land [x \leq 12]$).  Hence
-according to the earlier restrictions, the result of this $\casemax$
-operator will be representable in the case format previously described
-(i.e., linear inequalities in decisions).
+the $\casemax$ result is clearly still linear and representable in the case format previously described (i.e., linear inequalities in decisions).
 
-There are two operations in \texttt{Regress} that we have not defined
-yet.  The first operation of \emph{boolean restriction} required in
-lines 8--9 is obvious and an example is omitted: in this operation
+ The operation of \emph{boolean restriction} required for regressing boolean variables is obvious and an example is omitted: in this operation
 $f|_{b=v}$, anywhere a boolean variable $b$ occurs in $f$, we assign
-it the value $v \in \{ 0,1 \}$.  The second operation of
-\emph{continuous integration} $\int Q(x'_j) \otimes P(x'_j|\cdots)
-dx'_j$ is required in line 5; as previously defined, $P(x_j'|\cdots)$
+it the value $v \in \{ 0,1 \}$, and resolve the following logic implications, reducing formulae or removing partitions.  The operation of \emph{continuous integration} $\int Q(x'_j) \otimes P(x'_j|\cdots) dx'_j$ is required for regressing continuous variables. As previously defined, $P(x_j'|\cdots)$
 will always be of the form $\delta[x_j' - h(\vec{z})]$ where
 $h(\vec{z})$ is a case statement and $\vec{z}$ does not contain
 $x'_j$.  Rules of integration then tell us that $\int f(x'_j) \otimes
 \delta[x_j' - h(\vec{z})] dx'_j = f(x'_j) \{ x'_j / h(\vec{z}) \}$
 where the latter operation indicates that any occurrence of $x'_j$ in
 $f(x'_j)$ is \emph{symbolically substituted} with the case statement
-$h(\vec{z})$.  The full specification of this operation was a key
-contribution of~\cite{sanner_uai11} so we refer the reader to that
-paper for further technical details.  The
-important insight is that this $\int$ operation yields a result that is a
+$h(\vec{z})$. The appearance of case statement within formulae is solved expanding the cross-product of the logical partitions. A more detailed specification of this operation is available in ~\cite{sanner_uai11}.  The important insight is that this $\int$ operation yields a result that is a
 case statement in the form previously outlined.
 
-\subsection{Maximization of Continuous Action Parameters}
+The only operation for SDP that has not yet been defined is the continuous action maximization.
+The continuos maximization over action variables can be wrtitten as $g(\vec{b},\vec{x}) := \max_{\vec{y}} \, f(\vec{b},\vec{x},\vec{y})$. Note that the result of this max, $g(\vec{b},\vec{x})$ is a function of continuous variables, hence requiring \emph{symbolic} constrained optimization.
 
-The only operation in \texttt{VI} and \texttt{Regress} that has not
-yet been defined is the continuous action maximization in line 7 of
-\texttt{VI} that forms the key novel contribution of this paper.
-Reintroducing suppressed state variables and renaming $Q_a^{h}$ to
-$f$, we write this operation as $g(\vec{b},\vec{x}) := \max_{\vec{y}}
-\, f(\vec{b},\vec{x},\vec{y})$ --- crucially we note that 
-\emph{the} maximizing $\vec{y}$ is a function
-$g(\vec{b},\vec{x})$, hence requiring \emph{symbolic} 
-constrained optimization.
-%not a numerical value.  
-%We work through the derivation of $g$ in this
-%section, which amounts to \emph{symbolic} constrained optimization 
-%subject to unknown state parameters $\vec{b}$ and $\vec{x}$.
+The definition of this maximization operation was the major contribution of~\ref{zahra}, so refer to this work for a detailed explanation. We outline the basic steps for continuous maximization.
 
-From here out we assume that all case partition conditions $\phi_i$ of
-$f$ consist of conjunctions of non-negated linear inequalities and
-possibly negated boolean variables --- conditions easy to enforce
-since 
-negation
-inverts inequalities, e.g., $\neg [x < 2] \equiv [x \geq 2]$
-and disjunctions can be split across multiple non-disjunctive, 
-disjoint case partitions.
-%, e.g., {\footnotesize
-%\begin{equation*}
-%f = 
-%\begin{cases}
-%a \lor b: & \sqm f_1 \\ 
-%\neg a \land \neg b: & \sqm f_2\\ 
-%\end{cases} 
-%\; \; =  \; \;
-%\begin{cases}
-%a: & \sqm f_1 \\ 
-%\neg a \land b: & \sqm f_1 \\ 
-%\neg a \land \neg b: & \sqm f_2\\ 
-%\end{cases} \; .
-%\end{equation*}}
-%\hspace{2mm} 
-
-Exploiting the commutativity of $\max$, we can first
-rewrite any multivariate $\max_{\vec{y}}$ as a sequence of univariate
-$\max$ operations $\max_{y_1} \cdots \max_{y_{|\vec{y}|}}$; hence it
+First, due to the commutativity of $\max$, any multivariate $\max_{\vec{y}}$ can be rewritten as a sequence of univariate $\max$ operations $\max_{y_1} \cdots \max_{y_{|\vec{y}|}}$; hence it
 suffices to provide just the \emph{univariate} $\max_y$ solution:
-$g(\vec{b},\vec{x}) := \max_{y} \, f(\vec{b},\vec{x},y)$.
+$g(\vec{v}) := \max_{y} \, f(\vec{v},y)$, where $\vec{v}$ denotes a vector of boolean and continuous variables, in our case containing $\vec{b}$, $\vec{x}$ and other action parameters.
 
-We can rewrite $f(\vec{b},\vec{x},y)$ via 
-the following equalities:
+Second, because of the mutual disjointness of partitions, and the commutativity of $\casemax_i$ and $\max_y$, we can write $\max_y f(\vec{v},y) $ via:
 {\footnotesize
 \begin{align}
-\max_y f(\vec{b},\vec{x},y) & = 
-% cannot use summation form... it assigns the value 0 to illegal cases!
-% \max_y \sum_i \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)\\
-\max_y \casemax_i \, \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y) \nonumber \\
-& = \casemax_i \, \fbox{$\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$} \label{eq:casemax_max}
+\max_y f(\vec{v},y) & = 
+\max_y \casemax_i \, \phi_i(\vec{v},y) f_i(\vec{v},y) \nonumber \\
+& = \casemax_i \, \fbox{$\max_y \phi_i(\vec{v},y) f_i(\vec{v},y)$} \label{eq:casemax_max}
 \end{align}}
-%Because the 
-%$\phi_i$ are mutually disjoint and exhaustive, 
-%$f(\vec{b},\vec{x},y) = \casemax_i \, \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$.  
-The first equality is a consequence of the mutual 
-disjointness of the partitions in $f$.  Then because 
-$\max_y$ and $\casemax_i$ are commutative and may be reordered,
-we can compute $\max_y$ for \emph{each case partition
-individually}.  Thus to complete this section we need only
-show how to symbolically compute a single partition 
-$\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$.
 
-To make the partition maximization procedure concrete, 
-we use an example that arises in the \MarsRover\ problem.  
-This partition $i$ (resulting
-from applying SDP) has conditions $\phi_i(x,b,y) \equiv \neg b \wedge
-(x\geq 2) \wedge (y\leq 10) \wedge (y\geq -10) \wedge (y\leq 2-x) \wedge
-(y\geq -2-x)$ and value $f_i(x,y) = 4 - (x+y)^2 $.
+ Thus to complete this operation we need only
+show how to symbolically compute the maximum in a single partition 
+$\max_y \phi_i(\vec{v},y) f_i(\vec{v},y)$.
 
 In $\phi_i$, we observe that each conjoined constraint serves one of
 three purposes: (i) \emph{upper bound on $y$}: it can be written
-as $y < \cdots$ or $y \leq \cdots$ (i.e., $y \leq 10$, $y \leq 2 -
-x$), (ii) \emph{lower bound on $y$}: it can be written as $y >
-\cdots$ or $y \geq \cdots$ 
-(i.e., $d \geq -10$, $d \geq x - 2$)\footnote{For purposes of evaluating
-a case function $f$ at an upper or lower bound,
-it does not matter whether a bound is inclusive ($\leq$ or $\geq$)
-or exclusive ($<$ or $>$) since $f$ is required to be continuous
-and hence evaluating at the limit of the inclusive bound will
-match the evaluation for the exclusive bound.}
-or (iii) \emph{independent of $y$}: the constraints do not contain $y$
-and can be safely factored outside of the $\max_y$ (i.e., 
-$\IND = \neg b \land (x \geq 2)$).  
+as $y < l(\vec{v})$; (ii) \emph{lower bound on $y$}: it can be written as $y >
+u(\vec{v})$ or (iii) \emph{independent of $y$}: the constraints do not contain $y$
+and can be safely factored outside of the $\max_y$, as $f_i(\vec{v},y) =  g_i(\vec{v})$.  
 Because there are multiple symbolic upper and lower
-bounds on $y$, in general we will need to apply the $\casemax$
-($\casemin$) operator to determine the highest lower bound $\LB$
-(lowest upper bound $\UB$):
-%\footnote{We could have also written
-%the $\LB$ with respective constraints $x < 8$ and $x \geq 8$ since
-%the $\casemax$ ensures that the two adjoining case partitions
-%have the same valuation on their mutual boundary (by definition
-%the boundary is where the two functions meet).  Likewise for
-%$\UB$ and $\casemin$.  This note is important here because then we
-%can safely take limits and replace $<$ with $\leq$ and  
-%$>$ with $\geq$ when examining the lower and upper bounds on $y$.}
-{\footnotesize
-\begin{align*}
-\LB = \casemax(-10,-2 -x) & = \begin{cases}
-x \leq 8: & -2 -x \\ 
-x > 8: &-10\\ 
-\end{cases}\\
-\UB = \casemin(10, 2-x) & = \begin{cases}
-x > -8: & 2 -x \\ 
-x \leq -8: &10\\ 
-\end{cases}
-\end{align*}
-} We know that $\max_y \phi_i(\vec{b},\vec{x},y)
-f_i(\vec{b},\vec{x},y)$ for a continuous function $f_i$ (here at most
-quadratic) must occur at the critical points of the function --- 
-either the upper or lower bounds ($\UB$ and $\LB$) of $y$, 
-or the $\Root$ (i.e., zero) of $\frac{\partial}{\partial y} f_i$ 
-w.r.t.\ $y$ (because $f_i$ is at most quadratic, there exists 
-at most one $\Root$).  Each of $\UB$, $\LB$, and $\Root$
-is a symbolic function of $\vec{b}$ and $\vec{x}$; 
-here we show the computation of $\Root$:
-{\footnotesize 
-\begin{align*}
-\frac{\partial}{\partial y} f_i = - 2y - 2d = 0 \;\;\; \Longrightarrow \;\;\; \Root = y = -x
-\end{align*}}
+bounds on $y$, we apply the $\casemax$ ($\casemin$) operator to determine the highest lower bound $\LB$(lowest upper bound $\UB$):
 
-Given the \emph{potential} maxima points of $y = \UB$, $y = \LB$, and
-$y = \Root$ of $\frac{\partial}{\partial y} f_i(\vec{b},\vec{x},y)$
-w.r.t. constraints $\phi_i(\vec{b},\vec{x},y)$ --- which are all
-symbolic functions --- we must symbolically evaluate which yields the
-maximizing value $\Max$ for this case partition: {\footnotesize
+We know that $\max_y \phi_i(\vec{b},\vec{x},y)
+f_i(\vec{b},\vec{x},y)$ for a linear function $f_i$ must occur at either the upper or lower bounds ($\UB$ and $\LB$) of $y$, both of which are symbolic functions of $\vec{v}$; 
+
+Given the \emph{potential} maxima points of $y = \UB$ and $y = \LB$ w.r.t. constraints $\phi_i(\vec{b},\vec{x},y)$ --- which are all symbolic functions --- we must symbolically evaluate which yields the maximizing value $\Max$ for this case partition: {\footnotesize
 \begin{align*}
-\Max =  \sq \begin{cases}
-\mbox{$\exists \Root$}  \sq: \sq & \sqm \casemax( f_i \{ y / \Root \}, f_i \{ y / \UB \}, f_i \{ y / \LB \})\\
-\mbox{else}  \sq:  \sq & \sqm \casemax( f_i \{ y / \UB \}, f_i \{ y / \LB \})
-\end{cases}
-\end{align*}}
-Here $\casemax(f,g,h) = \casemax(f,\casemax(g,h))$.  The 
-substitution operator $\{ y / f \}$ replaces $y$ with case statement $f$, 
+\Max = \casemax( f_i \{ y / \UB \}, f_i \{ y / \LB \})
+\end{align*}} 
+The substitution operator $\{ y / f \}$ replaces $y$ with case statement $f$, 
 defined in~\cite{sanner_uai11}.
-
-For our running example, space precludes showing the final 
-$\Max$, so we show the pre-$\casemax$ operands instead:
-{\footnotesize 
-\begin{align*}
-& \Max = \casemax \Big( f_i \{ y / \Root \} = 4 - (x + -x)^2 = 4 \; , \\
-& f_i \{ y / \LB \} = \begin{cases}
-x \leq 8: & \sqm 4 - (x + [-2 - x])^2 = 0 \\ 
-x > 8:    & \sqm 4 - (x + [-10])^2 = -x^2 +20x -96\\ 
-\end{cases},\\
-& f_i \{ y / \UB \} = \begin{cases}
-x > -8:    & \sqm 4 - (x + [2 - x])^2 = 0 \\ 
-x \leq -8: & \sqm 4 - (x + [10])^2 = -x^2 -20x -96\\ 
-\end{cases} \Big)
-%& \Max = \casemax( 
-%\begin{cases}
-%x \leq 8: & \sqm 0 \\ 
-%x > 8:    & \sqm -x^2 +20x -96\\ 
-%\end{cases}, 
-%\begin{cases}
-%x > -8:    & \sqm 0 \\ 
-%x \leq -8: & \sqm -x^2 -20x -96\\ 
-%\end{cases}, 4)
-\end{align*}}
-Substituted values are subject to conditions in the cases 
-being substituted and shown above in $[\cdot]$.  
-When the $\casemax$ is evaluated, the resulting case conditions
-will have quadratic constraints like $-x^2 +20x -96 > 0$, 
-which must be linearized as previously discussed and shown
-for this example.
 
 At this point, we have almost completed the computation
 of the $\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$
 except for one issue: the incorporation of the $\IND$ constraints
 (factored out previously) and additional constraints that arise from the
-symbolic nature of the $\UB$, $\LB$, and $\Root$.  Specifically
-for the latter, we need to ensure that indeed $\LB \leq \Root \leq \UB$
-(or if no root exists, then $\LB \leq \UB$) by building a set
-of constraints $\CONS$ that ensure these conditions hold; to do this,
+symbolic nature of $\UB$ and $\LB$.  Specifically
+for the latter, we need to ensure that indeed $\LB < \UB$
+by building a set of constraints $\CONS$ that ensure these conditions hold; to do this,
 it suffices to ensure that for each possible expression $e$ used to
-construct $\LB$ that $e \leq \Root$ and similarly for the $Root$ and $\UB$.
-For the running $\MarsRover$ example:
-{\footnotesize 
-\begin{equation*}
-\CONS \sq = \sq \underbrace{[-2 - x \leq \sq -x] \land [-10 \leq \sq -x]}_{\LB \leq \Root} \land \underbrace{[-x \leq \sq 2 - x] \land [-x \leq \sq 10]}_{\Root \leq \UB} 
-\end{equation*}}
-Here, two constraints are tautologies and may be removed.
+construct $\LB$ that $e \leq \UB$.
 
 Now we express the final result as a single case partition:
 \begin{equation*}
-\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y) \;\; = \;\;
+\max_y \phi_i(\vec{v},y) f_i(\vec{v},y) \;\; = \;\;
 \left\{ \CONS \land \IND: \Max \right.
 \end{equation*}
 Returning to~\eqref{eq:casemax_max}, we find that we have
 now specified the inner operation (shown in the $\Box$).  
-Hence, to complete the
-maximization for an entire case statement $f$, we need only apply the
+Hence, to complete the maximization for an entire case statement $f$, we need only apply the
 above procedure to each case partition of $f$ and then $\casemax$ all
-of these results.  Revisiting the \MarsRover\ example $V^1$ in
-Figure~\ref{fig:opt_val_pol}, we can observe many of the decision 
-inequalities and value expressions from the above example.  To obtain
-the policy in Figure~\ref{fig:opt_val_pol}, 
-we need only annotate leaf values with any 
-$\UB$, $\LB$, and $\Root$ substitutions.
+of these results.  
 
-%This concludes our fundamental contribution of the paper which
-%computes the continuous action parameter maximization \emph{symbolically}
-%as a function of the state variables $\vec{b}$ and $\vec{x}$.
-
-{\bf Extended ADDs (XADDs)}
-%
-% mention feasibility checking, all ops apply directly
-%
-%The \emph{extended ADD} (XADD)
+\subsection {\bf Extended ADDs (XADDs)}
 ~\cite{sanner_uai11} extension of
 ADDs~\cite{bahar93add} provides a compact data structure to support
 case statements and operations.  Using XADDs in SDP as a continuous
 version of the ADD-based SPUDD~\cite{spudd} algorithm for
 discrete MDPs, we maintain compact forms of $Q$ and $V$, e.g., as
-shown in $V^2$ for \MarsRover\ in Figure~\ref{fig:opt_val_pol}.  XADDs
-also permit the use of linear constraint feasibility checkers 
-from LP solvers to prune unreachable paths in the XADD.
-
-The only operation that has not been previously defined for XADDs is
-$\max_y$, but this is easy: treating each XADD path from root to
-leaf node as a single case partition with conjunctive constraints, 
-$\max_y$ is performed at each leaf subject to these constraints
-and all path $\max_y$'s are then accumulated via the $\casemax$
-operation to obtain the final result.
-
+shown in $V^2$ for \MarsRover\ in Figure~\ref{fig:opt_val_pol}.  All the operations described in the previous section have been implemented for XADDs in previous works~\cite{sanner_uai11}. In this paper, we use linear XADDs, i.e. XADD with only boolean variables or linear inequalities in decisions and linear functions in terminal nodes. Linear XADDs permit LP solvers to be used in two ways: linear constraint feasibility checking to prune unreachable paths in the XADD and linear constrained optimization of linear functions to obtain maximum and minimum values of a XADD. Besides, our main contribution in this paper is the development of an approximation method for piecewise linear functions that is used in linear XADDs to reduce the number of nodes and provide more efficiency.

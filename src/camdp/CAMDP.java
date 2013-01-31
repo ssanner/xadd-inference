@@ -244,9 +244,13 @@ public class CAMDP {
 				int canon_max_dd = _context.makeCanonical(_maxDD);
 				if (_maxDD != canon_max_dd) {
 					System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical... could be rounding, continuing.");
+					_context.exportXADDToFile(_maxDD, "ERRORdiagram1OriginalXADD.xadd");
+					_context.exportXADDToFile(canon_max_dd, "ERRORdiagram2makeCanonical.xadd");
 					_context.getGraph(_maxDD).launchViewer("ERROR diagram 1: original maxDD");
 					_context.getGraph(canon_max_dd).launchViewer("ERROR diagram 2: makeCanonical(maxDD)");
+					_context.makeCanonical(_maxDD);
 					_maxDD = canon_max_dd;
+					
 					//ExitOnError("CAMDP VI ERROR: encountered non-canonical node that should have been canonical:\n" + 
 					//			_context.getString(_maxDD) + "\nvs.\n" + _context.getString(_maxDD));
 				}

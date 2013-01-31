@@ -53,14 +53,14 @@ Here $r^h$ is the reward obtained at horizon $h$ following $\Pi^*$ where
 we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
  
 Hybrid MDPs as defined above are naturally factored~\cite{boutilier99dt}
-in terms of state variables $(\vec{b},\vec{x},\vec{y})$; as such,
+in terms of state variables $(\vec{b},\vec{x})$; as such,
 transition structure can be exploited in the form of a dynamic Bayes
 net (DBN)~\cite{dbn} where the conditional probabilities
 $P(b_i'|\cdots)$ and $P(x_j'|\cdots)$ for each next state variable can
 condition on the action, current and next state.  We allow  
 \emph{synchronic arcs} (variables that condition on each
-other in the same time slice) within the binary $\vec{b}$ and
-continuous variables $\vec{x}$, but we do not allow cyclic synchronic dependencies. 
+other in the same time slice) between any pair of variables, binary $\vec{b}$ or
+continuous $\vec{x}$, but we do not allow cyclic synchronic dependencies. 
 The absence of synchronic cycles means there is a topological sorting of the variables according to the dependency graph implied by the model $P$: $\vec{v}_{sort}=topological\_sort_{P}( b_1,\ldots,b_n,x_{1},\ldots,x_m ) =  ( v_1,\ldots, v_{n+m})$, such that $v_k$ is independent of $v_j$, for all $j >k$. Hence we can factorize the joint transition model as
 {\footnotesize
 \begin{equation}
@@ -76,14 +76,13 @@ where $\vec{v}'_{<k} = ( v'_1,\ldots, v'_{k-1}), 1\leq k \leq n+m$
 We call the conditional probabilities
 $P(b_i'=v_{k_i}'|\vec{b},\vec{x},\vec{v}'_{<{k_i}},a,\vec{y})$ for \emph{binary} variables $b_i$
 ($1 \leq i \leq n$) conditional probability functions (CPFs) --- not
-tabular enumerations --- because in general these functions can
-condition on both discrete and continuous state as
+tabular enumerations --- because these functions can
+condition on both discrete and continuous state and action variables as
 in~\eqref{eq:mr_discrete_trans}.  For the \emph{continuous} variables
 $x_j$ ($1 \leq j \leq m$), we represent the CPFs
 $P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$ with \emph{piecewise
 linear equations} (PLEs) satisfying three properties: (i) PLEs 
-can only condition on the
-action, current state, and previous state variables, (ii) PLEs are
+can only condition on the action, current state, and previous state variables, (ii) PLEs are
 deterministic meaning that to be represented by probabilities they
 must be encoded using Dirac $\delta[\cdot]$ functions (example
 forthcoming), and (iii) PLEs are piecewise linear, where the piecewise
@@ -98,8 +97,7 @@ $P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$.
 
 %It is important at this point to qualify the extent of stochasticity
 %permitted in this restriction of CSA-MDPs.  
-While it will be clear
-that our restrictions do not permit general stochastic transition
+While it is clear that our restrictions do not permit general stochastic transition
 noise (e.g., Gaussian noise as in LQG control), they do permit
 discrete noise in the sense that
 $P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$ may condition on
@@ -115,7 +113,7 @@ solutions~\cite{feng04,hao09}.
 % of polynomials
 
 We allow the reward function $R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}')$ to be
-a general piecewise boolean-linear function (boolean or linear conditions
+a general piecewise linear function (boolean or linear conditions
 and linear values) such as
 \begin{align}
 R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}') = \begin{cases}
@@ -123,10 +121,10 @@ b \land x_1 \leq x_2 + 1 : & 1 - x_1' + 2x_2' \\
 \neg b \lor x_1 > x_2 + 1:     & 3x_1 + 2x_2 \\
 \end{cases} \label{eq:linear_reward}
 \end{align}
-%While these constraints on the transition and reward functions could
-%be relaxed, 
+
 These transition and reward constraints ensure that all derived
-functions in the solution of these hybrid MDPs will remain piecewise boolean-linear.
+functions in the solution of these hybrid MDPs will remain piecewise linear, which 
+is essential for our approximation and efficient representation.
 
 %ensure piecewise linear boundaries that can be checked for consistency
 %using a linear constraint feasibility checker, which we will later
@@ -144,14 +142,11 @@ functions in the solution of these hybrid MDPs will remain piecewise boolean-lin
 
 \label{sec:soln}
 
-Now we provide a continuous state and action generalization of {\it value
-iteration}~\cite{bellman}, which is a dynamic programming algorithm
-for constructing optimal policies.  It proceeds by constructing a
-series of $h$-stage-to-go value functions $V^h(\vec{b},\vec{x})$.
+The algorithm we use for solving hybrid MDPs, proposed by ~\cite{zahra}, is a continuous state and action generalization of {\it value iteration}~\cite{bellman},  which is a dynamic programming algorithm for constructing optimal policies.  It proceeds by constructing a
+series of $h$-stage-to-go optimal value functions $V^h(\vec{b},\vec{x})$.
 Initializing $V^0(\vec{b},\vec{x}) = 0$) we define the quality
 $Q_a^{h}(\vec{b},\vec{x},\vec{y})$ of taking action $a(\vec{y})$ in state
-$(\vec{b},\vec{x})$ and acting so as to obtain
-$V^{h-1}(\vec{b},\vec{x})$ thereafter as the following:
+$(\vec{b},\vec{x})$ and acting so as to obtain $V^{h-1}(\vec{b},\vec{x})$ thereafter as the following:
 \vspace{-2.5mm}
 {\footnotesize
 \begin{align}
@@ -167,12 +162,11 @@ V^{h}(\vec{b},\vec{x}) & = \max_{a \in A} \max_{\vec{y} \in \mathbb{R}^{|\vec{y}
 If the horizon $H$ is finite, then the optimal value function is
 obtained by computing $V^H(\vec{b},\vec{x})$ and the optimal
 horizon-dependent policy $\pi^{*,h}$ at each stage $h$ can be easily
-determined via $\pi^{*,h}(\vec{b},\vec{x}) = \argmax_a
-\argmax_{\vec{y}} Q^h_a(\vec{b},\vec{x},\vec{y})$.  If the horizon $H
+determined via $\pi^{*,h}(\vec{b},\vec{x}) = \argmax_{(a, \vec{y} )} Q^h_a(\vec{b},\vec{x},\vec{y})$.  If the horizon $H
 = \infty$ and the optimal policy has finitely bounded value, then
 value iteration can terminate at horizon $h$ if $V^{h} = V^{h-1}$;
 then $V^\infty = V^h$ and $\pi^{*,\infty} = \pi^{*,h}$.
 
-From this \emph{mathematical} definition, we next 
+From this \emph{mathematical} definition of the algorithm, we proceed to
 show how to \emph{compute}~\eqref{eq:qfun} and \eqref{eq:vfun} 
 for hybrid MDPs.
