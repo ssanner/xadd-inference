@@ -35,7 +35,7 @@ combinations of (i) boolean variables and (ii)
 a linear function $f$ within a region, it does not matter whether a bound is inclusive ($\leq$ or $\geq$) or exclusive ($<$ or $>$), since it can be arbitrarily near the bounds; for precise evaluation at the bounds, $f$ is required to be continuous, in which case both partitions will give the same result.}
 over continuous variables.  
 The $\phi_i$ are disjoint from each other;  however they may not exhaustively cover the state space, in which case $f$ is a \emph{partial function}, undefined for some
-variable assignments. For $f$ to represent a piecewise linear function, all $f_i$ must be linear in the continuous parameters.
+variable assignments. For $f$ to represent a piecewise linear function, all $f_i$ must be linear in the continuous parameters. In this work, we will refer to a pair $( f_i, \phi_i)$ as a case linear function, which is interpreted as a piecewise linear partial function defined in only one partition, $\phi_i$, and its value is equal to $f_i$ for all points where it is defined.
 
 In the context of SDP, we need to perform operations on symbolic functions represented in case form. The operations we need are: scalar multiplication, addition, subtraction and multiplication of symbolic functions, case maximization, boolean restriction and continuous integration. Next we explain how these operations are defined.
 
