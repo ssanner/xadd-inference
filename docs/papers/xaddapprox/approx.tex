@@ -1,15 +1,54 @@
-\title{Approximation for Piecewise Linear Functions}
- 
-\section*{Introduction}
-For many continuous probabilistic planning problems it is useful to describe transition or reward functions as piecewise linear functions of problem variables. This class of functions can be represented efficiently in linear eXtended Algebraic Decision Diagrams (LinXADDs). However, as the complexity of the function grows, the number of different cases and linear pieces may become intractably large even with few variables. A practical approach to tackle larger problems is to make approximations with a limited error, reducing the number of cases and of different linear functions. Our goal here is to describe an efficient method for obtaining the best linear approximation, and the error incurred, for two distinct linear functions defined on cases.
+%\title{Approximation for Piecewise Linear Functions}
 
-\section{Problem and Solution} 
-\label{probSol} 
-A better definition of our mathematical objects is in appendix \ref{appA}. For approximately representing complex piecewise linear functions it is helpful to determine if the number of cases and linear functions can be reduced, thus we intend to replace two case functions with a single case function. More formally, given two case linear functions $L_1 = ( f_1, \phi_1 )$ and $L_2 = ( f_2, \phi_2 )$, our goal is to determine a case linear function $L^* = (f^*,\phi_1 \cup  \phi_2)$ that minimizes the incurred  error:
-$$ E(f) = \max ( |f - f_1|_{\phi_1} , |f - f_2|_{\phi_2} )$$
-$$f^* = argmin_f E(f) $$
-This optimization problem is complex because we have maximization and minimization on different variables, and a maximum in the objective function.
-In order to solve it an iterative constraint generation based algorithm is proposed. Basically, for the minimization step, we will relax the maximum error on $\phi_1 \cup \phi_2$ to be the maximum error on a finite set of points, which become a finite set of constraints.  Using the solution for this relaxed problem we solve the maximization to find greatest error points in the region and then include this points as new constraints in the minimization. After a finite number of iterations the solution will no longer be improving (the maximum error points will already be included in the constrains) and the algorithm has converged to the true best approximation.
+%For many continuous probabilistic planning problems it is useful to describe transition or reward functions as piecewise linear functions of problem variables. This class of functions can be represented efficiently in linear eXtended Algebraic Decision Diagrams (LinXADDs). However, as the complexity of the function grows, the number of different cases and linear pieces may become intractably large even with few variables. A practical approach to tackle larger problems is to make approximations with a limited error, reducing the number of cases and of different linear functions. Our goal here is to describe an efficient method for obtaining the best linear approximation, and the error incurred, for two distinct linear functions defined on cases.
+
+%\section{Problem and Solution} 
+%\label{probSol} 
+In this section, we present a novel method for approximating piecewise linear functions. The goal of this algorithm is to reduce the number of partitions of a piecewise linear function represented in case form. This represents the ability to automatically identify and remove locally unimportant constraints, whose removal results in a small change in the represented function in exchange for a significant improvement in the efficiency of computations with these functions. XADDs already permit compactness by exploring variable and context independencies, so our approach is to merge terminal nodes as a way of reducing the number of dependencies that need to be represented. Thus, the most important step in the approximation algorithm is the optimal merging of linearly constrained linear functions. 
+
+Since boolean variables are either mutually independent or exclusive (the negated version of them), and don't affect directly the continuous domain of the functions in terminal nodes, our approximation works independent of the boolean variables, so we will consider piecewise linear functions whose partitions are defined only with linear inequalities. We observe that regions defined by conjunctions of linear inequalities are (possibly unbounded) polytopes and a disjunction of formulas is the union of the  regions defined by each sub formula, so that a generic formula $\phi$ of linear inequalities is equivalent to a region defined by a union of polytopes $\theta$. We denominate $Poly(\phi)$ the set of all polytopes generated expanding disjunctions of $\phi$.
+Second, since we are only concerned for linear functions, $f$ must be of the form $f(\vec{x}) = \vec{c}\cdot \vec{x}_0$ , where $\vec{x}_0$ denotes the extended vector $(1,\vec{x})$ to include the constant term $c_0$ of $f$. This means that an arbitrary linear function on a set of variables is equivalent (isomorph) to a vector $\vec{c}$ of linear variables, called parameters of $f$.
+Next we proceed to define the crucial step for the approximation algorithm, optimal merging of linear case functions.
+
+\subsection{ Optimal merging of linear case functions}
+More formally, given two case linear functions $L_1 = ( f_1, \phi_1 )$ and $L_2 = ( f_2, \phi_2 )$, our goal is to determine the best linear case approximation of $L_1$ and $L_2$. As it must represent  $L_1$ and $L_2$, the solution must be defined in both regions, therefore of the form $L^* = (f^*,\phi_1 \cup  \phi_2)$ . In this case, we must find a linear function $f^*$ that minimizes approximation error $E$, defined as the maximum  error of replacing both $f_1$ in $\phi_1$ and $f_2$ in $\phi_2$ by $f^*$:
+
+\begin{equation} E(f) = \max ( |f - f_1|_{\phi_1} , |f - f_2|_{\phi_2} ) \label{maxstep} \end{equation}
+\begin{equation} f^* = \argmin_f E(f)  \label{minstep} \end{equation}
+
+Note that the absolute value in~\ref{maxstep} is equivalent to max of two linear functions, e.g. $|f - f_1| = max ( f - f_1, f_1 - f)$. Moreover, each of these partition $\phi_i$ constrained max is equivalent to the max in all polytopes $\theta_{1{i_1}}$ of $\phi_i$. With this, we can rewrite the error $E$ as the maximum of a finite number of errors restricted to polytopes, e.g.:
+{%\footnotesize 
+\begin{align}
+\footnotesize
+ e_{1{i_1}}(f) = max_{\vec{x} \in \theta_{1{i_1}}} (f - f_1)(\vec{x}) \forall \theta_{1{i_1}} \in Poly(\phi_1) \nonumber\\
+ e_{2{i_2}}(f) = max_{\vec{x} \in \theta_{2{i_2}}} (f - f_2)(\vec{x}) \forall \theta_{2{i_2}} \in Poly(\phi_2) \nonumber\\
+ e_{1{i_3}}(f) = max_{\vec{x} \in \theta_{1{i_3}}} (f_1 - f)(\vec{x}) \forall \theta_{1{i_3}} \in Poly(\phi_1) \nonumber\\
+ e_{2{i_4}}(f) = max_{\vec{x} \in \theta_{2{i_4}}} (f_2 - f)(\vec{x}) \forall \theta_{2{i_4}} \in Poly(\phi_2)\nonumber\\
+E(f) = max_{k=1..K} (e_k(f)) \nonumber
+\end{align}
+where $K$ is the total number of polytopes and e$ _k$ is an enumeration of all $e_{nj}, n = 1,2; j $ is index of a polytope.
+}
+
+This bilinear piecewise optimization problem is very complex, including minimization on the parameters $\vec{c}$, maximization on the variables $\vec{x}$ and case max between the polytope maximums, thus we can break it down to a three step optimization problem: 
+
+(i) There are linear constrained bilinear functions $L_{k}(f,\vec{x},\phi_k) =  ( l_k(\vec{c},\vec{x}) ,\phi_k)$ depending on both the domain variables $\vec{x}$ and parameter variables $\vec{c}$, defined in $\phi_k$ such as $ ( (f - f_1)(\vec{x}),\phi_1) = ( (\vec{c}-\vec{c_1})\cdot\vec{x}, \phi_1)$. The innermost optimization step is the constrained maximization of this bilinear function on the domain variables.
+\begin{equation} e_k(f) = max_{\vec{x}} ( L_k(f,\vec{x},\phi_k) ) = max_{ {\vec{x}} \in \phi_k} (l_k (\vec{c}, \vec{x}) ) \label{step1} \nonumber \end{equation}
+
+(ii)There is a case max in a finite group of this linear constrained bilinear functions :
+\begin{equation} E(f) = \max_{k=1..K} ( max_{\vec{x}} ( L_k(f,\vec{x},\phi_k) )) = \max_{k=1..K} ( e_k(f)) \label{step2}  \nonumber \end{equation}
+
+(iii)Finally, this case max is minimized in terms of the parameters $\vec{c}$ as in ~\ref{minstep}:
+\begin{equation} e_k = max_{\vec{x} } \end{equation}
+
+In order to solve it we propose an elaborate iterative constraint generation based algorithm. The details of the algorithm will be exposed in the next section, but first we present a quick outline: 
+
+First, the algorithm will iterate between two phases, one for the maximization and one for the minimization. Second, on each phase a relaxed problem will be solved using the result from the previous phase. Third, when a phase gives the same return twice, the algorithm has converged.
+
+In the maximization phase, we will always assume a fixed $f$, and thus the maximization of the bilinear functions $L_{k}(f,\vec{x},phi_k$ for each linear case function will be a linear constrained linear program, solved efficiently by a LP solver. The optimal values are upper bounds on the actual minimal error in each polytope. More importantly, the vertexes that reach this optimal values are the points of the polytope that maximize the bilinear function for this function $f$ and thus are important points to which the minimization must attempt to reduce the error (in fact reducing the error in any set of points that doesn't contain this point won't change the maximal error, and thus won't improve our solution.
+
+In the minimization phase, we will solve a relaxation of~\ref{minstep}, where in each linear constrained bilinear function $e_k$ the maximal error in the polytope $\theta_k$ is replaced by the greater of the error in a finite set of points. More specifically, we only minimize the greatest of the error on points found in the maximization phase. This changes the piecewise bilinear problem into a linear program with the objective to be minimized is the error, and linear constraints encode that this error must be greater than the error on any of the previously obtained points. Solving this minimization yields a new solution $f$ whose error is a lower bound on the actual minimal error in each of these points (this $f$ may have to be modified to minimize the error in more points in the next iterations, but this can only lead to increasing the error in the points that were present in this iteration. Put simply, adding more constraints cannot improve the optimal value of solution for a linear program.
+
+Finally, we can see why if either of the phases do not produce changes the solution must be optimal for the piecewise bilinear problem as a whole. In the case of the maximization, if all the points generated (in all polytopes) were already in the previous minimization phase than the error in any of these cannot be reduced, and since this points include the points of maximal error in all polytopes the actual global maximal error is achieved in one of them, and therefore no solution can have a better maximal error than the current $f$. Similarly, if a repeated value function $f$ is produced in the minimization this means that this function already minimized the error in its greatest error points (added in the previous maximization) therefore no other function can reduce the error in one of this points and these include the maximal error, se the maximal error cannot be reduced, thus we have an optimal solution.
 
 \section{Algorithm}
 We will define an iterative algorithm using linear solvers in two different steps. Algorithm \ref{alg:glo} is the main method that solves the approximation problem using the functions $MAX\_ERROR$ and $BEST\_APPROX$, which use a linear programming, $LP\_Solve($ max or min$, objective, constraints)$.
