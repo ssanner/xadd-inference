@@ -9,6 +9,7 @@
 % Use the postscript times font!
 \usepackage{times}
 
+\newcommand{\I}{\mathbb{I}}
 \newcommand{\casemax}{\mathrm{casemax}}
 \newcommand{\casemin}{\mathrm{casemin}}
 \newcommand{\UB}{\mathit{UB}}
@@ -46,17 +47,17 @@ leliane@ime.usp.br}
 \maketitle
 
 \begin{abstract}
-Recent advances in solutions to hybrid MDPs with discrete and
+Recent advances in solutions to Hybrid MDPs with discrete and
 continuous state and action spaces have significantly extended the
 class of MDPs for which exact solutions can be derived, albeit at the
 expense of a restricted transition noise model.  In this paper, we
 work around limitations of previous solutions by adopting a robust
 optimization approach in which Nature is allowed to adversarially
-determine transition noise within automatically-derived confidence
+determine transition noise within pre-specified confidence
 intervals.  This allows one to derive an optimal policy with an
 arbitrary (user-specified) level of success probability and
 significantly extends the class of transition noise models for which
-hybrid MDPs can be solved.  This work also significantly extends
+Hybrid MDPs can be solved.  This work also significantly extends
 results for the related ``chance-constrained'' approach in stochastic
 hybrid control to accommodate state-dependent noise.  We demonstrate
 our approach working on a variety of hybrid MDPs taken from AI
@@ -85,11 +86,11 @@ derived for such problems.
 
 \input introduction.tex
 
-\section{Hybrid MDPs (MDPs)} 
+\section{Non-deterministic Hybrid MDPs} 
 
 \input csamdp2.tex
 
-\section{Robust Symbolic Dynamic Programming (RSDP)} 
+\section{Robust Symbolic Dynamic Programming} 
 
 \input sdp2.tex
 
