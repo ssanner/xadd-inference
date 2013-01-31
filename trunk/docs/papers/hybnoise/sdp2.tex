@@ -1,23 +1,65 @@
+In order to compute the equations above, we propose a \emph{robust
+symbolic dynamic programming} (RSDP) approach building on the
+work of~\cite{aaai_sdp,sanner_uai11}.  This requires a value iteration
+algorithm described in Algorithm~\ref{alg:vi} (\texttt{VI}) and the
+regression subroutine described in Algorithm~\ref{alg:regress}.  In what
+follows we show how the techniques of SDP can be extended to compute RDP
+exactly in closed-form as discussed in the last section.
 
-In order to compute the equations above, we propose a \emph{Robust symbolic dynamic programming} (RSDP) approach similar to ~\cite{sanner_uai11}.  This requires a value iteration algorithm proposed in ~\ref{alg:vi} (\texttt{VI})
-and a regression subroutine in Algorithm~\ref{alg:regress}
-In general we define symbolic functions to be represented in \emph{case} form~\cite{fomdp}:
-{%\footnotesize 
-\begin{align}
-f = 
-\begin{cases}
-  \phi_1: & f_1 \\ 
- \vdots&\vdots\\ 
-  \phi_k: & f_k \\ 
-\end{cases} \label{eq:case}
-\end{align}
+In general we define \emph{all} symbolic functions to be represented
+in \emph{case} form~\cite{fomdp} for which a binary ``cross-sum'' operation
+can be defined as follows:
+{\footnotesize 
+\begin{center}
+\begin{tabular}{r c c c l}
+&
+\hspace{-6mm} 
+  $\begin{cases}
+    \phi_1: & f_1 \\ 
+    \phi_2: & f_2 \\ 
+  \end{cases}$
+$\oplus$
+&
+\hspace{-4mm}
+  $\begin{cases}
+    \psi_1: & g_1 \\ 
+    \psi_2: & g_2 \\ 
+  \end{cases}$
+&
+\hspace{-2mm} 
+$ = $
+&
+\hspace{-2mm}
+  $\begin{cases}
+  \phi_1 \wedge \psi_1: & f_1 + g_1 \\ 
+  \phi_1 \wedge \psi_2: & f_1 + g_2 \\ 
+  \phi_2 \wedge \psi_1: & f_2 + g_1 \\ 
+  \phi_2 \wedge \psi_2: & f_2 + g_2 \\ 
+  \end{cases}$
+\end{tabular}
+\end{center}
 }
-%how to put noise in here
-where $\phi_i$ are logical formulae defined over the state
-$(\vec{b},\vec{x})$ and can include arbitrary logical ($\land,\lor,\neg$)
-combinations of boolean variables and \emph{linear} inequalities ($\geq,>,\leq,<$) 
-over continuous variables.  
-The $f_i$ may be either linear or quadratic in the continuous parameters with no discontinuities at partition boundaries. The transition and reward functions of the Rover example are all symbolic function examples. 
+\normalsize
+Here $\phi_i$ and $\psi_j$ are logical formulae defined over the state
+$(\vec{b},\vec{x})$ and can include arbitrary logical
+($\land,\lor,\neg$) combinations of boolean variables
+and \emph{linear} inequalities ($\geq,>,\leq,<$) over continuous
+variables -- we call this \emph{linear case form} (LCF).  The $f_i$
+and $g_j$ are restricted to be \emph{linear} functions.  Similarly
+operations such as $\ominus$ and $\otimes$ may be defined with operations
+applied to LCF functions yielded LCF results.
+
+{\bf ZAHRA TODO: define casemax here, then introduce remaining operations as used
+to compute results for Reservoir running example getting from $V^0$ to $V^1$... showing
+whatever you feel is most important by the end of page 4}
+
+{\bf NOTE: need to rewrite a lot this section from scratch... try not to be too
+verbose... we've already said why we do each operation so you just
+have to remark on the running example and what the result of each
+iteration says... don't explain the operations again unless something
+is really non-obvious... assume the reader can easily figure out the
+mechanical details of the derivation}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{.5em}
 \linesnumbered
@@ -56,9 +98,14 @@ The $f_i$ may be either linear or quadratic in the continuous parameters with no
 \SetKwFunction{remapWithPrimes}{Prime}
 %\SetKwFunction{sumout}{sumout}
 
-
 \Begin{
     $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
+{\bf ZAHRA TODO: Need to change a little now that we allow synchronic arcs... change to\\
+for all $v' \in Q$ \emph{\\ child variables must come parents in order}\\
+  if ($v' = x'_j$) then do continuous regression\\
+  else if ($v' = b'_i$) then do discrete regression\\
+... just need to reformat what is below to fit this new control flow
+}
     \emph{// Continuous regression marginal integration}\\
     \For {all $x'_j$ in $Q$}{
          $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y},\vec{n}) \, d_{x'_j}$\;
@@ -100,40 +147,6 @@ Q = V^{'1} =
 \end{align}
 
 (1b) Performing Regression for continuous variable $x$ in line 5 and boolean variable $b$ in lines 8--9. \emph{Boolean restriction} $f|_{b=v}$ assigns the value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$. 
-
-The Binary operators of $\oplus$ and $\otimes$ ( also $\ominus$ not defined here)  on two case statements are done by taking the cross-product of the logical partitions of the two case statement and performing the corresponding operation on the resulting paired partitions. The cross-sum is defined as below:
-{\footnotesize 
-\begin{center}
-\begin{tabular}{r c c c l}
-&
-\hspace{-6mm} 
-  $\begin{cases}
-    \phi_1: & f_1 \\ 
-    \phi_2: & f_2 \\ 
-  \end{cases}$
-$\oplus$
-&
-\hspace{-4mm}
-  $\begin{cases}
-    \psi_1: & g_1 \\ 
-    \psi_2: & g_2 \\ 
-  \end{cases}$
-&
-\hspace{-2mm} 
-$ = $
-&
-\hspace{-2mm}
-  $\begin{cases}
-  \phi_1 \wedge \psi_1: & f_1 + g_1 \\ 
-  \phi_1 \wedge \psi_2: & f_1 + g_2 \\ 
-  \phi_2 \wedge \psi_1: & f_2 + g_1 \\ 
-  \phi_2 \wedge \psi_2: & f_2 + g_2 \\ 
-  \end{cases}$
-\end{tabular}
-\end{center}
-}
-\normalsize
-The other operations of $\ominus$ and $\otimes$ are performed by subtracting or multiplying partition values.  Note that some partitions may become inconsistent (infeasible)  which are removed from the final result. 
 
 \emph{Continuous integration} of $\int Q(x'_j) \otimes P(x'_j|\cdots) dx'_j$ where results in the following according to the rules of integration: 
 \begin{align}
