@@ -300,5 +300,13 @@ d_1 \land (200 \leq l_1 \leq 2506): & 1200.48 + l_1 \\
 \end{align}
 }
 \end{itemize}
+To implement the case statements efficiently with continuous
+variables, extended Algebraic Decision diagrams (XADDs) are used from
+~\cite{sanner_uai11} extended from ADDs
+~\cite{bahar93add}. 
 
-To implement the case statements efficiently with continuous variables, extended Algebraic Decision diagrams (XADDs) are used from ~\cite{sanner_uai11} extended from ADDs ~\cite{bahar93add}. Unreachable paths can be pruned in XADDs using LP solvers.  We crucially note that all operations including the continuous maximization and minimization preserve the LCF property, hence all operations for robust SDP can be performed exactly in closed-form -- a first for receding horizon control with general forms of state-dependent continuous noise.
+In summary we remark that all operations including the
+continuous max and min operations preserve the LCF property,
+hence all operations for robust SDP can be performed exactly in
+closed-form --- a first for receding horizon control with general forms
+of state-dependent continuous noise.
