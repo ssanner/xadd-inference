@@ -1,10 +1,12 @@
 In order to compute the equations above, we propose a \emph{robust
-symbolic dynamic programming} (RSDP) approach building on the
-work of~\cite{sdp_aaai,sanner_uai11}.  This requires a value iteration
+symbolic dynamic programming} (RSDP) approach building on the work
+of~\cite{sdp_aaai,sanner_uai11}.  This requires a value iteration
 algorithm described in Algorithm~\ref{alg:vi} (\texttt{VI}) and the
-regression subroutine described in Algorithm~\ref{alg:regress}.  In what
-follows we show how the techniques of SDP can be extended to compute RDP
-exactly in closed-form as discussed in the last section.
+regression subroutine described in Algorithm~\ref{alg:regress}.  All
+required operations have been previously defined
+in~\cite{sdp_aaai,sanner_uai11}.  In what follows we show how these
+operations can be used to compute RSDP from the previous section
+exactly and in closed-form.
 
 In general we define \emph{all} symbolic functions to be represented
 in \emph{case} form~\cite{fomdp} for which a binary ``cross-sum'' operation
@@ -307,6 +309,6 @@ variables, extended Algebraic Decision diagrams (XADDs) are used from
 
 In summary we remark that all operations including the
 continuous max and min operations preserve the LCF property,
-hence all operations for robust SDP can be performed exactly in
+hence all operations for Robust SDP can be performed exactly in
 closed-form --- a first for receding horizon control with general forms
 of state-dependent continuous noise.
