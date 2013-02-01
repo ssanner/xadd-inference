@@ -28,7 +28,7 @@ problem~\cite{DLohr:2012}, one must carefully manage inertial moments and
 rotational velocities as the telescope maneuvers between different
 angular orientations and zoom positions, where noise margins increase
 when the telescope is in unstable positions (extended zooms).  And
-lastly, in a \textsc{Reservoir Control} problem, one must manage
+in a \textsc{Reservoir Control} problem, one must manage
 reservoir levels to ensure a sufficient water supply for a population
 while avoiding overflow conditions subject to uncertainty over daily
 rainfall amounts.  In all of these problems, there is no room for
@@ -43,8 +43,8 @@ used in the chance-constrained control
 literature~\cite{Schwarm:1999,Li:2002,Ono:2008,Blackmore:2011} that
 maintain confidence intervals on (multivariate) noise distributions
 and ensure that all reachable states are within these noise margins.
-However, all previous methods restrict either to linear systems with
-Gaussian uncertainty and state-independent noise or otherwise resort
+However, previous methods restrict either to linear systems with
+Gaussian uncertainty and state-independent noise or resort
 to approximation techniques.  Furthermore, as these works are all
 inherently focused on control from a given initial state, they are
 unable to prove properties such as \emph{robust controllability},
