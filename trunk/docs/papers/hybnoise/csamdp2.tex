@@ -100,7 +100,8 @@ throughout the paper:
 The problem of when and how much to drain reservoirs so as to maximize
 electricity revenue over time while avoiding reservoir overflow and underflow is a major problem in the OR literature ~\cite{Mahootchi2009,Yeh1985}.  Here we focus on the problem of deciding between \emph{drain} or \emph{not drain} for each reservoir to gain maximum reward over time. While the amount of rain effects the reservoir water levels, it is uncertain due to weather changes. 
 \end{example*}
-For simplicity, we work with a one-level water reservoir. The reward function is used to prevent overflow and underflow by assigning penalty to water levels outside the safe range. For the $\mathit{drain}$ action this is formally defined as: 
+For simplicity, we work with a one-level water reservoir. The reward function is used to prevent overflow and underflow by assigning penalty to water levels outside the safe range. For the $\mathit{drain}$ action this is formally defined as:
+\vspace{-2mm} 
 {\footnotesize
 \begin{align*}
 R &= 
@@ -110,7 +111,6 @@ R &=
 \end{cases}
 \end{align*}
 }
-
 Electricity is generated during the $\mathit{drain}$ action, so a reward equal to the new water level $l'_1$ is assigned for the safe range of $\mathit{no}$-$\mathit{drain}$ action. We assume rainfall occurs on 4 subsequent days, followed by 4 dry days which is modelled by a counter of 3 boolean variables $d_i $ ($i \in \lbrace 1,2,3 \rbrace$). The piecewise dynamics and noise function are defined using the following PLEs:
 {\footnotesize
 \begin{align*}
@@ -199,6 +199,7 @@ Next, given $Q_a^h(\vec{b},\vec{x},\vec{y},\vec{n})$ as above for each
 $a \in A$, we can proceed to define the $h$-stage-to-go value function
 assuming that the agent attempts to maximize value subject to Nature's
 adversarial choice of value-minimizing noise:
+\vspace{-2mm}
 {\footnotesize
 \begin{align}
 V^{h}(\vec{b},\vec{x}) & = \max_{a \in A} \max_{\vec{y} \in \mathbb{R}^{|\vec{y}|}} \min_{\vec{n} \mathbb{R}^{|\vec{e}|}} \left\{ Q^{h}_a(\vec{b},\vec{x},\vec{y},\vec{n}) \right\} \label{eq:vfun}
@@ -209,7 +210,6 @@ $Q$-function as below:
 \begin{align}
 \pi^{*,h}(\vec{b},\vec{x}) = \argmax_{a \in A}  \argmax_{\vec{y} \in \mathbb{R}^{|\vec{y}|}}  \min_{\vec{n} \mathbb{R}^{|\vec{e}|}}  Q^h_a(\vec{b},\vec{x},\vec{y},\vec{n})
 \end{align}}
-
 For finite-horizon HMDPs the optimal value function and policy are
 obtained up to horizon H.  For infinite horizons where the optimal policy
 has finitely bounded value then value iteration terminates when two
