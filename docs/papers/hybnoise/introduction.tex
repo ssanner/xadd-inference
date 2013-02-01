@@ -13,18 +13,18 @@ restrict stochastic noise on continuous transitions to be
 state-independent or discretized (i.e., requiring continuous
 transitions to be a finite mixture over deterministic transitions).
 % Not mentioning initial state dependence of many control solutions,
-% will mention these limitations and inability to handle 
+% will mention these limitations and inability to handle
 % controllability in Related Work.
 
 Unfortunately, each of these assumptions can be quite limiting in
 practice when strong \emph{a priori} guarantees on performance are
 required in the presence of general forms of state-dependent noise.
-For example, in a \textsc{UAV Navigation} problem~\cite{}, a human
+For example, in a \textsc{UAV Navigation} problem~\cite{Blackmore:2011}, a human
 controller must be aware of all positions from which a UAV with a
 given amount of fuel reserves can return to its landing strip with
 high probability of success given known areas of (state-dependent)
 turbulence and weather events.  In a \textsc{Space Telescope Control}
-problem~\cite{}, one must carefully manage inertial moments and
+problem~\cite{DLohr:2012}, one must carefully manage inertial moments and
 rotational velocities as the telescope maneuvers between different
 angular orientations and zoom positions, where noise margins increase
 when the telescope is in unstable positions (extended zooms).  And
