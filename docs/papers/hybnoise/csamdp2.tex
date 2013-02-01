@@ -95,27 +95,38 @@ N(n_l| \vec{b},\vec{x},a,\vec{y}) =
 
 To make the ND-HMDP framework concrete, we now introduce a running example used
 throughout the paper:
-\begin{example*}[\textsc{Reservoir Control}~\cite{someone who has worked on reservoir control}]
-{\bf ZAHRA TODO: enter definition and explain}
+%%%%%%%%%%%%%%%%%%%%%%%%% ZAHRA TODO
+\begin{example*}[\textsc{Reservoir Control}]
+The problem of when and how much to drain reservoirs so as to maximize
+electricity revenue over time while avoiding reservoir overflow and underflow is a major problem in the OR literature ~\cite{Mahootchi2009,Yeh1985}.  Here we focus on the problem of deciding between \emph{drain} or \emph{not drain} for each reservoir to gain maximum reward over time. While the amount of rain effects the reservoir water levels, it is uncertain due to weather changes. 
 \end{example*}
-We formally define this ND-HMDP using the following piecewise dynamics and reward:
-{\bf ZAHRA TODO: no need to specify binary variables -- just say a counter to indicate
-day of week, but specify continuous CPFs/PLEs and noise constraints}
-%\begin{align} 
-%\hspace{-2.8mm} & P(b' =1|x,b,n) = 
-%\begin{cases}
-%b \lor (x \geq -10 \land x \leq 10): & \hspace{-2mm} 1.0\\
-%\neg b \land (x < -10 \lor x > 10):  & \hspace{-2mm} 0.0
-%\end{cases} \label{eq:mr_discrete_trans} \\
-%\hspace{-2.8mm} & P(x'|x,a,n)  = \delta \left( x' - (x+n+a) \right) \label{eq:mr_cont_trans} \\
-%\hspace{-2.8mm} & R(x,b) = \begin{cases}
-%x > 40 \lor x < -40 : & -\infty \\
-%b' \land \neg b \land x \geq -2 \land x \leq 2 : & 10 \\
-%b' \land b \land x \geq -2 \land x \leq 2 : & -1\\
-%\neg b' \land x \geq -2 \land x \leq 2 : & -1\\
-%\end{cases} 
-%\end{align}
-Here use of the $\delta[\cdot]$ function ensures that the continuous CPF over $x'$ integrates to 1.
+For simplicity, we work with a one-level water reservoir. The reward function is used to prevent overflow and underflow by assigning penalty to water levels outside the safe range. For the $\mathit{drain}$ action this is formally defined as: 
+{\footnotesize
+\begin{align*}
+R &= 
+\begin{cases}
+(200 \leq l_1 \leq 4500) \wedge (200 \leq l'_1 \leq 4500) &:1\\
+\text{otherwise} &: -\infty\\
+\end{cases}
+\end{align*}
+}
+
+Electricity is generated during the $\mathit{drain}$ action, so a reward equal to the new water level $l'_1$ is assigned for the safe range of $\mathit{no}$-$\mathit{drain}$ action. We assume rainfall occurs on 4 subsequent days, followed by 4 dry days which is modelled by a counter of 3 boolean variables $d_i $ ($i \in \lbrace 1,2,3 \rbrace$). The piecewise dynamics and noise function are defined using the following PLEs:
+{\footnotesize
+\begin{align*}
+& P(l'_1|l_1,n,d_i,d'_i, a=\mathit{drain}) = \delta \left( l_1'  - (n + l_1 - 2000) \right)
+\\
+& P(l'_1|l_1,n,d_i,d'_i, a=\mathit{no}-\mathit{drain}) =\delta \left( l_1'  -  (n + l_1) \right)
+\\
+& n = \begin{cases}
+(d_1) \wedge (1200 \leq n \leq 2000) &:-\infty \\
+\neg (d_1) \wedge (0 \leq n \leq 400)&:-\infty \\
+\text{otherwise} &: +\infty
+\end{cases}
+\end{align*}
+}
+For rainy days, legal noise bounds are on the higher water levels while on dry days it occurs on lower water levels. Here use of the $\delta[\cdot]$ function ensures that the continuous CPF over $x'$ integrates to 1.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 A policy $\pi(\vec{b},\vec{x})$ specifies the action $a(\vec{y}) =
 \pi(\vec{b},\vec{x})$ to take at state $(\vec{b},\vec{x})$.  
