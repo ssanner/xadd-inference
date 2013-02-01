@@ -51,7 +51,7 @@ applied to LCF functions yielded LCF results.
 
 %%%%%%%%%%%%%%%%%%%%%%% ZAHRA TODO
 The other main operation required for the \texttt{VI} algorithm is a \emph{symbolic case maximization} performed below on two case statements:
-\vspace{-4mm}
+\vspace{-6mm}
 {\footnotesize
 \begin{center}
 \begin{tabular}{r c c c l}
@@ -86,7 +86,8 @@ $ = $
   \end{cases}$
 \end{tabular}
 \end{center}
-} Linear restrictions on $f$ and $g$ produce LCF results for this $\casemax$ operator.
+} \vspace{-2mm}
+Linear restrictions on $f$ and $g$ produce LCF results for this $\casemax$ operator.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{.5em}
 \linesnumbered
@@ -165,16 +166,17 @@ Next we explain the steps of the \texttt{VI} algorithm using the \textsc{Reservo
 For both actions, the function $Q^1_a$ is computed in line 6 using Algorithm~\ref{alg:regress} with the following operations for action $\mathit{no}$-$\mathit{drain}$:
 \begin{itemize}
 
-\item Priming the current state variables ($d_i,l_j$) to build the next states ($d_i',l_j'$) in the value function. This indicates a \emph{symbolically substitution} of  $V'^0= V^0 \sigma = 0$ where $\sigma = \lbrace d_i \setminus d_i' , l_j \setminus l_j' \rbrace$ for all values of $i$ and $j$. 
+\item Priming V which %the current state variables ($d_i,l_j$) to build the next states ($d_i',l_j'$) in the value function. This
+indicates a \emph{symbolically substitution} of  $V'^0= V^0 \sigma = 0$ where $\sigma = \lbrace d_i \setminus d_i' , l_j \setminus l_j' \rbrace$.% for all values of $i$ and $j$. 
 
-\item Since the reward function contains the primed variable $l_1'$, line 4 is performed where $Q = R(l_1,l'_1,d_i,d'_i,n,a) $. The discount factor which is scalar unary multiplication is applied and in this case the reward in line 15 is not added.
+\item Since the reward function contains the primed variable $l_1'$, line 4 is performed (and not line 15) where $Q = R(l_1,l'_1,d_i,d'_i,n,a) $. 
 
-\item The reward only contains primed continuous variable $l_1'$. For boolean variables, regression is performed using $f|_{b=v}$ which assigns the value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$. For continuous variables line 9 follows the rules of integration: 
+\item For boolean variables, regression is performed using $f|_{b=v}$ which assigns the value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$-- not applicable to the example. For continuous variables line 9 follows the rules of integration: 
 {\footnotesize
 \begin{align}
 \int f(x'_j) \otimes \delta[x_j' - h(\vec{z})] dx'_j = f(x'_j) \{ x'_j / h(\vec{z}) \}\nonumber
 \end{align}}
-This results in the following $Q$-value: 
+This results in the following $Q$-value for \textsc{Reservoir Control} : 
 {\footnotesize
 \begin{align*}
 %Q =   
@@ -184,7 +186,7 @@ This results in the following $Q$-value:
 \end{cases}
 \end{align*}
 }
-\item Maximizing the result with each of the noise variables in defined line 20 using a symbolic maximization. Each noise variable assigns -$\infty$ for legal values inside the boundary range +$\infty$ for illegal values defined by the noise model $N(\vec{n},\vec{b},\vec{x})$. The result is briefly defined below:
+\item Maximizing the result with each of the noise variables in defined line 20 using a sequence of symbolic maximizations. Each noise variable assigns -$\infty$ for legal values inside the boundary range +$\infty$ for illegal values defined by the noise model $N(\vec{n},\vec{b},\vec{x})$. The result is briefly defined below:
 %%%%%%%%%%%%%%%% Not in the log file and too big to fit
 %{\footnotesize
 %\begin{align}
@@ -221,7 +223,7 @@ where $\mathit{legal}$ noise value corresponds to [0,400] or [1200,2000] and $\m
 %The result assigns the value of $l_1+n$ to both safe water levels and legal noise ranges. Unsafe current or next state water levels (with legal noise) lead to -$\infty$ and illegal noise ranges cause the value to be +$\infty$.
 
 The regressed stochastic $Q_a^{h}(\vec{y},\vec{n})$ from Algorithm~\ref{alg:regress} is now minimized over the noise variables $\vec{n}$ in line 7. Intuitively this continuous minimization will never choose +$\infty$ as there is always some value smaller which insures that the transitioned model never chooses illegal values. Each partition $i$ of this intermediate $Q$ is considered for a continuous minimization separately with the final result a $\casemin$ on all the individual minimum results: $\casemin_i \min_n \phi_i(\vec{b},\vec{x},\vec{n}) f_i(\vec{b},\vec{x},\vec{n})$.  
-%%%%%%%%%%%%%%%%%% Can take this piece out completely
+%%%%%%%%%%%%%%%%%% TODO: Can take this piece out completely
 We demonstrate the steps of this algorithm for the third partition of the regressed $Q$ defined as:
 {\footnotesize
 \begin{align*}
@@ -286,7 +288,7 @@ d_1 \land (200 \leq l_1 \leq 2506) : & 1200.48 + l_1 \\
 \end{align}
 }
 
-The resulting Q-value with minimal noise is maximized over the continuous action parameter (not available in our example) in line 8; a symbolic continuous maximization operation, the major contribution of ~\cite{sdp_aaai}. A discrete $\casemax$ on the set of discrete actions for all $Q$-functions defines the final $V$:
+The resulting Q-value with minimal noise is maximized over the continuous action parameter (not available in our example) in line 8. A discrete $\casemax$ on the set of discrete actions for all $Q$-functions defines the final $V$:
 {\footnotesize
 \begin{align}
 V^1 =  
