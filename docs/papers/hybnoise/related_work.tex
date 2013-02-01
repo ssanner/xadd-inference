@@ -1,110 +1,33 @@
 %%HYBRID SYSTEMS
 
 % We focus on controllability in stochastic systems... few results
-% here except in chance-constrained systems where only 
+% here except in chance-constrained systems where only
 % approximate solutions are determined or dynamics
 % is restricted to be Gaussian with state-independent noise.
 % We argue that finding optimal solutions with exact guarantees
 % on controllability in systems with state-dependent noise is
-% crucial in settings like autonomous vehicles, satellite manuevers, 
+% crucial in settings like autonomous vehicles, satellite manuevers,
 % and environmental control systems.
 
-Hybrid systems are a class of dynamical systems that involve both
-continuous and discrete dynamics. The dynamics of the continuous
-variables are defined typically through differential equations and the
-evolution of the discrete variables through finite state machines,
-Petri nets or other abstract computational machines. One accepted
-manner to model hybrid systems is using hybrid automata that
-represents, in a single formalism, the discrete changes by automata
-transitions and the continuous changes by differential
-equations \cite{DeSHee:2009,Henzinger:1997}.  One special class of
-hybrid systems are the switched linear systems that have a collection
-of subsystems defined by linear dynamics (differential equations) and
-a switching rule that specifies the switching between the
-subsystems \cite{Sun:2005}.
+This work extends results in HMDP in AI ~\cite{boyan01,feng04,li05,kveton06,phase07,hao09,sdp_aaai} and hybrid system control literature 
+~\cite{Henzinger:1997,Hu:2000,DeSHee:2009} to handled state-dependent noise.
 
-One problem that has been studied in the area of hybrid systems is the
-verification of the safety property, that tries to proof that the
-system does not enter in unsafe configurations from an initial
-configuration \cite{Tomlin:2003}. Then, we say that the system
-satisfies the safety property if all reachable states are
-safe \cite{Henzinger:1997}. There are many tools for the automatic
-verification of hybrid systems such as HyTech \cite{Henzinger:1997},
-KRONOS \cite{Yovine:1997}, PHAVer \cite{Frehse:05} and
-HSOLVER \cite{Ratschan:2007}. All the techniques rely on the ability
-to compute reachable sets of hybrid systems. For example, HyTech, a
-symbolic model checker, automatically computes reachable sets for
-linear hybrid automata, a subclass of hybrid automata. HyTech can also
-return the values of design parameters for which this automata
-satisfies a temporal-logic requirement \cite{Henzinger:1997}. Some
-examples of verification of hybrid systems can be found
-in \cite{Henzinger:1997,Mohrenschildt:2001}.
-
-Another challenging topic in hybrid systems is to evaluate the effect
-of the hybrid controller on the systems operation, i.e., to solve the
-controllability problem for hybrid systems \cite{Stikkel:2004}. A
-hybrid system is called hybrid controllable if, for any pair of valid
+In the hybrid control literature, a challenging topic is to solve the controllability problem that is NP
+hard \cite{Blondel:1999}. A hybrid system is called hybrid controllable if, for any pair of valid
 states, there exists at least one permitted control sequence (correct
-control-laws) between them \cite{Tittus:1998,Yang:2007}. The general
-controllability problem of hybrid systems is NP
-hard \cite{Blondel:1999}. However, for special classes of hybrid
-systems, some necessary and sufficient conditions for controllability
-were obtained
-in \cite{Stikkel:2004,Lemch:2001,Sun:2002,Zhenyu:2003,Yang:2007}.  For
-example, by employing algebraic manipulation of system matrices, a
-sufficient and necessary condition for the controllability analysis of
-a class of piecewise linear hybrid systems is given in
-\cite{Zhenyu:2003}. This class is called controlled switching linear hybrid
-system and have the following properties: all mode switches are
-controllable, the dynamical subsystems within each mode has a LTI
-form, the admissible operating regions within each mode is the whole
-state space, and there are no discontinuous state jumps. The
-controllability test for this class of hybrid system can be determined
-based on the system matrices. In \cite{Yang:2007} is proposed an
-approach for controllability analysis of a class of more complex
-hybrid systems. This approach uses a discrete-path searching algorithm
-that integrates global reachability analysis at the discrete event
-system level and a local reachability analysis at the continuous
-level. This method cannot guarantee the existence of a solution for an
-arbitrary hybrid system \cite{Yang:2007}.
-
-Much of the work on hybrid systems has focused on deterministic models
-without allowing any uncertainty. In practice, there are real world
-applications where the environment is inherent uncertainty. To cope
-with this, the stochastic hybrid systems was proposed. Stochastic
-hybrid systems allow uncertainty (1) replacing deterministic jumps
-between discrete states by random jumps or (2) replacing the
-deterministic dynamics inside the discrete state by a stochastic
-differential equation or (3) combinations of 1 and 2 \cite{Hu:2000}. A
-critical problem in this type of systems is the verification of
-reachability properties because it is necessary to cope with the
-interaction between the discrete and continuous stochastic dynamics,
-in this case it is computed the probability that the system satisfies
-the property \cite{Koutsoukos:2006}.  Related with the concept of
-verification of safety property, in stochastic hybrid systems, the
-system tries to maximize the probability that the execution will
-remain in safe states as long as possible \cite{Hu:2000}.
-
-%%CHANCE-CONSTRAINED CONTROL
-
-Chance-constrained predictive stochastic control of dynamic systems
-characterizes uncertainty in a probabilistic manner, and finds the
+control-laws) between them \cite{Tittus:1998,Yang:2007}.  Another challenging topic for stochastic hybrid systems, a class of hybrid systems that allows uncertainty, is tried to maximize the probability that the execution will remain in safe states as long as possible \cite{Hu:2000}.
+This work is related with both topics, however we want to answer a slightly different question, called the robust controllability problem: what states have a policy to achieve a goal (that can be modeled as a reward or cost function) with high certainty over some horizon?
+To the authors’ knowledge, in the control area there are few results to answer a similar question except in the
+chance-constrained predictive stochastic sub-area, that finds the
 optimal sequence of control inputs subject to the constraint that the
 probability of failure must be below a user-specified
-threshold \cite{Blackmore:2011}. This constraint is known as a chance
-constraint \cite{Blackmore:2011} and is used to define stochastic
-robustness.
+threshold \cite{Blackmore:2011}. However all the previous work in this sub-are
+is focused on linear systems subject to
+Gaussian uncertainty and state-independence noise \cite{Schwarm:1999,Li:2002,Ono:2008,Blackmore:2011} or resort to approximation techniques \cite{Blackmore:2010}. Different from them, our approach is not approximated and can solve problems with state-dependent noise that is crucial in settings like autonomous vehicles, satellite maneuvers and environmental control systems.
 
-A great deal of work has taken place in recent years relating to
-chance-constrained optimal control of linear systems subject to
-Gaussian uncertainty in convex
-regions \cite{Schwarm:1999,Li:2002,Ono:2008} and linear systems in
-nonconvex regions \cite{Blackmore:2010,Blackmore:2011}.  The approach
-in \cite{Blackmore:2010} uses samples, or ‘particles’, to approximate
-the chance constraint, and hence does not guarantee satisfaction of
-the constraint. It applies to arbitrary uncertainty distributions and
-is significantly more computationally intensive than others. The
-approach proposed in \cite{Blackmore:2011} uses analytic bound to
-ensure satisfaction of the constraint and applies for linear-Gaussian
-systems.
+ 
+ 
+
+
+
 
