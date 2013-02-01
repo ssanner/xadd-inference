@@ -9,21 +9,36 @@
 % crucial in settings like autonomous vehicles, satellite manuevers,
 % and environmental control systems.
 
-This work extends results in HMDP in AI ~\cite{boyan01,feng04,li05,kveton06,phase07,hao09,sdp_aaai} and hybrid system control literature 
-~\cite{Henzinger:1997,Hu:2000,DeSHee:2009} to handled state-dependent noise.
+This work extends results in HMDP in AI
+~\cite{boyan01,feng04,li05,kveton06,phase07,hao09,sdp_aaai} and hybrid
+system control literature ~\cite{Henzinger:1997,Hu:2000,DeSHee:2009}
+to handled state-dependent noise.
 
-In the hybrid control literature, a challenging topic is to solve the controllability problem that is NP
-hard \cite{Blondel:1999}. A hybrid system is called hybrid controllable if, for any pair of valid
-states, there exists at least one permitted control sequence (correct
-control-laws) between them \cite{Tittus:1998,Yang:2007}.  Another challenging topic for stochastic hybrid systems, a class of hybrid systems that allows uncertainty, is tried to maximize the probability that the execution will remain in safe states as long as possible \cite{Hu:2000}.
-This work is related with both topics, however we want to answer a slightly different question, called the robust controllability problem: what states have a policy to achieve a goal (that can be modeled as a reward or cost function) with high certainty over some horizon?
-To the authors’ knowledge, in the control area there are few results to answer a similar question except in the
-chance-constrained predictive stochastic sub-area, that finds the
-optimal sequence of control inputs subject to the constraint that the
-probability of failure must be below a user-specified
-threshold \cite{Blackmore:2011}. However all the previous work in this sub-are
-is focused on linear systems subject to
-Gaussian uncertainty and state-independence noise \cite{Schwarm:1999,Li:2002,Ono:2008,Blackmore:2011} or resort to approximation techniques \cite{Blackmore:2010}. Different from them, our approach is not approximated and can solve problems with state-dependent noise that is crucial in settings like autonomous vehicles, satellite maneuvers and environmental control systems.
+In the hybrid control literature, a challenging topic is to solve the
+controllability problem that is NP hard \cite{Blondel:1999}. A hybrid
+system is called hybrid controllable if, for any pair of valid states,
+there exists at least one permitted control sequence (correct
+control-laws) between them \cite{Tittus:1998,Yang:2007}.  Another
+challenging topic for stochastic hybrid systems, a class of hybrid
+systems that allows uncertainty, is tried to maximize the probability
+that the execution will remain in safe states as long as
+possible \cite{Hu:2000}.  This work is related with both topics,
+however we want to answer a slightly different question, called the
+robust controllability problem: what states have a policy to achieve a
+goal (that can be modeled as a reward or cost function) with high
+certainty over some horizon?  To the authors’ knowledge, in the
+control area there are few results to answer a similar question except
+in the chance-constrained predictive stochastic sub-area, that finds
+the optimal sequence of control inputs subject to the constraint that
+the probability of failure must be below a user-specified
+threshold \cite{Blackmore:2011}. However all the previous work in this
+sub-are is focused on linear systems subject to Gaussian uncertainty
+and state-independence
+noise \cite{Schwarm:1999,Li:2002,Ono:2008,Blackmore:2011} or resort to
+approximation techniques \cite{Blackmore:2010}.  We remark that 
+our approach is not approximated and can optimally solve problems with
+state-dependent noise in a receding horizon control framework that
+answers the robust controllability question.
 
  
  
