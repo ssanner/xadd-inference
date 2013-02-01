@@ -1,6 +1,6 @@
 In order to compute the equations above, we propose a \emph{robust
 symbolic dynamic programming} (RSDP) approach building on the
-work of~\cite{aaai_sdp,sanner_uai11}.  This requires a value iteration
+work of~\cite{sdp_aaai,sanner_uai11}.  This requires a value iteration
 algorithm described in Algorithm~\ref{alg:vi} (\texttt{VI}) and the
 regression subroutine described in Algorithm~\ref{alg:regress}.  In what
 follows we show how the techniques of SDP can be extended to compute RDP
@@ -49,9 +49,9 @@ and $g_j$ are restricted to be \emph{linear} functions.  Similarly
 operations such as $\ominus$ and $\otimes$ may be defined with operations
 applied to LCF functions yielded LCF results.
 
-%%%%%%%%%%%%%%%%%%%%%%% ZAHRA TODO
-The other main operation required for the \texttt{VI} algorithm is a \emph{symbolic case maximization} performed below on two case statements:
-\vspace{-6mm}
+In addition to $\ominus$ and $\otimes$ another key binary operation on case
+statements the preserves the LCF property is \emph{symbolic case maximization}:
+\vspace{-7mm}
 {\footnotesize
 \begin{center}
 \begin{tabular}{r c c c l}
@@ -86,8 +86,8 @@ $ = $
   \end{cases}$
 \end{tabular}
 \end{center}
-} \vspace{-2mm}
-Linear restrictions on $f$ and $g$ produce LCF results for this $\casemax$ operator.
+} \vspace{-1mm}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{.5em}
 \linesnumbered
@@ -161,9 +161,7 @@ Linear restrictions on $f$ and $g$ produce LCF results for this $\casemax$ opera
 \decmargin{.5em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Next we explain the steps of the \texttt{VI} algorithm using the \textsc{Reservoir Control} example  for horizon $h=1$ and show that all other operations required to compute the optimal policy of (4) is supported by case representation and defined symbolically. 
-
-For both actions, the function $Q^1_a$ is computed in line 6 using Algorithm~\ref{alg:regress} with the following operations for action $\mathit{no}$-$\mathit{drain}$:
+To demonstrate how \texttt{VI} symbolically implements RDP, we compute $V^1$ for the \textsc{Reservoir Control} example. For both actions, the function $Q^1_a$ is computed in line 6 using Algorithm~\ref{alg:regress} with the following operations for action $\mathit{no}$-$\mathit{drain}$:
 \begin{itemize}
 
 \item Priming V which %the current state variables ($d_i,l_j$) to build the next states ($d_i',l_j'$) in the value function. This
@@ -171,7 +169,7 @@ indicates a \emph{symbolically substitution} of  $V'^0= V^0 \sigma = 0$ where $\
 
 \item Since the reward function contains the primed variable $l_1'$, line 4 is performed (and not line 15) where $Q = R(l_1,l'_1,d_i,d'_i,n,a) $. 
 
-\item For boolean variables, regression is performed using $f|_{b=v}$ which assigns the value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$-- not applicable to the example. For continuous variables line 9 follows the rules of integration: 
+\item For boolean variables, regression is performed using $f|_{b=v}$ (restriction operator) which assigns the value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$-- not applicable to the example. For continuous variables line 9 follows the rules of integration w.r.t. a $\delta$ function~\cite{sanner_uai11} which simply yields a symbolic substitution: 
 {\footnotesize
 \begin{align}
 \int f(x'_j) \otimes \delta[x_j' - h(\vec{z})] dx'_j = f(x'_j) \{ x'_j / h(\vec{z}) \}\nonumber
@@ -186,7 +184,7 @@ This results in the following $Q$-value for \textsc{Reservoir Control} :
 \end{cases}
 \end{align*}
 }
-\item Maximizing the result with each of the noise variables in defined line 20 using a sequence of symbolic maximizations. Each noise variable assigns -$\infty$ for legal values inside the boundary range +$\infty$ for illegal values defined by the noise model $N(\vec{n},\vec{b},\vec{x})$. The result is briefly defined below:
+\item Maximizing the result with each of the noise variables in defined line 20 using a sequence of symbolic maximizations. Each noise variable assigns -$\infty$ for legal values inside the boundary range +$\infty$ for illegal values defined by the noise model $N(\vec{n},\vec{b},\vec{x})$. The result is defined below:
 %%%%%%%%%%%%%%%% Not in the log file and too big to fit
 %{\footnotesize
 %\begin{align}
@@ -222,7 +220,7 @@ This results in the following $Q$-value for \textsc{Reservoir Control} :
 where $\mathit{legal}$ noise value corresponds to [0,400] or [1200,2000] and $\mathit{safe}$ water levels is [200,4500]. 
 %The result assigns the value of $l_1+n$ to both safe water levels and legal noise ranges. Unsafe current or next state water levels (with legal noise) lead to -$\infty$ and illegal noise ranges cause the value to be +$\infty$.
 
-The regressed stochastic $Q_a^{h}(\vec{y},\vec{n})$ from Algorithm~\ref{alg:regress} is now minimized over the noise variables $\vec{n}$ in line 7. Intuitively this continuous minimization will never choose +$\infty$ as there is always some value smaller which insures that the transitioned model never chooses illegal values. Each partition $i$ of this intermediate $Q$ is considered for a continuous minimization separately with the final result a $\casemin$ on all the individual minimum results: $\casemin_i \min_n \phi_i(\vec{b},\vec{x},\vec{n}) f_i(\vec{b},\vec{x},\vec{n})$.  
+The regressed stochastic $Q_a^{h}(\vec{y},\vec{n})$ from Algorithm~\ref{alg:regress} is now minimized over the noise variables $\vec{n}$ in line 7. Intuitively this continuous minimization will never choose +$\infty$ as there is always some value smaller which insures that the transitioned model never chooses illegal values. Each partition $i$ of this intermediate $Q$ is considered for a continuous minimization separately with the final result a $\casemin$ (definition follows from $\casemax$) on all the individual minimum results: $\casemin_i \min_n \phi_i(\vec{b},\vec{x},\vec{n}) f_i(\vec{b},\vec{x},\vec{n})$.  
 %%%%%%%%%%%%%%%%%% TODO: Can take this piece out completely
 We demonstrate the steps of this algorithm for the third partition of the regressed $Q$ defined as:
 {\footnotesize
@@ -303,5 +301,4 @@ d_1 \land (200 \leq l_1 \leq 2506): & 1200.48 + l_1 \\
 }
 \end{itemize}
 
-To implement the case statements efficiently with continuous variables, extended Algebraic Decision diagrams (XADDs) are used from ~\cite{sanner_uai11} extended from ADDs ~\cite{bahar93add}. Unreachable paths can be pruned in XADDs using LP solvers and all operations including the continuous minimization can be defined using XADDs by treating each path from root to leaf node as a single case partition with conjunctive constraints,  $\min_n$ is performed at each leaf subject to these constraints and all path $\min_n$'s are then accumulated via the $\casemin$ operation to obtain the final result.
-
+To implement the case statements efficiently with continuous variables, extended Algebraic Decision diagrams (XADDs) are used from ~\cite{sanner_uai11} extended from ADDs ~\cite{bahar93add}. Unreachable paths can be pruned in XADDs using LP solvers.  We crucially note that all operations including the continuous maximization and minimization preserve the LCF property, hence all operations for robust SDP can be performed exactly in closed-form -- a first for receding horizon control with general forms of state-dependent continuous noise.

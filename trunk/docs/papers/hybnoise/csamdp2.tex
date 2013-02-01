@@ -30,7 +30,7 @@ $P(\vec{b}',\vec{x}'| \vec{b},\vec{x},a,\vec{y},\vec{n})$ which
 depends on the current state, action and noise.
 In a factored setting, we do not typically represent the transition
 distribution jointly but rather we factorize it into a
-dynamic Bayes net (DBN)~\cite{} as follows:
+dynamic Bayes net (DBN)~\cite{dbn} as follows:
 {\footnotesize
 \begin{align}
 P&(\vec{b}',\vec{x}'|\vec{b},\vec{x}, a,\vec{y},\vec{n}) = \nonumber  \\
@@ -81,8 +81,8 @@ lies within $\mu \pm 2\sigma$, hence
 \begin{equation*}
 N(n_l| \vec{b},\vec{x},a,\vec{y}) = 
 \begin{cases}
-\mu - 2\sigma \leq n_l \leq \mu + 2 \sigma: & -\infty \\
-\text{otherwise} : & +\infty 
+\mu - 2\sigma \leq n_l \leq \mu + 2 \sigma: & -\infty \text{ (legal)}\\
+\text{otherwise} : & +\infty \text{ (illegal)}
 \end{cases} \; .
 \end{equation*}
 %For more general state dependent distributions, ~\eqref{eq:noise_derivation} should
@@ -97,36 +97,59 @@ To make the ND-HMDP framework concrete, we now introduce a running example used
 throughout the paper:
 %%%%%%%%%%%%%%%%%%%%%%%%% ZAHRA TODO
 \begin{example*}[\textsc{Reservoir Control}]
-The problem of when and how much to drain reservoirs so as to maximize
-electricity revenue over time while avoiding reservoir overflow and underflow is a major problem in the OR literature ~\cite{Mahootchi2009,Yeh1985}.  Here we focus on the problem of deciding between \emph{drain} or \emph{not drain} for each reservoir to gain maximum reward over time. While the amount of rain effects the reservoir water levels, it is uncertain due to weather changes. 
-\end{example*}
-For simplicity, we work with a one-level water reservoir. The reward function is used to prevent overflow and underflow by assigning penalty to water levels outside the safe range. For the $\mathit{drain}$ action this is formally defined as:
+The problem of maintaining maximal reservoir levels subject to
+uncertain amounts of rainfall is an important problem in operations
+research (OR) literature~\cite{Mahootchi2009,Yeh1985}.  In one
+variant of this problem, a reservoir operator must
+make a daily decision to \emph{drain} some water from a reservoir 
+or not subject to weather forecasts over some time horizon.
+Specifically in a seven day period, we assume that the weather forecast calls for a 
+substantial amount of rain on the fourth day and chances of less rain on the
+others.  The objective of the reservoir operator is to avoid underflow or
+overflow conditions while maximizing reservoir capacity.
+
+Formally, we assume a state consisting of continuous reservoir level $l_1 \in \mathbb{R}$
+and 3 boolean variables $\vec{b}$ to encode a time period of eight days.  We have
+two actions $a \in A = \{ \mathit{drain}, \mathit{no}-\mathit{drain} \}$.
+The reward function $R$ is used to prevent overflow and underflow by assigning
+$-\infty$ penalty to water levels outside of lower reserve and upper
+capacity limits and a reward for the amount of water stored at the end of
+the time step.  For both $a \in A$ this is formally defined as:
 \vspace{-2mm} 
 {\footnotesize
 \begin{align*}
-R &= 
+R(l_1,l_1',\vec{b},\vec{b}',a) &= 
 \begin{cases}
-(200 \leq l_1 \leq 4500) \wedge (200 \leq l'_1 \leq 4500) &:1\\
-\text{otherwise} &: -\infty\\
+(200 \! \leq \! l_1 \! \leq \! 4500) \wedge (200 \! \leq \! l'_1 \! \leq \! 4500) & \!\! : l_1'\\
+\text{otherwise} & \!\! : -\infty\\
 \end{cases}
 \end{align*}
 }
-Electricity is generated during the $\mathit{drain}$ action, so a reward equal to the new water level $l'_1$ is assigned for the safe range of $\mathit{no}$-$\mathit{drain}$ action. We assume rainfall occurs on 4 subsequent days, followed by 4 dry days which is modelled by a counter of 3 boolean variables $d_i $ ($i \in \lbrace 1,2,3 \rbrace$). The piecewise dynamics and noise function are defined using the following PLEs:
+For the transition function, we assume that on each time step $\vec{b}' = \vec{b} + 1$ (not shown)
+and the reservoir level changes according to the amount of outflow (2000 units of water on a
+$\mathit{drain}$ and 0 units on a $\mathit{no}$-$\mathit{drain}$ action)
+plus a noisy (uncertain) amount of rain $n$:
 {\footnotesize
 \begin{align*}
-& P(l'_1|l_1,n,d_i,d'_i, a=\mathit{drain}) = \delta \left( l_1'  - (n + l_1 - 2000) \right)
-\\
-& P(l'_1|l_1,n,d_i,d'_i, a=\mathit{no}-\mathit{drain}) =\delta \left( l_1'  -  (n + l_1) \right)
-\\
-& n = \begin{cases}
-(d_1) \wedge (1200 \leq n \leq 2000) &:-\infty \\
-\neg (d_1) \wedge (0 \leq n \leq 400)&:-\infty \\
+P(l'_1|l_1,n,d_i,d'_i, a& =\mathit{drain}) = \delta \left( l_1'  - (n + l_1 - 2000) \right) \\
+P(l'_1|l_1,n,d_i,d'_i, a&=\mathit{no}-\mathit{drain}) =\delta \left( l_1'  -  (n + l_1) \right)
+\end{align*}}
+The use of the $\delta[\cdot]$ function here ensures that the continuous CPF over $l'$ integrates to 1,
+which is crucial for defining a proper probability distribution.  While these PLEs are deterministic
+note that all continuous noise in this framework enters via the non-deterministic noise variables
+in ND-HMDPs.  The noisy level of rainfall $n$ is state-dependent and legal intervals are defined as follows:
+{\footnotesize
+\begin{align*}
+N(n|\vec{b},l_1) = \begin{cases}
+\vec{b} = 4 \wedge (1200 \leq n \leq 2000) &: -\infty \\
+\vec{b} = 4  \wedge (0 \leq n \leq 400)&: -\infty \\
 \text{otherwise} &: +\infty
 \end{cases}
-\end{align*}
-}
-For rainy days, legal noise bounds are on the higher water levels while on dry days it occurs on lower water levels. Here use of the $\delta[\cdot]$ function ensures that the continuous CPF over $x'$ integrates to 1.
+\end{align*}}
+In short, on day four ($\vec{b} = 4$) the amount of rain is expected to be between
+1200 and 2000 units, whereas on the other days it is expected to be between 0 and 400 units.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{example*}
 
 A policy $\pi(\vec{b},\vec{x})$ specifies the action $a(\vec{y}) =
 \pi(\vec{b},\vec{x})$ to take at state $(\vec{b},\vec{x})$.  
