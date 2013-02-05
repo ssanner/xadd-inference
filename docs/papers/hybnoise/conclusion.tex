@@ -11,9 +11,15 @@
 %              bounds and refining solutions, nonlinear by adaptive 
 %              linearization, bounded approximations, extensions 
 %              beyond piecewise linear to bilinear, quadratic, and 
-%              beyond, conversion to polygons and GPU computation,
+%              beyond, conversion to polygons and GPU computation
+%              -- or just keep polytopes -- key is parrallelization,
 %              exploit more structure on min/max and integrate --
-%              more efficient than for every path?
+%              more efficient than for every path?  policy iteration
+%              and finite state controllers; policy constraints
+%              reduce points for expensive (continuous) maximization.
+%              Concurrent multiagent zero-sum conditioned on 
+%              continuous state.  Aync. VI by backing up state with
+%              largest bound gap, or Bounded Cont. RTDP.
 
 This work has combined symbolic techniques and data structures from
 the HMDP literature in AI with techniques from chance-constrained
