@@ -1,18 +1,12 @@
 \label{sec:sdp}
 
 In this section, we describe the \emph{symbolic dynamic programming}
-(SDP) work of~\cite{sanner_uai12} and its extension to the case of continuously
-parameterized actions by ~\cite{sanner_aaai12}.  We present the general SDP
-framework for value iteration in Algorithm~\ref{alg:vi} (\texttt{VI})
-and a regression subroutine in Algorithm~\ref{alg:regress}
-(\texttt{Regress}) where we have omitted parameters $\vec{b}$ and
-$\vec{x}$ from $V$ and $Q$ to avoid notational clutter.  .
-%Before we explain this contribution though, we 
+(SDP) work of~\cite{sanner_uai11} and its extension to the case of continuously
+parameterized actions by ~\cite{zamani12}.  We present the general SDP
+framework for value iteration in Algorithm~\ref{alg:vi} (\texttt{VI}), the subroutine Regress
+was ommitted for space reasons and we refer to ~\cite{zamani12} for a detailed description of how this function performs the update of the $Q$ function.
 But first we recap SDP,
 which uses the \emph{case} representation and operations.
-%solution, which requires that the CSA-MDP and all other
-%functions such as $Q$ and $V$ are represented in \emph{case} form and
-%all operations are \emph{case operations}, defined next.
 
 \subsection{Case Representation and Operators}
 
@@ -40,12 +34,12 @@ We denote by $S(\phi)$ the region of $\phi$, that is, the set of values where $\
 For $f$ to represent a piecewise linear function, all $f_i$ must be linear in the continuous parameters. 
  In this work, we will refer to a pair $( f_i, \phi_i)$ as a case linear function, which is interpreted as a piecewise linear partial function defined in only one partition, $\phi_i$, and its value is equal to $f_i$ for all points where it is defined.
 
-In the context of SDP, we need to perform operations on symbolic functions represented in case form. The operations we need are: scalar multiplication, addition, subtraction and multiplication of symbolic functions, case maximization, boolean restriction and continuous integration. Next we explain how these operations are defined.
+In the context of SDP, we need to perform operations on symbolic functions represented in case form. The operations we need are: scalar multiplication, addition, subtraction and multiplication of symbolic functions, case maximization, boolean restriction and continuous integration. This operations were a major contribution of \cite{sanner_uai11} and we refer to that for the detailed definitions. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{.5em}
 \linesnumbered
-\begin{algorithm}[t!]
+\begin{algorithm}[th!]
 \vspace{-.5mm}
 \dontprintsemicolon
 \SetKwFunction{regress}{Regress}
@@ -72,78 +66,13 @@ In the context of SDP, we need to perform operations on symbolic functions repre
 \decmargin{.5em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\incmargin{.5em}
-\linesnumbered
-\begin{algorithm}[t!]
-\vspace{-.5mm}
-\dontprintsemicolon
-\SetKwFunction{remapWithPrimes}{Prime}
-%\SetKwFunction{sumout}{sumout}
-
-
-\Begin{
-    $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
-    \emph{// Continuous regression marginal integration}\\
-    \For {all $x'_j$ in $Q$}{
-         $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \, d_{x'_j}$\;
-    }
-    \emph{// Discrete regression marginal summation}\\
-    \For {all $b'_i$ in $Q$}{
-         $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 1}$\\
-         \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 0}$\;
-    }
-    \Return{$R(\vec{b},\vec{x},a,\vec{y}) \oplus (\gamma \otimes Q)$} \;
-}
-\caption{\footnotesize \texttt{Regress}($V,a,\vec{y}$) $\longrightarrow$ $Q$ \label{alg:regress}}
-\vspace{-1mm}
-\end{algorithm}
-\decmargin{.5em}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \emph{Unary operations} such as scalar multiplication $c\cdot f$ (for
 some constant $c \in \mathbb{R}$) or negation $-f$ on case statements
 $f$ are simply applied to each
 $f_i$ ($1 \leq i \leq k$). Intuitively, to perform a \emph{binary
   operation} on two case statements, we simply take the cross-product
 of the logical partitions of each case statement and perform the
-corresponding operation on the resulting paired partitions.  Letting
-each $\phi_i$ and $\psi_j$ denote generic first-order formulae, we can
-perform the ``cross-sum'' $\oplus$ of two (unnamed) cases in the
-following manner:
-
-{\footnotesize 
-\begin{center}
-\begin{tabular}{r c c c l}
-&
-\hspace{-6mm} 
-  $\begin{cases}
-    \phi_1: & f_1 \\ 
-    \phi_2: & f_2 \\ 
-  \end{cases}$
-$\oplus$
-&
-\hspace{-4mm}
-  $\begin{cases}
-    \psi_1: & g_1 \\ 
-    \psi_2: & g_2 \\ 
-  \end{cases}$
-&
-\hspace{-2mm} 
-$ = $
-&
-\hspace{-2mm}
-  $\begin{cases}
-  \phi_1 \wedge \psi_1: & f_1 + g_1 \\ 
-  \phi_1 \wedge \psi_2: & f_1 + g_2 \\ 
-  \phi_2 \wedge \psi_1: & f_2 + g_1 \\ 
-  \phi_2 \wedge \psi_2: & f_2 + g_2 \\ 
-  \end{cases}$
-\end{tabular}
-\end{center}
-}
-\normalsize
-
+corresponding operation on the resulting paired partitions. 
 Likewise, we perform $\ominus$ and $\otimes$ by,
 respectively, subtracting or multiplying partition values to obtain the result. 
 As linear inequalities can be inconsistent (infeasible) some of the generated partitions will be removed from the result. 
@@ -205,7 +134,7 @@ case statement in the form previously outlined.
 The only operation for SDP that has not yet been defined is the continuous action maximization.
 The continuos maximization over action variables can be wrtitten as $g(\vec{b},\vec{x}) := \max_{\vec{y}} \, f(\vec{b},\vec{x},\vec{y})$. Note that the result of this max, $g(\vec{b},\vec{x})$ is a function of continuous variables, hence requiring \emph{symbolic} constrained optimization.
 
-The definition of this maximization operation was the major contribution of~\ref{zahra}, so refer to this work for a detailed explanation. We outline the basic steps for continuous maximization.
+The definition of this maximization operation was the major contribution of~\cite{zamani12}, so refer to this work for a detailed explanation. We outline the basic steps for continuous maximization.
 
 First, due to the commutativity of $\max$, any multivariate $\max_{\vec{y}}$ can be rewritten as a sequence of univariate $\max$ operations $\max_{y_1} \cdots \max_{y_{|\vec{y}|}}$; hence it
 suffices to provide just the \emph{univariate} $\max_y$ solution:
@@ -268,4 +197,4 @@ ADDs~\cite{bahar93add} provides a compact data structure to support
 case statements and operations.  Using XADDs in SDP as a continuous
 version of the ADD-based SPUDD~\cite{spudd} algorithm for
 discrete MDPs, we maintain compact forms of $Q$ and $V$, e.g., as
-shown in $V^2$ for \MarsRover\ in Figure~\ref{fig:opt_val_pol}.  All the operations described in the previous section have been implemented for XADDs in previous works~\cite{sanner_uai11}. In this paper, we use linear XADDs, i.e. XADD with only boolean variables or linear inequalities in decisions and linear functions in terminal nodes. Linear XADDs permit LP solvers to be used in two ways: linear constraint feasibility checking to prune unreachable paths in the XADD and linear constrained optimization of linear functions to obtain maximum and minimum values of a XADD. Besides, our main contribution in this paper is the development of an approximation method for piecewise linear functions that is used in linear XADDs to reduce the number of nodes and provide more efficiency.
+shown in $V^2$ for \MarsRover\ in Figure !TODO: SHOW XADD EXAMPLE.  All the operations described in the previous section have been implemented for XADDs in previous works~\cite{sanner_uai11}. In this paper, we use linear XADDs, i.e. XADD with only boolean variables or linear inequalities in decisions and linear functions in terminal nodes. Linear XADDs permit LP solvers to be used in two ways: linear constraint feasibility checking to prune unreachable paths in the XADD and linear constrained optimization of linear functions to obtain maximum and minimum values of a XADD. Besides, our main contribution in this paper is the development of an approximation method for piecewise linear functions that is used in linear XADDs to reduce the number of nodes and provide more efficiency.

@@ -1,58 +1,32 @@
-In this section, we present a novel method for approximating piecewise linear functions. The goal of this algorithm is to reduce the number of partitions of a piecewise linear function represented in case form. This represents the ability to automatically identify and remove locally unimportant constraints, whose removal results in a small change in the represented function in exchange for a significant improvement in the efficiency of computations with these functions. XADDs already permit compactness by exploring variable and context independencies, so our approximate approach goes further to merge partitions as a form of removing dependencies that had little caluereducing the number of dependencies that need to be represented. 
+In this section, we present a novel method for approximating piecewise linear functions. The goal of this algorithm is to reduce the number of partitions of a piecewise linear function represented in case form. This represents the ability to automatically identify and remove locally unimportant constraints, whose removal results in a small change in the represented function in exchange for a significant improvement in the efficiency of computations with these functions. XADDs already permit compactness by exploring variable and context independencies, so our approximate approach goes further to merge partitions as a form of removing dependencies that had little influence in the represented function.
 
 \subsection{ Linear Approximation by Successive Merging}
-It is important to note that our merging strategy involves calculating a new case linear function, that can optimally approximate the two previous linear cases but be of a reasonably distinct kind, for instance it may not be obtainable as a linear combination of the original case functions. A clear example of a piecewise linear function where this kind of  "creative" approximation can be helpful is a regular difference step function, as the one in picture \ref{stepf}. For this function it seems clear that with a small error, in this particular case, independent of the number of steps, a much simpler representation can be achieved by modifying the linear function and merging the regions. We would like to represent it in a single partition as in figure \ref{steptolin}.
+It is important to note that our merging strategy involves calculating a new case linear function, that can optimally approximate the two previous linear cases but be of a reasonably distinct kind, for instance it may not be obtainable as a linear combination of the original case functions. 
 
-\begin{figure}[!h]
-\centering
-\begin{minipage}{.3\textwidth}
-  \centering
-  \subfigure[Step function] {
-	\fbox{\includegraphics[scale=0.5]{Figures/step.png}}
-	\label{stepf}
-  }
-\end{minipage}
-\begin{minipage}{.3\textwidth}
-\centering
-\subfigure[Linear Approximation] {
-	 \fbox{\includegraphics[scale=0.5]{Figures/steplin.png}}
-	\label{steptolin} 
-}
-\end{minipage}
-\caption{A step function can be much more compactly represented by a line that spans all partitions}
- \label{steppair1}
-\end{figure}
+In general, however, it isn't clear how a best linear approximation for various partitions can be directly constructed. Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy to obtain merging of arbitrary regions by successive pairwise merging of linear case functions. This idea is simple and is illustrated in figure~\ref{fig:steplining}. The bounded error property comes from keeping the amount of error "used" in every merge and avoiding any merges that incur more error than the remaining allowed error on one of the nodes being currently merged.
 
-In general, however, it isn't clear how a best linear approximation for various partitions can be directly constructed. Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy to obtain merging of arbitrary regions by successive pairwise merging of linear case functions. This idea is simple and is illustrated in~\ref{steplining}. The bounded error property comes from keeping the amount of error "used" in every merge and avoiding any merges that incur more error than the remaining allowed error on one of the nodes being currently merged.
-
-\begin{figure}[!h]
+\begin{figure}[!ht]
 \centering
-\begin{minipage}{.3\textwidth}
-  \centering
   \subfigure[Original] {
-	\fbox{\includegraphics[scale=0.4]{Figures/step1.png}}
-	\label{step1}
+	\fbox{\includegraphics[width=.3\textwidth]{Figures/stepfun/step1.png}}
+	\label{original}
   }
-\end{minipage}
-\begin{minipage}{.3\textwidth}
-\centering
+
 \subfigure[Step1] {
-	 \fbox{\includegraphics[scale=0.4]{Figures/step12.png}}
-	\label{step2} 
+	 \fbox{\includegraphics[width=.3\textwidth]{Figures/stepfun/step12.png}}
+	\label{step1} 
 }
-\end{minipage}
-\begin{minipage}{.3\textwidth}
-\centering
+
 \subfigure[Step2]{
-	 \fbox{\includegraphics[scale=0.4]{Figures/step123.png}}
+	 \fbox{\includegraphics[width=.3\textwidth]{Figures/stepfun/step123.png}}
 	 \label{step2}
 }
-\end{minipage}
+
 \caption{ Approximation by successive pair merging}
- \label{steplining}
+ \label{fig:steplining}
 \end{figure}
 
-\begin{algorithm}[!h]
+\begin{algorithm}[!ht]
 \dontprintsemicolon
 \KwIn{A piecewise linear functions $V$, allow\_error}
 \KwOut{Approximated version of $V$.}
@@ -94,9 +68,8 @@ More formally, given two case linear functions $L_1 = ( f_1, \phi_1 )$ and $L_2 
 \begin{equation} f^* = \argmin_f E(f)  \label{minphase} \end{equation}
 
 Note that the absolute value in~\ref{maxphase} is equivalent to max of two linear functions, e.g. $|f - f_1| = max ( f - f_1, f_1 - f)$. Moreover, each of these partition $\phi_i$ constrained max is equivalent to the max in all polytopes $\theta_{1{i_1}}$ of $\phi_i$. With this, we can rewrite the error $E$ as the maximum of a finite number of errors restricted to polytopes, e.g.:
-{%\footnotesize 
+{\footnotesize 
 \begin{align}
-\footnotesize
  e_{1{i_1}}(f) &= max_{\vec{x} \in \theta_{1{i_1}}} (f - f_1)(\vec{x}) \forall \theta_{1{i_1}} \in Poly(\phi_1) \nonumber\\
  e_{2{i_2}}(f) &= max_{\vec{x} \in \theta_{2{i_2}}} (f - f_2)(\vec{x}) \forall \theta_{2{i_2}} \in Poly(\phi_2) \nonumber\\
  e_{1{i_3}}(f) &= max_{\vec{x} \in \theta_{1{i_3}}} (f_1 - f)(\vec{x}) \forall \theta_{1{i_3}} \in Poly(\phi_1) \nonumber\\
@@ -109,10 +82,10 @@ where $K$ is the total number of pairs (linear function, polytope)  and e$ _k$ i
 This is a complex bilinear piecewise optimization problem, involving minimization on the parameters $\vec{c}$, maximization on the original continuous variables $\vec{x}$ and case max between the polytope maximums, thus we can break it down to a three step optimization problem: 
 
 (i) There are linear constrained bilinear functions $L_{k}(f,\vec{x},\phi_k) =  ( l_k(\vec{c},\vec{x}) ,\phi_k)$ depending on both the domain variables $\vec{x}$ and parameter variables $\vec{c}$, defined in $\phi_k$ such as $ ( (f - f_1)(\vec{x}),\phi_1) = ( (\vec{c}-\vec{c_1})\cdot\vec{x}, \phi_1)$. The innermost optimization step is the constrained maximization of this bilinear function on the domain variables.
-\begin{equation} e_k(f) = max_{\vec{x}} ( L_k(f,\vec{x},\phi_k) ) = max_{ {\vec{x}} \in \phi_k} (l_k (\vec{c}, \vec{x}) ) \label{step1} \nonumber \end{equation}
+\begin{equation} e_k(f) = max_{\vec{x}} ( L_k(f,\vec{x},\phi_k) ) = max_{ {\vec{x}} \in \phi_k} (l_k (\vec{c}, \vec{x}) ) \label{optim1} \nonumber \end{equation}
 
 (ii)There is a case max in a finite group of this linear constrained bilinear functions :
-\begin{equation} E(f) = \max_{k=1..K} ( max_{\vec{x}} ( L_k(f,\vec{x},\phi_k) )) = \max_{k=1..K} ( e_k(f)) \label{step2}  \nonumber \end{equation}
+\begin{equation} E(f) = \max_{k=1..K} ( max_{\vec{x}} ( L_k(f,\vec{x},\phi_k) )) = \max_{k=1..K} ( e_k(f)) \label{optim2}  \nonumber \end{equation}
 
 (iii)Finally, this case max is minimized in terms of the parameters $\vec{c}$ as in ~\ref{minphase}:
 
@@ -121,7 +94,7 @@ First, the algorithm will iterate between two phases, one for the maximization a
 
 TODO: It would be nice to have a diagram around here (and I can't make one fast ENOUGH)
 
-\begin{algorithm}[!h]
+\begin{algorithm}[!ht]
 \dontprintsemicolon
 \KwIn{Linear cases  $L_1 = ( f_1, \phi_1 )$, $L_2 = ( f_2, \phi_2 ).$}
 \KwOut{ $(L^*, error)$ s.t. $L^*$ approximates $L_1$ and $L_2$.}
@@ -158,7 +131,7 @@ This is now a linear problem in the coefficients of $f$, the solution Z is the e
 Solving this minimization yields a new solution $f$ whose error is a lower bound on the actual minimal error in each of these points. This can be seen by the following: $f$ may have to be modified to minimize the error in more points in the next iterations, but this can only lead to increasing the error in the points that were present in this iteration. This follows simply form the fact that adding more constraints cannot improve the optimal value of solution for a linear program.
 
 
-\begin{algorithm}[!h]
+\begin{algorithm}[!ht]
 \dontprintsemicolon
 \KwIn{Case linear functions $L_1 = ( f_1, \phi_1 ), L_2 = ( f_2, \phi_2 )$ and function $f$ }
 \KwOut{Set of points where the error is maximal for each polytope and the optimal $error$.}
@@ -179,7 +152,7 @@ $error \gets NEG\_INF$\;
 \end{algorithm}
 
 
-\begin{algorithm}[!h]
+\begin{algorithm}[!ht]
 \dontprintsemicolon
 \KwIn{Linear cases $L_1 = ( f_1, \phi_1 ), L_2 = ( f_2, \phi_2 )$ and a set of $points$ where to find the best approximation for}
 \KwOut{Best linear case approximation $f$.}
