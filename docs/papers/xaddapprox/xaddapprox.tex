@@ -1,16 +1,17 @@
-\documentclass{article}
+\documentclass[]{article}
+
 % The file proceed2e.sty is the style file for UAI-13.
 \usepackage{proceed2e}
 
 %File with description of bibliography style "named"
 \usepackage{named}
 % Use the postscript times font!
-\usepackage{times}
+%\usepackage{times}
 
 %% LinXADD packages
 %Algorithm Options
 \usepackage[vlined,algoruled,linesnumbered,titlenumbered]{algorithm2e} 
-%\usepackage{verbatim}
+\usepackage{verbatim}
 
 % Graph options
 %\usepackage{tikz}
@@ -18,7 +19,7 @@
 
 \usepackage{graphicx} 
 \usepackage{subfigure}
-%\usepackage{caption}
+\usepackage{caption}
 
 \hfuzz=1.002in
 \overfullrule=3mm
@@ -37,32 +38,26 @@
 \newcommand{\false}{\mathit{false}}
 \newcommand{\casemax}{\mathrm{casemax}}
 \newcommand{\casemin}{\mathrm{casemin}}
-\newcommand{\UB}{\mathit{UB}}
-\newcommand{\LB}{\mathit{LB}}
-\newcommand{\IND}{\mathit{Ind}}
-\newcommand{\CONS}{\mathit{Cons}}
-\newcommand{\Root}{\mathit{Root}}
-\newcommand{\Max}{\mathit{Max}}
 \def\argmax{\operatornamewithlimits{arg\,max}}
 \def\argmin{\operatornamewithlimits{arg\,min}}
-\newcommand{\sq}{\hspace{-1mm}}
-\newcommand{\sqm}{\hspace{-2mm}}
 
 \title{	Bounded Approximate Symbolic Dynamic Programming for Hybrid MDPs }
-\author{Luis Gustavo Rocha Vianna\\
-University of Sao Paulo\\
-Sao Paulo, Brazil\\
-ludygrv@gmail.com
-\And
-Scott Sanner\\
-NICTA \& ANU\\
-Canberra, Australia\\
-ssanner@nicta.com.au
-\And
-Leliane Nunes de Barros\\
-University of Sao Paulo\\
-Sao Paulo, Brazil\\
-leliane@ime.usp.br}
+
+\author{Anonimous for blind review}
+%\author{Luis Gustavo Rocha Vianna\\
+%University of Sao Paulo\\
+%Sao Paulo, Brazil\\
+%ludygrv@ime.usp.br
+%\And
+%Scott Sanner\\
+%NICTA \& ANU\\
+%Canberra, Australia\\
+%ssanner@nicta.com.au
+%\And
+%Leliane Nunes de Barros\\
+%University of Sao Paulo\\
+%Sao Paulo, Brazil\\
+%leliane@ime.usp.br}
 
 \begin{document}
 
@@ -72,42 +67,40 @@ leliane@ime.usp.br}
 Recently, advances in symbolic dynamic programming (SDP) have provided exact solutions for mixed discrete and continuous (hybrid) MDPs with piecewise linear dynamics and continuous actions. Combined with the extended algebraic decision diagram (XADD) data structure to compactly represent functions over discrete and continuous variables, SDP methods have been able to solve problems such as multivariate inventory control for which exact solutions were previously considered intractable. Unfortunately, XADD-based solutions to these problems can still grow quite large as problem size increases leading to the natural question of whether XADDs can be approximately compressed within fixed error bounds. To this end, we propose a compression technique for linear XADDs that requires the repeated solution of a bilinear program with an exponential number of constraints. Fortuitously, we show that this class of bilinear programs can be rewritten as an iterative bilevel linear programming problem that mitigates the need to generate an exponential number of constraints while still guaranteeing optimality. This solution permits the use of efficient linear program solvers and enables a novel class of bounded approximate SDP algorithms based on XADD compression. Empirically, we demonstrate this approach offers order-of-magnitude speedups over the exact solution for a variety of hybrid MDPs in exchange for relatively small approximation error.
 \end{abstract}
 
-\section{Introduction}
+\section{INTRODUCTION}
 
-\input introduction.tex
+\input 1introduction.tex
 
-\section{Hybrid MDPs}
+\section{EXTENDED ALGEBRAIC DECISION DIAGRAM (XADD)}
 
-\input csamdp.tex
+\input 2xadd.tex
 
-\section{Symbolic Dynamic Programming (SDP)}
+\section{BOUNDED ERROR APPROXIMATION OF PIECEWISE LINEAR FUNCTIONS}
 
-\input sdp.tex
+\input 3approx.tex
 
-\section{Piecewise Linear Approximation}
+\section{BOUNDED APPROXIMATE SYMBOLIC DYNAMIC PROGRAMMING}
 
-\input approx.tex
+\input 4basdp.tex
 
-\section{Empirical Results}
 
-\input empirical.tex
+\section{EMPIRICAL RESULTS}
 
-\section{Related Work}
+\input 5empirical.tex
 
-\input related_work.tex
+\section{RELATED WORK}
 
-\section{Concluding Remarks}
+\input 6related_work.tex
 
-\input conclusion.tex
+\section{CONCLUDING REMARKS}
 
-TODO: Scott's comments
-%\section*{Acknowledgments}
+\input 7conclusion.tex
 
-%\appendix
+\subsubsection*{Acknowledgments}
 
-%% The file named.bst is a bibliography style file for BibTeX 0.99c
-\bibliographystyle{named}
+%\subsubsection*{References}
+
+\bibliographystyle{plain}
 \bibliography{xaddapprox}
-
 \end{document}
 

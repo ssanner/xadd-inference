@@ -158,38 +158,10 @@ as $y < l(\vec{v})$; (ii) \emph{lower bound on $y$}: it can be written as $y >
 u(\vec{v})$ or (iii) \emph{independent of $y$}: the constraints do not contain $y$
 and can be safely factored outside of the $\max_y$, as $f_i(\vec{v},y) =  g_i(\vec{v})$.  
 Because there are multiple symbolic upper and lower
-bounds on $y$, we apply the $\casemax$ ($\casemin$) operator to determine the highest lower bound $\LB$(lowest upper bound $\UB$):
+bounds on $y$, we apply the $\casemax$ ($\casemin$) operator to determine the highest lower bound (lowest upper bound):
 
-We know that $\max_y \phi_i(\vec{b},\vec{x},y)
-f_i(\vec{b},\vec{x},y)$ for a linear function $f_i$ must occur at either the upper or lower bounds ($\UB$ and $\LB$) of $y$, both of which are symbolic functions of $\vec{v}$; 
-
-Given the \emph{potential} maxima points of $y = \UB$ and $y = \LB$ w.r.t. constraints $\phi_i(\vec{b},\vec{x},y)$ --- which are all symbolic functions --- we must symbolically evaluate which yields the maximizing value $\Max$ for this case partition: {\footnotesize
-\begin{align*}
-\Max = \casemax( f_i \{ y / \UB \}, f_i \{ y / \LB \})
-\end{align*}} 
 The substitution operator $\{ y / f \}$ replaces $y$ with case statement $f$, 
 defined in~\cite{sanner_uai11}.
-
-At this point, we have almost completed the computation
-of the $\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$
-except for one issue: the incorporation of the $\IND$ constraints
-(factored out previously) and additional constraints that arise from the
-symbolic nature of $\UB$ and $\LB$.  Specifically
-for the latter, we need to ensure that indeed $\LB < \UB$
-by building a set of constraints $\CONS$ that ensure these conditions hold; to do this,
-it suffices to ensure that for each possible expression $e$ used to
-construct $\LB$ that $e \leq \UB$.
-
-Now we express the final result as a single case partition:
-\begin{equation*}
-\max_y \phi_i(\vec{v},y) f_i(\vec{v},y) \;\; = \;\;
-\left\{ \CONS \land \IND: \Max \right.
-\end{equation*}
-Returning to~\eqref{eq:casemax_max}, we find that we have
-now specified the inner operation (shown in the $\Box$).  
-Hence, to complete the maximization for an entire case statement $f$, we need only apply the
-above procedure to each case partition of $f$ and then $\casemax$ all
-of these results.  
 
 \subsection {\bf Extended ADDs (XADDs)}
 ~\cite{sanner_uai11} extension of
