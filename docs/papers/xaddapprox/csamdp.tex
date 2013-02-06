@@ -52,7 +52,7 @@ V^{\Pi^*}(\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| 
 Here $r^h$ is the reward obtained at horizon $h$ following $\Pi^*$ where 
 we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
  
-Hybrid MDPs as defined above are naturally factored~\cite{boutilier99dt}
+HMDPs as defined above are naturally factored~\cite{boutilier99dt}
 in terms of state variables $(\vec{b},\vec{x})$; as such,
 transition structure can be exploited in the form of a dynamic Bayes
 net (DBN)~\cite{dbn} where the conditional probabilities
@@ -73,44 +73,27 @@ where $\vec{v}'_{<k} = ( v'_1,\ldots, v'_{k-1}), 1\leq k \leq n+m$
 %   quadratic programs
 % transition: stochasticity would mean int_n V(x,n) (= { x + n) P(n)
 
-We call the conditional probabilities
-$P(b_i'=v_{k_i}'|\vec{b},\vec{x},\vec{v}'_{<{k_i}},a,\vec{y})$ for \emph{binary} variables $b_i$
-($1 \leq i \leq n$) conditional probability functions (CPFs) --- not
-tabular enumerations --- because these functions can
-condition on both discrete and continuous state and action variables as
-in~\eqref{eq:mr_discrete_trans}.  For the \emph{continuous} variables
-$x_j$ ($1 \leq j \leq m$), we represent the CPFs
-$P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$ with \emph{piecewise
+The conditional probabilities functions $P(b_i'=v_{k_i}'|\vec{b},\vec{x},\vec{v}'_{<{k_i}},a,\vec{y})$ for \emph{binary} variables $b_i$ ($1 \leq i \leq n$) can condition on state and action variables.  
+
+For the \emph{continuous} variables $x_j$ ($1 \leq j \leq m$), we represent the CPFs $P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$ with \emph{piecewise
 linear equations} (PLEs) satisfying three properties: (i) PLEs 
 can only condition on the action, current state, and previous state variables, (ii) PLEs are
 deterministic meaning that to be represented by probabilities they
-must be encoded using Dirac $\delta[\cdot]$ functions (example
-forthcoming), and (iii) PLEs are piecewise linear, where the piecewise
-conditions may be arbitrary logical combinations of the binary variables
-and linear inequalities over the continuous variables.  An example PLE has been
-provided in~\eqref{eq:mr_cont_trans} where the use of the 
-$\delta[\cdot]$ function ensures that this is a conditional
-probability function that integrates to 1 over $x'$; In more intuitive
+must be encoded using Dirac $\delta[\cdot]$ functions and (iii) PLEs are piecewise linear, where the piecewise conditions may be arbitrary logical combinations of the binary variables
+and linear inequalities over the continuous variables. In more intuitive
 terms, one can see that this $\delta[\cdot]$ is a simple way to encode
 the PLE transition $x' = \left\{ \ldots \right.$ in the form of 
 $P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$.
 
-%It is important at this point to qualify the extent of stochasticity
-%permitted in this restriction of CSA-MDPs.  
 While it is clear that our restrictions do not permit general stochastic transition
 noise (e.g., Gaussian noise as in LQG control), they do permit
-discrete noise in the sense that
-$P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$ may condition on
-$\vec{b'}$, which are stochastically sampled according to their CPFs.
+discrete noise in the sense that $P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$ may condition on $\vec{b'}$, which are stochastically sampled according to their CPFs.
 We note that this representation effectively allows modeling of
 continuous variable transitions as a mixture of $\delta$ functions,
 which has been used frequently in previous exact continuous state MDP
 solutions~\cite{feng04,hao09}.
-% TODO: Not li05 here (allowed PWC probability), another?
 
-% Future work: To incorporate more general
-% forms of noise would generally lead to increase in order
-% of polynomials
+% TODO: Not li05 here (allowed PWC probability), another?
 
 We allow the reward function $R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}')$ to be
 a general piecewise linear function (boolean or linear conditions
@@ -126,24 +109,11 @@ These transition and reward constraints ensure that all derived
 functions in the solution of these hybrid MDPs will remain piecewise linear, which 
 is essential for our approximation and efficient representation.
 
-%ensure piecewise linear boundaries that can be checked for consistency
-%using a linear constraint feasibility checker, which we will later
-%see is crucial for efficiency.
-
-%In the final section, we discuss the
-%computational implications of relaxing the above restrictions on the
-%transition and reward functions.
-
-%For now, with our hybrid MDP defined as above, we
-%proceed to discuss how to solve for it's optimal finite horizon value
-%function and policy.
-
 \subsection{Solution Methods}
 
 \label{sec:soln}
 
-The algorithm we use for solving hybrid MDPs, proposed by ~\cite{zahra}, is a continuous state and action generalization of {\it value iteration}~\cite{bellman},  which is a dynamic programming algorithm for constructing optimal policies.  It proceeds by constructing a
-series of $h$-stage-to-go optimal value functions $V^h(\vec{b},\vec{x})$.
+The algorithm we use for solving hybrid MDPs, is an approximate version of the continuous state and action generalization of {\it value iteration}~\cite{bellman}, proposed by ~\cite{zamani12}.  which is a dynamic programming algorithm for constructing optimal policies.  It proceeds by constructing a series of $h$-stage-to-go optimal value functions $V^h(\vec{b},\vec{x})$.
 Initializing $V^0(\vec{b},\vec{x}) = 0$) we define the quality
 $Q_a^{h}(\vec{b},\vec{x},\vec{y})$ of taking action $a(\vec{y})$ in state
 $(\vec{b},\vec{x})$ and acting so as to obtain $V^{h-1}(\vec{b},\vec{x})$ thereafter as the following:

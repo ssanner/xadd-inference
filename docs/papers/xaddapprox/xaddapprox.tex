@@ -1,7 +1,9 @@
 \documentclass{article}
-% The file ijcai13.sty is the style file for IJCAI-13 (same as ijcai07.sty).
-\usepackage{ijcai13}
+% The file proceed2e.sty is the style file for UAI-13.
+\usepackage{proceed2e}
 
+%File with description of bibliography style "named"
+\usepackage{named}
 % Use the postscript times font!
 \usepackage{times}
 
@@ -18,17 +20,18 @@
 \usepackage{subfigure}
 %\usepackage{caption}
 
+\hfuzz=1.002in
+\overfullrule=3mm
+\hbadness=10000
+
 \usepackage{amsmath,amssymb} 
 \usepackage[T1]{fontenc} 
 \usepackage[applemac]{inputenc}
 
 \newcommand{\MarsRover}{\textsc{Mars Rover}}
-\newcommand{\MarsRoverL}{\textsc{Mars Rover Linear}}
-\newcommand{\MarsRoverNL}{\textsc{Mars Rover Nonlinear}}
-\newcommand{\InventoryControl}{\textsc{Inventory Control}}
-\newcommand{\WaterReservoir}{\textsc{Reservoir Management}}
-\newcommand{\MultiWaterReservoir}{\textsc{Multi-Reservoir}}
-
+\newcommand{\MarsRoverUni}{\textsc{Mars Rover1D}}
+\newcommand{\MarsRoverBi}{\textsc{Mars Rover2D}}
+\newcommand{\Invent}{\textsc{Inventory Control}}
 
 \newcommand{\true}{\mathit{true}}
 \newcommand{\false}{\mathit{false}}
@@ -45,7 +48,6 @@
 \newcommand{\sq}{\hspace{-1mm}}
 \newcommand{\sqm}{\hspace{-2mm}}
 
-% See ../linquad.cameraready/exact_sdp.tex for AAAI-12 Latex source
 \title{	Bounded Approximate Symbolic Dynamic Programming for Hybrid MDPs }
 \author{Luis Gustavo Rocha Vianna\\
 University of Sao Paulo\\
@@ -67,28 +69,7 @@ leliane@ime.usp.br}
 \maketitle
 
 \begin{abstract}
-Recent advances in symbolic dynamic programming (SDP) have provided
-exact solutions for mixed discrete and continuous (hybrid) MDPs with
-piecewise linear dynamics and continuous actions. Combined with the
-extended algebraic decision diagram (XADD) data structure to compactly
-represent functions over discrete and continuous variables,
-SDP methods have been able to solve problems such as
-multivariate inventory control for which exact solutions were
-previously considered intractable. Unfortunately, XADD-based solutions
-to these problems can still grow quite large as problem size increases
-leading to the natural question of whether XADDs can be approximately
-compressed within fixed error bounds. To this end, we propose a
-compression technique for linear XADDs that requires the repeated
-solution of a bilinear program with an exponential number of
-constraints. Fortuitously, we show that this class of bilinear
-programs can be rewritten as an iterative bilevel linear programming
-problem that mitigates the need to generate an exponential number of
-constraints while still guaranteeing optimality. This solution permits
-the use of efficient linear program solvers and enables a novel class
-of bounded approximate SDP algorithms based on XADD
-compression. Empirically, we demonstrate this approach offers
-order-of-magnitude speedups over the exact solution for a variety of
-hybrid MDPs in exchange for relatively small approximation error.
+Recently, advances in symbolic dynamic programming (SDP) have provided exact solutions for mixed discrete and continuous (hybrid) MDPs with piecewise linear dynamics and continuous actions. Combined with the extended algebraic decision diagram (XADD) data structure to compactly represent functions over discrete and continuous variables, SDP methods have been able to solve problems such as multivariate inventory control for which exact solutions were previously considered intractable. Unfortunately, XADD-based solutions to these problems can still grow quite large as problem size increases leading to the natural question of whether XADDs can be approximately compressed within fixed error bounds. To this end, we propose a compression technique for linear XADDs that requires the repeated solution of a bilinear program with an exponential number of constraints. Fortuitously, we show that this class of bilinear programs can be rewritten as an iterative bilevel linear programming problem that mitigates the need to generate an exponential number of constraints while still guaranteeing optimality. This solution permits the use of efficient linear program solvers and enables a novel class of bounded approximate SDP algorithms based on XADD compression. Empirically, we demonstrate this approach offers order-of-magnitude speedups over the exact solution for a variety of hybrid MDPs in exchange for relatively small approximation error.
 \end{abstract}
 
 \section{Introduction}
@@ -119,6 +100,7 @@ hybrid MDPs in exchange for relatively small approximation error.
 
 \input conclusion.tex
 
+TODO: Scott's comments
 %\section*{Acknowledgments}
 
 %\appendix
