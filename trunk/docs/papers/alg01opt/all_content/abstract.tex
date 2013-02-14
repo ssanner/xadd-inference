@@ -1,0 +1,30 @@
+The binary (two-class) classification problem is an important subclass
+of the classification problem in supervised machine learning. Its task
+is to split the input space into two sides, namely ``yes'' -- ``no'',
+or ``true'' -- ``false''. Examples include testing for a certain
+disease, or testing if a critical component has failed. The direct and
+most natural way to solve this problem is to minimize the 0--1 loss
+function, which is the sum of classification errors in the training
+data. However, 0--1 loss is highly non-convex and NP--hard to optimize
+directly. Most of the existing algorithms, including support vector
+machine (SVM), logistic regression, solve this problem using a
+surrogate of the 0--1 loss function that is convex, and are hence
+easily optimized. Although very successful, these algorithms are known
+to suffer from the presence of outliers. In fact, all convex losses
+suffer from outliers, while 0--1 loss does not. Therefore, the purpose
+of this thesis is to study different approaches to direct optimization
+of 0--1 loss for linear binary classification. For this purpose, four
+anytime algorithms are proposed.  Numerous comparisons on synthetic
+and real-world datasets with other state-of-the-art algorithms, such
+as logistic regression, SVM, Bayes point machine, show that the novel
+algorithms are almost always better, or at least comparable with
+existing algorithms regarding 0--1 loss optimization. Importantly, in
+the presence of outliers, the novel algorithms have a clear advantage
+over all existing algorithms.
+
+
+
+
+
+
+

@@ -1,0 +1,244 @@
+\begin{thebibliography}{42}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Bartlett et~al.(2003)Bartlett, Jordan, and McAuliffe]{Bartlett}
+Bartlett, Peter~L., Jordan, Michael~I., and McAuliffe, Jon~D.
+\newblock Convexity, classification, and risk bounds.
+\newblock Technical Report 638, University of California, Berkeley, November
+  2003.
+
+\bibitem[Bay(1998)]{kNN}
+Bay, Stephen~D.
+\newblock Combining nearest neighbor classifiers through multiple feature
+  subsets.
+\newblock In \emph{In Proceedings of the 17th International Conference on
+  Machine Learning}, pp.\  37--45, 1998.
+
+\bibitem[Ben-David et~al.(2003)Ben-David, Eiron, and Long]{nphard}
+Ben-David, S., Eiron, N., and Long, P.M.
+\newblock On the difficulty of approximately maximizing agree- ments.
+\newblock \emph{J. Comput. System Sci.}, \penalty0 (66(3)):\penalty0 496--514,
+  2003.
+
+\bibitem[Berkelaar et~al.(2004)Berkelaar, Eikland, and Notebaert]{lpsolve}
+Berkelaar, Michel, Eikland, Kjell, and Notebaert, Peter.
+\newblock lpsolve version 5.1.0.0.
+\newblock Open source, 2004.
+\newblock URL \url{http://lpsolve.sourceforge.net}.
+
+\bibitem[Bishop(1995)]{bishop2}
+Bishop, Christopher~M.
+\newblock \emph{Neural Networks for Pattern Recognition}.
+\newblock Oxford University Press, 1995.
+
+\bibitem[Bishop(2006)]{bishop06}
+Bishop, Christopher~M.
+\newblock \emph{Pattern Recognition and Machine Learning}.
+\newblock Springer, 2006.
+
+\bibitem[Bottou(1998)]{Bottou}
+Bottou, L{\'e}on.
+\newblock \emph{Online Learning and Neural Networks}.
+\newblock Cambridge University Press, 1998.
+
+\bibitem[Boyd \& Vandenberghe(2004)Boyd and Vandenberghe]{boyd04}
+Boyd, Stephen and Vandenberghe, Lieven.
+\newblock \emph{Convex Optimization}.
+\newblock Cambridge University Press, 2004.
+
+\bibitem[Breiman et~al.(1984)Breiman, Friedman, Olshen, and Stone]{tree1}
+Breiman, L., Friedman, J., Olshen, R.~A., and Stone, C.~J.
+\newblock \emph{Classification and Regression Trees}.
+\newblock Chapman and Hall, 1984.
+
+\bibitem[Cauchy(1847)]{Cauchy}
+Cauchy, Augustin.
+\newblock M{\'e}thodes g{\'e}n{\'e}rales pour la r{\'e}solution des
+  syst{\`e}mes d'{\'e}quations simultan{\'e}es.
+\newblock \emph{Comp. Rend. Sci. Paris}, 25:\penalty0 46--89, 1847.
+
+\bibitem[Coppersmith \& Winograd(1990)Coppersmith and Winograd]{Coppersmith}
+Coppersmith, D. and Winograd, S.
+\newblock Matrix multiplication via arithmetic progressions.
+\newblock \emph{J. Symbolic Computation}, 9(3):\penalty0 251--280, 1990.
+
+\bibitem[Cormen et~al.(2009)Cormen, Leiserson, Rivest, and Stein]{cormen}
+Cormen, Thomas, Leiserson, Charles, Rivest, Ronald, and Stein, Clifford.
+\newblock \emph{Introduction to Algorithm}.
+\newblock MIT Press, third edition, 2009.
+
+\bibitem[Cortes \& Vapnik(1995)Cortes and Vapnik]{Vapnik}
+Cortes, Corinna and Vapnik, Vladimir.
+\newblock Support-vector networks.
+\newblock \emph{Machine Learning}, 20, 1995.
+
+\bibitem[Davidon(1976)]{Davidon}
+Davidon, W.~C.
+\newblock New least-square algorithms.
+\newblock \emph{Journal of Optimization Theory and Applications}, \penalty0 (18
+  (2)):\penalty0 187--197, 1976.
+
+\bibitem[Ding \& Vishwanathan(2010)Ding and Vishwanathan]{Ding}
+Ding, Nan and Vishwanathan, S.V.N.
+\newblock t-logistic regression.
+\newblock In \emph{Advances in Neural Information Processing Systems}. NIPS,
+  2010.
+
+\bibitem[Fan et~al.(2008)Fan, Chang, Hsieh, Wang, and Lin]{linearSVM}
+Fan, R.-E., Chang, K.-W., Hsieh, C.-J., Wang, X.-R., and Lin, C.-J.
+\newblock Liblinear: A library for large linear classification.
+\newblock \emph{Journal of Machine Learning Research}, pp.\  1871--1874, 2008.
+
+\bibitem[Feldman et~al.(2009)Feldman, Guruswami, Raghavendra, and Wu]{Feldman}
+Feldman, V., Guruswami, V., Raghavendra, P., and Wu, Yi.
+\newblock Agnostic learning of monomials by halfspaces is hard.
+\newblock \emph{Preliminary version appeared in FOCS}, 2009.
+
+\bibitem[Frank \& Asuncion(2010)Frank and Asuncion]{ucidata}
+Frank, A. and Asuncion, A.
+\newblock Uci machine learning repository.
+\newblock Irvine, CA: University of California, School of Information and
+  Computer Science., 2010.
+\newblock URL \url{http://archive.ics.uci.edu/ml}.
+
+\bibitem[Freund \& Schapire(1995)Freund and Schapire]{adaboost}
+Freund, Yoav and Schapire, Robert~E.
+\newblock A decision-theoretic generalization of on-line learning and an
+  application to boosting.
+\newblock Technical report, AT\&T Bell Laboratories, 1995.
+
+\bibitem[Goldberg(1989)]{Goldberg}
+Goldberg, David~E.
+\newblock \emph{Genetic Algorithms in Search, Optimization, and Machine
+  Learning}.
+\newblock Kluwer Academic Publishers, Boston, MA, 1989.
+
+\bibitem[Herbrich et~al.(2001)Herbrich, Graepel, and Campbell]{Herbrich}
+Herbrich, Ralf, Graepel, Thore, and Campbell, Colin.
+\newblock Bayes point machines.
+\newblock \emph{Journal of Machine Learning Research}, pp.\  245--279, 2001.
+
+\bibitem[Hooke \& Jeeves(1961)Hooke and Jeeves]{Hooke}
+Hooke, R. and Jeeves, T.A.
+\newblock Direct search solution of numerical and statistical problems.
+\newblock \emph{Journal of the Association for Computing Machinery}, 8
+  (2):\penalty0 212--229, 1961.
+
+\bibitem[Kirkpatrick et~al.(1983)Kirkpatrick, Gelatt, and Vecchi]{Kirkpatrick}
+Kirkpatrick, S., Gelatt, C.~D., and Vecchi, M.~P.
+\newblock Optimization by simulated annealing.
+\newblock \emph{Science}, 220 (4598):\penalty0 671--680, 1983.
+
+\bibitem[Kiwiel(2001)]{Kiwiel}
+Kiwiel, Krzysztof~C.
+\newblock Convergence and efficiency of subgradient methods for quasiconvex
+  minimization.
+\newblock \emph{Mathematical Programming (Series A)}, \penalty0 (90 (1)), 2001.
+
+\bibitem[Kuhn \& Tucker(1951)Kuhn and Tucker]{Kuhn}
+Kuhn, H.~W. and Tucker, A.~W.
+\newblock Nonlinear programming.
+\newblock In \emph{Proceedings of 2nd Berkeley Symposium}, pp.\  481--492.
+  Berkeley: University of California Press, 1951.
+
+\bibitem[Li \& Lin(2007)Li and Lin]{ling}
+Li, Ling and Lin, Hsuan-Tien.
+\newblock Optimizing 0-1 loss for perceptrons by random coordinate descent.
+\newblock In \emph{Proceedings of the 2007 International Joint Conference on
+  Neural Networks}, 2007.
+
+\bibitem[Long \& Servedio(2010)Long and Servedio]{outliers}
+Long, Phil and Servedio, Rocco.
+\newblock Random classification noise defeats all convex potential boosters.
+\newblock \emph{Machine Learning Journal}, \penalty0 (78(3)):\penalty0
+  287--304, 2010.
+
+\bibitem[Mangasarian \& Wolberg(1990)Mangasarian and Wolberg]{breast}
+Mangasarian, O.~L. and Wolberg, W.~H.
+\newblock Cancer diagnosis via linear programming.
+\newblock \emph{SIAM News}, 23\penalty0 (5):\penalty0 1 -- 18, September 1990.
+
+\bibitem[Manwani \& Sastry(2011)Manwani and Sastry]{outliers2}
+Manwani, N. and Sastry, P.~S.
+\newblock Noise tolerance under risk minimzation.
+\newblock In \emph{ArXiv:1109.5231v2}, 2011.
+
+\bibitem[Marquardt(1963)]{Marquardt}
+Marquardt, Donald.
+\newblock An algorithm for least-squares estimation of nonlinear parameters.
+\newblock \emph{SIAM Journal on Applied Mathematics}, 11 (2):\penalty0
+  431--441, 1963.
+
+\bibitem[Masnadi-Shirazi \& Vasconcelos(2008)Masnadi-Shirazi and
+  Vasconcelos]{lossdesign}
+Masnadi-Shirazi, Hamed and Vasconcelos, Nuno.
+\newblock On the design of loss functions for classification: theory,
+  robustness to outliers, and savageboost.
+\newblock In \emph{NIPS}, 2008.
+
+\bibitem[McAllester(2007)]{McAllester}
+McAllester, David.
+\newblock Statistical methods for artificial intelligence.
+\newblock Lecture Notes for TTIC103, Toyota Technological Institute at Chicago,
+  8 2007.
+
+\bibitem[Minka(2001)]{bpm}
+Minka, Thomas.
+\newblock Expectation propagation for approximate bayesian inference.
+\newblock \emph{UAI}, pp.\  362--369, 2001.
+
+\bibitem[Ntaimo \& Sen(2005)Ntaimo and Sen]{ntaimo}
+Ntaimo, Lewis and Sen, Suvrajeet.
+\newblock The million-variable ``march'' for stochastic combinatorial
+  optimization.
+\newblock \emph{Journal of Global Optimization}, 32:\penalty0 385--400, 2005.
+
+\bibitem[Quinlan(1993)]{tree2}
+Quinlan, J.~R.
+\newblock \emph{C4.5: Programs for Mahine Learning}.
+\newblock Morgan Kaufmann, 1993.
+
+\bibitem[Rosenblatt(1957)]{perceptron}
+Rosenblatt, Frank.
+\newblock The perceptron--a perceiving and recognizing automaton.
+\newblock Technical Report 85-460-1, Cornell Aeronautical Laboratory, 1957.
+
+\bibitem[Russell \& Norvig(2010)Russell and Norvig]{russell}
+Russell, Stuart and Norvig, Peter.
+\newblock \emph{Artificial Intelligence -- A Modern Approach}.
+\newblock Pearson, third edition, 2010.
+
+\bibitem[Steihaug(1983)]{Steihaug}
+Steihaug, Trond.
+\newblock The conjugate gradient method and trust regions in large scale
+  optimization.
+\newblock \emph{SIAM Journal on Numerical Analysis}, 20:\penalty0 626--637,
+  1983.
+
+\bibitem[van Harmelen et~al.(2008)van Harmelen, Lifschitz, and
+  Porter]{harmelen}
+van Harmelen, Lifschitz, V., and Porter, B.
+\newblock \emph{Handbook of Knowledge Representation}.
+\newblock Elsevier B.V., first edition, 2008.
+
+\bibitem[Webers(2012)]{Webers}
+Webers, Christfried.
+\newblock Introduction to statistical machine learning.
+\newblock Lecture Notes for COMP4670, Australian National University, 2012.
+
+\bibitem[Wu \& Liu(2007)Wu and Liu]{wu07}
+Wu, Y. and Liu, Y.
+\newblock Robust truncated hinge loss support vector machines.
+\newblock \emph{JASA}, 102:\penalty0 974--983, 2007.
+
+\bibitem[WU \& LIU(2007)WU and LIU]{robusthinge}
+WU, Yichao and LIU, Yufeng.
+\newblock Robust truncated hinge loss support vector machines.
+\newblock \emph{Journal of the American Statistical Association}, 102\penalty0
+  (479), September 2007.
+
+\end{thebibliography}

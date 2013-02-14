@@ -1,0 +1,107 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% ICML 2013 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Use the following line _only_ if you're still using LaTeX 2.09.
+%\documentstyle[icml2013,epsf,natbib]{article}
+% If you rely on Latex2e packages, like most moden people use this:
+\documentclass{article}
+
+% For figures
+\usepackage{graphicx} % more modern
+%\usepackage{epsfig} % less modern
+\usepackage{subfigure} 
+\usepackage{enumerate}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{framed}
+\usepackage{url}
+\usepackage{multirow}
+%\usepackage{algorithm}
+\usepackage{algpseudocode}
+%\usepackage{algorithmic}
+
+
+% For citations
+\usepackage{natbib}
+
+% For algorithms
+
+% As of 2011, we use the hyperref package to produce hyperlinks in the
+% resulting PDF.  If this breaks your system, please commend out the
+% following usepackage line and replace \usepackage{icml2013} with
+% \usepackage[nohyperref]{icml2013} above.
+\usepackage{hyperref}
+
+% Packages hyperref and algorithmic misbehave sometimes.  We can fix
+% this with the following command.
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Employ the following version of the ``usepackage'' statement for
+% submitting the draft version of the paper for review.  This will set
+% the note in the first column to ``Under review.  Do not distribute.''
+\usepackage{icml2013} 
+% Employ this version of the ``usepackage'' statement after the paper has
+% been accepted, when creating the final version.  This will set the
+% note in the first column to ``Proceedings of the...''
+% \usepackage[accepted]{icml2013}
+
+\def\R{\mathbb{R}}
+\def\S{\mathbb{S}}
+\def\xi{\boldsymbol{x_i}}
+\def\x{\boldsymbol{x}}
+\def\w{\boldsymbol{w}}
+\def\p{\boldsymbol{p}}
+\def\l{\boldsymbol{l}}
+\def\t{\boldsymbol{t}}
+\def\X{\boldsymbol{X}}
+\def\D{\boldsymbol{D}}
+
+\newcommand{\sign}{\operatorname{sign}}
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{Algorithms for 0--1 Loss Optimization in Binary Classification}
+
+\begin{document} 
+
+\twocolumn[
+\icmltitle{Algorithms for 0--1 Loss Optimization in Binary Classification}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2013
+% package.
+\icmlauthor{Tan T. Nguyen}{tan1889@gmail.com}
+\icmladdress{ANU, Canberra, ACT 0200}
+\icmlauthor{Scott P. Sanner}{ssanner@nicta.com.anu}
+\icmladdress{NICTA \& ANU, Canberra, ACT 2601}
+
+% You may provide any keywords that you 
+% find helpful for describing your paper; these are used to populate 
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{0-1 loss, classification, optimization}
+
+\vskip 0.3in
+]
+
+\begin{abstract} 
+\input abstract
+\end{abstract} 
+
+%% Main contents
+\input intro
+\input background
+\input bandb
+\input combsearch
+\input smoothloss
+\input empirical
+\input conclusions
+
+% Bibliography
+\bibliography{alg01opt}
+\bibliographystyle{icml2013}
+
+\end{document} 
+
+

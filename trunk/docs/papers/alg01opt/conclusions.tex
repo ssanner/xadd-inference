@@ -1,0 +1,56 @@
+\section{Conclusions}
+\label{cha:conclusions}
+
+This thesis started with the introduction and formulation of the 0--1 loss optimization problem for binary classification, continued with the review of existing methods, progressed with designing and building several algorithms to solve the problem by using different approaches, verified these algorithms through a comprehensive testing process. Now, in this chapter, the thesis is being concluded by firstly reviewing its major contributions, and then outlining some interesting directions for future work.
+
+%=================================================
+\subsection{Summary of Contributions}
+\label{sec:concl.summary}
+
+It has been introduced very early in the thesis that most state-of-the-art classifiers suffer from the presence of outliers in the training set. This problem can be solved by using 0--1 loss, because this loss is robust to outliers. Thus, 0--1 loss optimization is an important problem, yet there is no known research specialized on this topic. This thesis examined in detail 0--1 loss optimization for linear binary classification, and key milestones and contributions in each chapter of the thesis are summarized as follows. 
+
+\begin{itemize}
+
+\item {\bf Chapter \ref{cha:branchandbound} developed several heuristics for the branch and bound approach}, which enabled the algorithm to solve problems of up to a few hundreds of data points (instead of tens) while guaranteeing the optimality of the returned solution. The first heuristic is the best-first strategy, which helps to find the optimal solution early by ordering the points for branching in decreasing distance to an approximated decision boundary. This heuristic essentially allowed the algorithm to be anytime, increasing its practicality. The second heuristic is called loss propagation and helps to prune the search tree significantly using a convex hull created by points with assigned class in the current search path. This heuristic allowed the algorithm to solve for optimal solution of problems of aforementioned size. Comparing to combinatorial search, this algorithm works better in high dimensionality but does not scale as well, therefore is suitable for small datasets of hundreds of data points. 
+ 
+\item {\bf Chapter \ref{cha:combinatorialsearch} reformulated the optimization problem to enable combinatorial search}, which changed the search space from infinite and continuous to finite and discrete by considering only decision boundaries that go through combinations of a fixed number of points chosen from the dataset. A mechanism is developed to order these combinations such, that the best solution is likely to be found early, allowing an anytime algorithm, which can solve for the optimal solution of datasets of about a thousand points with low dimensionality. For bigger datasets or high dimensionality, an approximation algorithm is designed with two layers of approximation and polynomial worst-case running time, allowing it to solve problem of up to ten thousand data points. Practical tests on synthetic and real-world datasets show that this algorithms give good approximation to the optimal solution.  
+
+\item {\bf Chapter \ref{cha:Smoothlossapprox} developed the smooth approximation of 0--1 loss}, which can approximate 0--1 loss to an arbitrarily level of precision. In contrast to 0--1 loss, the smooth loss function is continuous, differentiable, and its smoothness and approximation precision can be controlled by a constant. This essentially enabled the SLA algorithm, which optimizes the smooth loss function at increasing level of precision by repeatedly applying a modified version of the gradient descent method together with a range checker allowing the algorithm to escape from local optima. Tests on synthetic and real-world datasets show that SLA algorithm has similar approximation quality as that of the combinatorial search approximation, while its running time is significantly better: quadratic in worst-case but much faster on average. The SLA algorithm can solve problems of up to about a hundred thousand data points. Its disadvantage is in the reliance on setting of several parameters. However, a universal settings worked well for all conducted test cases.
+
+\item {\bf Chapter \ref{cha:results} performed and analyzed numerous tests} on both synthetic and real-world datasets to compare the performance of novel algorithms based on 0--1 loss with different existing algorithms based on surrogate losses. Tests showed that novel algorithms give significantly better 0--1 loss, and asserted the clear benefit of using classifiers based on 0--1 loss over others in the presence of outliers. Tests also revealed a class of so--called anti-surrogate-loss datasets, for which algorithms based on surrogate losses provide poor results, while those based on 0--1 loss work well.
+
+\end{itemize}
+
+Altogether, this thesis has made a number of substantial contributions to direct 0--1 loss optimization for binary linear classification and helped advancing this area by providing several algorithms and detailed comparisons and analyses for them.
+
+%=================================================
+\subsection{Future Work}
+\label{sec:concl.futurework}
+
+There are several directions for improvement that have not been explored in detail in the thesis. They are discussed as follows. 
+
+\begin{itemize}
+
+\item {\bf Develop a mechanism that incrementally determines the half-spaces of a convex hull formed by a set of points as more points are added to this set}. If this could be done efficiently, then the interior point test would only take linear time by checking if the given point lies in the correct side of all half-spaces, which is a single dot product operation. Thus, such mechanism would dramatically reduce the cost of calculation of the loss propagation heuristic, which is currently the main bottleneck of the branch and bound algorithm.
+
+\item {\bf Use genetic algorithm to find the optimal combination of points for the combinatorial search approach}. The locality of occurrence of the optimal solution around an initial approximated decision hyperplane suggests that the use of genetic algorithm may be effective as it may be able to select the most important points to assign to the optimal combination through the evolutionary process. 
+
+\item {\bf Parallelize the combinatorial search algorithm}. Each combination of points in the combinatorial search can be assessed separately. Thus, the algorithm is highly parallelizable. 
+
+\item {\bf Use only a small subset of data points for the calculation of the smooth loss function in the `range checking' process of the SLA algorithm}. This is possible because the loss values of data points lying far away from the current decision boundary are not likely to change when the decision boundary is changed only slightly. If implemented, this would reduce the running time of the SLA algorithm.
+
+\item {\bf Adopt more advanced optimization method for the SLA algorithm}. Currently, the first process of the SLA algorithm uses a modified gradient descent mechanism. However, there are faster optimization methods that can be used, such as the pseudo-second order Levenberg-Marquardt method \cite{Marquardt}, or the trust region Newton's method  \cite{Steihaug}.
+
+\item {\bf Find a systematic way to set the constants of SLA algorithm effectively}. Currently, an universal set of fixed values are used. However, if these constants were determined specifically for each test case, the SLA algorithm would produce even better results.
+
+\item {\bf Study the effectiveness of boosting for 0--1 loss classifiers}. We believe that boosting will increase the prediction ability of 0--1 loss classifiers significantly. However, boosting has not been studied in this thesis.
+
+\item {\bf Study the strange behavior of the Cmc dataset}. In section \ref{ssec:rc.prediction} we have seen that for the Cmc dataset, 0--1 loss classifier performs better than others in the without-noise scenario and worse in the with-noise. This contradicts our expectation. Thus, a closer study on this case may reveal some interesting properties of 0--1 classifier.
+
+\end{itemize}
+
+%=================================================
+\subsection{Concluding Remarks}
+
+While some possible extensions are left to future work, this thesis represents one of the first and critical step in studying direct 0--1 loss optimization for linear binary classification. Four novel algorithms have been proposed, and numerous tests on synthetic and real-world datasets showed that they have a clear advantage over existing algorithms in the presence of outliers.
+
