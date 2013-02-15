@@ -1,112 +1,100 @@
 \section{Smooth 0--1 Loss Approximation}
 \label{cha:Smoothlossapprox}
 
-Most of algorithms in previous chapters aim at determining the exact
-solution of the 0--1 loss optimization problem. The guarantee of the
-returned solution being optimal comes at a cost, that is the running
-time of these algorithms is significant. To reduce the running time,
-the combinatorial search approximation (CSA) algorithm was proposed in
-Chapter \ref{cha:combinatorialsearch}, which has complexity
-$O(N^3D^2)$ and is sensitive to dimensionality. In this section, a
-more efficient approximation algorithm is being studied.
-
-\begin{figure}[here]
-\includegraphics[width=0.50\textwidth]{images/fig51_sigmoid.eps}
-\caption{
-This plot illustrates how sigmoidal loss approximates 0--1 loss. As can be seen, sigmoidal loss is quite similar to 0--1 loss except that it makes a continuous transition from 1 to 0 around 0.
-}
-\label{fig:sla.sigmoid}
-\end{figure}
-
-The definition of 0--1 loss optimization problem given in Section \ref{sec:bgr.formulation} of Chapter \ref{cha:background} stated the 0--1 loss function as 
-$$L(\w) = \sum_{i=1}^N l_i = \sum_{i=1}^N \mathbb{I} [t_i \w^T \xi
-  \leq 0],$$ and the optimal solution is a weight vector $\w^*$ that
-minimizes the 0--1 loss function above. It has been also discussed,
-that 0--1 loss is non-differentiable non-smooth non-convex function
-with complicated shape, as illustrated by Figure
-\ref{fig:complex_shape}. To develop the smooth loss function that
-approximates the 0--1 loss function above, the individual loss $l_i =
-\mathbb{I} [t_i \w^T \xi \leq 0]$ of data point $\xi$ is now being
-examined. It is known that this individual 0--1 loss can be
-approximated by sigmoidal loss as follows:
-$$l_i = \mathbb{I} [t_i \w^T \xi \leq 0] \approx \frac{1}{1 + e^{t_i \w^T \xi }}.$$
-This approximation is illustrated by Figure \ref{fig:sla.sigmoid}, where it can be seen, that sigmoidal loss is quite similar to 0--1 loss except that it makes a continuous transition from 1 to 0 around $t_i \w^T \xi = 0$. 
-
-As the smooth loss function being developed here requires controllable smoothness and approximation's precision, a positive constant $K \in \R^+$ is multiplied into the exponential term of the sigmoidal loss. Then, the approximation becomes
-$$l_i = \mathbb{I} [t_i \w^T \xi \leq 0] \approx \frac{1}{1 + e^{Kt_i
-    \w^T \xi }}.$$ For convenience, this new approximation shall be
-referred to as \emph{smooth loss}, and the constant $K$ referred to as
-the \emph{precision constant}. The advantage of smooth loss is that
-the precision and smoothness of the approximation can be controlled,
-because as $K$ gets bigger, the approximation approaches the true 0--1
-loss, while the smoothness is reduced. In fact, the following
-asymptotic formula can be proven easily (assuming $\xi$ does not lie
-directly on the decision hyperplane):
+The non-smooth, non-differentiable 0--1 loss can be
+approximated by a smooth, differential sigmoidal loss as follows:
+$$l_i = \mathbb{I} [t_i \w^T \xi \leq 0] \approx \frac{1}{1 + e^{Kt_i \w^T \xi }}.$$
+This approximation is illustrated by Figure \ref{fig:sla.smooth} (top) for different
+values of the \emph{precision constant} $K \in \R^+$ that modulates smoothness.
+Assuming the $\xi$ do not lie
+directly on the decision hyperplane, then 
 $$\lim_{K \rightarrow +\infty} \frac{1}{1 + e^{Kt_i \w^T \xi }} = l_i.$$
 
-\begin{figure}[here]
-\includegraphics[width=0.50\textwidth]{images/fig52_smooth.eps}
-\caption{
-This plot illustrates how smooth loss approximates 0--1 loss. As can be seen, for precision constant $K=100$, smooth loss almost approximates 0--1 loss exactly, with abrupt changes around 0, whereas for $K=1$, smooth loss is exactly sigmoidal loss, and it is much smoother comparing to $K=100$. For $K=10$, the smoothness and precision fit in between the two previous cases. 
-}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[tp!]
+\hspace{-3mm} \includegraphics[width=0.50\textwidth]{images/fig52_smooth.eps}
+\vspace{-4mm} \hspace{-3mm} \includegraphics[width=0.50\textwidth]{images/fig53_smoothfunction.eps}
+\vspace{-1mm}
+\caption{ \footnotesize (top) Sigmoid approximation of 0--1 loss for varying
+  $K$.  (bottom) Smoothness of the 0--1 loss for synthetic data vs. $w_1$ with
+  other components of $\w$ held fixed.  The plot on the right is a
+  close-up of the plot on the left around the global minimum.}
 \label{fig:sla.smooth}
+\vspace{-1mm}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This discussion is supported by Figure \ref{fig:sla.smooth}, where the smooth loss is drawn at different values of the precision constant $K=1, 10, 100$ corresponding to the red, magenta, and blue curve. The gray curve displays the 0--1 loss for comparison. It can be seen, that for $K=100$, the smooth loss is already very close to the 0--1 loss, and it also displays less smoothness (i.e., abrupt changes around 0), whereas for $K=1$, the smooth loss is exactly the sigmoidal loss, with a smooth transition around 0.
+Figure
+\ref{fig:sla.smooth} (bottom) illustrates how this smooth loss
+function changes with different values of the precision constant $K$.
+Clearly, small $K$ yield smooth losses with few local minima but
+provide a rough approximation while large $K$ approach the true 0--1
+loss with many local minima.
 
-
-\begin{figure}[here]
-\includegraphics[width=0.50\textwidth]{images/fig53_smoothfunction.eps}
-\caption{
-This figure illustrates how smoothness and precision of the smooth loss function (SLF) changes with different values of constant $K$. The plot on the right is a close-up of the plot on the left around global minimum. The value of the smooth loss function is plotted versus changes of one component, $w_1$, of the weight vector $\w$ around the minimum (all other components are fixed). The blue curve corresponds to $K=100$, the red curve corresponds to $K=1$, the magenta curve corresponding to $K=10$, the gray curve is the true 0--1 loss displayed for comparison. For $K=1$, the function is smooth with only two extrema as shown by the red curve on the left plot. For $K=100$, there are many local optima and the smooth loss function closely approximates 0--1 loss function as shown by the blue curve in both plots. For $K=10$, many local optima are smoothed out, but many extrema still present, as shown by the magenta curve visible on the right plot (not apparent in the left plot due to the scale).
-}
-\label{fig:sla.smoothfunction}
-\end{figure}
-
-It is now possible to define the \emph{smooth loss function} as the sum of the smooth losses of all data point as follows:
-$$L_K(w) = \sum_{i=1}^N \frac{1}{1 + e^{Kt_i \w^T \xi }}.$$
-Figure \ref{fig:sla.smoothfunction} illustrates how this smooth loss function changes with different values of the precision constant $K$. The dataset underlying this figure has 100 points in $\R^3$. The curves in the figure represent the smooth loss function as a function of  component $w_1$ of the loss vector (other components are held fixed). The figure is divided into two plots. The plot on the left shows the general shapes of smooth loss function at different values of $K=1, 10, 100$ corresponding to the red, magenta, blue curves. The plot on the right is the close-up of the plot on the left and shows the detailed shape of smooth loss functions around the minimum. It also shows the true 0--1 loss (gray curve) for reference. As can be seen, for $K=1$, the smooth loss function (the red curve in the left plot) is very smooth with only two extrema, while on the other hand, for $K=100$ the function follows quite closely to the the 0--1 loss function, which means it has lots of local optima corresponding to abrupt changes of the 0--1 loss function, for $K=10$ (corresponding to the magenta curve on the right plot, not very apparent on the left plot), the local optima is smoothed out, but many extrema still present. There are two important things to note here. Firstly, the minimum of the smooth loss function evaluated at different value of $K$ are relatively close to each other, and as $K$ increases, it approaches the 0--1 loss minimum. Secondly, although at high precision there is a lot of local optima in the shape of the smooth loss function, but the general trend is a valley-like or canyon-like shape. These notes give rise to the idea behind the smooth loss approximation approach, which has the following sketch:  
-
+This suggests the following iteratively unrelaxed optimization approach
+for zeroing in on the optimum 0--1 loss value:
 \begin{description}
 \setlength{\itemsep}{0cm}
 \setlength{\parskip}{0cm}
-\item[Step 1:] \hfill \\ Find the optimal solution, $\w^*$, of the smooth loss function corresponding to a small value of $K$ (e.g., $K=1$) in a wider range (radius) around some initially approximated value of $\w$. 
-\item[Step 2:] \hfill \\ Use the previously found optimal solution as the initial approximation to start the search for the new minimum of the smooth loss function corresponding to an increased precision constant $K$ (e.g., K=10, 100, \dots) and reduced search radius (e.g., by a half). This step is repeated again and again until a desired level of the precision has been reached (e.g., $K=1000$). 
-\item[Step 3:] \hfill \\ The last optimal solution, $\w^*$, found in Step 2, which is the one corresponding to the desired level of precision, is returned as the approximation to the optimal solution of 0--1 loss. 
+\item[Step 1:] \hfill \\ Find the optimal solution, $\w^*$, of the
+  smooth loss function corresponding to a small value of $K$ (e.g.,
+  $K=1$) in a wider range (radius) around some initially approximated
+  value of $\w$.
+\item[Step 2:] \hfill \\ Use the previously found optimal solution as
+  the initial approximation to start the search for the new minimum of
+  the smooth loss function corresponding to an increased precision
+  constant $K$ (e.g., K=10, 100, \dots) and reduced search radius
+  (e.g., by a half). This step is repeated again and again until a
+  desired level of the precision has been reached (e.g., $K=1000$).
+\item[Step 3:] \hfill \\ The last optimal solution, $\w^*$, found in
+  Step 2, which is the one corresponding to the desired level of
+  precision, is returned as the approximation to the optimal solution
+  of 0--1 loss.
 \end{description}
 
-This is, of course, just a very rough idea and many things need to be clarified. The most important thing is perhaps the range optimization process: given a precision constant $K$, a radius $R$, an initial guess $\w$, how to efficiently find the optimal solution, $\w^*$, of the corresponding smooth loss function? The algorithm for this is being detailed in the first subsection of the next section. Other things to be clarified are, for examples, how to determine the initial approximation in Step 1? What is the suitable way to increase the precision constant and reduce the search radius? These are being address in the second subsection of the next section, where the SLA algorithm is detailed. 
+This is, of course, just a very rough idea and many things need to be
+clarified. The most important thing is perhaps the range optimization
+process: given a precision constant $K$, a radius $R$, an initial
+guess $\w$, how to efficiently find the optimal solution, $\w^*$, of
+the corresponding smooth loss function?
 
-%=================================================
-\subsection{Smooth Loss Approximation Algorithm}
-\label{sec:sla.algorithm}
+All steps in the sketch of the smooth loss approximation algorithm
+given in the previous section repeatedly rely on a range optimization
+process, which is described as follows. Given a radius $R$, a
+precision constant $K$, and an initial value of $\w$, find the minimum
+of the smooth loss function evaluated with the given value of $K$ in
+the given radius $R$ around the given initial approximation $\w$. This
+subsection, therefore, aims at providing an algorithm tailored for
+this task.
 
-The previous section provided a sketch of the SLA algorithm and left some  some open problems to be answered. Among those, the range optimization process was identified as having a crucial importance to the  development of the SLA algorithm. This section, therefore, concretize the SLA algorithm firstly by providing a specialized algorithm for the range optimization process in the first subsection. The subsection after that, then, provides and discusses the detailed SLA algorithm.  
+Finding the exact minimum in the given range is hard.  Therefore, a
+specialized approximation algorithm is being proposed for the range
+optimization process. The proposing algorithm is a mixture of the
+gradient descent method \cite{Cauchy}, the pattern search method
+\cite{Hooke}, and the hill climbing heuristic. It, thus, possesses
+advantages of all these methods. This algorithm is detailed in
+Algorithm \ref{alg:sla.range}, and a step by step description is being
+given next.
 
-%===========================
-\subsubsection{Range Optimization}
-\label{ssec:sla.range}
-
-All steps in the sketch of the smooth loss approximation algorithm given in the previous section repeatedly rely on a range optimization process, which is described as follows. Given a radius $R$, a precision constant $K$, and an initial value of $\w$, find the minimum of the smooth loss function evaluated with the given value of $K$ in the given radius $R$ around the given initial approximation $\w$. This subsection, therefore, aims at providing an algorithm tailored for this task. 
-
-Note, that the smooth loss function is differentiable, but not convex. Moreover, there may be many local minima when the smoothness is low (i.e., when precision constant is high). Thus, finding the exact minimum in the given range is hard. So, an approximation will be given instead. There are a number of methods that can be used in this situation, such as simulated annealing \cite{Kirkpatrick}, or even genetic algorithm \cite{Goldberg}. These, however, are generic methods, which take a long time to find good approximation, and do not exploit the structure of the smooth loss function as discussed in the previous section. Therefore, a specialized approximation algorithm is being proposed for the range optimization process. The proposing algorithm is a mixture of the gradient descent method \cite{Cauchy}, the pattern search method \cite{Hooke}, and the hill climbing heuristic. It, thus, possesses advantages of all these methods. This algorithm is detailed in Algorithm \ref{alg:sla.range}, and a step by step description is being given next. 
-
-\begin{figure}
-\caption{
-Range Optimization Algorithm for Smooth Loss Function. \\
-\text{\hspace{2.1cm}} $Input$: Initial guess $\w$, precision constant $K$, radius $R$, step size $\epsilon_S$. \\
-\text{\hspace{2.1cm}} $Output$: Approx. optimal solution $\w^*$ corresp. to given parameters.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[tp!]
+\vspace{-3mm}
+\caption{\footnotesize
+Range Optimization for SLA.\hfill\;\\
+\text{\hspace{1.4cm}} $Input$: $\w$, $K$, radius $R$, step size $\epsilon_S$. \\
+\text{\hspace{1.4cm}} $Output$: Approx. optimal solution $\w^*$ 
 }
 \label{alg:sla.range}
+{\footnotesize
 \begin{algorithmic}[1]
-\Function{Gradient-Descent-in-Range}{$\w, K, R, \epsilon_S$} \Comment{returns $\w^*$}
+\Function{Grad-Desc-in-Range}{$\w, K, R, \epsilon_S$} 
 \Repeat
-   \Statex \Comment{{\bf Stage 1}: Use modified gradient descent to find a local minimum}
+   \Statex \Comment{{\bf Stage 1}: Find a local minimum \hfill$\qquad\qquad$ \;}
    \State $\w^* \gets \w$
    \Repeat
       \State $r \gets max_{rate}$
       \State $\w \gets (\w^* - r \nabla L_K(\w^*))$
-      \While{$(r \geq min_{rate}) \land (L_K(\w^*) - L_K(\w) < \epsilon_L) $}
+      \While{$(r \!\! \geq \!\! min_{rate}) \!\! \land \!\! (L_K(\!\w^*) \!\! - \!\! L_K(\w) \!\! < \!\! \epsilon_L) $}
          \State $r \gets 0.1 r$
          \State $\w \gets (\w^* - r\nabla L_K(\w^*))$
       \EndWhile
@@ -114,23 +102,24 @@ Range Optimization Algorithm for Smooth Loss Function. \\
          \State $\w^* \gets \w$
       \EndIf
    \Until{$(-\epsilon_G \preccurlyeq  \nabla L_K(\w^*) \preccurlyeq \epsilon_G) \lor (r < min_{rate})$}
-   \Statex \Comment{{\bf Stage 2}: Probe within radius $R$ to escape the local minimum}
+   \Statex \Comment{{\bf Stage 2}: Probe in radius $R$ to escape minimum}
    \For {$i=0$ to $D$}
-      \For{$step \in \{\epsilon_S, -\epsilon_S, 2\epsilon_S, -2\epsilon_S, \dots, R, -R \}$}
+      \For{$step \! \in \! \{\epsilon_S,\! -\epsilon_S, 2\epsilon_S,\! -2\epsilon_S, \dots, R, \! -R \}$}
          \State $\w \gets \w^*$  
          \State $w_i \gets w_i + step$
          \If{$L_K(\w^*) - L_K(\w) \geq \epsilon_L$}
-            \State {\bf break both for loops and repeat from step 3}
+            \State {\bf go to step 3}
          \EndIf       
       \EndFor
    \EndFor
-   \Statex
+%   \Statex
 \Until{$L_K(\w^*) - L_K(\w) < \epsilon_L$}
 \State \Return $\w^*$
 \EndFunction
-\end{algorithmic}
+\end{algorithmic}}
+\vspace{-4mm}
 \end{figure}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The following are some important notes to Algorithm
 \ref{alg:sla.range}. In the first process, the biggest possible value
@@ -152,40 +141,38 @@ which was given as input. This range optimization algorithm will be a
 major component of the SLA algorithm being introduced in the next
 subsection.
 
+The Smooth Loss Approximation (SLA) algorithm in
+Figure~\ref{alg:sla.algorithm} represents a detailed SLA algorithm,
+the step by step explanation of which is being given next.
 
-%===========================
-\subsubsection{SLA Algorithm}
-\label{ssec:sla.algorithm} 
-
-With the range optimization algorithm given in the previous
-subsection, the realization of the sketch of SLA algorithm provided in
-Section \ref{sec:sla.foundation} becomes quite easy. Algorithm
-\ref{alg:sla.algorithm} represents a detailed SLA algorithm, the step
-by step explanation of which is being given next.
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}
+\vspace{-3mm}
 \caption{
-SLA Algorithm for 0--1 Loss Approximation. \\
-\text{\hspace{2.1cm}} $Input$: Dataset of training data points $ \boldsymbol{X}$, their labelled class targets $\t$. \\
-\text{\hspace{2.1cm}} $Output$: Approximated optimal weight vector $\w^*$ minimizing 0--1 loss.
+Smooth 0--1 Loss Approximation (SLA). \\
+\text{\hspace{1.4cm}} $Input$: Training data $(\boldsymbol{X},\t)$. \\
+\text{\hspace{1.4cm}} $Output$: Weights $\w^*$ minimizing 0--1 loss.
 }
 \label{alg:sla.algorithm}
+{\footnotesize
 \begin{algorithmic}[1]
 \Function{Find-SLA-Solution}{$\X, \t$} \Comment{returns $\w^*$}
-   \State $\w^* \gets$ approximated weight vector given by a fast classifier
+   \State $\w^* \gets \w^*_{\mathit{SVM}}$ from SVM solution for $(\boldsymbol{X},\t)$
    \State $R \gets R0$
    \State $\epsilon_S \gets \epsilon_{S0}$
    \State $K \gets K_{MIN}$
    \While {$K \leq K_{MAX}$}
-      \State $\w^* \gets$ \Call{Grandient-Descent-in-Range}{$\w^*, K, R, \epsilon_S$}
+      \State $\w^* \gets$ \Call{Grad-Desc-in-Range}{$\w^*, K, R, \epsilon_S$}
       \State $K \gets r_K.K$
       \State $R \gets r_R.R$
       \State $\epsilon_S \gets r_\epsilon.\epsilon_S$
    \EndWhile
    \State \Return $\w^*$
 \EndFunction
-\end{algorithmic}
+\end{algorithmic}}
+\vspace{-4mm}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The input and output of Algorithm \ref{alg:sla.algorithm} is the same
 as for all other 0--1 loss optimization algorithms introduced in this
@@ -198,7 +185,7 @@ the step size $\epsilon_S$ to the values of given constants $R0$ and
 $\epsilon_{S0}$. In step 5, the precision constant is initialized to
 $1$, and the while loop in steps 6 to 11 ensures that $K$ is increased
 gradually until a desired precision level $K_{MAX}$ has been
-reached. Step 7 calls the {\sc Gradient-Descent-in-Range} function to
+reached. Step 7 calls the {\sc Grad-Desc-in-Range} function to
 optimize $\w^*$ in accordance with parameters $K, R, \epsilon_S$ and
 the initial approximation is the current value of $\w^*$. Steps 8, 9,
 10 then updates the parameters for the next loop. Specifically, $K$ is
@@ -209,24 +196,6 @@ step size must be reduced in each loop. When the precision constant
 $K$ has reached the required level of precision $K_{MAX}$, the loop
 terminates, and the value of $\w^*$ is returned as the best
 approximation to optimal solution of 0--1 loss optimization problem.
-
-\begin{figure}[here]
-\includegraphics[width=0.50\textwidth]{images/fig54_approxsumm.eps}
-\caption{ This plot compare the two approximation algorithm:
-  combinatorial search approximation (CSA) with SLA. For reference,
-  optimal solutions (Opt) returned by prioritized combinatorial search
-  is also displayed. The results shown are based on average value of
-  30 synthetic datasets with $N=150$ and $D=3$. The left plot shows
-  the average running times of CSA $(0.18 \pm 0.01)$, SLA $(0.45 \pm
-  0.26)$, and Opt $(28.66 \pm 0.24)$. The right plot shows the average
-  loss values of returned solutions of CSA $(29.13 \pm 4.34)$, SLA
-  $(29.13 \pm 4.75)$, and Opt $(28.33 \pm 4.32)$. It can be seen, that
-  SLA and CSA have very similar accuracy in approximation, and both
-  are quite close to the optimal solution. Figure
-  \ref{fig:sla.approxlosses}, a continuation of this figure, also
-  confirms this statement.  }
-\label{fig:sla.approxsumm}
-\end{figure}
 
 Sensible values for the constants given in Algorithm
 \ref{alg:sla.algorithm} are, for example, the followings:
@@ -253,99 +222,3 @@ given by running the prioritized combinatorial search as a
 reference. It can be seen from these figures, that CSA and SLA have
 very similar approximation accuracy, and both are quite close to the
 optimal solution.
-
-
-
-\begin{figure}[here]
-\includegraphics[width=0.50\textwidth]{images/fig55_approxlosses.eps}
-\caption{ This figure is a continuation of Figure
-  \ref{fig:sla.approxsumm} and shows the actual loss values of the
-  solutions returned by the corresponding algorithm for each of the 30
-  synthetically generated datasets. The green curve corresponds to the
-  optimal 0--1 loss value (determined by the prioritized combinatorial
-  search algorithm). The blue curve corresponds to the loss value
-  approximated by CSA, and the red curve by SLA. It can be seen that
-  in some tests, SLA is better, while in other tests CSA is better,
-  but the difference between these two are minimal, and on average
-  they have about a same accuracy.  }
-\label{fig:sla.approxlosses}
-\end{figure}
-
-\begin{figure}[here]
-\includegraphics[width=0.50\textwidth]{images/fig56_approxsumm.eps}
-\caption{ This figure compares the CSA and SLA algorithms using
-  synthetic datasets of larger size. Results shown here are average
-  value of tests on 30 datasets of size $N=5000$ and $D=8$. The right
-  plot shows that SLA and CSA have similar approximation
-  precision. The left plot, however, shows that the running time of
-  SLA $(1.09 \pm 0.54)$ is much lower than that of CSA $(13.72 \pm
-  0.77)$.  }
-\label{fig:sla.approxsumm2}
-\end{figure}
-
-As for the running time, CSA seems to outperform SLA in these tests as
-shown in the left plot of Figure \ref{fig:sla.approxsumm}. To decide
-this, a very similar test as the above was executed, except this time
-the synthetic datasets were much larger, with $N=5000$ and $D=8$. The
-constant $N'$ (to get initial best combination) of CSA was set to $2D$
-(=16). The results is shown in Figure \ref{fig:sla.approxsumm2}. The
-right plot, again, shows that both algorithms have very similar
-accuracy. The plot on the left, however, shows that the running time
-of SLA $(1.09 \pm 0.54)$ is significantly lower than that of CSA
-$(13.72 \pm 0.77)$. Clearly, regarding running time, SLA is much more
-efficient than CSA. This will also be confirmed analytically in the
-next section.
-
-
-%=================================================
-\subsection{Performance Analysis of SLA Algorithm}
-\label{sec:sla.performance}
-
-The last test in the previous section showed (by Figure
-\ref{fig:sla.approxsumm2}), that for bigger datasets, the running time
-of SLA is considerably lower than that of CSA. This section will,
-therefore examine the complexity of the SLA algorithm analytically,
-and then compare it with that of CSA algorithm.
-
-Firstly, the complexity of function {\sc Gradient-Descent-in-Range}
-given by Algorithm \ref{alg:sla.range} is inspected, because it is the
-major component of the SLA algorithm. It is hard to derive the average
-complexity of this algorithm analytically, but the worst case
-complexity is easier to analyze as follows. The loop at step 2 and
-step 4 repeats for maximally $N/\epsilon_L$ times, because the loss
-value is upper bounded by $N$, and in each repeat of these loops, the
-loss is reduced by at least $\epsilon_L$. Inside the loop at step 4,
-the calculation of the smooth loss function and its gradient takes
-time $O(ND)$, the while loop at step 7 repeats exactly
-$O(log(max_{rate} / min_{rate}))$, which is a constant. In the second
-part of this function, the two for loops at step 15, 16 repeat exactly
-$(D+1) (2R/\epsilon_S)$ times. Inside these for loops, the calculation
-of smooth loss function takes time $O(ND)$. Thus, the second part
-(steps 15 to 23) takes times $O(ND^2)$, because $(2R/\epsilon_S)$ is
-just a constant. So, all together, the function {\sc
-  Gradient-Descent-in-Range} takes time $O(N^2D^2)$ in the worst case
-(when the loop at step 2 repeats for $N$ times).
-
-Now, To identify the complexity of SLA algorithm, the code of
-Algorithm \ref{alg:sla.algorithm} is inspected as follows. In step 2,
-if linear SVM is used to give the initial approximation of $\w^*$, the
-complexity is $O(ND)$. Steps 3 -- 5 clearly take a constant time. The
-while loop at step 6 repeats for exactly $\log_{r_K} (K_{MAX} /
-K_{MIN})$ times. Inside this while loop, steps 8 -- 10 take a constant
-time, step 7 calls the function {\sc Gradient-Descent-in-Range}, which
-takes $O(N^2D^2)$ time. The whole algorithm is, therefore,
-$O(N^2D^2)$, because $\log_{r_K} (K_{MAX} / K_{MIN})$ -- the number of
-repeats of the while loop at step 6 -- is a constant.
-
-Clearly, comparing to the complexity $O(N^3D^2)$ of CSA algorithm, the
-complexity $O(N^2D^2)$ of SLA algorithm is much better. Note, that
-both these bounds are for the worst case scenario and the average
-performance should be much better, because in both cases, loops are
-broken immediately when a better solution is found. This statement is
-evidenced by Figure \ref{fig:sla.approxsumm2}, where it takes the SLA
-algorithm just slightly over a second, and CSA about 14 seconds, to
-solve problems of $N=5000$ and $D=8$, whereas a dummy loop that
-repeats just one operation $a = (2*3)/5.9$ for $N^2D^2 = 5000^28^2$
-times takes 408.16 seconds to finish, and for $N^3D^2 = 5000^38^2$ it
-would clearly takes about $2.10^6$ seconds.
-
