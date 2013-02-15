@@ -1,4 +1,4 @@
-\section{Branch and Bound Approach}
+\section{Branch and Bound}
 \label{cha:branchandbound}
 
 Branch and bound techniques (\BB)~\cite{bandb} are a staple of the
@@ -44,7 +44,7 @@ linear program (LP) solver to minimize $\sum_{i=1}^D w_i$
 \begin{figure}[t!]
 \vspace{-3mm}
 \caption{
-BnB Algorithm Combining All Heuristics. \\
+Branch and Bound Search (BnB).\hfill\; \\
 %\text{\hspace{2.15cm}} $Input$: Training data $(\boldsymbol{X},\t)$. \\
 %\text{\hspace{2.15cm}} $Output$: Weights $\w^*$ minimizing 0--1 loss.
 }
@@ -138,19 +138,19 @@ found leading to infeasibility.  We also use the sum of forced and
 assigned components of the loss vector as a lower bound for purposes
 of pruning suboptimal branches (lines 16 and 19).
 
-To detect whether a point $\boldsymbol{p} \in \R^D$ is an interior
-point of the convex hull created by other points $\boldsymbol{p_1,
-  p_2, \dots, p_k} \in \R^D$, we approach the problem using the
+To detect whether a point $\mathbf{p} \in \R^D$ is an interior
+point of the convex hull created by other points $\mathbf{p}_1,
+  \mathbf{p}_2, \dots, \mathbf{p}_k \in \R^D$, we approach the problem using the
 Barycentric coordinate system.  This approach says point
-$\boldsymbol{p}$ is an interior point of the convex hull created by
-points $\boldsymbol{p_1, p_2, \dots, p_k}$ if the homogeneous
-barycentric coordinates of $\boldsymbol{p}$ with respect to
-$\boldsymbol{p_1, p_2, \dots, p_k}$ are all non-negative. This is
+$\mathbf{p}$ is an interior point of the convex hull created by
+points $\mathbf{p}_1, \mathbf{p}_2, \dots, \mathbf{p}_k$ if the homogeneous
+barycentric coordinates of $\mathbf{p}$ with respect to
+$\mathbf{p}_1, \mathbf{p}_2, \dots, \mathbf{p}_k$ are all non-negative. This is
 equivalent to checking whether the following linear constraints
-over $\boldsymbol{u}$ are feasible (e.g., by calling an LP solver):
+over $\mathbf{u}$ are feasible (e.g., by calling an LP solver):
 $$
-u_i \geq 0 \text{ for } i = 1,2, \dots, k \land \sum_{i=1}^k u_i = 1 \land \sum_{i=1}^k u_i \boldsymbol{p_i} = \boldsymbol{p}. 
-$$ If a feasible $\boldsymbol{u}$ exists, then point $\boldsymbol{p}$ lies
-in the convex hull of points $\boldsymbol{p_1, p_2, \dots, p_k}$,
-otherwise it does not.
+u_i \geq 0 \text{ for } i = 1,2, \dots, k \land \sum_{i=1}^k u_i = 1 \land \sum_{i=1}^k u_i \mathbf{p}_i = \mathbf{p}. 
+$$ If a feasible $\mathbf{u}$ exists, then point $\mathbf{p}$
+lies in the convex hull of points $\mathbf{p}_1, \mathbf{p}_2, \dots,
+\mathbf{p}_k$, otherwise it does not.
 
