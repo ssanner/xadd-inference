@@ -1,4 +1,4 @@
-\begin{thebibliography}{20}
+\begin{thebibliography}{19}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -22,11 +22,6 @@ Cauchy, Augustin.
 \newblock M{\'e}thodes g{\'e}n{\'e}rales pour la r{\'e}solution des
   syst{\`e}mes d'{\'e}quations simultan{\'e}es.
 \newblock \emph{Comp. Rend. Sci. Paris}, 25:\penalty0 46--89, 1847.
-
-\bibitem[Coppersmith \& Winograd(1990)Coppersmith and Winograd]{Coppersmith}
-Coppersmith, D. and Winograd, S.
-\newblock Matrix multiplication via arithmetic progressions.
-\newblock \emph{J. Symbolic Computation}, 9(3):\penalty0 251--280, 1990.
 
 \bibitem[Cortes \& Vapnik(1995)Cortes and Vapnik]{Vapnik}
 Cortes, Corinna and Vapnik, Vladimir.
