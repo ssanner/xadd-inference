@@ -37,6 +37,10 @@
 % this with the following command.
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 
+%\COMMENT begins comment
+%\ENDCOMMENT ends comment
+\long\def\COMMENT#1\ENDCOMMENT{\message{(Commented text...)}\par}
+
 % Employ the following version of the ``usepackage'' statement for
 % submitting the draft version of the paper for review.  This will set
 % the note in the first column to ``Under review.  Do not distribute.''
