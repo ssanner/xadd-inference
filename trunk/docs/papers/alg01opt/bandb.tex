@@ -10,8 +10,11 @@ find an optimal 0--1 loss solution.
 Following from the definition of the training objective
 from~\eqref{eq:objective} w.r.t. 0--1 loss in~\eqref{eq:loss01},
 the 0--1 loss optimization problem can be written as
-$$L(\w) = \sum_{i=1}^N \mathbb{I} [t_i \w^T \xi \leq 0] = \sum_{i=1}^N l_i,$$ 
-where $l_i =\mathbb{I} [t_i \w^T \xi \leq 0]$ denotes the individual 0--1 loss of point $\xi$. We have
+\begin{equation}
+L(\w) = \sum_{i=1}^N \mathbb{I} [t_i \w^T \xi \leq 0] = \sum_{i=1}^N l_i, \label{eq:loss01_data}
+\end{equation}
+where $l_i =\mathbb{I} [t_i \w^T \xi \leq 0]$ denotes the individual
+0--1 loss of point $\xi$.  Then we have
 \[ \begin{split}
 l_i = 0 &\Leftrightarrow t_i \w^T \xi > 0 \\
 l_i = 1 &\Leftrightarrow t_i \w^T \xi \leq 0. \\
@@ -38,7 +41,7 @@ $w_0$ at either $1$ or $-1$\footnote{$w_0 = 0$ would imply the optimal
   practice.  Nonetheless $w_0 = 0$ could also be tested for
   completeness.} (whichever yields a feasible solution) and call a
 linear program (LP) solver to minimize $\sum_{i=1}^D w_i$ 
-(providing a unique solution) subject to the constraints of $\l^*$.
+(to obtain a unique solution) subject to the constraints induced by $\l^*$.
 
 %=================================================
 \begin{figure}[t!]
@@ -105,14 +108,14 @@ In Figure~\ref{alg:BnB.Final} we provide the full BnB algorithm that
 searches for the optimal $\l^*$ from~\eqref{eq:bb_obj}.  The key idea
 of the algorithm is to build a search tree of assignments while
 tracking the minimum loss solution $\w^*$ and value $loss_{min}$ to
-prune provably suboptimal branches of the search tree.  To make this
-algorithm efficient, we use the following heuristic improvements:
+prune provably suboptimal branches of the search.  To make this
+algorithm efficient, we propose the following heuristic improvements:
 
 \noindent \emph{Initial Bound Approximation:} In line 2, we run a fast
 SVM solver on the full data to obtain an initial best solution $\w^*$
 and $loss_{min}$.  Clearly this should prune a large portion of the
-search space and guarantees that \BB\ can only do as well as or better
-than the SVM.
+search space and guarantees that \BB\ will do at least as well as
+the SVM.
 
 \noindent \emph{Decision Ordering:} It is well-known that the ordering
 of decision and value assignments in \BB\ can drastically affect
@@ -138,19 +141,19 @@ found leading to infeasibility.  We also use the sum of forced and
 assigned components of the loss vector as a lower bound for purposes
 of pruning suboptimal branches (lines 16 and 19).
 
-To detect whether a point $\mathbf{p} \in \R^D$ is an interior
-point of the convex hull created by other points $\mathbf{p}_1,
-  \mathbf{p}_2, \dots, \mathbf{p}_k \in \R^D$, we approach the problem using the
-Barycentric coordinate system.  This approach says point
-$\mathbf{p}$ is an interior point of the convex hull created by
-points $\mathbf{p}_1, \mathbf{p}_2, \dots, \mathbf{p}_k$ if the homogeneous
-barycentric coordinates of $\mathbf{p}$ with respect to
-$\mathbf{p}_1, \mathbf{p}_2, \dots, \mathbf{p}_k$ are all non-negative. This is
-equivalent to checking whether the following linear constraints
-over $\mathbf{u}$ are feasible (e.g., by calling an LP solver):
+To detect whether a point $\p \in \R^D$ is an interior point
+of the convex hull created by other points $\p_1,
+\p_2, \dots, \p_k \in \R^D$, we approach the problem
+using the Barycentric coordinate system.  Then point $\p$ is
+an interior point of the convex hull created by points $\p_1,
+\p_2, \dots, \p_k$ if the homogeneous barycentric
+coordinates of $\p$ with respect to $\p_1,
+\p_2, \dots, \p_k$ are all non-negative. This is
+equivalent to checking whether the following linear constraints over
+$\mathbf{u}$ are feasible (e.g., by calling an LP solver):
 $$
-u_i \geq 0 \text{ for } i = 1,2, \dots, k \land \sum_{i=1}^k u_i = 1 \land \sum_{i=1}^k u_i \mathbf{p}_i = \mathbf{p}. 
-$$ If a feasible $\mathbf{u}$ exists, then point $\mathbf{p}$
-lies in the convex hull of points $\mathbf{p}_1, \mathbf{p}_2, \dots,
-\mathbf{p}_k$, otherwise it does not.
+u_i \geq 0 \text{ for } i = 1,2, \dots, k \land \sum_{i=1}^k u_i = 1 \land \sum_{i=1}^k u_i \p_i = \p. 
+$$ If a feasible $\mathbf{u}$ exists, then point $\p$
+lies in the convex hull of points $\p_1, \p_2, \dots,
+\p_k$, otherwise it does not.
 

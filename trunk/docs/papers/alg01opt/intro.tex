@@ -9,7 +9,7 @@ with better computational guarantees.  While hinge loss used in
 SVMs~\cite{Vapnik} and log loss used in logistic regression may be
 viewed as convex surrogates of the 0--1 loss that are computationally
 efficient to globally optimize~\cite{Bartlett}, such convex surrogate
-losses lead to the problem of outliers~\cite{wu07,outliers,Ding} as
+losses are not robust to outliers~\cite{wu07,outliers,Ding} as
 shown in Figure~\ref{fig:svm_failure}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -40,16 +40,16 @@ specifically for 0--1 loss:
 % decisions whose branches can be pruned -- but how is this different
 % from the current pruning method?
 \noindent\emph{Branch and bound:} We show this staple of search in the
-optimization literature proves effective with good initialization (via
-the SVM solution) plus informed decision ordering heuristics and a
+optimization literature proves effective with good initialization 
+plus informed decision ordering heuristics and a
 forward-checking technique for pruning implied decisions within the
-convex hull of existing decisions; this leads to an \emph{optimal}
-0--1 loss solution for hundreds of data points.
+convex hull of existing decisions; this yields an anytime approximation
+scheme with \emph{optimal} convergence guarantees.
 %\item 
 
 \noindent\emph{Combinatorial search:} We exploit the fact that there
 are only a finite number of equivalence classes of separating
-hyperplanes that can have different losses and propose both
+hyperplanes that can have different loss values and propose both
 prioritized systematic and heuristic search through combinations of
 data points that define these equivalence classes.  While systematic
 combinatorial search yields efficient optimal solutions on low

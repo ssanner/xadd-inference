@@ -1,4 +1,4 @@
-\begin{thebibliography}{19}
+\begin{thebibliography}{14}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -16,12 +16,6 @@ Ben-David, S., Eiron, N., and Long, P.M.
 \newblock On the difficulty of approximately maximizing agree- ments.
 \newblock \emph{J. Comput. System Sci.}, \penalty0 (66(3)):\penalty0 496--514,
   2003.
-
-\bibitem[Cauchy(1847)]{Cauchy}
-Cauchy, Augustin.
-\newblock M{\'e}thodes g{\'e}n{\'e}rales pour la r{\'e}solution des
-  syst{\`e}mes d'{\'e}quations simultan{\'e}es.
-\newblock \emph{Comp. Rend. Sci. Paris}, 25:\penalty0 46--89, 1847.
 
 \bibitem[Cortes \& Vapnik(1995)Cortes and Vapnik]{Vapnik}
 Cortes, Corinna and Vapnik, Vladimir.
@@ -51,22 +45,11 @@ Frank, A. and Asuncion, A.
   Computer Science., 2010.
 \newblock URL \url{http://archive.ics.uci.edu/ml}.
 
-\bibitem[Goldberg(1989)]{Goldberg}
-Goldberg, David~E.
-\newblock \emph{Genetic Algorithms in Search, Optimization, and Machine
-  Learning}.
-\newblock Kluwer Academic Publishers, Boston, MA, 1989.
-
 \bibitem[Hooke \& Jeeves(1961)Hooke and Jeeves]{Hooke}
 Hooke, R. and Jeeves, T.A.
 \newblock Direct search solution of numerical and statistical problems.
 \newblock \emph{Journal of the Association for Computing Machinery}, 8
   (2):\penalty0 212--229, 1961.
-
-\bibitem[Kirkpatrick et~al.(1983)Kirkpatrick, Gelatt, and Vecchi]{Kirkpatrick}
-Kirkpatrick, S., Gelatt, C.~D., and Vecchi, M.~P.
-\newblock Optimization by simulated annealing.
-\newblock \emph{Science}, 220 (4598):\penalty0 671--680, 1983.
 
 \bibitem[Land \& Doig(1960)Land and Doig]{bandb}
 Land, A.~H. and Doig, A.~G.
@@ -79,16 +62,12 @@ Long, Phil and Servedio, Rocco.
 \newblock \emph{Machine Learning Journal}, \penalty0 (78(3)):\penalty0
   287--304, 2010.
 
-\bibitem[Mangasarian \& Wolberg(1990)Mangasarian and Wolberg]{breast}
-Mangasarian, O.~L. and Wolberg, W.~H.
-\newblock Cancer diagnosis via linear programming.
-\newblock \emph{SIAM News}, 23\penalty0 (5):\penalty0 1 -- 18, September 1990.
-
-\bibitem[Marquardt(1963)]{Marquardt}
-Marquardt, Donald.
-\newblock An algorithm for least-squares estimation of nonlinear parameters.
-\newblock \emph{SIAM Journal on Applied Mathematics}, 11 (2):\penalty0
-  431--441, 1963.
+\bibitem[Masnadi-Shirazi \& Vasconcelos(2008)Masnadi-Shirazi and
+  Vasconcelos]{lossdesign}
+Masnadi-Shirazi, Hamed and Vasconcelos, Nuno.
+\newblock On the design of loss functions for classification: theory,
+  robustness to outliers, and savageboost.
+\newblock In \emph{NIPS}, 2008.
 
 \bibitem[McAllester(2007)]{McAllester}
 McAllester, David.
@@ -100,13 +79,6 @@ McAllester, David.
 Minka, Thomas.
 \newblock Expectation propagation for approximate bayesian inference.
 \newblock \emph{UAI}, pp.\  362--369, 2001.
-
-\bibitem[Steihaug(1983)]{Steihaug}
-Steihaug, Trond.
-\newblock The conjugate gradient method and trust regions in large scale
-  optimization.
-\newblock \emph{SIAM Journal on Numerical Analysis}, 20:\penalty0 626--637,
-  1983.
 
 \bibitem[Wu \& Liu(2007)Wu and Liu]{wu07}
 Wu, Y. and Liu, Y.

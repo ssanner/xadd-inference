@@ -3,7 +3,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[t!]
-\includegraphics[width=0.50\textwidth]{images/fig13_losses.eps}
+\hspace{-3mm} \includegraphics[width=0.50\textwidth]{images/fig13_losses.eps}
 \vspace{-8mm}
 \caption{ \footnotesize Different losses as a function of the margin.}
 \label{fig:losses}
@@ -58,7 +58,7 @@ and $\x = (1,x_1,\ldots,x_D)$ so that $f_{\w}(\x) = \w^T \x$.  In the
 and $\x = (x_1,\ldots,x_D)$ so that $f_{\w}(\x) = \w^T \x + w_0$.
 
 The \emph{training dataset} contains $N$ data vectors $\X =
-\{\boldsymbol{x_1, x_2, \dots, x_N}\}$ and their corresponding target
+\{\x_1, \x_2, \dots, \x_N\}$ and their corresponding target
 class $\t = \{t_1, t_2, \dots, t_N\}$. To measure the confidence of a
 class prediction for an observation $\xi \in \X$, the so--called
 \emph{margin} is defined as $m_i(\w) = t_i f_{\w}(x_i)$.  A margin
@@ -89,16 +89,16 @@ Some popular losses as a function of the margin are
 \end{eqnarray}}
 where $\mathbb{I}[\cdot]$ is the indicator function taking the value 1
 when its argument is true and 0 when false.  These losses are plotted
-in Figure~\ref{fig:losses}.  0--1 loss is robust to outliers because
-it is not affected by a misclassified point's distance from the
-margin, but this property also makes it non-convex; the squared,
-hinge, and log losses are not robust to outliers in this way since
-they clearly \emph{are} convex.  Squared loss is not an ideal loss for
-classification since it harshly penalizes a classifier for correct
-margin predictions $\gg 1$, unlike the other losses.  This leaves us
-with hinge loss as optimized in the SVM and log loss as optimized in
-logistic regression as two convex surrogates of 
-0--1 loss for later comparison.
+in Figure~\ref{fig:losses}.  0--1 loss is robust to outliers since it
+is not affected by a misclassified point's distance from the margin,
+but this property also makes it non-convex; the convex squared, hinge,
+and log losses are not robust to outliers in this way since their
+penalty does scale with the margin of misclassification.  Squared loss is
+not an ideal loss for classification since it harshly penalizes a
+classifier for correct margin predictions $\gg 1$, unlike the other
+losses.  This leaves us with hinge loss as optimized in the SVM and
+log loss as optimized in logistic regression as two convex surrogates
+of 0--1 loss for later empirical comparison.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
