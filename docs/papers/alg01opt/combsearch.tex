@@ -6,21 +6,22 @@ approach, which is illustrated by Figure~\ref{fig:cs_intro}. In short,
 we observe that the hyperplane passing through a set of $D$ points
 maps to an equivalance class of hyperplanes all with the same 0--1
 loss.  This suggests a simple combinatorial search algorithm to
-enumerate all $\choose{N}{D}$ representatives in order to find the one
-with minimal 0--1 loss.
+enumerate all $\binom{N}{D}$ hyperplane equivalence class representatives 
+to find the one with minimal 0--1 loss.
 
 \begin{figure}[here]
 \includegraphics[width=0.50\textwidth]{images/fig41_intro.eps}
-\caption{ \footnotesize This plot illustrates the basic idea behind
-  the combinatorial search approach. In the plot, {\bf H} is the
+\caption{ \footnotesize This plot illustrates the idea behind
+  the combinatorial search approach. {\bf H} is the
   optimal decision hyperplane to separate the two classes. {\bf H'} is
-  obtained from {\bf H} by tuning its direction with changing the 0--1
-  loss value, so that it goes through the two nearest points A and B.}
+  obtained from {\bf H} 
+  so that it goes through the two nearest points A and B
+  without changing the class assignments or loss value.}
 \label{fig:cs_intro}
 \end{figure}
 
-To formulate the approach discussed above, 
-recall that using homogenous notation, the 0--1 loss for $\xi$ is 
+To formulate the approach discussed above, we write 
+the 0--1 loss for $\xi$ in homogenous notation as follows:
 \begin{equation}\label{eq:loss}
 L(w_0,\w) = \sum_{i=1}^N \mathbb{I} [w_0 + t_i (\w^T \xi) < 0].
 \end{equation}
@@ -40,62 +41,56 @@ L(w_0,\w) = \sum_{i=1}^N \mathbb{I} [w_0 + t_i (\w^T \xi) < 0].
 %which is very rare in practice. Thus, it is reasonable to assume that
 %$w_0 \not= 0$. 
 As noted previously, if both $w_0$ and $w$ are scaled by $|w_0|$, the
-solution is unchanged.  To be more specific, there are two
-cases. First, if $w_0>0$, then the loss function is:
-\[ \begin{split}
+solution is unchanged.  Specifically, there are two
+cases: first, if $w_0>0$, then the loss function is:
+\begin{align*}
 L(w_0,\w) &= \sum_{i=1}^N \mathbb{I} [w_0 + t_i (\w^T \xi) < 0] \\
 &=\sum_{i=1}^N \mathbb{I} [t_i (\frac{w_0}{|w_0|} + \frac{1}{|w_0|}\w^T \xi) < 0]  \\
-&= \sum_{i=1}^N \mathbb{I} [t_i (1 + \w'^T \xi) < 0] \\
-&= L(1, \w'),\\
-\end{split} \]
+&= \sum_{i=1}^N \mathbb{I} [t_i (1 + \w'^T \xi) < 0] = L(1, \w')
+\end{align*}
 where $\w'$ is defined as $\w' = \frac{1}{w_0}\w$. The equation of the
 decision hyperplane is as follows:
-\[ \begin{split} 
-&w_0 + \w^T\boldsymbol{x} = 0 \\
-\Leftrightarrow \quad
-&\frac{w_0}{|w_0|} + \frac{1}{|w_0|} \w^T \boldsymbol{x}  = 0 \\ \Leftrightarrow \quad
-&1 + \w'^T \boldsymbol{x} = 0
-\end{split} \]
+\begin{align*}
+w_0 + \w^T\x = 0 \; & \Leftrightarrow \; \frac{w_0}{|w_0|} + \frac{1}{|w_0|} \w^T \x  = 0 \\ 
+& \Leftrightarrow \; 1 + \w'^T \x = 0
+\end{align*}
 Second, if $w_0 < 0$, then $\w' = \frac{1}{w_0}\w = -\frac{1}{|w_0|}\w$, and the loss function is 
-\[ \begin{split}
+\begin{align*}
 L(w_0,\w) &= \sum_{i=1}^N \mathbb{I} [w_0 + t_i (\w^T \xi) < 0] \\
 &=\sum_{i=1}^N \mathbb{I} [t_i (\frac{w_0}{|w_0|} + \frac{1}{|w_0|}\w^T \xi) < 0]  \\
 &= \sum_{i=1}^N \mathbb{I} [t_i (-1 - \w'^T \xi) < 0] 
-= L(-1, -\w'),\\
-\end{split} \]
+= L(-1, -\w'),
+\end{align*}
 and the equation of the decision hyperplane is 
-\[ \begin{split} 
-&w_0 + \w^T\boldsymbol{x} = 0 \\
-\Leftrightarrow \quad
-&\frac{w_0}{|w_0|} + \frac{1}{|w_0|} \w^T \boldsymbol{x}  = 0 \\ \Leftrightarrow \quad
-&-1 - \w'^T \boldsymbol{x} = 0 \\
-\Leftrightarrow \quad
-&1 + \w'^T \boldsymbol{x} = 0
-\end{split} \]
-It can be seen, that the equation of the decision hyperplane ($1 +
-\w'^T \boldsymbol{x} = 0$) is the same in both cases, and the loss
+\begin{align*}
+w_0 + \w^T\x = 0 \; & \Leftrightarrow \; \frac{w_0}{|w_0|} + \frac{1}{|w_0|} \w^T \x  = 0 \\& \Leftrightarrow \; -1 - \w'^T \x = 0 \; \Leftrightarrow \; 1 + \w'^T \x = 0
+\end{align*}
+It can be seen that the equation of the decision hyperplane ($1 +
+\w'^T \x = 0$) is the same in both cases, and the loss
 function is either $L(1, \w')$ or $L(-1, -\w')$, i.e., the bias term
 is now a either $1$ or $-1$. As shall be
 seen next, this fact is critically important for the purpose of the
-combinatorial search approach. The discussion at the beginning of this
-section pointed out, that to find the optimal solution, it suffices to
+combinatorial search approach. As the initial discussion 
+pointed out, to find the optimal solution, it suffices to
 check all hyperplanes that go through $D$ points of the training
 dataset and find the one that has minimum 0--1 loss. So, assuming
-$\boldsymbol{x_1}, \dots, \boldsymbol{x_D}$ are (any) $D$ distinct
+$\x_1, \dots, \x_D$ are (any) $D$ distinct
 data points from the training dataset, then for the combinatorial
 search to work, the two following tasks must be solved:
-\begin{itemize}
-\item Find the weight vector $\w'=(w'_1, \dots, w'_D)^T$ of the
+%\begin{enumerate}
+%\item 
+(1) Find the weight vector $\w'=(w'_1, \dots, w'_D)^T$ of the
   decision hyperplane that goes through these $D$ selected points.
-\item Calculate the 0--1 loss value corresponding to $\w'$.
-\end{itemize}
+%\item 
+(2) Calculate the 0--1 loss value corresponding to $\w'$.
+%\end{enumerate}
 
 For the first task, because the hyperplane goes through the given $D$
 data points, at each point the hyperplane equation must be
 satisfied. So,
 $$ 1+ \w'^T\xi = 0, \quad\quad \text{for } i = 1, 2, \dots, D.$$
 Now, let $A$ be a matrix, whose rows are formed by these points: 
-$A =(\boldsymbol{x_1}\; \boldsymbol{x_2}\; \dots \; \boldsymbol{x_D})^T$,
+$A =(\x_1\; \x_2\; \dots \; \x_D)^T$,
 then the weight vector $\w'$ must satisfy the following matrix equation 
 \begin{equation}\label{eq:matrix}
 \boldsymbol{1} + A \w' = 0 \Longrightarrow \w' = -A^{-1}\boldsymbol{1},
@@ -103,12 +98,12 @@ then the weight vector $\w'$ must satisfy the following matrix equation
 where $\boldsymbol{1}$ is the unit vector in $\R^D$, because each row
 of this matrix equation corresponds to an equation for one point given
 above. Here, one sees that if the bias term $w_0$ was still present,
-the above equation would be undetermined.
+the above equation would be underdetermined.
 
 Now, with $\w'$ specified, the second task becomes easy, as the 0--1
 loss value is obviously the smaller value of $L(1,\w')$ and $L(-1,
 -\w')$. Thus, if $L(1,\w') \leq L(-1,-\w')$, the 0--1 loss value
-corresponding to decision hyperplane $1+\w'^T\boldsymbol{x} = 0$ is
+corresponding to decision hyperplane $1+\w'^T\x = 0$ is
 $L(1,\w')$, and the solution vector (including bias and weights) is
 $(1, \w')$, otherwise, the 0--1 loss value is $L(-1,-\w')$, and the
 solution vector is $(-1,-\w')$.
@@ -123,30 +118,29 @@ exploits the fact that combinations of data points lying closer to an
 initial approximated decision hyperplane (e.g., given by an SVM) are
 more likely to produce the optimal hyperplane than combinations of
 points lying far away.  The algorithm in
-Figure~\ref{alg:cs.prioritized} captures the above idea by considering
+Figure~\ref{alg:cs.prioritized} captures this idea by considering
 combinations of $D$ points in the increasing order of their distance
-to the approximated decision hyperplane, where the distance of a set
-of points is the minimal distance from these points to the
-approximated decision hyperplane. We remark that in the worst case,
-this algorithm can find an optimal solution in $O(D^3 \choose{N}{D})$ 
-time ($\choose{N}{D}$ iterations requiring a $D \times D$ matrix inversion)
-and observe that for small $D$, this will be much more efficient than \BB.
+to the approximated decision hyperplane, where the distance of a \emph{set}
+of points to a hyperplane is the minimal distance of points in the set.  PCS
+can find an optimal solution in $O(D^3 \binom{N}{D})$ 
+time ($\binom{N}{D}$ iterations requiring a $D \times D$ matrix inversion),
+which can be much more efficient than \BB\ for small $D$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[tp!]
 \vspace{-3mm}
 \caption{
 Prioritized Combinatorial Search (PCS).\hfill\; \\
-\text{\hspace{1.4cm}} $Input$: Training data $(\boldsymbol{X},\t)$. \\
+\text{\hspace{1.4cm}} $Input$: Training data $(\x,\t)$. \\
 \text{\hspace{1.4cm}} $Output$: Weights $\w^*$ minimizing 0--1 loss.
 }
 \label{alg:cs.prioritized}
 {\footnotesize 
 \begin{algorithmic}[1]
 \Function{Find-Optimal-01Loss-Solution}{$\X, \t$} \Comment{returns $\w^*$}
-\State $\w^* \gets \w^*_{\mathit{SVM}}$ from SVM solution for $(\boldsymbol{X},\t)$
+\State $\w^* \gets \w^*_{\mathit{SVM}}$ from SVM solution for $(\x,\t)$
 \State $loss_{min} \gets$ 0--1 loss implied by $\w^*$
-\State $\boldsymbol{i} \gets$ indices of $\xi$ ordered by $|{\w^*}^T\boldsymbol{x_k}|$, for $k=1..N$.
+\State $\boldsymbol{i} \gets$ indices of $\xi$ ordered by $|{\w^*}^T\x_k|$, for $k=1..N$.
 \State $\p \gets [1,2,\dots,D]$
 \Comment{first combination of $D$ points}
 \While{$\p \not= \emptyset$}
@@ -184,7 +178,7 @@ Prioritized Combinatorial Search (PCS).\hfill\; \\
 \vspace{-3mm}
 \caption{
 Combinatorial Search Approximation (CSA).\hfill \; \\
-%\text{\hspace{2.1cm}} $Input$: Dataset of training data points $ \boldsymbol{X}$, their labelled class targets $\t$. \\
+%\text{\hspace{2.1cm}} $Input$: Dataset of training data points $ \x$, their labelled class targets $\t$. \\
 %\text{\hspace{2.1cm}} $Output$: Optimal weight vector $\w^*$ minimizing 0--1 loss.
 }
 \label{alg:cs.approximation}
@@ -192,7 +186,7 @@ Combinatorial Search Approximation (CSA).\hfill \; \\
 \begin{algorithmic}[1]
 \Function{Approximate-01Loss-Solution}{$\X, \t$} \Comment{returns $\w^*$}
 \State $\w^* \gets$ approximated weight vector given by an SVM
-\State $\boldsymbol{i} \gets$ indices of points ordered by $|{\w^*}^T\boldsymbol{x_k}|$, for $k=1, \dots, N$.
+\State $\boldsymbol{i} \gets$ indices of points ordered by $|{\w^*}^T\x_k|$, for $k=1, \dots, N$.
 \State $(\p, \w^*, loss_{min}) \gets$ \Call{Get-Best-Initial-Solution}{$30$}
 \Loop
    \For {$k=1$ to $N$}
@@ -237,9 +231,9 @@ Combinatorial Search Approximation (CSA).\hfill \; \\
 \noindent \emph{Combinatorial Search Approximation (CSA)}: Rather than
 systematically enumerating all combinations as in prioritized search,
 we start from an initial ``best'' combination of $D$ points near an
-approximated decision hyperplane given by an SVM, then at each
-iteration, we swap two points $(\boldsymbol{x_k, x_j})$ in/out of the
+approximated decision hyperplane (e.g., given by an SVM), then at each
+iteration, we swap two points $(\x_k, \x_j)$ in/out of the
 current combination. The algorithm stops when it cannot find any more
 points to swap.  We do not present the full algorithm here due to
 space limitations but note that it is a slight variation on PCS 
-discussed previously.
+in Figure~\ref{alg:cs.prioritized}.
