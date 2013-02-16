@@ -1,4 +1,4 @@
-\section{Branch and Bound}
+\section{Branch and Bound for 0--1 Loss}
 \label{cha:branchandbound}
 
 Branch and bound techniques (\BB)~\cite{bandb} are a staple of the
@@ -135,7 +135,7 @@ points \emph{within} the convex hull defined by the set of $\x_i$
 assigned true in $\l$ are implied to be true and similarly for the
 false case.  Hence at every branch of \BB\ we utilize the technique of
 \emph{forward checking} by calling \textsc{Propagate-Loss} (lines 15
-abd 19) to augment $\l$ with any implied assigments that prune future
+and 19) to augment $\l$ with any implied assigments that prune future
 search steps or to detect whether an assignment conflict has been
 found leading to infeasibility.  We also use the sum of forced and
 assigned components of the loss vector as a lower bound for purposes
