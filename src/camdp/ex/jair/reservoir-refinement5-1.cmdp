@@ -1,0 +1,49 @@
+cvariables (x1 x2)
+min-values (-10000000 -10000000)
+max-values (10000000 10000000)
+bvariables ()
+ivariables()
+avariables(e)
+
+action drain (0 <= e<= 10)
+
+x1' ([400 * e + x1 -700 * e + 500 * e])
+x2' ([400 * e + x2 - 500 * e])
+
+reward 	([x1'<=4500]
+				([x2'<=4500]
+					([x1'>=200]
+						([x2'>=200]
+							
+												([e])
+												([-Infinity] ))
+											([-Infinity]))
+									([-Infinity] ))
+								([-Infinity]))					
+										
+												
+					
+endaction
+
+action no-drain (0 <= e <= 10)
+
+x1' ([400 * e + x1 -700 * e])
+x2' ([400 * e + x2])
+
+reward 	([x1'<=4500]
+				([x2'<=4500]
+					([x1'>=200]
+						([x2'>=200]
+						
+												([0])
+												([-Infinity] ))
+											([-Infinity]))
+									([-Infinity] ))
+								([-Infinity]))					
+							
+					
+endaction
+
+
+discount 1.000000
+iterations 12
