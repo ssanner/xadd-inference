@@ -1,0 +1,22 @@
+cvariables (x)
+min-values (0)
+max-values (200)
+bvariables (d)
+ivariables()
+avariables(a)
+
+action order (0 <= a <= 200)
+
+x' ([-50 + x + a])
+		
+reward  ([x<=100]
+			([x >= 50]
+					([50 - 0.1 * a - 0.05 * x ])
+					([x - 0.1 * a -0.05 * x] ))
+			([-100 - 0.1 * a -0.05 * x]))
+			
+endaction
+
+discount 1.000000
+iterations 12
+
