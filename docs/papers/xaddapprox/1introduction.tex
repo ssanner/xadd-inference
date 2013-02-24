@@ -1,5 +1,5 @@
 % XADD Approximation
-Recently, symbolic dynamic programming (SDP) ~\cite{sanner_uai11} have provided exact solutions for mixed discrete and continuous (hybrid) MDPs with piecewise linear dynamics and continuous actions\cite{zamani12}. The use of symbolic representation for functions in planning requires an efficient representation of dependencies, therefore an appropriate data structure was necessary. So this recent works provided a gain in compactness by extending Decision Diagrams to represent symbolic piecewise functions, creating the extended algebraic decision diagram (XADD). Using XADDs for efficient storage and manipulation of case based functions SDP methods have been able to solve problems such as multivariate inventory control for which exact solutions were previously considered intractable. Nevertheless, case representation and the symbolic XADD-based solutions are still quite sensitive to increase in the problem size, which can generally lead to exponential number of partitions. This lead for the motivating question of this work, whether XADDs efficiently compressed by approximation within fixed error bounds.
+Recently, symbolic dynamic programming (SDP) ~\cite{sanner_uai11} have provided exact solutions for Hybrid (mixed discrete and continuous) Markov Decision Processes (HMDPs) with piecewise linear dynamics and continuous actions\cite{zamani12}. The use of symbolic representation for functions in planning requires an efficient representation of dependencies, therefore an appropriate data structure was necessary. So this recent works provided a gain in compactness by extending Decision Diagrams to represent symbolic piecewise functions, creating the extended algebraic decision diagram (XADD). Using XADDs for efficient storage and manipulation of case based functions SDP methods have been able to solve problems such as multivariate inventory control for which exact solutions were previously considered intractable. Nevertheless, case representation and the symbolic XADD-based solutions are still quite sensitive to increase in the problem size, which can generally lead to exponential number of partitions. This lead for the motivating question of this work, whether XADDs efficiently compressed by approximation within fixed error bounds.
 
  A natural example of a piecewise linear function that can be approximated very efficiently is a regular difference step function, as the one in picture \ref{fig:stepf}. For this function it seems clear that with a small error, in this particular case, independent of the number of partitions, a much simpler representation can be achieved by modifying the linear function and merging the regions. We would like to represent it in a single partition as in figure \ref{fig:steptolin}. So our problem became of how automatically discovering appropriate linear functions that can replace the original functions in more than one partition while incurring minimal error. It is important to note that our merging strategy involves calculating a new linear function, that can optimally approximate the two previous linear functions in their corresponding regions but may be of a reasonably distinct kind, for instance it may not be obtainable as a linear combination of the original case functions.
  
@@ -7,7 +7,7 @@ The problem we discovered turned to be a piecewise bilinear saddle optimization,
 the use of efficient linear program solvers and enables a novel class
 of bounded approximate SDP algorithms based on XADD compression.
 
-The gain in efficiency allows solution of many larger problems where exact SDP would be intractable. Moreover, this algorithm performs approximation with bounded error guarantees which is another innovattion for Hybrid MDP solutions.
+The gain in efficiency allows solution of many larger problems where exact SDP would be intractable. Moreover, this algorithm performs approximation with bounded error guarantees which is another innovation for HMDP solutions.
 
 \begin{figure}[!ht]
 \centering
@@ -26,5 +26,7 @@ The gain in efficiency allows solution of many larger problems where exact SDP w
 }
 \end{minipage}
 \caption{A step function can be much more compactly represented by a line that spans all partitions}
- \label{steppair1}
+ \label{stepfunfig}
 \end{figure}
+
+The paper is organized as follows: Section 2 describes the symbolic functions and the data structure used to compactly represent them; Section 3 describes the main approximation algorithm for piecewise linear symbolic functions; Section 4 explains the bounded error approximate SDP planner for HMDPs; Section 5 describes our experimental results comparing our planner to exact solvers; Section 6 contains a brief overview of related work on solutions to HMDPs and Section 7 contains the conclusions.

@@ -15,7 +15,7 @@ x' &= x +a_x\\
 R & = \begin{cases} \\
 (tp1') \wedge (\neg tp1) \wedge (x > 50) &: 40 - 0.2*(x -50)\\
 (tp1') \wedge (\neg tp1) \wedge (x < 50) &: 40 - 0.2*(50-x)\\
-(tp1') \wedge ( tp1) &:  1.1\\
+(tp1') \wedge ( tp1) &:  0.0\\
 else & -2\\
 \end{cases} &
 \end{align*}}
@@ -29,7 +29,7 @@ else & -2\\
 
 
 
-\MarsRoverBi: In this version of \MarsRover there are no picture points as goals but the rover is expected to follow a path.In this the position is represented by a pair or continuous variables $(x,y)$. There is only one action, $move(a_x,a_y)$, where $|a_x|$ <10 and $|a_x|$ <10. The increasing valueof $x$ and keeping $y$ close to zero is reward 
+\MarsRoverBi: In this version of \MarsRover there are no picture points as goals but the rover is expected to follow a path. In this the position is represented by a pair or continuous variables $(x,y)$. There is only one action, $move(a_x,a_y)$, where $|a_x|$ <10 and $|a_x|$ <10. The increasing value of $x$ and keeping $y$ close to zero is reward 
 
 {\footnotesize
 \begin{align*}
