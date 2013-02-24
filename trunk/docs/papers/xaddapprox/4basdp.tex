@@ -1,53 +1,27 @@
-\label{sec:csamdp}
+\label{sec:basdp}
+We propose an approximate HMDP planner based on Symbolic Dynamic Programming that uses the XADD data structure and its efficient approximation to solve problems that couldn't solved exactly. We begin by formalizing a Hybrid MDP.
 
-%We first introduce our restricted class of 
-%continuous state and action Markov decision
-%processes (CSA-MDPs) followed by a description
-%of the mathematical solution of such problems.
+\subsection{Hybrid Markov Decision Processes (HMDPs) }
+In HMDPs, states are represented by variable assignments. We assume a vectors of variables
+$(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where each $b_i \in \{ 0,1 \}$ ($1 \leq i \leq n$) is boolean$\,$ and each $x_j \in \mathbb{R}$ ($1 \leq j \leq m$) is continuous. We also assume a finite set of $p$ parametrized actions $A = \{ a_1(\vec{y}_1), \ldots, a_p(\vec{y}_p) \}$, where $\vec{y}_k \in \mathbb{R}^{|\vec{y}_k|}$ ($1 \leq k \leq p$) denote continuous parameters for action $a_k$.
 
-%\subsection{Factored Representation}
-
-In our hybrid MDPs, states are represented by vectors of variables
-$(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$.  We assume
-that each $b_i \in \{ 0,1 \}$ ($1 \leq i \leq n$) is boolean$\,$
-and each $x_j \in \mathbb{R}$ ($1 \leq j \leq
-m$) is continuous.  We also assume a finite set of $p$ actions $A = \{
-a_1(\vec{y}_1), \ldots, a_p(\vec{y}_p) \}$, where 
-$\vec{y}_k \in \mathbb{R}^{|\vec{y}_k|}$ ($1
-\leq k \leq p$) denote continuous parameters for 
-action $a_k$.
-
-A hybrid MDP model requires the following: (i) a joint state transition model
+A HMDP model also requires the following: (i) a joint state transition model
 $P(\vec{b}',\vec{x}'|\cdots,a,\vec{y})$, which specifies the
 probability of the next state $(\vec{b}',\vec{x}')$ conditioned on a
 subset of the previous and next state and action $a(\vec{y})$; (ii) a
 reward function $R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}')$, which specifies the
 immediate reward obtained by taking action $a(\vec{y})$ in state
-$(\vec{b},\vec{x})$ and reaching state $(\vec{b}',\vec{x}')$; and (iii) a discount factor $\gamma, \; 0 \leq
-\gamma \leq 1$.
-%\footnote{If time is explicitly included as one of the
-%continuous state variables, $\gamma = 1$ is typically used, unless
-%discounting by horizon (different from the state variable time) is
-%still intended.}  
+$(\vec{b},\vec{x})$ and reaching state $(\vec{b}',\vec{x}')$; and (iii) a discount factor $\gamma, \; 0 \leq \gamma \leq 1$.
+
 A policy $\pi$ specifies the action $a(\vec{y}) =
 \pi(\vec{b},\vec{x})$ to take in each state $(\vec{b},\vec{x})$.  Our
 goal is to find an optimal sequence of finite horizon-dependent
-policies
-%\footnote{We assume a finite horizon $H$ in this
-%paper, however in cases where our SDP algorithm converges
-%in finite time, the resulting value function and 
-%corresponding policy are optimal for $H=\infty$. 
-% For finitely bounded value
-%with $\gamma = 1$, the forthcoming SDP algorithm may terminate in
-%finite time, but is not guaranteed to do so; for $\gamma < 1$, an
-%$\epsilon$-optimal policy for arbitrary $\epsilon$ can be computed by
-%SDP in finite time.
-%} 
-$\Pi^* = (\pi^{*,1},\ldots,\pi^{*,H})$ that
+policies $\Pi^* = (\pi^{*,1},\ldots,\pi^{*,H})$ that
 maximizes the expected sum of discounted rewards over a horizon $h \in
 H; H \geq 0$:
+
 \begin{align}
-V^{\Pi^*}(\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| \vec{b}_0,\vec{x}_0 \right]. \label{eq:vfun_def}
+V^{\Pi^*}(\vec{b},\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| (\vec{b}_0,\vec{x}_0) \right]. \label{eq:vfun_def}
 \end{align}
 Here $r^h$ is the reward obtained at horizon $h$ following $\Pi^*$ where 
 we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
@@ -68,10 +42,15 @@ P(\vec{b}',\vec{x}'|\vec{b},\vec{x},a,\vec{y}) =
 \prod_{k=1}^{n+m} P(v_k'| \vec{b},\vec{x}, \vec{v}'_{<k}, a,\vec{y}) \nonumber %\label{eq:dbn} 
 \end{equation}}
 where $\vec{v}'_{<k} = ( v'_1,\ldots, v'_{k-1}), 1\leq k \leq n+m$
-% can always linearize a quadratic decision (give example), 
-% more general reward: parameterized quadratically constrained 
-%   quadratic programs
-% transition: stochasticity would mean int_n V(x,n) (= { x + n) P(n)
+
+TODO: Illustrate MDP,DBN, with variable ordering fig~\ref{fig:hmdp}?
+
+\begin{figure}[h!t]
+\center
+\fbox{\includegraphics[scale=0.4]{Figures/xadds/samplexadd.eps} }
+\caption{ Example of HMDP dynamic.}
+\label{fig:hmdp} 
+\end{figure}
 
 The conditional probabilities functions $P(b_i'=v_{k_i}'|\vec{b},\vec{x},\vec{v}'_{<{k_i}},a,\vec{y})$ for \emph{binary} variables $b_i$ ($1 \leq i \leq n$) can condition on state and action variables.  
 
@@ -113,7 +92,7 @@ is essential for our approximation and efficient representation.
 
 \label{sec:soln}
 
-The algorithm we use for solving hybrid MDPs, is an approximate version of the continuous state and action generalization of {\it value iteration}~\cite{bellman}, proposed by ~\cite{zamani12}.  which is a dynamic programming algorithm for constructing optimal policies.  It proceeds by constructing a series of $h$-stage-to-go optimal value functions $V^h(\vec{b},\vec{x})$.
+The algorithm we use for solving HMDPs, is an approximate version of the continuous state and action generalization of {\it value iteration}~\cite{bellman}, which is a dynamic programming algorithm for constructing optimal policies.  It proceeds by constructing a series of $h$-stage-to-go optimal value functions $V^h(\vec{b},\vec{x})$.
 Initializing $V^0(\vec{b},\vec{x}) = 0$) we define the quality
 $Q_a^{h}(\vec{b},\vec{x},\vec{y})$ of taking action $a(\vec{y})$ in state
 $(\vec{b},\vec{x})$ and acting so as to obtain $V^{h-1}(\vec{b},\vec{x})$ thereafter as the following:
@@ -137,6 +116,37 @@ determined via $\pi^{*,h}(\vec{b},\vec{x}) = \argmax_{(a, \vec{y} )} Q^h_a(\vec{
 value iteration can terminate at horizon $h$ if $V^{h} = V^{h-1}$;
 then $V^\infty = V^h$ and $\pi^{*,\infty} = \pi^{*,h}$.
 
-From this \emph{mathematical} definition of the algorithm, we proceed to
-show how to \emph{compute}~\eqref{eq:qfun} and \eqref{eq:vfun} 
-for hybrid MDPs.
+Here we show the code of the SDP algorithm, Alg.~\ref{alg:vi}. The function Regress computes the result of equation~\ref{eq:qfun}, we note that all the operations involved, namely multiplication, integration of continuous $\delta$ functions and marginalization of boolean variables, are defined XADDs. Due to lack of space, its implementation is omitted and we refer to \cite{zamani12} for a precise description of these operations.
+
+\incmargin{.5em}
+\linesnumbered
+\begin{algorithm}[th!]
+\vspace{-.5mm}
+\dontprintsemicolon
+\SetKwFunction{regress}{Regress}
+\SetKwFunction{approximate}{Approximate}
+\Begin{
+   $V^0:=0, h:=0$\;
+   \While{$h < H$}{
+       $h:=h+1$\;
+       \ForEach {$a(\vec{y}) \in A$}{
+              $Q_a^{h}(\vec{y})\,:=\,$\regress{$V^{h-1},a,\vec{y}$}\;
+              $Q_a^{h} := \max_{\vec{y}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// Continuous $\max$}\;
+              $V^{h} := \casemax_a \, Q_a^{h}$ $\,$ \emph{// $\casemax$ all $Q_a$}\;
+              $\pi^{*,h} := \argmax_{(a,\vec{y})} \, Q_a^{h}(\vec{y})$\;
+       }
+       $V^h = $\approximate{$V^{h}$}\; \label{approxline}
+       \If{$V^h = V^{h-1}$}
+           {break $\,$ \emph{// Terminate if early convergence}\;}
+   }
+     \Return{$(V^h,\pi^{*,h})$} \;
+}
+\caption{\footnotesize \texttt{VI}(Hybrid-MDP, $H$) $\longrightarrow$ $(V^h,\pi^{*,h})$ \label{alg:vi}}
+\vspace{-1mm}
+\end{algorithm}
+\decmargin{.5em}
+
+
+\subsection{Bounded Approximate SPD}
+We will now properly define the Hybrid MDP planing algorithm described in this paper. The SDP algorithm~\ref{alg:vi} was modified from its original exact version by the addition of line \ref{approxline} which uses the algorithm~\ref{alg:approx}, responsible for collecting the cases and making the global approximation by combining the successive pairwise merges.
+

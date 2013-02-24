@@ -34,11 +34,6 @@ Zhengzhu Feng, Richard Dearden, Nicolas Meuleau, and Richard Washington.
 \newblock In {\em Uncertainty in Artificial Intelligence ({UAI-04})}, pages
   154--161, 2004.
 
-\bibitem{spudd}
-Jesse Hoey, Robert St-Aubin, Alan Hu, and Craig Boutilier.
-\newblock {SPUDD}: Stochastic planning using decision diagrams.
-\newblock In {\em {UAI-99}}, pages 279--288, Stockholm, 1999.
-
 \bibitem{hao09}
 Nicolas Meuleau, Emmanuel Benazera, Ronen~I. Brafman, Eric~A. Hansen, and
   Mausam.
@@ -52,6 +47,11 @@ Scott Sanner, Karina~Valdivia Delgado, and Leliane~Nunes {de Barros}.
 \newblock Symbolic dynamic programming for discrete and continuous state mdps.
 \newblock In {\em Proceedings of the 27th Conference on Uncertainty in {AI}
   ({UAI-2011})}, Barcelona, 2011.
+
+\bibitem{apricodd}
+Robert St-Aubin, Jesse Hoey, and Craig Boutilier.
+\newblock {APRICODD}: Approximate policy construction using decision diagrams.
+\newblock In {\em {NIPS-2000}}, pages 1089--1095, Denver, 2000.
 
 \bibitem{zamani12}
 Zahra Zamani, Scott Sanner, and Cheng Fang.

@@ -1,10 +1,11 @@
-In this section, we present a novel method for approximating piecewise linear functions. The goal of this algorithm is to reduce the number of partitions of a piecewise linear function represented in case form. This represents the ability to automatically identify and remove locally unimportant constraints, whose removal results in a small change in the represented function in exchange for a significant improvement in the efficiency of computations with these functions. XADDs already permit compactness by exploring variable and context independencies, so our approximate approach goes further to merge partitions as a form of removing dependencies that had little influence in the represented function.
+In this section, we present a novel method for approximating piecewise linear functions with bounded error. The goal of this algorithm is to reduce the number of partitions of a piecewise linear function represented in case form. This represents the ability to automatically identify and remove locally unimportant constraints, whose removal results in a small change in the represented function in exchange for a significant improvement in the efficiency of computations with these functions. XADDs already permit compactness by exploring variable and context independencies, so our approximate approach goes further to merge partitions as a form of removing dependencies that had little influence in the represented function. 
 
-\subsection{ Linear Approximation by Successive Merging}
-It is important to note that our merging strategy involves calculating a new case linear function, that can optimally approximate the two previous linear cases but be of a reasonably distinct kind, for instance it may not be obtainable as a linear combination of the original case functions. 
+\subsection{SUCCESSIVE MERGING}
+In order to result in less error when approximating a function, our method approximates locally, merging original partitions that incur small error. It is important to note that our merging strategy involves computing a new linear function, that can optimally approximate the previous linear functions in all the regions contained in the two partitions being merged. An interesting observation is that this new optimal function is obtained through an optimization process sensitive to the regions, so that it may not be obtainable as a linear combination of the original functions. 
 
-In general, however, it isn't clear how a best linear approximation for various partitions can be directly constructed. Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy to obtain merging of arbitrary regions by successive pairwise merging of linear case functions. This idea is simple and is illustrated in figure~\ref{fig:steplining}. The bounded error property comes from keeping the amount of error "used" in every merge and avoiding any merges that incur more error than the remaining allowed error on one of the nodes being currently merged.
+Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy to obtain merging of arbitrary regions by successive pairwise merging of partitions. This idea is simple and is illustrated in figure~\ref{fig:steplining}. The bounded error property comes from keeping the amount of error "used" in every merge and avoiding any merges that incur more error than the remaining allowed error on one of the nodes being currently merged.
 
+{\Large TODO: Improve quality, and put XADDs next to drawings!}
 \begin{figure}[!ht]
 \centering
   \subfigure[Original] {
@@ -28,7 +29,7 @@ In general, however, it isn't clear how a best linear approximation for various 
 
 \begin{algorithm}[!ht]
 \dontprintsemicolon
-\KwIn{A piecewise linear functions $V$, allow\_error}
+\KwIn{A piecewise linear function $V$, allow\_error}
 \KwOut{Approximated version of $V$.}
 $OpenCases \gets getCases(V)$\;
 \While{$OpenCases != \emptyset$} {
@@ -47,52 +48,80 @@ $OpenCases \gets getCases(V)$\;
 	}
 }
 \Return{ApplyRemap(V)}\;
-\caption{{\sc Approximate} bounded error approximation of a symbolic function by successive case merging}
+\caption{{\sc Approximate}: bounded approximation of piecewise linear function}
 \label{alg:approx}
 \end{algorithm}
 
-\subsection{ Optimal merging of linear case functions}
+\subsection{CASE LINEAR FUNCTION APPROXIMATION}
 
-In the last section we have shown that the the general piecewise linear approximation may be reduced to the smaller, pairwise case linear function approximation. Our main contribution in this paper is the development of an iterative linear program based algorithm for obtaining optimal, that is, max-error minimizing, case linear functions for any pair of case linear functions. In order to explain our algorithm more conveniently, we make some clarifications on denotation and simplification.
+We now focus on the pairwise case linear function approximation. The most important step in our solution to piecewise linear function approximation is the iterative linear program based algorithm for obtaining optimal, that is, max-error minimizing, case linear function to approximate any pair of case linear functions. In order to explain our algorithm more conveniently, we make the following consideration.
 
-First, since the continuous domain of a case linear function is independent of boolean variables, they do not interfere with the maximization of the linear functions and therefore don't change the merging of linear case functions. Our approximation works independent of the boolean variables, so we will consider piecewise linear functions whose partitions are defined only with linear inequalities. We observe that regions defined by conjunctions of linear inequalities are (possibly unbounded) polytopes and a disjunction of such formulae is the union of the  regions defined by each sub formula, so that a generic formula $\phi$ of linear inequalities is equivalent to a region  $S(\phi)$ defined by a union of polytopes $\theta$. We denominate $Poly(\phi)$ the set of all polytopes generated expanding disjunctions of $\phi$.
+Since the continuous domain of a case linear function is independent of boolean variable decisions, they do not interfere with the constrained maximization of the linear functions and therefore don't affect the merging of case linear functions. Hence, for clarity, we will consider piecewise linear functions whose partitions are defined only with linear inequalities.
 
-Second, since we are only representing linear functions, all functions $f$ must be of the form 
-$f(\vec{x}) = \vec{c}\cdot \vec{x}_0$ , where $\vec{x}_0$ denotes the extended vector 
-$(1,\vec{x})$ to include the constant term $c_0$ of $f$. This means that the domain of linear function on $\vec{x}$ is isomorph to $\mathbb{R}^{m+1}$. We call elements of this space parameter vectors $\vec{c}$.
-We can now proceed to defining the crucial step for the approximation algorithm, modeling optimal merging of linear case functions as an optimization problem.
+We can now define the optimal merging of case linear functions as an optimization problem. Formally, given two case linear functions $L_1 = ( f_1, \phi_1 )$ and $L_2 = ( f_2, \phi_2 )$, our goal is to determine the best linear case approximation of $L_1$ and $L_2$. As it must represent  $L_1$ and $L_2$, the solution must be defined in both regions, therefore of the form $L^* = (f^*,\phi_1 \lor  \phi_2)$. In this case, we must find a linear function $f^*$ that minimizes approximation error $Err(f)$, defined as the maximum  error of replacing both $f_1$ in $\phi_1$ and $f_2$ in $\phi_2$ by $f$:
 
-More formally, given two case linear functions $L_1 = ( f_1, \phi_1 )$ and $L_2 = ( f_2, \phi_2 )$, our goal is to determine the best linear case approximation of $L_1$ and $L_2$. As it must represent  $L_1$ and $L_2$, the solution must be defined in both regions, therefore of the form $L^* = (f^*,\phi_1 \lor  \phi_2)$ . In this case, we must find a linear function $f^*$ that minimizes approximation error $E$, defined as the maximum  error of replacing both $f_1$ in $\phi_1$ and $f_2$ in $\phi_2$ by $f^*$:
+\begin{equation} f^* = \argmin_f \left[ \max \big( Err_1(f), Err_2(f) \big) \right] \label{eq:fstar} \end{equation}
+where, for $i = 1,2$:
+\begin{equation} Err_i(f) = \max_{\vec{x}} \big(  | (f - f_i)(\vec{x}) | \big) \label{eq:errf} \end
+{equation}
+$$\text{s.t.} \hspace{1cm} \vec{x} \in C(\phi_i)$$
 
-\begin{equation} E(f) = \max ( |f - f_1|_{\phi_1} , |f - f_2|_{\phi_2} ) \label{maxphase} \end{equation}
-\begin{equation} f^* = \argmin_f E(f)  \label{minphase} \end{equation}
+As a linear function $f$ over $\vec{x} \in \mathbb{R}^m$ is equivalent to a coefficient vector $\vec{c} \in \mathbb{R}^{m+1}$, we can define $\vec{c_1}$ and $\vec{c_2}$ as the coefficient vectors of $f_1$ and $f_2$, respectively. As we are searching for the optimal linear function, the only constraint in $f$ is that it is linear, so the coefficients $\vec{c}$ are totally unconstrained. Thus our optimization problem can be rewritten as:
+\begin{equation} \min_{\vec{c}} \left[ \max \big( Err_1(\vec{c}), Err_2(\vec{c}) \big) \right] \label{eq:minc} \end{equation}
+where
+\begin{equation} Err_i(\vec{c}) = \max_{\vec{x_i}} \big(  | (\vec{c}-\vec{c_i}) \cdot \vec{x} |\big) \label{eq:errc} \end
+{equation}
+$$\text{s.t.} \hspace{1cm} \vec{x} \in C(\phi_i)$$
 
-Note that the absolute value in~\ref{maxphase} is equivalent to max of two linear functions, e.g. $|f - f_1| = max ( f - f_1, f_1 - f)$. Moreover, each of these partition $\phi_i$ constrained max is equivalent to the max in all polytopes $\theta_{1{i_1}}$ of $\phi_i$. With this, we can rewrite the error $E$ as the maximum of a finite number of errors restricted to polytopes, e.g.:
+Now it is clear that this involves a saddle bilinear program, as the objective functions contains $\vec{c} \cdot \vec{x}$, while we are maximizing in $\vec{x}$ and minimizing in $\vec{c}$. 
+Note that the absolute values in~\ref{eq:errc} are equivalent to max of two linear functions, e.g. $\max_y (|g(y)|) = \max \big( \max_y g(y), \max_y -g(y) \big)$. Moreover, a maximization within a regions $C(\phi_i)$, is equivalent to the max of the maximization in all polytopes $Polyt(\theta_{ij})$ of $\phi_i$. With this, we can rewrite the error $Err_i$, as the maximum of a finite number maximizations of bilinear functions with linear constraints in $\vec{x}$:
 {\footnotesize 
-\begin{align}
- e_{1{i_1}}(f) &= max_{\vec{x} \in \theta_{1{i_1}}} (f - f_1)(\vec{x}) \forall \theta_{1{i_1}} \in Poly(\phi_1) \nonumber\\
- e_{2{i_2}}(f) &= max_{\vec{x} \in \theta_{2{i_2}}} (f - f_2)(\vec{x}) \forall \theta_{2{i_2}} \in Poly(\phi_2) \nonumber\\
- e_{1{i_3}}(f) &= max_{\vec{x} \in \theta_{1{i_3}}} (f_1 - f)(\vec{x}) \forall \theta_{1{i_3}} \in Poly(\phi_1) \nonumber\\
- e_{2{i_4}}(f) &= max_{\vec{x} \in \theta_{2{i_4}}} (f_2 - f)(\vec{x}) \forall \theta_{2{i_4}} \in Poly(\phi_2)\nonumber\\
-E(f) &= max_{k=1..K} (e_k(f)) \nonumber
-\end{align}
-where $K$ is the total number of pairs (linear function, polytope)  and e$ _k$ is an enumeration of all $e_{nj}, n = 1,2; j $ is index of a polytope.
+\vspace{-2mm}
+\begin{equation} Err_i(\vec{c}) = \max_{j=1..n_i} \big( max ( err^+_{ij}(\vec{c}), err^-_{ij}(\vec{c}) ) \big) \label{eq:errcij} \end{equation}
+\vspace{-5mm}
+
+where, for $i=1,2$ and $j=1..n_i$
+\vspace{-1mm}
+\begin{equation} err^{\pm}_{ij}(\vec{c}) = \max_{\vec{x} \in Polyt(\theta_{ij})} \big( \pm(\vec{c} - \vec{c}_i)\cdot \vec{x} \big)  \label{eq:polymax} \end{equation}
+\vspace{-2mm}
 }
 
-This is a complex bilinear piecewise optimization problem, involving minimization on the parameters $\vec{c}$, maximization on the original continuous variables $\vec{x}$ and case max between the polytope maximums, thus we can break it down to a three step optimization problem: 
+Now our optimization problem is clearly defined in a three stage optimization: (i) maximization within a polytope with the original continuous variables $\vec{x}$; (ii) discrete maximization of the between the polytopes; and (iii) minimization of this global max with the coefficients $\vec{c}$. It is illustrated in figure~\ref{fig:optim}.
 
-(i) There are linear constrained bilinear functions $L_{k}(f,\vec{x},\phi_k) =  ( l_k(\vec{c},\vec{x}) ,\phi_k)$ depending on both the domain variables $\vec{x}$ and parameter variables $\vec{c}$, defined in $\phi_k$ such as $ ( (f - f_1)(\vec{x}),\phi_1) = ( (\vec{c}-\vec{c_1})\cdot\vec{x}, \phi_1)$. The innermost optimization step is the constrained maximization of this bilinear function on the domain variables.
-\begin{equation} e_k(f) = max_{\vec{x}} ( L_k(f,\vec{x},\phi_k) ) = max_{ {\vec{x}} \in \phi_k} (l_k (\vec{c}, \vec{x}) ) \label{optim1} \nonumber \end{equation}
+%\begin{equation} \min_{\vec{c}} \max_{i=1,2} \max_{j=1..n_i} \max_{sig=+,-} \max_{\vec{x} \in Polyt(\theta_{ij})} \big( sig(\vec{c} - \vec{c}_i)\cdot \vec{x} \big)  \label{eq:optimglo} \end{equation}\vspace{-2mm}
 
-(ii)There is a case max in a finite group of this linear constrained bilinear functions :
-\begin{equation} E(f) = \max_{k=1..K} ( max_{\vec{x}} ( L_k(f,\vec{x},\phi_k) )) = \max_{k=1..K} ( e_k(f)) \label{optim2}  \nonumber \end{equation}
+\begin{figure}[h!t]
+\center
+\fbox{\includegraphics[scale=0.4]{Figures/xadds/samplexadd.eps} }
+\caption{ Diagram representation of the optimization problem.}
+\label{fig:optim} 
+\end{figure}
 
-(iii)Finally, this case max is minimized in terms of the parameters $\vec{c}$ as in ~\ref{minphase}:
 
-In order to solve it we propose an elaborate iterative constraint generation based algorithm~\ref{alg:glo}, which we describe in the following.
-First, the algorithm will iterate between two phases, one for the maximization and one for the minimization.  Second, on each phase a relaxed problem will be solved using the result from the previous phase. Third, when a phase gives the same return twice, the algorithm has converged.
+{\large TODO: It would be nice to have a diagram around here}
 
-TODO: It would be nice to have a diagram around here (and I can't make one fast ENOUGH)
+In order to solve this, we propose an iterative constraint generation based algorithm which we describe in the following. First, the algorithm will iterate between two phases, one for the maximization and one for the minimization.  Second, on each phase a relaxed problem will be solved using the result from the previous phase. Finally, when a phase gives the same solution twice, the algorithm has converged and a solution to the original problem was found.
+
+In the maximization phase, related to Eq.~\ref{eq:polymax}, we will assume a fixed $\vec{c}$, and thus the maximization of the bilinear functions $\pm(\vec{c} - \vec{c}_i)\cdot \vec{x}$ for each polytope will be linear constrained linear objective problems, solved efficiently by a LP solver. The optimal values are maximum errors in each polytope, the maximum of which is an upper bound on the optimal approximation error, simply because this $\vec{c}$ is a valid function and if no other function gives a better approximation we can use it and the error is exactly the one we just obtained. More importantly, the vertices that reach these optimal values are the points of the polytope that maximize the bilinear function for this value of $\vec{c}$ and therefore are important points for the minimization phase. In fact, if the minimization can't reduce the error in these points, it can't change the maximal error, and thus has achieved the optimal solution. The maximal error points from each polytope are stored at every iteration through the maximization phase, $x^{+t}_{ij}$ and $x^{-t}_{ij}$ are the points found in the $t$-th maximization for the polytope $\theta_{ij}$. 
+
+In the minimization phase, we will solve a relaxation of the problem in Eq.~\ref{eq:minc}, where in each linear constrained bilinear function $err^{\pm}_{ij}$ the maximal error in the polytope $\theta_{ij}$ is replaced by the greatest error from a finite set of points from polytope. More specifically, we only minimize the greatest of the error on points found in the maximization phase. This changes the piecewise bilinear problem into a linear program with the objective to be minimized is a new variable $Z$ that symbolizes the maximal error. There are linear constraints to encode that $Z$ must be greater than any of the errors on the points selected in the previous iterations. For all polytopes $\theta_{ij}$ and previous iterations $t$ the points selected are $x^{\pm t}_{ij}$ and the error at there points is $\tilde{err}_{ij}^{\pm t}(\vec{c})$.
+
+$$ \tilde{err}_{ij}^{\pm t} (\vec{c}) = \big( \pm (\vec{c}_i - \vec{c})\cdot \vec{x}_{ij}^{\pm t} \big)$$
+$$ \tilde{Err}(\vec{c}) =\max_{i,j,t} \big( \tilde{err}^{+t}_{ij} (\vec{c}), \tilde{err}^{-t}_{ij} (\vec{c}) \big)$$
+And the optimization becomes:
+$$min_{\vec{c}}\tilde{Err}({\vec{c}}) = min_{{\vec{c}},Z}  Z $$
+s.t. 
+$$
+	\begin{array}{llll}
+		Z & \geq & \tilde{err}_{ij}^{+t} (\vec{c}) & \mbox{for } i=1,2; j = 1..n_i; t=1..T\\
+		Z & \geq & \tilde{err}_{ij}^{-t} (\vec{c}) & \mbox{for } i=1,2; j = 1..n_i; t=1..T\\
+	\end{array}
+$$
+where $T$ is the current iteration.
+
+This is now a linear problem in the coefficients $\vec{c}$ and $Z$. Solving this minimization yields a new solution $\vec{c}$ that minimizes the greatest error in all these points. As important points may still have not been considered this is a lower bound in the optimal approximation error. This can be seen by the following: $f$ may have to be modified to minimize the error in more points in the next iterations, but this can only lead to increasing the error in the points that were present in this iteration. This follows directly from the fact that adding more constraints cannot improve the optimal value of solution for a linear program.
+
+The pseudocode for the algorithm just described is algorithm~\ref{alg:glo}. The algorithms ~\ref{alg:maxError} and ~\ref{alg:relaxApprox} encode, respectively, the maximization and the minimization phases. Both use an abstract call to a linear programming solver, $LP\_Solve($ max or min$, objective\_function, linear\_constraints)$ which returns the solution and optimal value for the linear program received.
 
 \begin{algorithm}[!ht]
 \dontprintsemicolon
@@ -109,27 +138,6 @@ $new\_points, error = MAX\_ERROR(f, L_1,L_2)$\;
 \caption{{\sc PairwiseCaseMax} finds the best case linear function}
 \label{alg:glo}
 \end{algorithm}
-
-
-In the maximization phase, related to eq.~\ref{maxphase}, we will always assume a fixed $f$, and thus the maximization of the bilinear functions $L_{k}(f,\vec{x},\phi_k)$ for each linear case function will be a linear constrained linear program, solved efficiently by a LP solver. The optimal values are upper bounds on the actual minimal error in each polytope. More importantly, the vertexes that reach this optimal values are the points of the polytope that maximize the bilinear function for this function $f$ and thus are important points to which the minimization must attempt to reduce the error (in fact reducing the error in any set of points that doesn't contain this point won't change the maximal error, and thus won't improve our solution.
-
-In the minimization phase, we will solve a relaxation of~\ref{minphase}, where in each linear constrained bilinear function $e_k$ the maximal error in the polytope $\theta_k$ is replaced by the greater of the error in a finite set of points. More specifically, we only minimize the greatest of the error on points found in the maximization phase. This changes the piecewise bilinear problem into a linear program with the objective to be minimized is the error, and linear constraints encode that this relaxed error $\tilde{E}(f)$ must be greater than the error on any of the previously obtained points. As shown in the following where $x^k_j$, $j=1..m_k$ are the points found in the polytope $\theta_k$:
-
-$$ \tilde{E}(f) =\max ( L_k (f, x^k_1, \theta_k), ... , L_k ( f, x^k_{m_k}), \theta_k ), k = 1, 2, .. K$$
-$$\tilde{f} = argmin_f\tilde{E}(f) = argmin_{f,Z}  Z $$
-s.t. 
-$$
-	\begin{array}{llll}
-		Z & \geq & L_1(x^1_j, \theta_1) & \mbox{for } j = 1,...m_1\\
-		Z & \geq & L_2(x^2_j, \theta_2) & \mbox{for } j = 1,...m_2\\
-		Z & \geq & L_3(x^3_j, \theta_3) & \mbox{for } j = 1,...m_3\\
-		\vdots & \vdots & \vdots & \vdots\\
-	\end{array}
-$$
-
-This is now a linear problem in the coefficients of $f$, the solution Z is the error incurred in the approximation. 
-Solving this minimization yields a new solution $f$ whose error is a lower bound on the actual minimal error in each of these points. This can be seen by the following: $f$ may have to be modified to minimize the error in more points in the next iterations, but this can only lead to increasing the error in the points that were present in this iteration. This follows simply form the fact that adding more constraints cannot improve the optimal value of solution for a linear program.
-
 
 \begin{algorithm}[!ht]
 \dontprintsemicolon
@@ -166,14 +174,16 @@ $constr \gets \emptyset$\;
 $f \gets LP\_Solve(min_{f,Z}, Z, constr)$\;	
 \Return{$f$}\;
 \caption{{\sc BEST\_APPROX} finds the linear function minimizing errors a set of points}
-\label{alg:bestApprox}
+\label{alg:relaxApprox}
 \end{algorithm}
 
+Finally, we prove some properties of the developed algorithm.
 
-Finally, we can see why if either of the phases do not produce changes the solution must be optimal for the piecewise bilinear problem as a whole. In the case of the maximization, if all the points generated (in all polytopes) were already in the previous minimization phase than the error in any of these cannot be reduced, and since this points include the points of maximal error in all polytopes the actual global maximal error is achieved in one of them, and therefore no solution can have a better maximal error than the current $f$. Similarly, if a repeated value function $f$ is produced in the minimization this means that this function already minimized the error in its greatest error points (added in the previous maximization) therefore no other function can reduce the error in one of this points and these include the maximal error, se the maximal error cannot be reduced, thus we have an optimal solution.
+{\bf Theorem} {\it Algorithm~\ref{alg:glo} always terminates and produces the optimal solution for the optimization described in Eqs.~\ref{eq:minc},~\ref{eq:errcij},~\ref{eq:polymax}.} 
 
-\subsection{Bounded Approximate SPD}
-We will now properly define the Hybrid MDP planing algorithm described in this paper. The SDP algorithm~\ref{alg:vi} was modified from its original exact version by the addition of line \ref{approxline} which calls the algorithm~\ref{alg:approx} which is responsible collecting the cases and making the global approximation by combining the successive pairwise merges. The pairwise merges are solved by the iterative algorithm that uses linear program solvers in the two phases previously defined. The algorithms ~\ref{alg:maxError} and ~\ref{alg:bestApprox} encode the previously defined maximization and minimization phases. Both use an abstract call to a linear programming solver, $LP\_Solve($ max or min$, objective\_function, linear\_constraints)$ which returns the solution and optimal value for the linear program received.
+To prove the optimality of the solution obtained, we observe that at the beginning of the loop the algorithm always keeps an optimal approximation $f$ for all $points$ stored. Using this $f$ the $MAX\_ERROR$ routine computes new points that are the maximum error points for this $f$. If there are new points, these are added to the stored points and $BEST\_APPROX$ computes a new $f$ that minimizes in all stored points. As we return to the start of the loop we have a new optimal approximation. If there are no new points, this means that the current $f$ minimizes the error in the points that maximize its error therefore it minimizes the maximal error in all regions and is the optimal solution.  As the algorithm only terminates when there are no new points, and in this case the solution is optimal, if the algorithm terminates, its solution is optimal.
+ Next we prove that the algorithm must terminate: First, the formulae $\phi$  are finite and define a finite number of polytopes. Second, for all polytopes defined, there is a finite number of inequalities and correspondingly a finite number of vertices. At each non terminal iteration at least one new polytope vertex must be added to the stored $points$ list, as there are finitely many vertices, the number of iterations must be finite, so the algorithm terminates.
+
 
 
 
