@@ -1,0 +1,70 @@
+\long\def\COMMENT#1\ENDCOMMENT{\message{(Commented text...)}\par}
+
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{assumption}[lemma]{Assumption}
+\newtheorem{theorem}[lemma]{Theorem}
+\newtheorem{proposition}[lemma]{Proposition}
+\newtheorem{corollary}[lemma]{Corollary}
+\newtheorem{hypothesis}[lemma]{Hypothesis}
+\newtheorem{definition}[lemma]{Definition}
+%\newtheorem{hypothesis}{Hypothesis}{\bfseries}{\itshape}
+%\theoremstyle{remark}
+%\newtheorem*{proof_deferred}{Proof}
+%\newtheorem*{proofsk}{Proof Sketch}{\rmfamily}{\rmfamily}
+
+% No brackets after {definition},{example} starts new counters 
+\newtheorem{property}[lemma]{Property}
+\newtheorem{example}[lemma]{Example}
+
+\newcommand{\norm}[1]{\textrm{\normalsize $#1$}}
+\newcommand{\sm}[1]{\textrm{\footnotesize $#1$}}
+
+\newcommand{\denselist}{\itemsep 0pt\partopsep 0pt}
+\newcommand{\semidenselist}{\itemsep 2pt\partopsep 2pt}
+
+%\def\casemax{\operatornamewithlimits{case\,max}}
+\def\argmax{\operatornamewithlimits{arg\,max}}
+\def\argmin{\operatornamewithlimits{arg\,min}}
+
+%\def\argmax{\mathop{\rm arg\,max}}
+
+%\numberwithin{algorithm}{chapter}
+
+\newcommand{\casemax}{\textrm{casemax}}
+\newcommand{\B}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\I}{\mathbb{I}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\op}{\;\mathit{op}\;}
+
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\II}{\mathcal{I}}
+\newcommand{\Gain}{\mathit{Gain}}
+\newcommand{\VPI}{\mathit{VPI}}
+
+\newcommand{\var}{v}
+\newcommand{\eq}{\leftarrow}
+
+\newcommand{\LB}{\mathit{LB}}
+\newcommand{\UB}{\mathit{UB}}
+
+\renewcommand{\vec}[1]{\mathbf{#1}}
+
+\renewcommand{\l}{\langle}
+\renewcommand{\r}{\rangle}
+
+% Macro for strikeout text
+\newlength{\howlong}
+\newcommand{\sout}[1]{
+\settowidth{\howlong}{#1}%
+#1\unitlength0.5ex%
+\begin{picture}(0,0)
+\put(0,1){\line(-1,0){\howlong\divide\unitlength}}
+\end{picture}%
+}
+
+
+
