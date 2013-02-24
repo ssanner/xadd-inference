@@ -1,0 +1,2 @@
+~/Java/dot.exe -Tps -Efontsize=36 -Nfontsize=36 aadd_clean.dot > aadd_ex.ps
+~/Java/dot.exe -Tps -Efontsize=36 -Nfontsize=36 -Granksep=1 knapsack.dot > knapsack.eps

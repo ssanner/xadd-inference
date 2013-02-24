@@ -1,0 +1,35 @@
+\begin{thebibliography}{1}
+
+\bibitem{bahar93add}
+R.~Iris Bahar, Erica Frohm, Charles Gaona, Gary Hachtel, Enrico Macii, Abelardo
+  Pardo, and Fabio Somenzi.
+\newblock {A}lgebraic {D}ecision {D}iagrams and their applications.
+\newblock In {\em {IEEE} /{ACM} International Conference on {CAD}}, 1993.
+
+\bibitem{particle_filters}
+Arnaud Doucet, Nando De~Freitas, and Neil Gordon, editors.
+\newblock {\em {Sequential Monte Carlo methods in practice}}.
+\newblock Springer, 2001.
+
+\bibitem{factor_graph}
+F.~R. Kschischang, B.~J. Frey, and H.~A. Loeliger.
+\newblock {Factor graphs and the sum-product algorithm}.
+\newblock {\em IEEE Transactions on Information Theory}, 47(2):498--519,
+  February 2001.
+
+\bibitem{uai11}
+Scott Sanner, Karina~Valdivia Delgado, and Leliane~Nunes {de Barros}.
+\newblock Symbolic dynamic programming for discrete and continuous state mdps.
+\newblock In {\em {UAI-2011}}, Barcelona, 2011.
+
+\bibitem{thrun_mcl}
+S.~Thrun, D.~Fox, W.~Burgard, and F.~Dellaert.
+\newblock Robust monte carlo localization for mobile robots.
+\newblock {\em Artificial Intelligence}, 128(1-2):99--141, 2000.
+
+\bibitem{varelim}
+Nevin~Lianwen Zhang and David Poole.
+\newblock Exploiting causal independence in bayesian network inference.
+\newblock {\em J. Artif. Intell. Res. (JAIR)}, 5:301--328, 1996.
+
+\end{thebibliography}
