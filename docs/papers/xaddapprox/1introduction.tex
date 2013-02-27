@@ -79,19 +79,20 @@ To answer these questions, we propose a bounded error compression
 technique for linear XADDs that involves the solution of a constrained
 bilinear saddle point problem.  Fortuitously, we show that given the
 special structure of this problem, it can be expressed as a bilevel
-linear programming problem (where a constraint itself is an
-optimization problem, leading to a second level of optimization).
-Fortunately, while the second-level optimization problem implicitly
-represents an infinite number of constraints, we prove that a
-constraint generation approach to handling this second stage will
-allow the first stage to terminate at optimality after generating only
-a finite number of constraints.  This solution permits the use of
-efficient linear program solvers for XADD compression and enables a
-novel class of bounded approximate SDP algorithms for hybrid MDPs.
-Empirically we demonstrate that this approach to XADD compression
-offers order-of-magnitude speedups over the exact solution in exchange
-for a small approximation error, thus vastly increasing the range of
-HMDPs for which solutions with strong error guarantees are possible.
+linear programming problem.% (where a constraint itself is an
+%optimization problem, leading to a second level of optimization).
+Fortunately, while the second-level optimization problem in this
+bilevel program implicitly represents an infinite number of
+constraints, we show that a constraint generation approach for 
+the second stage allows the first stage to terminate at
+optimality after generating only a finite number of constraints.  This
+solution permits the use of efficient linear program solvers for XADD
+compression and enables a novel class of bounded approximate SDP
+algorithms for hybrid MDPs.  Empirically we demonstrate that this
+approach to XADD compression offers order-of-magnitude speedups over
+the exact solution in exchange for a small approximation error, thus
+vastly increasing the range of HMDPs for which solutions with strong
+error guarantees are possible.
 
 %% No mention of paper organization: this is just filler content that
 %% no one ever reads -- readers spot it and skip to the next section.
