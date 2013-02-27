@@ -1,0 +1,39 @@
+{\bf Scott: Just writing down some thoughts for later revision.}
+
+Boyan and Littman~\cite{boyan01} presented the first exact solution
+for 1D continuous HMDPs with linear reward while {\it Feng et
+  al}~\cite{feng04} present exact solutions for a subset of HMDPs
+where all piecewise functions had to have axis-aligned boundaries (so
+no general linear inequalities) and actions were discrete.  Li and
+Littman~\cite{li05} extended {\it Feng et al}'s model to bounded
+approximation using rectilinear piecewise constant functions.
+However, in general we note that these methods could only provide
+optimal solutions for a heavily restricted subset of discrete action
+HMDPs in comparison to our more general setting for which exact
+solutions are available and an approximation approach which is an
+expressive superset of Li and Littman, which could not produce the
+approximation shown in Figure~\ref{fig:stepfunfig}(a,b).
+
+Boyan et al~\cite{phase07} presents an approximation approach that can
+arbitrarily approximate 1D continuous MDP solutions but does not
+extend to multivariate or continuous actions.
+
+One major advantage of this approach over approximation techniques in
+the continuous action HMDP literature~\cite{kveton06,kveton06aaai} is
+that rather than require a specific (parametric) form of basis
+functions \emph{a priori} for which no error guarantees can be made,
+XADD compression guarantees a solution within prespecified error
+bounds --- one can think of this approximation approach as one that
+directly finds a compact, bounded error approximation without
+requiring seed basis functions.
+
+\cite{hao09} is a search-based dynamic programming approach useful for
+solving for a value function for a restricted subset of initial
+states.  We note that this approach admits any dynamic programming
+backup and representation and hence can be combined with the work we
+propose here to focus approximate solutions on a subset of initial
+states.  This would be an interesting avenue for future work.
+
+In general no related work can provide bounded approximate solutions
+for the multivariate HMDPs with continuous actions and arbitrary
+piecewise linear dynamics and rewards that we consider in this paper.
