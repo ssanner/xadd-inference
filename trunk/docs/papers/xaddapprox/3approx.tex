@@ -1,9 +1,53 @@
 \label{sec:approx}
 
-In this section, we present a novel method for approximating piecewise linear functions with bounded error. The goal of this algorithm is to reduce the number of partitions of a piecewise linear function represented in case form. This represents the ability to automatically identify and remove locally unimportant constraints, whose removal results in a small change in the represented function in exchange for a significant improvement in the efficiency of computations with these functions. XADDs already permit compactness by exploring variable and context independencies, so our approximate approach goes further to merge partitions as a form of removing dependencies that had little influence in the represented function. 
+In this section, we present the main novel contribution of our paper
+for approximating XADDs within a fixed error bound.  Since the point
+of XADD approximation is to shrink its size, we refer to our method of
+approximation as \emph{XADD compression} (\textsc{XADDComp}).
 
-\subsection{SUCCESSIVE MERGING}
-In order to result in less error when approximating a function, our method approximates locally, merging original partitions that incur small error. It is important to note that our merging strategy involves computing a new linear function, that can optimally approximate the previous linear functions in all the regions contained in the two partitions being merged. An interesting observation is that this new optimal function is obtained through an optimization process sensitive to the regions, so that it may not be obtainable as a linear combination of the original functions. 
+Following previous work on ADD compression~\cite{apricodd}, we note
+that decision diagrams should be compressed from the bottom up ---
+merging leaves causes simplifications to ripple upwards through a
+decision diagram removing vacuous decisions and shrinking the decision
+diagram.  For example, after merging leaves in
+Figure~\ref{fig:stepfunfig}(a), we note that the only remaining
+decision in \ref{fig:stepfunfig}(b) is $x < 3$.  Hence, we focus on a
+leaf merging approach to \textsc{XADDComp}, which poses two questions:
+(1) what leaves do we merge, and (2) how do we find the best
+approximation of merged leaves?  We answer these two questions in the
+following subsections.
+
+%A novel method for approximating piecewise linear functions with
+%bounded error. The goal of this algorithm is to reduce the number of
+%partitions of a piecewise linear function represented in case
+%form. This represents the ability to automatically identify and remove
+%locally unimportant constraints, whose removal results in a small
+%change in the represented function in exchange for a significant
+%improvement in the efficiency of computations with these
+%functions. XADDs already permit compactness by exploring variable and
+%context independencies, so our approximate approach goes further to
+%merge partitions as a form of removing dependencies that had little
+%influence in the represented function.
+
+%% NOTE: No paper uses all caps for section headings... it's like
+%% yelling at the reader. :)
+%\subsection{SUCCESSIVE MERGING}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                     Scott stopped editing here
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Successive Leaf Merging}
+
+In order to result in less error when approximating a function, our
+method approximates locally, merging original partitions that incur
+small error. It is important to note that our merging strategy
+involves computing a new linear function, that can optimally
+approximate the previous linear functions in all the regions contained
+in the two partitions being merged. An interesting observation is that
+this new optimal function is obtained through an optimization process
+sensitive to the regions, so that it may not be obtainable as a linear
+combination of the original functions.
 
 Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy to obtain merging of arbitrary regions by successive pairwise merging of partitions. This idea is simple and is illustrated in figure~\ref{fig:steplining}. The bounded error property comes from keeping the amount of error "used" in every merge and avoiding any merges that incur more error than the remaining allowed error on one of the nodes being currently merged.
 
@@ -29,6 +73,8 @@ Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy 
  \label{fig:steplining}
 \end{figure}
 
+\incmargin{1.5em}
+\linesnumbered
 \begin{algorithm}[!ht]
 \dontprintsemicolon
 \KwIn{A piecewise linear function $V$, allow\_error}
@@ -53,8 +99,9 @@ $OpenCases \gets getCases(V)$\;
 \caption{{\sc Approximate}: bounded approximation of piecewise linear function}
 \label{alg:approx}
 \end{algorithm}
+\decmargin{1.5em}
 
-\subsection{CASE LINEAR FUNCTION APPROXIMATION}
+\subsection{Pairwise Leaf Approximation}
 
 We now focus on the pairwise case linear function approximation. The most important step in our solution to piecewise linear function approximation is the iterative linear program based algorithm for obtaining optimal, that is, max-error minimizing, case linear function to approximate any pair of case linear functions. In order to explain our algorithm more conveniently, we make the following consideration.
 
@@ -125,6 +172,8 @@ This is now a linear problem in the coefficients $\vec{c}$ and $Z$. Solving this
 
 The pseudocode for the algorithm just described is algorithm~\ref{alg:glo}. The algorithms ~\ref{alg:maxError} and ~\ref{alg:relaxApprox} encode, respectively, the maximization and the minimization phases. Both use an abstract call to a linear programming solver, $LP\_Solve($ max or min$, objective\_function, linear\_constraints)$ which returns the solution and optimal value for the linear program received.
 
+\incmargin{1.5em}
+\linesnumbered
 \begin{algorithm}[!ht]
 \dontprintsemicolon
 \KwIn{Linear cases  $L_1 = ( f_1, \phi_1 )$, $L_2 = ( f_2, \phi_2 ).$}
@@ -140,7 +189,10 @@ $new\_points, error = MAX\_ERROR(f, L_1,L_2)$\;
 \caption{{\sc PairwiseCaseMax} finds the best case linear function}
 \label{alg:glo}
 \end{algorithm}
+\decmargin{1.5em}
 
+\incmargin{1.5em}
+\linesnumbered
 \begin{algorithm}[!ht]
 \dontprintsemicolon
 \KwIn{Case linear functions $L_1 = ( f_1, \phi_1 ), L_2 = ( f_2, \phi_2 )$ and function $f$ }
@@ -160,8 +212,10 @@ $error \gets NEG\_INF$\;
 \caption{{\sc MAX\_ERROR} finds the points of maximum error}
 \label{alg:maxError}
 \end{algorithm}
+\decmargin{1.5em}
 
-
+\incmargin{1.5em}
+\linesnumbered
 \begin{algorithm}[!ht]
 \dontprintsemicolon
 \KwIn{Linear cases $L_1 = ( f_1, \phi_1 ), L_2 = ( f_2, \phi_2 )$ and a set of $points$ where to find the best approximation for}
@@ -178,6 +232,7 @@ $f \gets LP\_Solve(min_{f,Z}, Z, constr)$\;
 \caption{{\sc BEST\_APPROX} finds the linear function minimizing errors a set of points}
 \label{alg:relaxApprox}
 \end{algorithm}
+\decmargin{1.5em}
 
 Finally, we prove some properties of the developed algorithm.
 
