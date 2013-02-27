@@ -1,10 +1,23 @@
 \label{sec:xadd}
 
-In this section, we describe the case representation of symbolic functions and how decision diagrams data structures can be used to store and manipulate them.
+In this section, we begin with a formal definition of the extended
+algebraic decision diagram (XADD); subsequently in
+Section~\ref{sec:approx} we will contribute approximation techniques
+for XADDs and in Section~\ref{sec:basdp} we will show how this XADD
+approximation can be used in a bounded approximate symbolic dynamic
+programming algorithm for hybrid MDPs.
 
-\subsection{CASE REPRESENTATION}
+\subsection{Case Representation}
 
-We are interested in the symbolic representation of piecewise polynomial functions defined over discrete and continuous domains. Given a set of boolean and continuous variables $(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where $b_i \in \{ 0,1 \}$ ($1 \leq i \leq n$) and $x_j \in \mathbb{R}$ ($1 \leq j \leq m$), we will represent symbolic piecewise polynomials in \emph{case} form~\cite{fomdp}:
+%% THIS PAPER DOES NOT ALLOW POLYNOMIALS, SHOULD NOT MENTION THEM!
+
+Underlying the XADD of Figure~\ref{fig:stepfunfig} is a simple
+piecewise function that we can represent in mathematical case form as
+follows.  Given a domain of boolean and continuous variables
+$(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where
+$b_i \in \{ 0,1 \}$ ($1 \leq i \leq n$) and $x_j \in \mathbb{R}$
+($1 \leq j \leq m$), we will piecewise case statements with linear
+piece constraints and linear values in \emph{case} form:
 {%\footnotesize 
 \begin{align}
 f(\vec{b},\vec{x}) = 
@@ -14,12 +27,55 @@ f(\vec{b},\vec{x}) =
   \phi_k(\vec{b},\vec{x}): & f_k(\vec{x}) \\ 
 \end{cases} \label{eq:case}
 \end{align}
-}
-Here the $f_i$ are polynomial functions over the continuous variables $\vec{x}$ and the $\phi_i$ are logical formulae defined over the state $(\vec{b},\vec{x})$ that can include arbitrary logical ($\land,\lor,\neg$) combinations of (i) boolean variables and (ii)  strict\footnote{ For purposes of evaluating a linear function $f$ within a region, it does not matter whether a bound is inclusive ($\leq$ or $\geq$) or exclusive ($<$ or $>$), since it can be arbitrarily near the bounds; for precise evaluation at the bounds, $f$ is required to be continuous, in which case both partitions will give the same result.} inequalities ($>,<$) comparing polynomial expressions over the continuous variables  over continuous variables.  
+} 
+%% The XADD could work with a full set of inequalities, it's not
+%% worth discussion complications of only $<,>$ at this point in
+%% the paper.  You want to get to Section 3 -- the contribution --
+%% as soon as possible.
+Here the $f_i$ are linear expressions over $\vec{x}$ and the $\phi_i$
+are logical formulae defined over the domain $(\vec{b},\vec{x})$ that
+can include arbitrary logical ($\land,\lor,\neg$) combinations of (i)
+boolean variables and (ii) linear inequalities over $\vec{x}$.
 
-The $\phi_i$ are required to be disjoint from each other;  however they may not exhaustively cover the state space, in which case $f$ is a \emph{partial function}, undefined for some variable assignments. Since they represent parts of the piecewise function, pairs $(f_i,\phi_i)$ are referred to as cases or partitions of $f$, moreover, these are identified with a piecewise function of a single partition, which is called a case function.
+%% This is not important for XADD approximation... it has been
+%% covered in previous work for SDP that is cited.
+%
+%The $\phi_i$ are required to be mutually disjoint from each other;
+%however they may not exhaustively cover the state space, in which case
+%$f$ is a \emph{partial function}, undefined for some variable
+%assignments. Since they represent parts of the piecewise function,
+%pairs $(f_i,\phi_i)$ are referred to as cases or partitions of $f$,
+%moreover, these are identified with a piecewise function of a single
+%partition, which is called a case function.
 
-We are specially interested in piecewise linear functions and case linear functions, in which case all $f_i$ and all expressions in the inequalities in $\phi_i$ are linear. In this case, we note that any logical formula can be rewritten as a disjunction of conjunctive formulas, so that we can write $\phi_i$ = $\bigvee_{j=0}^{n_i} \theta_{ij}$ where each $\theta_{ij}$ is a conjunction of boolean variables and  linear inequalities, and $n_i$ is the number of conjunctive formulas obtained from $\phi_i$. As $\theta_{ij}$ is only conjunctive, there is a partial boolean assignment necessary for $\theta_{ij}$ to be satisfied, denoted $\vec{b}_{\theta_{ij}}$ and the conjunction of the linear inequalities in $\theta_{ij}$ define a convex feasible region in $\mathbb{R}^m$, denominated the polytope of $\theta_{ij}$ and denoted $Polyt(\theta_{ij})$. We observe that the inequalities in $\theta_{ij}$ may define unfeasible or unbounded regions, but we discard unfeasible combinations and add special minimal and maximal bounds for every continuous variable so that all polytopes considered are feasible and bounded. This regions are important when evaluating the image of $f$, because $f$ takes the value of $f_i$ in a constrained region $C(\phi_i)$, that is the union of polytopes from $\phi_i$.
+%% Because we only work with linear XADDs, make this restriction up
+%% front as I've done above... then this entire paragraph collapses
+%% to a short discussion of the polytopes.
+%%
+%% Theta is a really bad choice for polytopes since it almost always
+%% entails a parameter vector in the AI literature.
+%
+%We are especially interested in piecewise linear functions and case
+%linear functions, in which case all $f_i$ and all expressions in the
+%inequalities in $\phi_i$ are linear. In this case, we note that any
+%logical formula can be rewritten as a disjunction of conjunctive
+formulas, so that we can write $\phi_i$ =
+$\bigvee_{j=0}^{n_i} \theta_{ij}$ where each $\theta_{ij}$ is a
+conjunction of boolean variables and linear inequalities, and $n_i$ is
+the number of conjunctive formulas obtained from $\phi_i$. As
+$\theta_{ij}$ is only conjunctive, there is a partial boolean
+assignment necessary for $\theta_{ij}$ to be satisfied, denoted
+$\vec{b}_{\theta_{ij}}$ and the conjunction of the linear inequalities
+in $\theta_{ij}$ define a convex feasible region in $\mathbb{R}^m$,
+denominated the polytope of $\theta_{ij}$ and denoted
+$Polyt(\theta_{ij})$. We observe that the inequalities in
+$\theta_{ij}$ may define unfeasible or unbounded regions, but we
+discard unfeasible combinations and add special minimal and maximal
+bounds for every continuous variable so that all polytopes considered
+are feasible and bounded. This regions are important when evaluating
+the image of $f$, because $f$ takes the value of $f_i$ in a
+constrained region $C(\phi_i)$, that is the union of polytopes from
+$\phi_i$.
 		$$C(\phi_i) = \bigcup_j Polyt(\theta_{ij})$$
 
 TODO: Make picture to examplify $f$, $f_i$, $\phi$, $\theta$, a polytope and a region $C_i$...

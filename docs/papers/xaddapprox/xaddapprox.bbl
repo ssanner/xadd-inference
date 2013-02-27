@@ -17,11 +17,6 @@ Craig Boutilier, Thomas Dean, and Steve Hanks.
   leverage.
 \newblock {\em {JAIR}}, 11:1--94, 1999.
 
-\bibitem{fomdp}
-Craig Boutilier, Ray Reiter, and Bob Price.
-\newblock Symbolic dynamic programming for first-order {MDPs}.
-\newblock In {\em {IJCAI-01}}, pages 690--697, Seattle, 2001.
-
 \bibitem{boyan01}
 Justin Boyan and Michael Littman.
 \newblock Exact solutions to time-dependent {MDPs}.
