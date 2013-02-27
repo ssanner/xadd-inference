@@ -22,6 +22,12 @@ Craig Boutilier, Ray Reiter, and Bob Price.
 \newblock Symbolic dynamic programming for first-order {MDPs}.
 \newblock In {\em {IJCAI-01}}, pages 690--697, Seattle, 2001.
 
+\bibitem{boyan01}
+Justin Boyan and Michael Littman.
+\newblock Exact solutions to time-dependent {MDPs}.
+\newblock In {\em Advances in Neural Information Processing Systems {NIPS-00}},
+  pages 1026--1032, 2001.
+
 \bibitem{dbn}
 Thomas Dean and Keiji Kanazawa.
 \newblock A model for reasoning about persistence and causation.
@@ -33,6 +39,31 @@ Zhengzhu Feng, Richard Dearden, Nicolas Meuleau, and Richard Washington.
   problems.
 \newblock In {\em Uncertainty in Artificial Intelligence ({UAI-04})}, pages
   154--161, 2004.
+
+\bibitem{kveton06aaai}
+Branislav Kveton and Milos Hauskrecht.
+\newblock Learning basis functions in hybrid domains.
+\newblock In {\em In Proceedings of the 21st National Conference on Artificial
+  Intelligence (AAAI-06)}, pages 1161--1166, Boston, USA, 2006.
+
+\bibitem{kveton06}
+Branislav Kveton, Milos Hauskrecht, and Carlos Guestrin.
+\newblock Solving factored mdps with hybrid state and action variables.
+\newblock {\em Journal Artificial Intelligence Research (JAIR)}, 27:153--201,
+  2006.
+
+\bibitem{li05}
+Lihong Li and Michael~L. Littman.
+\newblock Lazy approximation for solving continuous finite-horizon mdps.
+\newblock In {\em National Conference on Artificial Intelligence {AAAI-05}},
+  pages 1175--1180, 2005.
+
+\bibitem{phase07}
+Janusz Marecki, Sven Koenig, and Milind Tambe.
+\newblock A fast analytical algorithm for solving markov decision processes
+  with real-valued resources.
+\newblock In {\em International Conference on Uncertainty in Artificial
+  Intelligence {IJCAI}}, pages 2536--2541, 2007.
 
 \bibitem{hao09}
 Nicolas Meuleau, Emmanuel Benazera, Ronen~I. Brafman, Eric~A. Hansen, and

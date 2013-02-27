@@ -1,29 +1,97 @@
-% XADD Approximation
-Recently, symbolic dynamic programming (SDP) ~\cite{sanner_uai11} have provided exact solutions for Hybrid (mixed discrete and continuous) Markov Decision Processes (HMDPs) with piecewise linear dynamics and continuous actions\cite{zamani12}. The use of symbolic representation for functions in planning requires an efficient representation of dependencies, therefore an appropriate data structure was necessary. So this recent works provided a gain in compactness by extending Decision Diagrams to represent symbolic piecewise functions, creating the extended algebraic decision diagram (XADD). Using XADDs for efficient storage and manipulation of case based functions SDP methods have been able to solve problems such as multivariate inventory control for which exact solutions were previously considered intractable. Nevertheless, case representation and the symbolic XADD-based solutions are still quite sensitive to increase in the problem size, which can generally lead to exponential number of partitions. This lead for the motivating question of this work, whether XADDs efficiently compressed by approximation within fixed error bounds.
+Many real-world sequential-decision making problems involving
+resources, time, or spatial configurations naturally use continuous
+variables in both their state and action representation and can be
+modeled as Hybrid Markov Decision Processes (HMDPs).  While HMDPs have
+been studied extensively in the AI
+literature~\cite{boyan01,feng04,li05,kveton06,phase07,hao09}, only
+recently have symbolic dynamic programming
+(SDP)~\cite{sanner_uai11,zamani12} techniques been introduced to
+enable the exact solution of multivariate HMDPs with continuous
+actions and arbitrary piecewise linear dynamics and rewards.
 
- A natural example of a piecewise linear function that can be approximated very efficiently is a regular difference step function, as the one in picture \ref{fig:stepf}. For this function it seems clear that with a small error, in this particular case, independent of the number of partitions, a much simpler representation can be achieved by modifying the linear function and merging the regions. We would like to represent it in a single partition as in figure \ref{fig:steptolin}. So our problem became of how automatically discovering appropriate linear functions that can replace the original functions in more than one partition while incurring minimal error. It is important to note that our merging strategy involves calculating a new linear function, that can optimally approximate the two previous linear functions in their corresponding regions but may be of a reasonably distinct kind, for instance it may not be obtainable as a linear combination of the original case functions.
- 
-The problem we discovered turned to be a piecewise bilinear saddle optimization, and a original solution for specific optimization problem was proposed. The solution involves a dual stage iterative algorithm that requires solutions of linear programs with an increasing number of constraints to obtain the optimal solution for the bilinear problem. This solution permits
-the use of efficient linear program solvers and enables a novel class
-of bounded approximate SDP algorithms based on XADD compression.
+%% Don't fbox your images... it looks bad... too many extra lines
+%% confuse diagram and uneven padding around fbox appears sloppy.
 
-The gain in efficiency allows solution of many larger problems where exact SDP would be intractable. Moreover, this algorithm performs approximation with bounded error guarantees which is another innovation for HMDP solutions.
+%% DO NOT USED RASTERIZED PNGS!  Reviewers will comment on the
+%% graphics not being publication quality!
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[!ht]
+\vspace{-2mm}
 \centering
-\subfigure[Step function] {
-	\fbox{\includegraphics[width=0.45\textwidth]{Figures/stepfun/stepfun.png}}
-	\label{fig:stepf}
-}
-%\begin{minipage}{.3\textwidth}
-%\centering
-\subfigure[Linear Approximation] {
-	 \fbox{\includegraphics[width=0.45\textwidth]{Figures/stepfun/stepfunapp.png}}
-	\label{fig:steptolin} 
-}
-%\end{minipage}
-\caption{A step function can be much more compactly represented by a line that spans all partitions}
- \label{stepfunfig}
+\hspace{-3mm}\includegraphics[width=0.45\textwidth]{Figures/xadds/intro_diagram.pdf}
+%\subfigure[Step function] {
+%	\fbox{\includegraphics[width=0.45\textwidth]{Figures/stepfun/stepfun.png}}
+%	\label{fig:stepf}
+%}
+%\subfigure[Linear Approximation] {
+%	 \fbox{\includegraphics[width=0.45\textwidth]{Figures/stepfun/stepfunapp.png}}
+%	\label{fig:steptolin} 
+%}
+\caption{\footnotesize
+(a) A function $f(x)$ for $x \in [0,5]$ and its XADD representation
+(solid branch is true, dotted branch is false); (b) A compressed XADD 
+approximation $g(x)$ of $f(x)$.}  \label{fig:stepfunfig}
+\vspace{-3mm}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The paper is organized as follows: Section 2 describes the symbolic functions and the data structure used to compactly represent them; Section 3 describes the main approximation algorithm for piecewise linear symbolic functions; Section 4 explains the bounded error approximate SDP planner for HMDPs; Section 5 describes our experimental results comparing our planner to exact solvers; Section 6 contains a brief overview of related work on solutions to HMDPs and Section 7 contains the conclusions.
+What has proved crucial in this SDP solution of piecewise linear HMDPs
+is the use of the XADD data structure representation of functions
+shown in Figure~\ref{fig:stepfunfig}(a,b) that allows the HMDP value
+function to be represented compactly and SDP operations to be computed
+efficiently.  In brief, an XADD is simply an extension of the
+algebraic decision diagram (ADD)~\cite{bahar93add} to continuous
+variables where decisions may be boolean variable tests or
+inequalities of continuous expressions and leaves may be continuous
+expressions; XADDs are evaluated similarly to decision trees.
+Following the SDP work of~\cite{zamani12} for HMDPs with continuous
+actions, which we extend in this work, we restrict our attention to
+XADDs with linear inequalities and expressions.
+
+While XADDs have enabled SDP solutions to HMDPs that would not be
+otherwise possible with more na\"{i}ve representations of piecewise
+functions, XADDs still have limitations --- for some problems the HMDP
+solution (represented by a value function) simply has many distinct
+pieces and does not admit a more compact \emph{exact} XADD
+representation, e.g, Figure~\ref{fig:stepfunfig}(a).  However,
+motivated by previous approximation work in discrete factored MDPs
+using ADD approximation~\cite{apricodd}, we pose the question of
+whether there exists a technique for compressing an XADD in exchange
+for some bounded approximation error; as a hint of the solution we
+note that Figure~\ref{fig:stepfunfig}(a) can be compactly approximated
+by \ref{fig:stepfunfig}(b) which is more compact and induces
+relatively small approximation error.  In the case of ADDs, this
+approximation process was straightforward: leaves with nearby constant
+values are averaged and merged, leading to bottom-up compaction of the
+ADD.  In the XADD, if we wish to take a similar approach, we see that
+the problem is more complex since it is not clear (1) which leaves to
+merge, or (2) how to find the best approximation of these leaves that
+minimizes the error over the constrained, continuous space where each
+leaf is valid --- indeed, as Figure~\ref{fig:stepfunfig}(a,b)
+demonstrates, the answer is not given simply by averaging leaves since
+the average of constant leaves in (a) could never produce the linear
+function in the leaves of (b).  Hence, we wish to answer questions (1)
+and (2) to produce an approximation like that given in
+Figure~\ref{fig:stepfunfig}.
+
+To answer these questions, we propose a bounded error compression
+technique for linear XADDs that involves the solution of a constrained
+bilinear saddle point problem.  Fortuitously, we show that given the
+special structure of this problem, it can be expressed as a bilevel
+linear programming problem (where a constraint itself is an
+optimization problem, leading to a second level of optimization).
+Fortunately, while the second-level optimization problem implicitly
+represents an infinite number of constraints, we prove that a
+constraint generation approach to handling this second stage will
+allow the first stage to terminate at optimality after generating only
+a finite number of constraints.  This solution permits the use of
+efficient linear program solvers for XADD compression and enables a
+novel class of bounded approximate SDP algorithms for hybrid MDPs.
+Empirically we demonstrate that this approach to XADD compression
+offers order-of-magnitude speedups over the exact solution in exchange
+for a small approximation error, thus vastly increasing the range of
+HMDPs for which solutions with strong error guarantees are possible.
+
+%% No mention of paper organization: this is just filler content that
+%% no one ever reads -- readers spot it and skip to the next section.
