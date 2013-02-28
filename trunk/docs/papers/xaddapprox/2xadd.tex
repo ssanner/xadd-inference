@@ -1,4 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% NOTE: Better to put the graphics above the math... visualize the function,
+%%       see the XADD representatin... then examine the mathematical semantics.
+%%
 \vspace{-5mm}
 \begin{figure}[t!]
 \begin{minipage}{0.15\textwidth}
@@ -61,16 +65,19 @@ approximate symbolic dynamic programming algorithm for hybrid MDPs.
 %% XADDs since XADDs have already been introduced and discuss why
 %% you're taking the time to discuss the case representation.
 
-Underlying the XADD of Figure~\ref{fig:stepfunfig} is a simple
-piecewise linear function that we can represent in mathematical case
-form that we use as a semantical representation of XADDs throughout
-this paper.  Specifically, given a domain of boolean and continuous
-variables $(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$,
-where $b_i \in \{ 0,1 \}$ ($1 \leq i \leq n$) and $x_j \in
+An XADD is a function represented by a directed acyclic graph having a
+fixed ordering of decision tests from root to leaf.  For example,
+Figure~\ref{fig:symbex}(a) shows the plot of a piecewise function and
+Figure~\ref{fig:symbex}(b) its XADD representation.  Underlying the
+XADD in Figure~\ref{fig:symbex}(b) is a simple piecewise linear
+function that we can represent semantically in case form.
+Specifically, given a domain of boolean and continuous variables
+$(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where
+$b_i \in \{ 0,1 \}$ ($1 \leq i \leq n$) and $x_j \in
 [x_j^{\min},x_j^{\max}]$ ($1 \leq j \leq m$) for
-$x_j^{\min},x_j^{\max} \in \mathbb{R}$ and $x_j^{\max} > x_j^{\min}$, a case
-statement with linear piece constraints and linear values has the form
-{\footnotesize 
+$x_j^{\min},x_j^{\max} \in \mathbb{R}$ and $x_j^{\max} > x_j^{\min}$,
+a case statement representing an XADD with linear decisions and leaf
+expressions takes the following piecewise linear form {\footnotesize
 \begin{align}
 f(\vec{b},\vec{x}) = 
 \begin{cases}
@@ -93,16 +100,15 @@ are logical formulae defined over the domain $(\vec{b},\vec{x})$ that
 can include arbitrary logical ($\land,\lor,\neg$) combinations of (i)
 boolean variables and (ii) linear inequalities over $\vec{x}$.
 
-In the XADD examples of Figure~\ref{fig:stepfunfig}, we note that 
+In the XADD examples of Figure~\ref{fig:stepfunfig},  
 \emph{every leaf} represents a case value $f_i$ and 
 \emph{every path from root to leaf} represents a conjunction
 of decision constraints.  The disjunction of all path constraints
 leading to leaf $f_i$ corresponds to a case partition
 $\l \phi_i(\vec{b},\vec{x}) : f_i(\vec{x}) \r$.  Clearly, all case
 partitions derived from an XADD must be mutually disjoint and
-exhaustive of the domain $(\vec{b},\vec{x})$ and hence the 
-case statement for a XADD $f(\vec{b},\vec{x})$ must be a well-defined
-function.
+exhaustive of the domain $(\vec{b},\vec{x})$, hence XADDs
+represent well-defined functions.
 
 %% This is not important for XADD approximation... it has been
 %% covered in previous work for SDP that is cited.
@@ -138,7 +144,8 @@ $\phi_i$ as
 $C(\phi_i) = \bigcup_j \PT(\theta_{ij})$, 
 %\end{equation*}
 where $\PT$ extracts the subset of linear constraints from
-$\theta_{ij}$. Figure~\ref{fig:symbex} illustrates the defined concepts for an example function.
+$\theta_{ij}$. Figure~\ref{fig:symbex}(a) illustrates the different
+polytopes in the XADD of \ref{fig:symbex}(b).
 
 \subsection{XADD Operations} 
 
@@ -194,7 +201,7 @@ $ = $
 XADDs remains in linear case form, we note that unlike ADDs which
 prohibit continuous variables $\vec{x}$ and have a fixed set of
 boolean decision variables, the XADD representation may need to create
-new decision nodes for the linear inequalities $\{ f_1 > g_1, f_1 >
+\emph{new decision tests} for the linear inequalities $\{ f_1 > g_1, f_1 >
 g_2, f_2 > g_1, f_2 > g_2 \}$ over $\vec{x}$ as a result of the $\max$.
 
 Additional XADD operations such as symbolic substitution and
