@@ -730,7 +730,10 @@ public class XADD {
 			// getINode will take care of 'low==high'
 			ret = getINode(var, low, high);
 
-		}
+		} 
+//		else {
+//			System.out.println("ComputeTermNode: " + n1.toString() + " " + _aOpNames[op] + " " + n2.toString() + "\n                 = " + getString(ret));
+//		}
 
 		_hmApplyCache.put(new IntTriple(a1, a2, op), ret);
 		return ret;
@@ -817,7 +820,8 @@ public class XADD {
 
 			// Operations: +,-,*,/
 			if ((op != MAX) && (op != MIN)) {
-				 return getTermNode(new OperExpr(ArithOperation.fromXADDOper(op), xa1._expr, xa2._expr));
+				//System.out.println("Returning: " + new OperExpr(ArithOperation.fromXADDOper(op), xa1._expr, xa2._expr));
+				return getTermNode(new OperExpr(ArithOperation.fromXADDOper(op), xa1._expr, xa2._expr));
 			}
 			
 			CompExpr comp = new CompExpr(CompOperation.LT_EQ, xa1._expr, xa2._expr);
