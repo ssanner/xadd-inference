@@ -28,12 +28,34 @@ public class TestXADD {
 	 */
 	
 	public static void main(String[] args) throws Exception {
-		main1(args);
+		main4(args);
+	}
+	
+	public static void main4(String[] args) throws Exception {
+		XADD xadd_context = new XADD();
+		int expr1 = TestBuild(xadd_context, "./src/xadd/ex/delta1.xadd");
+		int reduced_e1 = xadd_context.reduceLP(expr1);
+		//xadd_context.getGraph(reduced_e1).launchViewer();
+		
+		// Reducing with LP constraint checking
+		//XADDUtils.PlotXADD(xadd_context, reduced_e1, -5, 0.1, 5, "x", "Reduced expression");
+	
+		int expr2 = TestBuild(xadd_context, "./src/xadd/ex/xadd_sq_test.xadd");
+		//xadd_context.getGraph(expr2).launchViewer();
+
+		int mult_expr = xadd_context.apply(reduced_e1, expr2, XADD.PROD); 
+		int add_expr = xadd_context.apply(mult_expr, reduced_e1, XADD.SUM); 
+		xadd_context.getGraph(mult_expr).launchViewer();
+		xadd_context.getGraph(add_expr).launchViewer();
+		
+		XADDUtils.PlotXADD(xadd_context, mult_expr, -5, 0.1, 5, "x", "Mult expression");
+		XADDUtils.PlotXADD(xadd_context, add_expr,  -5, 0.1, 5, "x", "Add expression");
+
 	}
 	
 	public static void main3(String[] args) throws Exception {
 		XADD xadd_context = new XADD();
-		int expr1 = TestBuild(xadd_context, "./src/xadd/xadd_sq_test.xadd");
+		int expr1 = TestBuild(xadd_context, "./src/xadd/ex/xadd_sq_test.xadd");
 		int reduced_e1 = xadd_context.reduceLP(expr1);
 		xadd_context.getGraph(reduced_e1).launchViewer();
 		
@@ -102,7 +124,7 @@ public class TestXADD {
 		XADD xadd_context = new XADD();
 
 		//////////////////////
-		int ixadd = TestBuild(xadd_context, "./src/xadd/test7.xadd");
+		int ixadd = TestBuild(xadd_context, "./src/xadd/ex/test7.xadd");
 		
 		Graph g1 = xadd_context.getGraph(ixadd);
 		g1.launchViewer();
@@ -189,10 +211,10 @@ public class TestXADD {
 		xadd_context.getVarIndex(xadd_context.new BoolDec("g"), true);
 		xadd_context.getVarIndex(xadd_context.new BoolDec("h"), true);
 
-		int xadd_implied2 = TestBuild(xadd_context, "./src/xadd/implied2.xadd");
+		int xadd_implied2 = TestBuild(xadd_context, "./src/xadd/ex/implied2.xadd");
 		//System.in.read();
 		
-		int xadd_circle = TestBuild(xadd_context, "./src/xadd/circle.xadd");
+		int xadd_circle = TestBuild(xadd_context, "./src/xadd/ex/circle.xadd");
 		Graph gc = xadd_context.getGraph(xadd_circle); gc.launchViewer();
 		//System.in.read();
 		
@@ -209,13 +231,13 @@ public class TestXADD {
 		// xadd_context.new XADDLeafIndefIntegral("x2"), /*canonical_reorder*/false);
 		// xadd_context.getGraph(int2_xac).launchViewer();
 
-		int xadd1 = TestBuild(xadd_context, "./src/xadd/test1.xadd");
-		int xadd2 = TestBuild(xadd_context, "./src/xadd/test2.xadd");
+		int xadd1 = TestBuild(xadd_context, "./src/xadd/ex/test1.xadd");
+		int xadd2 = TestBuild(xadd_context, "./src/xadd/ex/test2.xadd");
 
-		int xadd3 = TestBuild(xadd_context, "./src/xadd/test3.xadd");
+		int xadd3 = TestBuild(xadd_context, "./src/xadd/ex/test3.xadd");
 
-		int x1_d = TestBuild(xadd_context, "./src/xadd/test4.xadd");
-		int d = TestBuild(xadd_context, "./src/xadd/test5.xadd");
+		int x1_d = TestBuild(xadd_context, "./src/xadd/ex/test4.xadd");
+		int d = TestBuild(xadd_context, "./src/xadd/ex/test5.xadd");
 		HashMap<String, ArithExpr> hm = new HashMap<String, ArithExpr>();
 		hm.put("x1", new DoubleExpr(5d));
 		int d2 = xadd_context.substitute(x1_d, hm);
@@ -279,7 +301,7 @@ public class TestXADD {
 		// y should *not* contain the variable x
 		//
 		// Here y = xadd_circle(x1,x2,r1,r2), x = k, z = xadd1(k,x1,f)
-		xadd1 = TestBuild(xadd_context, "./src/xadd/test1.xadd");
+		xadd1 = TestBuild(xadd_context, "./src/xadd/ex/test1.xadd");
 
 		int y = xadd_context.reduceProcessXADDLeaf(xadd_circle, xadd_context.new DeltaFunctionSubstitution("k", xadd1), /* canonical_reorder */
 		true);
@@ -295,8 +317,8 @@ public class TestXADD {
 		System.in.read();
 
 		// *****************TESTING MAX***********
-		int xadd4 = TestBuild(xadd_context, "./src/xadd/test4.xadd");
-		int xadd5 = TestBuild(xadd_context, "./src/xadd/test5.xadd");
+		int xadd4 = TestBuild(xadd_context, "./src/xadd/ex/test4.xadd");
+		int xadd5 = TestBuild(xadd_context, "./src/xadd/ex/test5.xadd");
 		int xaddrRes = xadd_context.apply(xadd4, xadd5, XADD.MAX);
 		Graph gRes = xadd_context.getGraph(xadd_context.reduceLP(xaddrRes));
 		gRes.launchViewer();
@@ -380,7 +402,7 @@ public class TestXADD {
 
 	public static int TestBuild(XADD xadd_context, String filename) {
 		int dd1 = xadd_context.buildCanonicalXADDFromFile(filename);
-		xadd_context.showGraph(dd1, "Parsed Graph: " + filename);
+		//xadd_context.showGraph(dd1, "Parsed Graph: " + filename);
 		//xadd_context.showGraph(xadd_context.apply(dd1, dd1, XADD.SUM),  "Parsed Graph, Sum");
 		//xadd_context.showGraph(xadd_context.apply(dd1, dd1, XADD.PROD), "Parsed Graph, Prod");
 		return dd1;

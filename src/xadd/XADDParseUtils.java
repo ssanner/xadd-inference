@@ -113,7 +113,12 @@ public class XADDParseUtils {
 		if (t._nArity == 0)
 			return context.getTermNode(new VarExpr(t._sFunName));
 
-		if (t._sFunName.equals("N") && t._nArity == 4) {
+		if (t._sFunName.equals("Delta") && t._nArity == 1) {
+
+			ArithExpr expr = ArithExpr.Convert2ArithExpr(t.getBinding(0));
+			return context.getTermNode(new DeltaFunExpr(expr)); 
+			
+		} else if (t._sFunName.equals("N") && t._nArity == 4) { // TODO: Postpone transformation?
 
 			ArithExpr expr = ArithExpr.Convert2ArithExpr(t.getBinding(0));
 			ArithExpr mu = ArithExpr.Convert2ArithExpr(t.getBinding(1));

@@ -121,6 +121,7 @@ public abstract class ExprLib{
 		public static final Class ARITH_CLASS = ArithExpr.class;
 		public static final Class OPER_CLASS = OperExpr.class;
 		public static final Class COMP_CLASS = CompExpr.class;
+		public static final Class DELTA_FUN_CLASS = DeltaFunExpr.class;
 	
 		public static HashMap<Class, Integer> _class2order = new HashMap<Class, Integer>();
 		static {
@@ -129,6 +130,7 @@ public abstract class ExprLib{
 			_class2order.put(ARITH_CLASS, 2);
 			_class2order.put(OPER_CLASS, 3);
 			_class2order.put(COMP_CLASS, 4);
+			_class2order.put(DELTA_FUN_CLASS, 100); // Always last
 		}
 	
 		public abstract Expr makeCanonical();
@@ -141,8 +143,8 @@ public abstract class ExprLib{
 			if (!this_class.equals(other_class)) {
 				Integer rank_this  = _class2order.get(this_class);
 				Integer rank_other = _class2order.get(other_class);
-				if (rank_this  == null) rank_this  = -1;  // Handling function expressions which always come first
-				if (rank_other == null) rank_other = -1;
+				if (rank_this  == null) rank_this  = 5;  // Put function expressions after main arithmetic expressions (0-4)
+				if (rank_other == null) rank_other = 5;
 				return rank_this - rank_other;
 			} else
 				return this.hashCode() - o.hashCode();
@@ -960,7 +962,7 @@ public static class OperExpr extends ArithExpr {
 				// term
 				if (i == 0 && (_terms.get(0) instanceof DoubleExpr)) {
 					((DoubleExpr)_terms.get(0)).round();
-					if (Math.abs(((DoubleExpr) _terms.get(0))._dConstVal) <= XADD.PRECISION)
+					if (Math.abs(((DoubleExpr) _terms.get(0))._dConstVal) < XADD.PRECISION)
 						return false;
 					else
 						continue;
@@ -985,8 +987,12 @@ public static class OperExpr extends ArithExpr {
 
 	public boolean checkTermCanonical() {
 		// This is term canonical if it is a product of a constant followed
-		// by variables
+		// by variables or a product with a delta function
 		if (_type == ArithOperation.PROD) {
+			
+			if (_terms.get(_terms.size() - 1) instanceof DeltaFunExpr) // Delta comes last if it is present
+				return true;
+			
 			if (!(_terms.get(0) instanceof DoubleExpr))
 				return false;
 
@@ -1026,7 +1032,7 @@ public static class OperExpr extends ArithExpr {
 
 		// A simple non-canonical case is OperExpr - 0, so catch this
 		if (_type == ArithOperation.MINUS && _terms.get(1) instanceof DoubleExpr
-				&& Math.abs(((DoubleExpr) _terms.get(1))._dConstVal) <= XADD.PRECISION) {
+				&& Math.abs(((DoubleExpr) _terms.get(1))._dConstVal) < XADD.PRECISION) {
 			return _terms.get(0).makeCanonical();
 		}
 
@@ -1070,7 +1076,11 @@ public static class OperExpr extends ArithExpr {
 		// X * (1/Y) * (W + Z) * (U + V)
 		// Maintain sum list...
 		// if division, multiply in 1/x
-		if (new_type == ArithOperation.PROD) {
+		boolean contains_delta = new_terms.get(new_terms.size() - 1) instanceof DeltaFunExpr; // Delta is always last
+		//if (contains_delta) System.err.println(new_type + ": " + new_terms);
+		
+		// Don't simplify a product if it contains a delta
+		if (new_type == ArithOperation.PROD && !contains_delta) {
 
 			ArrayList<ArithExpr> sum_terms = new ArrayList<ArithExpr>();
 			ArithExpr first_term = new_terms.get(0);
@@ -1128,7 +1138,8 @@ public static class OperExpr extends ArithExpr {
 			}
 		}
 
-		// 9. Merge (and remove) all polynomial terms in a sum
+		// 9. Merge (and remove) all polynomial/function terms in a sum
+		//    Product terms of delta may not be canonical because they were ignored for canonicalization earlier.
 		if (new_type == ArithOperation.SUM) {
 			ArrayList<ArithExpr> non_terms = new ArrayList<ArithExpr>();
 			double const_sum = 0d;
@@ -1137,17 +1148,28 @@ public static class OperExpr extends ArithExpr {
 			HashMap<ArrayList<ArithExpr>, Double> term2coef = new HashMap<ArrayList<ArithExpr>, Double>();
 			for (ArithExpr e : new_terms) {
 				if ((e instanceof OperExpr && ((OperExpr) e)._type == ArithOperation.PROD)
-						|| (e instanceof VarExpr)) {
+						|| (e instanceof VarExpr) || (e instanceof FunExpr)) {
 
 					// Determine the terms and coefficient
 					ArrayList<ArithExpr> index = new ArrayList<ArithExpr>();
 					DoubleExpr d = null;
-					if (e instanceof VarExpr) {
+					if (e instanceof VarExpr || e instanceof FunExpr) {
 						index.add(e);
 						d = new DoubleExpr(1d);
 					} else {
 						OperExpr o = (OperExpr) e;
-						d = (DoubleExpr) o._terms.get(0);
+						Expr first_term = o._terms.get(0);
+						if (first_term instanceof DoubleExpr)
+							d = (DoubleExpr) first_term;
+						else { // This should only occur when a product term contains a DeltaExpr and it was not simplified
+							if (!(o._terms.get(o._terms.size() - 1) instanceof DeltaFunExpr)) { 
+								System.err.println("Possible non-canonical term: " + o);
+								new Exception().printStackTrace(System.err);
+								System.exit(1);
+							}
+							index.add((ArithExpr)first_term); // It's not a constant
+							d = new DoubleExpr(1d);
+						}
 						for (int j = 1; j < o._terms.size(); j++)
 							index.add(o._terms.get(j));
 					}
@@ -1198,7 +1220,7 @@ public static class OperExpr extends ArithExpr {
 				else
 					factors.add(e);
 			}
-			if (coef != 0d) {
+			if (Math.abs(coef) > XADD.PRECISION) {
 				factors.add(0, new DoubleExpr(coef));
 				new_terms = factors; // Will be sorted on new OperExpr
 			} else {
@@ -1599,10 +1621,7 @@ public static class OperExpr extends ArithExpr {
 		public Expr makeCanonical() {
 			if (Double.isInfinite(_dConstVal) || Double.isNaN(_dConstVal) || this == ONE || this == ZERO || this == NEG_ONE)
 				return this;
-			this.round();
-			//DoubleExpr dexpr = new DoubleExpr(_dConstVal);
-			//dexpr.round();
-			return this;
+			return this.round();
 		}
 		
 		public ArithExpr round() {
@@ -1697,7 +1716,7 @@ public static class OperExpr extends ArithExpr {
 	// we need to make them ArithExpr's
 	public abstract static class FunExpr extends ArithExpr {
 
-		public FunExpr(List<ArithExpr> l) { 
+		public FunExpr(ArrayList<ArithExpr> l) { 
 			_args = new ArrayList<ArithExpr>(l);
 		}
 		
@@ -1707,9 +1726,10 @@ public static class OperExpr extends ArithExpr {
 		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
+			boolean omit_parens = _args.size() == 1 && _args.get(0) instanceof OperExpr;
 			for (ArithExpr e : _args)
 				sb.append( (sb.length() != 0 ? ", " : "") + e.toString() );
-			return _funName + "(" + sb.toString() + ")";
+			return _funName + (omit_parens ? "" : "(") + sb.toString() + (omit_parens ? "" : ")");
 		}
 	
 		@Override
@@ -1799,15 +1819,15 @@ public static class OperExpr extends ArithExpr {
 		}
 	}
 	
-	public abstract static class DeltaFunExpr extends FunExpr {
+	public static class DeltaFunExpr extends FunExpr {
 
 		public final static String DELTA_NAME = "DELTA".intern();
 		
 		public DeltaFunExpr(ArithExpr e) {
-			this(Arrays.asList(e));
+			this(new ArrayList<ArithExpr>(Arrays.asList(e)));
 		}
 
-		public DeltaFunExpr(List<ArithExpr> l) {
+		public DeltaFunExpr(ArrayList<ArithExpr> l) {
 			super(l);
 			_funName = DELTA_NAME;
 		}
