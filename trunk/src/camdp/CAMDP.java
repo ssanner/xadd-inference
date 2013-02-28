@@ -228,12 +228,13 @@ public class CAMDP {
 
 				// Regress the current value function through each action (finite number of continuous actions)
 				int regr = _qfunHelper.regress(_valueDD, me.getValue());
-				//regr  = _context.reduceRound(regr);
+				regr  = _context.reduceRound(regr); // Round!
 				if (DISPLAY_POSTMAX_Q)
 					doDisplay(regr, "Q-" + me.getKey() + "^" +_nCurIter + "-" + String.format("%03d",Math.round(1000*APPROX_ERROR)) );
 	
 				// Maintain running max over different actions
 				_maxDD = (_maxDD == null) ? regr : _context.apply(_maxDD, regr, XADD.MAX);
+				_maxDD = _context.reduceRound(_maxDD); // Round!
 				_maxDD = _context.reduceLP(_maxDD); // Rely on flag XADD.CHECK_REDUNDANCY
 
 				// Optional post-max approximation 

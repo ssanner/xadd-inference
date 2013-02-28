@@ -1193,8 +1193,8 @@ public class XADD {
 
 		if (n instanceof XADDTNode) 
 		{
-			ArithExpr.round( ((XADDTNode)n)._expr );
-			return node_id; // Assuming that to have a node id means canonical
+			ArithExpr new_expr = ((XADDTNode)n)._expr.round();
+			return getTermNode(new_expr); 
 		}
 
 		// If its an internal node, check the reduce cache
@@ -1205,17 +1205,19 @@ public class XADD {
 
 		XADDINode inode = (XADDINode) n;
 
-		Decision d = _alOrder.get(inode._var);
-		/////////// 
+		// Round decision if possible
+		int var = inode._var;
+		Decision d = _alOrder.get(var);
 		if (d instanceof ExprDec)
 		{
-			((ExprDec) d).round();
+			ExprDec new_expr_dec = ((ExprDec) d).round();
+			var = getVarIndex(new_expr_dec, true);
 		}
 		int low = reduceRound(inode._low);
 		int high = reduceRound(inode._high);
 
 		// For now we'll only do linearization of quadratic decisions
-		ret = getINode(inode._var, low, high);
+		ret = getINode(var, low, high);
 		// Put return value in cache and return
 		_hmReduceCache.put(new IntTriple(node_id, -1, ROUND), ret);
 		return ret;
@@ -2591,10 +2593,8 @@ public class XADD {
 			_expr = expr;
 		}
 
-		public void round() {
-			OperExpr lhs = (OperExpr) _expr._lhs;
-			for (ArithExpr a : lhs._terms)
-				ArithExpr.round(a);
+		public ExprDec round() {
+			return new ExprDec(new CompExpr(_expr._type, _expr._lhs.round(), _expr._rhs.round()));
 		}
 
 		public int hashCode() {

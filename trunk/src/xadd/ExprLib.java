@@ -12,6 +12,7 @@
 
 package xadd;
 
+import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -138,8 +139,10 @@ public abstract class ExprLib{
 			Class other_class = o.getClass();
 	
 			if (!this_class.equals(other_class)) {
-				Integer rank_this = _class2order.get(this_class);
+				Integer rank_this  = _class2order.get(this_class);
 				Integer rank_other = _class2order.get(other_class);
+				if (rank_this  == null) rank_this  = -1;  // Handling function expressions which always come first
+				if (rank_other == null) rank_other = -1;
 				return rank_this - rank_other;
 			} else
 				return this.hashCode() - o.hashCode();
@@ -387,7 +390,7 @@ public abstract class ExprLib{
 			if (XADD.NORMALIZE_DECISIONS) {
 				if (new_lhs instanceof OperExpr){
 					new_lhs = ((OperExpr) new_lhs).normalize();
-					ArithExpr.round(new_lhs);
+					new_lhs = new_lhs.round();
 				}
 			}
 			new_expr = new CompExpr(new_expr._type, new_lhs, ZERO);
@@ -658,29 +661,8 @@ public abstract static class ArithExpr extends Expr {
 
 	public abstract void collectVars(HashSet<String> vars);
 	
-	public static void round(ArithExpr tempExpr){
-		if (tempExpr instanceof DoubleExpr)
-			((DoubleExpr)tempExpr).round();
-		else if (tempExpr instanceof OperExpr)
-		{
-			OperExpr oper_expr = (OperExpr) tempExpr;
-			// sum of products, for each sum term:
-			for (ArithExpr e : oper_expr._terms) 
-			{
-				if (e instanceof DoubleExpr)
-					((DoubleExpr)e).round(); 
-				else if (e instanceof OperExpr)
-				{
-					// inside each product term
-					if (((OperExpr) e)._type == ArithOperation.PROD) // for each of the products:
-						for (ArithExpr e1 : ((OperExpr) e)._terms) 
-							if (e1 instanceof DoubleExpr)
-								((DoubleExpr)e1).round(); 
-				}
-			}
-		}
-	}
-	
+	public abstract ArithExpr round();
+		
 	// Assume expression is canonical, hence in sum of products form (could be a single term)
 	public ArithExpr differentiateExpr(String diff_var) {
 		diff_var = diff_var.intern();
@@ -858,6 +840,17 @@ public static class OperExpr extends ArithExpr {
 		ArrayList<ArithExpr> terms2 = new ArrayList<ArithExpr>();
 		for (ArithExpr expr : _terms)
 			terms2.add(expr.substitute(subst));
+		OperExpr expr = new OperExpr(_type, terms2);
+		if (expr._terms.size() == 1)
+			return expr._terms.get(0);
+		else
+			return expr;
+	}
+
+	public ArithExpr round() {
+		ArrayList<ArithExpr> terms2 = new ArrayList<ArithExpr>();
+		for (ArithExpr expr : _terms)
+			terms2.add(expr.round());
 		OperExpr expr = new OperExpr(_type, terms2);
 		if (expr._terms.size() == 1)
 			return expr._terms.get(0);
@@ -1612,10 +1605,10 @@ public static class OperExpr extends ArithExpr {
 			return this;
 		}
 		
-		public void round() {
+		public ArithExpr round() {
 			if (Double.isInfinite(_dConstVal) || Double.isNaN(_dConstVal) || this == ONE || this == ZERO || this == NEG_ONE)
-				return;
-			_dConstVal = (Math.round(_dConstVal*XADD.ROUND_PRECISION)*1d)/XADD.ROUND_PRECISION;
+				return this;
+			return new DoubleExpr( (Math.round(_dConstVal*XADD.ROUND_PRECISION)*1d)/XADD.ROUND_PRECISION );
 		}
 	
 	}
@@ -1680,6 +1673,11 @@ public static class OperExpr extends ArithExpr {
 		public String toString(boolean format) {
 			return toString();
 		}
+
+		@Override
+		public ArithExpr round() {
+			return this;
+		}
 	}
 	
 	public static class CoefExprPair {
@@ -1688,6 +1686,148 @@ public static class OperExpr extends ArithExpr {
 		public CoefExprPair(ArithExpr expr, double coef) {
 			_expr = expr;
 			_coef = coef;
+		}
+	}
+	
+	//////////////////////////////////////////////////////////////////////////
+	//                       Special-Purpose Functions
+	//////////////////////////////////////////////////////////////////////////
+	
+	// Defined functions... we want these to be embeddable in OperExpr so
+	// we need to make them ArithExpr's
+	public abstract static class FunExpr extends ArithExpr {
+
+		public FunExpr(List<ArithExpr> l) { 
+			_args = new ArrayList<ArithExpr>(l);
+		}
+		
+		public String _funName = null;
+		public ArrayList<ArithExpr> _args = new ArrayList<ArithExpr>();
+		
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			for (ArithExpr e : _args)
+				sb.append( (sb.length() != 0 ? ", " : "") + e.toString() );
+			return _funName + "(" + sb.toString() + ")";
+		}
+	
+		@Override
+		public String toString(boolean format) {
+			StringBuilder sb = new StringBuilder();
+			for (ArithExpr e : _args)
+				sb.append( (sb.length() != 0 ? ", " : "") + e.toString(format) );
+			return _funName + "(" + sb.toString() + ")";
+		}
+	
+		@Override
+		public boolean equals(Object o) {
+			if (this.getClass().equals(o.getClass())) {
+				FunExpr f = (FunExpr)o;
+				return _funName.equals(f._funName) && _args.equals(f._args);
+			} else
+				return false;
+		}
+	
+		@Override
+		public int hashCode() {
+			return _funName.hashCode() + _args.hashCode();
+		}
+	
+		public final static Class ARRAYLIST_ARITH_EXPR_CLASS = new ArrayList<ArithExpr>().getClass();
+
+		@Override
+		public ArithExpr substitute(HashMap<String, ArithExpr> subst) {
+			
+			ArrayList<ArithExpr> new_args = new ArrayList<ArithExpr>();
+			for (ArithExpr e : _args)
+				new_args.add(e.substitute(subst));
+			
+			try {
+				Constructor<? extends FunExpr> constructor = getClass().getDeclaredConstructor( ARRAYLIST_ARITH_EXPR_CLASS ) ;
+				return constructor.newInstance( new_args ) ;
+			} catch( Exception e ) {
+				System.err.println(e);
+				e.printStackTrace(System.err);
+				System.exit(1);
+				return null;
+			}
+		}
+
+		@Override
+		public void collectVars(HashSet<String> vars) {
+			for (ArithExpr e : _args)
+				e.collectVars(vars);
+		}
+	
+		@Override
+		// Assuming this should not modify existing structure
+		public Expr makeCanonical() {
+			
+			ArrayList<ArithExpr> new_args = new ArrayList<ArithExpr>();
+			for (ArithExpr e : _args)
+				new_args.add((ArithExpr)e.makeCanonical());
+
+			try {
+				Constructor<? extends FunExpr> constructor = getClass().getDeclaredConstructor( ARRAYLIST_ARITH_EXPR_CLASS ) ;
+				return constructor.newInstance( new_args ) ;
+			} catch( Exception e ) {
+				System.err.println(e);
+				e.printStackTrace(System.err);
+				System.exit(1);
+				return null;
+			}
+		}
+		
+		@Override
+		// Modifies existing structure... need to call before it is hashed
+		public ArithExpr round() {	
+			
+			ArrayList<ArithExpr> new_args = new ArrayList<ArithExpr>();
+			for (ArithExpr e : _args)
+				new_args.add(e.round());
+
+			try {
+				Constructor<? extends FunExpr> constructor = getClass().getDeclaredConstructor( ARRAYLIST_ARITH_EXPR_CLASS ) ;
+				return constructor.newInstance( new_args ) ;
+			} catch( Exception e ) {
+				System.err.println(e);
+				e.printStackTrace(System.err);
+				System.exit(1);
+				return null;
+			}
+		}
+	}
+	
+	public abstract static class DeltaFunExpr extends FunExpr {
+
+		public final static String DELTA_NAME = "DELTA".intern();
+		
+		public DeltaFunExpr(ArithExpr e) {
+			this(Arrays.asList(e));
+		}
+
+		public DeltaFunExpr(List<ArithExpr> l) {
+			super(l);
+			_funName = DELTA_NAME;
+		}
+
+		@Override
+		// Might set to Double.POSITIVE_INFINITY, but we'll take a discrete intepretation and set it to 1
+		public Double evaluate(HashMap<String, Double> cont_assign) {
+			ArithExpr expr = _args.get(0);
+			Double eval = expr.evaluate(cont_assign);
+			if (eval == null)
+				return null;
+			else
+				return Math.abs(eval) < XADD.PRECISION ? 1d : 0d;
+		}
+	
+		@Override
+		// Might set to Double.POSITIVE_INFINITY, but we'll take a discrete intepretation and set it to 1
+		public Double evaluateRange(HashMap<String, Double> low_assign,
+				HashMap<String, Double> high_assign, boolean use_low) {
+			return 1d;
 		}
 	}
 }
