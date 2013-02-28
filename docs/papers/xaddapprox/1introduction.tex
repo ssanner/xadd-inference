@@ -30,24 +30,26 @@ actions and arbitrary piecewise linear dynamics and rewards.
 %}
 \caption{\footnotesize
 (a) A function $f(x)$ for $x \in [0,5]$ and its XADD representation
-(solid branch is true, dotted branch is false); (b) A compressed XADD 
-approximation $g(x)$ of $f(x)$.}  \label{fig:stepfunfig}
+(solid branch is true, dotted branch is false); (b) A compressed XADD
+approximation $g(x)$ of $f(x)$.  While these simple XADDs are trees, XADDs 
+are more generally directed acyclic graphs as we show 
+later.}  \label{fig:stepfunfig}
 \vspace{-3mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 What has proved crucial in this SDP solution of piecewise linear HMDPs
-is the use of the XADD data structure representation of functions
-shown in Figure~\ref{fig:stepfunfig}(a,b) that allows the HMDP value
-function to be represented compactly and SDP operations to be computed
-efficiently.  In brief, an XADD is simply an extension of the
-algebraic decision diagram (ADD)~\cite{bahar93add} to continuous
-variables where decisions may be boolean variable tests or
+is the use of the XADD data structure representation of functions like
+the simple examples shown in Figure~\ref{fig:stepfunfig}(a,b) that
+allows the HMDP value function to be represented compactly and SDP
+operations to be computed efficiently.  In brief, an XADD is simply an
+extension of the algebraic decision diagram (ADD)~\cite{bahar93add} to
+continuous variables where decisions may be boolean variable tests or
 inequalities of continuous expressions and leaves may be continuous
-expressions; XADDs are evaluated similarly to decision trees.
-Following the SDP work of~\cite{zamani12} for HMDPs with continuous
-actions, which we extend in this work, we restrict our attention to
-XADDs with linear inequalities and expressions.
+expressions; XADDs are evaluated from root to leaf like decision
+trees.  Following the SDP work of~\cite{zamani12} for HMDPs with
+continuous actions that we extend, we restrict XADDs to have linear
+decisions and leaves.
 
 While XADDs have enabled SDP solutions to HMDPs that would not be
 otherwise possible with more na\"{i}ve representations of piecewise
@@ -57,22 +59,26 @@ pieces and does not admit a more compact \emph{exact} XADD
 representation, e.g, Figure~\ref{fig:stepfunfig}(a).  However,
 motivated by previous approximation work in discrete factored MDPs
 using ADD approximation~\cite{apricodd}, we pose the question of
-whether there exists a technique for compressing an XADD in exchange
-for some bounded approximation error; as a hint of the solution we
-note that Figure~\ref{fig:stepfunfig}(a) can be compactly approximated
-by \ref{fig:stepfunfig}(b) which is more compact and induces
-relatively small approximation error.  In the case of ADDs, this
-approximation process was straightforward: leaves with nearby constant
-values are averaged and merged, leading to bottom-up compaction of the
-ADD.  In the XADD, if we wish to take a similar approach, we see that
-the problem is more complex since it is not clear (1) which leaves to
-merge, or (2) how to find the best approximation of these leaves that
-minimizes the error over the constrained, continuous space where each
-leaf is valid --- indeed, as Figure~\ref{fig:stepfunfig}(a,b)
-demonstrates, the answer is not given simply by averaging leaves since
-the average of constant leaves in (a) could never produce the linear
-function in the leaves of (b).  Hence, we wish to answer questions (1)
-and (2) to produce an approximation like that given in
+whether there exists a method for compressing an XADD in exchange
+for some bounded approximation error; as a hint of the solution, we
+note that Figure~\ref{fig:stepfunfig}(a) can be approximated
+by \ref{fig:stepfunfig}(b) which is more compact and induces relatively 
+small error.  
+
+But how do we find such a compressed XADD?  In the simpler case of
+ADDs~\cite{apricodd}, this approximation process was straightforward:
+leaves with nearby constant values are averaged and merged, leading to
+bottom-up compaction of the ADD.  In the XADD, if we wish to take a
+similar approach, we see that the problem is more complex since it is
+not clear (1) which leaves to merge, or (2) how to find the best
+approximation of these leaves that minimizes the error over the
+\emph{constrained, continuous} space where each leaf is valid.  Indeed, as
+Figure~\ref{fig:stepfunfig}(a,b) demonstrates, the answer
+is \emph{not} given simply by averaging leaves since the average of
+constant leaves in (a) could never produce the linear function in the
+leaves of (b).  Hence, we wish to answer questions (1) and (2) to
+produce a \emph{bounded and low-error approximation over the entire
+continuous function domain} like that given in
 Figure~\ref{fig:stepfunfig}.
 
 To answer these questions, we propose a bounded error compression
@@ -84,7 +90,7 @@ linear programming problem. % (where a constraint itself is an
 While the second-level optimization problem in this
 bilevel program implicitly represents an infinite number of
 constraints, we show that a constraint generation approach for 
-the second stage allows the first stage to terminate at
+this second stage allows the first stage to terminate at
 optimality after generating only a finite number of constraints.  This
 solution permits the use of efficient linear program solvers for XADD
 compression and enables a novel class of bounded approximate SDP

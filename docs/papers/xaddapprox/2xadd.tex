@@ -1,7 +1,54 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{-5mm}
+\begin{figure}[t!]
+\begin{minipage}{0.15\textwidth}
+{\scriptsize
+\begin{align*}
+f(x,y)= 
+\begin{cases}
+  \phi_1:& \hspace{-2mm} f_1\\ 
+  \phi_2: & \hspace{-2mm}f_2\\ 
+\end{cases}
+\end{align*} }
+\end{minipage}
+\begin{minipage}{0.15\textwidth}
+{\scriptsize
+\begin{align*}
+ \phi_1 = \theta_{11}\vee \theta_{12}\\
+\theta_{11} = x<0 \\
+\theta_{12} = x>0 \wedge y<0 \\
+ f_1 = \displaystyle \frac{x}{2} 
+\end{align*} }
+\end{minipage}
+\begin{minipage}{0.15\textwidth}
+{\scriptsize
+\begin{align*}
+\phi_2 = \theta_{21}\\
+\theta_{21} = x>0 \wedge y>0\\
+f_2 = \displaystyle -\frac{x}{2}
+\end{align*} }
+\end{minipage}\\
+\begin{minipage}{0.3\textwidth}
+\center
+\vspace{-13mm}
+\includegraphics[trim = 1cm 0cm 1cm 0cm,width=\textwidth]{Figures/stepfun/PiecewiseLinearEx.pdf} 
+\end{minipage}
+\begin{minipage}{0.15\textwidth}
+\center
+\vspace{-13mm}
+\includegraphics[width=\textwidth]{Figures/xadds/dia2.pdf}
+\end{minipage}
+\vspace{-10mm}
+
+\caption{Example of piecewise linear function in case and XADD form: \emph{(top)} Case formulation; \emph{(left)} Graphical plot; and \emph{(right)} XADD diagram.}
+\label{fig:symbex}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \label{sec:xadd}
 
-We begin with a formal definition of the extended algebraic decision
-diagram (XADD), then in Section~\ref{sec:approx} we will contribute
+We begin with a brief introduction to the extended algebraic decision
+diagram (XADD), then in Section~\ref{sec:approx} we contribute
 approximation techniques for XADDs and in Section~\ref{sec:basdp}, we
 will show how this approximation can be used in a bounded
 approximate symbolic dynamic programming algorithm for hybrid MDPs.
@@ -93,61 +140,23 @@ $C(\phi_i) = \bigcup_j \PT(\theta_{ij})$,
 where $\PT$ extracts the subset of linear constraints from
 $\theta_{ij}$. Figure~\ref{fig:symbex} illustrates the defined concepts for an example function.
 
-\vspace{-5mm}
-\begin{figure}[ht!]
-\begin{minipage}{0.15\textwidth}
-{\scriptsize
-\begin{align*}
-f(x,y)= 
-\begin{cases}
-  \phi_1:& \hspace{-2mm} f_1\\ 
-  \phi_2: & \hspace{-2mm}f_2\\ 
-\end{cases}
-\end{align*} }
-\end{minipage}
-\begin{minipage}{0.15\textwidth}
-{\scriptsize
-\begin{align*}
- \phi_1 = \theta_{11}\vee \theta_{12}\\
-\theta_{11} = x<0 \\
-\theta_{12} = x>0 \wedge y<0 \\
- f_1 = \displaystyle \frac{x}{2} 
-\end{align*} }
-\end{minipage}
-\begin{minipage}{0.15\textwidth}
-{\scriptsize
-\begin{align*}
-\phi_2 = \theta_{21}\\
-\theta_{21} = x>0 \wedge y>0\\
-f_2 = \displaystyle -\frac{x}{2}
-\end{align*} }
-\end{minipage}\\
-\begin{minipage}{0.3\textwidth}
-\center
-\vspace{-13mm}
-\includegraphics[trim = 1cm 0cm 1cm 0cm,width=\textwidth]{Figures/stepfun/PiecewiseLinearEx.pdf} 
-\end{minipage}
-\begin{minipage}{0.15\textwidth}
-\center
-\vspace{-13mm}
-\includegraphics[width=\textwidth]{Figures/xadds/dia2.pdf}
-\end{minipage}
-\vspace{-10mm}
-
-\caption{Example of piecewise linear function in case and XADD form: \emph{(top)} Case formulation; \emph{(left)} Graphical plot; and \emph{(right)} XADD diagram.}
-\label{fig:symbex}
-\end{figure}
-
 \subsection{XADD Operations} 
 
-XADDs are important not only because they compactly represent piecewise
-functions that arise in the forthcoming solution of hybrid MDPs, but
-also because operations on XADDs can efficiently exploit their structure.
-XADDs extend algebraic decision diagrams (ADDs)~\cite{bahar93add} and
-thus inherit most ADD unary and binary operations such as addition
-$\oplus$ and multiplication $\otimes$ without further comment.
-However, some XADD operations require extensions over the ADD, e.g.,
-the binary $\max$ operation represented here in case form:
+XADDs are important not only because they compactly represent
+piecewise functions that arise in the forthcoming solution of hybrid
+MDPs, but also because operations on XADDs can efficiently exploit
+their structure.  XADDs extend algebraic decision diagrams
+(ADDs)~\cite{bahar93add} and thus inherit most unary and binary ADD
+operations such as addition $\oplus$ and multiplication $\otimes$.
+While the addition of two linear piecewise functions represented by
+XADDs remains linear, in general their product may not (i.e., the values
+may be quadratic); however, for the purposes of symbolic dynamic
+programming later, we remark that we only ever need to multiply
+piecewise constaint functions by piecewise linear functions
+represented as XADDs, hencing yielding a piecewise linear result.
+
+Some XADD operations do require extensions over the ADD, e.g., the
+binary $\max$ operation represented here in case form:
 
 \vspace{-5mm}
 {\footnotesize
@@ -176,16 +185,17 @@ $ = $
   \phi_1 \wedge \psi_1 \wedge f_1 \leq g_1 : & \hspace{-2mm} g_1 \\ 
   \phi_1 \wedge \psi_2 \wedge f_1 > g_2    : & \hspace{-2mm}f_1 \\ 
   \phi_1 \wedge \psi_2 \wedge f_1 \leq g_2 : & \hspace{-2mm} g_2 \\ 
-  \hspace{1cm}\vdots \hspace{8mm}: & \hspace{-2mm} \vdots
+  \hspace{1cm}\vdots \hspace{8mm} & \hspace{-2mm} \vdots
   \end{cases}$
 \end{tabular}
 \end{center}
 \vspace{-3mm}
-} While the $\max$ result is still in linear case form, we note that
-unlike ADDs which prohibit continuous variables $\vec{x}$, the XADD
-representation may need to create new decision nodes for the linear
-inequalities $\{ f_1 > g_1, f_1 > g_2, f_2 > g_1, f_2 > g_2 \}$ over
-$\vec{x}$, if not already existing.
+} While the $\max$ of two linear piecewise functions represented as
+XADDs remains in linear case form, we note that unlike ADDs which
+prohibit continuous variables $\vec{x}$ and have a fixed set of
+boolean decision variables, the XADD representation may need to create
+new decision nodes for the linear inequalities $\{ f_1 > g_1, f_1 >
+g_2, f_2 > g_1, f_2 > g_2 \}$ over $\vec{x}$ as a result of the $\max$.
 
 Additional XADD operations such as symbolic substitution and
 integration required for the solution of hybrid MDPs have all been
@@ -193,4 +203,20 @@ defined previously~\cite{sanner_uai11,zamani12} and we refer the
 reader to those works for details.
 
 %EDIT - one more operation...!%
-Another operation defined for linear XADDs is the unary maximization. Since every leaf is a linear function and every path defines a restricting set of inequalities, a linear program solver can be called for each path to find the maximal value in that region. The discrete maximum of all the paths is the maximal value that can be reached in the function represented in the XADD. This is used both for obtaining the allowed approximation error from a relative allowed error and calculating the actual error as the maximum of the difference between the original function and the approximation.
+%%
+%% NOTE: This is quite a long explanation for what in the end is a somewhat
+%%       obvious operation and it is another technical distraction from
+%%       the main contribution.  This explanation should be compressed to
+%%       a single sentence and mentioned later when it is required --
+%%       although if you do a relative approximation, you need not discuss
+%%       this at all.
+%%
+%Another operation defined for linear XADDs is the unary
+%maximization. Since every leaf is a linear function and every path
+%defines a restricting set of inequalities, a linear program solver can
+%be called for each path to find the maximal value in that region. The
+%discrete maximum of all the paths is the maximal value that can be
+%reached in the function represented in the XADD. This is used both for
+%obtaining the allowed approximation error from a relative allowed
+%error and calculating the actual error as the maximum of the
+%difference between the original function and the approximation.
