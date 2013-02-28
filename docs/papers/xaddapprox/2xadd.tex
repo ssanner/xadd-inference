@@ -13,6 +13,7 @@ approximate symbolic dynamic programming algorithm for hybrid MDPs.
 %% Need to make strong immediate connections between cases and
 %% XADDs since XADDs have already been introduced and discuss why
 %% you're taking the time to discuss the case representation.
+
 Underlying the XADD of Figure~\ref{fig:stepfunfig} is a simple
 piecewise linear function that we can represent in mathematical case
 form that we use as a semantical representation of XADDs throughout
@@ -90,17 +91,52 @@ $\phi_i$ as
 $C(\phi_i) = \bigcup_j \PT(\theta_{ij})$, 
 %\end{equation*}
 where $\PT$ extracts the subset of linear constraints from
-$\theta_{ij}$.
+$\theta_{ij}$. Figure~\ref{fig:symbex} illustrates the defined concepts for an example function.
 
-%TODO: Make picture to examplify $f$, $f_i$, $\phi$, $\theta$, a
-%polytope and a region $C_i$...
-%
-%\begin{figure}[h!t]
-%\center
-%\fbox{\includegraphics[width=0.45\textwidth]{Figures/stepfun/PiecewiseLinearEx.pdf} }
-%\caption{ Example of symbolic function in case form, graph showing the continuous domain for each partition.}
-%\label{fig:samplecase} 
-%\end{figure}
+\vspace{-5mm}
+\begin{figure}[ht!]
+\begin{minipage}{0.15\textwidth}
+{\scriptsize
+\begin{align*}
+f(x,y)= 
+\begin{cases}
+  \phi_1:& \hspace{-2mm} f_1\\ 
+  \phi_2: & \hspace{-2mm}f_2\\ 
+\end{cases}
+\end{align*} }
+\end{minipage}
+\begin{minipage}{0.15\textwidth}
+{\scriptsize
+\begin{align*}
+ \phi_1 = \theta_{11}\vee \theta_{12}\\
+\theta_{11} = x<0 \\
+\theta_{12} = x>0 \wedge y<0 \\
+ f_1 = \displaystyle \frac{x}{2} 
+\end{align*} }
+\end{minipage}
+\begin{minipage}{0.15\textwidth}
+{\scriptsize
+\begin{align*}
+\phi_2 = \theta_{21}\\
+\theta_{21} = x>0 \wedge y>0\\
+f_2 = \displaystyle -\frac{x}{2}
+\end{align*} }
+\end{minipage}\\
+\begin{minipage}{0.3\textwidth}
+\center
+\vspace{-13mm}
+\includegraphics[trim = 1cm 0cm 1cm 0cm,width=\textwidth]{Figures/stepfun/PiecewiseLinearEx.pdf} 
+\end{minipage}
+\begin{minipage}{0.15\textwidth}
+\center
+\vspace{-13mm}
+\includegraphics[width=\textwidth]{Figures/xadds/dia2.pdf}
+\end{minipage}
+\vspace{-10mm}
+
+\caption{Example of piecewise linear function in case and XADD form: \emph{(top)} Case formulation; \emph{(left)} Graphical plot; and \emph{(right)} XADD diagram.}
+\label{fig:symbex}
+\end{figure}
 
 \subsection{XADD Operations} 
 
