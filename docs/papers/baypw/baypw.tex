@@ -36,7 +36,7 @@
 % proceedings, working notes, and technical reports.
 %
 % exact symbolic bayesian inference for piecewise priors and likelihoods
-\title{An Exact Symbolic Gibbs Sampler for Piecewise Bayesian Models}
+\title{Symbolic Methods for Exact Gibbs Sampling in Piecewise Bayesian Models}
 
 % WinBUGS Manual
 %
@@ -64,52 +64,31 @@
 \maketitle
 
 \begin{abstract}
-In many interesting cases of Bayesian inference, the prior or
-likelhood are piecewise functions that make exact inference difficult
-if not intractable.  Recent work has developed a linear piecewise
-polynomial model that is a conjugate prior for an expressive family of
-piecewise prior and likelihood distributions with the caveat that the
-complexity of inference is super-exponential in the size of the model,
-making it intractable for practical inference.  In this work, we make
-two major contributions over and above this previous work: (1) we show
-how logical nodes often used in Bayesian graphical models can be used
-in conjunction with previous work, and (2) we show how exact Gibbs
-samplers can be derived for any graphical model over piecewise
-polynomial factors and linear piecewise logical nodes (notably
-including piecewise functions such as maximization).  This work marks
-the first time that an exact Gibbs sampling method can be fully
-automated for this expressive class of piecewise Bayesian models
-(e.g., inference not possible in BUGS), making possible automated
-inference in a range of novel models such as A, B, and C that we
-empirically evaluate and show D, E, and F.
+In Bayesian probabilistic models, it is often useful to have piecewise
+priors or likelihoods, e.g., a uniform distribution with latent upper
+bounds constrained to be greater than latent lower bounds, or an
+observation that is the maximum of latent random variables.
+Unfortunately, standard inference toolkits such as Bayesian inference
+using Gibbs sampling (BUGS) are unable to derive samplers for these
+two examples, leading researchers to use alternative approximate
+inference techniques without asymptotic guarantees, or to simply avoid
+such piecewise models altogether.  In this work, we show how to
+compute closed-form integrals on piecewise functions with
+deterministic variable dependencies (via symbolic collapsing) and
+furthermore, to exploit recently developed data structures for
+efficiency of these operations.  Empirically, this enables us to
+perform exact Gibbs sampling in the previous two examples while also
+scaling to accommodate large piecewise Bayesian graphical models such
+as those required for pairwise preference learning or learning from
+range-restricted score data.  As a result, this work enables
+sampling-based Bayesian inference in a novel range of piecewise models
+for which automated Gibbs samplers were previously unknown.
 %- Exact inference known, but as we will show, not scalable.
 %- First exact Gibbs sampler for arbitrary linear piecewise polynomial likelihoods ().
 %- New methods for working with delta functions with logical distributions.
 %- Piecewise likelihoods are pervasive in *many* important Bayesian inference problems
 %  hard boundaries, truncation at 0, max functions, etc.
 %  (people currently approximate heavily)
-%
-%Probabilistic reasoning in the real-world often requires inference in
-%continuous variable graphical models, yet there are few methods for
-%\emph{exact, closed-form} inference when joint distributions are
-%non-Gaussian.  To address this inferential deficit, we introduce SVE
-%-- a \emph{symbolic} extension of the well-known \emph{variable
-%elimination} algorithm to perform exact inference in an
-%\emph{expressive} class of mixed discrete and continuous variable
-%graphical models whose conditional probability functions can be
-%well-approximated as piecewise combinations of polynomials with
-%bounded support.  Using this representation, we show that we can
-%compute all of the SVE operations \emph{exactly and in closed-form},
-%which crucially includes \emph{definite integration w.r.t.\ multivariate 
-%piecewise polynomial functions}.  To aid in the efficient computation
-%and compact representation of this solution, we use an extended
-%algebraic decision diagram (XADD) data structure that supports all SVE
-%operations.  We provide illustrative results for SVE on probabilistic
-%inference queries inspired by robotics localization and tracking
-%applications that use complex continuous distributions; this
-%represents the first time a general closed-form exact solution
-%has been proposed for this expressive class of discrete/continuous
-%graphical models.
 \end{abstract}
 
 % \cite{}, \citeauthor{}~\shortcite{} (to include author names in text)
@@ -117,6 +96,159 @@ empirically evaluate and show D, E, and F.
 \section{Introduction}
 
 \label{sec:intro}
+
+There are many cases in Bayesian modeling where it is useful (and
+sometimes, required) to have priors or likelihoods that are piecewise;
+we examine two such cases in Figure~\ref{gm:uniform_max}.  In
+\ref{gm:uniform_max}(a), we have observed data in the maximum range
+$[0,m]$ ($m > 0$) generated from a uniform distribution with latent
+upper bound $u$ and lower bound $l$ where the joint prior on $l$ and
+$u$ must enforce $u > l$; we would like to obtain a posterior over $u$
+and $l$ in this model.  In \ref{gm:uniform_max}(b), we have observed
+maximum bid data from a number of sealed bid auctions where the
+bidders are known, but only the winning bid value is revealed; then we
+would like to obtain a posterior over each bidder's unknown valuation
+$b_i$ of the given commidity.  Later in our empirical results section
+we will further discuss cases of preference learning and inference
+from restricted range score data where piecewise likelihoods and
+priors are appropriate.
+
+Despite the wide range of settings in which such piecewise Bayesian
+models could be useful, there are few options for inference in such
+models with strong guarantees:
+%in these models that guarantee asymptotic convergence to the exact value
+\begin{itemize}
+\item Closed-form approximation techniques such as variational message
+  passing~\cite{} or expectation propagation~\cite{} have proved
+  effective for many specific Bayesian inference
+  tasks~\cite{lda,trueskill,matchbox}, but lack asymptotic exactness
+  guarantees.
+\item Exact closed-form inference techniques based on symbolic
+  variable elimination (SVE)~\cite{sve} have been proposed for factor
+  graphs with piecewise factors, but have two caveats: (1) in
+  practice, SVE inference is superexponential in the number of
+  variables in the model, and (2) SVE cannot currently handle the
+  $\delta$ function in Figure~\ref{gm:uniform_max}.  Nonetheless, SVE
+  does provide a foundation for exact symbolic inference that we build
+  on in this work.
+% MH not effective for high-dimensional models as used in experiments?
+% - Or do an MH step in a Gibbs step?  
+% - Or do a slice sampling in a Gibbs step?  But need to know all regions
+% with value >= to the slice, which is difficult and requires zero-finding
+% when multimodal.
+\item Markov Chain Monite Carlo (MCMC)~\cite{hastings70,mcmc} sampling
+  methods such as Metropolis-Hastings (MH)~\cite{} or Gibbs
+  sampling~\cite{geman} \emph{do} have asymptotic exactness
+  guarantees.  While MH is often used in practice, it requires a
+  proposal distribution and step size that should be properly tuned to avoid slow
+  convergence, especially in the case of multimodal
+  posteriors~\cite{}, which are exacerbated in the case of piecewise
+  models as we show later.
+% TODO: should show this later or remove!
+On the other hand, Gibbs sampling~\cite{geman} does not require
+tuning in practice but does require the automatic derivation of
+conditional probabilities for each latent variable in the Bayesian
+probabilistic model.  The well-known Bayesian inference using
+Gibbs Sampling (BUGS) software~\cite{winbugs} in fact performs
+this automatic derivation for conjugate priors and uses a variety
+of other specialized techniques including MH, slice sampling~\cite{neal}
+for non-conjugate cases.  However, ***
+for a large subset of piecewise models with latent bound parameters
+as in Figure~\ref{gm:uniform_max}(a) or evidence that is a deterministic
+function of two or more latent variables as required to encode
+the inference problem of Figure~\ref{gm:uniform_max}(b).
+
+% Derive the direct conditional!  No MH steps, etc.
+To obtain a completely automatic inference approach for piecewise
+Bayesian models with asymptotic exactness guarantees and 
+no tuning of a proposal distribution required, we focus on Gibbs sampling
+in this work and 
+
+% Winbugs does not allow logical functions or children to take data,
+% except for certain link functions so in following, x cannot take
+% data:
+% - x = a + b
+% - x = a * b
+% - x = max(a, b)
+% - x = step(a>b, 0)
+% Logical nodes are used to transform observed data and to make
+% derived functions whose value is sampled.  Nodes downstream of
+% a logical node of a stochastic variable only seem to be generated
+% in a feedforward process, they never feed back.
+%
+% *** While BUGS cannot handle x = a + b, if a and b are Gaussian
+%     then tons of methods can handle this problem so delta substitution
+%     is rather obvious here.  Delta substitution really only interesting
+%     with piecewise functions like max.
+%
+% It does not support joint / piecewise priors, say I[a>b] on uniform,
+% does allow step(a+b > 0), but the output is a variable.
+%
+% It cannot handle truncated distributions with unknown bounds since
+% the normalizing constant is dependent on the bounds.  To handle this,
+% we would need symbolic integration with parameters in denominator.
+%
+% It seems logical variables should not have stochastic children, only
+% stochastic parents?
+%
+% Does conditional distribution work out?  How to work with delta function?
+% Does it induce determinism?  For max model?  For score model?
+Hard!
+
+Two contributions:
+
+
+In many interesting Bayesian graphical models, the prior or likelihood
+may be piecewise functions.  For e
+
+, e.g., a uniform distribution with unknown
+upper bound constrained to be greater than the lower bound, or an
+observation that is the maximium of latent random variables.
+Unfortunately, standard toolkits such as Bayesian inference using
+Gibbs sampling (BUGS) are unable to derive samplers for such models,
+leading researchers to use alternative approximate inference
+techniques without guarantees on convergence, or to simply avoid these
+piecewise models altogether.  In this work, we show how to compute
+closed-form integrals on piecewise functions with deterministic
+variable dependencies and furthermore, to exploit recently developed
+data structures for efficiency of these operations. 
+
+%that render exact inference computationally intractable.  
+%While recent work has developed a linear piecewise
+%polynomial model that is a conjugate prior for an expressive family of
+%piecewise prior and likelihood distributions with the caveat that the
+%complexity of inference is super-exponential in the size of the model,
+%making it intractable for practical inference.  
+In this work, we make two major contributions over and above this
+previous work: (1) we show how logical nodes often used in Bayesian
+graphical models can be used in conjunction with previous work, and
+(2) we show how exact Gibbs samplers can be derived for any graphical
+model over piecewise polynomial factors and linear piecewise logical
+nodes (notably including piecewise functions such as maximization).
+This work marks the first time that an exact Gibbs sampling method can
+be fully automated for this expressive class of piecewise Bayesian
+models (e.g., inference not possible in BUGS), making possible
+automated inference in a range of novel models such as A, B, and C
+that we empirically evaluate and show D, E, and F.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{minipage}{\textwidth}
+\begin{figure}[t!]
+\centering
+\includegraphics[width=.50\textwidth]{uniform_max.pdf}
+\vspace{-6mm}
+\caption{\footnotesize Two piecewise Bayesian models: 
+(a) data samples $d_i$ are generated uniformly from a uniform with 
+upper bound $u$ and lower bound $l$ having a joint uniform prior where $u > l$;
+(b) data samples $d_k$ are observations of the maximum bid $b_i$ and $b_j$
+in a sealed bid auction with a uniform prior over the range of each bid.}
+\label{fig:uniform_max}
+%\caption{\footnotesize .} 
+\vspace{-4mm}
+\end{figure}
+%\end{minipage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 % TODO:
 %
@@ -137,35 +269,20 @@ empirically evaluate and show D, E, and F.
 % Dynamics
 % Expectations of arbitrary functions if allowing delta function!
 
-Real-world probabilistic reasoning is rife with 
-uncertainty over continuous random variables with
-complex (often nonlinear) relationships, e.g.,
-estimating the position and pose of entities from 
-measurements in robotics, or radar tracking
-applications with asymmetric stochastic dynamics and complex mixtures of 
-noise processes.
-While closed-form exact solutions exist for inference in some
-continuous variable graphical models, such solutions are largely
+Real-world probabilistic reasoning is rife with uncertainty over
+continuous random variables with complex (often nonlinear)
+relationships, e.g., estimating the position and pose of entities from
+measurements in robotics, or radar tracking applications with
+asymmetric stochastic dynamics and complex mixtures of noise
+processes.  While closed-form exact solutions exist for inference in
+some continuous variable graphical models, such solutions are largely
 limited to relatively well-behaved cases such as joint Gaussian
 models.  On the other hand, the more complex inference tasks of
 tracking with real-world sensors involves underlying distributions
 that are beyond the reach of current closed-form exact solutions.
-Take, for example, the robot sensor model in Figure~\ref{fig:gm2} 
+Take, for example, the robot sensor model in Figure~\ref{fig:gm2}
 motivated by~\cite{thrun_mcl}.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{minipage}{\textwidth}
-\begin{figure}%[th!]
-\begin{center}
-\vspace{-1mm}
-\fbox{Placeholder}%\includegraphics[width=.48\textwidth]{gm2.pdf}
-\end{center}
-\vspace{-6mm}
-\caption{\footnotesize The \emph{robot localization} graphical model and all conditional probabilities.} \label{fig:gm2}
-%\caption{\footnotesize .} 
-\vspace{-4mm}
-\end{figure}
-%\end{minipage}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 Here $d \in \R$ is a variable representing the distance of a
 mobile robot to a wall and $x_i$ are the observed measurements of
 distance (e.g., using a laser range finder).  The prior distribution

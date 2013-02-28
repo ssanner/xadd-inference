@@ -1,5 +1,4 @@
 pdflatex baypw.tex
-#dvips -Ppdf -G0 -tletter baypw.dvi -o baypw.pdf
 
 
 
