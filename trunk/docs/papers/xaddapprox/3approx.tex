@@ -51,21 +51,35 @@ combination of the original functions.
 
 Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy to obtain merging of arbitrary regions by successive pairwise merging of partitions. This idea is simple and is illustrated in figure~\ref{fig:steplining}. The bounded error property comes from keeping the amount of error "used" in every merge and avoiding any merges that incur more error than the remaining allowed error on one of the nodes being currently merged.
 
-{\Large TODO: Improve quality, and put XADDs next to drawings!}
 \begin{figure}[!ht]
 \centering
   \subfigure[Original] {
-	\fbox{\includegraphics[width=.3\textwidth]{Figures/stepfun/step1.png}}
+  	\begin{minipage}{.25\textwidth}
+	\includegraphics[width=\textwidth]{Figures/stepfun/succ1.png}
+	\end{minipage}
+	\begin{minipage}{.2\textwidth}
+	\includegraphics[width=\textwidth]{Figures/xadds/succ1.pdf}
+	\end{minipage}
 	\label{original}
   }
 
 \subfigure[Step1] {
-	 \fbox{\includegraphics[width=.3\textwidth]{Figures/stepfun/step12.png}}
+  	\begin{minipage}{.25\textwidth}
+	\includegraphics[width=\textwidth]{Figures/stepfun/succ2.png}
+	\end{minipage}
+	\begin{minipage}{.2\textwidth}
+	\includegraphics[width=\textwidth]{Figures/xadds/succ2.pdf}
+	\end{minipage}
 	\label{step1} 
 }
 
 \subfigure[Step2]{
-	 \fbox{\includegraphics[width=.3\textwidth]{Figures/stepfun/step123.png}}
+  	\begin{minipage}{.25\textwidth}
+	 \includegraphics[width=\textwidth]{Figures/stepfun/succ3.png}
+	\end{minipage}
+	\begin{minipage}{.2\textwidth}
+	\includegraphics[width=\textwidth]{Figures/xadds/succ3.pdf}
+	\end{minipage}
 	 \label{step2}
 }
 
@@ -137,17 +151,15 @@ where, for $i=1,2$ and $j=1..n_i$
 
 Now our optimization problem is clearly defined in a three stage optimization: (i) maximization within a polytope with the original continuous variables $\vec{x}$; (ii) discrete maximization of the between the polytopes; and (iii) minimization of this global max with the coefficients $\vec{c}$. It is illustrated in figure~\ref{fig:optim}.
 
-%\begin{equation} \min_{\vec{c}} \max_{i=1,2} \max_{j=1..n_i} \max_{sig=+,-} \max_{\vec{x} \in Polyt(\theta_{ij})} \big( sig(\vec{c} - \vec{c}_i)\cdot \vec{x} \big)  \label{eq:optimglo} \end{equation}\vspace{-2mm}
-
 \begin{figure}[h!t]
 \center
-\fbox{\includegraphics[scale=0.4]{Figures/xadds/samplexadd.eps} }
-\caption{ Diagram representation of the optimization problem.}
+\includegraphics[trim = 2cm 0cm 2cm 0cm, height=0.25\textwidth,width=0.2\textwidth]{Figures/optimDiag/optdiagram1.pdf} 
+\hspace{2mm}
+\includegraphics[trim = 2cm 0cm 2cm 0cm, height=0.25\textwidth,width=0.2\textwidth]{Figures/optimDiag/optdiagram2.pdf}
+\caption{Illustration of the piecewise linear merging problem: \emph{(left)} the original linear functions in their regions; \emph{(right)} a linear approximation defined on the merged region.}
 \label{fig:optim} 
 \end{figure}
 
-
-{\large TODO: It would be nice to have a diagram around here}
 
 In order to solve this, we propose an iterative constraint generation based algorithm which we describe in the following. First, the algorithm will iterate between two phases, one for the maximization and one for the minimization.  Second, on each phase a relaxed problem will be solved using the result from the previous phase. Finally, when a phase gives the same solution twice, the algorithm has converged and a solution to the original problem was found.
 
