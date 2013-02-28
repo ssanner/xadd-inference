@@ -35,15 +35,32 @@ following subsections.
 %\subsection{SUCCESSIVE MERGING}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%                     Scott stopped editing here - and this has changed almost everything....
-%%			I am glad that you have improved so many things, but it does seem bad that there %% 			were so many "mistakes",
+%% I am glad that you have improved so many things, but it does seem
+%% bad that there were so many "mistakes".
+%%
+%% Not mistakes per se, but just too much technical detail that
+%% detracted from the main storyline that defines the paper.
+%% What you were writing was more for the style of a journal article 
+%% or thesis, so its appropriate when you go to write those.
+%%
+%% Also you should work on writing very succinct sentences.  Typically
+%% a lot of what you're writing can be expressed in much less space, or 
+%% does not really need to be explained, or does not need to be explained
+%% in the place you are explaining it.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Successive Leaf Merging}
 
-A straightforward way of attempting to find the optimal way of merging leaves would require evaluation of the combinatorial possibilities of partitioning of all leaves and is hardly practical. A simpler, but more efficient approach is to repeatedly consider the simpler problem of merging just two leaves. In this case it seems reasonable to find the pair of leaves that incurs the smallest error upon merging and repeat this while any of the pairs can still be merged with the allowed error. Thus, our approximation algorithm, Alg.~\ref{alg:approx} uses a constructive strategy to obtain merging of arbitrary regions by successive pairwise merging of partitions. This idea is simple and is illustrated in figure~\ref{fig:steplining}. The bounded error property is guaranteed by storing the amount of error "used" in every merge and avoiding any merges that incur more error than the remaining allowed error on one of the nodes being currently merged.
+Since it would be combinatorially prohibitive to examine all possible
+leaf merges in an XADD, our approximation algorithm in
+Algorithm~\ref{alg:approx} uses a constructive strategy of successive
+pairwise merging of partitions. The idea is simple and is illustrated
+in Figure~\ref{fig:steplining}. The bounded error property is
+guaranteed by accumulating the amount of error "used" in every merged
+leaf and avoiding any merges that exceed an error threshold.
 
-\begin{figure}[!ht]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[t!]
 \centering
   \subfigure[Original] {
   	\begin{minipage}{.25\textwidth}
@@ -72,13 +89,15 @@ A straightforward way of attempting to find the optimal way of merging leaves wo
 	\end{minipage}
 	 \label{step2}
 }
-\caption{ Approximation by successive pair merging}
+\caption{ \footnotesize Successive pair merging for a simple 1D example.}
  \label{fig:steplining}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{1.5em}
 \linesnumbered
-\begin{algorithm}[!ht]
+\begin{algorithm}[t!]
 \dontprintsemicolon
 \KwIn{A piecewise linear function $V$, relative\_allow\_error}
 \KwOut{Approximated version of $V$.}
@@ -101,21 +120,65 @@ $OpenCases \gets getCases(V)$\;
 	}
 }
 \Return{ApplyRemap(V)}\;
-\caption{{\sc Approximate}: bounded approximation of piecewise linear function}
+\caption{\footnotesize {\sc Approximate}: bounded approximation of piecewise linear function}
+%%
+%% NOTE: the example should really demonstrate the merge error accumulating.
+%%
 \label{alg:approx}
 \end{algorithm}
 \decmargin{1.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Pairwise Leaf Approximation}
 
-We now focus on the pairwise case linear function approximation. The most important step in our solution to piecewise linear function approximation is the iterative linear program based algorithm for obtaining optimal, that is, max-error minimizing, case linear function to approximate any pair of case linear functions. In order to explain our algorithm more conveniently, we make the following consideration.
+%% Following is verbose and a lot of it obvious, or already explained,
+%% or complicating matters in ways not required to get the key insights.
+%%
+%We now focus on the pairwise case linear function approximation. The
+%most important step in our solution to piecewise linear function
+%approximation is the iterative linear program based algorithm for
+%obtaining optimal, that is, max-error minimizing, case linear function
+%to approximate any pair of case linear functions. In order to explain
+%our algorithm more conveniently, we make the following consideration.
+%
+%Since the continuous domain of a case linear function is independent
+%of boolean variable decisions, they do not interfere with the
+%constrained maximization of the linear functions and therefore don't
+%affect the merging of case linear functions. Hence, for clarity, we
+%will consider piecewise linear functions whose partitions are defined
+%only with linear inequalities.
+%
+%We can now define the optimal merging of case linear functions as an
+%optimization problem. 
 
-Since the continuous domain of a case linear function is independent of boolean variable decisions, they do not interfere with the constrained maximization of the linear functions and therefore don't affect the merging of case linear functions. Hence, for clarity, we will consider piecewise linear functions whose partitions are defined only with linear inequalities.
-
-We can now define the optimal merging of case linear functions as an optimization problem. Formally, given two case linear functions $L_1 = ( f_1, \phi_1 )$ and $L_2 = ( f_2, \phi_2 )$, our goal is to determine the best linear case approximation of $L_1$ and $L_2$. As it must represent  $L_1$ and $L_2$, the solution must be defined in both regions, therefore of the form $L^* = (f^*,\phi_1 \lor  \phi_2)$. As a linear function $f$ over $\vec{x} \in \mathbb{R}^m$ is equivalent to a coefficient vector $\vec{c} \in \mathbb{R}^{m+1}$, we can define $\vec{c_1}$ and $\vec{c_2}$ as the coefficient vectors of $f_1$ and $f_2$, respectively. Searching for the optimal linear function $f^*$ can be restated as searching for optimal coefficients $\vec{c^*}$. Thus our optimization problem can be written as:
+%% Need to get to bilinear optimization problem by the end of the first
+%% paragraph.
+In pairwise leaf merging, we must address the following fundamental
+problem: given two XADD leaves represented by their case partitions
+$L_1 = ( f_1, \phi_1 )$ and $L_2 = ( f_2, \phi_2 )$, our goal is to
+determine the best linear case approximation of $L_1$ and $L_2$.  As
+it must represent $L_1$ and $L_2$, the solution must be defined in
+both regions, therefore of the form $L^* = (f^*,\phi_1 \lor \phi_2)$.
+Since we restrict to linear XADDs, $f_1$,$f_2$ and $f$ are all linear
+expressions over $\vec{x}$ written in the general form $f_1
+= \vec{c_1}^T (\vec{x},1)^T$ and likewise using $\vec{c}_2$ for $\vec{f}_2$
+and $\vec{c}^*$ for $\vec{f}^*$.  Hence the optimization problema
+boils down to finding the optimal weight vector $\vec{c}$ satisfying
+the following bilinear saddle point optimization problem:
 \begin{equation} \min_{\vec{c}} \max_{i} \max_{\vec{x} \in C(\phi_i)} \big( |(\vec{c} - \vec{c}_i)\cdot \vec{x}| \big)  \label{eq:optimglo} \end{equation}
 
-Which is a piecewise saddle bilinear program, as the objective function is bilinear $\vec{c} \cdot \vec{x}$, there is maximization in $\vec{x}$ in piecewise linear regions $C(\phi_i)$ and minimization in $\vec{c}$. Defining a function to represent the error in each region, $Err_i$, this can be rewritten as:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                Scott stopped editing here for now
+%%
+%% Need to explain intuitively this in the context of Figure 4,
+%% then step through the simplification of the problem.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Which is a piecewise saddle bilinear program, as the objective
+function is bilinear $\vec{c} \cdot \vec{x}$, there is maximization in
+$\vec{x}$ in piecewise linear regions $C(\phi_i)$ and minimization in
+$\vec{c}$. Defining a function to represent the error in each region,
+$Err_i$, this can be rewritten as:
 
 \begin{equation} \min_{\vec{c}} \left[ \max \big( Err_1(\vec{c}), Err_2(\vec{c}) \big) \right] \label{eq:minc} \end{equation}
 where
@@ -139,8 +202,8 @@ Now our optimization problem is clearly defined in a three stage optimization: (
 
 \begin{equation} \min_{\vec{c}} \max_{i,j} \max_{\vec{x} \in Polyt(\theta_{ij})} \big( |(\vec{c} - \vec{c}_i)\cdot \vec{x}| \big)  \label{eq:optimglo} \end{equation}
 
-
-\begin{figure}[h!t]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[t!]
 \center
 \includegraphics[trim = 2cm 0cm 2cm 0cm, height=0.25\textwidth,width=0.2\textwidth]{Figures/optimDiag/optdiagram1.pdf} 
 \hspace{2mm}
@@ -148,7 +211,7 @@ Now our optimization problem is clearly defined in a three stage optimization: (
 \caption{Illustration of the piecewise linear merging problem: \emph{(left)} the original linear functions in their regions; \emph{(right)} a linear approximation defined on the merged region.}
 \label{fig:optim} 
 \end{figure}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 In order to solve this, we propose an iterative constraint generation based algorithm which we describe in the following. First, the algorithm will iterate between two phases, one for the maximization and one for the minimization.  Second, on each phase a relaxed problem will be solved using the result from the previous phase. Finally, when a phase gives the same solution twice, the algorithm has converged and a solution to the original problem was found.
 
