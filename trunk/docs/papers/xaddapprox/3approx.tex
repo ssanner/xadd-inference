@@ -31,25 +31,17 @@ following subsections.
 
 %% NOTE: No paper uses all caps for section headings... it's like
 %% yelling at the reader. :)
+% !!! It is the UAI Style, as in the sample.tex !
 %\subsection{SUCCESSIVE MERGING}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%                     Scott stopped editing here
+%%                     Scott stopped editing here - and this has changed almost everything....
+%%			I am glad that you have improved so many things, but it does seem bad that there %% 			were so many "mistakes",
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Successive Leaf Merging}
 
-In order to result in less error when approximating a function, our
-method approximates locally, merging original partitions that incur
-small error. It is important to note that our merging strategy
-involves computing a new linear function, that can optimally
-approximate the previous linear functions in all the regions contained
-in the two partitions being merged. An interesting observation is that
-this new optimal function is obtained through an optimization process
-sensitive to the regions, so that it may not be obtainable as a linear
-combination of the original functions.
-
-Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy to obtain merging of arbitrary regions by successive pairwise merging of partitions. This idea is simple and is illustrated in figure~\ref{fig:steplining}. The bounded error property comes from keeping the amount of error "used" in every merge and avoiding any merges that incur more error than the remaining allowed error on one of the nodes being currently merged.
+A straightforward way of attempting to find the optimal way of merging leaves would require evaluation of the combinatorial possibilities of partitioning of all leaves and is hardly practical. A simpler, but more efficient approach is to repeatedly consider the simpler problem of merging just two leaves. In this case it seems reasonable to find the pair of leaves that incurs the smallest error upon merging and repeat this while any of the pairs can still be merged with the allowed error. Thus, our approximation algorithm, Alg.~\ref{alg:approx} uses a constructive strategy to obtain merging of arbitrary regions by successive pairwise merging of partitions. This idea is simple and is illustrated in figure~\ref{fig:steplining}. The bounded error property is guaranteed by storing the amount of error "used" in every merge and avoiding any merges that incur more error than the remaining allowed error on one of the nodes being currently merged.
 
 \begin{figure}[!ht]
 \centering
@@ -62,7 +54,6 @@ Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy 
 	\end{minipage}
 	\label{original}
   }
-
 \subfigure[Step1] {
   	\begin{minipage}{.25\textwidth}
 	\includegraphics[width=\textwidth]{Figures/stepfun/succ2.png}
@@ -72,7 +63,6 @@ Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy 
 	\end{minipage}
 	\label{step1} 
 }
-
 \subfigure[Step2]{
   	\begin{minipage}{.25\textwidth}
 	 \includegraphics[width=\textwidth]{Figures/stepfun/succ3.png}
@@ -82,7 +72,6 @@ Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy 
 	\end{minipage}
 	 \label{step2}
 }
-
 \caption{ Approximation by successive pair merging}
  \label{fig:steplining}
 \end{figure}
@@ -91,8 +80,10 @@ Thus, our approximation algorithm~\ref{alg:approx} uses a constructive strategy 
 \linesnumbered
 \begin{algorithm}[!ht]
 \dontprintsemicolon
-\KwIn{A piecewise linear function $V$, allow\_error}
+\KwIn{A piecewise linear function $V$, relative\_allow\_error}
 \KwOut{Approximated version of $V$.}
+$M \gets MaxValue(V)$
+$allow\_error \gets M * relative\_allow\_error$
 $OpenCases \gets getCases(V)$\;
 \While{$OpenCases != \emptyset$} {
 	$L_1 = OpenCases.pop()$\;
@@ -121,22 +112,17 @@ We now focus on the pairwise case linear function approximation. The most import
 
 Since the continuous domain of a case linear function is independent of boolean variable decisions, they do not interfere with the constrained maximization of the linear functions and therefore don't affect the merging of case linear functions. Hence, for clarity, we will consider piecewise linear functions whose partitions are defined only with linear inequalities.
 
-We can now define the optimal merging of case linear functions as an optimization problem. Formally, given two case linear functions $L_1 = ( f_1, \phi_1 )$ and $L_2 = ( f_2, \phi_2 )$, our goal is to determine the best linear case approximation of $L_1$ and $L_2$. As it must represent  $L_1$ and $L_2$, the solution must be defined in both regions, therefore of the form $L^* = (f^*,\phi_1 \lor  \phi_2)$. In this case, we must find a linear function $f^*$ that minimizes approximation error $Err(f)$, defined as the maximum  error of replacing both $f_1$ in $\phi_1$ and $f_2$ in $\phi_2$ by $f$:
+We can now define the optimal merging of case linear functions as an optimization problem. Formally, given two case linear functions $L_1 = ( f_1, \phi_1 )$ and $L_2 = ( f_2, \phi_2 )$, our goal is to determine the best linear case approximation of $L_1$ and $L_2$. As it must represent  $L_1$ and $L_2$, the solution must be defined in both regions, therefore of the form $L^* = (f^*,\phi_1 \lor  \phi_2)$. As a linear function $f$ over $\vec{x} \in \mathbb{R}^m$ is equivalent to a coefficient vector $\vec{c} \in \mathbb{R}^{m+1}$, we can define $\vec{c_1}$ and $\vec{c_2}$ as the coefficient vectors of $f_1$ and $f_2$, respectively. Searching for the optimal linear function $f^*$ can be restated as searching for optimal coefficients $\vec{c^*}$. Thus our optimization problem can be written as:
+\begin{equation} \min_{\vec{c}} \max_{i} \max_{\vec{x} \in C(\phi_i)} \big( |(\vec{c} - \vec{c}_i)\cdot \vec{x}| \big)  \label{eq:optimglo} \end{equation}
 
-\begin{equation} f^* = \argmin_f \left[ \max \big( Err_1(f), Err_2(f) \big) \right] \label{eq:fstar} \end{equation}
-where, for $i = 1,2$:
-\begin{equation} Err_i(f) = \max_{\vec{x}} \big(  | (f - f_i)(\vec{x}) | \big) \label{eq:errf} \end
-{equation}
-$$\text{s.t.} \hspace{1cm} \vec{x} \in C(\phi_i)$$
+Which is a piecewise saddle bilinear program, as the objective function is bilinear $\vec{c} \cdot \vec{x}$, there is maximization in $\vec{x}$ in piecewise linear regions $C(\phi_i)$ and minimization in $\vec{c}$. Defining a function to represent the error in each region, $Err_i$, this can be rewritten as:
 
-As a linear function $f$ over $\vec{x} \in \mathbb{R}^m$ is equivalent to a coefficient vector $\vec{c} \in \mathbb{R}^{m+1}$, we can define $\vec{c_1}$ and $\vec{c_2}$ as the coefficient vectors of $f_1$ and $f_2$, respectively. As we are searching for the optimal linear function, the only constraint in $f$ is that it is linear, so the coefficients $\vec{c}$ are totally unconstrained. Thus our optimization problem can be rewritten as:
 \begin{equation} \min_{\vec{c}} \left[ \max \big( Err_1(\vec{c}), Err_2(\vec{c}) \big) \right] \label{eq:minc} \end{equation}
 where
 \begin{equation} Err_i(\vec{c}) = \max_{\vec{x_i}} \big(  | (\vec{c}-\vec{c_i}) \cdot \vec{x} |\big) \label{eq:errc} \end
 {equation}
 $$\text{s.t.} \hspace{1cm} \vec{x} \in C(\phi_i)$$
 
-Now it is clear that this involves a saddle bilinear program, as the objective functions contains $\vec{c} \cdot \vec{x}$, while we are maximizing in $\vec{x}$ and minimizing in $\vec{c}$. 
 Note that the absolute values in~\ref{eq:errc} are equivalent to max of two linear functions, e.g. $\max_y (|g(y)|) = \max \big( \max_y g(y), \max_y -g(y) \big)$. Moreover, a maximization within a regions $C(\phi_i)$, is equivalent to the max of the maximization in all polytopes $Polyt(\theta_{ij})$ of $\phi_i$. With this, we can rewrite the error $Err_i$, as the maximum of a finite number maximizations of bilinear functions with linear constraints in $\vec{x}$:
 {\footnotesize 
 \vspace{-2mm}
@@ -150,6 +136,9 @@ where, for $i=1,2$ and $j=1..n_i$
 }
 
 Now our optimization problem is clearly defined in a three stage optimization: (i) maximization within a polytope with the original continuous variables $\vec{x}$; (ii) discrete maximization of the between the polytopes; and (iii) minimization of this global max with the coefficients $\vec{c}$. It is illustrated in figure~\ref{fig:optim}.
+
+\begin{equation} \min_{\vec{c}} \max_{i,j} \max_{\vec{x} \in Polyt(\theta_{ij})} \big( |(\vec{c} - \vec{c}_i)\cdot \vec{x}| \big)  \label{eq:optimglo} \end{equation}
+
 
 \begin{figure}[h!t]
 \center

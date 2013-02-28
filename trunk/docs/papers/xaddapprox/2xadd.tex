@@ -191,3 +191,6 @@ Additional XADD operations such as symbolic substitution and
 integration required for the solution of hybrid MDPs have all been
 defined previously~\cite{sanner_uai11,zamani12} and we refer the
 reader to those works for details.
+
+%EDIT - one more operation...!%
+Another operation defined for linear XADDs is the unary maximization. Since every leaf is a linear function and every path defines a restricting set of inequalities, a linear program solver can be called for each path to find the maximal value in that region. The discrete maximum of all the paths is the maximal value that can be reached in the function represented in the XADD. This is used both for obtaining the allowed approximation error from a relative allowed error and calculating the actual error as the maximum of the difference between the original function and the approximation.
