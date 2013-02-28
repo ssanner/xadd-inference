@@ -45,12 +45,12 @@ else & -1\\
 \begin{figure}[tbp!]
 \centering
 \subfigure[Value at $6^{th}$ iteration for exact SDP.] {
-	 \fbox{\includegraphics[width=0.22\textwidth, height=0.15\textwidth]{Figures/rover2D/rover2dV6-0.pdf}}
+	 \fbox{\includegraphics[width=0.22\textwidth, height=0.15\textwidth]{Figures/rover2D/rover2dV6-0.eps}}
 	 \fbox{\includegraphics[width=0.22\textwidth, height=0.15\textwidth]{Figures/rover2D/rover2dV6-0xadd.pdf}}
 	 \label{V6-0xadd}
 }
 \subfigure[Value at $6^{th}$ iteration for $5\%$ approximate SDP.] {
-	 \fbox{\includegraphics[width=0.22\textwidth, height=0.15\textwidth]{Figures/rover2D/rover2dV6-5.pdf}}
+	 \fbox{\includegraphics[width=0.22\textwidth, height=0.15\textwidth]{Figures/rover2D/rover2dV6-5.eps}}
 	 \fbox{\includegraphics[width=0.22\textwidth, height=0.15\textwidth]{Figures/rover2D/rover2dV6-5xadd.pdf}}
 	 \label{V6-5xadd}
 }
@@ -93,14 +93,14 @@ else & -2\\
 
 \begin{figure*}[tbp!]
 \centering
-\includegraphics[width=0.30\textwidth]{Figures/inventory/invent2Nodes.pdf}
-\includegraphics[width=0.30\textwidth]{Figures/inventory/invent2Time.pdf}
-\includegraphics[width=0.30\textwidth]{Figures/inventory/invent2MaxErr.pdf}
+\includegraphics[width=0.30\textwidth]{Figures/inventory/inventory2Nodes.pdf}
+\includegraphics[width=0.30\textwidth]{Figures/inventory/inventory2Time.pdf}
+\includegraphics[width=0.30\textwidth]{Figures/inventory/inventory2MaxErr.pdf}
 \vspace{-2mm}
-\caption{\footnotesize
-{\it (left)}  $V^4(x,y,l=false)$\textsc{UAV Navigation} problem;
-{\it (middle)} $V^7(l_1,d_1=false,d_2=false,d_3=false)$ \textsc{Reservoir Control} problem;
-{\it (right)} $V^4(k,v,z=true,g=false)$ \textsc{Space Telescope Control} problem.
+\caption{\footnotesize Performance plots for $\Invent$2 with different 5 relative errors eps:
+{\it (left)}  Space (number of Nodes);
+{\it (middle)} Time (miliseconds);
+{\it (right)} Maximal error as fraction of the max value.
 }
 \label{fig:Value}
 \vspace{-5mm}
