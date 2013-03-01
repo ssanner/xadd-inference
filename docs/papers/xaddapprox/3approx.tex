@@ -3,7 +3,7 @@
 In this section, we present the main novel contribution of our paper
 for approximating XADDs within a fixed error bound.  Since the point
 of XADD approximation is to shrink its size, we refer to our method of
-approximation as XADD Compression (\textsc{XADDComp}).
+approximation as XADD Compression (\texttt{XADDComp}).
 
 Following previous work on ADD compression~\cite{apricodd}, we note
 that decision diagrams should be compressed from the bottom up ---
@@ -104,7 +104,7 @@ in Figure~\ref{fig:steplining}. The bounded error property is
 guaranteed by accumulating the amount of error "used" in every merged
 leaf and avoiding any merges that exceed a maximum error threshold $\epsilon$.
 However, we have not yet defined how to find the lowest error approximation
-of a pair of leaves in \texttt{PairLeafApprox}, which we provide next.
+of a pair of leaves in \texttt{PairLeafApp}, which we provide next.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -132,19 +132,20 @@ $\Open := \{ L_i \} = \{ \l \phi_i, f_i \r \} \in \hat{X}$\emph{// cases in $\ha
 	$L_1 := \Open.\mathit{pop}()$\;
 	\For{$ L_2 \in \Open$}  { 
                 \emph{// Merge and track accumulated error}\;
-		$f^* := $\texttt{PairLeafApprox}$(L_1, L_2)$\emph{// Sec~\ref{sec:leaf_approx}}\;
+		$(f^*,\tilde{\epsilon}) :=$\texttt{PairLeafApp}$(L_1, L_2)$\emph{// Sec~\ref{sec:leaf_approx}}\;
 %                \emph{// Track accumulated error in merge}\;
-	        $f^*.\Error := f^*.\Error + $\\\hspace{18mm}$\max(f_1.\Error,f_2.\Error)$\;
+	        $f^*.\Error := \tilde{\epsilon} + \max(f_1.\Error,f_2.\Error)$\;
                 \emph{// Keep merge if within error bounds}\;
 		\If {$f^*.\Error < \epsilon$}
 		{       
                         $\hat{\epsilon} := \max(\hat{\epsilon}, f^*.\Error)$\;
 			$\Open.\mathit{remove}(L_2)$\;
-                        \emph{//Merge leaves and simplify $\hat{X}$}
+                        \emph{// Replace leaves in $\hat{X}$ and simplify}\;
 			$\hat{X}.f_1 := f^*, \; \hat{X}.f_2 := f^*$\; 
+                        $L_1 \! := \! \l \phi_1 \! \lor \phi_2, f^* \r$\emph{// Keep merging $L_1$}\;
                         % \texttt{Simplify($\hat{X}$)}\; $ Not defined, so omit
 			\; 
-			$\Open.\mathit{insert}(\l \phi_1 \lor \phi_2, f^* \r)$\;
+			%$\Open.\mathit{insert}(\l \phi_1 \lor \phi_2, f^* \r)$\;
 		}
 	}
 }
@@ -255,10 +256,10 @@ Since each of $f$, $f_1$, and $f_2$ are all linear and
 $C(\phi_1),C(\phi_2)$ represent (unions of) linear convex polytopes,
 we know that the \emph{maximum difference} between $f$ and $f_1,f_2$ must
 occur at the \emph{vertices} of the respective polytope regions.
-Thus, denoting $\vec{x_{ij}^k}$ ($k = \{ 1 \ldots N_{ij} \}$) as a vertex of
+Thus, denoting $\vec{x_{ij}^k}$ ($k \in \{ 1 \ldots N_{ij} \}$) as a vertex of
 the linear convex polytope defined by $\theta_{ij}$, we can obtain a
 \emph{linear program} version of~\eqref{eq:optimglo} with a \emph{finite} 
-number of constraints:
+number of constraints at the vertices $\vec{x_{ij}^k}$ of all polytopes:
 \begin{align}
 \min_{\vec{c}^*,\epsilon} \; & \epsilon \label{eq:linear_exp} \\
 s.t. \;       & \epsilon \geq \left| \vec{c_i}^T \! \mb \vec{x_{ij}^k}\\1 \me \! - \vec{c^*}^T \! \mb \vec{x_{ij}^k}\\1 \me \right|; 
@@ -272,89 +273,72 @@ is that for $n_{ij}$ linear constraints in $\PT(\theta_{ij})$, the
 number of vertices of the polytope may be exponential, i.e., $N_{ij} =
 O(\exp n_{ij})$.  
 
-However, we make one final critical insight: while we may have
-an exponential number of constraints in~\eqref{eq:linear_exp}, we have
-a very efficient way to evaluate for a \emph{fixed} solution $\vec{c}^*$,
-what single point $\vec{x_{ij}^k}$ in each polytope $\PT(\theta_{ij})$
-provides the maximum error --- this is exactly what the second stage
-linear program in~\eqref{eq:bilevel} provides.  Hence, this suggests a
-very efficient constraint generation approach to
-solving~\eqref{eq:linear_exp}:
 
-\vspace{1mm}
-\noindent \texttt{PairwiseLeafApprox}($L_1,L_2$) $\longrightarrow$ ($\vec{c}^*,\epsilon$):
-\vspace{-2mm}
-\begin{enumerate}
-\item Initialize $\vec{c}^*$ to an arbitrary value and the constraint set $C$
-to be empty, i.e., $C = \emptyset$.
-\item Given $\vec{c}^*$, for each $i \in \{ 1,2\}$ and for each $\theta_{ij}$, generate the $\vec{x_{ij}^k}$ s.t.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{1.5em}
+\linesnumbered
+\begin{algorithm}[t!]
+\dontprintsemicolon
+$\vec{c^*} := \vec{0}$ \emph{// Arbitrarily initialize $\vec{c^*}$}\;
+$C := \emptyset$ \emph{// Start with an empty constraint set}\;
+\emph{// Generate max error vertex constraints for $\vec{c^*}$}\;
+\For{$i \in \{ 1,2\}, \theta_{ij} \in C(\phi_i)$} {
+\nlset{} \vspace{-7mm}
 \begin{align*}
-\vec{x_{ij}^k} := \argmax_{\vec{x}} \! & \left| \vec{c_i}^T \! \mb \vec{x}\\1 \me \! - \vec{c^*}^T \! \mb \vec{x}\\1 \me \right| \\ 
-  s.t. \;              \! & \vec{x} \in \PT(\theta_{ij})
-\end{align*}
-and add the following pair of constraints to $C$:
-\begin{align*}
-  C := C \; \cup \; & \{ \epsilon > \vec{c_i}^T ({\vec{x_{ij}^k}}^T,1)^T - \vec{c^*}^T ({\vec{x_{ij}^k}}^T,1)^T \} \\
-         \; \cup \; & \{ \epsilon > \vec{c^*}^T ({\vec{x_{ij}^k}}^T,1)^T - \vec{c_i}^T ({\vec{x_{ij}^k}}^T,1)^T \}
-%  C := C \; \cup \; & \{ \epsilon > \vec{c_i}^T \! \mb \vec{x_{ij}^k} \\1 \me \! - \vec{c^*}^T \! \mb \vec{x_{ij}^k}\\1 \me \} \\
-%         \; \cup \; & \{ \epsilon > \vec{c^*}^T \! \mb \vec{x_{ij}^k}\\1 \me - \vec{c_i}^T \! \mb \vec{x_{ij}^k} \\1 \me \}
-\end{align*}
-encoding that $\epsilon$ must be greater than the absolute error induced
-by $f_i - f^*$ at the vertex point $\vec{x_{ij}^k}$.  
-%This is an important constraint to
-%add because it corresponds to the $\vec{x_{ij}^k}$ with the maximum error.
-\item Solve the LP of~\eqref{eq:linear_exp} w.r.t. the subset of constraints in $C$ to obtain a new $\vec{c}^*_{\mathit{new}}$.
-\item If $\vec{c}^* = \vec{c}^*_{\mathit{new}}$, return the optimal solution $\vec{c}^*$ and its error $\epsilon$, otherwise go to step 2.
-\end{enumerate}
-Once the last step returns $\vec{c}^*,\epsilon$, we have the best $f^*$ and corresponding
-maximum error $\epsilon$ given leaves $L_1$ and $L_2$, thus performing the optimal pairwise
-leaf approximation problem that we set out to address.
+&\vec{x_{ij}^k}_+ := \argmax_{\vec{x}} \left| \vec{c_i}^T \! \mb \vec{x}\\1 \me \! - \vec{c^*}^T \! \mb \vec{x}\\1 \me \right| \\ 
+&  \hspace{17mm} \textrm{s.t. } \vec{x} \in \PT(\theta_{ij})\\
+&\vec{x_{ij}^k}_- := \argmax_{\vec{x}} \left| \vec{c^*}^T \! \mb \vec{x}\\1 \me \! - \vec{c_i}^T \! \mb \vec{x}\\1 \me \right| \\ 
+&  \hspace{17mm} \textrm{s.t. } \vec{x} \in \PT(\theta_{ij})\\
+%\end{align*}
+%\begin{align*}
+&  C := C \cup \{ \epsilon \!>\! \vec{c_i}^T (\vec{x_{ij}^k}_+^T,1)^T \!-\! \vec{c^*}^T (\vec{x_{ij}^k}_+^T,1)^T \} \\
+&  C := C \cup \{ \epsilon \!>\! \vec{c^*}^T (\vec{x_{ij}^k}_-^T,1)^T \!-\! \vec{c_i}^T (\vec{x_{ij}^k}_-^T,1)^T \}
+\end{align*}\vspace{-5mm}
+}
+\emph{// Re-solve LP with augmented constraint set}\;
+$(\vec{c^*},\epsilon_{\mathit{new}}) := \argmin_{\vec{c}^*,\epsilon} \epsilon$ subject to $C$\;
+\If{$\epsilon \neq \epsilon_{\mathit{new}}$}{
+     $\epsilon := \epsilon_{\mathit{new}}$, go to line 4\;
+}
+\Return{$(\vec{c^*},\epsilon)$}\emph{// Best hyperplane and error}\;
+\caption{\footnotesize 
+ \texttt{PairLeafApp}($L_1,L_2$) $\longrightarrow$ ($\vec{c}^*,\epsilon$)}
+\label{alg:pairleafapp}
+\end{algorithm}
+\decmargin{1.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+However, we make one final crucial insight: while we may have an
+exponential number of constraints in~\eqref{eq:linear_exp}, we have a
+very efficient way to evaluate for a \emph{fixed} solution
+$\vec{c}^*$, the single point $\vec{x_{ij}^k}$ in each
+$\PT(\theta_{ij})$ with max error --- this is exactly what the second
+stage linear program in~\eqref{eq:bilevel} provides.  Hence, this
+suggests an efficient \emph{constraint generation} approach to
+solving~\eqref{eq:linear_exp} that we outline in
+Algorithm~\ref{alg:pairleafapp}.  Beginning with an empty constraint
+set, we iteratively add in constraints for the polytope vertices
+$\vec{x_{ij}^k}$ that yield max error for the current best solution
+$\vec{c^*}$ (one constraint for each side of the absolute value).
+Then we re-solve for $(\vec{c^*},\vec{x_{ij}^k})$ to see if the error
+has gotten worse; if not, we have reached optimality since $\vec{c^*}$
+satisfies all constraints (vertices $\vec{x_{ij}^k}$ not having
+constraints in $C$ had provably equal or smaller error than those in
+$C$) and adding in all constraints could not reduce $\epsilon$
+further.
 
-{\bf TODO: Scott left off here... need to refine above explanation... consider putting content into a formal algorithm, continue to theoretical guarantees.}
-
-Terminates at convergence in finite steps.
-
-
-{\bf Theorem} {\it Algorithm~\ref{alg:glo} always terminates and produces the optimal solution for the optimization described in Eqs.~\ref{eq:minc},~\ref{eq:errcij},~\ref{eq:polymax}.} 
-
-To prove the optimality of the solution obtained, we observe that at the beginning of the loop the algorithm always keeps an optimal approximation $f$ for all $points$ stored. Using this $f$ the $MAX\_ERROR$ routine computes new points that are the maximum error points for this $f$. If there are new points, these are added to the stored points and $BEST\_APPROX$ computes a new $f$ that minimizes in all stored points. As we return to the start of the loop we have a new optimal approximation. If there are no new points, this means that the current $f$ minimizes the error in the points that maximize its error therefore it minimizes the maximal error in all regions and is the optimal solution.  As the algorithm only terminates when there are no new points, and in this case the solution is optimal, if the algorithm terminates, its solution is optimal.
- Next we prove that the algorithm must terminate: First, the formulae $\phi$  are finite and define a finite number of polytopes. Second, for all polytopes defined, there is a finite number of inequalities and correspondingly a finite number of vertices. At each non terminal iteration at least one new polytope vertex must be added to the stored $points$ list, as there are finitely many vertices, the number of iterations must be finite, so the algorithm terminates.
-
-
-In practice, terminates with much fewer than exponential number of constraints.
-
-This defines the algorithm \textsc{PairwiseCaseMax} called in line X of Algorithm~\ref{alg:approx}.
-
-%% Formal pseudocode in the form of algorithms has to be completely
-%% an unambiguously specified -- every function call has to be defined
-%% in another algorithm or equation, every structured argument or
-%% has to be formally defined.  I've removed the existing pseudocode
-%% because the above is more than adequate to understand the pairwise
-%% merge and it will take a lot of editing to achieve the formal
-%% level of quality needed in the existing pseudocode at much greater
-%% length than the above description.  We're going to run out of space
-%% as is and I don't think the pseudocode makes an further 
-%% contribution to the above description.
-%%
-%% Some notes: 
-%% - what are Remap and ApplyRemap?  these really get into details of implementation
-%%   that are not crucial for understanding the key insights of the algorithm
-%% - the range of all variables has to be defined (point, sol+, obj+, etc)
-%% - function calls should not be in a math font, they should be textsc or texttt
-%% - function calls have to be formally defined in other algorithms or equations
-%% - max_points.add(sol+,sol-) is not clear, should use set notation: 
-%%      max_points := max_points \cup {sol+} \cup {sol-}
-%% - NEG_INF is -\infty in Latex
-%% - Poly has not been defined in the text, previously Polyt had been defined
-%% - It is taking three columns of a lot of (undefined) notation to describe
-%%   the list enumerated algorithm above
-%%
-%% The AAAI-12 SDP pseudocode should obey the above properties, if not, it is
-%% a mistake and should be fixed in the upcoming HMDP discussion.
-
-
-
-
-
-
+We conclude our discussion of \texttt{PairLeafApp} in
+Algorithm~\ref{alg:pairleafapp} with a key observation: it will always
+terminate in finite time with the optimal solution, since at least two
+constraints are generated on every iteration and there are only a
+finite number of possible polytope vertices $\vec{x_{ij}^k}$ for which
+to generate constraints.  We later demonstrate that
+\texttt{PairLeafApp} runs very efficiently in practice indicating 
+that it is generating only a small subset of the possible
+exponential set of constraints.
+%Thus to summarize our key contributions in this subsection, 
+%we have managed to transform an initial bilinear saddle point
+%into a bi-level linear program and then through crucial insights about
+%the second level, we have managed to solve the pairwise leaf approximation
+%problem efficiently with only linear programming and the technique
+%of constraint generation.
