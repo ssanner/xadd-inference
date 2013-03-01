@@ -253,9 +253,9 @@ infinite number of constraints --- one for each
 $\vec{x} \in \PT(\theta_{ij})$, we return to Figure~\ref{fig:optim}.
 Since each of $f$, $f_1$, and $f_2$ are all linear and
 $C(\phi_1),C(\phi_2)$ represent (unions of) linear convex polytopes,
-we know that the maximum difference between $f$ and $f_1,f_2$ must
+we know that the \emph{maximum difference} between $f$ and $f_1,f_2$ must
 occur at the \emph{vertices} of the respective polytope regions.
-Thus, denoting $\vec{x}_{ij}^k$ ($k = \{ 1 \ldots N_{ij} \}$) as a vertex of
+Thus, denoting $\vec{x_{ij}^k}$ ($k = \{ 1 \ldots N_{ij} \}$) as a vertex of
 the linear convex polytope defined by $\theta_{ij}$, we can obtain a
 \emph{linear program} version of~\eqref{eq:optimglo} with a \emph{finite} 
 number of constraints:
@@ -275,35 +275,41 @@ O(\exp n_{ij})$.
 However, we make one final critical insight: while we may have
 an exponential number of constraints in~\eqref{eq:linear_exp}, we have
 a very efficient way to evaluate for a \emph{fixed} solution $\vec{c}^*$,
-what single point $\vec{x}_{ij}^k$ in each polytope $\PT(\theta_{ij})$
+what single point $\vec{x_{ij}^k}$ in each polytope $\PT(\theta_{ij})$
 provides the maximum error --- this is exactly what the second stage
 linear program in~\eqref{eq:bilevel} provides.  Hence, this suggests a
 very efficient constraint generation approach to
-solving~\eqref{eq:linear_exp}: 
+solving~\eqref{eq:linear_exp}:
+
+\vspace{1mm}
+\noindent \texttt{PairwiseLeafApprox}($L_1,L_2$) $\longrightarrow$ ($\vec{c}^*,\epsilon$):
+\vspace{-2mm}
 \begin{enumerate}
 \item Initialize $\vec{c}^*$ to an arbitrary value and the constraint set $C$
 to be empty, i.e., $C = \emptyset$.
-\item Given $\vec{c}^*$, generate the $\vec{x_{ij}^k}$ for \emph{each} $\theta_{ij}$ such that
+\item Given $\vec{c}^*$, for each $i \in \{ 1,2\}$ and for each $\theta_{ij}$, generate the $\vec{x_{ij}^k}$ s.t.
 \begin{align*}
 \vec{x_{ij}^k} := \argmax_{\vec{x}} \! & \left| \vec{c_i}^T \! \mb \vec{x}\\1 \me \! - \vec{c^*}^T \! \mb \vec{x}\\1 \me \right| \\ 
   s.t. \;              \! & \vec{x} \in \PT(\theta_{ij})
 \end{align*}
 and add the following pair of constraints to $C$:
 \begin{align*}
-  C := C \; \cup \; & \{ \epsilon > \vec{c_i}^T (\vec{x_{ij}^k}^T,1)^T - \vec{c^*}^T (\vec{x_{ij}^k}^T,1)^T \} \\
-         \; \cup \; & \{ \epsilon > \vec{c^*}^T (\vec{x_{ij}^k}^T,1)^T - \vec{c_i}^T (\vec{x_{ij}^k}^T,1)^T \}
+  C := C \; \cup \; & \{ \epsilon > \vec{c_i}^T ({\vec{x_{ij}^k}}^T,1)^T - \vec{c^*}^T ({\vec{x_{ij}^k}}^T,1)^T \} \\
+         \; \cup \; & \{ \epsilon > \vec{c^*}^T ({\vec{x_{ij}^k}}^T,1)^T - \vec{c_i}^T ({\vec{x_{ij}^k}}^T,1)^T \}
 %  C := C \; \cup \; & \{ \epsilon > \vec{c_i}^T \! \mb \vec{x_{ij}^k} \\1 \me \! - \vec{c^*}^T \! \mb \vec{x_{ij}^k}\\1 \me \} \\
 %         \; \cup \; & \{ \epsilon > \vec{c^*}^T \! \mb \vec{x_{ij}^k}\\1 \me - \vec{c_i}^T \! \mb \vec{x_{ij}^k} \\1 \me \}
 \end{align*}
 encoding that $\epsilon$ must be greater than the absolute error induced
-by $f_i - f^*$ at the vertex point $\vec{x_{ij}^k}$.  This is an important constraint to
-add because it corresponds to the $\vec{x_{ij}^k}$ with the maximum error.
+by $f_i - f^*$ at the vertex point $\vec{x_{ij}^k}$.  
+%This is an important constraint to
+%add because it corresponds to the $\vec{x_{ij}^k}$ with the maximum error.
 \item Solve the LP of~\eqref{eq:linear_exp} w.r.t. the subset of constraints in $C$ to obtain a new $\vec{c}^*_{\mathit{new}}$.
 \item If $\vec{c}^* = \vec{c}^*_{\mathit{new}}$, return the optimal solution $\vec{c}^*$ and its error $\epsilon$, otherwise go to step 2.
 \end{enumerate}
 Once the last step returns $\vec{c}^*,\epsilon$, we have the best $f^*$ and corresponding
-maximum error $\epsilon$ for given leaves $L_1$ and $L_2$, thus completing the
-definition of \texttt{PairLeafApprox}.
+maximum error $\epsilon$ given leaves $L_1$ and $L_2$, thus performing the optimal pairwise
+leaf approximation problem that we set out to address.
+
 
 {\bf TODO: Scott left off here... need to refine above explanation... consider putting content into a formal algorithm, continue to theoretical guarantees.}
 
