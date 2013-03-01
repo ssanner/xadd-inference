@@ -17,8 +17,8 @@
 %\usepackage{tikz}
 %\usetikzlibrary{arrows,shapes,snakes,automata,backgrounds,petri}
 
-\usepackage{lpic}
-\usepackage{pinlabel}
+%\usepackage{lpic}
+%\usepackage{pinlabel}
 \usepackage{graphicx} 
 \usepackage{subfigure}
 \usepackage{caption}
@@ -28,14 +28,17 @@
 \hbadness=10000
 
 \usepackage{amsmath,amssymb} 
-\usepackage[T1]{fontenc} 
-\usepackage[applemac]{inputenc}
+%\usepackage[T1]{fontenc} 
+%\usepackage[applemac]{inputenc}
 
 \newcommand{\MarsRover}{\textsc{Mars Rover}}
 \newcommand{\MarsRoverUni}{\textsc{Mars Rover1D}}
 \newcommand{\MarsRoverBi}{\textsc{Mars Rover2D}}
 \newcommand{\Invent}{\textsc{Inventory Control}}
 \newcommand{\PT}{\mathit{Polytope}}
+\newcommand{\Open}{\mathit{Open}}
+\newcommand{\Merge}{\mathit{merge}}
+\newcommand{\Error}{\mathit{error}}
 
 \renewcommand{\l}{\langle}
 \renewcommand{\r}{\rangle}
@@ -45,6 +48,9 @@
 \newcommand{\casemin}{\mathrm{casemin}}
 \def\argmax{\operatornamewithlimits{arg\,max}}
 \def\argmin{\operatornamewithlimits{arg\,min}}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\mb}{\begin{bmatrix}}
+\newcommand{\me}{\end{bmatrix}}
 
 \title{	Bounded Approximate Symbolic Dynamic Programming\\ for Hybrid MDPs }
 

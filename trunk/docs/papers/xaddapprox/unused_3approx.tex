@@ -1,0 +1,148 @@
+Which is a piecewise saddle bilinear program, as the objective
+function is bilinear $\vec{c} \cdot \vec{x}$, there is maximization in
+$\vec{x}$ in piecewise linear regions $C(\phi_i)$ and minimization in
+$\vec{c}$. Defining a function to represent the error in each region,
+$Err_i$, this can be rewritten as:
+
+\begin{equation} \min_{\vec{c}} \left[ \max \big( Err_1(\vec{c}), Err_2(\vec{c}) \big) \right] \label{eq:minc} \end{equation}
+where
+\begin{equation} Err_i(\vec{c}) = \max_{\vec{x_i}} \big(  | (\vec{c}-\vec{c_i}) \cdot \vec{x} |\big) \label{eq:errc} \end
+{equation}
+$$\text{s.t.} \hspace{1cm} \vec{x} \in C(\phi_i)$$
+
+Note that the absolute values in~\ref{eq:errc} are equivalent to max of two linear functions, e.g. $\max_y (|g(y)|) = \max \big( \max_y g(y), \max_y -g(y) \big)$. Moreover, a maximization within a regions $C(\phi_i)$, is equivalent to the max of the maximization in all polytopes $Polyt(\theta_{ij})$ of $\phi_i$. With this, we can rewrite the error $Err_i$, as the maximum of a finite number maximizations of bilinear functions with linear constraints in $\vec{x}$:
+{\footnotesize 
+\vspace{-2mm}
+\begin{equation} Err_i(\vec{c}) = \max_{j=1..n_i} \big( max ( err^+_{ij}(\vec{c}), err^-_{ij}(\vec{c}) ) \big) \label{eq:errcij} \end{equation}
+\vspace{-5mm}
+
+where, for $i=1,2$ and $j=1..n_i$
+\vspace{-1mm}
+\begin{equation} err^{\pm}_{ij}(\vec{c}) = \max_{\vec{x} \in Polyt(\theta_{ij})} \big( \pm(\vec{c} - \vec{c}_i)\cdot \vec{x} \big)  \label{eq:polymax} \end{equation}
+\vspace{-2mm}
+}
+
+Now our optimization problem is clearly defined in a three stage optimization: (i) maximization within a polytope with the original continuous variables $\vec{x}$; (ii) discrete maximization of the between the polytopes; and (iii) minimization of this global max with the coefficients $\vec{c}$. It is illustrated in Figure~\ref{fig:optim}.
+
+\begin{equation} \min_{\vec{c}} \max_{i,j} \max_{\vec{x} \in Polyt(\theta_{ij})} \big( |(\vec{c} - \vec{c}_i)\cdot \vec{x}| \big)  \label{eq:optimglo} \end{equation}
+
+In order to solve this, we propose an iterative constraint generation based algorithm which we describe in the following. First, the algorithm will iterate between two phases, one for the maximization and one for the minimization.  Second, on each phase a relaxed problem will be solved using the result from the previous phase. Finally, when a phase gives the same solution twice, the algorithm has converged and a solution to the original problem was found.
+
+In the maximization phase, related to Eq.~\ref{eq:polymax}, we will assume a fixed $\vec{c}$, and thus the maximization of the bilinear functions $\pm(\vec{c} - \vec{c}_i)\cdot \vec{x}$ for each polytope will be linear constrained linear objective problems, solved efficiently by a LP solver. The optimal values are maximum errors in each polytope, the maximum of which is an upper bound on the optimal approximation error, simply because this $\vec{c}$ is a valid function and if no other function gives a better approximation we can use it and the error is exactly the one we just obtained. More importantly, the vertices that reach these optimal values are the points of the polytope that maximize the bilinear function for this value of $\vec{c}$ and therefore are important points for the minimization phase. In fact, if the minimization can't reduce the error in these points, it can't change the maximal error, and thus has achieved the optimal solution. The maximal error points from each polytope are stored at every iteration through the maximization phase, $x^{+t}_{ij}$ and $x^{-t}_{ij}$ are the points found in the $t$-th maximization for the polytope $\theta_{ij}$. 
+
+In the minimization phase, we will solve a relaxation of the problem in Eq.~\ref{eq:minc}, where in each linear constrained bilinear function $err^{\pm}_{ij}$ the maximal error in the polytope $\theta_{ij}$ is replaced by the greatest error from a finite set of points from polytope. More specifically, we only minimize the greatest of the error on points found in the maximization phase. This changes the piecewise bilinear problem into a linear program with the objective to be minimized is a new variable $Z$ that symbolizes the maximal error. There are linear constraints to encode that $Z$ must be greater than any of the errors on the points selected in the previous iterations. For all polytopes $\theta_{ij}$ and previous iterations $t$ the points selected are $x^{\pm t}_{ij}$ and the error at there points is $\tilde{err}_{ij}^{\pm t}(\vec{c})$.
+
+$$ \tilde{err}_{ij}^{\pm t} (\vec{c}) = \big( \pm (\vec{c}_i - \vec{c})\cdot \vec{x}_{ij}^{\pm t} \big)$$
+$$ \tilde{Err}(\vec{c}) =\max_{i,j,t} \big( \tilde{err}^{+t}_{ij} (\vec{c}), \tilde{err}^{-t}_{ij} (\vec{c}) \big)$$
+And the optimization becomes:
+$$min_{\vec{c}}\tilde{Err}({\vec{c}}) = min_{{\vec{c}},Z}  Z $$
+s.t. 
+$$
+	\begin{array}{llll}
+		Z & \geq & \tilde{err}_{ij}^{+t} (\vec{c}) & \mbox{for } i=1,2; j = 1..n_i; t=1..T\\
+		Z & \geq & \tilde{err}_{ij}^{-t} (\vec{c}) & \mbox{for } i=1,2; j = 1..n_i; t=1..T\\
+	\end{array}
+$$
+where $T$ is the current iteration.
+
+This is now a linear problem in the coefficients $\vec{c}$ and $Z$. Solving this minimization yields a new solution $\vec{c}$ that minimizes the greatest error in all these points. As important points may still have not been considered this is a lower bound in the optimal approximation error. This can be seen by the following: $f$ may have to be modified to minimize the error in more points in the next iterations, but this can only lead to increasing the error in the points that were present in this iteration. This follows directly from the fact that adding more constraints cannot improve the optimal value of solution for a linear program.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Formal pseudocode in the form of algorithms has to be completely
+%% an unambiguously specified -- every function call has to be defined
+%% in another algorithm or equation, every structured argument or
+%% has to be formally defined.  I've removed the existing pseudocode
+%% because the above is more than adequate to understand the pairwise
+%% merge and it will take a lot of editing to achieve the formal
+%% level of quality needed in the existing pseudocode at much greater
+%% length than the above description.  We're going to run out of space
+%% as is and I don't think the pseudocode makes an further 
+%% contribution to the above description.
+%%
+%% Some notes: 
+%% - what are Remap and ApplyRemap?  these really get into details of implementation
+%%   that are not crucial for understanding the key insights of the algorithm
+%% - the range of all variables has to be defined (point, sol+, obj+, etc)
+%% - function calls should not be in a math font, they should be textsc or texttt
+%% - function calls have to be formally defined in other algorithms or equations
+%% - max_points.add(sol+,sol-) is not clear, should use set notation: 
+%%      max_points := max_points \cup {sol+} \cup {sol-}
+%% - NEG_INF is -\infty in Latex
+%% - Poly has not been defined in the text, previously Polyt had been defined
+%% - It is taking three columns of a lot of (undefined) notation to describe
+%%   the list enumerated algorithm above
+%%
+%% The AAAI-12 SDP pseudocode should obey the above properties, if not, it is
+%% a mistake and should be fixed in the upcoming HMDP discussion.
+
+The pseudocode for the algorithm just described is algorithm~\ref{alg:glo}. The algorithms ~\ref{alg:maxError} and ~\ref{alg:relaxApprox} encode, respectively, the maximization and the minimization phases. Both use an abstract call to a linear programming solver, $LP\_Solve($ max or min$, objective\_function, linear\_constraints)$ which returns the solution and optimal value for the linear program received.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{1.5em}
+\linesnumbered
+\begin{algorithm}[!ht]
+\dontprintsemicolon
+\KwIn{Linear cases  $L_1 = ( f_1, \phi_1 )$, $L_2 = ( f_2, \phi_2 ).$}
+\KwOut{ $(L^*, error)$ s.t. $L^*$ approximates $L_1$ and $L_2$.}
+$f \gets 0$\;
+$points \gets \emptyset$\;
+$new\_points, error = MAX\_ERROR(f, L_1,L_2)$\;
+\While{$new\_points \not \subset points$} {
+	$points = points \cup new\_points$\;
+	$f = BEST\_APPROX(f_1,f_2,points)$\;
+	$new\_points, error = MAX\_ERROR(f, L_1,L_2)$\;}
+\Return{$( (f, \phi_1 \lor \phi_2), error )$}\;
+\caption{{\sc PairwiseCaseMax} finds the best case linear function}
+\label{alg:glo}
+\end{algorithm}
+\decmargin{1.5em}
+
+\incmargin{1.5em}
+\linesnumbered
+\begin{algorithm}[!ht]
+\dontprintsemicolon
+\KwIn{Case linear functions $L_1 = ( f_1, \phi_1 ), L_2 = ( f_2, \phi_2 )$ and function $f$ }
+\KwOut{Set of points where the error is maximal for each polytope and the optimal $error$.}
+$max\_points \gets \emptyset$\;
+$error \gets NEG\_INF$\;
+\For {$\theta_1 \in Poly(\phi1)$} {
+	$sol^+, obj^+ \gets LP\_Solve(max _x, f-f_1,\theta_1) )$\;
+	$sol^-, obj^- \gets LP\_Solve(max _x, f_1-f,\theta_1) )$\;
+	$max\_points.add(sol^+,sol^-)$\; 	$error \gets max(error, obj^+, obj^-)$\; 
+	}
+\For {$\theta_2 \in Poly(\phi2)$} {
+	$sol^+, obj^+ \gets LP\_Solve(max _x, f-f_2,\theta_2) )$\;
+	$sol^-, obj^- \gets LP\_Solve(max _x, f_2-f,\theta_2) )$\;
+	$max\_points.add(sol^+,sol^-)$\; 	$error \gets max(error, obj^+, obj^-)$\; 
+	}\Return{$(max\_points, error)$}\;
+\caption{{\sc MAX\_ERROR} finds the points of maximum error}
+\label{alg:maxError}
+\end{algorithm}
+\decmargin{1.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{1.5em}
+\linesnumbered
+\begin{algorithm}[!ht]
+\dontprintsemicolon
+\KwIn{Linear cases $L_1 = ( f_1, \phi_1 ), L_2 = ( f_2, \phi_2 )$ and a set of $points$ where to find the best approximation for}
+\KwOut{Best linear case approximation $f$.}
+$constr \gets \emptyset$\;
+\For {$p \in points$}{ 
+	\If {$p \in \phi_1$}{
+		$constr \gets constr \cup \{ (Z \geq (f - f_1) (p)), (Z \geq (f_1 - f) (p) )\} $}\;
+	\If {$p \in \phi_2$}{
+		$constr \gets constr \cup \{ (Z \geq (f - f_2) (p)), (Z \geq (f_2 - f) (p) )\} $}\;
+}\;
+$f \gets LP\_Solve(min_{f,Z}, Z, constr)$\;	
+\Return{$f$}\;
+\caption{{\sc BEST\_APPROX} finds the linear function minimizing errors a set of points}
+\label{alg:relaxApprox}
+\end{algorithm}
+\decmargin{1.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Finally, we prove some properties of the developed algorithm.

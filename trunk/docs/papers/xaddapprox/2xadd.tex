@@ -72,7 +72,7 @@ Figure~\ref{fig:symbex}(b) its XADD representation.  Underlying the
 XADD in Figure~\ref{fig:symbex}(b) is a simple piecewise linear
 function that we can represent semantically in case form.
 Specifically, given a domain of boolean and continuous variables
-$(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where
+$(\vec{b}^T,\vec{x}^T) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where
 $b_i \in \{ 0,1 \}$ ($1 \leq i \leq n$) and $x_j \in
 [x_j^{\min},x_j^{\max}]$ ($1 \leq j \leq m$) for
 $x_j^{\min},x_j^{\max} \in \mathbb{R}$ and $x_j^{\max} > x_j^{\min}$,
@@ -134,7 +134,8 @@ represent well-defined functions.
 Since $\phi_i$ can be written in disjunctive normal form (DNF), i.e.,
 $\phi_i \equiv \bigvee_{j=0}^{n_i} \theta_{ij}$ where $\theta_{ij}$
 represents a conjunction of linear constraints over $\vec{x}$ and a
-(partial) truth assignment to $\vec{b}$, we observe that every
+(partial) truth assignment to $\vec{b}$ corresponding to $j$th path
+from the XADD root to leaf $f_i$, we observe that every
 $\theta_{ij}$ contains a bounded convex linear polytope ($\vec{x}$ is
 finitely bounded in all dimensions as initially defined).  Since this
 polytope intepretation will become important for XADD approximation,
@@ -199,15 +200,17 @@ $ = $
 \vspace{-3mm}
 } While the $\max$ of two linear piecewise functions represented as
 XADDs remains in linear case form, we note that unlike ADDs which
-prohibit continuous variables $\vec{x}$ and have a fixed set of
-boolean decision variables, the XADD representation may need to create
+prohibit continuous variables $\vec{x}$ and \emph{only} have a \emph{fixed} set of
+boolean decision tests $\vec{b}$, an XADD may need to create
 \emph{new decision tests} for the linear inequalities $\{ f_1 > g_1, f_1 >
-g_2, f_2 > g_1, f_2 > g_2 \}$ over $\vec{x}$ as a result of the $\max$.
+g_2, f_2 > g_1, f_2 > g_2 \}$ over $\vec{x}$ as a result of operations
+like $\max$.
 
-Additional XADD operations such as symbolic substitution and
-integration required for the solution of hybrid MDPs have all been
-defined previously~\cite{sanner_uai11,zamani12} and we refer the
-reader to those works for details.
+Additional XADD operations such as symbolic substitution, continuous
+(action) parameter maximization, and integration required for the
+solution of hybrid MDPs have all been defined
+previously~\cite{sanner_uai11,zamani12} and we refer the reader to
+those works for details.
 
 %EDIT - one more operation...!%
 %%
