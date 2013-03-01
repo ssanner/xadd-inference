@@ -3,7 +3,7 @@
 In this section, we present the main novel contribution of our paper
 for approximating XADDs within a fixed error bound.  Since the point
 of XADD approximation is to shrink its size, we refer to our method of
-approximation as \emph{XADD compression} (\textsc{XADDComp}).
+approximation as XADD Compression (\textsc{XADDComp}).
 
 Following previous work on ADD compression~\cite{apricodd}, we note
 that decision diagrams should be compressed from the bottom up ---
@@ -12,7 +12,7 @@ decision diagram removing vacuous decisions and shrinking the decision
 diagram.  For example, after merging leaves in
 Figure~\ref{fig:stepfunfig}(a), we note that the only remaining
 decision in \ref{fig:stepfunfig}(b) is $x < 3$.  Hence, we focus on a
-leaf merging approach to \textsc{XADDComp}, which poses two questions:
+leaf merging approach to \texttt{XADDComp}, which poses two questions:
 (1) what leaves do we merge, and (2) how do we find the best
 approximation of merged leaves?  We answer these two questions in the
 following subsections.
@@ -29,11 +29,6 @@ following subsections.
 %merge partitions as a form of removing dependencies that had little
 %influence in the represented function.
 
-%% NOTE: No paper uses all caps for section headings... it's like
-%% yelling at the reader. :)
-% !!! It is the UAI Style, as in the sample.tex !
-%\subsection{SUCCESSIVE MERGING}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% I am glad that you have improved so many things, but it does seem
 %% bad that there were so many "mistakes".
@@ -49,17 +44,12 @@ following subsections.
 %% in the place you are explaining it.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Successive Leaf Merging}
-
-Since it would be combinatorially prohibitive to examine all possible
-leaf merges in an XADD, our approximation algorithm in
-Algorithm~\ref{alg:approx} uses a constructive strategy of successive
-pairwise merging of partitions. The idea is simple and is illustrated
-in Figure~\ref{fig:steplining}. The bounded error property is
-guaranteed by accumulating the amount of error "used" in every merged
-leaf and avoiding any merges that exceed an error threshold.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% TODO: need to show accumulated error in merges
+%% TODO: need to indicate with under-bracket, which nodes are being merged.
+%%
 \begin{figure}[t!]
 \centering
   \subfigure[Original] {
@@ -82,54 +72,93 @@ leaf and avoiding any merges that exceed an error threshold.
 }
 \subfigure[Step2]{
   	\begin{minipage}{.25\textwidth}
-	 \includegraphics[width=\textwidth]{Figures/stepfun/succ3.png}
+	\includegraphics[width=\textwidth]{Figures/stepfun/succ3.png}
 	\end{minipage}
 	\begin{minipage}{.2\textwidth}
 	\includegraphics[width=\textwidth]{Figures/xadds/succ3.pdf}
 	\end{minipage}
 	 \label{step2}
 }
-\caption{ \footnotesize Successive pair merging for a simple 1D example.}
- \label{fig:steplining}
+\caption{ \footnotesize Successive pair merging XADD compression for a simple 1D example.
+At each step two nodes are chosen for merging, the best approximating
+hyperplane is determined according to Section~\ref{sec:leaf_approx},
+and if the accumulated error is within required bounds, the leaves are
+merged and internal XADD structure simplified to remove unneeded
+decisions.}  \label{fig:steplining}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Successive Leaf Merging}
+
+%% See notes below on pseudocode... there will be too many questions
+%% about undefined notation and there are too many details to fix
+%% before the deadline.  I don't think you need anything more than
+%% the simple diagrammatic explanation of Successive Leaf Merging,
+%% as long as you denote the error accumulation.
+
+Since it would be combinatorially prohibitive to examine all possible
+leaf merges in an XADD, our approximation algorithm in
+Algorithm~\ref{alg:approx} uses a systematic search strategy of successive
+pairwise merging of leaves. The idea is simple and is illustrated
+in Figure~\ref{fig:steplining}. The bounded error property is
+guaranteed by accumulating the amount of error "used" in every merged
+leaf and avoiding any merges that exceed a maximum error threshold $\epsilon$.
+However, we have not yet defined how to find the lowest error approximation
+of a pair of leaves in \texttt{PairLeafApprox}, which we provide next.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
 \incmargin{1.5em}
 \linesnumbered
 \begin{algorithm}[t!]
 \dontprintsemicolon
-\KwIn{A piecewise linear function $V$, relative\_allow\_error}
-\KwOut{Approximated version of $V$.}
-$M \gets MaxValue(V)$
-$allow\_error \gets M * relative\_allow\_error$
-$OpenCases \gets getCases(V)$\;
-\While{$OpenCases != \emptyset$} {
-	$L_1 = OpenCases.pop()$\;
-	$error = allow\_error$\;
-	\For{$ L_2 \in OpenCase$}  { 
-		$MergeResult = PairwiseCaseMax( L_1, L_2)$\;
-		\If {$ MergeResult.error < error $} 
-		{
-			$error \gets error - MergeResult.error$\;
-			$OpenCases.remove(L_2)$\;
-			$ Remap(L_1, MergeResult.L^*) $\;
-			$ Remap(L_2, MergeResult.L^*) $\;
-			$ L_1 \gets MergeResult.L^* $\;
+%% NOTE: $error$ is read as e*r*r*o*r... you want $\mathit{error}$
+%% NOTE: Follow notation that is used in the paper, always L for a leaf/partition.
+%% NOTE: All algorithm notation has to be consistent, later algorithms
+%%       don't use this \KwIn, \KwOut and use := in place of \gets.
+%\KwIn{A piecewise linear function $V$, relative\_allow\_error}
+%\KwOut{Approximated version of $V$.}
+%% NOTE: Relative error adds numerous explanation complications and
+%%       I think it is hard to justify over the HMDP just passing in
+%%       an allowed error bound which is how things are done in the 
+%%       literature.  This is the cleanest way to do things and a 
+%%       more complex approach should not be taken unless it is empirically
+%%       better.
+%%$allow\_error \gets M * relative\_allow\_error$
+$\hat{\epsilon} \gets 0$ \emph{// The max amount of error used so far}\;
+$\hat{X} \gets X$ \emph{// The approximated XADD}\;
+$\Open := \{ L_i \} = \{ \l \phi_i, f_i \r \} \in \hat{X}$\emph{// cases in $\hat{X}$}\;
+\While{$\Open \neq \emptyset$} {
+	$L_1 := \Open.\mathit{pop}()$\;
+	\For{$ L_2 \in \Open$}  { 
+                \emph{// Merge and track accumulated error}\;
+		$f^* := $\texttt{PairLeafApprox}$(L_1, L_2)$\emph{// Sec~\ref{sec:leaf_approx}}\;
+%                \emph{// Track accumulated error in merge}\;
+	        $f^*.\Error := f^*.\Error + $\\\hspace{18mm}$\max(f_1.\Error,f_2.\Error)$\;
+                \emph{// Keep merge if within error bounds}\;
+		\If {$f^*.\Error < \epsilon$}
+		{       
+                        $\hat{\epsilon} := \max(\hat{\epsilon}, f^*.\Error)$\;
+			$\Open.\mathit{remove}(L_2)$\;
+                        \emph{//Merge leaves and simplify $\hat{X}$}
+			$\hat{X}.f_1 := f^*, \; \hat{X}.f_2 := f^*$\; 
+                        % \texttt{Simplify($\hat{X}$)}\; $ Not defined, so omit
+			\; 
+			$\Open.\mathit{insert}(\l \phi_1 \lor \phi_2, f^* \r)$\;
 		}
 	}
 }
-\Return{ApplyRemap(V)}\;
-\caption{\footnotesize {\sc Approximate}: bounded approximation of piecewise linear function}
-%%
-%% NOTE: the example should really demonstrate the merge error accumulating.
-%%
+\Return{$(\hat{X},\hat{\epsilon})$}\emph{// Comp. XADD and error used}\;
+\caption{\footnotesize 
+ \texttt{XADDComp}(XADD $X$, $\epsilon$) $\longrightarrow$ $(\hat{X},\hat{\epsilon})$}
 \label{alg:approx}
 \end{algorithm}
 \decmargin{1.5em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Pairwise Leaf Approximation}
+
+\label{sec:leaf_approx}
 
 %% Following is verbose and a lot of it obvious, or already explained,
 %% or complicating matters in ways not required to get the key insights.
@@ -155,52 +184,30 @@ $OpenCases \gets getCases(V)$\;
 %% paragraph.
 In pairwise leaf merging, we must address the following fundamental
 problem: given two XADD leaves represented by their case partitions
-$L_1 = ( f_1, \phi_1 )$ and $L_2 = ( f_2, \phi_2 )$, our goal is to
+$L_1 = \l f_1, \phi_1 \r$ and $L_2 = \l f_2, \phi_2 \r$, our goal is to
 determine the best linear case approximation of $L_1$ and $L_2$.  As
 it must represent $L_1$ and $L_2$, the solution must be defined in
-both regions, therefore of the form $L^* = (f^*,\phi_1 \lor \phi_2)$.
-Since we restrict to linear XADDs, $f_1$,$f_2$ and $f$ are all linear
-expressions over $\vec{x}$ written in the general form $f_1
-= \vec{c_1}^T (\vec{x},1)^T$ and likewise using $\vec{c}_2$ for $\vec{f}_2$
-and $\vec{c}^*$ for $\vec{f}^*$.  Hence the optimization problema
-boils down to finding the optimal weight vector $\vec{c}$ satisfying
-the following bilinear saddle point optimization problem:
-\begin{equation} \min_{\vec{c}} \max_{i} \max_{\vec{x} \in C(\phi_i)} \big( |(\vec{c} - \vec{c}_i)\cdot \vec{x}| \big)  \label{eq:optimglo} \end{equation}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%                Scott stopped editing here for now
-%%
-%% Need to explain intuitively this in the context of Figure 4,
-%% then step through the simplification of the problem.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Which is a piecewise saddle bilinear program, as the objective
-function is bilinear $\vec{c} \cdot \vec{x}$, there is maximization in
-$\vec{x}$ in piecewise linear regions $C(\phi_i)$ and minimization in
-$\vec{c}$. Defining a function to represent the error in each region,
-$Err_i$, this can be rewritten as:
-
-\begin{equation} \min_{\vec{c}} \left[ \max \big( Err_1(\vec{c}), Err_2(\vec{c}) \big) \right] \label{eq:minc} \end{equation}
-where
-\begin{equation} Err_i(\vec{c}) = \max_{\vec{x_i}} \big(  | (\vec{c}-\vec{c_i}) \cdot \vec{x} |\big) \label{eq:errc} \end
-{equation}
-$$\text{s.t.} \hspace{1cm} \vec{x} \in C(\phi_i)$$
-
-Note that the absolute values in~\ref{eq:errc} are equivalent to max of two linear functions, e.g. $\max_y (|g(y)|) = \max \big( \max_y g(y), \max_y -g(y) \big)$. Moreover, a maximization within a regions $C(\phi_i)$, is equivalent to the max of the maximization in all polytopes $Polyt(\theta_{ij})$ of $\phi_i$. With this, we can rewrite the error $Err_i$, as the maximum of a finite number maximizations of bilinear functions with linear constraints in $\vec{x}$:
-{\footnotesize 
-\vspace{-2mm}
-\begin{equation} Err_i(\vec{c}) = \max_{j=1..n_i} \big( max ( err^+_{ij}(\vec{c}), err^-_{ij}(\vec{c}) ) \big) \label{eq:errcij} \end{equation}
-\vspace{-5mm}
-
-where, for $i=1,2$ and $j=1..n_i$
-\vspace{-1mm}
-\begin{equation} err^{\pm}_{ij}(\vec{c}) = \max_{\vec{x} \in Polyt(\theta_{ij})} \big( \pm(\vec{c} - \vec{c}_i)\cdot \vec{x} \big)  \label{eq:polymax} \end{equation}
-\vspace{-2mm}
-}
-
-Now our optimization problem is clearly defined in a three stage optimization: (i) maximization within a polytope with the original continuous variables $\vec{x}$; (ii) discrete maximization of the between the polytopes; and (iii) minimization of this global max with the coefficients $\vec{c}$. It is illustrated in figure~\ref{fig:optim}.
-
-\begin{equation} \min_{\vec{c}} \max_{i,j} \max_{\vec{x} \in Polyt(\theta_{ij})} \big( |(\vec{c} - \vec{c}_i)\cdot \vec{x}| \big)  \label{eq:optimglo} \end{equation}
+both regions and is therefore of the form $L^* =
+\l f^*,\phi_1 \lor \phi_2 \r$.  Since we restrict to linear XADDs, 
+$f_1 = \vec{c_1}^T (\vec{x}^T,1)^T$, $f_2 = \vec{c_2}^T (\vec{x}^T,1)^T$ and 
+$f^* = \vec{c^*}^T (\vec{x}^T,1)^T$ (assuming
+$\vec{c_1},\vec{c_2},\vec{c^*} \in \mathbb{R}^{m+1}$ where $\vec{x} \in \mathbb{R}^{m}$).  
+Hence the optimization problem reduces
+to one of finding the optimal weight vector $\vec{c^*}$ satisfying the
+following bilinear saddle point optimization problem:
+\begin{equation} 
+\min_{\vec{c}^*} \max_{i \in \{ 1, 2 \}} \max_{\vec{x} \in C(\phi_i)} \bigg| \underbrace{\vec{c_i}^T \mb \vec{x}\\1 \me}_{f_i} - \underbrace{\vec{c^*}^T \mb \vec{x}\\1 \me}_{f^*} \bigg| \label{eq:optimglo} 
+\end{equation}
+This is bilinear due to the inner product of $\vec{c^*}$ with $\vec{x}$.
+%This is a saddle point optimization problem due to the
+%$\min_{\vec{c}^*} \max_{\vec{x}}$ and bilinear due to the inner product
+%of $\vec{c^*}$ with $\vec{x}$.
+%
+%In short, this says that we need to find the weight vector $\vec{c^*}$
+%which \emph{minimizes the maximum absolute difference} between the hyperplanes defined
+%by $f^*$ and $f_1, f_2$, but only for the valid
+%$\vec{x}$ in the respective polytopes $C(\phi_1)$ and $C(\phi_2)$ where
+%each leaf $f_1$ and $f_2$ is valid.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[t!]
@@ -208,102 +215,138 @@ Now our optimization problem is clearly defined in a three stage optimization: (
 \includegraphics[trim = 2cm 0cm 2cm 0cm, height=0.25\textwidth,width=0.2\textwidth]{Figures/optimDiag/optdiagram1.pdf} 
 \hspace{2mm}
 \includegraphics[trim = 2cm 0cm 2cm 0cm, height=0.25\textwidth,width=0.2\textwidth]{Figures/optimDiag/optdiagram2.pdf}
-\caption{Illustration of the piecewise linear merging problem: \emph{(left)} the original linear functions in their regions; \emph{(right)} a linear approximation defined on the merged region.}
+\caption{\footnotesize Illustration of the pairwise leaf approximation problem: \emph{(left)} the original linear leaf functions $f_1$ and $f_2$ in their respective (single) polytope regions $\phi_1$ and $\phi_2$; \emph{(right)} a linear approximation $f$ overlaid on $f_1$ and $f_2$ in their regions showing errors at the polytope vertices.}
 \label{fig:optim} 
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-In order to solve this, we propose an iterative constraint generation based algorithm which we describe in the following. First, the algorithm will iterate between two phases, one for the maximization and one for the minimization.  Second, on each phase a relaxed problem will be solved using the result from the previous phase. Finally, when a phase gives the same solution twice, the algorithm has converged and a solution to the original problem was found.
+To better understand the structure of this bilinear saddle point
+problem, we refer to Figure~\ref{fig:optim}, which shows on the
+left, two functions $f_1$ and $f_2$ and the respective single polytope
+regions $C(\phi_1)$ and $C(\phi_2)$ where $f_1$ and $f_2$ are
+respectively valid.  On the right, we show a proposed approximating
+hyperplane $f$ within the regions $C(\phi_1)$ and $C(\phi_2)$.
+Clearly we want to choose the $f^*=f$ that minimizes the absolute
+difference between $f$ and $f_1,f_2$ within their respective polytopes.
+On account of this perspective and recalling that $C(\phi_i)
+= \bigcup_j \PT(\theta_{ij})$, we can rewrite~\eqref{eq:optimglo} as
+the following bi-level linear optimization problem:\footnote{
+To obtain a true bi-level \emph{linear} program, we need \emph{two} separate
+second stage constraints to encode that $\epsilon$ is larger than each
+side of the absolute value (the argument of the absolute value and its
+negation), but this is a straightforward absolute value expansion in a
+linear program that we will consider implicit to avoid notational clutter.}
+\begin{align}
+\min_{\vec{c}^*,\epsilon} \; & \epsilon \label{eq:bilevel} \\
+s.t. \;       & \epsilon \geq \left( \!\!
+  \begin{array}{ll}
+  \max\limits_{\vec{x}} \! & \left| \vec{c_i}^T \! \mb \vec{x}\\1 \me \! - \vec{c^*}^T \! \mb \vec{x}\\1 \me \right| \\ 
+  s.t. \;              \! & \vec{x} \in \PT(\theta_{ij})
+  \end{array} \!\!\! \right); \forall i \in \{ 1,\!2 \}, \forall \theta_{ij} \nonumber
+\end{align}
+While it may seem we have made little progress with this rewrite
+of~\eqref{eq:optimglo} --- this still appears to be a difficult
+optimization problem, we can make an important insight that allows
+us to remove the second stage of optimization altogether.  While
+implicitly it appears that the second stage would correspond to an
+infinite number of constraints --- one for each
+$\vec{x} \in \PT(\theta_{ij})$, we return to Figure~\ref{fig:optim}.
+Since each of $f$, $f_1$, and $f_2$ are all linear and
+$C(\phi_1),C(\phi_2)$ represent (unions of) linear convex polytopes,
+we know that the maximum difference between $f$ and $f_1,f_2$ must
+occur at the \emph{vertices} of the respective polytope regions.
+Thus, denoting $\vec{x}_{ij}^k$ ($k = \{ 1 \ldots N_{ij} \}$) as a vertex of
+the linear convex polytope defined by $\theta_{ij}$, we can obtain a
+\emph{linear program} version of~\eqref{eq:optimglo} with a \emph{finite} 
+number of constraints:
+\begin{align}
+\min_{\vec{c}^*,\epsilon} \; & \epsilon \label{eq:linear_exp} \\
+s.t. \;       & \epsilon \geq \left| \vec{c_i}^T \! \mb \vec{x_{ij}^k}\\1 \me \! - \vec{c^*}^T \! \mb \vec{x_{ij}^k}\\1 \me \right|; 
+\begin{array}{l}
+\forall i \in \{ 1,\!2 \}, \forall \theta_{ij} \nonumber,\\ 
+\forall k \in \{ 1 \ldots N_{ij} \}
+\end{array}
+\end{align}
+Unfortunately, the drawback of this single linear programming approach
+is that for $n_{ij}$ linear constraints in $\PT(\theta_{ij})$, the
+number of vertices of the polytope may be exponential, i.e., $N_{ij} =
+O(\exp n_{ij})$.  
 
-In the maximization phase, related to Eq.~\ref{eq:polymax}, we will assume a fixed $\vec{c}$, and thus the maximization of the bilinear functions $\pm(\vec{c} - \vec{c}_i)\cdot \vec{x}$ for each polytope will be linear constrained linear objective problems, solved efficiently by a LP solver. The optimal values are maximum errors in each polytope, the maximum of which is an upper bound on the optimal approximation error, simply because this $\vec{c}$ is a valid function and if no other function gives a better approximation we can use it and the error is exactly the one we just obtained. More importantly, the vertices that reach these optimal values are the points of the polytope that maximize the bilinear function for this value of $\vec{c}$ and therefore are important points for the minimization phase. In fact, if the minimization can't reduce the error in these points, it can't change the maximal error, and thus has achieved the optimal solution. The maximal error points from each polytope are stored at every iteration through the maximization phase, $x^{+t}_{ij}$ and $x^{-t}_{ij}$ are the points found in the $t$-th maximization for the polytope $\theta_{ij}$. 
+However, we make one final critical insight: while we may have
+an exponential number of constraints in~\eqref{eq:linear_exp}, we have
+a very efficient way to evaluate for a \emph{fixed} solution $\vec{c}^*$,
+what single point $\vec{x}_{ij}^k$ in each polytope $\PT(\theta_{ij})$
+provides the maximum error --- this is exactly what the second stage
+linear program in~\eqref{eq:bilevel} provides.  Hence, this suggests a
+very efficient constraint generation approach to
+solving~\eqref{eq:linear_exp}: 
+\begin{enumerate}
+\item Initialize $\vec{c}^*$ to an arbitrary value and the constraint set $C$
+to be empty, i.e., $C = \emptyset$.
+\item Given $\vec{c}^*$, generate the $\vec{x_{ij}^k}$ for \emph{each} $\theta_{ij}$ such that
+\begin{align*}
+\vec{x_{ij}^k} := \argmax_{\vec{x}} \! & \left| \vec{c_i}^T \! \mb \vec{x}\\1 \me \! - \vec{c^*}^T \! \mb \vec{x}\\1 \me \right| \\ 
+  s.t. \;              \! & \vec{x} \in \PT(\theta_{ij})
+\end{align*}
+and add the following pair of constraints to $C$:
+\begin{align*}
+  C := C \; \cup \; & \{ \epsilon > \vec{c_i}^T (\vec{x_{ij}^k}^T,1)^T - \vec{c^*}^T (\vec{x_{ij}^k}^T,1)^T \} \\
+         \; \cup \; & \{ \epsilon > \vec{c^*}^T (\vec{x_{ij}^k}^T,1)^T - \vec{c_i}^T (\vec{x_{ij}^k}^T,1)^T \}
+%  C := C \; \cup \; & \{ \epsilon > \vec{c_i}^T \! \mb \vec{x_{ij}^k} \\1 \me \! - \vec{c^*}^T \! \mb \vec{x_{ij}^k}\\1 \me \} \\
+%         \; \cup \; & \{ \epsilon > \vec{c^*}^T \! \mb \vec{x_{ij}^k}\\1 \me - \vec{c_i}^T \! \mb \vec{x_{ij}^k} \\1 \me \}
+\end{align*}
+encoding that $\epsilon$ must be greater than the absolute error induced
+by $f_i - f^*$ at the vertex point $\vec{x_{ij}^k}$.  This is an important constraint to
+add because it corresponds to the $\vec{x_{ij}^k}$ with the maximum error.
+\item Solve the LP of~\eqref{eq:linear_exp} w.r.t. the subset of constraints in $C$ to obtain a new $\vec{c}^*_{\mathit{new}}$.
+\item If $\vec{c}^* = \vec{c}^*_{\mathit{new}}$, return the optimal solution $\vec{c}^*$ and its error $\epsilon$, otherwise go to step 2.
+\end{enumerate}
+Once the last step returns $\vec{c}^*,\epsilon$, we have the best $f^*$ and corresponding
+maximum error $\epsilon$ for given leaves $L_1$ and $L_2$, thus completing the
+definition of \texttt{PairLeafApprox}.
 
-In the minimization phase, we will solve a relaxation of the problem in Eq.~\ref{eq:minc}, where in each linear constrained bilinear function $err^{\pm}_{ij}$ the maximal error in the polytope $\theta_{ij}$ is replaced by the greatest error from a finite set of points from polytope. More specifically, we only minimize the greatest of the error on points found in the maximization phase. This changes the piecewise bilinear problem into a linear program with the objective to be minimized is a new variable $Z$ that symbolizes the maximal error. There are linear constraints to encode that $Z$ must be greater than any of the errors on the points selected in the previous iterations. For all polytopes $\theta_{ij}$ and previous iterations $t$ the points selected are $x^{\pm t}_{ij}$ and the error at there points is $\tilde{err}_{ij}^{\pm t}(\vec{c})$.
+{\bf TODO: Scott left off here... need to refine above explanation... consider putting content into a formal algorithm, continue to theoretical guarantees.}
 
-$$ \tilde{err}_{ij}^{\pm t} (\vec{c}) = \big( \pm (\vec{c}_i - \vec{c})\cdot \vec{x}_{ij}^{\pm t} \big)$$
-$$ \tilde{Err}(\vec{c}) =\max_{i,j,t} \big( \tilde{err}^{+t}_{ij} (\vec{c}), \tilde{err}^{-t}_{ij} (\vec{c}) \big)$$
-And the optimization becomes:
-$$min_{\vec{c}}\tilde{Err}({\vec{c}}) = min_{{\vec{c}},Z}  Z $$
-s.t. 
-$$
-	\begin{array}{llll}
-		Z & \geq & \tilde{err}_{ij}^{+t} (\vec{c}) & \mbox{for } i=1,2; j = 1..n_i; t=1..T\\
-		Z & \geq & \tilde{err}_{ij}^{-t} (\vec{c}) & \mbox{for } i=1,2; j = 1..n_i; t=1..T\\
-	\end{array}
-$$
-where $T$ is the current iteration.
+Terminates at convergence in finite steps.
 
-This is now a linear problem in the coefficients $\vec{c}$ and $Z$. Solving this minimization yields a new solution $\vec{c}$ that minimizes the greatest error in all these points. As important points may still have not been considered this is a lower bound in the optimal approximation error. This can be seen by the following: $f$ may have to be modified to minimize the error in more points in the next iterations, but this can only lead to increasing the error in the points that were present in this iteration. This follows directly from the fact that adding more constraints cannot improve the optimal value of solution for a linear program.
-
-The pseudocode for the algorithm just described is algorithm~\ref{alg:glo}. The algorithms ~\ref{alg:maxError} and ~\ref{alg:relaxApprox} encode, respectively, the maximization and the minimization phases. Both use an abstract call to a linear programming solver, $LP\_Solve($ max or min$, objective\_function, linear\_constraints)$ which returns the solution and optimal value for the linear program received.
-
-\incmargin{1.5em}
-\linesnumbered
-\begin{algorithm}[!ht]
-\dontprintsemicolon
-\KwIn{Linear cases  $L_1 = ( f_1, \phi_1 )$, $L_2 = ( f_2, \phi_2 ).$}
-\KwOut{ $(L^*, error)$ s.t. $L^*$ approximates $L_1$ and $L_2$.}
-$f \gets 0$\;
-$points \gets \emptyset$\;
-$new\_points, error = MAX\_ERROR(f, L_1,L_2)$\;
-\While{$new\_points \not \subset points$} {
-	$points = points \cup new\_points$\;
-	$f = BEST\_APPROX(f_1,f_2,points)$\;
-	$new\_points, error = MAX\_ERROR(f, L_1,L_2)$\;}
-\Return{$( (f, \phi_1 \lor \phi_2), error )$}\;
-\caption{{\sc PairwiseCaseMax} finds the best case linear function}
-\label{alg:glo}
-\end{algorithm}
-\decmargin{1.5em}
-
-\incmargin{1.5em}
-\linesnumbered
-\begin{algorithm}[!ht]
-\dontprintsemicolon
-\KwIn{Case linear functions $L_1 = ( f_1, \phi_1 ), L_2 = ( f_2, \phi_2 )$ and function $f$ }
-\KwOut{Set of points where the error is maximal for each polytope and the optimal $error$.}
-$max\_points \gets \emptyset$\;
-$error \gets NEG\_INF$\;
-\For {$\theta_1 \in Poly(\phi1)$} {
-	$sol^+, obj^+ \gets LP\_Solve(max _x, f-f_1,\theta_1) )$\;
-	$sol^-, obj^- \gets LP\_Solve(max _x, f_1-f,\theta_1) )$\;
-	$max\_points.add(sol^+,sol^-)$\; 	$error \gets max(error, obj^+, obj^-)$\; 
-	}
-\For {$\theta_2 \in Poly(\phi2)$} {
-	$sol^+, obj^+ \gets LP\_Solve(max _x, f-f_2,\theta_2) )$\;
-	$sol^-, obj^- \gets LP\_Solve(max _x, f_2-f,\theta_2) )$\;
-	$max\_points.add(sol^+,sol^-)$\; 	$error \gets max(error, obj^+, obj^-)$\; 
-	}\Return{$(max\_points, error)$}\;
-\caption{{\sc MAX\_ERROR} finds the points of maximum error}
-\label{alg:maxError}
-\end{algorithm}
-\decmargin{1.5em}
-
-\incmargin{1.5em}
-\linesnumbered
-\begin{algorithm}[!ht]
-\dontprintsemicolon
-\KwIn{Linear cases $L_1 = ( f_1, \phi_1 ), L_2 = ( f_2, \phi_2 )$ and a set of $points$ where to find the best approximation for}
-\KwOut{Best linear case approximation $f$.}
-$constr \gets \emptyset$\;
-\For {$p \in points$}{ 
-	\If {$p \in \phi_1$}{
-		$constr \gets constr \cup \{ (Z \geq (f - f_1) (p)), (Z \geq (f_1 - f) (p) )\} $}\;
-	\If {$p \in \phi_2$}{
-		$constr \gets constr \cup \{ (Z \geq (f - f_2) (p)), (Z \geq (f_2 - f) (p) )\} $}\;
-}\;
-$f \gets LP\_Solve(min_{f,Z}, Z, constr)$\;	
-\Return{$f$}\;
-\caption{{\sc BEST\_APPROX} finds the linear function minimizing errors a set of points}
-\label{alg:relaxApprox}
-\end{algorithm}
-\decmargin{1.5em}
-
-Finally, we prove some properties of the developed algorithm.
 
 {\bf Theorem} {\it Algorithm~\ref{alg:glo} always terminates and produces the optimal solution for the optimization described in Eqs.~\ref{eq:minc},~\ref{eq:errcij},~\ref{eq:polymax}.} 
 
 To prove the optimality of the solution obtained, we observe that at the beginning of the loop the algorithm always keeps an optimal approximation $f$ for all $points$ stored. Using this $f$ the $MAX\_ERROR$ routine computes new points that are the maximum error points for this $f$. If there are new points, these are added to the stored points and $BEST\_APPROX$ computes a new $f$ that minimizes in all stored points. As we return to the start of the loop we have a new optimal approximation. If there are no new points, this means that the current $f$ minimizes the error in the points that maximize its error therefore it minimizes the maximal error in all regions and is the optimal solution.  As the algorithm only terminates when there are no new points, and in this case the solution is optimal, if the algorithm terminates, its solution is optimal.
  Next we prove that the algorithm must terminate: First, the formulae $\phi$  are finite and define a finite number of polytopes. Second, for all polytopes defined, there is a finite number of inequalities and correspondingly a finite number of vertices. At each non terminal iteration at least one new polytope vertex must be added to the stored $points$ list, as there are finitely many vertices, the number of iterations must be finite, so the algorithm terminates.
+
+
+In practice, terminates with much fewer than exponential number of constraints.
+
+This defines the algorithm \textsc{PairwiseCaseMax} called in line X of Algorithm~\ref{alg:approx}.
+
+%% Formal pseudocode in the form of algorithms has to be completely
+%% an unambiguously specified -- every function call has to be defined
+%% in another algorithm or equation, every structured argument or
+%% has to be formally defined.  I've removed the existing pseudocode
+%% because the above is more than adequate to understand the pairwise
+%% merge and it will take a lot of editing to achieve the formal
+%% level of quality needed in the existing pseudocode at much greater
+%% length than the above description.  We're going to run out of space
+%% as is and I don't think the pseudocode makes an further 
+%% contribution to the above description.
+%%
+%% Some notes: 
+%% - what are Remap and ApplyRemap?  these really get into details of implementation
+%%   that are not crucial for understanding the key insights of the algorithm
+%% - the range of all variables has to be defined (point, sol+, obj+, etc)
+%% - function calls should not be in a math font, they should be textsc or texttt
+%% - function calls have to be formally defined in other algorithms or equations
+%% - max_points.add(sol+,sol-) is not clear, should use set notation: 
+%%      max_points := max_points \cup {sol+} \cup {sol-}
+%% - NEG_INF is -\infty in Latex
+%% - Poly has not been defined in the text, previously Polyt had been defined
+%% - It is taking three columns of a lot of (undefined) notation to describe
+%%   the list enumerated algorithm above
+%%
+%% The AAAI-12 SDP pseudocode should obey the above properties, if not, it is
+%% a mistake and should be fixed in the upcoming HMDP discussion.
+
 
 
 
