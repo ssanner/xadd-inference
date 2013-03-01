@@ -1,17 +1,38 @@
 \label{sec:basdp}
-We propose an approximate HMDP planner based on Symbolic Dynamic Programming that uses the XADD data structure and its efficient approximation to solve problems that couldn't solved exactly. We begin by formalizing a Hybrid MDP.
+
+Having shown how to efficiently approximate XADDs in
+Section~\ref{sec:approx}, we switch to the main application focus of
+this work: finding bounded approximate solutions for Hybrid MDPs
+(HMDPs).  Specifically, in this section, we build on the Symbolic
+Dynamic Programming (SDP)~\cite{sanner_uai11,zamani12} framework for
+HMDPs that uses the XADD data structure to maintain a compact
+representation of the value function, extending it to allow next-state
+dependent rewards and synchronic arcs in its transition function.  In
+this work, we augment SDP with a bounded value approximation step that
+we will subsequently show permits the solution of HMDPs with strong
+error guarantees that cannot otherwise be solved exactly.  We begin by
+formalizing an HMDP.
 
 \subsection{Hybrid Markov Decision Processes (HMDPs) }
-In HMDPs, states are represented by variable assignments. We assume a vectors of variables
-$(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where each $b_i \in \{ 0,1 \}$ ($1 \leq i \leq n$) is boolean$\,$ and each $x_j \in \mathbb{R}$ ($1 \leq j \leq m$) is continuous. We also assume a finite set of $p$ parametrized actions $A = \{ a_1(\vec{y}_1), \ldots, a_p(\vec{y}_p) \}$, where $\vec{y}_k \in \mathbb{R}^{|\vec{y}_k|}$ ($1 \leq k \leq p$) denote continuous parameters for action $a_k$.
 
-A HMDP model also requires the following: (i) a joint state transition model
-$P(\vec{b}',\vec{x}'|\cdots,a,\vec{y})$, which specifies the
+In HMDPs, states are represented by variable assignments. We assume a
+vectors of variables $(\vec{b}^T,\vec{x}^T) = (
+b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where each $b_i \in \{ 0,1 \}$
+($1 \leq i \leq n$) is boolean$\,$ and each $x_j \in \mathbb{R}$
+($1 \leq j \leq m$) is continuous. We also assume a finite set of $p$
+parametrized actions $A = \{ a_1(\vec{y}_1), \ldots,
+a_p(\vec{y}_p) \}$, where $\vec{y}_k \in \mathbb{R}^{|\vec{y}_k|}$
+($1 \leq k \leq p$) denote continuous parameters for action $a_k$.
+
+An HMDP model also requires the following: (i) a joint state transition
+model $P(\vec{b}',\vec{x}'|\cdots,a,\vec{y})$, which specifies the
 probability of the next state $(\vec{b}',\vec{x}')$ conditioned on a
 subset of the previous and next state and action $a(\vec{y})$; (ii) a
-reward function $R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}')$, which specifies the
-immediate reward obtained by taking action $a(\vec{y})$ in state
-$(\vec{b},\vec{x})$ and reaching state $(\vec{b}',\vec{x}')$; and (iii) a discount factor $\gamma, \; 0 \leq \gamma \leq 1$.
+reward function $R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}')$,
+which specifies the immediate reward obtained by taking action
+$a(\vec{y})$ in state $(\vec{b},\vec{x})$ and reaching state
+$(\vec{b}',\vec{x}')$; and (iii) a discount factor $\gamma, \;
+0 \leq \gamma \leq 1$.
 
 A policy $\pi$ specifies the action $a(\vec{y}) =
 \pi(\vec{b},\vec{x})$ to take in each state $(\vec{b},\vec{x})$.  Our
@@ -19,83 +40,101 @@ goal is to find an optimal sequence of finite horizon-dependent
 policies $\Pi^* = (\pi^{*,1},\ldots,\pi^{*,H})$ that
 maximizes the expected sum of discounted rewards over a horizon $h \in
 H; H \geq 0$:
-
 \begin{align}
 V^{\Pi^*}(\vec{b},\vec{x}) & = E_{\Pi^*} \left[ \sum_{h=0}^{H} \gamma^h \cdot r^h \Big| (\vec{b}_0,\vec{x}_0) \right]. \label{eq:vfun_def}
 \end{align}
-Here $r^h$ is the reward obtained at horizon $h$ following $\Pi^*$ where 
-we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
+Here $r^h$ is the reward obtained at horizon $h$ following $\Pi^*$
+where we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
  
-HMDPs as defined above are naturally factored~\cite{boutilier99dt}
-in terms of state variables $(\vec{b},\vec{x})$; as such,
-transition structure can be exploited in the form of a dynamic Bayes
-net (DBN)~\cite{dbn} where the conditional probabilities
-$P(b_i'|\cdots)$ and $P(x_j'|\cdots)$ for each next state variable can
-condition on the action, current and next state.  We allow  
+HMDPs as defined above are naturally factored~\cite{boutilier99dt} in
+terms of state variables $(\vec{b},\vec{x})$; as such, transition
+structure can be exploited in the form of a dynamic Bayes net
+(DBN)~\cite{dbn} where the conditional probabilities $P(b_i'|\cdots)$
+and $P(x_j'|\cdots)$ for each next state variable can condition on the
+action, current and next state.  We allow
 \emph{synchronic arcs} (variables that condition on each
-other in the same time slice) between any pair of variables, binary $\vec{b}$ or
-continuous $\vec{x}$, but we do not allow cyclic synchronic dependencies. 
-The absence of synchronic cycles means there is a topological sorting of the variables according to the dependency graph implied by the model $P$: $\vec{v}_{sort}=topological\_sort_{P}( b_1,\ldots,b_n,x_{1},\ldots,x_m ) =  ( v_1,\ldots, v_{n+m})$, such that $v_k$ is independent of $v_j$, for all $j >k$. Hence we can factorize the joint transition model as
+other in the same time slice) between any pair of variables, binary
+$\vec{b}$ or continuous $\vec{x}$ so long as they do not lead
+to cyclic dependencies in the DBN --- this leads to a natural topologically
+sorted variable ordering that prevents any variable from conditioning on
+a later variable in the ordering.  Based on these assumptions, we can factorize
+the joint transition model as 
 {\footnotesize
 \begin{equation}
 P(\vec{b}',\vec{x}'|\vec{b},\vec{x},a,\vec{y}) = 
 \prod_{k=1}^{n+m} P(v_k'| \vec{b},\vec{x}, \vec{v}'_{<k}, a,\vec{y}) \nonumber %\label{eq:dbn} 
 \end{equation}}
-where $\vec{v}'_{<k} = ( v'_1,\ldots, v'_{k-1}), 1\leq k \leq n+m$
+where $\vec{v}'_{<k} = ( v'_1,\ldots, v'_{k-1}), 1\leq k \leq n+m$.
 
-The conditional probabilities functions $P(b_i'=v_{k_i}'|\vec{b},\vec{x},\vec{v}'_{<{k_i}},a,\vec{y})$ for \emph{binary} variables $b_i$ ($1 \leq i \leq n$) can condition on state and action variables.  
+The conditional probability functions
+$P(b_i'=v_{k_i}'|\vec{b},\vec{x},\vec{v}'_{<{k_i}},a,\vec{y})$
+for \emph{binary} variables $b_i$ ($1 \leq i \leq n$) can condition on
+state and action variables.
+For the \emph{continuous} variables $x_j$ ($1 \leq j \leq m$), we
+represent the CPFs
+$P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$
+with \emph{piecewise linear equations} (PLEs) satisfying three
+properties: (i) PLEs can only condition on the action, current state,
+and previous state variables, (ii) PLEs are deterministic meaning that
+to be represented by probabilities they must be encoded using Dirac
+$\delta[\cdot]$ functions and (iii) PLEs are piecewise linear, where
+the piecewise conditions may be arbitrary logical combinations of the
+binary variables and linear inequalities over the continuous
+variables. Numerous examples of PLEs will be presented in the empirical
+results in Section~\ref{sec:empirical}.
 
-For the \emph{continuous} variables $x_j$ ($1 \leq j \leq m$), we represent the CPFs $P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$ with \emph{piecewise
-linear equations} (PLEs) satisfying three properties: (i) PLEs 
-can only condition on the action, current state, and previous state variables, (ii) PLEs are
-deterministic meaning that to be represented by probabilities they
-must be encoded using Dirac $\delta[\cdot]$ functions and (iii) PLEs are piecewise linear, where the piecewise conditions may be arbitrary logical combinations of the binary variables
-and linear inequalities over the continuous variables. In more intuitive
-terms, one can see that this $\delta[\cdot]$ is a simple way to encode
-the PLE transition $x' = \left\{ \ldots \right.$ in the form of 
-$P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$.
-
-While it is clear that our restrictions do not permit general stochastic transition
-noise (e.g., Gaussian noise as in LQG control), they do permit
-discrete noise in the sense that $P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$ may condition on $\vec{b'}$, which are stochastically sampled according to their CPFs.
-We note that this representation effectively allows modeling of
-continuous variable transitions as a mixture of $\delta$ functions,
-which has been used frequently in previous exact continuous state MDP
-solutions~\cite{feng04,hao09}.
+While it is clear that our restrictions do not permit general
+stochastic transition noise (e.g., Gaussian noise as in LQG control),
+they do permit discrete noise in the sense that
+$P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$ may
+condition on $\vec{b'}$, which are stochastically sampled according to
+their CPFs.  We note that this representation effectively allows
+modeling of continuous variable transitions as a mixture of $\delta$
+functions, which has been used frequently in previous exact continuous
+state MDP solutions~\cite{feng04,hao09}.
 
 % TODO: Not li05 here (allowed PWC probability), another?
 
-We allow the reward function $R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}')$ to be
-a general piecewise linear function (boolean or linear conditions
-and linear values) such as
-\begin{align}
+We allow the reward function
+$R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}')$ to be a general
+piecewise linear function (boolean or linear conditions and linear
+values) such as
+%{\footnotesize
+\begin{align*}
 R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}') = \begin{cases}
-b \land x_1 \leq x_2 + 1 : & 1 - x_1' + 2x_2' \\
-\neg b \lor x_1 > x_2 + 1:     & 3x_1 + 2x_2 \\
-\end{cases} \label{eq:linear_reward}
-\end{align}
-
-These transition and reward constraints ensure that all derived
-functions in the solution of these hybrid MDPs will remain piecewise linear, which 
-is essential for our approximation and efficient representation.
+b \land x_1 \leq x_2 + 1 : & \!\!1 - x_1' + 2x_2' \\
+\neg b \lor x_1 > x_2 + 1:     & \!\!3y + 2x_2 \\
+\end{cases} %\label{eq:linear_reward}
+\end{align*}%}
+The above transition and reward constraints ensure that all derived
+functions in the solution of these HMDPs will remain piecewise
+linear, which is essential for efficient linear XADD 
+representation~\cite{sanner_uai11} and for the XADD
+approximation techniques proposed in Section~\ref{sec:approx}.
 
 \subsection{Solution Methods}
 
 \label{sec:soln}
 
-The algorithm we use for solving HMDPs, is an approximate version of the continuous state and action generalization of {\it value iteration}~\cite{bellman}, which is a dynamic programming algorithm for constructing optimal policies.  It proceeds by constructing a series of $h$-stage-to-go optimal value functions $V^h(\vec{b},\vec{x})$.
-Initializing $V^0(\vec{b},\vec{x}) = 0$) we define the quality
-$Q_a^{h}(\vec{b},\vec{x},\vec{y})$ of taking action $a(\vec{y})$ in state
-$(\vec{b},\vec{x})$ and acting so as to obtain $V^{h-1}(\vec{b},\vec{x})$ thereafter as the following:
+The algorithm we use for solving HMDPs is an approximate version of
+the continuous state and action generalization of {\it value
+iteration}~\cite{bellman}, which is a dynamic programming algorithm
+for constructing optimal policies.  It proceeds by constructing a
+series of $h$-stage-to-go optimal value functions
+$V^h(\vec{b},\vec{x})$.  Initializing $V^0(\vec{b},\vec{x}) = 0$, we
+define the quality $Q_a^{h}(\vec{b},\vec{x},\vec{y})$ of taking action
+$a(\vec{y})$ in state $(\vec{b},\vec{x})$ and acting so as to obtain
+$V^{h-1}(\vec{b},\vec{x})$ thereafter as the following:
 \vspace{-2.5mm}
 {\footnotesize
 \begin{align}
-& Q_a^{h}(\vec{b},\vec{x},\vec{y}) = \sum_{\vec{b}'} \hspace{-1.0mm} \int_{\vec{x}'} \hspace{-1.0mm} \Bigg[ 
+Q_a^{h}(\vec{b},\vec{x},\vec{y}) = \sum_{\vec{b}'} & \hspace{-1.0mm} \int_{\vec{x}'} \hspace{-1.0mm} \Bigg[ 
 \prod_{k=1}^{n+m} P(v_k'| \vec{b},\vec{x}, \vec{v}'_{<k}, a,\vec{y}) \cdot \label{eq:qfun} \\ 
-& \left( R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}') + \gamma V^{h-1}(\vec{b}',\vec{x}') d\vec{x}' \right)  \Bigg] \nonumber
+& \!\! \left( R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}') + \gamma V^{h-1}(\vec{b}',\vec{x}') d\vec{x}' \right)  \Bigg] \nonumber
 \end{align}}
 Given $Q_a^h(\vec{b},\vec{x})$ for each $a \in A$, we can proceed
-to define the $h$-stage-to-go value function as follows:
+to define the $h$-stage-to-go value function as the maximizing action parameter
+values $\vec{y}$ for the best action $a$ in each state $(\vec{b},\vec{x})$ as follows:
 \begin{align}
 V^{h}(\vec{b},\vec{x}) & = \max_{a \in A} \max_{\vec{y} \in \mathbb{R}^{|\vec{y}|}} \left\{ Q^{h}_a(\vec{b},\vec{x},\vec{y}) \right\} \label{eq:vfun}
 \end{align}
@@ -103,14 +142,32 @@ V^{h}(\vec{b},\vec{x}) & = \max_{a \in A} \max_{\vec{y} \in \mathbb{R}^{|\vec{y}
 If the horizon $H$ is finite, then the optimal value function is
 obtained by computing $V^H(\vec{b},\vec{x})$ and the optimal
 horizon-dependent policy $\pi^{*,h}$ at each stage $h$ can be easily
-determined via $\pi^{*,h}(\vec{b},\vec{x}) = \argmax_{(a, \vec{y} )} Q^h_a(\vec{b},\vec{x},\vec{y})$.  If the horizon $H
-= \infty$ and the optimal policy has finitely bounded value, then
-value iteration can terminate at horizon $h$ if $V^{h} = V^{h-1}$;
-then $V^\infty = V^h$ and $\pi^{*,\infty} = \pi^{*,h}$.
-
+determined via $\pi^{*,h}(\vec{b},\vec{x}) = \argmax_{(a, \vec{y} )}
+Q^h_a(\vec{b},\vec{x},\vec{y})$.  If the horizon $H = \infty$ and the
+optimal policy has finitely bounded value, then value iteration can
+terminate at horizon $h$ if $V^{h} = V^{h-1}$; then $V^\infty = V^h$
+and $\pi^{*,\infty} = \pi^{*,h}$.
 
 \subsection{Bounded Approximate SDP (BASDP)}
-We will now properly define BASDP, our bounded approximate Hybrid MDP planning algorithm. The  algorithm, in Algorithm~\ref{alg:basdp}, is a modified version of SDP by the addition of line \ref{approxline} which uses the compression method described in the previous section. The value iteration is performed in two stages: first, obtain the XADD form of the quality $Q^h_a(\vec{y})$ by regression of transitions, performed by the algorithm~\ref{alg:regress}; Second, perform maximization, both continuous for the action parameters and discrete between actions, to compute the new value function. We note that all the operations involved, namely addition, multiplication, integration of continuous $\delta$ functions, marginalization of boolean variables, continuous parameter maximization and discrete maximization, are defined for XADDs. For most of these operations the execution time scales superlinearly with the number of partitions in the XADD, which can be greatly reduced by the compression algorithm. Hence, the apparently simple modification can increase considerably the range of problems that can be solved by SDP.
+
+We will now define BASDP, our bounded approximate HMDP symbolic dynamic
+programming algorithm.  BASDP is provided in Algorithm~\ref{alg:basdp}
+and is a modified version of SDP~\cite{zamani12} to support the HMDP
+model given in the previous section and the addition of line \ref{approxline} which
+uses the compression method described in Section~\ref{sec:approx}. The
+value iteration is performed in two stages: first, obtain the XADD
+form of the quality $Q^h_a(\vec{y})$ by regression of transitions,
+performed by the algorithm~\ref{alg:regress}; Second, perform
+maximization, both continuous for the action parameters and discrete
+between actions, to compute the new value function. We note that all
+the operations involved, namely addition, multiplication, integration
+of continuous $\delta$ functions, marginalization of boolean
+variables, continuous parameter maximization and discrete
+maximization, are defined for XADDs. For most of these operations the
+execution time scales superlinearly with the number of partitions in
+the XADD, which can be greatly reduced by the compression
+algorithm. Hence, the apparently simple modification can increase
+considerably the range of problems that can be solved by SDP.
 
 \incmargin{.5em}
 \linesnumbered
