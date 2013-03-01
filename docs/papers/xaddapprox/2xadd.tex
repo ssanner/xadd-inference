@@ -3,9 +3,21 @@
 %% NOTE: Better to put the graphics above the math... visualize the function,
 %%       see the XADD representatin... then examine the mathematical semantics.
 %%
-\vspace{-5mm}
 \begin{figure}[t!]
-\begin{minipage}{0.15\textwidth}
+\vspace{-5mm}
+\begin{minipage}{0.30\textwidth}
+\center
+\vspace{-5mm}
+\includegraphics[trim = 0cm 0cm 0cm 0cm,width=\textwidth]{Figures/stepfun/PiecewiseLinearEx2.pdf} 
+\end{minipage}\hspace{-5mm}
+\begin{minipage}{0.18\textwidth}
+\center
+\vspace{-5mm}
+\includegraphics[width=\textwidth]{Figures/xadds/dia2.pdf}
+\end{minipage}\\
+\vspace{-10mm}
+
+\begin{minipage}{0.16\textwidth}
 {\scriptsize
 \begin{align*}
 f(x,y)= 
@@ -15,36 +27,26 @@ f(x,y)=
 \end{cases}
 \end{align*} }
 \end{minipage}
-\begin{minipage}{0.15\textwidth}
+\begin{minipage}{0.16\textwidth}
 {\scriptsize
 \begin{align*}
- \phi_1 = \theta_{11}\vee \theta_{12}\\
-\theta_{11} = x<0 \\
-\theta_{12} = x>0 \wedge x<-y \\
- f_1 = \displaystyle \frac{x}{2} 
+ \phi_1 & = \theta_{11}\vee \theta_{12}\\
+\theta_{11} & = x\!<\!0 \\
+\theta_{12} & = x\!>\!0 \wedge x\!<\!-y \\
+ f_1 & = \displaystyle \frac{x}{2} 
 \end{align*} }
 \end{minipage}
 \begin{minipage}{0.15\textwidth}
 {\scriptsize
 \begin{align*}
-\phi_2 = \theta_{21}\\
-\theta_{21} = x>0 \wedge y>x\\
-f_2 = \displaystyle \frac{x}{5} - \frac{y}{2}
+\phi_2 & = \theta_{21}\\
+\theta_{21} & = x\!>\!0 \wedge y\!>\!x\\
+f_2 & = \displaystyle \frac{x}{5} - \frac{y}{2}
 \end{align*} }
-\end{minipage}\\
-\begin{minipage}{0.3\textwidth}
-\center
-\vspace{-5mm}
-\includegraphics[trim = 0cm 0cm 0cm 0cm,width=\textwidth]{Figures/stepfun/PiecewiseLinearEx2.pdf} 
 \end{minipage}
-\begin{minipage}{0.15\textwidth}
-\center
-\vspace{-13mm}
-\includegraphics[width=\textwidth]{Figures/xadds/dia2.pdf}
-\end{minipage}
-\vspace{-10mm}
+\vspace{-6mm}
 
-\caption{Example of piecewise linear function in case and XADD form: \emph{(top)} Case formulation; \emph{(left)} Graphical plot; and \emph{(right)} XADD diagram.}
+\caption{\footnotesize Example of piecewise linear function in case and XADD form: \emph{(top left)} plot of function $f(x,y)$; \emph{(top right)} XADD representing $f(x,y)$; \emph{(bottom)} case semantics for $f(x,y)$ demonstrating notation used in this work.}
 \label{fig:symbex}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -67,9 +69,9 @@ approximate symbolic dynamic programming algorithm for hybrid MDPs.
 
 An XADD is a function represented by a directed acyclic graph having a
 fixed ordering of decision tests from root to leaf.  For example,
-Figure~\ref{fig:symbex}(a) shows the plot of a piecewise function and
-Figure~\ref{fig:symbex}(b) its XADD representation.  Underlying the
-XADD in Figure~\ref{fig:symbex}(b) is a simple piecewise linear
+Figure~\ref{fig:symbex}(top left) shows the plot of a piecewise function and
+\ref{fig:symbex}(top right) its XADD representation.  Underlying this
+XADD is a simple piecewise linear
 function that we can represent semantically in case form.
 Specifically, given a domain of boolean and continuous variables
 $(\vec{b}^T,\vec{x}^T) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where
@@ -100,7 +102,7 @@ are logical formulae defined over the domain $(\vec{b},\vec{x})$ that
 can include arbitrary logical ($\land,\lor,\neg$) combinations of (i)
 boolean variables and (ii) linear inequalities over $\vec{x}$.
 
-In the XADD examples of Figure~\ref{fig:stepfunfig},  
+In the XADD example of Figure~\ref{fig:symbex},  
 \emph{every leaf} represents a case value $f_i$ and 
 \emph{every path from root to leaf} represents a conjunction
 of decision constraints.  The disjunction of all path constraints
@@ -137,16 +139,16 @@ represents a conjunction of linear constraints over $\vec{x}$ and a
 (partial) truth assignment to $\vec{b}$ corresponding to $j$th path
 from the XADD root to leaf $f_i$, we observe that every
 $\theta_{ij}$ contains a bounded convex linear polytope ($\vec{x}$ is
-finitely bounded in all dimensions as initially defined).  Since this
-polytope intepretation will become important for XADD approximation,
-we formally define the union of all convex linear polytopes contained in 
+finitely bounded in all dimensions as initially defined).  
+We formally define the union of all convex linear polytopes contained in 
 $\phi_i$ as
 %\begin{equation*}
 $C(\phi_i) = \bigcup_j \PT(\theta_{ij})$, 
 %\end{equation*}
 where $\PT$ extracts the subset of linear constraints from
-$\theta_{ij}$. Figure~\ref{fig:symbex}(a) illustrates the different
-polytopes in the XADD of \ref{fig:symbex}(b).
+$\theta_{ij}$. Figure~\ref{fig:symbex}(top left) illustrates the different
+polytopes in the XADD of \ref{fig:symbex}(top right) with
+corresponding case notation in \ref{fig:symbex}(bottom).
 
 \subsection{XADD Operations} 
 
@@ -166,7 +168,7 @@ represented as XADDs, hencing yielding a piecewise linear result.
 Some XADD operations do require extensions over the ADD, e.g., the
 binary $\max$ operation represented here in case form:
 
-\vspace{-5mm}
+\vspace{-3mm}
 {\footnotesize
 \begin{center}
 \begin{tabular}{r c c c l}
@@ -197,7 +199,7 @@ $ = $
   \end{cases}$
 \end{tabular}
 \end{center}
-\vspace{-3mm}
+\vspace{-1mm}
 } While the $\max$ of two linear piecewise functions represented as
 XADDs remains in linear case form, we note that unlike ADDs which
 prohibit continuous variables $\vec{x}$ and \emph{only} have a \emph{fixed} set of
