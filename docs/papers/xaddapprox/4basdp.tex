@@ -90,8 +90,9 @@ $(\vec{b},\vec{x})$ and acting so as to obtain $V^{h-1}(\vec{b},\vec{x})$ therea
 \vspace{-2.5mm}
 {\footnotesize
 \begin{align}
-& Q_a^{h}(\vec{b},\vec{x},\vec{y}) = \sum_{\vec{b}'} \hspace{-1.0mm} \int_{\vec{x}'} \hspace{-1.0mm} \Bigg[ R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}') +  \label{eq:qfun} \\ 
-& \gamma \cdot \left( \prod_{k=1}^{n+m} P(v_k'| \vec{b},\vec{x}, \vec{v}'_{<k}, a,\vec{y}) V^{h-1}(\vec{b}',\vec{x}') d\vec{x}' \right)  \Bigg] \nonumber
+& Q_a^{h}(\vec{b},\vec{x},\vec{y}) = \sum_{\vec{b}'} \hspace{-1.0mm} \int_{\vec{x}'} \hspace{-1.0mm} \Bigg[ 
+\prod_{k=1}^{n+m} P(v_k'| \vec{b},\vec{x}, \vec{v}'_{<k}, a,\vec{y}) \cdot \label{eq:qfun} \\ 
+& \left( R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}') + \gamma V^{h-1}(\vec{b}',\vec{x}') d\vec{x}' \right)  \Bigg] \nonumber
 \end{align}}
 Given $Q_a^h(\vec{b},\vec{x})$ for each $a \in A$, we can proceed
 to define the $h$-stage-to-go value function as follows:
@@ -107,7 +108,9 @@ determined via $\pi^{*,h}(\vec{b},\vec{x}) = \argmax_{(a, \vec{y} )} Q^h_a(\vec{
 value iteration can terminate at horizon $h$ if $V^{h} = V^{h-1}$;
 then $V^\infty = V^h$ and $\pi^{*,\infty} = \pi^{*,h}$.
 
-Here we show the code of the SDP algorithm, Alg.~\ref{alg:vi}. The function Regress computes the result of equation~\ref{eq:qfun}, we note that all the operations involved, namely multiplication, integration of continuous $\delta$ functions and marginalization of boolean variables, are defined XADDs. Due to lack of space, its implementation is omitted and we refer to \cite{zamani12} for a precise description of these operations.
+
+\subsection{Bounded Approximate SDP (BASDP)}
+We will now properly BASDP, our bounded approximate Hybrid MDP planing algorithm. The  algorithm, in Algorithm~\ref{alg:basdp}, is a modified version of SDP by the addition of line \ref{approxline} which uses the compression method described in the previous section. The value iteration is performed in two stages: first, obtain the XADD form of the quality $Q^h_a(\vec{y})$ by regression of transitions, performed by the method $\texttt{Regress}$; Second, perform maximization, both continuous for the action parameters and discrete between actions, to compute new value function. We note that all the operations involved, namely addition, multiplication, integration of continuous $\delta$ functions, marginalization of boolean variables, continuous parameter maximization and discrete maximization, are defined for XADDs. 
 
 \incmargin{.5em}
 \linesnumbered
@@ -115,7 +118,6 @@ Here we show the code of the SDP algorithm, Alg.~\ref{alg:vi}. The function Regr
 \vspace{-.5mm}
 \dontprintsemicolon
 \SetKwFunction{regress}{Regress}
-\SetKwFunction{approximate}{Approximate}
 \Begin{
    $V^0:=0, h:=0$\;
    \While{$h < H$}{
@@ -126,18 +128,48 @@ Here we show the code of the SDP algorithm, Alg.~\ref{alg:vi}. The function Regr
               $V^{h} := \casemax_a \, Q_a^{h}$ $\,$ \emph{// $\casemax$ all $Q_a$}\;
               $\pi^{*,h} := \argmax_{(a,\vec{y})} \, Q_a^{h}(\vec{y})$\;
        }
-       $V^h = $\approximate{$V^{h}$}\; \label{approxline}
+       $V^h = \texttt{XADDComp}(V^{h},\epsilon)$\; \label{approxline}
        \If{$V^h = V^{h-1}$}
            {break $\,$ \emph{// Terminate if early convergence}\;}
    }
      \Return{$(V^h,\pi^{*,h})$} \;
 }
-\caption{\footnotesize \texttt{VI}(Hybrid-MDP, $H$) $\longrightarrow$ $(V^h,\pi^{*,h})$ \label{alg:vi}}
+\caption{\footnotesize \texttt{BASDP}(HMDP, $H$, $\epsilon$) $\longrightarrow$ $(V^h,\pi^{*,h})$ \label{alg:basdp}}
 \vspace{-1mm}
 \end{algorithm}
 \decmargin{.5em}
 
+\incmargin{.5em}
+\linesnumbered
+\begin{algorithm}[th!]
+\vspace{-.5mm}
+\dontprintsemicolon
+\SetKwFunction{remapWithPrimes}{Prime}
+%\SetKwFunction{sumout}{sumout}
 
-\subsection{Bounded Approximate SPD}
-We will now properly define the Hybrid MDP planing algorithm described in this paper. The SDP algorithm~\ref{alg:vi} was modified from its original exact version by the addition of line \ref{approxline} which uses the algorithm~\ref{alg:approx}, responsible for collecting the cases and making the global approximation by combining the successive pairwise merges.
 
+\Begin{
+    $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
+%%%%%%%%%%%%%%%%%%% ZAHRA TODO ( check casemax of noise is correct) 
+   $Q := R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}') \oplus (\gamma \cdot Q)$ \;
+   \ForEach { $v_k'$ in $Q$}  
+    {
+    	\If {$v_k'$ = $x'_j$}
+    	{
+    	\emph{//Continuous marginal integration}\\
+         $Q := \int Q \otimes P(x_j'|\vec{b},\vec{x},\vec{v}_{<k}',a,\vec{y}) \, d_{x'_j}$\;
+    	}
+	    \If {$v_k'$=$b'_i$}
+    	{
+    	\emph{// Discrete marginal summation}\\
+         $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{x},\vec{v}_{<k}',a,\vec{y}) \right]|_{b_i' = 1}$\\
+         \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},\vec{v}_{<k}',a,\vec{y}) \right]|_{b_i' = 0}$\;
+    	}
+    }
+    \Return{$Q$} \;
+}
+\caption{\footnotesize \texttt{Regress}($V,a,\vec{y}$) $\longrightarrow$ $Q$ \label{alg:regress}}
+\vspace{-1mm}
+\end{algorithm}
+\decmargin{.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
