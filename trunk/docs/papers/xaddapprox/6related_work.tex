@@ -1,39 +1,44 @@
-{\bf Scott: Just writing down some thoughts for later revision.}
-
 Boyan and Littman~\cite{boyan01} presented the first exact solution
-for 1D continuous HMDPs with linear reward while {\it Feng et
-  al}~\cite{feng04} present exact solutions for a subset of HMDPs
-where all piecewise functions had to have axis-aligned boundaries (so
-no general linear inequalities) and actions were discrete.  Li and
-Littman~\cite{li05} extended {\it Feng et al}'s model to bounded
-approximation using rectilinear piecewise constant functions.
-However, in general we note that these methods could only provide
-optimal solutions for a heavily restricted subset of discrete action
-HMDPs in comparison to our more general setting for which exact
-solutions are available and an approximation approach which is an
-expressive superset of Li and Littman, which could not produce the
-approximation shown in Figure~\ref{fig:stepfunfig}(a,b).
+for 1D continuous HMDPs with discrete actions, linear reward and
+piecewise dynamics while Feng {\it et al}~\cite{feng04} generalized
+this solution for a subset of multivariate HMDPs where all piecewise
+functions had to have rectilinear piece boundaries (i.e., general
+linear inequalities like $x + y > 0$ where disallowed) and actions
+were discrete.  Li and Littman~\cite{li05} extended Feng {\it et al}'s
+model to the case of bounded approximation using rectilinear piecewise
+constant functions that by definition could not produce
+the low-error approximations shown in Figures~\ref{fig:stepfunfig}(a,b)
+or~\ref{fig:steplining}.  In addition, we note that all of these methods
+could only provide (approximately) optimal solutions for a rectilinear
+subset of \emph{discrete} action HMDPs in comparison to our
+more general setting of \emph{continuous} action HMDPs with 
+linear piecewise dynamics and rewards building on the work of Zamani
+{\it et al}~\cite{zamani12}.  Hence our solutions are targeted at more
+general value function representations, namely linear XADDs, for which
+approximation has not been previously attempted.
 
-Boyan et al~\cite{phase07} presents an approximation approach that can
-arbitrarily approximate 1D continuous MDP solutions but does not
+An alternative approach to bounded error HMDP solutions such as the phase-type
+approximation of Marecki {\it et al}~\cite{phase07} presents an 
+approximation scheme that can
+arbitrarily approximate 1D continuous MDP solutions but which does not
 extend to multivariate or continuous actions.
+In an approximate linear programming approach using basis functions, 
+Kveton {\it et al}~\cite{kveton06,kveton06aaai} explore bounded
+approximations and learnable basis functions for HMDPs but cannot provide 
+\emph{a priori} guarantees on the maximum allowed error in a solution
+as we can in our BASDP framework.  Munos and Moore~\cite{munos02} take
+a variable resolution discretization approach to refining value
+functions and policies, but these methods are based on kd-trees which
+require a rectilinear partitioning of the state space that can consume
+prohibitive amounts of space to approximate the simple oblique
+piecewise linear function of Figure~\ref{fig:symbex}, which is
+represented exactly as a four node XADD.
 
-One major advantage of this approach over approximation techniques in
-the continuous action HMDP literature~\cite{kveton06,kveton06aaai} is
-that rather than require a specific (parametric) form of basis
-functions \emph{a priori} for which no error guarantees can be made,
-XADD compression guarantees a solution within prespecified error
-bounds --- one can think of this approximation approach as one that
-directly finds a compact, bounded error approximation without
-requiring seed basis functions.
+In a somewhat orthogonal direction to other work, Meuleau {\it et
+al}~\cite{hao09} investigate a search-based dynamic programming
+solution to HMDPs that is restricted to optimality over a subset of
+initial states.  We note that this approach admits \emph{any} dynamic
+programming backup and representation and hence can be combined with
+the BASDP approach we propose here, an interesting avenue for future
+work.
 
-\cite{hao09} is a search-based dynamic programming approach useful for
-solving for a value function for a restricted subset of initial
-states.  We note that this approach admits any dynamic programming
-backup and representation and hence can be combined with the work we
-propose here to focus approximate solutions on a subset of initial
-states.  This would be an interesting avenue for future work.
-
-In general no related work can provide bounded approximate solutions
-for the multivariate HMDPs with continuous actions and arbitrary
-piecewise linear dynamics and rewards that we consider in this paper.
