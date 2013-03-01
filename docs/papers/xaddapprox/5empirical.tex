@@ -4,7 +4,7 @@ We evaluated Bounded Approximate SDP on the following domains:
 \MarsRoverUni, \MarsRoverBi ~and \Invent.
 
 \MarsRoverUni:
-An unidimensional domain, where the position of the rover is the single continuous variable ($x$) and the goal of the rover is to take pictures at specific points. There is only one action $ move(a_x)$, where $a_x$ is the bounded movement distance. In the description of the problem for instance rover1d2, there are two pictures points and taking pictures is recorded in two boolean variables ($tp_1$ and $tp_2$). The dynamics for action $move(a_x)$ is as follows:
+A simple domain, where the position of the rover is represented by a single continuous variable ($x$) and the goal of the rover is to take pictures at specific points. There is only one action $ move(a_x)$, where $a_x$ is the movement distance. In the description of the problem for instance rover1d2, there are two pictures points and taking pictures is recorded in two boolean variables ($tp_1$ and $tp_2$). The dynamics for action $move(a_x)$ is as follows:
 {\footnotesize
 \begin{align*}
 tp_1' &= \begin{cases}
@@ -15,21 +15,18 @@ tp_2' &= \begin{cases}
 tp_2 \vee (x>-60 \wedge x<-40)&: 1\\
 else&: 0\\
 \end{cases}\\
-x' &= \begin{cases}
-a_x>-30 \wedge a_x<30&: x +a_x\\
-else&: x\\
-\end{cases}\\
+x' &=  x +a_x\\
 R & = R_1 + R_2 + R_3\\
 R_1 & = \begin{cases} 
 (tp1') \wedge (\neg tp1) \wedge (x > 50) &: 40 - 0.2*(x -50)\\
 (tp1') \wedge (\neg tp1) \wedge (x < 50) &: 40 - 0.2*(50-x)\\
-(tp1') \wedge ( tp1) &:  0.0\\
+(tp1') \wedge ( tp1) &:  1.1\\
 else &: -2\\
 \end{cases} \\
 R_2 & = \begin{cases} 
 (tp2') \wedge (\neg tp2) \wedge (x > -50) &: 60 - 0.2*(-x +50)\\
 (tp2') \wedge (\neg tp2) \wedge (x < -50) &: 60 - 0.2*(x +50)\\
-(tp2') \wedge ( tp2) &:  0.0\\
+(tp2') \wedge ( tp2) &:  1.2\\
 else &: -1\\
 \end{cases} \\
 R_3 & = \begin{cases} 
@@ -40,12 +37,14 @@ a_x < 0 &: 0.1*a_x\\
 
 \begin{figure}[h!]
 \center
-\includegraphics[width=0.45\textwidth]{Figures/rover1D/rover1d2V6.pdf} 
-\caption{Value Function at Iteration 6 for rover1d2.}
-\label{steplin} 
+\includegraphics[width=0.45\textwidth]{Figures/rover1D/roverLinear1d2V6.pdf} 
+\caption{Value function at iteration 6 for $\MarsRoverUni$, showing how different levels of approximation error (eps) lead to different compressions.}
+\label{fig:rover1dv6} 
 \end{figure}
 
-\MarsRoverBi: In this version of \MarsRover ~there are no picture points but the rover is expected to follow a path. The position is represented by a pair or continuous variables $(x,y)$. There is only one action, $move(a_x,a_y)$, where $|a_x|$ <10 and $|a_x|$ <10. The new position is given by $(x',y') = ( x+a_x, y+a_y)$. The reward increases with $x$ and decreases with the absolute value of $y$, that is:
+We show in figure~\ref{fig:rover1dv6} the different value functions obtained by compressing with different levels.
+
+\MarsRoverBi: In this version of \MarsRover ~there are no picture points but the rover is expected to follow a path. The position is represented by a pair or continuous variables $(x,y)$. There is only one action, $move(a_x,a_y)$, where $|a_x| < 10$ and $|a_y| < 10$. The new position is given by $(x',y') = ( x+a_x, y+a_y)$. The reward increases with $x$ and decreases with the absolute value of $y$, that is:
 {\footnotesize
 \begin{align*}
 R & = \begin{cases}
@@ -70,7 +69,7 @@ else: & -1\\
 \caption {\footnotesize
 	Value function at iteration 6 for the \MarsRoverBi domain;
 	{\it (top)} Exact value function; 	{\it (bottom)} Approximate value function with error bounded 5\% per iteration;
-	{\it (right)} 3D Plots; {\it (left) XADD Diagrams}.
+	{\it (left)} 3D Plots; {\it (right)} XADD Diagrams.
 }
 \label{fig:Mars2DV6}
 \vspace{-5mm}
@@ -90,7 +89,7 @@ else: & -1\\
 \includegraphics[width=0.32\textwidth]{Figures/rover2D/rover2d-Time.pdf}
 \hspace{1mm}
 \includegraphics[width=0.32\textwidth]{Figures/rover2D/rover2d-MaxErr.pdf}
-\caption{\footnotesize Performance plots for $\MarsRover$ and $\Invent$2 with 5 different relative errors (eps):
+\caption{\footnotesize Performance plots for $\MarsRoverBi$ and $\Invent$2 with 5 different relative errors (eps):
 {\it (left)}  Space (number of Nodes);
 {\it (middle)} Time (miliseconds);
 {\it (right)} Maximal error as fraction of the max value.
@@ -99,6 +98,7 @@ else: & -1\\
 \vspace{-5mm}
 \end{figure*}
 
+In figure~\ref{fig:Mars2DV6}, we can clearly see the effect of compression. In the 3D plots, a much simpler surface is obtained for the 5\% error compression, and correspondingly, in the diagrams, the number of nodes is greatly reduced, which enables a much faster computation of XADD operations and bounded error solution. 
 
 \Invent:
 A multidimensional continuous, in $n$-$\Invent$. There are $n$ continuous resources that can be bought and sold. There are $n$ non-parametric actions $order$-$i$ for each resource, $ 1 \leq i \leq n$. The maximum amount of  each resource that is sold on one iteration depends on a stochastic demand variable $d$ that is true with $60\%$ probability. The resource $x_i'$ for action $order$-$i$ is given by:

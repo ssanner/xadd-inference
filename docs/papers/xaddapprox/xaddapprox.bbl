@@ -68,6 +68,11 @@ Nicolas Meuleau, Emmanuel Benazera, Ronen~I. Brafman, Eric~A. Hansen, and
 \newblock {\em Journal Artificial Intelligence Research (JAIR)}, 34:27--59,
   2009.
 
+\bibitem{munos02}
+Andrew~Moore Remi~Munos.
+\newblock Variable resolution discretization in optimal control.
+\newblock {\em Machine Learning}, 49, 2--3:291--323, 2002.
+
 \bibitem{sanner_uai11}
 Scott Sanner, Karina~Valdivia Delgado, and Leliane~Nunes {de Barros}.
 \newblock Symbolic dynamic programming for discrete and continuous state mdps.
