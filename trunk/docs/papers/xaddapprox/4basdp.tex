@@ -60,7 +60,7 @@ where we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
        \ForEach {$a(\vec{y}) \in A$}{
               $Q_a^{h}(\vec{y}):=\,$\regress{$V^{h-1},a,\vec{y}$}\;
               $Q_a^{h}\! := \! \max_{\vec{y}} \, Q_a^{h}(\vec{y})$ \emph{// Parameter $\max$}\;
-              $V^{h} \! := \! \casemax_a \, Q_a^{h}$ $\,$ \emph{// Max all $Q_a$}\;
+              $V^{h} \! := \! \max_a \, Q_a^{h}$ $\,$ \emph{// Max all $Q_a$}\;
               $\pi^{*,h} := \argmax_{(a,\vec{y})} \, Q_a^{h}(\vec{y})$\;
        }
        $V^h = \texttt{XADDComp}(V^{h},\epsilon)$\; \label{approxline}
@@ -149,7 +149,7 @@ results in Section~\ref{sec:empirical}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 While it is clear that our restrictions do not permit general
-stochastic transition noise (e.g., Gaussian noise as in LQG control),
+stochastic continuous transition noise (e.g., Gaussian noise),
 they do permit discrete noise in the sense that
 $P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$ may
 condition on $\vec{b'}$, which are stochastically sampled according to
@@ -215,25 +215,29 @@ and $\pi^{*,\infty} = \pi^{*,h}$.
 
 \subsection{Bounded Approximate SDP (BASDP)}
 
-We will now define BASDP, our bounded approximate HMDP symbolic dynamic
-programming algorithm.  BASDP is provided in Algorithm~\ref{alg:basdp}
-along with a regression subroutine in Algorithm~\ref{alg:regress}
-and is a modified version of SDP~\cite{zamani12} to support the HMDP
-model given in the previous section and the addition of line \ref{approxline}, which
-uses the compression method described in Section~\ref{sec:approx}. 
-Error is cumulative over each horizon, so the maximum possible error
-incurred in an undiscounted BASDP solution is $H\epsilon$.
+We will now define BASDP, our bounded approximate HMDP symbolic
+dynamic programming algorithm.  BASDP is provided in
+Algorithm~\ref{alg:basdp} along with a regression subroutine in
+Algorithm~\ref{alg:regress} and is a modified version of
+SDP~\cite{zamani12} to support the HMDP model with next-state
+dependent reward function and sychronic arcs given in the previous
+section and the crucial addition of line \ref{approxline}, which uses
+the \texttt{XADDComp} compression method described in
+Section~\ref{sec:approx}.  Error is cumulative over each horizon, so for example,
+the maximum possible error incurred in an undiscounted BASDP solution
+is $H\epsilon$.
 %The value iteration is performed in two stages: first, obtain the XADD
 % form of the quality $Q^h_a(\vec{y})$ by regression of transitions,
 %performed by the algorithm~\ref{alg:regress}; Second, perform
 %maximization, both continuous for the action parameters and discrete
 %between actions, to compute the new value function. 
-We note that all the operations involved, namely addition,
-multiplication, integration of continuous $\delta$ functions,
-marginalization of boolean variables, continuous parameter
-maximization and discrete maximization, are defined for XADDs as given
-by~\cite{sanner_uai11,zamani12}.  For most of these operations the
-execution time scales superlinearly with the number of partitions in
-the XADD, which can be greatly reduced by the \texttt{XADDComp} compression
-algorithm.  We empirically demonstrate the benefits of approximation
-in the next section.
+All functions are represented as XADDs, and we note that all of the
+XADD operations involved, namely addition $\oplus$, multiplication
+$\otimes$, integration of Dirac $\delta$ functions, marginalization of
+boolean variables $\sum_{b_i}$, continuous parameter maximization
+$\max_{\vec{y}}$ and discrete maximization $\max_a$, are defined for
+XADDs as given by~\cite{sanner_uai11,zamani12}.  For most of these
+operations the execution time scales superlinearly with the number of
+partitions in the XADD, which can be greatly reduced by
+the \texttt{XADDComp} compression algorithm.  We empirically
+demonstrate the benefits of approximation in the next section.
