@@ -285,9 +285,9 @@ $C := \emptyset$ \emph{// Start with an empty constraint set}\;
 \For{$i \in \{ 1,2\}, \theta_{ij} \in C(\phi_i)$} {
 \nlset{} \vspace{-7mm}
 \begin{align*}
-&\vec{x_{ij}^k}_+ := \argmax_{\vec{x}} \left| \vec{c_i}^T \! \mb \vec{x}\\1 \me \! - \vec{c^*}^T \! \mb \vec{x}\\1 \me \right| \\ 
+&\vec{x_{ij}^k}_+ := \argmax_{\vec{x}} \left( \vec{c_i}^T \! \mb \vec{x}\\1 \me \! - \vec{c^*}^T \! \mb \vec{x}\\1 \me \right) \\ 
 &  \hspace{17mm} \textrm{s.t. } \vec{x} \in \PT(\theta_{ij})\\
-&\vec{x_{ij}^k}_- := \argmax_{\vec{x}} \left| \vec{c^*}^T \! \mb \vec{x}\\1 \me \! - \vec{c_i}^T \! \mb \vec{x}\\1 \me \right| \\ 
+&\vec{x_{ij}^k}_- := \argmax_{\vec{x}} \left( \vec{c^*}^T \! \mb \vec{x}\\1 \me \! - \vec{c_i}^T \! \mb \vec{x}\\1 \me \right) \\ 
 &  \hspace{17mm} \textrm{s.t. } \vec{x} \in \PT(\theta_{ij})\\
 %\end{align*}
 %\begin{align*}
@@ -336,9 +336,3 @@ to generate constraints.  We later demonstrate that
 \texttt{PairLeafApp} runs very efficiently in practice indicating 
 that it is generating only a small subset of the possible
 exponential set of constraints.
-%Thus to summarize our key contributions in this subsection, 
-%we have managed to transform an initial bilinear saddle point
-%into a bi-level linear program and then through crucial insights about
-%the second level, we have managed to solve the pairwise leaf approximation
-%problem efficiently with only linear programming and the technique
-%of constraint generation.
