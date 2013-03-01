@@ -43,15 +43,6 @@ P(\vec{b}',\vec{x}'|\vec{b},\vec{x},a,\vec{y}) =
 \end{equation}}
 where $\vec{v}'_{<k} = ( v'_1,\ldots, v'_{k-1}), 1\leq k \leq n+m$
 
-TODO: Illustrate MDP,DBN, with variable ordering fig~\ref{fig:hmdp}?
-
-\begin{figure}[h!t]
-\center
-\fbox{\includegraphics[scale=0.4]{Figures/xadds/samplexadd.eps} }
-\caption{ Example of HMDP dynamic.}
-\label{fig:hmdp} 
-\end{figure}
-
 The conditional probabilities functions $P(b_i'=v_{k_i}'|\vec{b},\vec{x},\vec{v}'_{<{k_i}},a,\vec{y})$ for \emph{binary} variables $b_i$ ($1 \leq i \leq n$) can condition on state and action variables.  
 
 For the \emph{continuous} variables $x_j$ ($1 \leq j \leq m$), we represent the CPFs $P(x_j'=v_{k_j}'|\vec{b},\vec{x},\vec{v}'_{<{k_j}},a,\vec{y})$ with \emph{piecewise
