@@ -23,6 +23,13 @@ Justin Boyan and Michael Littman.
 \newblock In {\em Advances in Neural Information Processing Systems {NIPS-00}},
   pages 1026--1032, 2001.
 
+\bibitem{bresina02}
+John~L. Bresina, Richard Dearden, Nicolas Meuleau, Sailesh Ramkrishnan,
+  David~E. Smith, and Richard Washington.
+\newblock Planning under continuous time and resource uncertainty:a challenge
+  for ai.
+\newblock In {\em Uncertainty in Artificial Intelligence (UAI-02)}, 2002.
+
 \bibitem{dbn}
 Thomas Dean and Keiji Kanazawa.
 \newblock A model for reasoning about persistence and causation.

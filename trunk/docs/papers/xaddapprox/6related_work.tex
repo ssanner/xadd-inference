@@ -13,25 +13,25 @@ could only provide (approximately) optimal solutions for a rectilinear
 subset of \emph{discrete} action HMDPs in comparison to our
 more general setting of \emph{continuous} action HMDPs with 
 linear piecewise dynamics and rewards building on the work of Zamani
-{\it et al}~\cite{zamani12}.  Hence our solutions are targeted at more
-general value function representations, namely linear XADDs, for which
-approximation has not been previously attempted.
+{\it et al}~\cite{zamani12}.  
+%Hence our solutions are targeted at more
+%general value function representations, namely linear XADDs, for which
+%approximation has not been previously attempted.
 
-An alternative approach to bounded error HMDP solutions such as the phase-type
-approximation of Marecki {\it et al}~\cite{phase07} presents an 
-approximation scheme that can
+An alternative approach to bounded error HMDP solutions is the phase-type
+approximation of Marecki {\it et al}~\cite{phase07} which can
 arbitrarily approximate 1D continuous MDP solutions but which does not
-extend to multivariate or continuous actions.
+extend to multivariate settings or continuous actions.
 In an approximate linear programming approach using basis functions, 
 Kveton {\it et al}~\cite{kveton06,kveton06aaai} explore bounded
 approximations and learnable basis functions for HMDPs but cannot provide 
 \emph{a priori} guarantees on the maximum allowed error in a solution
 as we can in our BASDP framework.  Munos and Moore~\cite{munos02} take
 a variable resolution discretization approach to refining value
-functions and policies, but these methods are based on kd-trees which
-require a rectilinear partitioning of the state space that can consume
+functions and policies, but these methods are based on rectilinear
+partitioned kd-trees which can consume
 prohibitive amounts of space to approximate the simple oblique
-piecewise linear function of Figure~\ref{fig:symbex}, which is
+piecewise linear function of Figure~\ref{fig:symbex}, 
 represented exactly as a four node XADD.
 
 In a somewhat orthogonal direction to other work, Meuleau {\it et
