@@ -296,11 +296,11 @@ $C := \emptyset$ \emph{// Start with an empty constraint set}\;
 \end{align*}\vspace{-5mm}
 }
 \emph{// Re-solve LP with augmented constraint set}\;
-$(\vec{c^*},\epsilon_{\mathit{new}}) := \argmin_{\vec{c}^*,\epsilon} \epsilon$ subject to $C$\;
-\If{$\epsilon \neq \epsilon_{\mathit{new}}$}{
-     $\epsilon := \epsilon_{\mathit{new}}$, go to line 4\;
+$(\vec{c^*}_{\mathit{new}},\epsilon^*) := \argmin_{\vec{c}^*,\epsilon} \epsilon$ subject to $C$\;
+\If{$\vec{c^*}_{\mathit{new}} \neq \vec{c^*}$}{
+     $\vec{c^*} := \vec{c^*}_{\mathit{new}}$, go to line 4\;
 }
-\Return{$(\vec{c^*},\epsilon)$}\emph{// Best hyperplane and error}\;
+\Return{$(\vec{c^*},\epsilon^*)$}\emph{// Best hyperplane and error}\;
 \caption{\footnotesize 
  \texttt{PairLeafApp}($L_1,L_2$) $\longrightarrow$ ($\vec{c}^*,\epsilon$)}
 \label{alg:pairleafapp}
