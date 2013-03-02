@@ -189,7 +189,7 @@ $L_1 = \l f_1, \phi_1 \r$ and $L_2 = \l f_2, \phi_2 \r$, our goal is to
 determine the best linear case approximation of $L_1$ and $L_2$.  As
 it must represent $L_1$ and $L_2$, the solution must be defined in
 both regions and is therefore of the form $L^* =
-\l f^*,\phi_1 \lor \phi_2 \r$.  Since we restrict to linear XADDs, 
+\l f^*,\phi_1 \lor \phi_2 \r$.  Since we restrict to linear XADDs, then 
 $f_1 = \vec{c_1}^T (\vec{x}^T,1)^T$, $f_2 = \vec{c_2}^T (\vec{x}^T,1)^T$ and 
 $f^* = \vec{c^*}^T (\vec{x}^T,1)^T$ (assuming
 $\vec{c_1},\vec{c_2},\vec{c^*} \in \mathbb{R}^{m+1}$ where $\vec{x} \in \mathbb{R}^{m}$).  
@@ -270,7 +270,7 @@ s.t. \;       & \epsilon \geq \left| \vec{c_i}^T \! \mb \vec{x_{ij}^k}\\1 \me \!
 \end{align}
 Unfortunately, the drawback of this single linear programming approach
 is that for $n_{ij}$ linear constraints in $\PT(\theta_{ij})$, the
-number of vertices of the polytope may be exponential, i.e., $N_{ij} =
+number of vertices of the polytope may be \emph{exponential}, i.e., $N_{ij} =
 O(\exp n_{ij})$.  
 
 
@@ -320,13 +320,13 @@ suggests an efficient \emph{constraint generation} approach to
 solving~\eqref{eq:linear_exp} that we outline in
 Algorithm~\ref{alg:pairleafapp}.  Beginning with an empty constraint
 set, we iteratively add in constraints for the polytope vertices
-$\vec{x_{ij}^k}$ that yield max error for the current best solution
+$\vec{x_{ij}^k}$ that yield maximal error for the current best solution
 $\vec{c^*}$ (one constraint for each side of the absolute value).
-Then we re-solve for $(\vec{c^*},\vec{x_{ij}^k})$ to see if the error
+Then we re-solve for $(\vec{c^*},\epsilon^*)$ to see if the error
 has gotten worse; if not, we have reached optimality since $\vec{c^*}$
 satisfies all constraints (vertices $\vec{x_{ij}^k}$ not having
 constraints in $C$ had provably equal or smaller error than those in
-$C$) and adding in all constraints could not reduce $\epsilon$
+$C$) and adding in all constraints could not reduce $\epsilon^*$
 further.
 
 We conclude our discussion of \texttt{PairLeafApp} in
