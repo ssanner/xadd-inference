@@ -143,12 +143,7 @@ x_j' & = \begin{cases}
 (\neg d') \wedge (x_j > 50) &: x_j - 50\\
 (\neg d') \wedge (x_j < 50) &:  0\\
 \end{cases} \\
-R & = \begin{cases} \\
-(d') &: \sum_{k} {x_k' - x_k}\\
-(tp_1') \wedge (\neg tp_1) \wedge (x < 50) &: 40 - 0.2*(50-x)\\
-(tp_1') \wedge ( tp_1) &:  1.1\\
-else & -2\\
-\end{cases} 
+R & = \sum_{k} {x_k' - x_k}\\
 \end{align*} }
 \vspace{-6mm}
 
