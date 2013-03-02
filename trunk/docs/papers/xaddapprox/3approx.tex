@@ -280,6 +280,7 @@ O(\exp n_{ij})$.
 \begin{algorithm}[t!]
 \dontprintsemicolon
 $\vec{c^*} := \vec{0}$ \emph{// Arbitrarily initialize $\vec{c^*}$}\;
+$\epsilon^* := \infty$ \emph{// Initialize to invalid error}\;
 $C := \emptyset$ \emph{// Start with an empty constraint set}\;
 \emph{// Generate max error vertex constraints for $\vec{c^*}$}\;
 \For{$i \in \{ 1,2\}, \theta_{ij} \in C(\phi_i)$} {
@@ -296,9 +297,9 @@ $C := \emptyset$ \emph{// Start with an empty constraint set}\;
 \end{align*}\vspace{-5mm}
 }
 \emph{// Re-solve LP with augmented constraint set}\;
-$(\vec{c^*}_{\mathit{new}},\epsilon^*) := \argmin_{\vec{c}^*,\epsilon} \epsilon$ subject to $C$\;
-\If{$\vec{c^*}_{\mathit{new}} \neq \vec{c^*}$}{
-     $\vec{c^*} := \vec{c^*}_{\mathit{new}}$, go to line 4\;
+$(\vec{c^*},\epsilon^*_{\mathit{new}}) := \argmin_{\vec{c}^*,\epsilon} \epsilon$ subject to $C$\;
+\If{$\epsilon^*_{\mathit{new}} \neq \epsilon^*$}{
+     $\epsilon^* := \epsilon^*_{\mathit{new}}$, go to line 4\;
 }
 \Return{$(\vec{c^*},\epsilon^*)$}\emph{// Best hyperplane and error}\;
 \caption{\footnotesize 
