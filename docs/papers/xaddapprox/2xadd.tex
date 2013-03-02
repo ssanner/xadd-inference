@@ -98,7 +98,7 @@ f(\vec{b},\vec{x}) =
 %% this paper, they only occur in the SDP backup and were covered
 %% in previous work -- its irrelevant here.
 Here the $f_i$ are linear expressions over $\vec{x}$ and the $\phi_i$
-are logical formulae defined over the domain $(\vec{b},\vec{x})$ that
+are logical formulae defined over the domain $(\vec{b}^T,\vec{x}^T)$ that
 can include arbitrary logical ($\land,\lor,\neg$) combinations of (i)
 boolean variables and (ii) linear inequalities over $\vec{x}$.
 
@@ -109,7 +109,7 @@ of decision constraints.  The disjunction of all path constraints
 leading to leaf $f_i$ corresponds to a case partition
 $\l \phi_i(\vec{b},\vec{x}) : f_i(\vec{x}) \r$.  Clearly, all case
 partitions derived from an XADD must be mutually disjoint and
-exhaustive of the domain $(\vec{b},\vec{x})$, hence XADDs
+exhaustive of the domain $(\vec{b}^T,\vec{x}^T)$, hence XADDs
 represent well-defined functions.
 
 %% This is not important for XADD approximation... it has been
@@ -163,7 +163,7 @@ XADDs remains linear, in general their product may not (i.e., the values
 may be quadratic); however, for the purposes of symbolic dynamic
 programming later, we remark that we only ever need to multiply
 piecewise constaint functions by piecewise linear functions
-represented as XADDs, hencing yielding a piecewise linear result.
+represented as XADDs, thus yielding a piecewise linear result.
 
 Some XADD operations do require extensions over the ADD, e.g., the
 binary $\max$ operation represented here in case form:
