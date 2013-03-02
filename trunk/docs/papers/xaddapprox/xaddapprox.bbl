@@ -23,6 +23,13 @@ Justin Boyan and Michael Littman.
 \newblock In {\em Advances in Neural Information Processing Systems {NIPS-00}},
   pages 1026--1032, 2001.
 
+\bibitem{bresina02}
+John~L. Bresina, Richard Dearden, Nicolas Meuleau, Sailesh Ramkrishnan,
+  David~E. Smith, and Richard Washington.
+\newblock Planning under continuous time and resource uncertainty:a challenge
+  for ai.
+\newblock In {\em Uncertainty in Artificial Intelligence (UAI-02)}, 2002.
+
 \bibitem{dbn}
 Thomas Dean and Keiji Kanazawa.
 \newblock A model for reasoning about persistence and causation.
@@ -78,6 +85,11 @@ Scott Sanner, Karina~Valdivia Delgado, and Leliane~Nunes {de Barros}.
 \newblock Symbolic dynamic programming for discrete and continuous state mdps.
 \newblock In {\em Proceedings of the 27th Conference on Uncertainty in {AI}
   ({UAI-2011})}, Barcelona, 2011.
+
+\bibitem{Scarf2002}
+Herbert~E Scarf.
+\newblock Inventory theory.
+\newblock {\em Operations Research}, 50(1):186--191, 2002.
 
 \bibitem{apricodd}
 Robert St-Aubin, Jesse Hoey, and Craig Boutilier.
