@@ -16,7 +16,7 @@ formalizing an HMDP.
 \subsection{Hybrid Markov Decision Processes (HMDPs) }
 
 In HMDPs, states are represented by variable assignments. We assume a
-vectors of variables $(\vec{b}^T,\vec{x}^T) = (
+vector of variables $(\vec{b}^T,\vec{x}^T) = (
 b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where each $b_i \in \{ 0,1 \}$
 ($1 \leq i \leq n$) is boolean$\,$ and each $x_j \in \mathbb{R}$
 ($1 \leq j \leq m$) is continuous. We also assume a finite set of $p$
@@ -218,13 +218,13 @@ and $\pi^{*,\infty} = \pi^{*,h}$.
 We will now define BASDP, our bounded approximate HMDP symbolic
 dynamic programming algorithm.  BASDP is provided in
 Algorithm~\ref{alg:basdp} along with a regression subroutine in
-Algorithm~\ref{alg:regress} and is a modified version of
+Algorithm~\ref{alg:regress}; BASDP is a modified version of
 SDP~\cite{zamani12} to support the HMDP model with next-state
 dependent reward function and sychronic arcs given in the previous
 section and the crucial addition of line \ref{approxline}, which uses
 the \texttt{XADDComp} compression method described in
 Section~\ref{sec:approx}.  Error is cumulative over each horizon, so for example,
-the maximum possible error incurred in an undiscounted BASDP solution
+the maximum possible error incurred in an \emph{undiscounted} BASDP solution
 is $H\epsilon$.
 %The value iteration is performed in two stages: first, obtain the XADD
 % form of the quality $Q^h_a(\vec{y})$ by regression of transitions,
