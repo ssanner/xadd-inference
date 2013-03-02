@@ -284,7 +284,7 @@ $\epsilon^* := \infty$ \emph{// Initialize to invalid error}\;
 $C := \emptyset$ \emph{// Start with an empty constraint set}\;
 \emph{// Generate max error vertex constraints for $\vec{c^*}$}\;
 \For{$i \in \{ 1,2\}, \theta_{ij} \in C(\phi_i)$} {
-\nlset{} \vspace{-7mm}
+\nlset{} \vspace{-8mm}
 \begin{align*}
 &\vec{x_{ij}^k}_+ := \argmax_{\vec{x}} \left( \vec{c_i}^T \! \mb \vec{x}\\1 \me \! - \vec{c^*}^T \! \mb \vec{x}\\1 \me \right) \\ 
 &  \hspace{17mm} \textrm{s.t. } \vec{x} \in \PT(\theta_{ij})\\
@@ -294,7 +294,7 @@ $C := \emptyset$ \emph{// Start with an empty constraint set}\;
 %\begin{align*}
 &  C := C \cup \{ \epsilon \!>\! \vec{c_i}^T (\vec{x_{ij}^k}_+^T,1)^T \!-\! \vec{c^*}^T (\vec{x_{ij}^k}_+^T,1)^T \} \\
 &  C := C \cup \{ \epsilon \!>\! \vec{c^*}^T (\vec{x_{ij}^k}_-^T,1)^T \!-\! \vec{c_i}^T (\vec{x_{ij}^k}_-^T,1)^T \}
-\end{align*}\vspace{-5mm}
+\end{align*}\vspace{-6mm}
 }
 \emph{// Re-solve LP with augmented constraint set}\;
 $(\vec{c^*},\epsilon^*_{\mathit{new}}) := \argmin_{\vec{c}^*,\epsilon} \epsilon$ subject to $C$\;
@@ -304,6 +304,7 @@ $(\vec{c^*},\epsilon^*_{\mathit{new}}) := \argmin_{\vec{c}^*,\epsilon} \epsilon$
 \Return{$(\vec{c^*},\epsilon^*)$}\emph{// Best hyperplane and error}\;
 \caption{\footnotesize 
  \texttt{PairLeafApp}($L_1,L_2$) $\longrightarrow$ ($\vec{c}^*,\epsilon$)}
+\vspace{-1mm}
 \label{alg:pairleafapp}
 \end{algorithm}
 \decmargin{1.5em}
