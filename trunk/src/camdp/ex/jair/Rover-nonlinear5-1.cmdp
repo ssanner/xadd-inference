@@ -23,19 +23,16 @@ x' ([a<=10]
 			([x]))
 		([x]))
 		
-reward ([x'<=2]
-			([x'>=-2]
-				([x<=2]
-					([x>=-2]
-						(tp
-							([-Infinity])
-							([(4 - x*x) ]))
-      			([-Infinity]))
-      		([-Infinity]))
-		([-Infinity]))
-	([-Infinity]))
+reward ([x<=2]
+			([x>=-2]
+           		(tp
+           			([0])
+           			([(40 - x*x) ]))
+      			([-1]))
+      		([-1]))
 
 endaction
 
 discount 1.000000
 iterations 8
+

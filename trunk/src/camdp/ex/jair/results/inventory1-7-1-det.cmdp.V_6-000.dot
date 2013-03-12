@@ -1,0 +1,38 @@
+digraph G { 
+graph [ fontname = "Helvetica",fontsize="16",ratio = "auto",
+        size="7.5,10",ranksep="2.00" ];
+node [fontsize="16"];
+"5419" [label="(292.5 + (-0.15 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"6121" [label="(270 + (-0.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"6296" [label="(1 + (-0.006667 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"6310" [label="(1 + (-0.002 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"5633" [label="(337.5 + (-0.3 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"6311" [label="(1 * x) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"6293" [label="(1 + (-0.005 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"4413" [label="(207.5 + (1.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"5840" [label="(1 + (-0.003333 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"6308" [label="(-1 + (0.01 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"6309" [label="(-1 + (0.02 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"6065" [label="(-1 + (0.004 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"4" [label="-Infinity",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"5314" [label="262.5",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"5239" [label="(257.5 + (0.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"5877" [label="(280 + (-0.1 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"_temp_" [label="V^6-000",fillcolor=gold1,color=black,shape=square,style=filled];
+"6296" -> "5314" [color=black,style=solid];
+"6296" -> "6293" [color=black,style=dashed];
+"6310" -> "6309" [color=black,style=solid];
+"6310" -> "4" [color=black,style=dashed];
+"6311" -> "4" [color=black,style=dashed];
+"6311" -> "6310" [color=black,style=solid];
+"6293" -> "6121" [color=black,style=solid];
+"6293" -> "6065" [color=black,style=dashed];
+"5840" -> "5419" [color=black,style=solid];
+"5840" -> "5633" [color=black,style=dashed];
+"6308" -> "6296" [color=black,style=solid];
+"6308" -> "5239" [color=black,style=dashed];
+"6309" -> "6308" [color=black,style=solid];
+"6309" -> "4413" [color=black,style=dashed];
+"6065" -> "5877" [color=black,style=dashed];
+"6065" -> "5840" [color=black,style=solid];
+}

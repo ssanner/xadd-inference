@@ -1,0 +1,34 @@
+digraph G { 
+graph [ fontname = "Helvetica",fontsize="16",ratio = "auto",
+        size="7.5,10",ranksep="2.00" ];
+node [fontsize="16"];
+"4034" [label="(-1 + (0.004 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"3651" [label="(275 + (-0.25 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"3850" [label="(237.5 + (-0.1 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"4257" [label="(1 + (-0.005 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"2805" [label="(165 + (1.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"3470" [label="(215 + (0.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"4273" [label="(-1 + (0.02 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"4274" [label="(1 + (-0.002 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"4272" [label="(-1 + (0.01 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"4260" [label="(1 + (-0.006667 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"3545" [label="220",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"4275" [label="(1 * x) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"4" [label="-Infinity",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"_temp_" [label="V^5-000",fillcolor=gold1,color=black,shape=square,style=filled];
+"4085" [label="(227.5 + (-0.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"4034" -> "3651" [color=black,style=solid];
+"4034" -> "3850" [color=black,style=dashed];
+"4257" -> "4034" [color=black,style=dashed];
+"4257" -> "4085" [color=black,style=solid];
+"4273" -> "4272" [color=black,style=solid];
+"4273" -> "2805" [color=black,style=dashed];
+"4274" -> "4273" [color=black,style=solid];
+"4274" -> "4" [color=black,style=dashed];
+"4272" -> "4260" [color=black,style=solid];
+"4272" -> "3470" [color=black,style=dashed];
+"4260" -> "3545" [color=black,style=solid];
+"4260" -> "4257" [color=black,style=dashed];
+"4275" -> "4274" [color=black,style=solid];
+"4275" -> "4" [color=black,style=dashed];
+}

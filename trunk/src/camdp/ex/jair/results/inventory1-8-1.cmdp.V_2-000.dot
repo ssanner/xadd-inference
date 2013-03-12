@@ -1,0 +1,44 @@
+digraph G { 
+graph [ fontname = "Helvetica",fontsize="16",ratio = "auto",
+        size="7.5,10",ranksep="2.00" ];
+node [fontsize="16"];
+"1424" [label="(52.500225 + (1.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"3280" [label="(1 + (-0.002 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"3282" [label="d",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"2263" [label="(1 * x) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"2262" [label="(1 + (-0.002 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"3281" [label="(1 * x) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"2100" [label="(132.5 + (-0.1 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"3027" [label="(232.519127 + (0.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"2250" [label="(-1 + (0.02 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1960" [label="(102.500225 + (0.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"2249" [label="(-1 + (0.005 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"3166" [label="(277.5 + (-0.1 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"4" [label="-Infinity",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"_temp_" [label="V^2-000",fillcolor=gold1,color=black,shape=square,style=filled];
+"2542" [label="(82.519127 + (1.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"2543" [label="(20.500525 + (1.67 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"3268" [label="(-1 + (0.006667 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"3267" [label="(-1 + (0.003333 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"2544" [label="(1 + (-0.009997 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"3280" -> "4" [color=black,style=dashed];
+"3280" -> "3268" [color=black,style=solid];
+"3282" -> "2263" [color=black,style=dashed];
+"3282" -> "3281" [color=black,style=solid];
+"2263" -> "4" [color=black,style=dashed];
+"2263" -> "2262" [color=black,style=solid];
+"2262" -> "4" [color=black,style=dashed];
+"2262" -> "2250" [color=black,style=solid];
+"3281" -> "3280" [color=black,style=solid];
+"3281" -> "4" [color=black,style=dashed];
+"2250" -> "2249" [color=black,style=solid];
+"2250" -> "1424" [color=black,style=dashed];
+"2249" -> "2100" [color=black,style=solid];
+"2249" -> "1960" [color=black,style=dashed];
+"3268" -> "3267" [color=black,style=solid];
+"3268" -> "2544" [color=black,style=dashed];
+"3267" -> "3166" [color=black,style=solid];
+"3267" -> "3027" [color=black,style=dashed];
+"2544" -> "2542" [color=black,style=dashed];
+"2544" -> "2543" [color=black,style=solid];
+}
