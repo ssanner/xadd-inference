@@ -11,17 +11,14 @@ x' ([-50 + x + a])
 
 		
 reward 	([x' >= 0]
-			([x >= 0]
 				([x' <= 500]
-					([x <= 500]
 						([x>=50]
 							([50 - 0.1 * a - 0.05 * x ])
 							([x - 0.1 * a -0.05 * x] )
 						)
 					([-Infinity]))	
 				([-Infinity]))	
-			([-Infinity]))	
-	([-Infinity]))	
+
 			
 endaction
 

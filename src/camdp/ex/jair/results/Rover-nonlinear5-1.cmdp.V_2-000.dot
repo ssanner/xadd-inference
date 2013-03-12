@@ -1,0 +1,46 @@
+digraph G { 
+graph [ fontname = "Helvetica",fontsize="16",ratio = "auto",
+        size="7.5,10",ranksep="2.00" ];
+node [fontsize="16"];
+"763" [label="(1 + (0.5 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"764" [label="(1 + (-0.5 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"941" [label="(1 + (-0.5 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"942" [label="tp",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"930" [label="(1 + (0.5 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"304" [label="(-61 + (-1 * x * x) + (-20 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"475" [label="(1 + (0.1 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"921" [label="(-1 + (-0.083333 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"12" [label="-1",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"747" [label="(-1 + (-0.083333 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1" [label="0",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"287" [label="(-61 + (-1 * x * x) + (20 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"458" [label="(1 + (-0.1 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"160" [label="-2",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"884" [label="(1 + (-0.083333 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"8" [label="(40 + (-1 * x * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"561" [label="(1 + (-0.083333 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"267" [label="39",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"_temp_" [label="V^2-000",fillcolor=gold1,color=black,shape=square,style=filled];
+"763" -> "747" [color=black,style=dashed];
+"763" -> "8" [color=black,style=solid];
+"764" -> "763" [color=black,style=solid];
+"764" -> "561" [color=black,style=dashed];
+"941" -> "930" [color=black,style=solid];
+"941" -> "884" [color=black,style=dashed];
+"942" -> "764" [color=black,style=dashed];
+"942" -> "941" [color=black,style=solid];
+"930" -> "1" [color=black,style=solid];
+"930" -> "921" [color=black,style=dashed];
+"475" -> "304" [color=black,style=dashed];
+"475" -> "267" [color=black,style=solid];
+"921" -> "160" [color=black,style=solid];
+"921" -> "12" [color=black,style=dashed];
+"747" -> "160" [color=black,style=solid];
+"747" -> "475" [color=black,style=dashed];
+"458" -> "287" [color=black,style=dashed];
+"458" -> "267" [color=black,style=solid];
+"884" -> "160" [color=black,style=dashed];
+"884" -> "12" [color=black,style=solid];
+"561" -> "458" [color=black,style=solid];
+"561" -> "160" [color=black,style=dashed];
+}

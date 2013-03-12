@@ -1,0 +1,26 @@
+digraph G { 
+graph [ fontname = "Helvetica",fontsize="16",ratio = "auto",
+        size="7.5,10",ranksep="2.00" ];
+node [fontsize="16"];
+"1415" [label="(1 + (-0.006667 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"776" [label="(80 + (1.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"4" [label="-Infinity",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"1419" [label="(1 * x) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1418" [label="(1 + (-0.002 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1279" [label="(157.5 + (-0.15 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"1417" [label="(-1 + (0.02 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1416" [label="(-1 + (0.01 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1175" [label="135",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"_temp_" [label="V^3-000",fillcolor=gold1,color=black,shape=square,style=filled];
+"1100" [label="(130 + (0.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"1415" -> "1279" [color=black,style=dashed];
+"1415" -> "1175" [color=black,style=solid];
+"1419" -> "4" [color=black,style=dashed];
+"1419" -> "1418" [color=black,style=solid];
+"1418" -> "4" [color=black,style=dashed];
+"1418" -> "1417" [color=black,style=solid];
+"1417" -> "776" [color=black,style=dashed];
+"1417" -> "1416" [color=black,style=solid];
+"1416" -> "1415" [color=black,style=solid];
+"1416" -> "1100" [color=black,style=dashed];
+}

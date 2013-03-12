@@ -1,0 +1,13 @@
+Inventory:
+src/camdp/ex/jair/inventory1-7-1-det.cmdp 6 true false
+src/camdp/ex/jair/inventory1-8-1.cmdp 6 true false
+
+
+
+
+Reservoir:
+src/camdp/ex/jair/reservoir-refinement5-2.cmdp 6 false true
+
+
+Rover:
+src/camdp/ex/jair/Rover-nonlinear5-1.cmdp 6 true false

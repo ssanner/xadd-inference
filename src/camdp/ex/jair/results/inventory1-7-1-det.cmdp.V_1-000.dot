@@ -1,0 +1,18 @@
+digraph G { 
+graph [ fontname = "Helvetica",fontsize="16",ratio = "auto",
+        size="7.5,10",ranksep="2.00" ];
+node [fontsize="16"];
+"239" [label="(-1 + (0.02 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"114" [label="(-5 + (1.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"182" [label="(50 + (-0.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"4" [label="-Infinity",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"249" [label="(1 * x) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"_temp_" [label="V^1-000",fillcolor=gold1,color=black,shape=square,style=filled];
+"248" [label="(1 + (-0.002 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"239" -> "114" [color=black,style=dashed];
+"239" -> "182" [color=black,style=solid];
+"249" -> "4" [color=black,style=dashed];
+"249" -> "248" [color=black,style=solid];
+"248" -> "239" [color=black,style=solid];
+"248" -> "4" [color=black,style=dashed];
+}
