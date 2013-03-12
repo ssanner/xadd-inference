@@ -97,7 +97,7 @@ We can also consider the more general CA-HMDP setting to this problem:
 \textsc{Continuous Action}  \InventoryControl  (\textsc{CAIC}):
 Here in a given time step, the inventory can order  any of the $i$ items $a_i \in [0,200]$ considering the stochastic customer demand. 
 
-The transition functions for state $x_i$ and $d$ and actions $a_i$ are defined as: 
+The transition functions for the continuous state $x_i$ and actions $a_i$ is defined as: 
 {%\footnotesize
 \vspace{-2mm}
 \begin{align}
@@ -108,30 +108,32 @@ d  : & x_i + a_i - 150 \\
 %\end{align}
 \hspace{4mm}
 %\begin{align}
-d' =  \begin{cases}
-d     : &(0.7)\\
-\neg d: &(0.3)\\
-\end{cases} %\label{eq:transD_inv}
+%d' =  \begin{cases}
+%d     : &(0.7)\\
+%\neg d: &(0.3)\\
+%\end{cases} %\label{eq:transD_inv}
 \end{align}
 \vspace{-2mm}}
 
 The reward is the sum of $K$ functions as below:
-{%\footnotesize
+{\footnotesize
 \begin{align}
-R = \sum_{i=0}^K R_i = \begin{cases}
+R = \sum_{i=0}^K R_i = \sum_{i=0}^K \begin{cases}
+d \wedge (x_i \geq 150) &: 150 - 0.1 * a_i - 0.05 * x_i \\
+d \wedge \neg(x_i \geq 150) &:   x_i - 0.1 * a_i - 0.05 * x_i \\
+\neg d \wedge (x_i \geq 50) &: 50 - 0.1 * a_i - 0.05 * x_i  \\
+\neg d \wedge \neg(x_i \geq 50) &: x_i - 0.1 * a_i - 0.05 * x_i  \\
+\end{cases} 
++ 
+\begin{cases}
 (x_i \leq 0) \wedge (\sum_{j \neq i} x_j \geq C) &: -\infty  \\	
 (x'_i \leq 0) \wedge (\sum_{j \neq i} x'_j \geq C) &: -\infty  \\	
-d \wedge (x_i \geq 150) \wedge (\mathit{safeLimits}) &: 150 - 0.1 * a_i - 0.05 * x_i \\
-d \wedge \neg(x_i \geq 150) \wedge (\mathit{safeLimits})&:   x_i - 0.1 * a_i - 0.05 * x_i \\
-\neg d \wedge (x_i \geq 50) \wedge (\mathit{safeLimits})&: 50 - 0.1 * a_i - 0.05 * x_i  \\
-\neg d \wedge \neg(x_i \geq 50) \wedge (\mathit{safeLimits})&: x_i - 0.1 * a_i - 0.05 * x_i  \\
-\end{cases} \label{rew_inv}
+(x_i \geq 0) \wedge (\sum_{j \neq i} x_j \leq C)\\ \hspace{3mm}\wedge
+(x'_i \geq 0) \wedge (\sum_{j \neq i} x'_j \leq C)&: 0
+\end{cases} 
+\label{rew_inv}
 \end{align}}
-where $C$ is the total capacity for $K$ items in the inventory and $\mathit{safeLimits}$ is the inventory capacity of each item above zero and the sum of total capacity below $C$ for all states:
-\begin{align}
-\mathit{safeLimits} = (x_i \geq 0) \wedge (\sum_{j \neq i} x_j \leq C) \wedge
-(x'_i \geq 0) \wedge (\sum_{j \neq i} x'_j \leq C) \nonumber
-\end{align}
+where $C$ is the total capacity for $K$ items in the inventory. The second case checks the safe ranges of the capacity such that the inventory capacity of each item above zero and the sum of total capacity below $C$ is desired.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\vspace{5mm}
 \begin{figure}[t!]
@@ -139,7 +141,7 @@ where $C$ is the total capacity for $K$ items in the inventory and $\mathit{safe
 %\subfigure{
 %\hspace{-20mm}
 \vspace{-3mm}
-\includegraphics[width=1 \textwidth]{Figures2/diagrams/v2-inv4.pdf}
+\includegraphics[width=1 \textwidth]{Figures2/diagrams/v2_inv2_2.pdf}
 \vspace{-2mm}
 \caption{\footnotesize Optimal value function $V^2(x)$ for the
 CAIC problem represented as an extended algebraic decision
@@ -151,29 +153,24 @@ non-parenthetical expression provides the \emph{optimal value} and the
 parenthetical expression provides the \emph{optimal policy} 
 ($a = \pi^{*,2}(x)$) to achieve value $V^2(x)$.}
 \label{fig:inv_policy}
-\vspace{-5mm}
+\vspace{-10mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Note that illegal state values are defined using $-\infty$, in this case having the capacity lower than zero at any time and having capacity higher than that of the total $C$. If our objective is to maximize the long-term \emph{value} $V$ (i.e.,the sum of rewards received over an infinite horizon of actions), we show that the optimal value function can be derived in closed-form. For a single-item continuous state and action inventory CAIC problem the optimal value function is defined as below:
-%from inventory1-8
-{%\footnotesize
-%\begin{tabular}{l}
-%$
+\vspace{-10mm}
 \begin{align}
 V = \begin{cases}
-\neg (\mathit{safeLimits}) &: -\infty \\
-d \land (x \geq 300) \land (\mathit{safeLimits}) &:  277.5 - 0.1 * x \\
-d \land (150 \leq x \leq 300) \land (\mathit{safeLimits})&:  232.5 + 0.05 * x \\
-d \land (100 \leq x \leq 150) \land (\mathit{safeLimits}) &:  20.5 + 1.67 * x\\
-d \land (x \leq 100) \land (\mathit{safeLimits})&:  82.5 + 1.05 * x \\
-\neg d \land (x \geq 200) \land (\mathit{safeLimits}) &:  132.5 - 0.1 * x \\
-\neg d \land (50 \leq x \leq 200) \land (\mathit{safeLimits})&: 102.5 + 0.05 * x \\
-\neg d \land (x \leq 50) \land (\mathit{safeLimits})&:  52.5 + 1.05 * x \\
+(x < 0 \vee x>500) &: -\infty \\
+d \land (0 \leq x \leq 500) \land (x \geq 300) &:  277.5 - 0.1 * x \\
+d \land (150 \leq x \leq 300) &:  232.5 + 0.05 * x \\
+d \land (100 \leq x \leq 150) &:  20.5 + 1.67 * x\\
+d \land (0 \leq x \leq 100) &:  82.5 + 1.05 * x \\
+\neg d \land (200 \leq x \leq 500)  &:  132.5 - 0.1 * x \\
+\neg d \land (50 \leq x \leq 200) &: 102.5 + 0.05 * x \\
+\neg d \land (0 \leq x \leq 50) &:  52.5 + 1.05 * x \\
 \end{cases} \label{eq:vfun_inv}
-%$
-%\end{tabular}
+\vspace{-8mm}
 \end{align}
-}
 This value function is piecewise and linear and the policy obtained from this value function shown in Figure ~\ref{fig:inv_policy} (for each slice of the state space) matches with Scarf's policy for the \InventoryControl problem. If the holding and storage costs are linear, the optimal policy in each horizon is always of $(S,s)$ (~\cite{Scarf_Karlin58}). In general this means if ($x>s$) the policy should be not to order any items and if ($x<s$) then ordering $S-s-x$ items is optimal. Figure~\ref{fig:inv_policy} represents an extended algebraic decision diagram (XADD) representation which allows efficient implementation of the \emph{case calculus} for arbitrary functions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 Note that for all cases except the very first case of $d \land (x \geq 150)$ we have ordering of $S-s-x$ when $x<s$ and no ordering when $x>s$. %For this case, since the upper bound is not explicitly defined $x \leq 200$ it seems to be incorrect, but considering all constraints, this falls under the $x<s$ category thus ordering $300-x$ items. 
@@ -182,13 +179,11 @@ According to this we rewrite Scarf's policy:
 \begin{align}
 \pi^{*,2}(x) = 
 \begin{cases}
-d \land (x \geq 300) \land (\mathit{safeLimits}) &:  0 \\
-d \land (150 \leq x \leq 300) \land (\mathit{safeLimits})&:  300 - x \\
-d \land (100 \leq x \leq 150) \land (\mathit{safeLimits}) &:  200\\
-d \land (x \leq 100) \land (\mathit{safeLimits})&:  300 - x \\
-\neg d \land (x \geq 200) \land (\mathit{safeLimits}) &:  0 \\
-\neg d \land (50 \leq x \leq 200) \land (\mathit{safeLimits})&: 200 - x\\
-\neg d \land (x \leq 50) \land (\mathit{safeLimits})&:  200 - x \\
+d \land (300 \leq x \leq 500)  &:  0 \\
+d \land ((150 \leq x \leq 300) \vee (0 \leq x \leq 100)) &:  300 - x \\
+d \land (100 \leq x \leq 150)  &:  200 - x \\
+\neg d \land (200 \leq x \leq 500) &:  0 \\
+\neg d \land ((0 \leq x \leq 50)\vee (50 \leq x \leq 200)) &:  200 - x \\
 \end{cases}
 \end{align}
 
