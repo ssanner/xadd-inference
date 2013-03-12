@@ -1,6 +1,8 @@
 Inventory:
 src/camdp/ex/jair/inventory1-7-1-det.cmdp 6 true false
 src/camdp/ex/jair/inventory1-8-1.cmdp 6 true false
+src/camdp/ex/jair/inventory2-7-det.cmdp 6 false true
+src/camdp/ex/jair/inventory2-7.cmdp 6 false true
 
 
 
