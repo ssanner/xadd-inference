@@ -1,0 +1,26 @@
+------------------------------------------------------
+2013-1-26-11-31-29
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: true
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 5
+ # preferences : 70
+------------------------------------------------------
+Time to calculate prior: 1081
+Time to apply likelihood for user 0: 0
+Time to build CDF: 150
+Time to compute exact posterior: 1223
+Time to generate 200 samples: 1658
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: 6.0
+{w_1_var=0.0797330021657003, w_4_var=0.16617510101246416, w_5=0.1819580078125, w_4=0.6878217506408691, w_3=0.9309140205383301, w_2=0.6088735008239746, w_1=0.23365026473999023, w_2_var=0.18318908520452207, w_3_var=0.033309638061500696, w_5_var=0.06384420387668792}
+# prefs: 1, # correct: 0, # wrong: 1 : 0.0%, expected_time: 6.0%, inference_time: 1662, no_nodes: 95, max_no_nodes: 34
+Time to evaluate one expected utility for user 0: 0.0
+# prefs_exact: 1, # correct_exact: 0, # wrong_exact: 1 : 0.0%, expected_time: 0.0%, inference_time_exact: 324801, no_exact_nodes: 635, max_no_exact_nodes: 220
+-------
+Time to calculate prior: 16
+Time to apply likelihood for user 1: 0

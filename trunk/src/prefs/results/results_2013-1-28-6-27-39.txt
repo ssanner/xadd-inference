@@ -1,0 +1,12 @@
+------------------------------------------------------
+2013-1-28-6-27-40
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 20
+ # preferences : 1011
+------------------------------------------------------

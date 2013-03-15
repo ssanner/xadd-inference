@@ -1,0 +1,7 @@
+cvariables (o_i d)
+min-values (0 0)
+max-values (25 25)
+bvariables ()
+
+o_i ([T(o_i,0.0,0,5)]) 
+d ([T(d,0.0,0,5)])

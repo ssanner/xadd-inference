@@ -1,0 +1,140 @@
+------------------------------------------------------
+2013-1-27-0-51-30
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 12
+ # preferences : 428
+------------------------------------------------------
+Time to apply likelihood for user 0: 0
+Time to build CDF: 4293
+Time to generate 200 samples: 379147
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: 5.6
+{w_1_var=0.10729340619830192, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.3119320297241211, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 5, # correct: 2, # wrong: 3 : 40.0%, expected_time: 5.6%, inference_time: 379149, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 1: 0
+Time to generate 200 samples: 469414
+>> user: 1, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 1: 6.2
+{w_1_var=0.10498387492235484, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.3049634552001953, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 5, # correct: 2, # wrong: 3 : 40.0%, expected_time: 6.2%, inference_time: 469446, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 2: 0
+Time to generate 200 samples: 488051
+>> user: 2, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 2: 4.8
+{w_1_var=0.1124482846640091, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.31270463943481447, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 5, # correct: 4, # wrong: 1 : 80.0%, expected_time: 4.8%, inference_time: 488052, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 3: 0
+Time to generate 200 samples: 608900
+>> user: 3, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 3: 3.6666666666666665
+{w_1_var=0.11369314910409005, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.35539085388183594, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 3, # correct: 1, # wrong: 2 : 33.33333333333333%, expected_time: 3.6666666666666665%, inference_time: 608901, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 4: 0
+Time to generate 200 samples: 743257
+>> user: 4, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 4: 5.0
+{w_1_var=0.10296863305516996, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.3276710319519043, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 2, # correct: 1, # wrong: 1 : 50.0%, expected_time: 5.0%, inference_time: 743257, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 5: 0
+Time to generate 200 samples: 1058263
+>> user: 5, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 5: 5.0
+{w_1_var=0.10800335747634522, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.34201000213623045, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 1, # correct: 1, # wrong: 0 : 100.0%, expected_time: 5.0%, inference_time: 1058314, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 6: 0
+Time to generate 200 samples: 1363304
+>> user: 6, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 6: 9.0
+{w_1_var=0.10095855699277893, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.2681850814819336, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 1, # correct: 0, # wrong: 1 : 0.0%, expected_time: 9.0%, inference_time: 1363418, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 7: 0
+Time to generate 200 samples: 1712015
+>> user: 7, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 7: 10.0
+{w_1_var=0.08338538613793606, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.264152774810791, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 1, # correct: 1, # wrong: 0 : 100.0%, expected_time: 10.0%, inference_time: 1712355, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 8: 0
+Time to generate 200 samples: 1973215
+>> user: 8, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 8: 14.5
+{w_1_var=0.09694413879715241, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.29493524551391603, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 4, # correct: 3, # wrong: 1 : 75.0%, expected_time: 14.5%, inference_time: 1973494, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 9: 0
+Time to generate 200 samples: 2308387
+>> user: 9, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 9: 5.5
+{w_1_var=0.1015052125097005, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.35825775146484373, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 4, # correct: 3, # wrong: 1 : 75.0%, expected_time: 5.5%, inference_time: 2308727, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 10: 0
+Time to generate 200 samples: 2540176
+>> user: 10, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 10: 10.75
+{w_1_var=0.10679080847351682, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.3383453178405762, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 4, # correct: 3, # wrong: 1 : 75.0%, expected_time: 10.75%, inference_time: 2540282, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 11: 0
+Time to generate 200 samples: 2734567
+>> user: 11, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 11: 5.333333333333333
+{w_1_var=0.10903278589265937, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.29885244369506836, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 3, # correct: 0, # wrong: 3 : 0.0%, expected_time: 5.333333333333333%, inference_time: 2734567, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 12: 0
+Time to generate 200 samples: 3207392
+>> user: 12, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 12: 6.8
+{w_1_var=0.08068545561387545, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.2612026786804199, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 5, # correct: 3, # wrong: 2 : 60.0%, expected_time: 6.8%, inference_time: 3207617, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 13: 0
+Time to generate 200 samples: 3167374
+>> user: 13, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 13: 9.666666666666666
+{w_1_var=0.1100449538395245, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.2969974136352539, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 3, # correct: 3, # wrong: 0 : 100.0%, expected_time: 9.666666666666666%, inference_time: 3167579, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 14: 0
+Time to generate 200 samples: 3383710
+>> user: 14, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 14: 12.0
+{w_1_var=0.10123496099395962, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.2958454704284668, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 2, # correct: 0, # wrong: 2 : 0.0%, expected_time: 12.0%, inference_time: 3383976, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 15: 0
+Time to generate 200 samples: 3792257
+>> user: 15, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 15: 8.0
+{w_1_var=0.10536324225192072, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.2762027359008789, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 3, # correct: 0, # wrong: 3 : 0.0%, expected_time: 8.0%, inference_time: 3792469, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 16: 0
+Time to generate 200 samples: 3759436
+>> user: 16, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 16: 8.5
+{w_1_var=0.12477490203869956, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.31811019897460935, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 4, # correct: 4, # wrong: 0 : 100.0%, expected_time: 8.5%, inference_time: 3759590, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 17: 0
+Time to generate 200 samples: 4219965
+>> user: 17, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 17: 6.25
+{w_1_var=0.11742751577236199, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.3428490447998047, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 8, # correct: 4, # wrong: 4 : 50.0%, expected_time: 6.25%, inference_time: 4220179, no_nodes: 57683, max_no_nodes: 46630
+-------
+Time to apply likelihood for user 18: 0

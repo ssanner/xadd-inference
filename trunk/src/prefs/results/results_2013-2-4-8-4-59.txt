@@ -1,0 +1,261 @@
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: true
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 4
+ # preferences : 39
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: true
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 6
+ # preferences : 96
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 8
+ # preferences : 185
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 10
+ # preferences : 294
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 12
+ # preferences : 428
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 14
+ # preferences : 592
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 16
+ # preferences : 782
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 18
+ # preferences : 975
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 20
+ # preferences : 1236
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: true
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 4
+ # preferences : 6
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: true
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 6
+ # preferences : 22
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 8
+ # preferences : 32
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 10
+ # preferences : 55
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 12
+ # preferences : 68
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 14
+ # preferences : 109
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-4-59
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 16
+ # preferences : 115
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-5-0
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 18
+ # preferences : 147
+------------------------------------------------------
+------------------------------------------------------
+2013-2-4-8-5-0
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 20
+ # preferences : 202
+------------------------------------------------------
+Time to apply likelihood for user 0: 36 for 3 likelihoods
+Time to apply likelihood for user 0: 52 for 6 likelihoods
+Time to calculate prior: 751
+Time to apply likelihood for user 0: 753 for 1 likelihoods
+Time to calculate prior: 803
+Time to apply likelihood for user 0: 804 for 1 likelihoods
+Time to build CDF: 182
+Time to compute exact posterior: 752
+Time to build CDF: 959
+Time to build CDF: 233
+Time to compute exact posterior: 805
+Time to build CDF: 1975
+Time to generate 200 samples: 1382
+Time to generate 200 samples: 1392
+Time to generate 200 samples: 1814
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.07832256466232654, w_4_var=0.11509915041524031, w_5=0.16635934829711915, w_4=0.7839828681945801, w_3=0.8995988273620605, w_2=0.5309760856628418, w_1=0.21717632293701172, w_2_var=0.16643889423713656, w_3_var=0.044836149589002464, w_5_var=0.05783162301044618}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 1782, no_nodes: 490, max_no_nodes: 342
+-------
+Time to apply likelihood for user 0: 2 for 8 likelihoods
+Time to generate 200 samples: 686
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.10274766839822412, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.3208585739135742, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 636, no_nodes: 5689, max_no_nodes: 4307
+-------
+Time to apply likelihood for user 0: 3 for 10 likelihoods
+Time to build CDF: 2002
+Time to build CDF: 3047
+Time to generate 200 samples: 222
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.11691217854903192, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.31218782424926755, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 222, no_nodes: 56814, max_no_nodes: 46397
+-------
+Time to apply likelihood for user 0: 13 for 12 likelihoods
+Time to generate 200 samples: 297
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.12480554973236407, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.3965455055236816, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 301, no_nodes: 239083, max_no_nodes: 227539
+-------
+Time to apply likelihood for user 0: 18 for 15 likelihoods
+Time to build CDF: 12292

@@ -1,0 +1,20 @@
+------------------------------------------------------
+2013-1-28-6-26-34
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 5
+ # preferences : 69
+------------------------------------------------------
+Time to apply likelihood for user 0: 0
+Time to build CDF: 177
+Time to generate 200 samples: 311
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: 2.75
+{o_5=0.8139885711669922, o_4=0.8552163314819335, o_2_var=0.09991684408811702, d=0.7888760757446289, o_4_var=0.08440923074723983, o_1=0.8309402275085449, o_3=0.8242923164367676, o_5_var=0.0924992053511102, o_2=0.7732023620605468, o_3_var=0.08121876589868451, o_1_var=0.08716819326797093, d_var=0.10464197558264438}
+# prefs: 16, # correct: 16, # wrong: 0 : 100.0%, expected_time: 2.75%, inference_time: 313, no_nodes: 55, max_no_nodes: 12
+-------

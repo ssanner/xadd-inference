@@ -1,0 +1,82 @@
+------------------------------------------------------
+2013-1-26-4-38-53
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: true
+Sample size: 900
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car5.csv
+ # items : 7
+ # preferences : 19
+------------------------------------------------------
+Time to calculate prior: 74
+Time to compute exact posterior: 40
+Time to compute exact posterior: 59
+Time to compute exact posterior: 81
+Time to compute exact posterior: 99
+Time to compute exact posterior: 118
+Time to compute exact posterior: 138
+Time to apply likelihood for user 0: 31
+Time to build CDF: 1206
+Time to generate 1000 samples: 14603
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: 13.8
+{w_1_var=0.0, w_3=9.5367431640625E-7, w_2=0.9999990463256836, w_1=0.9999990463256836, w_2_var=0.0, w_3_var=0.0}
+# prefs: 10, # correct: 5, # wrong: 5 : 50.0%, expected_time: 13.8%, inference_time: 14611, no_nodes: 601, max_no_nodes: 304
+Time to evaluate one expected utility for user 0: 0.0
+# prefs_exact: 10, # correct_exact: 5, # wrong_exact: 5 : 50.0%, expected_time: 0.0%, inference_time_exact: 0, no_exact_nodes: 4, max_no_exact_nodes: 1
+-------
+Time to calculate prior: 1
+Time to compute exact posterior: 1
+Time to compute exact posterior: 2
+Time to compute exact posterior: 3
+Time to compute exact posterior: 4
+Time to compute exact posterior: 5
+Time to apply likelihood for user 1: 2
+Time to generate 1000 samples: 13103
+>> user: 1, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 1: 9.6
+{w_1_var=0.0, w_3=9.5367431640625E-7, w_2=0.9999990463256836, w_1=0.9999990463256836, w_2_var=0.0, w_3_var=0.0}
+# prefs: 10, # correct: 5, # wrong: 5 : 50.0%, expected_time: 9.6%, inference_time: 13104, no_nodes: 601, max_no_nodes: 304
+Time to evaluate one expected utility for user 1: 0.0
+# prefs_exact: 10, # correct_exact: 2, # wrong_exact: 8 : 20.0%, expected_time: 0.0%, inference_time_exact: 0, no_exact_nodes: 4, max_no_exact_nodes: 1
+-------
+Time to calculate prior: 2
+Time to compute exact posterior: 1
+Time to compute exact posterior: 2
+Time to compute exact posterior: 3
+Time to compute exact posterior: 4
+Time to compute exact posterior: 5
+Time to compute exact posterior: 6
+Time to compute exact posterior: 7
+Time to compute exact posterior: 8
+Time to apply likelihood for user 2: 0
+Time to generate 1000 samples: 13098
+>> user: 2, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 2: 8.11111111111111
+{w_1_var=0.0, w_3=9.5367431640625E-7, w_2=0.9999990463256836, w_1=0.9999990463256836, w_2_var=0.0, w_3_var=0.0}
+# prefs: 9, # correct: 5, # wrong: 4 : 55.55555555555556%, expected_time: 8.11111111111111%, inference_time: 13099, no_nodes: 601, max_no_nodes: 304
+Time to evaluate one expected utility for user 2: 0.0
+# prefs_exact: 9, # correct_exact: 4, # wrong_exact: 5 : 44.44444444444444%, expected_time: 0.0%, inference_time_exact: 0, no_exact_nodes: 4, max_no_exact_nodes: 1
+-------
+Time to calculate prior: 2
+Time to apply likelihood for user 3: 0
+Time to generate 1000 samples: 13125
+>> user: 3, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 3: 7.9
+{w_1_var=0.0, w_3=9.5367431640625E-7, w_2=0.9999990463256836, w_1=0.9999990463256836, w_2_var=0.0, w_3_var=0.0}
+# prefs: 10, # correct: 7, # wrong: 3 : 70.0%, expected_time: 7.9%, inference_time: 13126, no_nodes: 601, max_no_nodes: 304
+Time to evaluate one expected utility for user 3: 0.0
+# prefs_exact: 10, # correct_exact: 7, # wrong_exact: 3 : 70.0%, expected_time: 0.0%, inference_time_exact: 0, no_exact_nodes: 4, max_no_exact_nodes: 1
+-------
+Time to calculate prior: 1
+Time to apply likelihood for user 4: 1
+Time to generate 1000 samples: 13000
+>> user: 4, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 4: 6.7
+{w_1_var=0.0, w_3=9.5367431640625E-7, w_2=0.9999990463256836, w_1=0.9999990463256836, w_2_var=0.0, w_3_var=0.0}
+# prefs: 10, # correct: 4, # wrong: 6 : 40.0%, expected_time: 6.7%, inference_time: 13001, no_nodes: 601, max_no_nodes: 304
+Time to evaluate one expected utility for user 4: 0.01
+# prefs_exact: 10, # correct_exact: 3, # wrong_exact: 7 : 30.0%, expected_time: 0.1%, inference_time_exact: 0, no_exact_nodes: 4, max_no_exact_nodes: 1
+-------

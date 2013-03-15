@@ -1,0 +1,27 @@
+------------------------------------------------------
+2013-1-23-2-27-44
+Prior path: ./src/prefs/UniformConst.gm
+Likelihood path: ./src/prefs/deltaLikelihood.xadd
+Utility path: ./src/prefs/utility.xadd
+Compute exact posterior: true
+Sample size: 900
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_simple_synthetic5.csv
+ # items : 10
+ # preferences : 5
+------------------------------------------------------
+Time to calculate prior: 10
+Time to compute exact posterior: 8
+Time to compute exact posterior: 16
+Time to compute exact posterior: 25
+Time to compute exact posterior: 34
+Time to compute exact posterior: 43
+Time to apply likelihood for user 0: 34
+Time to build CDF: 12471
+Time to generate 1000 samples: 14804
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: 3.5
+{w_7=0.5084416961669922, w_4_var=0.06718455951482233, w_6=0.1395930650499132, w_5=0.5860408359103733, w_4=0.5803321202596029, w_3=0.5621348084343805, w_2=0.5786832957797581, w_10=0.5048108969794379, w_1=0.5536412429809571, w_10_var=0.08484744799000148, w_5_var=0.06634407844139197, w_1_var=0.06902747602563593, w_8_var=0.08841149823646753, w_6_var=0.015147105534262377, w_2_var=0.06430782357635056, w_3_var=0.06835812775199868, w_9_var=0.08444691640526132, w_8=0.4930955251057943, w_7_var=0.08457373898029298, w_9=0.49720022413465714}
+# prefs: 12, # correct: 12, # wrong: 0 : 100.0%, expected_time: 42.0, no_nodes: 613
+Time to evaluate one expected utility for user 0: 2312.0
+# prefs_exact: 12, # correct_exact: 12, # wrong_exact: 0 : 100.0%, expected_time: 27744.0, no_exact_nodes: 4

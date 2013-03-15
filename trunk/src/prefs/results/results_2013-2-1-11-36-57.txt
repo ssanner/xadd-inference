@@ -1,0 +1,13 @@
+------------------------------------------------------
+2013-2-1-11-36-58
+Prior path: ./src/prefs/models/TriangularDoubleScoreConst.gm
+Likelihood path: ./src/prefs/models/ScoreLikelihood.xadd
+Utility path: 
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/premier_train.csv
+ # items : 5
+ # preferences : 13
+------------------------------------------------------
+Time to apply likelihood for user 0: 28901 for 7 likelihoods

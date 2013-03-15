@@ -72,12 +72,10 @@ public class GraphicalModel {
 			for (String var : (ArrayList<String>)list) {
 					
 				String split[] = var.split("_");
-				if (split.length == 1 || (split.length == 2 && Character.isDigit(split[1].charAt(0)))) {
-					
+				if (split.length == 1 || (split.length == 2 && Character.isDigit(split[1].charAt(0)))) {					
 					addXADDVar(var, list == _alBVarsTemplate);
-					int cpt_id = getXADD(var, list == _alBVarsTemplate);					
-					_alFactors.add(new Factor(cpt_id));
-					
+					int cpt_id = getXADD(var, list == _alBVarsTemplate);
+					_alFactors.add(new Factor(cpt_id));					
 				} else if (split.length == 2) {
 					
 					String var_part = split[0];
@@ -142,7 +140,7 @@ public class GraphicalModel {
 		}
 	}
 	
-	protected int getXADD(String var, boolean is_bool) {
+	public int getXADD(String var, boolean is_bool) {
 		ArrayList cpt_desc = _hmVar2cptTemplate.get(var);
 		if (cpt_desc == null)
 			exit("Could not find XADD for " + var);

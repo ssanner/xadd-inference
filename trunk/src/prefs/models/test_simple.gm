@@ -1,0 +1,10 @@
+cvariables (x_1 x_2)
+min-values (-10 -10)
+max-values (20 20)
+bvariables ()
+
+x_1 ([N(x_1,0.1*x_2,0.99,4)]) 
+
+x_2 ([N(x_2,0.1*x_1,0.99,4)])
+     
+    

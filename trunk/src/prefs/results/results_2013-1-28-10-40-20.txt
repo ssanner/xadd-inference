@@ -1,0 +1,103 @@
+------------------------------------------------------
+2013-1-28-10-40-20
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: true
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 4
+ # preferences : 39
+------------------------------------------------------
+Time to calculate prior: 1182
+Time to apply likelihood for user 0: 0 for 1 likelihoods
+Time to build CDF: 182
+Time to compute exact posterior: 1309
+Time to generate 200 samples: 145
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.07231621908692283, w_4_var=0.17715691776302223, w_5=0.259517765045166, w_4=0.6402712059020996, w_3=0.9302420997619629, w_2=0.6240084075927734, w_1=0.21191267013549805, w_2_var=0.16391156470139545, w_3_var=0.036990075887432285, w_5_var=0.07574113217141533}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 149, no_nodes: 95, max_no_nodes: 34
+Time to evaluate one expected utility for user 0: NaN
+# prefs_exact: 0, # correct_exact: 0, # wrong_exact: 0 : NaN%, expected_time: NaN%, inference_time_exact: 354156, no_exact_nodes: 635, max_no_exact_nodes: 220
+-------
+Time to calculate prior: 18
+Time to apply likelihood for user 1: 0 for 1 likelihoods
+Time to compute exact posterior: 33
+Time to generate 200 samples: 44
+>> user: 1, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 1: NaN
+{w_1_var=0.07926190599755907, w_4_var=0.15754696831525483, w_5=0.19694217681884765, w_4=0.6944685173034668, w_3=0.9234245491027832, w_2=0.6672469902038575, w_1=0.22702756881713868, w_2_var=0.16135352427613495, w_3_var=0.03561177622774961, w_5_var=0.07492948294527603}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 48, no_nodes: 95, max_no_nodes: 34
+Time to evaluate one expected utility for user 1: NaN
+# prefs_exact: 0, # correct_exact: 0, # wrong_exact: 0 : NaN%, expected_time: NaN%, inference_time_exact: 77185, no_exact_nodes: 635, max_no_exact_nodes: 220
+-------
+Time to calculate prior: 19
+Time to apply likelihood for user 2: 0 for 0 likelihoods
+Time to compute exact posterior: 19
+Time to generate 200 samples: 53
+>> user: 2, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 2: 14.0
+{w_1_var=0.0645049773101797, w_4_var=0.14224093746564004, w_5=0.24056177139282225, w_4=0.7422228813171386, w_3=0.923428955078125, w_2=0.6581386184692383, w_1=0.17852638244628907, w_2_var=0.17973971960468604, w_3_var=0.03481718937797853, w_5_var=0.08678652175050056}
+# prefs: 1, # correct: 1, # wrong: 0 : 100.0%, expected_time: 14.0%, inference_time: 57, no_nodes: 95, max_no_nodes: 34
+Time to evaluate one expected utility for user 2: 1.0
+# prefs_exact: 1, # correct_exact: 1, # wrong_exact: 0 : 100.0%, expected_time: 1.0%, inference_time_exact: 75180, no_exact_nodes: 635, max_no_exact_nodes: 220
+-------
+Time to calculate prior: 17
+Time to apply likelihood for user 3: 0 for 0 likelihoods
+Time to compute exact posterior: 17
+Time to generate 200 samples: 77
+>> user: 3, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 3: 4.0
+{w_1_var=0.06742410651138168, w_4_var=0.17698377799991558, w_5=0.19841293334960938, w_4=0.6772164535522461, w_3=0.8682493019104004, w_2=0.7047236633300781, w_1=0.20478704452514648, w_2_var=0.16660401459595764, w_3_var=0.06915779867367353, w_5_var=0.06662277553455936}
+# prefs: 1, # correct: 0, # wrong: 1 : 0.0%, expected_time: 4.0%, inference_time: 78, no_nodes: 95, max_no_nodes: 34
+Time to evaluate one expected utility for user 3: 1.0
+# prefs_exact: 1, # correct_exact: 0, # wrong_exact: 1 : 0.0%, expected_time: 1.0%, inference_time_exact: 77699, no_exact_nodes: 635, max_no_exact_nodes: 220
+-------
+Time to calculate prior: 17
+Time to apply likelihood for user 4: 0 for 0 likelihoods
+Time to compute exact posterior: 17
+Time to generate 200 samples: 28
+>> user: 4, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 4: NaN
+{w_1_var=0.08303988088622134, w_4_var=0.1492405385432081, w_5=0.19444692611694336, w_4=0.7274689483642578, w_3=0.8997672080993653, w_2=0.7531294250488281, w_1=0.19118484497070312, w_2_var=0.1459259926087236, w_3_var=0.05894633777551474, w_5_var=0.08171515292791418}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 32, no_nodes: 95, max_no_nodes: 34
+Time to evaluate one expected utility for user 4: NaN
+# prefs_exact: 0, # correct_exact: 0, # wrong_exact: 0 : NaN%, expected_time: NaN%, inference_time_exact: 77230, no_exact_nodes: 635, max_no_exact_nodes: 220
+-------
+Time to calculate prior: 20
+Time to apply likelihood for user 5: 0 for 0 likelihoods
+Time to compute exact posterior: 20
+Time to generate 200 samples: 29
+>> user: 5, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 5: NaN
+{w_1_var=0.08723363676301192, w_4_var=0.18268657929983292, w_5=0.18199609756469726, w_4=0.634728946685791, w_3=0.9465414428710938, w_2=0.6919084167480469, w_1=0.26011655807495115, w_2_var=0.17983942451934698, w_3_var=0.019120700249723434, w_5_var=0.07849730798433704}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 30, no_nodes: 95, max_no_nodes: 34
+Time to evaluate one expected utility for user 5: NaN
+# prefs_exact: 0, # correct_exact: 0, # wrong_exact: 0 : NaN%, expected_time: NaN%, inference_time_exact: 78144, no_exact_nodes: 635, max_no_exact_nodes: 220
+-------
+Time to calculate prior: 54
+Time to apply likelihood for user 6: 0 for 0 likelihoods
+Time to compute exact posterior: 54
+Time to generate 200 samples: 27
+>> user: 6, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 6: NaN
+{w_1_var=0.07541782753376566, w_4_var=0.17736114602219455, w_5=0.19622142791748046, w_4=0.6695106506347657, w_3=0.9102563285827636, w_2=0.7186773490905761, w_1=0.18820489883422853, w_2_var=0.14164443981739835, w_3_var=0.04191305938914989, w_5_var=0.07759108212193817}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 28, no_nodes: 95, max_no_nodes: 34
+Time to evaluate one expected utility for user 6: NaN
+# prefs_exact: 0, # correct_exact: 0, # wrong_exact: 0 : NaN%, expected_time: NaN%, inference_time_exact: 78152, no_exact_nodes: 635, max_no_exact_nodes: 220
+-------
+Time to calculate prior: 17
+Time to apply likelihood for user 7: 0 for 0 likelihoods
+Time to compute exact posterior: 17
+Time to generate 200 samples: 27
+>> user: 7, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 7: NaN
+{w_1_var=0.06461447747524511, w_4_var=0.13795344304128826, w_5=0.19990407943725585, w_4=0.750036849975586, w_3=0.9453126907348632, w_2=0.6112226676940918, w_1=0.20878578186035157, w_2_var=0.1898989665247278, w_3_var=0.019518415980055617, w_5_var=0.07039295982967408}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 28, no_nodes: 95, max_no_nodes: 34
+Time to evaluate one expected utility for user 7: NaN
+# prefs_exact: 0, # correct_exact: 0, # wrong_exact: 0 : NaN%, expected_time: NaN%, inference_time_exact: 78179, no_exact_nodes: 635, max_no_exact_nodes: 220
+-------
+Time to calculate prior: 24
+Time to apply likelihood for user 8: 0 for 1 likelihoods
