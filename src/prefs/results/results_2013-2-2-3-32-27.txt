@@ -1,0 +1,157 @@
+------------------------------------------------------
+2013-2-2-3-32-27
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: true
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 4
+ # preferences : 39
+------------------------------------------------------
+Time to calculate prior: 446
+Time to apply likelihood for user 0: 449 for 1 likelihoods
+Time to build CDF: 111
+Time to compute exact posterior: 447
+Time to generate 200 samples: 205
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.08232342080110681, w_4_var=0.14748350856169978, w_5=0.15464794158935546, w_4=0.7326682662963867, w_3=0.9127868843078614, w_2=0.627911205291748, w_1=0.23629291534423827, w_2_var=0.17452327607131837, w_3_var=0.044272660950103855, w_5_var=0.0628373204684119}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: -242, no_nodes: 95, max_no_nodes: 34
+Time to evaluate one expected utility for user 0: NaN
+# prefs_exact: 0, # correct_exact: 0, # wrong_exact: 0 : NaN%, expected_time: NaN%, inference_time_exact: 73598, no_exact_nodes: 589, max_no_exact_nodes: 220
+-------
+------------------------------------------------------
+2013-2-2-3-33-42
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 6
+ # preferences : 96
+------------------------------------------------------
+Time to apply likelihood for user 0: 0 for 1 likelihoods
+Time to build CDF: 23
+Time to generate 200 samples: 53
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.0867586253323811, w_4_var=0.14633742692482019, w_5=0.1704182243347168, w_4=0.7439621543884277, w_3=0.9164420509338379, w_2=0.6156511306762695, w_1=0.2525350189208984, w_2_var=0.19068426357705903, w_3_var=0.04132015134289795, w_5_var=0.056323279682318005}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 54, no_nodes: 95, max_no_nodes: 34
+-------
+------------------------------------------------------
+2013-2-2-3-33-42
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 8
+ # preferences : 185
+------------------------------------------------------
+Time to apply likelihood for user 0: 1 for 3 likelihoods
+Time to build CDF: 52
+Time to generate 200 samples: 43
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.07354555558146207, w_4_var=0.12754419662501118, w_5=0.1892083168029785, w_4=0.7510933494567871, w_3=0.8950754928588868, w_2=0.45504331588745117, w_1=0.22884122848510743, w_2_var=0.15312501029368833, w_3_var=0.04693214358308758, w_5_var=0.06867935473640498}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 43, no_nodes: 483, max_no_nodes: 335
+-------
+------------------------------------------------------
+2013-2-2-3-33-43
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 10
+ # preferences : 294
+------------------------------------------------------
+Time to apply likelihood for user 0: 2 for 6 likelihoods
+Time to build CDF: 153
+Time to generate 200 samples: 47
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.10772568388643082, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.3500225639343262, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 45, no_nodes: 5717, max_no_nodes: 4315
+-------
+------------------------------------------------------
+2013-2-2-3-33-43
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 12
+ # preferences : 428
+------------------------------------------------------
+Time to apply likelihood for user 0: 2 for 8 likelihoods
+Time to build CDF: 452
+Time to generate 200 samples: 80
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.10871888491201394, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.30397472381591795, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 79, no_nodes: 56511, max_no_nodes: 46088
+-------
+------------------------------------------------------
+2013-2-2-3-33-46
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 14
+ # preferences : 592
+------------------------------------------------------
+Time to apply likelihood for user 0: 2 for 10 likelihoods
+Time to build CDF: 668
+Time to generate 200 samples: 79
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.11745728657919824, w_4_var=0.0, w_5=9.5367431640625E-7, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.3359552001953125, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 78, no_nodes: 237075, max_no_nodes: 225250
+-------
+------------------------------------------------------
+2013-2-2-3-33-55
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 16
+ # preferences : 782
+------------------------------------------------------
+Time to apply likelihood for user 0: 2 for 12 likelihoods
+Time to build CDF: 1377
+Time to generate 200 samples: 37
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: NaN
+{w_1_var=0.0, w_4_var=0.0, w_5=0.9999990463256836, w_4=0.9999990463256836, w_3=0.9999990463256836, w_2=0.9999990463256836, w_1=0.9999990463256836, w_2_var=0.0, w_3_var=0.0, w_5_var=0.0}
+# prefs: 0, # correct: 0, # wrong: 0 : NaN%, expected_time: NaN%, inference_time: 35, no_nodes: 311443, max_no_nodes: 225250
+-------
+------------------------------------------------------
+2013-2-2-3-34-18
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: false
+Sample size: 100
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car_sp60.1.csv
+ # items : 18
+ # preferences : 975
+------------------------------------------------------
+Time to apply likelihood for user 0: 4 for 15 likelihoods

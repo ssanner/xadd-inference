@@ -1,0 +1,7 @@
+cvariables (l u)
+min-values (-10 -10)
+max-values (10 10)
+bvariables ()
+
+l ([U(l,0.0,0.0,1.0)]) 
+u ([U(u,0.0,0.0,1.0)])

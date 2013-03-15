@@ -1,0 +1,37 @@
+------------------------------------------------------
+2013-1-26-6-50-59
+Prior path: ./src/prefs/models/TriangularConst.gm
+Likelihood path: ./src/prefs/models/deltaLikelihood.xadd
+Utility path: ./src/prefs/models/utility.xadd
+Compute exact posterior: true
+Sample size: 900
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_car5.csv
+ # items : 6
+ # preferences : 14
+------------------------------------------------------
+Time to calculate prior: 1888
+Time to apply likelihood for user 0: 68826
+Time to build CDF: 9070
+Time to compute exact posterior: 6782
+Time to generate 1000 samples: 21480
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: 15.125
+{w_1_var=0.07017501003477963, w_3=0.14671159320407443, w_2=0.9461562877231174, w_1=0.38337294896443685, w_2_var=0.020803539323475197, w_3_var=0.049927782018099984}
+# prefs: 8, # correct: 7, # wrong: 1 : 87.5%, expected_time: 15.125%, inference_time: 286836, no_nodes: 217, max_no_nodes: 120
+Time to evaluate one expected utility for user 0: 0.015625
+# prefs_exact: 8, # correct_exact: 7, # wrong_exact: 1 : 87.5%, expected_time: 0.125%, inference_time_exact: 658530, no_exact_nodes: 99, max_no_exact_nodes: 36
+-------
+Time to calculate prior: 1
+Time to apply likelihood for user 1: -285345
+Time to compute exact posterior: 13
+Time to generate 1000 samples: 83161
+>> user: 1, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 1: 9.285714285714286
+{w_1_var=0.07107834285952362, w_3=0.1522157308790419, w_2=0.9376968404981825, w_1=0.3785991202460395, w_2_var=0.027417641708543817, w_3_var=0.05057716734196515}
+# prefs: 7, # correct: 4, # wrong: 3 : 57.14285714285714%, expected_time: 9.285714285714286%, inference_time: 375783, no_nodes: 217, max_no_nodes: 120
+Time to evaluate one expected utility for user 1: 0.0
+# prefs_exact: 7, # correct_exact: 5, # wrong_exact: 2 : 71.42857142857143%, expected_time: 0.0%, inference_time_exact: 6803, no_exact_nodes: 4, max_no_exact_nodes: 1
+-------
+Time to calculate prior: 7
+Time to apply likelihood for user 2: 2139

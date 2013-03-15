@@ -1,0 +1,38 @@
+------------------------------------------------------
+2013-1-23-2-30-46
+Prior path: ./src/prefs/UniformConst.gm
+Likelihood path: ./src/prefs/deltaLikelihood.xadd
+Utility path: ./src/prefs/utility.xadd
+Compute exact posterior: true
+Sample size: 900
+Samples to ignore : 100
+Preference dataset: ./src/prefs/data/pref_simple_synthetic5.csv
+ # items : 10
+ # preferences : 5
+------------------------------------------------------
+Time to calculate prior: 10
+Time to compute exact posterior: 10
+Time to compute exact posterior: 18
+Time to compute exact posterior: 27
+Time to compute exact posterior: 35
+Time to compute exact posterior: 43
+Time to apply likelihood for user 0: 34
+Time to build CDF: 301
+Time to generate 1000 samples: 38475
+>> user: 0, epsilon: 0.0, experiment: 1 is starting
+Time to evaluate one expected utility for user 0: 3.25
+{w_7=0.4949044524298774, w_4_var=0.0672146709544166, w_6=0.13356038835313586, w_5=0.580026986863878, w_4=0.5629191441006131, w_3=0.5595318476359049, w_2=0.5786052788628472, w_10=0.4966158824496799, w_1=0.5566171518961589, w_10_var=0.08460771789988425, w_5_var=0.06856117949021064, w_1_var=0.06648403956902604, w_8_var=0.08266047465402271, w_6_var=0.01306586285549535, w_2_var=0.06725314038447756, w_3_var=0.06810165285806281, w_9_var=0.08374497437763101, w_8=0.502360413869222, w_7_var=0.08023389004014018, w_9=0.49901674058702256}
+# prefs: 12, # correct: 12, # wrong: 0 : 100.0%, expected_time: 39.0, no_nodes: 613
+Time to evaluate one expected utility for user 0: 1760.25
+# prefs_exact: 12, # correct_exact: 12, # wrong_exact: 0 : 100.0%, expected_time: 21123.0, no_exact_nodes: 305
+-------
+Time to generate 1000 samples: 53482
+>> user: 0, epsilon: 0.0, experiment: 2 is starting
+Time to evaluate one expected utility for user 0: 2.6666666666666665
+{w_7=0.5056087896558974, w_4_var=0.06666181800585347, w_6=0.1453494962056478, w_5=0.6011149597167968, w_4=0.5810823143853081, w_3=0.581204276614719, w_2=0.5728995174831815, w_10=0.505394098493788, w_1=0.5581461991204156, w_10_var=0.081453532656781, w_5_var=0.06355210669609679, w_1_var=0.06575581760202277, w_8_var=0.07852042716049398, w_6_var=0.014926448759575144, w_2_var=0.06601222777587817, w_3_var=0.0696672565670705, w_9_var=0.08272158021539049, w_8=0.5024476453993055, w_7_var=0.08278919942613053, w_9=0.4891317367553711}
+# prefs: 12, # correct: 12, # wrong: 0 : 100.0%, expected_time: 32.0, no_nodes: 613
+Time to evaluate one expected utility for user 0: 2104.9166666666665
+# prefs_exact: 12, # correct_exact: 12, # wrong_exact: 0 : 100.0%, expected_time: 25259.0, no_exact_nodes: 305
+-------
+Time to calculate prior: 1
+Time to apply likelihood for user 1: 0

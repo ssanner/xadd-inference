@@ -1,0 +1,11 @@
+import matplotlib.pyplot as plt
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(no_items, sampling_time, color='b')
+ax.plot(no_items, cdfs, color='g')
+ax.plot(no_exact_items, exact_time, color='r')
+ax.set_yscale('log');
+ax.set_xlabel('No. Items');
+ax.set_ylabel('Time (ms)');
+plt.savefig('time.pdf')

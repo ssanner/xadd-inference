@@ -1,0 +1,18 @@
+import os
+
+dir = '../results/';
+score_files = [];
+pref_files = [];
+for f in sorted(os.listdir(dir)):
+	if f.startswith('results'):
+		with open(dir + f) as file:   
+			s = file.read(); 
+			ll = s.find('# items');
+			no_items=0
+			if ll > -1: no_items = (int(s[ll+9:s.find('# preferences')-2]));
+			if s.find('premier_train') > -1:
+				score_files.append(dir + f);
+				print 'score: ', f, ' > ', no_items;
+			elif s.find('car_') > -1:
+				pref_files.append(dir + f);
+				print 'pref: ', f, ' > ', no_items;

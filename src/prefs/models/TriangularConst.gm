@@ -1,0 +1,6 @@
+cvariables (w_i)
+min-values (-10)
+max-values (10)
+bvariables ()
+
+w_i ([T(w_i,0.0,1,5)]) 
