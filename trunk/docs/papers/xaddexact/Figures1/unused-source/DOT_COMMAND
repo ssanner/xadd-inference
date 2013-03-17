@@ -1,0 +1,1 @@
+~/Java/dot.exe -Tps -Efontsize=36 -Nfontsize=36 -Granksep=.95 V_2.dot > v2_mr_dd.ps; epstopdf v2_mr_dd.ps 

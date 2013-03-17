@@ -1,0 +1,151 @@
+digraph G {
+  graph [
+    ranksep = "2.00",
+    bb = "0,0,694,612",
+    ratio = auto,
+    fontsize = 16,
+    fontname = Helvetica,
+    size = "7.5,10"
+  ];
+
+  node [
+    fontsize = 16
+  ];
+
+  364 [
+    height = "0.51069",
+    label = "(-100 + (1 * x)) >= 0",
+    fillcolor = lightblue,
+    width = "2.9217",
+    style = filled,
+    pos = "501,199"
+  ];
+  363 [
+    shape = box,
+    label = "(50 + (0.5 * x)) (a = 100 - x)",
+    fillcolor = lightsalmon,
+    width = "1.5625",
+    style = filled,
+    pos = "449,18"
+  ];
+  618 [
+    shape = box,
+    label = "(120 + (0.5 * x)) (a = 300 - x)",
+    fillcolor = lightsalmon,
+    width = "1.6944",
+    style = filled,
+    pos = "298,199"
+  ];
+  513 [
+    height = "0.51069",
+    label = "(-100 + (1 * x)) >= 0",
+    fillcolor = lightblue,
+    width = "2.9217",
+    style = filled,
+    pos = "114,199"
+  ];
+  512 [
+    shape = box,
+    label = "(20 + (1 * x)) (a = 200)",
+    fillcolor = lightsalmon,
+    width = "1.3958",
+    style = filled,
+    pos = "50,18"
+  ];
+  _temp_ [
+    height = "0.94444",
+    shape = box,
+    label = "V^2.dot",
+    fillcolor = gold,
+    width = "0.94444",
+    style = filled,
+    pos = "478,578"
+  ];
+  511 [
+    shape = box,
+    label = "(-30 + (1.5 * x)) (a = 200 - x)",
+    fillcolor = lightsalmon,
+    width = "1.6458",
+    style = filled,
+    pos = "178,18"
+  ];
+  639 [
+    height = "0.51069",
+    label = d,
+    fillcolor = lightblue,
+    style = filled,
+    pos = "399,578"
+  ];
+  638 [
+    height = "0.51069",
+    label = "(-150 + (1 * x)) >= 0",
+    fillcolor = lightblue,
+    width = "2.9217",
+    style = filled,
+    pos = "288,381"
+  ];
+  6 [
+    shape = box,
+    label = "(1 * x) (a = 0)",
+    fillcolor = lightsalmon,
+    width = "0.80556",
+    style = filled,
+    pos = "553,18"
+  ];
+  295 [
+    shape = box,
+    label = "(1.5 * x) (a = 100 - x)",
+    fillcolor = lightsalmon,
+    width = "0.97222",
+    style = filled,
+    pos = "659,199"
+  ];
+  395 [
+    height = "0.51069",
+    label = "(-50 + (1 * x)) >= 0",
+    fillcolor = lightblue,
+    width = "2.736",
+    style = filled,
+    pos = "510,381"
+  ];
+  513 -> 511 [
+    style = "",
+    pos = "e,171.91,36.035 120.25,180.51 131.49,149.07 155.18,82.825 168.46,45.685"
+  ];
+  639 -> 638 [
+    style = "",
+    pos = "e,297.96,399.5 389.73,560.71 370.54,527 326.31,449.31 303,408.36"
+  ];
+  638 -> 618 [
+    style = "",
+    pos = "e,297.05,217.13 288.98,362.41 290.73,330.93 294.4,264.75 296.48,227.31"
+  ];
+  364 -> 363 [
+    style = dashed,
+    pos = "e,453.95,36.035 495.92,180.51 486.79,149.07 467.54,82.825 456.75,45.685"
+  ];
+  639 -> 395 [
+    style = dashed,
+    pos = "e,500.04,399.5 408.27,560.71 427.46,527 471.69,449.31 495,408.36"
+  ];
+  395 -> 364 [
+    style = "",
+    pos = "e,501.87,217.39 509.12,362.41 507.55,331.01 504.25,265.09 502.38,227.6"
+  ];
+  513 -> 512 [
+    style = dashed,
+    pos = "e,56.091,36.035 107.75,180.51 96.506,149.07 72.82,82.825 59.541,45.685"
+  ];
+  364 -> 6 [
+    style = "",
+    pos = "e,548.05,36.035 506.08,180.51 515.21,149.07 534.46,82.825 545.25,45.685"
+  ];
+  638 -> 513 [
+    style = dashed,
+    pos = "e,130.63,217.21 271.32,362.74 240.27,330.62 173.53,261.58 137.77,224.59"
+  ];
+  395 -> 295 [
+    style = dashed,
+    pos = "e,644.76,217.21 524.29,362.74 550.76,330.75 607.55,262.16 638.26,225.05"
+  ];
+}
