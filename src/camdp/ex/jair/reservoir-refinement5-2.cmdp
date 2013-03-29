@@ -5,7 +5,7 @@ bvariables ()
 ivariables()
 avariables(e)
 
-action drain (0 <= e<= 10)
+action drain (0 <= e<= 1000)
 
 x1' ([400 * e + x1 -700 * e + 500 * e])
 x2' ([400 * e + x2 - 500 * e])
@@ -31,7 +31,7 @@ reward 	([x1'<=4500]
 					
 endaction
 
-action no-drain (0 <= e <= 10)
+action no-drain (0 <= e <= 1000)
 
 x1' ([400 * e + x1 -700 * e])
 x2' ([400 * e + x2])

@@ -1,7 +1,8 @@
 \documentclass[twoside,11pt]{article}
 \usepackage{jair, theapa, rawfonts}
-\usepackage{amsmath,amssymb,amsthm}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
 \usepackage[vlined,algoruled,titlenumbered,noend]{algorithm2e}
+\usepackage{array}
 \usepackage{epsfig,subfigure,graphicx}
 
 \def\argmax{\operatornamewithlimits{arg\max}}
@@ -55,9 +56,9 @@
 \begin{abstract}
 Many real-world decision-theoretic planning problems can naturally be modeled using continuous states and actions. Problems such as the multi-item Inventory problem \cite{Scarf_Karlin58} have long been solved in the operation research literature using discrete variable MDPs or approximating the optimal value for continuous domains. Other work similar to that of Gaussian control deals with general continuous domains but can not handle piecewise values on the state space. Here we propose a framework to find the first exact optimal piecewise solution for problems modeled using multi-variate continuous state and action variables.
 
-We define a Symbolic Dynamic Programming (SDP) approach using the \emph{case} calculus which provides a closed-form solution for all operations (e.g. continuous maximization and integration). Solutions are provided for discrete action Hybrid(i.e. discrete and continuous)state MDPs(HMDPs) using polynomial transitions with discrete noise and arbitrary reward functions as well as solutions to continuous action HMDPs with piecewise linear (or quadratic) discrete noise transition and reward functions. 
+We define a Symbolic Dynamic Programming (SDP) approach using the \emph{case} calculus which provides a closed-form solution for all operations (e.g. continuous maximization and integration). Solutions are provided for discrete action Hybrid(i.e. discrete and continuous) state MDPs (HMDPs) using polynomial transitions with discrete noise and arbitrary reward functions . Solutions to continuous action HMDPs with piecewise linear (or quadratic) discrete noise transition and reward functions are also derived. 
 
-Apart from providing the solution to general HMDPs, our other contribution is the compact representation of XADDs - a continuous variable extension of Algebraic decision diagrams (ADDs) - with related properties and algorithms. This allows us to empirically provide results for HMDPs showing the \emph{first optimal automated solution} on various continuous domains. 
+Apart from providing the solution to general HMDPs, our other contribution is the compact representation of XADDs - a continuous variable extension of Algebraic decision diagrams (ADDs) - with related properties and algorithms. This allows us to empirically provide efficient results for HMDPs showing the \emph{first optimal automated solution} on various continuous domains. 
 \end{abstract}
 
 \section{Introduction}
@@ -68,7 +69,7 @@ Other examples include \InventoryControl\ problems \cite{Scarf_Karlin58} for con
 
 %While all these problems are naturally modeled using discrete action hybrid (discrete and continuous) state Markov Decision Processes (DA-HMDPs) or continuous action hybrid MDPs (CA-HMDPs), there has been no prior work handling piecewise transitions. 
 %more here?
-Little progress has been made in the recent years in developing \emph{exact} solutions for HMDPs with multiple continuous state variables beyond the subset of HMDPs  which have an optimal \emph{hyper-rectangular piecewise linear value function} \cite{feng04,li05}. Also previous work on \emph{exact} solutions to multivariate continuous state \emph{and} action settings have also been limited to the control theory literature for the case of linear-quadratic Gaussian (LQG) control \cite{lqgc}. 
+Little progress has been made in the recent years in developing \emph{exact} solutions for HMDPs with multiple continuous state variables beyond the subset of HMDPs  which have an optimal \emph{hyper-rectangular piecewise linear value function} \cite{feng04,li05}. Further previous work on \emph{exact} solutions to multivariate continuous state \emph{and} action settings have been limited to the control theory literature for the case of linear-quadratic Gaussian (LQG) control \cite{lqgc}. 
 %i.e., minimizing a quadratic cost function subject to linear dynamics with Gaussian noise in a partially observed setting.  
 However, the transition dynamics and reward (or cost) for such problems cannot be piecewise --- a crucial limitation preventing the application of such solutions to many planning and operation research (OR) problems. 
 Consider the famous OR problem of \InventoryControl in \cite{Scarf_Karlin58}: 
@@ -87,14 +88,14 @@ under linear reordering costs and linear holding costs.
 Consider a continuous state version of this problem with discrete actions: 
 \vspace{2mm}
 
-\textsc{Discrete Action} \InventoryControl  (\textsc{DAIC}): 
+\textsc{Discrete Action} \InventoryControl (\textsc{DAIC}): 
 A multi-item ($K$-item) inventory consists of continuous amounts of specific items $x_i$ where $i \in [0,K]$ is the number of items and $x_i \in [0,200]$. The customer demand is a stochastic boolean variable $d$ for low or high demand levels.  Ordering a specific item $a_j$ comes in three discrete ranges of  $(low,mid, high)$ where $\lbrace low = 25, mid = 50, high = 75 \rbrace$ and $j \in \lbrace 1,2,3 \rbrace$. There are linear reorder costs and also a penalty for holding items. The transition and reward functions have to be defined for each continuous item $x_i$ and action $j$.
 %is this good? do I need to put transition and reward? 
 
-We can also consider the more general CA-HMDP setting to this problem: 
+We can also consider the more general  continuous action HMDP setting to this problem: 
 \vspace{2mm}
 
-\textsc{Continuous Action}  \InventoryControl  (\textsc{CAIC}):
+\textsc{Continuous Action}  \InventoryControl (\textsc{CAIC}):
 Here in a given time step, the inventory can order  any of the $i$ items $a_i \in [0,200]$ considering the stochastic customer demand. 
 
 The transition functions for the continuous state $x_i$ and actions $a_i$ is defined as: 
@@ -104,45 +105,60 @@ The transition functions for the continuous state $x_i$ and actions $a_i$ is def
 x'_i= \begin{cases}
 d  : & x_i + a_i - 150 \\
 \neg d : & x_i + a_i - 50    
-\end{cases} \label{eq:trans_inv}
-%\end{align}
+\end{cases} %\label{eq:trans_inv}
 \hspace{4mm}
-%\begin{align}
-%d' =  \begin{cases}
-%d     : &(0.7)\\
-%\neg d: &(0.3)\\
-%\end{cases} %\label{eq:transD_inv}
+ P(d'=\mathit{true}|d,\vec{x},\vec{x'})=  \begin{cases}
+d     :& 0.7\\
+\neg d : & 0.3	\\
+\end{cases} \label{eq:transD_inv}
 \end{align}
 \vspace{-2mm}}
 
-The reward is the sum of $K$ functions as below:
+The reward is the sum of $K$ functions $R = \sum_{i=0}^K R_i $ as below:
 {\footnotesize
 \begin{align}
-R = \sum_{i=0}^K R_i = \sum_{i=0}^K \begin{cases}
-d \wedge (x_i \geq 150) &: 150 - 0.1 * a_i - 0.05 * x_i \\
-d \wedge \neg(x_i \geq 150) &:   x_i - 0.1 * a_i - 0.05 * x_i \\
-\neg d \wedge (x_i \geq 50) &: 50 - 0.1 * a_i - 0.05 * x_i  \\
-\neg d \wedge \neg(x_i \geq 50) &: x_i - 0.1 * a_i - 0.05 * x_i  \\
+R =
+\begin{cases}
+\sum_{j} x_j \geq C &: -\infty  \\	
+\sum_{j} x'_j \geq C &: -\infty 	\\
+\sum_{j} x_j \leq C &:0\\  
+\sum_{j} x'_j \leq C &: 0 	\\
+\end{cases}
++
+\Bigg( \sum_{i=0}^K \begin{cases}
+d \wedge x_i \geq 150&: 150 - 0.1 * a_i - 0.05 * x_i \\
+d \wedge x_i \leq 150 &:   x_i - 0.1 * a_i - 0.05 * x_i \\
+\neg d \wedge x_i \geq 50 &: 50 - 0.1 * a_i - 0.05 * x_i  \\
+\neg d \wedge x_i \leq 50 &: x_i - 0.1 * a_i - 0.05 * x_i  \\
 \end{cases} 
 + 
 \begin{cases}
-(x_i \leq 0) \wedge (\sum_{j \neq i} x_j \geq C) &: -\infty  \\	
-(x'_i \leq 0) \wedge (\sum_{j \neq i} x'_j \geq C) &: -\infty  \\	
-(x_i \geq 0) \wedge (\sum_{j \neq i} x_j \leq C)\\ \hspace{3mm}\wedge
-(x'_i \geq 0) \wedge (\sum_{j \neq i} x'_j \leq C)&: 0
-\end{cases} 
+x_i \leq 0 &: -\infty  \\	
+x'_i \leq 0&: -\infty  \\	
+x_i \geq 0 &:0\\
+x'_i \geq 0 &: 0
+\end{cases} \Bigg)
 \label{rew_inv}
 \end{align}}
-where $C$ is the total capacity for $K$ items in the inventory. The second case checks the safe ranges of the capacity such that the inventory capacity of each item above zero and the sum of total capacity below $C$ is desired.
+where $C$ is the total capacity for $K$ items in the inventory. The first and last cases check the safe ranges of the capacity such that the inventory capacity of each item above zero and the sum of total capacity below $C$ is desired.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\vspace{5mm}
 \begin{figure}[t!]
 \centering
 %\subfigure{
 %\hspace{-20mm}
-\vspace{-3mm}
-\includegraphics[width=1 \textwidth]{Figures2/diagrams/v2_inv2_2.pdf}
-\vspace{-2mm}
+%\vspace{-3mm}
+%\includegraphics[width=1 \textwidth]{Figures2/diagrams/v2_inv2_2.pdf}
+\begin{subfigure}
+                \centering
+                \includegraphics[width=0.77\textwidth]{Figures2/diagrams/v2_inv2_2.pdf}
+        \end{subfigure}
+                \hspace{2mm}
+\begin{subfigure}
+                \centering
+                \includegraphics[width=0.18\textwidth]{Figures2/diagrams/p2_inv_2.pdf}
+        \end{subfigure}
+%\vspace{-2mm}
 \caption{\footnotesize Optimal value function $V^2(x)$ for the
 CAIC problem represented as an extended algebraic decision
 diagram (XADD).  Here the solid lines represent the $\true$ branch for
@@ -151,13 +167,14 @@ $V^2(x)$ for any state $x$, one simply traverses the diagram in a
 decision-tree like fashion until a leaf is reached where the
 non-parenthetical expression provides the \emph{optimal value} and the
 parenthetical expression provides the \emph{optimal policy} 
-($a = \pi^{*,2}(x)$) to achieve value $V^2(x)$.}
+($a = \pi^{*,2}(x)$) to achieve value $V^2(x)$ (Left); Optimal policy for the second iteration $\pi^2$ consistent with Scarf's policy (Right).}
 \label{fig:inv_policy}
-\vspace{-10mm}
+\vspace{-7mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Note that illegal state values are defined using $-\infty$, in this case having the capacity lower than zero at any time and having capacity higher than that of the total $C$. If our objective is to maximize the long-term \emph{value} $V$ (i.e.,the sum of rewards received over an infinite horizon of actions), we show that the optimal value function can be derived in closed-form. For a single-item continuous state and action inventory CAIC problem the optimal value function is defined as below:
-\vspace{-10mm}
+Note that illegal state values are defined using $-\infty$, in this case having the capacity lower than zero at any time and having capacity higher than that of the total $C$. If our objective is to maximize the long-term \emph{value} $V$ (i.e.,the sum of rewards received over an infinite horizon of actions), we show that the optimal value function can be derived in closed-form. 
+For a single-item continuous state and action inventory CAIC problem the optimal value function is defined as below:
+\vspace{-1mm}
 \begin{align}
 V = \begin{cases}
 (x < 0 \vee x>500) &: -\infty \\
@@ -171,19 +188,18 @@ d \land (0 \leq x \leq 100) &:  82.5 + 1.05 * x \\
 \end{cases} \label{eq:vfun_inv}
 \vspace{-8mm}
 \end{align}
-This value function is piecewise and linear and the policy obtained from this value function shown in Figure ~\ref{fig:inv_policy} (for each slice of the state space) matches with Scarf's policy for the \InventoryControl problem. If the holding and storage costs are linear, the optimal policy in each horizon is always of $(S,s)$ (~\cite{Scarf_Karlin58}). In general this means if ($x>s$) the policy should be not to order any items and if ($x<s$) then ordering $S-s-x$ items is optimal. Figure~\ref{fig:inv_policy} represents an extended algebraic decision diagram (XADD) representation which allows efficient implementation of the \emph{case calculus} for arbitrary functions.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-Note that for all cases except the very first case of $d \land (x \geq 150)$ we have ordering of $S-s-x$ when $x<s$ and no ordering when $x>s$. %For this case, since the upper bound is not explicitly defined $x \leq 200$ it seems to be incorrect, but considering all constraints, this falls under the $x<s$ category thus ordering $300-x$ items. 
+This value function is piecewise and linear and the policy obtained from this value function shown in Figure ~\ref{fig:inv_policy} (for each slice of the state space) matches with Scarf's policy for the \InventoryControl problem. If the holding and storage costs are linear, the optimal policy in each horizon is always of $(S,s)$ ~\cite{Scarf_Karlin58}. In general this means if ($x>s$) the policy should be not to order any items and if ($x<s$) then ordering $S-s-x$ items is optimal. Figure~\ref{fig:inv_policy} represents an extended algebraic decision diagram (XADD) representation which allows efficient implementation of the \emph{case calculus} for arbitrary functions. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 According to this we rewrite Scarf's policy: 
 \begin{align}
 \pi^{*,2}(x) = 
 \begin{cases}
+(x < 0 \vee x>500) &: -\infty \\
 d \land (300 \leq x \leq 500)  &:  0 \\
-d \land ((150 \leq x \leq 300) \vee (0 \leq x \leq 100)) &:  300 - x \\
+d \land (0 \leq x \leq 300) &:  300 - x \\
 d \land (100 \leq x \leq 150)  &:  200 - x \\
 \neg d \land (200 \leq x \leq 500) &:  0 \\
-\neg d \land ((0 \leq x \leq 50)\vee (50 \leq x \leq 200)) &:  200 - x \\
+\neg d \land (0 \leq x \leq 200) &:  200 - x \\
 \end{cases}
 \end{align}
 
@@ -213,10 +229,10 @@ Aided by these algorithmic and data structure advances, we empirically demonstra
 
 
 \section{Hybrid MDPs (HMDPs)}
-The mathematical framework of Markov Decision Processes (MDPs) is used for modelling many stochastic sequential decision making problems (~\cite{bellman}). This discrete-time stochastic control process chooses an action $a$ available at state $s$. The process then goes to the next state $s'$ according to a transition function $T(s,s')$ and receives a reward $R(s,a)$. The transition function follows the Markov property allowing each state to only depend on its previous state.  We provide novel exact solutions using the MDP framework for discrete and continuous variables in the state and action space. Hybrid State and Action MDPs (HMDPs) are introduced in the next section followed by the finite-horizon solution via dynamic programming (~\cite{li05}).
+The mathematical framework of Markov Decision Processes (MDPs) is used for modelling many stochastic sequential decision making problems ~\cite{bellman}. This discrete-time stochastic control process chooses an action $a$ available at state $s$. The process then transitions to the next state $s'$ according to $T(s,s')$ and receives a reward $R(s,a)$. The transition function follows the Markov property allowing each state to only depend on its previous state.  We provide novel exact solutions using the MDP framework for discrete and continuous variables in the state and action space. Hybrid State and Action MDPs (HMDPs) are introduced in the next section followed by the finite-horizon solution via dynamic programming ~\cite{li05}.
 %\vspace*{-0.05in}
 \subsection{Factored Representation}
-\label{sec:dcmdps}
+\label{sec:HMDPs}
 %\vspace*{-0.05in}
 In an HMDP, states are represented by vectors of variables
 $(\vec{b},\vec{x}) = ( b_1,\ldots,b_n,x_{1},\ldots,x_m )$.  We assume
@@ -230,7 +246,7 @@ action $a_{k}$ and  if $|\vec{y}_k|=0$ then action $a_{k}$ has no parameters and
 
 Each HMDP model requires the following definitions: 
 
-(i) a state transition model $P(\vec{b}',\vec{x}'|\cdots,a,\vec{y})$, which specifies the
+(i) a state transition model $P(\vec{b}',\vec{x}'|\vec{b},\vec{x},a,\vec{y})$, which specifies the
 probability of the next state $(\vec{b}',\vec{x}')$ conditioned on a
 subset of the previous and next state and action $a$ with its possible parameters $\vec{y}$; 
 
@@ -283,10 +299,10 @@ we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
                         \hspace{-1mm}
 \begin{subfigure}
                 \centering
-                \includegraphics[width=0.55\textwidth]{Figures1/diagrams/probabilities.pdf}
+                \includegraphics[width=0.55\textwidth]{Figures2/diagrams/probabilities_2.pdf}
         \end{subfigure}
         \vspace{-3mm}
-\caption{\footnotesize Network topology between state variables in the 2-item continuous action \InventoryControl (CAIC) problem (Left); Dynamic bayes network (DBN) structure representing the transition and reward function (Middle); transition probabilities in terms of CPF and PLE for the state variables in the example(Right). }
+\caption{\footnotesize Network topology between state variables in the 2-item continuous action \InventoryControl (CAIC) problem (Left); Dynamic bayes network (DBN) structure representing the transition and reward function (Middle); transition probabilities and reward function in terms of CPF and PLE for $x_1$ (Right). }
 \label{fig:dbn}
 \vspace{-3mm}
 \end{figure}
@@ -304,21 +320,21 @@ Hence we can factorize the joint transition model as
 {%\footnotesize
 \begin{equation}
 P(\vec{b}',\vec{x}'|\vec{b},\vec{x},a,\vec{y}) = 
-\prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}). \nonumber %\label{eq:dbn} 
+\prod_{i=1}^n P(b_i'|\vec{b},\vec{x},\vec{b'},\vec{x'},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},\vec{x'},a,\vec{y}). \nonumber %\label{eq:dbn} 
 \end{equation}}
-where $P(b_i'|\vec{b},\vec{x},a,\vec{y})$ may condition on a subset of
-$\vec{b}$ and $\vec{x}$ and likewise 
-$P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y})$ may condition on a subset of
-$\vec{b}$, $\vec{b}'$, and $\vec{x}$. Figure ~\ref{fig:dbn} presents the DBN for our CAIC example according to this definition.  
+where $P(b_i'|\vec{b},\vec{x},\vec{b'},\vec{x'},a,\vec{y})$ may condition on a subset of
+$\vec{b}$ and $\vec{x}$ in the current and next state and likewise 
+$P(x_j'|\vec{b},\vec{b}',\vec{x},\vec{x'},a,\vec{y})$ may condition on a subset of
+$\vec{b}$, $\vec{b}'$, $\vec{x}$ and $\vec{x'}$. Figure ~\ref{fig:dbn} presents the DBN for our CAIC example according to this definition.  
 
 We call the conditional probabilities
-$P(b_i'|\vec{b},\vec{x},a,\vec{y})$ for \emph{binary} variables $b_i$
+$P(b_i'|\vec{b},\vec{x},\vec{b'},\vec{x'},a,\vec{y})$ for \emph{binary} variables $b_i$
 ($1 \leq i \leq n$) conditional probability functions (CPFs) --- not
 tabular enumerations --- because in general these functions can
 condition on both discrete and continuous state as
 in the right-hand side of ~\eqref{eq:trans_inv}.  For the \emph{continuous} variables
 $x_j$ ($1 \leq j \leq m$), we represent the CPFs
-$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ with \emph{piecewise
+$P(x_j'|\vec{b},\vec{b'},\vec{x},\vec{x'},a,\vec{y})$ with \emph{piecewise
 linear equations} (PLEs) satisfying three properties: 
 
 (i) PLEs can only condition on the
@@ -328,18 +344,18 @@ action, current state, and previous state variables
 must be encoded using Dirac $\delta[\cdot]$ functions (example forthcoming)
 
 (iii) PLEs are piecewise linear, where the piecewise conditions may be arbitrary logical combinations of $\vec{b}$, $\vec{b}'$ 
-and linear inequalities over $\vec{x}$.  
+and linear inequalities over $\vec{x}$ and $\vec{x'}$.  
 
 The transition function example provided in the left-hand side of ~\eqref{eq:trans_inv} can be expressed in PLE format such as the right figure in Figure ~\ref{fig:dbn}.
 The use of the $\delta[\cdot]$ function ensures that the PLEs are conditional
 probability functions that integrates to 1 over $x'_j$; In more intuitive
 terms, one can see that this $\delta[\cdot]$ is a simple way to encode
 the PLE transition $x' = \left\{ \ldots \right.$ in the form of 
-$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$.
+$P(x_j'|\vec{b},\vec{b'},\vec{x},\vec{x'},a,\vec{y})$.
 
 %qualify the extent of stochasticity and other restrictions
 While it will be clear that our restrictions do not permit general stochastic transition noise (e.g., Gaussian noise as in LQG control), they do permit discrete noise in the sense that
-$P(x_j'|\vec{b},\vec{b'},\vec{x},a,\vec{y})$ may condition on
+$P(x_j'|\vec{b},\vec{b'},\vec{x},\vec{x'},a,\vec{y})$ may condition on
 $\vec{b'}$, which are stochastically sampled according to their CPFs.
 \footnote{Continuous stochastic noise for the transition function is an on going work which allows us to model stochasticity more generally}
 We note that this representation effectively allows modeling of
@@ -353,18 +369,18 @@ we do not restrict the equation to be linear, but rather
 allow it to specify \emph{arbitrary} functions (e.g., nonlinear). The reward function can also be defined as \emph{arbitrary} function of the current state for each action $a \in A$. 
 While our DA-HMDP examples throughout the paper will demonstrate the full expressiveness of our symbolic dynamic programming approach, we note that there are computational advantages to be had when the reward and transition case conditions and functions can be restricted to linear polynomials.  
 
-Due to the same restrictions for CA-HMDPs we allow the reward function $R(\vec{b},\vec{x},a,\vec{y})$ to be either of the following:
+Due to the same restrictions for CA-HMDPs the reward function $R(\vec{b},\vec{b'},\vec{x},\vec{x'}, a,\vec{y})$ is defined as either of the following:
 
 (i) a general piecewise linear function (boolean or linear conditions and linear values) such as ~\eqref{rew_inv}  
 
 (ii) a piecewise quadratic function of univariate state and a linear function of univariate action parameters:
 \begin{align}
-R(x,b) & = \begin{cases}
-\neg b \land x \geq -2 \land x \leq 2 : & 4 - x^2 \\
-b \lor x < -2 \lor x > 2 : & 0
+R(x,x',d,d', a) & = \begin{cases}
+\neg d \land x \geq -2 \land x \leq 2 : & 4 - x^2 \\
+d \lor x < -2 \lor x > 2 : & 0
 \end{cases} \label{rew:nonlinear}
 \end{align}
-%The reward function in a DCSA-DCMDP can potentially be defined as an \emph{arbitrary} function but to ensure computationally efficient results we assume piecewise linear boundaries that can be checked for consistency using a linear constraint feasibility checker, which we will later see is crucial for efficiency.
+%The reward function in a DA-HMDPs can potentially be defined as an \emph{arbitrary} function but to ensure computationally efficient results we assume piecewise linear boundaries that can be checked for consistency using a linear constraint feasibility checker, which we will later see is crucial for efficiency.
 
 These transition and reward constraints will ensure that all derived functions in the solution of HMDPs adhere to the reward 
 constraints.
@@ -385,8 +401,8 @@ $V^{h-1}(\vec{b},\vec{x})$ thereafter as the following:
 {%\footnotesize
 \begin{align}
 Q_a^{h}(\vec{b},\vec{x},\vec{y}) & = 
- \sum_{\vec{b}'} \hspace{-1.0mm} \int \hspace{-1.0mm} \left( \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \right) \label{eq:qfun} \\ 
-& \Bigg[ R(\vec{b},\vec{x},a,\vec{y}) + \gamma \cdot V^{h-1}(\vec{b}',\vec{x}') d\vec{x}'  \hspace{-0.2mm} \Bigg] \nonumber
+ \sum_{\vec{b}'} \hspace{-1.0mm} \int \hspace{-1.0mm} \left( \prod_{i=1}^n P(b_i'|\vec{b},\vec{x},\vec{b'},\vec{x'},a,\vec{y}) \prod_{j=1}^m P(x_j'|\vec{b},\vec{b}',\vec{x},\vec{x'},a,\vec{y}) \right) \label{eq:qfun} \\ 
+& \Bigg[ R(\vec{b},\vec{b'},\vec{x},\vec{x'}, a,\vec{y}) + \gamma \cdot V^{h-1}(\vec{b}',\vec{x}') d\vec{x}'  \hspace{-0.2mm} \Bigg] \nonumber
 \end{align}}
 Given $Q_a^h(\vec{b},\vec{x},\vec{y})$ for each $a \in A$ where $\vec{y}$ can also be empty , we can proceed
 to define the $h$-stage-to-go value function as follows:
@@ -421,7 +437,7 @@ in \cite{fomdp} was previously only used with piecewise
 constant functions, we now generalize the representation to work with
 general piecewise functions for HMDPs in this article.  
 %Should all this be taken out?
-%We present the general SDP framework for value iteration in DA-DCMDPs in Algorithm~\ref{alg:vi} (\texttt{VI}). Further we define  Algorithm~\ref{alg:contMax}(\texttt{Continuous Maximization}) to deal with the final maximization in (~\ref{eq:vfun}) for continuous actions.
+%We present the general SDP framework for value iteration in DA-HMDPs in Algorithm~\ref{alg:vi} (\texttt{VI}). Further we define  Algorithm~\ref{alg:contMax}(\texttt{Continuous Maximization}) to deal with the final maximization in (~\ref{eq:vfun}) for continuous actions.
 
 Before we define our solution, however, we must formally define our
 case representation and symbolic case operators.
@@ -877,16 +893,35 @@ In this section we present the Symbolic value iteration algorithm (SVI) for HMDP
 
 \Begin{
     $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
-    \emph{// Continuous regression marginal integration}\\
-    \For {all $x'_j$ in $Q$}{
-         $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \, d_{x'_j}$\;
+%    \emph{// Continuous regression marginal integration}\\
+%    \For {all $x'_j$ in $Q$}{
+%         $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \, d_{x'_j}$\;
+%    }
+%    \emph{// Discrete regression marginal summation}\\
+%    \For {all $b'_i$ in $Q$}{
+%         $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 1}$\\
+%         \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 0}$\;
+%    }
+%    \Return{$R(\vec{b},\vec{x},a,\vec{y}) \oplus (\gamma \otimes Q)$} \;
+\If {$v'$ in $R$}
+	 {$Q := R(\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y}) \oplus (\gamma \cdot Q)$} \;
+    \ForEach { $v'$ in $Q$}  
+    {
+    	\If {$v'$ = $x'_j$}
+    	{
+    	\emph{//Continuous marginal integration}\\
+         $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y}) \, d_{x'_j}$\;
+    	}
+	    \If {$v'$=$b'_i$}
+    	{
+    	\emph{// Discrete marginal summation}\\
+         $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y}) \right]|_{b_i' = 1}$
+         $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{b},\vec{x},\vec{x}',a,\vec{y}) \right]|_{b_i' = 0}$\;
+    	}
     }
-    \emph{// Discrete regression marginal summation}\\
-    \For {all $b'_i$ in $Q$}{
-         $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 1}$\\
-         \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 0}$\;
-    }
-    \Return{$R(\vec{b},\vec{x},a,\vec{y}) \oplus (\gamma \otimes Q)$} \;
+    \If {$\neg$ ($v'$  in $R$)}
+    {$Q := R(\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y}) \oplus (\gamma \cdot Q)$ }\;
+    \Return{$Q$} \;
 }
 \caption{\footnotesize \texttt{Regress}($V,a,\vec{y}$) $\longrightarrow$ $Q$ \label{alg:regress}}
 \vspace{-1mm}
@@ -894,14 +929,14 @@ In this section we present the Symbolic value iteration algorithm (SVI) for HMDP
 \decmargin{.5em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Our objective is to take a DA-HMDP or CA-HMDP as defined in Section~\ref{sec:dcmdps}, apply value
+Our objective is to take a DA-HMDP or CA-HMDP as defined in Section~\ref{sec:HMDPs}, apply value
 iteration as defined in Section~\ref{sec:soln}, and produce
 the final value optimal function $V^h$ at horizon $h$ in the form
 of a case statement. Algorithm ~\ref{alg:vi} presents this briefly. 
 
 For the base case of $h=0$ in line 2, we note that setting $V^0(\vec{b},\vec{x}) = 0$
 (or to the reward case statement, if not action dependent)
-%and $R(\vec{b},\vec{x})$ as described in Section~\ref{sec:dcmdps}
+%and $R(\vec{b},\vec{x})$ as described in Section~\ref{sec:HMDPs}
 is trivially in the form of a case statement.
 
 Next, for $h > 0$ and for each action in line 5 we must perform lines 6--12. Starting with the application of Algorithm~\ref{alg:regress}.  Note that we have omitted parameters $\vec{b}$ and
@@ -916,7 +951,9 @@ $\sigma = \{ b_1 / b_1', \ldots, b_n / b_n', x_1 / x_1', \ldots, x_m / x_m' \}$
 and obtain $V'^{h} = V^{h}\sigma$ in line 2 of Algorithm ~\ref{alg:regress}.
 %where $V'^{h}$ is over $(\vec{b}',\vec{x}')$.
 
-\item {\it Continuous Integration}: As defined in line 4--5 once we have our primed value
+\item {\it Add Reward Function}: If the reward function $R$ contains any primed state variable $b'$ or $x'$, lines 3--4 is executed to add this reward function to the previous discounted Q-value. If $R$ had no primed variables, then it is added to the Q-value at the end of this algorithm in lines 14--15.
+
+\item {\it Continuous Integration}: As defined in line 7--9 once we have our primed value
 function $V'^{h}$ in case statement format defined over next state
 variables $(\vec{b}',\vec{x}')$, we evaluate the integral
 marginalization $\int_{\vec{x}'}$ over the continuous variables
@@ -932,11 +969,11 @@ This
 operation is performed repeatedly in sequence \emph{for each}
 $x_j'$ ($1 \leq j \leq m$) for every action $a$.  The only
 additional complication is that the form of 
-$P(x_j'|\vec{b},\vec{x},a,\vec{y})$ is a \emph{conditional} 
+$P(x_j'|\vec{b},\vec{x},\vec{b'},\vec{x'},a,\vec{y})$ is a \emph{conditional} 
 equation such as the right-hand of Figure ~\ref{fig:dbn}, and represented generically
 as follows:
 \begin{align}
-   P(x_j'|\vec{b},\vec{x},a,\vec{y}) = \delta\left[ x_j' = \begin{cases}
+   P(x_j'|\vec{b},\vec{x},\vec{b'},\vec{x'},a,\vec{y}) = \delta\left[ x_j' = \begin{cases}
     \phi_1: & f_1 \\ 
    \vdots&\vdots\\ 
     \phi_k: & f_k \\ 
@@ -960,7 +997,7 @@ each action $a$ denoted by $\tilde{Q}_a^{h+1}$.
 regression $\tilde{Q}_a^{h+1}$ for each action $a$, we proceed
 to derive the full backup $Q_a^{h+1}$ from $\tilde{Q}_a^{h+1}$
 by evaluating the discrete 
-marginalization $\sum_{\vec{b}'}$ in~\eqref{eq:qfun} which is shown in lines 7--9.
+marginalization $\sum_{\vec{b}'}$ in~\eqref{eq:qfun} which is shown in lines 10--12.
 Because we previously disallowed synchronic arcs
 between the variables in $\vec{b}'$ 
 in the transition DBN, we can sum out each variable $b_i'$ ($1 \leq i \leq n$) 
@@ -969,12 +1006,12 @@ $Q_a^{h+1} := \tilde{Q}_a^{h+1}$
 we perform the discrete regression by applying the following iterative
 process \emph{for each} $b_i'$ in any order for each action $a$:
 \begin{align}
-Q_a^{h+1} := & \left[ Q_a^{h+1} \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 1} 
- \oplus \left[ Q_a^{h+1} \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y}) \right]|_{b_i' = 0}.
+Q_a^{h+1} := & \left[ Q_a^{h+1} \otimes P(b_i'|\vec{b},\vec{x},\vec{b'},\vec{x'},a,\vec{y}) \right]|_{b_i' = 1} 
+ \oplus \left[ Q_a^{h+1} \otimes P(b_i'|\vec{b},\vec{x},\vec{b'},\vec{x'},a,\vec{y}) \right]|_{b_i' = 0}.
 \end{align}
 This requires a variant of the earlier restriction operator $|_v$ that
 actually \emph{sets} the variable $v$ to the given value if present.
-Note that both $Q_a^{h+1}$ and $P(b_i'|\vec{b},\vec{x},a,\vec{y})$ can be represented
+Note that both $Q_a^{h+1}$ and $P(b_i'|\vec{b},\vec{x},\vec{b'},\vec{x'},a,\vec{y})$ can be represented
 as case statements (discrete CPTs \emph{are} case statements), 
 and each operation produces a case statement.
 Thus, once this process is complete, we have marginalized over
@@ -1074,7 +1111,7 @@ On a final note, we observe that SDP holds for \emph{any} symbolic
 case statements; we have not restricted ourselves to rectangular
 piecewise functions, piecewise linear functions, or even piecewise
 polynomial functions.  As the SDP solution is purely symbolic,
-SDP applies to \emph{any} DCSA-DCMDP using bounded symbolic function 
+SDP applies to \emph{any} HMDP using bounded symbolic function 
 that can be written in case format!  Of course, that is the theory,
 next we meet practice.
 
@@ -1120,7 +1157,7 @@ parameterized by $\vec{p}$. Formal definitions of our XADD are similar to that o
 Extended ADDs (XADDs) allow representing continuous variables in a decision diagram in the function representation of $\mathbb{R}^{n+m} \rightarrow \mathbb{R}$ over case statements. Each leaf in an XADD represents a multi-variate arbitrary function from the real-value domain and each decision node can be an equality, dis-equality or inequality on the multi-variate domain which is more expressive than the ADD boolean decisions. The branches are true/false depending on the value of each decision node. This compact representation will not require truth tables like ADDs or BDDs as it is more expressive in allowing infinitely many real values for each decision. 
 %note it is NOT about variable assignment! 
 
-We next formally define the XADD operations and algorithms required to support all case operations of SDP. Most importantly we prove minimality of the XADD representation and provide pruning algorithms based on this theorem. 
+We next formally define the XADD operations and algorithms required to support all case operations of SDP as well as pruning algorithms to make this representation even more efficient. 
 
 \subsection{Formal Definition and Operations}
 %\vspace*{-0.05in}
@@ -1159,16 +1196,13 @@ the branch at each decision node corresponding to the decisions taken
 in $F^{var}$ --- continuing until a leaf node is reached,
 which is then returned as $Val(F,\rho)$. The diagram on the right of Figure ~\ref{fig:bdd_add_xadd} demonstrates the polynomial leaves and the decision node inequalities which branch to true/false depending on the decision value.
 
-For BDDs and ADDs proof of canonicity can be defined according to \cite{bryant}. In these two cases for any function $f(x_1,\cdots, x_n)$ and a fixed variable ordering over $x_1,\cdots, x_n$, a reduced BDD or ADD is defined as the
-minimally sized ordered decision diagram representation of a function $f$. This proves that there is a unique canonical BDD or ADD representation for
-every function from $\{0,1\}^{n} \rightarrow \{0,1\}$ for BDDs and $\{0,1\}^{n}
-\rightarrow \mathbb{R}$ for ADDs. 
+%////////////////////////////////proof starting, comment all!
+%For BDDs and ADDs proof of canonicity can be defined according to \cite{bryant}. In these two cases for any function $f(x_1,\cdots, x_n)$ and a fixed variable ordering over $x_1,\cdots, x_n$, a reduced BDD or ADD is defined as the minimally sized ordered decision diagram representation of a function $f$. This proves that there is a unique canonical BDD or ADD representation for every function from $\{0,1\}^{n} \rightarrow \{0,1\}$ for BDDs and $\{0,1\}^{n} \rightarrow \mathbb{R}$ for ADDs. 
 
-To prove such a result for XADDs is not as trivial. In an XADD, leaves and decision nodes are polynomials and we have to prove minimality with respect to this.
+%To prove such a result for XADDs is not as trivial. In an XADD, leaves and decision nodes are polynomials and we have to prove minimality with respect to this.
 %that there exists a unique canonical form for both the leaves and the internal nodes. 
-First we provide some definitions used in the proof:
+To define the pruning algorithms, we provide some definitions listed below:
 
-%%%%%%%%%%%%%%%% Added proof
 \begin{mydef}(\textbf{Function representation}):
 A multi-variate function of booleans and real values $ f:\mathbb{B}^m \times \mathbb{R}^n \rightarrow \mathbb{R}$ denoted by $f(\vec{b},\vec{x})$  represents an XADD ($f_{XADD}$) defined on the class of piecewise formulas (case statements).
 \end{mydef}
@@ -1231,71 +1265,68 @@ A node $F_i^{var}$ in $f_{XADD}$ is redundant if its constraints can be addresse
 Figure ~\ref{fig:path_formula} (c) prunes (b) of the redundant node 1.
 \end{mydef}
 
-In our DCSA-MDP framework we assume polynomial leaves and limit decisions to linear or quadratic inequalities. %In general proving polynomial decisions are canonical is possible using Algebraic geometry given the order of the polynomials, but it is not reasonably computational as there is no bound on the running time. 
-The following corollary proves that there is a canonical form for polynomial functions.
+%In our DCSA-MDP framework we assume polynomial leaves and limit decisions to linear or quadratic inequalities. %In general proving polynomial decisions are canonical is possible using Algebraic geometry given the order of the polynomials, but it is not reasonably computational as there is no bound on the running time. 
+%The following corollary proves that there is a canonical form for polynomial functions.
 
-\begin{corollary} ~\cite{cox}
-Let $k$ be an infinite field, and let $f,g \in k\left[ x_1,\cdots,x_n \right]$ be polynomials over $\left[ x_1,\cdots,x_n \right]$. Then $f=g$ in $k\left[ x_1,\cdots,x_n \right]$ if and only if $f:k^n \rightarrow k$ and $g:k^n \rightarrow k$ are the same function.
-\end{corollary}
+%\begin{corollary} ~\cite{cox}
+%Let $k$ be an infinite field, and let $f,g \in k\left[ x_1,\cdots,x_n \right]$ be polynomials over $\left[ x_1,\cdots,x_n \right]$. Then $f=g$ in $k\left[ x_1,\cdots,x_n \right]$ if and only if $f:k^n \rightarrow k$ and $g:k^n \rightarrow k$ are the same function.
+%\end{corollary}
 
+
+%Next we give the formal theorem and proof for a minimal XADD with linear decisions and polynomial leaves.
+
+%\begin{theorem}
+%Two functions $f(\vec{b},\vec{x})$  and $g(\vec{b},\vec{x})$  are equal for all $\vec{b},\vec{x}$ if and only if their corresponding XADDs are isomorphic: 
+%\begin{equation*}
+%\forall \vec{b},\vec{x} : f(\vec{b},\vec{x}) = g(\vec{b},\vec{x}) \hspace{5mm} \Longleftrightarrow \hspace{5mm} f_{XADD}=^i g_{XADD}
+%\end{equation*}
+%\end{theorem}
+%
 %\begin{proof}
-%To prove the nontrivial direction, suppose $f,g \in k\left[ x_1,\cdots,x_n \right]$ give the same function on $k^n$. By hypothesis, the polynomial $f - g$ vanishes at all points of $k^n$ which imples that $f-g$ is the zero polynomial (all of its coefficients are zero). This is the result of a proven proposition where $f=0$ in  $k\left[ x_1,\cdots,x_n \right]$ if and only if $f$ is the zero function. This proves that $f=g$ in $k\left[ x_1,\cdots,x_n \right]$.
+%The reverse direction of the theorem is easy to prove from the definition of isomorphism. Two isomorphic graphs ( in this case XADDs) have the same number of nodes and and are connected in such a way that their corresponding functions are equal. 
+%The other direction is nontrivial and the proof is by induction on the number of nodes of $ f:\mathbb{B}^m \times \mathbb{R}^n \rightarrow \mathbb{R}$. %Each argument $n,m$ is considered as the number of decision levels ($n+m$) for $n$ linear decisions and $m$ boolean decisions.
+%
+%For ($n = 0,m=0$) there are no linear or boolean decision nodes $D$ and the XADD consists of only a leaf node with a polynomial function. According to Corollary 1.1, two polynomial functions are equal precisely when they give the same function in an infinite space. 
+%We can identify when two leaf expressions are identical in practice by the following: \\
+%(a) sorting the parameters in each leaf\\
+%(b) factoring out (grouping terms with the same ordered set of
+%parameters) and summing constants in identical terms\\
+%(c) sorting the list of terms according to the lowest variable index
+%and number of parameters.  \\
+%(d) assigning (+1) to the coefficient of the lowest variable index and dividing the other terms by the coefficient of the lowest variable index. 
+%
+%We proceed to show the correctness of the theorem for all functions of $n,m$ nodes. We assume two previous cases: (a) For $n,m-1$ if two functions of $ \mathbb{B}^{m-1} \times \mathbb{R}^{n} \rightarrow \mathbb{R}$ are equal then their XADDs are isomorphic. (b) For $n-1,m$ if two functions of $ \mathbb{B}^{m} \times \mathbb{R}^{n-1} \rightarrow \mathbb{R}$ are equal then their XADDs are isomorphic. 
+%The additional decision node $d$in both cases is inductively added at the root of two non-equal minimal XADDs $f_{XADD_1},f_{XADD_2}$ and are assigned as the $true$ and $false$ branches of $f_{XADD}$. Note that if $f_{XADD_1}=f_{XADD_2}$ then they are reduced to one graph $f_{XADD_1}$ as defined in the \textit{ReduceXADD} algorithm later and decision $d$ is omitted from the final result. 
+%
+%For case (a) the new decision node $d$ is a boolean decision node and  $f_{XADD_1} \neq f_{XADD_2}$ then since $d$ is of the order of $m$ it does not occur in any of its left and right subtrees (orthogonal) and there is also no implication between $d$ and $f_{XADD_1}$ or $f_{XADD_2}$. This means that we can't reduce the new XADD any further and this is the unique minimal representation for $f_{XADD}$ and any other function with the same root decision $d$ (since $d$ is boolean, there is a unique canonical representation for it) has to have the same XADD representation. 
+%
+%If $d$ is a linear inequality as defined by (b), we use Corollary 1.1 to make sure that the function of $d$ is itself canonical. In practice $d$ is a line $\left\langle w_1,\cdots ,w_k \right\rangle \cdot \vec{x} + c = 0$ to make it canonical, we order the coefficients $\left\langle w_1,\cdots ,w_k \right\rangle$ and set the first non-zero coefficient to one ( dividing the other coefficients by this non-zero value).
+%
+%Next considering $d$ as the root of the two XADDs $f_{XADD_1},f_{XADD_2}$ we need to check for two general cases that can occur because of the relation between the constraint in $d$ and other non-boolean decision nodes: 
+%
+%\begin{itemize}
+%\item  Check whether adding $d$ to $f_{XADD}$ results in any inconsistency in any of $f_{XADD_1}$ or $f_{XADD_2}$. Parts of these canonical XADDs can become inconsistent due to the new constraint added by $d$ to $f_{XADD}$ according to  ~\ref{inconsist}.
+%We can remove all inconsistencies using an LP-solver. Starting with the root node, the LP-solver checks for parent-child implications of all the nodes within all paths of $f_{XADD}$. Any inconsistent node is pruned out of  $f_{XADD}$ returning a new XADD where all paths are reachable. Before the next check, we make sure that $f_{XADD_1} \neq f_{XADD_2}$ since otherwise they are collapsed into one minimal XADD of $f_{XADD_1}$ and no further action is required. 
+%\begin{equation*}
+%(var = f_{XADD}) \equiv (dec_1 \wedge (var=f_{XADD_1}) \vee (dec_2 \wedge (var=f_{XADD_2})): (\neg dec_1 \wedge dec_2 \models \perp)
+%\end{equation*}
+%
+%\item Check whether adding $d$ to $f_{XADD}$ adds redundancy to $f_{XADD_1}$ or $f_{XADD_2}$. Adding $d$ can result in redundant nodes due to the new constraint added by $d$ to $f_{XADD}$ according to ~\ref{redundant}. We can remove all redundancies using a SAT-solver. Satisfiability (SAT) is the problem of determining if the variables of a given Boolean formula can be assigned in such a way as to make the formula evaluate to TRUE. A SAT-solver requires a knowledge base of all true formulas to check the satisfiability of a new formula. 
+%
+%Starting at the root node, all possible child-parent implications are added  to the knowledge-base of the SAT-solver. At the end-node of each path $\eta(p_i)$, the SAT-solver checks for all redundant nodes for all paths of $f_{XADD}$. If the formula $\psi$ at any decision node $n$ is equivalent to taking the $true$ or $false$ branch of $n$ with respect to the KB, then the SAT-solver identifies this node as a redundant node and it is pruned out of $f_{XADD}$: 
+%\begin{equation*}
+%(\psi_n \Longleftrightarrow^{KB} (\psi_{n_\mathit{True}}) \vee (\psi_{n_\mathit{False}})) \Longrightarrow \mathit{Prune} \hspace{2mm} n
+%\end{equation*}
+%
+%\end{itemize}
+%Thus if we add the new decision in any order in the canonical XADD of $n$, given that any inconsistency or redundancy is removed in polynomial decisions and also the format of the decision is also canonical, the new XADD of order $n+1$ is also canonical. 
 %\end{proof}
 
-Next we give the formal theorem and proof for a minimal XADD with linear decisions and polynomial leaves.
+For any function from $\mathbb{R}^{n+m} \rightarrow \mathbb{R}$, we next
+describe how a reduced XADD can be constructed from an arbitrary ordered decision diagram.
+All algorithms that we will deﬁne in the following sections rely on the helper function \emph{getNode} in Algorithm \ref{algGetNode} , which returns a more compact representation of a single internal decision node. 
 
-\begin{theorem}
-Two functions $f(\vec{b},\vec{x})$  and $g(\vec{b},\vec{x})$  are equal for all $\vec{b},\vec{x}$ if and only if their corresponding XADDs are isomorphic: 
-\begin{equation*}
-\forall \vec{b},\vec{x} : f(\vec{b},\vec{x}) = g(\vec{b},\vec{x}) \hspace{5mm} \Longleftrightarrow \hspace{5mm} f_{XADD}=^i g_{XADD}
-\end{equation*}
-\end{theorem}
-
-\begin{proof}
-The reverse direction of the theorem is easy to prove from the definition of isomorphism. Two isomorphic graphs ( in this case XADDs) have the same number of nodes and and are connected in such a way that their corresponding functions are equal. 
-The other direction is nontrivial and the proof is by induction on the number of nodes of $ f:\mathbb{B}^m \times \mathbb{R}^n \rightarrow \mathbb{R}$. %Each argument $n,m$ is considered as the number of decision levels ($n+m$) for $n$ linear decisions and $m$ boolean decisions.
-
-For ($n = 0,m=0$) there are no linear or boolean decision nodes $D$ and the XADD consists of only a leaf node with a polynomial function. According to Corollary 1.1, two polynomial functions are equal precisely when they give the same function in an infinite space. 
-We can identify when two leaf expressions are identical in practice by the following: \\
-(a) sorting the parameters in each leaf\\
-(b) factoring out (grouping terms with the same ordered set of
-parameters) and summing constants in identical terms\\
-(c) sorting the list of terms according to the lowest variable index
-and number of parameters.  \\
-(d) assigning (+1) to the coefficient of the lowest variable index and dividing the other terms by the coefficient of the lowest variable index. 
-
-We proceed to show the correctness of the theorem for all functions of $n,m$ nodes. We assume two previous cases: (a) For $n,m-1$ if two functions of $ \mathbb{B}^{m-1} \times \mathbb{R}^{n} \rightarrow \mathbb{R}$ are equal then their XADDs are isomorphic. (b) For $n-1,m$ if two functions of $ \mathbb{B}^{m} \times \mathbb{R}^{n-1} \rightarrow \mathbb{R}$ are equal then their XADDs are isomorphic. 
-The additional decision node $d$in both cases is inductively added at the root of two non-equal minimal XADDs $f_{XADD_1},f_{XADD_2}$ and are assigned as the $true$ and $false$ branches of $f_{XADD}$. Note that if $f_{XADD_1}=f_{XADD_2}$ then they are reduced to one graph $f_{XADD_1}$ as defined in the \textit{ReduceXADD} algorithm later and decision $d$ is omitted from the final result. 
-
-For case (a) the new decision node $d$ is a boolean decision node and  $f_{XADD_1} \neq f_{XADD_2}$ then since $d$ is of the order of $m$ it does not occur in any of its left and right subtrees (orthogonal) and there is also no implication between $d$ and $f_{XADD_1}$ or $f_{XADD_2}$. This means that we can't reduce the new XADD any further and this is the unique minimal representation for $f_{XADD}$ and any other function with the same root decision $d$ (since $d$ is boolean, there is a unique canonical representation for it) has to have the same XADD representation. 
-
-If $d$ is a linear inequality as defined by (b), we use Corollary 1.1 to make sure that the function of $d$ is itself canonical. In practice $d$ is a line $\left\langle w_1,\cdots ,w_k \right\rangle \cdot \vec{x} + c = 0$ to make it canonical, we order the coefficients $\left\langle w_1,\cdots ,w_k \right\rangle$ and set the first non-zero coefficient to one ( dividing the other coefficients by this non-zero value).
-
-Next considering $d$ as the root of the two XADDs $f_{XADD_1},f_{XADD_2}$ we need to check for two general cases that can occur because of the relation between the constraint in $d$ and other non-boolean decision nodes: 
-
-\begin{itemize}
-\item  Check whether adding $d$ to $f_{XADD}$ results in any inconsistency in any of $f_{XADD_1}$ or $f_{XADD_2}$. Parts of these canonical XADDs can become inconsistent due to the new constraint added by $d$ to $f_{XADD}$ according to  ~\ref{inconsist}.
-We can remove all inconsistencies using an LP-solver. Starting with the root node, the LP-solver checks for parent-child implications of all the nodes within all paths of $f_{XADD}$. Any inconsistent node is pruned out of  $f_{XADD}$ returning a new XADD where all paths are reachable. Before the next check, we make sure that $f_{XADD_1} \neq f_{XADD_2}$ since otherwise they are collapsed into one minimal XADD of $f_{XADD_1}$ and no further action is required. 
-\begin{equation*}
-(var = f_{XADD}) \equiv (dec_1 \wedge (var=f_{XADD_1}) \vee (dec_2 \wedge (var=f_{XADD_2})): (\neg dec_1 \wedge dec_2 \models \perp)
-\end{equation*}
-
-\item Check whether adding $d$ to $f_{XADD}$ adds redundancy to $f_{XADD_1}$ or $f_{XADD_2}$. Adding $d$ can result in redundant nodes due to the new constraint added by $d$ to $f_{XADD}$ according to ~\ref{redundant}. We can remove all redundancies using a SAT-solver. Satisfiability (SAT) is the problem of determining if the variables of a given Boolean formula can be assigned in such a way as to make the formula evaluate to TRUE. A SAT-solver requires a knowledge base of all true formulas to check the satisfiability of a new formula. 
-
-Starting at the root node, all possible child-parent implications are added  to the knowledge-base of the SAT-solver. At the end-node of each path $\eta(p_i)$, the SAT-solver checks for all redundant nodes for all paths of $f_{XADD}$. If the formula $\psi$ at any decision node $n$ is equivalent to taking the $true$ or $false$ branch of $n$ with respect to the KB, then the SAT-solver identifies this node as a redundant node and it is pruned out of $f_{XADD}$: 
-\begin{equation*}
-(\psi_n \Longleftrightarrow^{KB} (\psi_{n_\mathit{True}}) \vee (\psi_{n_\mathit{False}})) \Longrightarrow \mathit{Prune} \hspace{2mm} n
-\end{equation*}
-
-\end{itemize}
-Thus if we add the new decision in any order in the canonical XADD of $n$, given that any inconsistency or redundancy is removed in polynomial decisions and also the format of the decision is also canonical, the new XADD of order $n+1$ is also canonical. 
-\end{proof}
-
-Given that there exists a minimal XADD for any function from $\mathbb{R}^{n+m} \rightarrow \mathbb{R}$, we next
-describe how this reduced XADD can be constructed from an arbitrary ordered decision diagram.
-All algorithms that we will deﬁne in the following sections rely on the helper function \emph{getNode} in Algorithm \ref{algGetNode} , which returns a minimal representation of a single internal decision node. 
-
-The algorithm \emph{ReduceXADD} allows the efficient construction of a unique minimal XADD representation from an arbitrary ordered decision diagram with polynomial leaves and polynomial inequalities as the decision nodes. Algorithm~\ref{algReduceXADD} is defined according to the following definition: 
+The algorithm \emph{ReduceXADD} allows the construction of a compact XADD representation from an arbitrary ordered decision diagram with polynomial leaves and polynomial inequalities as the decision nodes. Algorithm~\ref{algReduceXADD} is defined according to the following definition: 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{1em}
 \linesnumbered
@@ -1378,7 +1409,7 @@ Using the function \emph{GetNode} (Algorithm\ref{algGetNode}) any redundant deci
 \vspace{-6mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\vspace{-7mm}
+%\vspace{-7mm}
 We next present two successive algorithms, Algorithm~\ref{algPrune} for removing inconsistent nodes and Algorithm~\ref{algRedundant} for removing redundant nodes. 
 Given any XADD with potential inconsistent nodes, the output of \emph{algPrune} (Algorithm~\ref{algPrune}) is a reduced XADD with canonical leaves, linear decisions and no inconsistent nodes. 
 In lines 7 and 11 we test the current decision node with all previous decisions for implications in \emph{TestImplied}. 
@@ -1478,8 +1509,7 @@ Lines 14--15 define the decision labels and their values ($\mathit{true,false}$)
 \end{algorithm}
 \decmargin{1em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\vspace{-3mm}
-
+%\vspace{-3mm}
 As an example consider the two cases on the left side of the Figure ~\ref{fig:canonical}. In the upper diagram,  $x \geq -8  \Rightarrow x \geq -10 $ is reduced to $x\geq-8$ since it covers all the state space in the lower diagram.   
 
 Next we propose an equivalence testing approach for redundancy pruning using a SAT-solver. Consider the middle example in Figure  ~\ref{fig:canonical} where the child node(C) implies the parent node(A). We define the recursive algorithm required to prune all child-parent implications from an XADD using this example. We introduce Algorithm \ref{algRedundant} to remove redundant nodes. 
@@ -1492,8 +1522,7 @@ The recursive property of the algorithm now traverses backwards from the leaf no
 
 We use a SAT-solver (minisat) to entail this sentence and since the result is true, we can prune the true branch returning node B represented in the right-hand diagram of  Figure ~\ref{fig:canonical}. A similar approach is performed for the high branch in lines 16--17. The returned value is the true or false branch if the parent node can be pruned else a new node is built using line 19 of Algorithm \ref{algGetNode}. 
 
-In principle exact SDP solutions can be obtained for arbitrary symbolic functions, we  restrict XADDs to use polynomial functions only. This allow unique and canonical form for all functions and equations in the decision nodes and leaves, which further minimizes redundancy in an XADD.
-
+In principle exact SDP solutions can be obtained for arbitrary symbolic functions, we  restrict XADDs to use polynomial functions only. %This allow unique and canonical form for all functions and equations in the decision nodes and leaves, which further minimizes redundancy in an XADD.
 Having proved the main properties of an XADD, next we present the operations and algorithms required for SDP for XADDs.
 
 \subsection{XADD algorithms and operations}
@@ -1774,7 +1803,6 @@ If a call to Apply is unable to immediately compute a result or reuse a previous
 \end{itemize}
 
 Finally for the high and low branch of the final computation, two recursive calls are made to \emph{Apply} and the result is in a canonical form returned by \emph{GetNode}. 
-
 Having defined the efficient representation of XADDs, next we show results from implementing the SVI algorithms using this structure.
 
 \section{Experimental Results} \label{results}
@@ -1783,203 +1811,203 @@ Having defined the efficient representation of XADDs, next we show results from 
 We implemented two versions of our proposed SVI algorithms using XADDs
 --- one that does not prune nodes of the XADD and another that uses a
 linear programming solver to prune unreachable nodes (for problems
-with linear XADDs) and then performs a satisfiability check to prune redundant paths  --- and tested these algorithms on different problems. For DA-DCMDPs we have used the standard problem of \Knapsack\ and two versions of a Mars Rover domain that we call \MarsRoverL\ and \MarsRoverNL.
+with linear XADDs) and then performs a satisfiability check to prune redundant paths  --- and tested these algorithms on different problems.
 
-For CA-DCMDPs we evaluated SVI on a didactic nonlinear
-\MarsRover\ example and two problems from Operations Research (OR) \InventoryControl\ defined in the introduction and \WaterReservoir  all of which are described below.\footnote{All Java source code and a human/machine readable file format for all domains needed to reproduce
+For CA-HMDPs we evaluated SVI on a didactic nonlinear
+\MarsRover\ example and two problems from Operations Research (OR) \InventoryControl\ defined in the introduction and \WaterReservoir  all of which are described below. For comparison purposes the DA-HMDPs example domains are discretized by their action space. \footnote{All Java source code and a human/machine readable file format for all domains needed to reproduce
 the results in this paper can be found online at
 \texttt{http://code.google.com/p/xadd-inference}.}
 
 \subsection{Domains}
 
-\paragraph{\Knapsack}
-
-We have three continuous state variables: $k \in [0,100]$ indicating
-knapsack weight, and two sources of knapsack contents: $x_i \in
-[0,100]$ for $i \in \{ 1,2 \}$.  We have two actions $\mathit{move}_i$
-for $i \in \{ 1,2 \}$ that can move {\bf all} of a resource from $x_i$ to
-the knapsack {\bf if} the knapsack weight remains below
-its capacity of $100$.  We get an immediate reward for any weight added 
-to the knapsack.
-
-We can formalize the transition and reward for \Knapsack\ 
-action $\mathit{move}_i$ $(i \in \{ 1,2 \})$
-using conditional equations, where $(k,x_1,x_2)$
-and $(k',x_1',x_2')$ are respectively the pre- and post-action
-state and $R$ is immediate reward:
-
-\vspace{-2mm}
-%; following is the state-update
-%equation for action $\mathit{move}_i$ ($i \in \{ 1,2 \}$): 
-{\footnotesize
-%\begin{tabular}{l l}
-%\hspace{-2mm} $k' = \begin{cases}
+%\paragraph{\Knapsack}
+%
+%We have three continuous state variables: $k \in [0,100]$ indicating
+%knapsack weight, and two sources of knapsack contents: $x_i \in
+%[0,100]$ for $i \in \{ 1,2 \}$.  We have two actions $\mathit{move}_i$
+%for $i \in \{ 1,2 \}$ that can move {\bf all} of a resource from $x_i$ to
+%the knapsack {\bf if} the knapsack weight remains below
+%its capacity of $100$.  We get an immediate reward for any weight added 
+%to the knapsack.
+%
+%We can formalize the transition and reward for \Knapsack\ 
+%action $\mathit{move}_i$ $(i \in \{ 1,2 \})$
+%using conditional equations, where $(k,x_1,x_2)$
+%and $(k',x_1',x_2')$ are respectively the pre- and post-action
+%state and $R$ is immediate reward:
+%
+%\vspace{-2mm}
+%%; following is the state-update
+%%equation for action $\mathit{move}_i$ ($i \in \{ 1,2 \}$): 
+%{\footnotesize
+%%\begin{tabular}{l l}
+%%\hspace{-2mm} $k' = \begin{cases}
+%%k + x_i \leq 100 : & k + x_i \\
+%%k + x_i > 100 :    & k \\
+%%\end{cases}$ & $R = \begin{cases}
+%%k + x_i \leq 100 : & x_i \\
+%%k + x_i > 100 :    & 0 \\
+%%\end{cases}$\\
+%%\hspace{-2mm} $x_i' = \begin{cases}
+%%k + x_i \leq 100 : & 0 \\
+%%k + x_i > 100 :    & x_i \\
+%%\end{cases}$ & $x_j' = x_j, \; (j \neq i)$
+%%\end{tabular}}
+%\begin{align*}
+%k' = \begin{cases}
 %k + x_i \leq 100 : & k + x_i \\
 %k + x_i > 100 :    & k \\
-%\end{cases}$ & $R = \begin{cases}
-%k + x_i \leq 100 : & x_i \\
-%k + x_i > 100 :    & 0 \\
-%\end{cases}$\\
-%\hspace{-2mm} $x_i' = \begin{cases}
+%\end{cases}
+%\hspace{4mm}
+%x_i' = \begin{cases}
 %k + x_i \leq 100 : & 0 \\
 %k + x_i > 100 :    & x_i \\
-%\end{cases}$ & $x_j' = x_j, \; (j \neq i)$
-%\end{tabular}}
-\begin{align*}
-k' = \begin{cases}
-k + x_i \leq 100 : & k + x_i \\
-k + x_i > 100 :    & k \\
-\end{cases}
-\hspace{4mm}
-x_i' = \begin{cases}
-k + x_i \leq 100 : & 0 \\
-k + x_i > 100 :    & x_i \\
-\end{cases}
-\hspace{2mm}
-x_j' = x_j
-\;(j \neq i)
- \hspace{6mm}
-R = \begin{cases}
-k + x_i \leq 100 : & x_i \\
-k + x_i > 100 :    & 0 \\
-\end{cases}
-\end{align*}}
-If our objective is to maximize the long-term \emph{value} $V$ (i.e.,
-the sum of rewards received over an infinite horizon of actions), then
-we can write the optimal value achievable from a given state in \Knapsack\ 
-as a function of state variables:
-
-\vspace{-2mm}
-{%\footnotesize
-%\begin{tabular}{l}
-%$
-\begin{align*}
-V = \begin{cases}
-x_1 + k > 100 \land x_2 + k > 100 : & 0 \\
-x_1 + k > 100 \land x_2 + k \leq 100 : & x_2 \\
-x_1 + k \leq 100 \land x_2 + k > 100 : & x_1 \\
-%x_1 + k \leq 100 \land x_2 + k \leq 100 \land x_2 > x_1 : & x_2 \\
-%x_1 + k \leq 100 \land x_2 + k \leq 100 \land x_2 \leq x_1 : & x_1 \\
-x_1 + x_2 + k > 100 \land x_{1/2} + k \leq 100 \land x_2 > x_1 : & x_2 \\
-x_1 + x_2 + k > 100 \land x_{1/2} + k \leq 100 \land x_2 \leq x_1 : & x_1 \\
-x_1 + x_2 + k \leq 100: & \hspace{-7mm} x_1 + x_2 \\
-\end{cases} 
-%$
-%\end{tabular}
-\end{align*}
-}
-Reading this as a decision list, one will see this encodes the following:
-(a) if both resources are too large for the knapsack, 0 reward is obtained, (b) otherwise if only one item can fit, the reward is for the largest item that fits, (c) otherwise if both items can fit then reward $x_1 + x_2$ is obtained.  Here we note
-that the value function is piecewise linear, but it contains decision
-boundaries like $x_1 + x_2 + k \leq 100$ that are clearly non-rectangular;
-rectangular boundaries are restricted to conjunctions of simple
-inequalities of a continuous variable and a constant (e.g., $x_1 \leq
-5 \land x_2 > 2 \land k \geq 0$). 
-
-What is interesting to note is that although \Knapsack\ is very
-simple, no previous algorithm in the HMDP literature has been
-proposed to exactly solve it due to the nature of its non-rectangular
-piecewise optimal value function.  
+%\end{cases}
+%\hspace{2mm}
+%x_j' = x_j
+%\;(j \neq i)
+% \hspace{6mm}
+%R = \begin{cases}
+%k + x_i \leq 100 : & x_i \\
+%k + x_i > 100 :    & 0 \\
+%\end{cases}
+%\end{align*}}
+%If our objective is to maximize the long-term \emph{value} $V$ (i.e.,
+%the sum of rewards received over an infinite horizon of actions), then
+%we can write the optimal value achievable from a given state in \Knapsack\ 
+%as a function of state variables:
+%
+%\vspace{-2mm}
+%{%\footnotesize
+%%\begin{tabular}{l}
+%%$
+%\begin{align*}
+%V = \begin{cases}
+%x_1 + k > 100 \land x_2 + k > 100 : & 0 \\
+%x_1 + k > 100 \land x_2 + k \leq 100 : & x_2 \\
+%x_1 + k \leq 100 \land x_2 + k > 100 : & x_1 \\
+%%x_1 + k \leq 100 \land x_2 + k \leq 100 \land x_2 > x_1 : & x_2 \\
+%%x_1 + k \leq 100 \land x_2 + k \leq 100 \land x_2 \leq x_1 : & x_1 \\
+%x_1 + x_2 + k > 100 \land x_{1/2} + k \leq 100 \land x_2 > x_1 : & x_2 \\
+%x_1 + x_2 + k > 100 \land x_{1/2} + k \leq 100 \land x_2 \leq x_1 : & x_1 \\
+%x_1 + x_2 + k \leq 100: & \hspace{-7mm} x_1 + x_2 \\
+%\end{cases} 
+%%$
+%%\end{tabular}
+%\end{align*}
+%}
+%Reading this as a decision list, one will see this encodes the following:
+%(a) if both resources are too large for the knapsack, 0 reward is obtained, (b) otherwise if only one item can fit, the reward is for the largest item that fits, (c) otherwise if both items can fit then reward $x_1 + x_2$ is obtained.  Here we note
+%that the value function is piecewise linear, but it contains decision
+%boundaries like $x_1 + x_2 + k \leq 100$ that are clearly non-rectangular;
+%rectangular boundaries are restricted to conjunctions of simple
+%inequalities of a continuous variable and a constant (e.g., $x_1 \leq
+%5 \land x_2 > 2 \land k \geq 0$). 
+%
+%What is interesting to note is that although \Knapsack\ is very
+%simple, no previous algorithm in the HMDP literature has been
+%proposed to exactly solve it due to the nature of its non-rectangular
+%piecewise optimal value function.  
 
 \paragraph{\MarsRover}
-We consider two versions for a \textsc{Discrete Action} setting of a \MarsRover. A rover is supposed to approach one or more target points and take images of these points. Actions may consume time and energy.  There are also some domain constraints, e.g., some pictures can be taken only in a certain time window and can require different levels of energy to be performed. For a linear version of this problem,  \textsc{Discrete Action} \MarsRoverL  has two continuous variables,
-time $t$ and energy $e$.  For each target point $i$ ($i
-= 1 \ldots k$), there is a boolean variable $p_i$ indicating whether the
-rover is at point $i$.
+%We consider two versions for a \textsc{Discrete Action} setting of a \MarsRover. A rover is supposed to approach one or more target points and take images of these points. Actions may consume time and energy.  There are also some domain constraints, e.g., some pictures can be taken only in a certain time window and can require different levels of energy to be performed. For a linear version of this problem,  \textsc{Discrete Action} \MarsRoverL  has two continuous variables,
+%time $t$ and energy $e$.  For each target point $i$ ($i
+%= 1 \ldots k$), there is a boolean variable $p_i$ indicating whether the
+%rover is at point $i$.
+%
+%There are $k(k-1)$ actions $\mathit{move}_i$ that move the rover from
+%point $i$ to point $j \neq i$.  There are another $k$ actions
+%$\mathit{take\-pic}_i$ that take a picture at point $i$, which are
+%conditioned on linear expressions over the time and energy
+%variables. e.g., the transition function for taking a picture and the energy and time are provided below: 
+%\begin{align*}
+%\mathit{take\-pic '}_i & = 
+%\begin{cases}
+%(e > 3) \land (t \geq 3600) \land\ (t \leq 50400) : & 1 \\
+%\text{\normalsize otherwise}: & \mathit{take\-pic}_i \\
+%\end{cases}\\
+%%\hspace{4mm}
+% \mathit{t'} & = 
+%\begin{cases}
+%(e > 3) \land (t \geq 3600) \land\ (t \leq 50400) \land \neg \mathit{take\-pic}_i: & t+600 \\
+%\text{\normalsize otherwise}: & t \\
+%\end{cases}\\
+%%\hspace{4mm}
+% \mathit{e'} & = 
+%\begin{cases}
+%(e > 3) \land (t \geq 3600) \land\ (t \leq 50400) \land \neg \mathit{take\-pic}_i: & e-3 \\
+%\text{\normalsize otherwise}: & e \\
+%\end{cases}
+%\end{align*}
+%
+%The reward is also a function of time and energy, e.g., the
+%reward for action $\mathit{take\-pic}_i$ is given by:
+%
+%\vspace{-4mm}
+%{%\footnotesize
+%\begin{align*}
+%R_{\mathit{take\-pic}_i}(e,t,p_i) & = 
+%\begin{cases}
+%(e > 3 + 0.0002*t) \land (t \geq 3600) \land\ (t \leq 50400) \land p_i: & 110\\
+%\text{\normalsize otherwise}: & 0\\
+%\end{cases}
+%\end{align*}}
+%\vspace{-2mm}
+%
+%which shows that to get a reward of 110, 
+%the rover must take a picture at point $i$ 
+%between times 3600 and 50400 with a required energy reserve
+%that increases as the day progresses.
+%
+%A non-linear version of \textsc{Discrete Action}  \MarsRoverNL has two continuous variables --- geographic coordinates $(x,y)$ --- and $k$ boolean variables $h_i$ for each picture point $i$ indicating whether the
+%rover \emph{has already taken} a picture of point $i$.  There is a
+%single $\mathit{move}$ action in this domain --- it simply reduces the
+%distance from the rover to a specific point by $\frac{1}{3}$ of the 
+%current distance.  The intent of this action is to represent the fact that a rover may move progressively more slowly as it approaches a target position in order to reach the
+%position with high accuracy. 
+%There are another $k$ actions $\mathit{take\-pic}_i$ that take a picture at point $i$, which are conditioned on \emph{nonlinear} expressions over the continuous
+%$x$ and $y$ variables. The formalized transition function for this action is defined as the following:
+%%\vspace{-3mm}
+%{%\footnotesize
+%\begin{align}
+%\mathit{take\-pic '}_i & = 
+%\begin{cases}
+%x^2 + y^2 < 4 : & 1 \\
+%x^2 + y^2 \geq 4 \land  \mathit{take\-pic}_i : & 1 \\
+%x^2 + y^2 \geq 4 \land  \neg \mathit{take\-pic}_i : & 0 \\
+%\end{cases} \label{trans:nonlin} 
+%\end{align}
+%}
+%%\vspace{-3mm} 
+%The reward is also a function of $x$ and $y$, the reward for action $\mathit{take\-pic}_i$ is given by:
+%%\vspace{-3mm}
+%{%\footnotesize
+%\begin{align}
+%R_{\mathit{take\-pic}_i}(x,y,h_i) & = 
+%\begin{cases}
+%x^2 + y^2 < 4 \land h_i : & 0 \\
+%x^2 + y^2 < 4 \land \neg h_i : & 4 - x^2 - y^2 \\
+%x^2 + y^2 \geq 4 : & 0
+%\end{cases} \label{rew:nonlin} 
+%\end{align}
+%}
+%%\vspace{-3mm}
+%This indicates that if the rover has not already taken a picture of
+%point $i$ and the rover is within a radius of 2 from the picture point
+%$(0,0)$, then the rover receives a reward that is quadratically
+%proportional to the distance from the picture point.  Hence for
+%various points, the rover has to trade-off whether to take each picture
+%at its current position, or to get a larger reward by
+%first moving and potentially getting closer before taking the picture.
 
-There are $k(k-1)$ actions $\mathit{move}_i$ that move the rover from
-point $i$ to point $j \neq i$.  There are another $k$ actions
-$\mathit{take\-pic}_i$ that take a picture at point $i$, which are
-conditioned on linear expressions over the time and energy
-variables. e.g., the transition function for taking a picture and the energy and time are provided below: 
-\begin{align*}
-\mathit{take\-pic '}_i & = 
-\begin{cases}
-(e > 3) \land (t \geq 3600) \land\ (t \leq 50400) : & 1 \\
-\text{\normalsize otherwise}: & \mathit{take\-pic}_i \\
-\end{cases}\\
-%\hspace{4mm}
- \mathit{t'} & = 
-\begin{cases}
-(e > 3) \land (t \geq 3600) \land\ (t \leq 50400) \land \neg \mathit{take\-pic}_i: & t+600 \\
-\text{\normalsize otherwise}: & t \\
-\end{cases}\\
-%\hspace{4mm}
- \mathit{e'} & = 
-\begin{cases}
-(e > 3) \land (t \geq 3600) \land\ (t \leq 50400) \land \neg \mathit{take\-pic}_i: & e-3 \\
-\text{\normalsize otherwise}: & e \\
-\end{cases}
-\end{align*}
-
-The reward is also a function of time and energy, e.g., the
-reward for action $\mathit{take\-pic}_i$ is given by:
-
-\vspace{-4mm}
-{%\footnotesize
-\begin{align*}
-R_{\mathit{take\-pic}_i}(e,t,p_i) & = 
-\begin{cases}
-(e > 3 + 0.0002*t) \land (t \geq 3600) \land\ (t \leq 50400) \land p_i: & 110\\
-\text{\normalsize otherwise}: & 0\\
-\end{cases}
-\end{align*}}
-\vspace{-2mm}
-
-which shows that to get a reward of 110, 
-the rover must take a picture at point $i$ 
-between times 3600 and 50400 with a required energy reserve
-that increases as the day progresses.
-
-A non-linear version of \textsc{Discrete Action}  \MarsRoverNL has two continuous variables --- geographic coordinates $(x,y)$ --- and $k$ boolean variables $h_i$ for each picture point $i$ indicating whether the
-rover \emph{has already taken} a picture of point $i$.  There is a
-single $\mathit{move}$ action in this domain --- it simply reduces the
-distance from the rover to a specific point by $\frac{1}{3}$ of the 
-current distance.  The intent of this action is to represent the fact that a rover may move progressively more slowly as it approaches a target position in order to reach the
-position with high accuracy. 
-There are another $k$ actions $\mathit{take\-pic}_i$ that take a picture at point $i$, which are conditioned on \emph{nonlinear} expressions over the continuous
-$x$ and $y$ variables. The formalized transition function for this action is defined as the following:
-%\vspace{-3mm}
-{%\footnotesize
-\begin{align}
-\mathit{take\-pic '}_i & = 
-\begin{cases}
-x^2 + y^2 < 4 : & 1 \\
-x^2 + y^2 \geq 4 \land  \mathit{take\-pic}_i : & 1 \\
-x^2 + y^2 \geq 4 \land  \neg \mathit{take\-pic}_i : & 0 \\
-\end{cases} \label{trans:nonlin} 
-\end{align}
-}
-%\vspace{-3mm} 
-The reward is also a function of $x$ and $y$, the reward for action $\mathit{take\-pic}_i$ is given by:
-%\vspace{-3mm}
-{%\footnotesize
-\begin{align}
-R_{\mathit{take\-pic}_i}(x,y,h_i) & = 
-\begin{cases}
-x^2 + y^2 < 4 \land h_i : & 0 \\
-x^2 + y^2 < 4 \land \neg h_i : & 4 - x^2 - y^2 \\
-x^2 + y^2 \geq 4 : & 0
-\end{cases} \label{rew:nonlin} 
-\end{align}
-}
-%\vspace{-3mm}
-This indicates that if the rover has not already taken a picture of
-point $i$ and the rover is within a radius of 2 from the picture point
-$(0,0)$, then the rover receives a reward that is quadratically
-proportional to the distance from the picture point.  Hence for
-various points, the rover has to trade-off whether to take each picture
-at its current position, or to get a larger reward by
-first moving and potentially getting closer before taking the picture.
-
-In a \textsc{Continuous Action}  setting, a \MarsRover state consists of its continuous position $x$ along a given route.  In a given time step, the rover may move a continuous distance $y \in [-10,10]$.  The rover receives its greatest reward for taking a picture at $x=0$, which quadratically decreases to zero at the boundaries of the range $x \in [-2,2]$.  The rover will
+In a \textsc{Continuous Action} setting, a \MarsRover state consists of its continuous position $x$ along a given route.  In a given time step, the rover may move a continuous distance $y \in [-10,10]$.  The rover receives its greatest reward for taking a picture at $x=0$, which quadratically decreases to zero at the boundaries of the range $x \in [-2,2]$.  The rover will
 automatically take a picture when it starts a time step within the range $x \in [-2,2]$ and it only receives this reward once.
 
 Using boolean variable $b \in \{0,1\}$ to indicate if the picture has
 already been taken ($b=1$), $x'$ and $b'$ to denote 
 post-action state, and $R$ to denote reward, we 
-express the \MarsRover\ CA-DCMDP using piecewise dynamics and reward:
-\vspace{-4mm}
+express the \MarsRover\ CA-HMDP using piecewise dynamics and reward:
+%\vspace{-4mm}
 \begin{align*} 
 \hspace{-2.8mm} P(b'\sq=\sq1|x,b) & = 
 \begin{cases}
@@ -2069,7 +2097,7 @@ else &: 0 \\
 \end{align*}
 }
 The value function is piecewise and non-linear, and it contains non-rectangular decision
-boundaries like $4 -x^2 -y^2\geq 0$. Figure ~\ref{fig:opt_graph} presents the  0-, 1-, and 2-step time horizon solutions for this problem; further, in symbolic form, we display both the 1-step time horizon value function and corresponding optimal policy in Figure ~\ref{fig:opt_val_pol}. Here, the piecewise nature of the transition and reward function leads to piece- wise structure in the value function and policy. Yet despite the intuitive and simple nature of this result, we are unaware of prior methods that can produce such exact solutions.
+boundaries like $4 -x^2 -y^2\geq 0$. Figure ~\ref{fig:opt_graph} presents the  0-, 1-, and 2-step time horizon solutions for this problem; further, in symbolic form, we display both the 1-step time horizon value function and corresponding optimal policy in Figure ~\ref{fig:opt_val_pol}. Here, the piecewise nature of the transition and reward function leads to piece- wise structure in the value function and policy. Yet despite the intuitive and simple nature of this result, we are unaware of prior methods that can produce such exact solutions. 
 
 \paragraph{\WaterReservoir} 
 Reservoir management is well-studied in
@@ -2077,7 +2105,7 @@ the OR literature \cite{Mahootchi2009,Yeh1985}.  The key continuous decision is 
 much elapsed time $e$ to
 \emph{drain} (or \emph{not drain}) each reservoir to maximize
 electricity revenue over the decision-stage horizon while avoiding
-reservoir overflow and underflow.  Cast as a CA-DCMDP, we 
+reservoir overflow and underflow.  Cast as a CA-HMDP, we 
 believe SVI provides the first approach capable of deriving
 an exact closed-form non-myopic optimal policy
 for all levels.
@@ -2107,7 +2135,9 @@ The transition function for levels of the $\mathit{drain}$ action is defined bel
 l_1' & =(400 * e + l_1 -700 * e + 500 * e) \\
 l_2'& =(400 * e + l_2 - 500 * e) \\
 \end{align*}}
-Given the descriptions of these domains and the \InventoryControl problem in the introduction, we now provide the empirical results obtained from implementing our algorithms.
+
+Similar to the discrete version of the \InventoryControl problem in the introduction, the DA-HMDP setting for these two problems defines discrete actions by partitioning the action space of each domain into 1/10 slices. For the \MarsRover\ problem this defines 2 actions ($a_1=[-10,0], a_2 = [0,10]$), for \WaterReservoir  the discrete time action set is a set of 20 elements where $e_1=[0,10]$ and $e_20 = [190,200]$ and the transition and reward functions are defined according to these constant values.
+We now provide the empirical results obtained from implementing our algorithms.
 
 \subsection{Results}
 
@@ -2118,101 +2148,75 @@ in terms of time and space cost while varying the horizon and problem size.
 Because the reward and transition functions for \textsc{Discrete Action}  \MarsRoverL\ use piecewise linear case statements, we note the optimal value function
 in this domain is also piecewise linear.  Hence in this domain, we use
 a linear constraint feasibility checker to prune unreachable paths in
-the XADD --- later we will compare solutions for \MarsRoverL\ with and
+the XADD, we also compare solutions for \MarsRover with and
 without this pruning.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.42\textwidth]{Figures1/cmdp/SpaceVsPictureLinear.pdf}
-\hspace{5mm}
-\includegraphics[width=0.42\textwidth]{Figures1/cmdp/SpaceVsPictures.pdf}
-\includegraphics[width=0.42\textwidth]{Figures1/cmdp/TimeVsPicturesLinear.pdf}
-\hspace{5mm}
-\includegraphics[width=0.42\textwidth]{Figures1/cmdp/TimeVsPictures.pdf}
-\caption{%\footnotesize 
-Space (\# XADD nodes in value function) 
-and time to optimally solve different problem 
-sizes of the two \textsc{Discrete Action}  \MarsRover~domains for varying horizon lengths.}
-\label{fig:all_lin}
-\vspace{-5mm}
-\end{figure*}
+%\begin{figure*}[t]
+%\centering
+%\includegraphics[width=0.42\textwidth]{Figures1/cmdp/SpaceVsPictureLinear.pdf}
+%\hspace{5mm}
+%\includegraphics[width=0.42\textwidth]{Figures1/cmdp/SpaceVsPictures.pdf}
+%\includegraphics[width=0.42\textwidth]{Figures1/cmdp/TimeVsPicturesLinear.pdf}
+%\hspace{5mm}
+%\includegraphics[width=0.42\textwidth]{Figures1/cmdp/TimeVsPictures.pdf}
+%\caption{%\footnotesize 
+%Space (\# XADD nodes in value function) 
+%and time to optimally solve different problem 
+%sizes of the two \textsc{Discrete Action}  \MarsRover~domains for varying horizon lengths.}
+%\label{fig:all_lin}
+%\vspace{-5mm}
+%\end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-In Figure~\ref{fig:all_lin}, for both the \textsc{Discrete Action}  \MarsRoverL\ and
-\textsc{Discrete Action}  \MarsRoverNL\ domains, we show how the number of nodes of the value function XADD (proportional to the space required to represent the
-value function) varies for each iteration (horizon) and different
-problem sizes (given by the number of pictures).  We first note that
-the nonlinear variant appears \emph{much} harder for SDP (much more
-time required and larger value functions) than for the linear variant
---- this is largely due to the fact that the XADD can be optimally
-pruned in the linear variant.  Secondly, we note an apparent
-superlinear growth in space and time required to solve each problem as
-a function of the number of picture points --- this likely reflects
-the superlinear growth of combinations of pictures that must be
-jointly considered as the number of pictures increases.  Finally, from these
-graphs it is hard to summarize general algorithm behavior as a function of
-horizon, but it appears for the linear problem variant that both the time 
-and space grow linearly as a function of horizon --- this will be
-confirmed in the next experiments.  
+%In Figure~\ref{fig:all_lin}, for both the \textsc{Discrete Action}  \MarsRoverL\ and \textsc{Discrete Action}  \MarsRoverNL\ domains, we show how the number of nodes of the value function XADD (proportional to the space required to represent the value function) varies for each iteration (horizon) and different problem sizes (given by the number of pictures).  We first note that the nonlinear variant appears \emph{much} harder for SDP (much more time required and larger value functions) than for the linear variant --- this is largely due to the fact that the XADD can be optimally pruned in the linear variant.  Secondly, we note an apparent superlinear growth in space and time required to solve each problem as a function of the number of picture points --- this likely reflects the superlinear growth of combinations of pictures that must be jointly considered as the number of pictures increases.  Finally, from these graphs it is hard to summarize general algorithm behavior as a function of horizon, but it appears for the linear problem variant that both the time  and space grow linearly as a function of horizon --- this will be confirmed in the next experiments.  
 
-Figure~\ref{fig:lin3} shows the amount of time for each iteration of
-SDP vs. horizon for \MarsRoverL\ with three picture points for SDP
-with and without XADD pruning.  Here we see an impressive reduction in
-time and space as a function of horizon with pruning.  Without
-pruning, both time and space grow super-linearly with the horizon,
-while with pruning time and space appear to grow linearly with the
-horizon.
-
-
+%Figure~\ref{fig:lin3} shows the amount of time for each iteration of SDP vs. horizon for \MarsRoverL\ with three picture points for SDP with and without XADD pruning.  Here we see an impressive reduction in time and space as a function of horizon with pruning.  Without pruning, both time and space grow super-linearly with the horizon, while with pruning time and space appear to grow linearly with the horizon.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}[t]
-\centering
-%\subfigure{
-\includegraphics[width=0.4\textwidth]{Figures1/cmdp/SpaceVsHorizonRoverLinear3.pdf}
-\hspace{5mm}
-\includegraphics[width=0.4\textwidth]{Figures1/cmdp/TimeVsHorizonRoverLinear3.pdf}
-%}
+%\begin{figure*}[t]
+%\centering
+%%\subfigure{
+%\includegraphics[width=0.4\textwidth]{Figures1/cmdp/SpaceVsHorizonRoverLinear3.pdf}
+%\hspace{5mm}
+%\includegraphics[width=0.4\textwidth]{Figures1/cmdp/TimeVsHorizonRoverLinear3.pdf}
+%%}
+%%\vspace{-3mm}
+%\caption{%\footnotesize 
+%Space (\# XADD nodes in value function) and
+%time for different iterations (horizons) of SDP on \textsc{Discrete Action} \MarsRoverL\ 
+%with 3 image target points.  Results shown for SDP with and without XADD 
+%infeasible path pruning.}
+%\label{fig:lin3}
 %\vspace{-3mm}
-\caption{%\footnotesize 
-Space (\# XADD nodes in value function) and
-time for different iterations (horizons) of SDP on \textsc{Discrete Action} \MarsRoverL\ 
-with 3 image target points.  Results shown for SDP with and without XADD 
-infeasible path pruning.}
-\label{fig:lin3}
-\vspace{-3mm}
-\end{figure*}
+%\end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}[t]
-\centering
-%\subfigure{
-\includegraphics[width=0.31\textwidth]{Figures1/cmdp/Knapsack.pdf}
-\includegraphics[width=0.31\textwidth]{Figures1/cmdp/MarsRoverLinear2.pdf}
-\includegraphics[width=0.31\textwidth]{Figures1/cmdp/MarsNonlinear.pdf}
-%}
-%\vspace{-3mm}
-\caption{%\footnotesize 
-\emph{Optimal} value function (vertical axis) for different domains showing 
-\emph{non-rectangular} piecewise boundaries.  From left to right, \Knapsack\ 
-($H = \infty$, horizontal axes $x_2$ and $x_1$),
-\MarsRoverL\ with two pictures ($H = 8$, horizontal axes $\mathit{energy}$ and 
-$\mathit{time}$), and \MarsRoverNL\ with one picture ($H = 3$, horizontal axes 
-$y$ and $x$).}
-\label{fig:plot3D}
-\vspace{-5mm}
-\end{figure*}
+%\begin{figure*}[t]
+%\centering
+%%\subfigure{
+%\includegraphics[width=0.31\textwidth]{Figures1/cmdp/Knapsack.pdf}
+%\includegraphics[width=0.31\textwidth]{Figures1/cmdp/MarsRoverLinear2.pdf}
+%\includegraphics[width=0.31\textwidth]{Figures1/cmdp/MarsNonlinear.pdf}
+%%}
+%%\vspace{-3mm}
+%\caption{%\footnotesize 
+%\emph{Optimal} value function (vertical axis) for different domains showing 
+%\emph{non-rectangular} piecewise boundaries.  From left to right, \Knapsack\ 
+%($H = \infty$, horizontal axes $x_2$ and $x_1$),
+%\MarsRoverL\ with two pictures ($H = 8$, horizontal axes $\mathit{energy}$ and 
+%$\mathit{time}$), and \MarsRoverNL\ with one picture ($H = 3$, horizontal axes 
+%$y$ and $x$).}
+%\label{fig:plot3D}
+%\vspace{-5mm}
+%\end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-In Figure~\ref{fig:plot3D}, we show the exact optimal value function
-on the vertical axis 
-for three domains, \Knapsack\, \textsc{Discrete Action}  \MarsRoverL ~and \textsc{Discrete Action}  \MarsRoverNL, as a function of two continuous state variables shown on the horizontal axes.
+%In Figure~\ref{fig:plot3D}, we show the exact optimal value function on the vertical axis  for three domains, \Knapsack\, \textsc{Discrete Action}  \MarsRoverL ~and \textsc{Discrete Action}  \MarsRoverNL, as a function of two continuous state variables shown on the horizontal axes.
 We notice here that the piecewise boundaries for all three
 plots clearly demonstrate non-rectangular boundaries. In particular, the
-value function plot for the \MarsRoverNL~domain demonstrates nonlinear
+value function plot for the \MarsRover demonstrates nonlinear
 piecewise boundaries with each piece being a nonlinear function of the
 state --- it has the shape of stacked quadratic cones with each lower
 cone representing the cost of first moving from points farther away
 from the picture being receiving the value for taking the picture
-within the radius limits from~\eqref{rew:nonlinear}.
+within the radius limits.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure*}[t]
@@ -2327,7 +2331,7 @@ convergence.
 %\vspace*{-0.05in}
 \section{Related Work}
 
-The most relevant vein of related work for DA-DCMDPs is that of \cite{feng04} and \cite{li05} which can perform exact dynamic programming on
+The most relevant vein of related work for DA-HMDPs is that of \cite{feng04} and \cite{li05} which can perform exact dynamic programming on
 HMDPs with rectangular piecewise linear reward and transition functions
 that are delta functions.  While SDP can solve these same problems,
 it removes both the rectangularity and piecewise restrictions on the
@@ -2367,7 +2371,7 @@ approximations.
 %As for continuous actions and states, there has been prior work on approximate solutions to continuous state MDPs \cite{munos02,phase07} and even continuous state and action
 %MDPs \cite{kveton06}, which might inform future approximate extensions
 %of this work.  
-As for CA-DCMDPs, there has been prior work in control theory. The field of linear-quadratic Gaussian (LQG) control \cite{lqgc} which use linear dynamics with continuous actions, Gaussian noise, and quadratic
+As for CA-HMDPs, there has been prior work in control theory. The field of linear-quadratic Gaussian (LQG) control \cite{lqgc} which use linear dynamics with continuous actions, Gaussian noise, and quadratic
 reward is most closely related.  However, these exact solutions do
 not extend to discrete and continuous systems with \emph{piecewise}
 dynamics or reward.
