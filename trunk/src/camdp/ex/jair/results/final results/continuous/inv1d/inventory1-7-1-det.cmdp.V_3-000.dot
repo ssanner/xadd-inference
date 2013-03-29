@@ -1,0 +1,34 @@
+digraph G { 
+graph [ fontname = "Helvetica",fontsize="16",ratio = "auto",
+        size="7.5,10",ranksep="2.00" ];
+node [fontsize="16"];
+"830" [label="(240.057756 + (1.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"831" [label="(145.029253 + (2 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"1850" [label="(1 * x) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"952" [label="(97.50075 + (2.95 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"1073" [label="(1 + (-0.009997 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1072" [label="(1 + (-0.02 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1653" [label="(472.5 + (-0.15 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"4" [label="-Infinity",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"1542" [label="405.029253",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"1849" [label="(1 + (-0.002 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1847" [label="(-1 + (0.003333 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"_temp_" [label="V^3-000",fillcolor=gold1,color=black,shape=square,style=filled];
+"1848" [label="(-1 + (0.006667 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1332" [label="(390.057756 + (0.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"1846" [label="(1 + (-0.002222 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"1850" -> "4" [color=black,style=dashed];
+"1850" -> "1849" [color=black,style=solid];
+"1073" -> "830" [color=black,style=dashed];
+"1073" -> "1072" [color=black,style=solid];
+"1072" -> "831" [color=black,style=dashed];
+"1072" -> "952" [color=black,style=solid];
+"1849" -> "4" [color=black,style=dashed];
+"1849" -> "1848" [color=black,style=solid];
+"1847" -> "1332" [color=black,style=dashed];
+"1847" -> "1846" [color=black,style=solid];
+"1848" -> "1847" [color=black,style=solid];
+"1848" -> "1073" [color=black,style=dashed];
+"1846" -> "1653" [color=black,style=dashed];
+"1846" -> "1542" [color=black,style=solid];
+}

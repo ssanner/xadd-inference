@@ -42,11 +42,12 @@ public class CAMDP {
 	private static final boolean SILENT_PLOT = true;
 	
 	//Prune and Linear Flags
-	public static boolean LINEAR_PROBLEM = true;
+	public static boolean LINEAR_PROBLEM = false;
 	public static boolean APPROX_PRUNING = true;
 	public double APPROX_ERROR = 0.0d;
 	public boolean APPROX_ALWAYS = false;
 	public boolean COMPARE_OPTIMAL = false;
+	public boolean DISCRETIZE_PROBLEM =false;
 	
 	//Optimal solution maintenance
 	public static ArrayList<Integer> optimalDD = new ArrayList<Integer>();
@@ -70,7 +71,7 @@ public class CAMDP {
 
 	/* Local vars */
 	public boolean DISPLAY_2D = false;
-	public boolean DISPLAY_3D = false;
+	public boolean DISPLAY_3D = true;
 
 	public String _problemFile = null;
 	public String _logFileRoot = null;

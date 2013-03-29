@@ -4,12 +4,17 @@ src/camdp/ex/jair/inventory1-8-1.cmdp 6 true false
 src/camdp/ex/jair/inventory2-7-det.cmdp 6 false true
 src/camdp/ex/jair/inventory2-7.cmdp 6 false true
 
-
-
+action = increments of 1/10 of continuous range
+2d = 100 actions 
 
 Reservoir:
 src/camdp/ex/jair/reservoir-refinement5-2.cmdp 6 false true
-
+try e=100 first, then discritize inc evenly (1/10)
 
 Rover:
 src/camdp/ex/jair/Rover-nonlinear5-1.cmdp 6 true false
+
+1/10 = 2 actions
+same plots for discretize
+
+change reward to consider all primes

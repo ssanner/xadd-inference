@@ -5,7 +5,10 @@ import graph.Graph;
 import java.util.*;
 
 import util.IntTriple;
+import xadd.ExprLib;
 import xadd.XADD;
+import xadd.ExprLib.ArithExpr;
+import xadd.ExprLib.DoubleExpr;
 import xadd.XADD.*;
 
 public class ComputeQFunction {
@@ -114,16 +117,19 @@ public class ComputeQFunction {
 			}
 			_camdp._logStream.println("- Done noise parameter minimization");
 			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " )" + _context.collectVars(q) + "\n" + _context.getString(q));
-		}
-		 
+		}		
+		
 		// Continuous action parameter maximization
 		if (a._actionParams.size() == 0) {
 			// No action params to maximize over
 			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " ):\n" + " No action parameters to max over, skipping this step.");
-		} else {
-			// Max out each action param in turn
+		} else 
+		{
+		
+				// Max out each action param in turn
 			HashSet<String> q_vars = _context.collectVars(q);
-			for (int i=0; i < a._actionParams.size(); i++) {
+			for (int i=0; i < a._actionParams.size(); i++) 
+			{
 				String avar = a._actionParams.get(i);
 				double lb   = a._hmAVar2LB.get(avar);
 				double ub   = a._hmAVar2UB.get(avar);
@@ -132,18 +138,45 @@ public class ComputeQFunction {
 					_camdp._logStream.println("- Skipping var '" + avar + "': [" + lb + "," + ub + "], which does not occur in q: " + _context.collectVars(q));
 					continue;
 				}
-				
-				_camdp._logStream.println("- Maxing out action param '" + avar + "': [" + lb + "," + ub + "]");
-				q = maxOutVar(q, avar, lb, ub);
-				_camdp._logStream.println("-->: " + _context.getString(q));
+				 //discretizing for continuous domains ( 10 is the step size) 
+				if (_camdp.DISCRETIZE_PROBLEM)
+				{
+					_camdp._logStream.println("- DISCRETIZING '" + avar + " into "+ ((ub - lb)/10) + " discrete actions");
+					int range=(int) lb;
+					int actionTree = q;
+					Integer maximizedTree = null;
+					//int interval = (ub - lb) / 10;
+					while (range<= (int) ub)
+					{
+						ArithExpr range_a = new DoubleExpr(range);
+						Integer actionValue =_context.getTermNode(range_a);
+						int actionReplace = _context.reduceProcessXADDLeaf(actionValue, 
+								_context.new DeltaFunctionSubstitution(avar, actionTree), true);
+						maximizedTree= (maximizedTree == null) ? actionReplace :
+											_context.apply(maximizedTree, actionReplace, XADD.MAX);
+						maximizedTree = _context.reduceRound(maximizedTree); // Round!
+						maximizedTree = _context.reduceLP(maximizedTree); // Rely on flag XADD.CHECK_REDUNDANCY
 
+						range = range+10;
+						_camdp.flushCaches(Arrays.asList(maximizedTree,q) /* additional node to save */);
+
+					}
+					q = maximizedTree;
+				}
+				else //not discretizing! continuous version
+				{
+					_camdp._logStream.println("- Maxing out action param '" + avar + "': [" + lb + "," + ub + "]");
+					q = maxOutVar(q, avar, lb, ub);
+					_camdp._logStream.println("-->: " + _context.getString(q));
+					// Can be computational expensive (max-out) so flush caches if needed
+					_camdp.flushCaches(Arrays.asList(q) /* additional node to save */);
+				}
 				
-				// Can be computational expensive (max-out) so flush caches if needed
-				_camdp.flushCaches(Arrays.asList(q) /* additional node to save */);
 				if (CAMDP.DISPLAY_PREMAX_Q){
 					_camdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "-End^" + _camdp._nCurIter + "-" + Math.round(1000*_camdp.APPROX_ERROR));
 				}
-			}
+			  }
+		
 			_camdp._logStream.println("- Done action parameter maximization");
 			_camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + " )\n" + _context.getString(q));
 		}

@@ -1,0 +1,26 @@
+digraph G { 
+graph [ fontname = "Helvetica",fontsize="16",ratio = "auto",
+        size="7.5,10",ranksep="2.00" ];
+node [fontsize="16"];
+"696" [label="(-1 + (0.003333 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"610" [label="(307.5 + (-0.1 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"532" [label="(262.529253 + (0.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"697" [label="(-1 + (0.006667 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"4" [label="-Infinity",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"344" [label="(112.529253 + (1.05 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"345" [label="(17.50075 + (2 * x))",fillcolor=lightsalmon,color=black,shape=box,style=filled];
+"707" [label="(1 + (-0.002 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"_temp_" [label="V^2-000",fillcolor=gold1,color=black,shape=square,style=filled];
+"346" [label="(1 + (-0.009997 * x)) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"708" [label="(1 * x) > 0",fillcolor=lightblue,color=black,shape=ellipse,style=filled];
+"696" -> "610" [color=black,style=solid];
+"696" -> "532" [color=black,style=dashed];
+"697" -> "696" [color=black,style=solid];
+"697" -> "346" [color=black,style=dashed];
+"707" -> "697" [color=black,style=solid];
+"707" -> "4" [color=black,style=dashed];
+"346" -> "344" [color=black,style=dashed];
+"346" -> "345" [color=black,style=solid];
+"708" -> "4" [color=black,style=dashed];
+"708" -> "707" [color=black,style=solid];
+}
