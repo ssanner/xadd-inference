@@ -1,0 +1,9 @@
+T	1	0	null
+T	8	(4 + (-1 * x * x))	null
+E	4	(1 + (0.5 * x)) > 0
+I	14	4	1	8
+E	3	(1 + (-0.5 * x)) > 0
+I	18	3	1	14
+B	1	tp
+I	19	1	18	1
+F	5	3	(#nodes and #decisions)
