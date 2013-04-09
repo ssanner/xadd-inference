@@ -138,13 +138,14 @@ public class ComputeQFunction {
 					_camdp._logStream.println("- Skipping var '" + avar + "': [" + lb + "," + ub + "], which does not occur in q: " + _context.collectVars(q));
 					continue;
 				}
-				 //discretizing for continuous domains ( 10 is the step size) 
+				 //discretizing for continuous domains ( C is the step size) 
 				if (_camdp.DISCRETIZE_PROBLEM)
 				{
-					_camdp._logStream.println("- DISCRETIZING '" + avar + " into "+ ((ub - lb)/10) + " discrete actions");
+					_camdp._logStream.println("- DISCRETIZING '" + avar + " into "+ _camdp.DISCRETE_NUMBER + " discrete actions");
 					int range=(int) lb;
 					int actionTree = q;
 					Integer maximizedTree = null;
+					int stepsize = (int) ((ub - lb)/(_camdp.DISCRETE_NUMBER-1));
 					//int interval = (ub - lb) / 10;
 					while (range<= (int) ub)
 					{
@@ -157,8 +158,8 @@ public class ComputeQFunction {
 						maximizedTree = _context.reduceRound(maximizedTree); // Round!
 						maximizedTree = _context.reduceLP(maximizedTree); // Rely on flag XADD.CHECK_REDUNDANCY
 
-						range = range+10;
-						_camdp.flushCaches(Arrays.asList(maximizedTree,q) /* additional node to save */);
+						range = range+ stepsize;
+						_camdp.flushCaches(Arrays.asList(maximizedTree) /* additional node to save */);
 
 					}
 					q = maximizedTree;
