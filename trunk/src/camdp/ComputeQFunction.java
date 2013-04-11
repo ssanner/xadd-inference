@@ -142,12 +142,12 @@ public class ComputeQFunction {
 				if (_camdp.DISCRETIZE_PROBLEM)
 				{
 					_camdp._logStream.println("- DISCRETIZING '" + avar + " into "+ _camdp.DISCRETE_NUMBER + " discrete actions");
-					int range=(int) lb;
 					int actionTree = q;
 					Integer maximizedTree = null;
-					int stepsize = (int) ((ub - lb)/(_camdp.DISCRETE_NUMBER-1));
+					int range=(int) _camdp.GLOBAL_LB;
+					int stepsize = (int) ((_camdp.GLOBAL_UB - _camdp.GLOBAL_LB)/(_camdp.DISCRETE_NUMBER-1));
 					//int interval = (ub - lb) / 10;
-					while (range<= (int) ub)
+					while (range<= (int) _camdp.GLOBAL_UB)
 					{
 						ArithExpr range_a = new DoubleExpr(range);
 						Integer actionValue =_context.getTermNode(range_a);
