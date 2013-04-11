@@ -144,22 +144,37 @@ public class ComputeQFunction {
 					_camdp._logStream.println("- DISCRETIZING '" + avar + " into "+ _camdp.DISCRETE_NUMBER + " discrete actions");
 					int actionTree = q;
 					Integer maximizedTree = null;
-					int range=(int) _camdp.GLOBAL_LB;
-					int stepsize = (int) ((_camdp.GLOBAL_UB - _camdp.GLOBAL_LB)/(_camdp.DISCRETE_NUMBER-1));
+					double range= _camdp.GLOBAL_LB;
+					double stepsize =  (_camdp.GLOBAL_UB - _camdp.GLOBAL_LB)/(_camdp.DISCRETE_NUMBER-1);
+					int var_id = _context._cvar2ID.get(avar);
+					int actionReplace = -1;
 					//int interval = (ub - lb) / 10;
-					while (range<= (int) _camdp.GLOBAL_UB)
+					while (range<= _camdp.GLOBAL_UB)
 					{
 						ArithExpr range_a = new DoubleExpr(range);
 						Integer actionValue =_context.getTermNode(range_a);
-						int actionReplace = _context.reduceProcessXADDLeaf(actionValue, 
+						// Check cache
+						_contRegrKey.set(var_id, actionValue, actionTree);
+						Integer result = null;
+						if ((result = _camdp._hmContRegrCache.get(_contRegrKey)) != null)
+							actionReplace= result;
+						else
+						{
+						// Perform regression via delta function substitution
+							actionReplace = _context.reduceProcessXADDLeaf(actionValue, 
 								_context.new DeltaFunctionSubstitution(avar, actionTree), true);
+						
+						// Cache result
+						_camdp._hmContRegrCache.put(new IntTriple(_contRegrKey), actionReplace);
+						}
+						
 						maximizedTree= (maximizedTree == null) ? actionReplace :
 											_context.apply(maximizedTree, actionReplace, XADD.MAX);
 						maximizedTree = _context.reduceRound(maximizedTree); // Round!
 						maximizedTree = _context.reduceLP(maximizedTree); // Rely on flag XADD.CHECK_REDUNDANCY
 
 						range = range+ stepsize;
-						_camdp.flushCaches(Arrays.asList(maximizedTree) /* additional node to save */);
+					    //_camdp.flushCaches(Arrays.asList(maximizedTree,actionReplace) /* additional node to save */);
 
 					}
 					q = maximizedTree;
