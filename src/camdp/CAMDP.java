@@ -48,7 +48,9 @@ public class CAMDP {
 	public boolean APPROX_ALWAYS = false;
 	public boolean COMPARE_OPTIMAL = false;
 	public boolean DISCRETIZE_PROBLEM =true;
-	public int DISCRETE_NUMBER = 2;
+	public int DISCRETE_NUMBER = 4;
+	public int GLOBAL_LB=-9;
+	public int GLOBAL_UB=9;
 	
 	//Optimal solution maintenance
 	public static ArrayList<Integer> optimalDD = new ArrayList<Integer>();
