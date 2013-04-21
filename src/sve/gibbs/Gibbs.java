@@ -474,8 +474,9 @@ public abstract class Gibbs {
 			int aa = integrate(var, temp, "[" + var + " < t" + "]");
 
 			if (Common.WRITE_XADDS)
+				// NOTE: Can now export XADDs if required for reading in later (exportXADDToFile)
 				Common.println("After integratation of numerator:\n"
-						+ _gm._context.getString(aa, true, false),
+						+ _gm._context.getString(aa, true),
 						Common._XADD_WRITER);
 
 			int numerator = replaceVar(aa, "t", var); // t is replaced here with
@@ -485,7 +486,7 @@ public abstract class Gibbs {
 
 			if (Common.WRITE_XADDS)
 				Common.println("After var replace in numerator:\n"
-						+ _gm._context.getString(numerator, true, false),
+						+ _gm._context.getString(numerator, true),
 						Common._XADD_WRITER);
 
 			int denominator = integrate(var, temp); // computing denominator
@@ -498,7 +499,7 @@ public abstract class Gibbs {
 
 			if (Common.WRITE_XADDS)
 				Common.println("After integration in denominator:\n"
-						+ _gm._context.getString(denominator, true, false),
+						+ _gm._context.getString(denominator, true),
 						Common._XADD_WRITER);
 
 		}
