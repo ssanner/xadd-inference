@@ -1934,6 +1934,8 @@ public class XADD {
 			//     and return that result.
 			// ... if delta's but do not contain variable then factor
 			//     these out for multiplication in at the end
+			// ... what to do on encountering summation?  breaks into 
+			//     individual subproblems of the above, all results summed together!
 			
 			// Multiply these in later
 			HashMap<Decision, Boolean> int_var_indep_decisions = new HashMap<Decision, Boolean>();

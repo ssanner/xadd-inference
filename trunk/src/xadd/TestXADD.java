@@ -32,21 +32,28 @@ public class TestXADD {
 	}
 	
 	public static void main4(String[] args) throws Exception {
+		
+		// Examples where delta's occur
+		// ... one obvious case is running max... need to push delta's into leaves
+		//     * standard ops normal, integral takes sum form... delta will subst in constraints
+		// ... another is delta of a piecewise function x + y = z where need to eliminate
+		//     x or y b/c z is observed
+		
 		XADD xadd_context = new XADD();
 		int expr1 = TestBuild(xadd_context, "./src/xadd/ex/delta1.xadd");
 		int reduced_e1 = xadd_context.reduceLP(expr1);
-		//xadd_context.getGraph(reduced_e1).launchViewer();
+		xadd_context.getGraph(reduced_e1).launchViewer("Delta reduced");
 		
 		// Reducing with LP constraint checking
 		//XADDUtils.PlotXADD(xadd_context, reduced_e1, -5, 0.1, 5, "x", "Reduced expression");
 	
 		int expr2 = TestBuild(xadd_context, "./src/xadd/ex/xadd_sq_test.xadd");
-		//xadd_context.getGraph(expr2).launchViewer();
+		xadd_context.getGraph(expr2).launchViewer("XADD Sq");
 
 		int mult_expr = xadd_context.apply(reduced_e1, expr2, XADD.PROD); 
 		int add_expr = xadd_context.apply(mult_expr, reduced_e1, XADD.SUM); 
-		xadd_context.getGraph(mult_expr).launchViewer();
-		xadd_context.getGraph(add_expr).launchViewer();
+		xadd_context.getGraph(mult_expr).launchViewer("Delta * XADD Sq");
+		xadd_context.getGraph(add_expr).launchViewer("Delta + XADD Sq");
 		
 		XADDUtils.PlotXADD(xadd_context, mult_expr, -5, 0.1, 5, "x", "Mult expression");
 		XADDUtils.PlotXADD(xadd_context, add_expr,  -5, 0.1, 5, "x", "Add expression");
