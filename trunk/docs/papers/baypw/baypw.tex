@@ -84,11 +84,46 @@ range-restricted score data.  As a result, this work enables
 sampling-based Bayesian inference in a novel range of piecewise models
 for which automated Gibbs samplers were previously unknown.
 %- Exact inference known, but as we will show, not scalable.
-%- First exact Gibbs sampler for arbitrary linear piecewise polynomial likelihoods ().
+%- First exact Gibbs sampler for arbitrary linear piecewise polynomial likelihoods.
 %- New methods for working with delta functions with logical distributions.
+%  (can handle delta's of linear sums and linear maximizations with evidence 
+%   which BUGS cannot handle, as long as one linear non-observed variable in a delta OK 
+%   via collapsing, but often observed var is only linear var (y=x^2), perhaps there are
+%   transforms on delta functions that allow nonlinear or at least quadratic vars
+%   with evidence y = x^2, observe y, transform {x>0: sqrt(y) = x; x<0: sqrt(y) = x})
+%   evidence is a constant so can just substitute!  Can take any function of both
+%   sides of equality!)  Needs the piecewise delta operation which uses sum transform!
+%   **Nonlinear evidence**?  Rewrite delta as sum of cases, integral distributes.
+%   Gibbs for (nonlinear) deterministic functions?  Have to collapse due to determinism
+%   anyway.  ``Exact Symbolic Collapsed Gibbs Sampling for Nonlinear Deterministic Nodes''
+%   three contributions: (1) Symbolic Gibbs samplers, (2) Piecewise delta integrals (max), 
+%   (3) Handling nonlinear deterministic variables.  Experiments: VOI, max, truncated
+%   function of parameters.  Software framework for specifying models/doing inference.
+% --> so do a paper focusing on limitations of BUGS for exact inference by using
+%    automated symbolic manipulations?  Need a case calculus.
 %- Piecewise likelihoods are pervasive in *many* important Bayesian inference problems
 %  hard boundaries, truncation at 0, max functions, etc.
 %  (people currently approximate heavily)
+%
+% Primitives for Exact and Efficient Bayesian Decision-theoretic Inference
+%
+% (4) emphasize required tools for Bayesian decision-theoretic
+%     inference, piecewise functions like regret
+%
+% (5) cover methods for efficient decision-theoretic sampling... need
+%     to compute integral over p(x)*R(x) exactly... ways to subselect
+%     samples for later use, but what later use?  Does R(x) cover
+%     min_a R(x,a) if risk would later be used for some
+%     action-specific purpose?  Ways to draw these samples
+%     incrementally?  Could optimize continuous sample selection to
+%     maintain some cumulative criteria but to maximize expected
+%     utility?
+%
+%     Perhaps at its simplest, computing Z(theta) = int_x p(x|theta)*R(x) dx
+%     and sampling according to a Z-normalized joint distribution would
+%     still be sufficient to direct samples in right direction for x and
+%     more efficient in terms of convergence then sampling p(x) first.
+%     This would be advised when theta cannot be marginalized out.
 \end{abstract}
 
 % \cite{}, \citeauthor{}~\shortcite{} (to include author names in text)
@@ -108,7 +143,7 @@ and $l$ in this model.  In \ref{gm:uniform_max}(b), we have observed
 maximum bid data from a number of sealed bid auctions where the
 bidders are known, but only the winning bid value is revealed; then we
 would like to obtain a posterior over each bidder's unknown valuation
-$b_i$ of the given commidity.  Later in our empirical results section
+$b_i$ of the given commodity.  Later in our empirical results section
 we will further discuss cases of preference learning and inference
 from restricted range score data where piecewise likelihoods and
 priors are appropriate.
