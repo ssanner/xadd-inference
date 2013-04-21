@@ -5,6 +5,11 @@
 % arbitrary precision and does not introduce additional errors owing
 % to discretization noise.
 %
+% Should mention somewhere modifications to max operator to handle
+% negative values and important order of operations when working
+% with infinities (0*anything=0) so cannot terminate early when
+% see a 0 on a branch during Apply.
+%
 % Future work: hierarchy and decompositions with bounds, RTDP, 
 %              UCT and sampling, determinization-discretization 
 %              guided solutions, reward shaping, upper and lower

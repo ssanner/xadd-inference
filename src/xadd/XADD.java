@@ -2162,6 +2162,16 @@ public class XADD {
 		public int processXADDLeaf(ArrayList<Decision> decisions,
 				ArrayList<Boolean> decision_values, ArithExpr leaf_val) {
 
+			// Determine if this will be a delta integral or not
+			// ... if we encounter a delta function here that contains
+			//     the variable then one of them has to be linear in
+			//     the variable, otherwise we exit
+			// ... if find delta linear in variable then we extract substitution
+			//     and make it to all remaining terms -- delta and non-delta --
+			//     and return that result.
+			// ... if delta's but do not contain variable then factor
+			//     these out for multiplication in at the end
+			
 			// Multiply these in later
 			HashMap<Decision, Boolean> int_var_indep_decisions = new HashMap<Decision, Boolean>();
 
@@ -2264,10 +2274,8 @@ public class XADD {
 			// Now explicitly compute lower and upper bounds as XADDs
 			//
 			// If these are polynomials, must go to +/- infinity at limits so
-			// cannot
-			// be used to approximate cdfs. Hence we must assume that there will
-			// always
-			// be limits on the polynomial functions implicit in the bounds.
+			// cannot be used to approximate cdfs. Hence we must assume that there will
+			// always be limits on the polynomial functions implicit in the bounds.
 			int xadd_lower_bound = -1;
 			if (lower_bound.isEmpty()) {
 				if (DEBUG_XADD_DEF_INTEGRAL) {
