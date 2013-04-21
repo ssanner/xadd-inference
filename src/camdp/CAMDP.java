@@ -47,7 +47,7 @@ public class CAMDP {
 	public double APPROX_ERROR = 0.0d;
 	public boolean APPROX_ALWAYS = false;
 	public boolean COMPARE_OPTIMAL = false;
-	public boolean DISCRETIZE_PROBLEM =true;
+	public boolean DISCRETIZE_PROBLEM = false;
 	public int DISCRETE_NUMBER = 11;
 	public int GLOBAL_LB=-9;
 	public int GLOBAL_UB=9;
