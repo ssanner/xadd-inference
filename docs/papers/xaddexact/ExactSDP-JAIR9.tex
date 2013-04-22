@@ -89,7 +89,7 @@ Consider a continuous state version of this problem with discrete actions:
 \vspace{2mm}
 
 \textsc{Discrete Action} \InventoryControl (\textsc{DAIC}): 
-A multi-item ($K$-item) inventory consists of continuous amounts of specific items $x_i$ where $i \in [0,K]$ is the number of items and $x_i \in [0,200]$. The customer demand is a stochastic boolean variable $d$ for low or high demand levels.  Ordering a specific item $a_j$ comes in three discrete ranges of  $(low,mid, high)$ where $\lbrace low = 25, mid = 50, high = 75 \rbrace$ and $j \in \lbrace 1,2,3 \rbrace$. There are linear reorder costs and also a penalty for holding items. The transition and reward functions have to be defined for each continuous item $x_i$ and action $j$.
+A multi-item ($K$-item) inventory consists of continuous amounts of specific items $x_i$ where $i \in [0,K]$ is the number of items and $x_i \in [0,200]$. The customer demand is a stochastic boolean variable $d$ for low or high demand levels.  The order action $a_j$ takes two values of $(0,200)$ where the first indicates no ordering and the second assumes maximum amount of ordering which is 200. There are linear reorder costs and also a penalty for holding items. The transition and reward functions have to be defined for each continuous item $x_i$ and action $j$.
 %is this good? do I need to put transition and reward? 
 
 We can also consider the more general  continuous action HMDP setting to this problem: 
@@ -125,7 +125,7 @@ R =
 \sum_{j} x'_j \leq C &: 0 	\\
 \end{cases}
 +
-\Bigg( \sum_{i=0}^K \begin{cases}
+\sum_{i=0}^K \Bigg( \begin{cases}
 d \wedge x_i \geq 150&: 150 - 0.1 * a_i - 0.05 * x_i \\
 d \wedge x_i \leq 150 &:   x_i - 0.1 * a_i - 0.05 * x_i \\
 \neg d \wedge x_i \geq 50 &: 50 - 0.1 * a_i - 0.05 * x_i  \\
@@ -151,14 +151,14 @@ where $C$ is the total capacity for $K$ items in the inventory. The first and la
 %\includegraphics[width=1 \textwidth]{Figures2/diagrams/v2_inv2_2.pdf}
 \begin{subfigure}
                 \centering
-                \includegraphics[width=0.77\textwidth]{Figures2/diagrams/v2_inv2_2.pdf}
+                \includegraphics[width=0.68\textwidth]{Figures2/diagrams/inv-v2.pdf}
         \end{subfigure}
                 \hspace{2mm}
 \begin{subfigure}
                 \centering
-                \includegraphics[width=0.18\textwidth]{Figures2/diagrams/p2_inv_2.pdf}
+                \includegraphics[width=0.26\textwidth]{Figures2/diagrams/inv-p2.pdf}
         \end{subfigure}
-%\vspace{-2mm}
+\vspace{-2mm}
 \caption{\footnotesize Optimal value function $V^2(x)$ for the
 CAIC problem represented as an extended algebraic decision
 diagram (XADD).  Here the solid lines represent the $\true$ branch for
@@ -167,26 +167,25 @@ $V^2(x)$ for any state $x$, one simply traverses the diagram in a
 decision-tree like fashion until a leaf is reached where the
 non-parenthetical expression provides the \emph{optimal value} and the
 parenthetical expression provides the \emph{optimal policy} 
-($a = \pi^{*,2}(x)$) to achieve value $V^2(x)$ (Left); Optimal policy for the second iteration $\pi^2$ consistent with Scarf's policy (Right).}
+($a = \pi^{*,2}(x)$) to achieve value $V^2(x)$ (Left); Simplified diagram for the optimal policy for the second iteration $\pi^2$ consistent with Scarf's policy (Right).}
 \label{fig:inv_policy}
-\vspace{-7mm}
+\vspace{-6mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Note that illegal state values are defined using $-\infty$, in this case having the capacity lower than zero at any time and having capacity higher than that of the total $C$. If our objective is to maximize the long-term \emph{value} $V$ (i.e.,the sum of rewards received over an infinite horizon of actions), we show that the optimal value function can be derived in closed-form. 
 For a single-item continuous state and action inventory CAIC problem the optimal value function is defined as below:
-\vspace{-1mm}
+\vspace{-4mm}
 \begin{align}
 V = \begin{cases}
 (x < 0 \vee x>500) &: -\infty \\
 d \land (0 \leq x \leq 500) \land (x \geq 300) &:  277.5 - 0.1 * x \\
 d \land (150 \leq x \leq 300) &:  232.5 + 0.05 * x \\
-d \land (100 \leq x \leq 150) &:  20.5 + 1.67 * x\\
-d \land (0 \leq x \leq 100) &:  82.5 + 1.05 * x \\
+d \land ( 0 \leq x \leq 150) &:  82.5 + 1.05 * x \\
 \neg d \land (200 \leq x \leq 500)  &:  132.5 - 0.1 * x \\
 \neg d \land (50 \leq x \leq 200) &: 102.5 + 0.05 * x \\
 \neg d \land (0 \leq x \leq 50) &:  52.5 + 1.05 * x \\
 \end{cases} \label{eq:vfun_inv}
-\vspace{-8mm}
+\vspace{-7mm}
 \end{align}
 This value function is piecewise and linear and the policy obtained from this value function shown in Figure ~\ref{fig:inv_policy} (for each slice of the state space) matches with Scarf's policy for the \InventoryControl problem. If the holding and storage costs are linear, the optimal policy in each horizon is always of $(S,s)$ ~\cite{Scarf_Karlin58}. In general this means if ($x>s$) the policy should be not to order any items and if ($x<s$) then ordering $S-s-x$ items is optimal. Figure~\ref{fig:inv_policy} represents an extended algebraic decision diagram (XADD) representation which allows efficient implementation of the \emph{case calculus} for arbitrary functions. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -197,7 +196,6 @@ According to this we rewrite Scarf's policy:
 (x < 0 \vee x>500) &: -\infty \\
 d \land (300 \leq x \leq 500)  &:  0 \\
 d \land (0 \leq x \leq 300) &:  300 - x \\
-d \land (100 \leq x \leq 150)  &:  200 - x \\
 \neg d \land (200 \leq x \leq 500) &:  0 \\
 \neg d \land (0 \leq x \leq 200) &:  200 - x \\
 \end{cases}
@@ -933,6 +931,7 @@ Our objective is to take a DA-HMDP or CA-HMDP as defined in Section~\ref{sec:HMD
 iteration as defined in Section~\ref{sec:soln}, and produce
 the final value optimal function $V^h$ at horizon $h$ in the form
 of a case statement. Algorithm ~\ref{alg:vi} presents this briefly. 
+We use the \textsc{CAIC} example from the introduction to help clarify each step of this algorithm. 
 
 For the base case of $h=0$ in line 2, we note that setting $V^0(\vec{b},\vec{x}) = 0$
 (or to the reward case statement, if not action dependent)
@@ -948,11 +947,20 @@ steps:
 \item {\it Prime the Value Function}: Since $V^{h}$ will become
 the ``next state'' in value iteration, we setup a substitution
 $\sigma = \{ b_1 / b_1', \ldots, b_n / b_n', x_1 / x_1', \ldots, x_m / x_m' \}$
-and obtain $V'^{h} = V^{h}\sigma$ in line 2 of Algorithm ~\ref{alg:regress}.
+and obtain $V'^{h} = V^{h}\sigma$ in line 2 of Algorithm ~\ref{alg:regress}. Starting with the first iteration, for the \textsc{CAIC} example this step does not apply to $h-1=0$ since $V^0=0$.
 %where $V'^{h}$ is over $(\vec{b}',\vec{x}')$.
 
-\item {\it Add Reward Function}: If the reward function $R$ contains any primed state variable $b'$ or $x'$, lines 3--4 is executed to add this reward function to the previous discounted Q-value. If $R$ had no primed variables, then it is added to the Q-value at the end of this algorithm in lines 14--15.
-
+\item {\it Add Reward Function}: If the reward function $R$ contains any primed state variable $b'$ or $x'$, lines 3--4 is executed to add this reward function to the previous discounted Q-value. If $R$ had no primed variables, then it is added to the Q-value at the end of this algorithm in lines 14--15. The reward function of \textsc{CAIC} contains primed $x'$ thus the Q-value is defined as below: 
+\vspace{-1mm}
+\begin{align}
+Q = \begin{cases}
+(x < 0 \vee x>500 \vee x'<0 \vee x'<500) &: -\infty \\
+d \land (150 \leq x \leq 500) &:  150 - 0.1 * a - 0.05 * x \\
+d \land (0 \leq x \leq 150) &:  0.95 * x - 0.1 * a \\
+\neg d \land (50 \leq x \leq 500) &: 50 + -0.1 * a+ -0.05 * x \\
+\neg d \land (0 \leq x \leq 50) &:  0.95 * x + -0.1 * a\\
+\end{cases} \nonumber
+\end{align}
 \item {\it Continuous Integration}: As defined in line 7--9 once we have our primed value
 function $V'^{h}$ in case statement format defined over next state
 variables $(\vec{b}',\vec{x}')$, we evaluate the integral
@@ -991,8 +999,22 @@ $\tilde{Q}_a^{h+1} := V'^{h}$ for each action $a \in A$, and repeat
 the above integrals for all $x_j'$, updating $\tilde{Q}_a^{h+1}$ each time,
 then after elimination of all $x_j'$ ($1 \leq j \leq m$), we will have 
 the partial regression of $V'^{h}$ for the continuous variables for
-each action $a$ denoted by $\tilde{Q}_a^{h+1}$.
-
+each action $a$ denoted by $\tilde{Q}_a^{h+1}$. Following the \textsc{CAIC} example, continuous integration of $x$ results in the following: 
+{\footnotesize
+\begin{align}
+Q = \begin{cases}
+x < 0 \vee x>500 &: -\infty \\
+d \land (x \geq 150) \land (150 \leq (x+a) \leq 650) &:  150 - 0.1 * a - 0.05 * x \\
+d \land (x \geq 150) \land ((x+a \geq 650) \vee (x+a \leq 150)) &:  -\infty \\
+d \land (x \leq 150) \land (150 \leq (x+a) \leq 650)&:  0.95 * x - 0.1 * a \\
+d \land (x \leq 150) \land ((x+a \geq 650) \vee (x+a \leq 150)) &:  -\infty \\
+\neg d \land (x \geq 50) \land (50 \leq (x+a) \leq 550)  &:  50 - 0.1 * a - 0.05 * x \\
+\neg d \land (x \geq 50) \land ((x+a \geq 550) \vee (x+a \leq 50)) &:  -\infty \\
+\neg d \land (x \leq 50) \land (50 \leq (x+a) \leq 550) &:  0.95 * x - 0.1 * a \\
+\neg d \land (x \leq 50) \land ((x+a \geq 550) \vee (x+a \leq 50)) &:  -\infty \\
+\end{cases} \label{recent_q}
+\end{align}
+}
 \item {\it Discrete Marginalization}: Now that we have our partial
 regression $\tilde{Q}_a^{h+1}$ for each action $a$, we proceed
 to derive the full backup $Q_a^{h+1}$ from $\tilde{Q}_a^{h+1}$
@@ -1016,7 +1038,7 @@ as case statements (discrete CPTs \emph{are} case statements),
 and each operation produces a case statement.
 Thus, once this process is complete, we have marginalized over
 all $\vec{b}'$ and $Q_a^{h+1}$ is the symbolic representation
-of the intended Q-function.
+of the intended Q-function. In \textsc{CAIC} discrete marginalization of the boolean state variable $d$ is not performed since there is no primed version of this variable $d'$ in the current Q-function. 
 
 %Added algorithm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1067,23 +1089,78 @@ suffices to provide just the \emph{univariate} $\max_y$ solution:
 \max_{\vec{y}} =\max_{y_1} \cdots \max_{y_{|\vec{y}|}} \Rightarrow g(\vec{b},\vec{x}) := \max_{y} \, f(\vec{b},\vec{x},y). \nonumber
 \end{align}
 According to the properties on the Continuous Maximization operation defined in the previous section, we compute a univariate maximization  
-$\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$ using Algorithm \ref{alg:contMax}.
+$\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$ using Algorithm \ref{alg:contMax}. 
 \footnote{Note also that from here out we assume that all case partition conditions $\phi_i$ of
 $f$ consist of conjunctions of non-negated linear inequalities and
 possibly negated boolean variables --- conditions easy to enforce
 since negation inverts inequalities, e.g., $\neg [x < 2] \equiv [x \geq 2]$
 and disjunctions can be split across multiple non-disjunctive, 
-disjoint case partitions.}
+disjoint case partitions.} Each step of this algorithm is followed using one of the partitions of the Q-function in (~\ref{recent_q}) in this case the first partition with the constraints of 
+$\phi_i(x,d,a) \equiv d \land (0 \leq x \leq 500) \land (x \geq 150) \land ((x+a) \leq 650) \land ((x+a) \geq 150) $ and function value of $ f_i(x,d,a) = 150 - 0.1 * a - 0.05 * x$.
 
-For each of the constraints $c_i$ in each partition $\phi_i$ the lower and upper bounds and independent constraints are determined in 4--10. A unique LB and UB and the root of the function are computed in lines 13--15 by taking the maximum of the lower bounds and the minimum of the upper bounds as the best bounds in the current partition and line 15 takes any roots of the leaf function. 
-The boundary constraints in lines 16--19 are added to the independent constraints as the constraint of the final maximum $\mathit{Max}$  and a $\casemax$ is performed on the LB,UB and the roots as the function of $\mathit{Max}$. Taking this $\max_y$ is performed in line 21 for each partition. Returning to~\eqref{eq:casemax_max}, we find that we have
-now specified the inner operation (shown in the $\Box$).  
-Hence, to complete the maximization for an entire case statement $f$, we need only apply the above procedure to each case partition of $f$ and then $\casemax$ all
-of these results in line 23. To obtain
-the policy in Figure~\ref{fig:inv_policy}, 
+For each of the constraints $c_i$ in each partition $\phi_i$ the lower and upper bounds and independent constraints are determined in 4--10 where $\LB = (150 - x, 0) , \UB= (650 - x, 1000000) $ and $\IND=(d,x \geq 0 , x \leq 500) $ where the $0$ and $1000000$ are the natural lower and upper bounds on any inventory item $x$.
+A unique LB and UB and the root of the function are computed in lines 13--15 by taking the maximum of the lower bounds and the minimum of the upper bounds as the best bounds in the current partition and line 15 takes any roots of the leaf function (not applicable to the current $f_i$): 
+{%\footnotesize
+\begin{align*}
+\LB = \casemax(0,150-x) & = \begin{cases}
+x > 150: & 0\\ 
+x \leq 150: & 150 -x \\ 
+\end{cases}\\
+\UB = \casemin(100000, 650-x) & = \begin{cases}
+x > -1000000: & 650 -x  \\ 
+x \leq -1000000: &1000000\\ 
+\end{cases}
+\end{align*}
+}  
+The boundary constraints in lines 16--19 are added to the independent constraints as the constraint of the final maximum $\mathit{Max}$:
+{%\footnotesize 
+\begin{equation*}
+\CONS_{\LB \leq \UB} \sq = \sq [0 \leq 1000000] \land [0 \leq 150 - x] \land [150 - x \leq 1000000] \land [150-x \leq 650 -x] \land [0 \leq 650 - x] 
+\end{equation*}}
+Here, two constraints are tautologies and may be removed.
+A $\casemax$ is performed on the substituted LB,UB and the roots on the function $f_i$: 
+{\footnotesize 
+\begin{align*}
+ \Max &= \casemax \Big( f_i \{ y / \Root \} = \textit{null} , \\
+ f_i \{ y / \LB \} &= \begin{cases}
+x \> 150: & \sqm 150 - 0.1 * (0) - 0.05 * x = 150 - 0.05 * x \\ 
+x \leq 150:    & \sqm 150 - 0.1 * (150 - x ) - 0.05 * x = 135.00075 + 0.05 * x\\ 
+\end{cases},\\
+ f_i \{ y / \UB \} &= \begin{cases}
+x > -1000000:    & \sqm 150 - 0.1 * (650 -x) - 0.05 * x = 84.980494 + 0.05 * x \\ 
+x \leq -1000000: & \sqm 150 - 0.1 * (1000000) - 0.05 * x =  -99850 -0.05 * x\\ 
+\end{cases} \Big) 
+\\
+\Max & = 
+\begin{cases}
+(x > 150) \land (x \leq 650):    & \sqm 150 - 0.05 * x \\ 
+(x > 150) \land (x \geq 650):    & \sqm 84.980494 + 0.05 * x \\ 
+x \leq 150: & \sqm 135.00075 + 0.05 * x\\ 
+\end{cases}
+\end{align*}}
+Where the resulting maximum is according to the $\casemax$ operator defined in the previous section and the partition of $x \leq -1000000:  -99850 -0.05 * x$ is omitted due to inconsistency. Taking this $\max_y$ is performed in line 21 for each partition using both independent and boundary constraints. Returning to~\eqref{eq:casemax_max}, we find that we have now specified the inner operation (shown in the $\Box$) which is defined as the following for this partition.\footnote{ These last two results are defined by taking out all inconsistent partitions. This is done using efficient pruning techniques mentioned in the next section.}
+\begin{align*}
+\Max & = 
+\begin{cases}
+d \land (150 \leq x \leq 500):    & \sqm 150 - 0.05 * x \\ 
+\text{\normalsize otherwise} : & -\infty\\ 
+\end{cases}
+\end{align*}
+To complete the maximization for an entire case statement $f$, we need only apply the above procedure to each case partition of $f$ and then $\casemax$ all of these results in line 23: 
+\begin{align*}
+Q & = 
+\begin{cases}
+d \land (150 \leq x \leq 500):    & \sqm 150 - 0.05 * x \\ 
+d \land (0 \leq x \leq 150):    & \sqm -14.99925 + 1.05 * x \\ 
+\neg d \land (50 \leq x \leq 500):    & \sqm 50 - 0.05 * x \\ 
+\neg d \land (0 \leq x \leq 50):    & \sqm -5 + 1.05 * x \\ 
+\text{\normalsize otherwise} : & -\infty\\ 
+\end{cases}
+\end{align*}
+To obtain the policy in Figure~\ref{fig:inv_policy}, 
 we need only annotate leaf values with any 
 $\UB$, $\LB$, and $\Root$ substitutions.
-Continuous maximization is further explained in the next section using the appropriate data structure. 
+Continuous maximization is also	 explained in the next section using the appropriate data structure. 
 
 \item {\it Maximization}: Now that we have $Q_a^{h+1}(\vec{y})$ in
 case format for each action $a \in\{a_{1}(\vec{y}_1), \ldots \\, a_{p}(\vec{y}_p)\}$, obtaining
@@ -1095,7 +1172,7 @@ V^{h+1} & =
 \max(Q_{a_1}^{h+1}(\vec{y}),\max(\ldots,\max(Q_{a_{p-1}}(\vec{y})^{h+1},Q_{a_p}^{h+1}(\vec{y}))))
 \end{align*}
 \end{enumerate}
-Line 10 and 12 in Algorithm ~\ref{alg:vi} computes the optimal policy on the Q-function for the two action cases and line 14 performs symbolic maximization.
+Note that for our \textsc{CAIC} example the last Q-function is equal to the optimal value function since we have considered a single continuous action here. Line 10 and 12 in Algorithm ~\ref{alg:vi} computes the optimal policy on the Q-function for the two action cases and line 14 performs symbolic maximization.
 By induction, because $V^0$ is a case statement and applying
 SDP to $V^h$ in case statement form produces $V^{h+1}$ in case
 statement form, we have achieved our intended
@@ -1809,9 +1886,8 @@ Having defined the efficient representation of XADDs, next we show results from 
 \vspace*{-0.05in}
 
 We implemented two versions of our proposed SVI algorithms using XADDs
---- one that does not prune nodes of the XADD and another that uses a
-linear programming solver to prune unreachable nodes (for problems
-with linear XADDs) and then performs a satisfiability check to prune redundant paths  --- and tested these algorithms on different problems.
+--- one with the discrete setting and one with the continuous setting. 
+% we compare that does not prune nodes of the XADD and another that uses a linear programming solver to prune unreachable nodes (for problems with linear XADDs) and then performs a satisfiability check to prune redundant paths  --- and tested these algorithms on different problems.
 
 For CA-HMDPs we evaluated SVI on a didactic nonlinear
 \MarsRover\ example and two problems from Operations Research (OR) \InventoryControl\ defined in the introduction and \WaterReservoir  all of which are described below. For comparison purposes the DA-HMDPs example domains are discretized by their action space. \footnote{All Java source code and a human/machine readable file format for all domains needed to reproduce
@@ -2000,7 +2076,7 @@ the results in this paper can be found online at
 %at its current position, or to get a larger reward by
 %first moving and potentially getting closer before taking the picture.
 
-In a \textsc{Continuous Action} setting, a \MarsRover state consists of its continuous position $x$ along a given route.  In a given time step, the rover may move a continuous distance $y \in [-10,10]$.  The rover receives its greatest reward for taking a picture at $x=0$, which quadratically decreases to zero at the boundaries of the range $x \in [-2,2]$.  The rover will
+A \MarsRover state consists of its continuous position $x$ along a given route.  In a given time step, the rover may move a continuous distance $y \in [-10,10]$.  The rover receives its greatest reward for taking a picture at $x=0$, which quadratically decreases to zero at the boundaries of the range $x \in [-2,2]$.  The rover will
 automatically take a picture when it starts a time step within the range $x \in [-2,2]$ and it only receives this reward once.
 
 Using boolean variable $b \in \{0,1\}$ to indicate if the picture has
@@ -2117,7 +2193,6 @@ electricity generated in periods when the $\mathit{drain}(e)$ action
 drains water from $l_2$ to $l_1$ (the other action is 
 $\mathit{no}$-$\mathit{drain}(e)$); we assume deterministic rainfall
 replenishment and present the reward function as:  
-
 \vspace{-4mm}
 {\footnotesize
 \begin{align*}
@@ -2136,20 +2211,17 @@ l_1' & =(400 * e + l_1 -700 * e + 500 * e) \\
 l_2'& =(400 * e + l_2 - 500 * e) \\
 \end{align*}}
 
-Similar to the discrete version of the \InventoryControl problem in the introduction, the DA-HMDP setting for these two problems defines discrete actions by partitioning the action space of each domain into 1/10 slices. For the \MarsRover\ problem this defines 2 actions ($a_1=[-10,0], a_2 = [0,10]$), for \WaterReservoir  the discrete time action set is a set of 20 elements where $e_1=[0,10]$ and $e_20 = [190,200]$ and the transition and reward functions are defined according to these constant values.
+Similar to the discrete version of the \InventoryControl problem in the introduction, the DA-HMDP setting for these two problems defines discrete actions by partitioning the action space of each domain into $i$ number of slices. For example the \MarsRover\ problem with 2 actions which are the lower and upper bounds on $a$ ($a_1=-10, a_2 = 10$) and the transition and reward functions are defined according to these constant values.
 We now provide the empirical results obtained from implementing our algorithms.
 
 \subsection{Results}
 
-For the \textsc{Discrete Action} \MarsRover\ domains, 
+For both the \textsc{Discrete Action} and \textsc{Continuous Action} \MarsRover\ domains, 
 we have run experiments to evaluate our SDP solution 
 in terms of time and space cost while varying the horizon and problem size.
 
-Because the reward and transition functions for \textsc{Discrete Action}  \MarsRoverL\ use piecewise linear case statements, we note the optimal value function
-in this domain is also piecewise linear.  Hence in this domain, we use
-a linear constraint feasibility checker to prune unreachable paths in
-the XADD, we also compare solutions for \MarsRover with and
-without this pruning.
+%Because the reward and transition functions for \textsc{Discrete Action}  \MarsRoverL\ use piecewise linear case statements, we note the optimal value function in this domain is also piecewise linear.  
+%To show results of the pruning techniques of the previous section, Hence in this domain, we use a linear constraint feasibility checker to prune unreachable paths in the XADD, we also compare solutions for \MarsRover with and without this pruning.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\begin{figure*}[t]
 %\centering
@@ -2209,22 +2281,15 @@ without this pruning.
 %\end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %In Figure~\ref{fig:plot3D}, we show the exact optimal value function on the vertical axis  for three domains, \Knapsack\, \textsc{Discrete Action}  \MarsRoverL ~and \textsc{Discrete Action}  \MarsRoverNL, as a function of two continuous state variables shown on the horizontal axes.
-We notice here that the piecewise boundaries for all three
-plots clearly demonstrate non-rectangular boundaries. In particular, the
-value function plot for the \MarsRover demonstrates nonlinear
-piecewise boundaries with each piece being a nonlinear function of the
-state --- it has the shape of stacked quadratic cones with each lower
-cone representing the cost of first moving from points farther away
-from the picture being receiving the value for taking the picture
-within the radius limits.
+%We notice here that the piecewise boundaries for all three plots clearly demonstrate non-rectangular boundaries. In particular, the value function plot for the \MarsRover demonstrates nonlinear piecewise boundaries with each piece being a nonlinear function of the state --- it has the shape of stacked quadratic cones with each lower cone representing the cost of first moving from points farther away from the picture being receiving the value for taking the picture within the radius limits.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure*}[t]
 \centering
 %\subfigure{
-\includegraphics[width=0.4\textwidth]{Figures1/camdp/nodeRover.pdf}
+\includegraphics[width=0.4\textwidth]{Figures2/camdp/contRoverNode.pdf}
 \hspace{5mm}
-\includegraphics[width=0.4\textwidth]{Figures1/camdp/timeRover.pdf}
+\includegraphics[width=0.4\textwidth]{Figures2/camdp/contRoverTime.pdf}
 %}
 \vspace{-3mm}
 \caption{%\footnotesize 
@@ -2235,76 +2300,138 @@ time for different iterations (horizons) of SDP on Nonlinear \textsc{Continuous 
 \vspace{-6mm}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
+\begin{figure}[tbp!]
+\vspace{2mm}
+\centering
+%\subfigure{
+\includegraphics[width=0.45\textwidth]{Figures2/camdp/RoverResHorizonNode.pdf}
+\includegraphics[width=0.45\textwidth]{Figures2/camdp/RoverResHorizonTime.pdf}
+%}
+\vspace{-2mm}
+\caption{%\footnotesize 
+Space and elapsed time vs. horizon for a fixed discritization of 5 for the \textsc{Discrete Action} \MarsRover\ and 8 for the \WaterReservoir to show how the number of nodes and time increases with each horizons. 
+}
+\label{fig:roverDisTS}
+\vspace{-5mm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
 \begin{figure}[tbp!]
 \vspace{-2mm}
 \centering
 %\subfigure{
-\includegraphics[width=0.45\textwidth]{Figures1/camdp/ResNode.pdf}
-\includegraphics[width=0.45\textwidth]{Figures1/camdp/ResTime.pdf}
+\includegraphics[width=0.48\textwidth]{Figures2/camdp/disRovResNode2.pdf}
+\includegraphics[width=0.48\textwidth]{Figures2/camdp/disRovResTime2.pdf}
 %}
 \vspace{-2mm}
 \caption{%\footnotesize 
-Reservoir Management: space and elapsed time vs. horizon. Comparing the two algorithms for inconsistency pruning (IPrune) and redundancy and inconsistency pruning (RIPrune).  
-% comparing 
-%1,2 or 3 States and actions (SA) with Deterministic (DD) 
-%or Stochastic (SD) demand and no-pruning}.
+Space and elapsed time vs. horizon for a fixed horizon of 3 and different problem sizes for the \textsc{Discrete Action} \MarsRover\ and the \WaterReservoir. 
 }
-\label{fig:resTimeSpace}
+\label{fig:roverDisSize}
 \vspace{-5mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-To the best of our knowledge, these results demonstrate the first
-exact analytical solutions for HMDPs having optimal value functions
-with general linear and even nonlinear piecewise boundaries.
 
-For the \textsc{Continuous Action} \MarsRover problem, we present the time and space analysis for the problem description defined in the introduction in Figure~\ref{fig:roverTS}. Here three evaluations are performed based on the pruning algorithms in the previous section. We note that without the LP-Solver Algorithm~\ref{algPrune}, the algorithm can not go beyond the forth iteration as it produces many inconsistent nodes. For the redundancy check of Algorithm~\ref{algRedundant}, as it can be seen in the graph, a reduction of at most 25 \% is achieved. The time required to remove redundancy has increased due to the calls made to the SAT-Solver.  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
+\begin{figure}[tbp!]
+\vspace{-2mm}
+\centering
+%\subfigure{
+\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover2.pdf}
+\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover4.pdf}
+\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover6.pdf}
+\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover8.pdf}
+\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover10.pdf}
 
-Figure ~\ref{fig:resTimeSpace} compares inconsistency pruning and redundancy pruning for the reservoir management problem. In this setting, very little node reduction can be gained from redundancy pruning due to the different water levels and their correlation. The time has increased rapidly after the second iteration for the redundancy pruning due to the equivalence checking of the SAT-Solver. This suggests that in some domains using redundancy pruning in not efficient and should be omitted from the final results. We next show results for the \InventoryControl problem without redundancy pruning. 
+%}
+\vspace{-2mm}
+\caption{%\footnotesize 
+Horizon 3 of the value function for different number of \textsc{Discrete Action} \MarsRover\. Convergence towards the real value of $V^3$ as defined in Figure ~\ref{fig:opt_val_pol} is garanteed as the number of discretizations of the action space increases.
+}
+\label{fig:roverDisV}
+\vspace{-5mm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%To the best of our knowledge, these results demonstrate the first exact analytical solutions for HMDPs having optimal value functions with general linear and even nonlinear piecewise boundaries.
+
+For the \textsc{Continuous Action} \MarsRover problem, we present the time and space analysis for the problem description defined in the introduction in Figure~\ref{fig:roverTS}. Here three evaluations are performed based on the pruning algorithms in the previous section. We note that without the LP-Solver Algorithm~\ref{algPrune}, the algorithm can not go beyond the forth iteration as it produces many inconsistent nodes. For the redundancy check of Algorithm~\ref{algRedundant}, as it can be seen in the graph, a reduction of at most 25 \% is achieved. The time required to remove redundancy has increased due to the calls made to the SAT-Solver.  In this setting, very little node reduction can be gained from redundancy pruning. The time has increased rapidly after the second iteration for the redundancy pruning due to the equivalence checking of the SAT-Solver. This suggests that in some domains using redundancy pruning in not efficient and should be omitted from the final results. We next show results for the  \WaterReservoir and \InventoryControl problem without redundancy pruning. 
+
+Next we present the analysis of the \textsc{Discrete Action} \MarsRover\ domains.Figure ~\ref{fig:roverDisTS} shows how time and space costs of different horizons increases for a fixed action discritization of 10.
+Note that one of the caveats of using a discrete setting is defining the actual discrete actions. While in the continuous setting an action is defined between a large high and low range (e.g $a \in$ [$-1000000,1000000$]) allowing the SDP algorithm to choose the best possible action among all the answers, for a discrete setting, knowing the range to discretize the action becomes very important. As an example in the rover description, allowing actions to be far from the center (e.g. $a \in$ [$-20,20$]) does not result in a converged solution. Finding this range is one of the drawbacks of using a discrete setting. 
+
+On the other hand, the level of discretization within this range also is very important. To show this visually Figure ~\ref{fig:rover_discrete} shows the results of the 4th iteration for 3 different discretizations compared to the continuous result. This figure proves the need to partition the action space within the predefined range more finely, but as figure ~\ref{fig:roverDisSize} shows  the effect of varying the  problem size for the fixed horizon of 4, this leads to increasing time and space costs. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
+%\begin{figure}[tbp!]
+%\vspace{-2mm}
+%\centering
+%%\subfigure{
+%\includegraphics[width=0.45\textwidth]{Figures1/camdp/ResNode.pdf}
+%\includegraphics[width=0.45\textwidth]{Figures1/camdp/ResTime.pdf}
+%%}
+%\vspace{-2mm}
+%\caption{%\footnotesize 
+%Reservoir Management: space and elapsed time vs. horizon. Comparing the two algorithms for inconsistency pruning (IPrune) and redundancy and inconsistency pruning (RIPrune).  
+%% comparing 
+%%1,2 or 3 States and actions (SA) with Deterministic (DD) 
+%%or Stochastic (SD) demand and no-pruning}.
+%}
+%\label{fig:resTimeSpace}
+%\vspace{-5mm}
+%\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% In this setting, very little node reduction can be gained from redundancy pruning due to the different water levels and their correlation. The time has increased rapidly after the second iteration for the redundancy pruning due to the equivalence checking of the SAT-Solver. This suggests that in some domains using redundancy pruning in not efficient and should be omitted from the final results. We next show results for the \InventoryControl problem without redundancy pruning. 
 
 In Figure~\ref{fig:v2plots}, we show a plot of 
 the optimal closed-form policy at $h=2$: the solution interleaves $\mathit{drain}(e)$ and $\mathit{no}$-$\mathit{drain}(e)$ where even horizons are the latter;
 here we see that we avoid draining for the longest elapsed time $e$ 
 when $l_2$ is low (wait for rain to replenish) and $l_1$ is high (draining
-water into it could overflow it).  $V^2(l_1,l_2)$ and $V^9(l_1,l_2)$
-show the progression of convergence from horizon $h=2$ to $h=9$ ---
+water into it could overflow it).  $V^2(l_1,l_2)$ and $V^6(l_1,l_2)$
+show the progression of convergence from horizon $h=2$ to $h=6$ ---
 low levels of $l_1$ and $l_2$ allow the system to generate electricity
-for the longest total elapsed time over 9 decision stages. 
+for the longest total elapsed time over 6 decision stages. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % policy2, v2plot.pdf, v9plot
 % annotation?
 \begin{figure*}[tbp!]
 \vspace{-2mm}
 \centering
-\includegraphics[width=0.3\textwidth]{Figures1/camdp/policy-iteration2-3.pdf}
-\includegraphics[width=0.3\textwidth]{Figures1/camdp/V2.pdf}
-\includegraphics[width=0.3\textwidth]{Figures1/camdp/V9.pdf}
+\includegraphics[width=0.29\textwidth]{Figures2/camdp/q3.pdf}
+\includegraphics[width=0.29\textwidth]{Figures2/camdp/v3.pdf}
+\includegraphics[width=0.31\textwidth]{Figures2/camdp/v6.pdf}
 \vspace{-3mm}
 \caption{%\footnotesize 
 \WaterReservoir: 
-{\it (left)} Policy $\mathit{no}$-$\mathit{drain}(e)=\pi^{2,*}(l_1,l_2)$ 
+{\it (left)} Policy $\mathit{no}$-$\mathit{drain}(e)=\pi^{3,*}(l_1,l_2)$ 
 showing on the z-axis the elapsed time $e$ that should be executed 
 for $\mathit{no}$-$\mathit{drain}$ conditioned on the states; 
-{\it (middle)} $V^2(l_1,l_2)$; 
-{\it (right)} $V^9(l_1,l_2)$.
+{\it (middle)} $V^3(l_1,l_2)$; 
+{\it (right)} $V^6(l_1,l_2)$.
 }
 \label{fig:v2plots}
 \vspace{-4mm}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
 \begin{figure}[tbp!]
 \vspace{-2mm}
 \centering
 %\subfigure{
-\includegraphics[width=0.45\textwidth]{Figures1/camdp/inventorySpace.pdf}
-\includegraphics[width=0.45\textwidth]{Figures1/camdp/inventoryTime.pdf}
+\includegraphics[width=0.49\textwidth]{Figures2/camdp/invCNode.pdf}
+\includegraphics[width=0.49\textwidth]{Figures2/camdp/invCTime.pdf}
 %}
 \vspace{-2mm}
 \caption{%\footnotesize 
-\InventoryControl: space and time vs. horizon.
+\textsc{Continuous Action} \InventoryControl: space and time vs. horizon.
 % comparing 
 %1,2 or 3 States and actions (SA) with Deterministic (DD) 
 %or Stochastic (SD) demand and no-pruning}.
@@ -2314,6 +2441,46 @@ for $\mathit{no}$-$\mathit{drain}$ conditioned on the states;
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
+\begin{figure}[tbp!]
+\vspace{-2mm}
+\centering
+%\subfigure{
+\includegraphics[width=0.49\textwidth]{Figures2/camdp/invD6Node.pdf}
+\includegraphics[width=0.49\textwidth]{Figures2/camdp/invD6Time.pdf}
+%}
+\vspace{-2mm}
+\caption{%\footnotesize 
+\textsc{Discrete Action} \InventoryControl: Space and time vs. horizon for 6 discrete actions. Results are shown for various continuous items in the inventory.
+% comparing 
+%1,2 or 3 States and actions (SA) with Deterministic (DD) 
+%or Stochastic (SD) demand and no-pruning}.
+}
+\label{fig:invD6}
+\vspace{-2mm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
+\begin{figure}[tbp!]
+\vspace{-2mm}
+\centering
+%\subfigure{
+\includegraphics[width=0.49\textwidth]{Figures2/camdp/invH3Node.pdf}
+\includegraphics[width=0.49\textwidth]{Figures2/camdp/invH3Time.pdf}
+%}
+\vspace{-2mm}
+\caption{%\footnotesize 
+Space and elapsed time vs. horizon for a fixed horizon of 3 and different problem sizes for the \textsc{Discrete Action} \InventoryControl. 
+% comparing 
+%1,2 or 3 States and actions (SA) with Deterministic (DD) 
+%or Stochastic (SD) demand and no-pruning}.
+}
+\label{fig:invH3}
+\vspace{-2mm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 In Figure~\ref{fig:invC}, we provide a time and space analysis of
 deterministic- and stochastic-demand (resp. DD and SD) variants of the
 SCIC and MJCIC problem for up to three items (the same scale of
@@ -2321,13 +2488,15 @@ problems often studied in the OR literature); for each number of items
 $n \in \{ 1,2,3 \}$ the state (inventory levels) is $\vec{x} \in
 [0,\infty]^n$ and the action (reorder amounts) is $\vec{y} \in
 [0,\infty]^n$.  Orders are made at one month intervals and we solve
-for a horizon up to $h=6$ months.  Here we see that linear feasibility
-checking/pruning in the XADD is crucial -- we cannot solve beyond
-$h=2$ without it for 1 item!  While solving for larger numbers of
+for a horizon up to $h=6$ months.  
+%Here we see that linear feasibility checking/pruning in the XADD is crucial -- we cannot solve beyond $h=2$ without it for 1 item!  
+While solving for larger numbers of
 items and SD (rather than DD) both increase time and space, 
 the solutions quickly reach quiescence indicating structural
 convergence.
+Figure ~\ref{fig:invD6} represents the time and space for the deterministic \textsc{Discrete Action} \InventoryControl for a discretization of 6 actions and different inventory items for up to $h=6$ horizons. While the number of items affects both time and space, even for 6 discrete actions the 3-item inventory will have exponential time and space for the second horizon onwards. The reason is behind the high dimensions, for a 3-item inventory of 6 discrete actions, a total of $6 \times 6 \times 6$ actions are required!
 
+To show the effect of different number of action discretizations for the \InventoryControl Figure ~\ref{fig:invH3} is used to analyse the time and space for a fixed horizon of $h=3$and inventory items of $1,2$ and 3. As the number of discrete actions increases, the time and space grows almost linearly for the 1 and 2 item inventory but again for a 3-item inventory this causes major space and time limitations. 
 %\vspace*{-0.05in}
 \section{Related Work}
 
