@@ -1,0 +1,176 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Bahar \bgroup \em et al.\egroup
+  }{1993}]{bahar93add}
+R.~Iris Bahar, Erica Frohm, Charles Gaona, Gary Hachtel, Enrico Macii, Abelardo
+  Pardo, and Fabio Somenzi.
+\newblock {A}lgebraic {D}ecision {D}iagrams and their applications.
+\newblock In {\em {IEEE} /{ACM} International Conference on {CAD}}, 1993.
+
+\bibitem[\protect\citeauthoryear{Bellman}{1957}]{bellman}
+Richard~E. Bellman.
+\newblock {\em Dynamic Programming}.
+\newblock Princeton University Press, Princeton, NJ, 1957.
+
+\bibitem[\protect\citeauthoryear{Blackmore \bgroup \em et al.\egroup
+  }{2010}]{Blackmore:2010}
+L.~Blackmore, M.~Ono, A.~Bektassov, and B.C. Williams.
+\newblock A probabilistic particle-control approximation of chance-constrained
+  stochastic predictive control.
+\newblock {\em Robotics, IEEE Transactions on}, 26(3):502 --517, 2010.
+
+\bibitem[\protect\citeauthoryear{Blackmore \bgroup \em et al.\egroup
+  }{2011}]{Blackmore:2011}
+Lars Blackmore, Masahiro Ono, and Brian~C. Williams.
+\newblock Chance-constrained optimal path planning with obstacles.
+\newblock {\em IEEE Transactions on Robotics}, 27(6):1080--1094, 2011.
+
+\bibitem[\protect\citeauthoryear{Blondel and Tsitsiklis}{1999}]{Blondel:1999}
+Vincent~D. Blondel and John~N. Tsitsiklis.
+\newblock Complexity of stability and controllability of elementary hybrid
+  systems.
+\newblock {\em Automatica}, 35(3):479--489, 1999.
+
+\bibitem[\protect\citeauthoryear{Boutilier \bgroup \em et al.\egroup
+  }{2001}]{fomdp}
+Craig Boutilier, Ray Reiter, and Bob Price.
+\newblock Symbolic dynamic programming for first-order {MDPs}.
+\newblock In {\em {IJCAI-01}}, pages 690--697, Seattle, 2001.
+
+\bibitem[\protect\citeauthoryear{Boyan and Littman}{2001}]{boyan01}
+Justin Boyan and Michael Littman.
+\newblock Exact solutions to time-dependent {MDPs}.
+\newblock In {\em Advances in Neural Information Processing Systems {NIPS-00}},
+  pages 1026--1032, 2001.
+
+\bibitem[\protect\citeauthoryear{{D}e Schutter \bgroup \em et al.\egroup
+  }{2009}]{DeSHee:2009}
+B.~{D}e Schutter, W.P.M.H. Heemels, J.~Lunze, and C.~Prieur.
+\newblock Survey of modeling, analysis, and control of hybrid systems.
+\newblock In J.~Lunze and F.~Lamnabhi-Lagarrigue, editors, {\em Handbook of
+  Hybrid Systems Control -- Theory, Tools, Applications}, chapter~2, pages
+  31--55. Cambridge University Press, Cambridge, UK, 2009.
+
+\bibitem[\protect\citeauthoryear{Feng \bgroup \em et al.\egroup
+  }{2004}]{feng04}
+Zhengzhu Feng, Richard Dearden, Nicolas Meuleau, and Richard Washington.
+\newblock Dynamic programming for structured continuous markov decision
+  problems.
+\newblock In {\em Uncertainty in Artificial Intelligence ({UAI-04})}, pages
+  154--161, 2004.
+
+\bibitem[\protect\citeauthoryear{Henzinger \bgroup \em et al.\egroup
+  }{1997}]{Henzinger:1997}
+Thomas~A. Henzinger, Pei~H. Ho, and Howard~W. Toi.
+\newblock {HYTECH: A Model Checker for Hybrid Systems}.
+\newblock {\em International Journal on Software Tools for Technology
+  Transfer}, 1(1-2):110--122, 1997.
+
+\bibitem[\protect\citeauthoryear{Hu \bgroup \em et al.\egroup }{2000}]{Hu:2000}
+J.~Hu, John Lygeros, and S.~Sastry.
+\newblock {Towards a theory of stochastic hybrid systems}.
+\newblock {\em Lecture Notes in Computer Science LNCS}, 1790:160--173, 2000.
+
+\bibitem[\protect\citeauthoryear{Kveton \bgroup \em et al.\egroup
+  }{2006}]{kveton06}
+Branislav Kveton, Milos Hauskrecht, and Carlos Guestrin.
+\newblock Solving factored mdps with hybrid state and action variables.
+\newblock {\em Journal Artificial Intelligence Research (JAIR)}, 27:153--201,
+  2006.
+
+\bibitem[\protect\citeauthoryear{Li and Littman}{2005}]{li05}
+Lihong Li and Michael~L. Littman.
+\newblock Lazy approximation for solving continuous finite-horizon mdps.
+\newblock In {\em National Conference on Artificial Intelligence {AAAI-05}},
+  pages 1175--1180, 2005.
+
+\bibitem[\protect\citeauthoryear{Li \bgroup \em et al.\egroup }{2002}]{Li:2002}
+Pu~Li, Moritz Wendt, and G\"{u}Nter Wozny.
+\newblock Brief a probabilistically constrained model predictive controller.
+\newblock {\em Automatica}, 38(7):1171--1176, 2002.
+
+\bibitem[\protect\citeauthoryear{Littman}{1994}]{littman94}
+Michael~L. Littman.
+\newblock Markov games as a framework for multi-agent reinforcement learning.
+\newblock In {\em ICML}, pages 157--163, 1994.
+
+\bibitem[\protect\citeauthoryear{L{\"o}hr \bgroup \em et al.\egroup
+  }{2012}]{DLohr:2012}
+Johannes L{\"o}hr, Patrick Eyerich, Thomas Keller, and Bernhard Nebel.
+\newblock A planning based framework for controlling hybrid systems.
+\newblock In {\em Proceedings of the Twenty-Second International Conference on
+  Automated Planning and Scheduling}, 2012.
+
+\bibitem[\protect\citeauthoryear{Mahootchi}{2009}]{Mahootchi2009}
+Masoud Mahootchi.
+\newblock {\em Storage System Management Using Reinforcement Learning
+  Techniques and Nonlinear Models}.
+\newblock PhD thesis, University of Waterloo,Canada, 2009.
+
+\bibitem[\protect\citeauthoryear{Marecki \bgroup \em et al.\egroup
+  }{2007}]{phase07}
+Janusz Marecki, Sven Koenig, and Milind Tambe.
+\newblock A fast analytical algorithm for solving markov decision processes
+  with real-valued resources.
+\newblock In {\em International Conference on Uncertainty in Artificial
+  Intelligence {IJCAI}}, pages 2536--2541, 2007.
+
+\bibitem[\protect\citeauthoryear{Meuleau \bgroup \em et al.\egroup
+  }{2009}]{hao09}
+Nicolas Meuleau, Emmanuel Benazera, Ronen~I. Brafman, Eric~A. Hansen, and
+  Mausam.
+\newblock A heuristic search approach to planning with continuous resources in
+  stochastic domains.
+\newblock {\em Journal Artificial Intelligence Research (JAIR)}, 34:27--59,
+  2009.
+
+\bibitem[\protect\citeauthoryear{Ono and Williams}{2008}]{Ono:2008}
+Masahiro Ono and Brian~C. Williams.
+\newblock An efficient motion planning algorithm for stochastic dynamic systems
+  with constraints on probability of failure.
+\newblock In {\em AAAI}, pages 1376--1382, 2008.
+
+\bibitem[\protect\citeauthoryear{Puterman}{1994}]{puterman}
+Martin~L. Puterman.
+\newblock {\em Markov Decision Processes: Discrete Stochastic Dynamic
+  Programming}.
+\newblock Wiley, New York, 1994.
+
+\bibitem[\protect\citeauthoryear{Sanner \bgroup \em et al.\egroup
+  }{2011}]{sanner_uai11}
+Scott Sanner, Karina~Valdivia Delgado, and Leliane~Nunes {de Barros}.
+\newblock Symbolic dynamic programming for discrete and continuous state mdps.
+\newblock In {\em Proceedings of the 27th Conference on Uncertainty in {AI}
+  ({UAI-2011})}, Barcelona, 2011.
+
+\bibitem[\protect\citeauthoryear{Schwarm and Nikolaou}{1999}]{Schwarm:1999}
+Alexander~T. Schwarm and Michael Nikolaou.
+\newblock Chance-constrained model predictive control.
+\newblock {\em AIChE Journal}, 45(8):1743--1752, 1999.
+
+\bibitem[\protect\citeauthoryear{Tittus and Egardt}{1998}]{Tittus:1998}
+M.~Tittus and B.~Egardt.
+\newblock Control design for integrator hybrid systems.
+\newblock {\em Automatic Control, IEEE Transactions on}, 43(4):491 --500, apr
+  1998.
+
+\bibitem[\protect\citeauthoryear{Yang and Blanke}{2007}]{Yang:2007}
+Zhenyu Yang and Mogens Blanke.
+\newblock A unified approach to controllability analysis for hybrid control
+  systems.
+\newblock {\em Nonlinear Analysis: Hybrid Systems}, 1(2):212 -- 222, 2007.
+
+\bibitem[\protect\citeauthoryear{Yeh}{1985}]{Yeh1985}
+William~G Yeh.
+\newblock Reservoir management and operations models: A state-of-the-art
+  review.
+\newblock {\em Water Resources research}, 21,12:1797�1818, 1985.
+
+\bibitem[\protect\citeauthoryear{Zamani \bgroup \em et al.\egroup
+  }{2012}]{sdp_aaai}
+Z.~Zamani, S.~Sanner, and C.~Fang.
+\newblock Symbolic dynamic programming for continuous state and action mdps.
+\newblock In {\em In Proceedings of the 26th AAAI Conference on Artificial
+  Intelligence ({AAAI-12})}, Toronto, Canada, 2012.
+
+\end{thebibliography}
