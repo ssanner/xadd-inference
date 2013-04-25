@@ -204,18 +204,19 @@ P&(\vec{b}',\vec{x}'|\vec{b},\vec{x}, a,\vec{y},\vec{n}) = \nonumber  \\
   \prod_{j=1}^c P(x_j'|\vec{b},\vec{x},\vec{b}',\vec{x}',a,\vec{y},\vec{n})
 \end{align}
 }
-\emph{Here we allow synchronic arcs under the condition that the DBN forms
+\emph{Here we allow synchronic arcs among our conditional probabilities 
+under the condition that all conditional probabilities in the above DBN form 
 a proper directed acyclic graph (DAG)}.
 For binary variables $b_i$ ($1 \leq i \leq a$),
 $P(b_i'|\vec{b},\vec{x},\vec{b}',\vec{x}',\vec{x},a,\vec{y},\vec{n})$ are defined as
 general conditional probability functions (CPFs), which are not necessarily tabular
-since they may condition on inequalities over continuous variables.  For
+since they may condition on inequalities of continuous variables.  For
 continuous variables $x_j$ ($1 \leq j \leq c$), the CPFs
 $P(x_j'|\vec{b},\vec{x},\vec{b}',\vec{x}',a,\vec{y},\vec{n})$ are represented
 with \emph{piecewise linear equations} (PLEs) that may have piecewise 
 conditions which are arbitrary logical combinations of
 $\vec{b}$, $\vec{b}'$ and linear inequalities over $\vec{x}$, $\vec{x}'$,
-and $\vec{n}$.  Examples of PLEs will follow shortly.
+and $\vec{n}$.  Examples of PLEs follow shortly.
 
 In general, we assume that for each intermediate continuous noise variable 
 $n_l$ ($1 \leq l \leq e$)
@@ -285,37 +286,37 @@ The reward function $R$ is used to prevent overflow and underflow by assigning
 $-\infty$ penalty to water levels outside of lower reserve and upper
 capacity limits and a reward for the amount of water stored at the end of
 the time step.  For both $a \in A$ this is formally defined as:
-\vspace{-2mm} 
+\vspace{-0mm} 
 {\footnotesize
-\begin{align*}
+\begin{align}
 R(l_1,l_1',\vec{b},\vec{b}',a) &= 
 \begin{cases}
-(200 \! \leq \! l_1 \! \leq \! 4500) \wedge (200 \! \leq \! l'_1 \! \leq \! 4500) & \!\! : l_1'\\
+(200 \! \leq \! l_1 \! \leq \! 4500) \wedge (200 \! \leq \! l_1' \! \leq \! 4500) & \!\! : l_1'\\
 \text{otherwise} & \!\! : -\infty\\
-\end{cases}
-\end{align*}
-}
-For the transition function, we assume that on each time step $\vec{b}' = \vec{b} + 1$ (not shown)
-and the reservoir level changes according to the amount of outflow (2000 units of water on a
-$\mathit{drain}$ and 0 units on a $\mathit{no}$-$\mathit{drain}$ action)
-plus a noisy (uncertain) amount of rain $n$:
-{\footnotesize
-\begin{align*}
-P(l'_1|l_1,n,d_i,d'_i, a& =\mathit{drain}) = \delta \left( l_1'  - (n + l_1 - 2000) \right) \\
-P(l'_1|l_1,n,d_i,d'_i, a&=\mathit{no}-\mathit{drain}) =\delta \left( l_1'  -  (n + l_1) \right)
-\end{align*}}
+\end{cases} \label{eq:reward}
+\end{align}
+} 
+For the transition function, we assume that on each time step
+$\vec{b}' = \vec{b} + 1$ (not shown) and the reservoir level changes
+according to the amount of outflow (2000 units of water on a
+$\mathit{drain}$ and 0 units on a $\mathit{no}$-$\mathit{drain}$
+action) plus a noisy (uncertain) amount of rain $n$: {\footnotesize
+\begin{align}
+P(l'_1|l_1,n, a& =\mathit{drain}) = \delta \left( l_1'  - (n + l_1 - 2000) \right) \label{eq:drain_trans} \\
+P(l'_1|l_1,n, a&=\mathit{no}\text{-}\mathit{drain}) =\delta \left( l_1'  -  (n + l_1) \right) \label{eq:nodrain_trans}
+\end{align}}
 The use of the $\delta[\cdot]$ function here ensures that the continuous CPF over $l'$ integrates to 1,
 which is crucial for defining a proper probability distribution.  While these PLEs are deterministic
 note that all continuous noise in this framework enters via the non-deterministic noise variables
 in ND-HMDPs.  The noisy level of rainfall $n$ is state-dependent and legal intervals are defined as follows:
 {\footnotesize
-\begin{align*}
+\begin{align}
 N(n|\vec{b},l_1) = \begin{cases}
 \vec{b} = 4 \wedge (1200 \leq n \leq 2000) &: -\infty \\
-\vec{b} = 4  \wedge (0 \leq n \leq 400)&: -\infty \\
+\vec{b} \neq 4  \wedge (0 \leq n \leq 400)&: -\infty \\
 \text{otherwise} &: +\infty
-\end{cases}
-\end{align*}}
+\end{cases} \label{eq:noise}
+\end{align}}
 In short, on day four ($\vec{b} = 4$) the amount of rain is expected to be between
 1200 and 2000 units, whereas on the other days it is expected to be between 0 and 400 units.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -397,13 +398,13 @@ adversarial choice of value-minimizing noise:
 \vspace{-2mm}
 {\footnotesize
 \begin{align}
-V^{h}(\vec{b},\vec{x}) & = \max_{a \in A} \max_{\vec{y} \in \mathbb{R}^{|\vec{y}|}} \min_{\vec{n} \mathbb{R}^{|\vec{e}|}} \left\{ Q^{h}_a(\vec{b},\vec{x},\vec{y},\vec{n}) \right\} \label{eq:vfun}
+V^{h}(\vec{b},\vec{x}) & = \max_{a \in A} \max_{\vec{y} \in \mathbb{R}^{|\vec{y}|}} \min_{\vec{n} \in \mathbb{R}^{|\vec{e}|}} \left\{ Q^{h}_a(\vec{b},\vec{x},\vec{y},\vec{n}) \right\} \label{eq:vfun}
 \end{align}}
 The optimal policy at horizon $h$ can also be determined using the
 $Q$-function as below:
 {\footnotesize
 \begin{align}
-\pi^{*,h}(\vec{b},\vec{x}) = \argmax_{a \in A}  \argmax_{\vec{y} \in \mathbb{R}^{|\vec{y}|}}  \min_{\vec{n} \mathbb{R}^{|\vec{e}|}}  Q^h_a(\vec{b},\vec{x},\vec{y},\vec{n})
+\pi^{*,h}(\vec{b},\vec{x}) = \argmax_{a \in A}  \argmax_{\vec{y} \in \mathbb{R}^{|\vec{y}|}}  \min_{\vec{n} \in \mathbb{R}^{|\vec{e}|}}  Q^h_a(\vec{b},\vec{x},\vec{y},\vec{n})
 \end{align}}
 For finite-horizon HMDPs the optimal value function and policy are
 obtained up to horizon H.  For infinite horizons where the optimal policy
@@ -436,7 +437,7 @@ exactly and in closed-form.
 In general we define \emph{all} symbolic functions to be represented
 in \emph{case} form~\cite{fomdp} for which a binary ``cross-sum'' operation
 can be defined as follows:
-{\footnotesize 
+%{\footnotesize 
 \begin{center}
 \begin{tabular}{r c c c l}
 &
@@ -465,8 +466,8 @@ $ = $
   \end{cases}$
 \end{tabular}
 \end{center}
-}
-\normalsize
+%}
+%\normalsize
 Here $\phi_i$ and $\psi_j$ are logical formulae defined over the state
 $(\vec{b},\vec{x})$ and can include arbitrary logical
 ($\land,\lor,\neg$) combinations of boolean variables
@@ -476,10 +477,11 @@ and $g_j$ are restricted to be \emph{linear} functions.  Similarly
 operations such as $\ominus$ and $\otimes$ may be defined with operations
 applied to LCF functions yielded LCF results.
 
-In addition to $\ominus$ and $\otimes$ another key binary operation on case
+In addition to $\ominus$ and $\otimes$, another key binary operation on case
 statements the preserves the LCF property is \emph{symbolic case maximization}:
-\vspace{-7mm}
-{\footnotesize
+
+\vspace{-2mm}
+{\small
 \begin{center}
 \begin{tabular}{r c c c l}
 &
@@ -513,7 +515,9 @@ $ = $
   \end{cases}$
 \end{tabular}
 \end{center}
-} \vspace{-1mm}
+}
+We refer the reader to~\cite{sdp_aaai,sanner_uai11} for further details
+on operations required by RSDP.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{.5em}
@@ -528,11 +532,11 @@ $ = $
        $h:=h+1$\;
        \ForEach {$a(\vec{y}) \in A$}{
               $Q_a^{h}(\vec{y},\vec{n})\,:=\,$\regress{$V^{h-1},a,\vec{y}$}\;
-				$Q_a^{h}(\vec{y}) := \min_{\vec{n}} \, Q_a^{h}(\vec{y},\vec{n})$ $\,$\emph{//Stochastic $\min$}\;
-				$Q_a^{h} := \max_{\vec{y}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// Continuous $\max$}\;
-              $V^{h} := \casemax_a \, Q_a^{h}$ $\,$ \emph{// $\casemax$ all $Q_a$}\;
-              $\pi^{*,h} := \argmax_{(a,\vec{y})} \, Q_a^{h}(\vec{y})$\;
+				$Q_a^{h}(\vec{y}) := \min_{\vec{n}} \, Q_a^{h}(\vec{y},\vec{n})$ $\,$\emph{// noise $\min$}\;
+				$Q_a^{h} := \max_{\vec{y}} \, Q_a^{h}(\vec{y})$ $\,$ \emph{// action $\max$}\;
        }
+       $V^{h} := \casemax_a \, Q_a^{h}$ $\,$ \emph{// $\max$ over all $Q_a$}\;
+       $\pi^{*,h} := \argmax_{(a,\vec{y})} \, Q_a^{h}(\vec{y})$\;
        \If{$V^h = V^{h-1}$}
            {break $\,$ \emph{// Terminate if early convergence}\;}
    }
@@ -556,28 +560,28 @@ $ = $
 \Begin{
     $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
 %%%%%%%%%%%%%%%%%%% ZAHRA TODO ( check casemax of noise is correct) 
- 	\If {$v'$ in $R$}
+ 	\If {$R$ contains primed variables}
 	 {$Q := R(\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y}) \oplus (\gamma \cdot Q)$} \;
     \ForEach { $v'$ in $Q$}  
     {
-    	\If {$v'$ = $x'_j$}
+    	\If {$v'$ is $x'_j$}
     	{
-    	\emph{//Continuous marginal integration}\\
+    	\emph{// Continuous marginal integration}\\
          $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y},\vec{n}) \, d_{x'_j}$\;
     	}
-	    \If {$v'$=$b'_i$}
+	    \If {$v'$ is $b'_i$}
     	{
     	\emph{// Discrete marginal summation}\\
-         $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y},\vec{n}) \right]|_{b_i' = 1}$\\
-         \hspace{8mm} $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{b},\vec{x},\vec{x}',a,\vec{y},\vec{n}) \right]|_{b_i' = 0}$\;
+         $Q := \left[ Q \otimes P(b_i'|\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y},\vec{n}) \right]|_{b_i' = 1}$
+         \hspace{0mm} \mbox{$\text{\ }$ $\;\;\;\;\;\;$ $\oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{b},\vec{x},\vec{x}',a,\vec{y},\vec{n}) \right]|_{b_i' = 0}$}\;
     	}
     }
-    \If {$\neg$ ($v'$  in $R$)}
-    {$Q := R(\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y}) \oplus (\gamma \cdot Q)$ }\;
+    \If {$R$ does not contain primed variables}
+    {$Q := R(\vec{b},\vec{x},a,\vec{y}) \oplus (\gamma \cdot Q)$ }\;
      \ForEach { $n_l$ in $Q$}
      {
 		\emph{// Sequence of $\max$-in for noise variables}\\          
-         $Q_a^{h}(\vec{y},\vec{n}) := \casemax_{n_l} \, ( Q, N(n_l, b_i,x_j))$ $\,$ \;
+         $Q(\vec{y},\vec{n}) := \casemax_{n_l} \, ( Q, N(n_l, \vec{b},\vec{x}))$ $\,$ \;
 	}
 	%%%%%%%%%%%%%%%%%%%%
     \Return{$Q$} \;
@@ -588,20 +592,34 @@ $ = $
 \decmargin{.5em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-To demonstrate how \texttt{VI} symbolically implements RDP, we compute $V^1$ for the \textsc{Reservoir Control} example. For both actions, the function $Q^1_a$ is computed in line 6 using Algorithm~\ref{alg:regress} with the following operations for action $\mathit{no}$-$\mathit{drain}$:
+To demonstrate how \texttt{VI} symbolically implements RSDP, we compute $V^1$ for the \textsc{Reservoir Control} example with no boolean variables (assume $\vec{b}=1$). For both actions, the function $Q^1_a$ is computed in line 6 using Alg~\ref{alg:vi}, e.g., this calls Alg~\ref{alg:regress} to compute the following operations for $Q^1_{\mathit{no}\text{-}\mathit{drain}}$:
 \begin{itemize}
 
-\item Priming $V^0$ which %the current state variables ($d_i,l_j$) to build the next states ($d_i',l_j'$) in the value function. This
-requires a substitution $Q^0= V^0 \sigma$ where $\sigma = \lbrace d_i \setminus d_i' , l_j \setminus l_j' \rbrace$.  Here, $V^0=0$ so $Q^0=0$.
+\item In line 2 of Algorithm~\ref{alg:regress}, we prime $V$ which
+  requires a substitution $Q= V \sigma$ where $\sigma = \lbrace
+  d_i/d_i' , l_j/l_j' \rbrace$.  Here, $V=V^0=0$ so $Q=V\sigma=0$.
 
-\item Since the reward function contains the primed variable $l_1'$, line 4 is performed (and not line 15). 
+\item Since the reward function contains the primed variable $l_1'$,
+  line 4 is performed (and not line 15).  Hence $Q=R\oplus \gamma\cdot 0 = R$
+  where $R$ is as defined in~\eqref{eq:reward} with $\vec{b}=1$.
 
-\item For boolean variables, regression is performed using $f|_{b=v}$ (restriction operator) which assigns the value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$ --- not applicable to the example. For continuous variables line 9 follows the rules of integration w.r.t. a $\delta$ function~\cite{sanner_uai11} which simply yields a symbolic substitution: 
-{\footnotesize
+\item For boolean variables, discrete marginalization is performed on
+  line 12 using $f|_{b=v}$ (restriction operator) which assigns the
+  value $v \in \{ 0,1 \}$ to any occurrence of $b$ in $f$ --- not
+  applicable to the example. For continuous variables, line 9 follows
+  the rules of integration w.r.t. a $\delta$
+  function~\cite{sanner_uai11} which simply yields a symbolic
+  substitution: {\footnotesize
 \begin{align}
 \int f(x'_j) \otimes \delta[x_j' - h(\vec{z})] dx'_j = f(x'_j) \{ x'_j / h(\vec{z}) \}\nonumber
 \end{align}}
-This results in the following $Q$-value for \textsc{Reservoir Control} : 
+In the case of the transition for $\mathit{no}\text{-}\mathit{drain}$
+in~\eqref{eq:nodrain_trans}, we observe that on integration of $l_1'$,
+the only non-zero probability mass occurs when $l_1' = l_1 + n$, 
+hence we substitute $l_1'/(l_1 + n)$ wherever
+$l_1'$ occurs in our current $Q$ (from line 4, described above).  
+This results in the following $Q$ after the for
+loop in line 6 of Algorithm~\ref{alg:regress} has completed:
 {\footnotesize
 \begin{align*}
 %Q =   
@@ -611,122 +629,74 @@ This results in the following $Q$-value for \textsc{Reservoir Control} :
 \end{cases}
 \end{align*}
 }
-\item Maximizing the result with each of the noise variables in defined line 20 using a sequence of symbolic maximizations. Each noise variable assigns -$\infty$ for legal values inside the boundary range +$\infty$ for illegal values defined by the noise model $N(\vec{n},\vec{b},\vec{x})$. The result is defined below:
-%%%%%%%%%%%%%%%% Not in the log file and too big to fit
-%{\footnotesize
-%\begin{align}
-%\begin{cases}
-%1200 \leq n \leq 2000 :& -\infty \\
-%\neg(1200 \leq n \leq 2000) :& +\infty \\
-%d_1 \land (200 \leq l_1 \leq 4500) \land (1200 \leq n \leq 2000) \land (200 \leq (l_1+n) \leq 4500): & l_1 +n \\ 
-%d_1 \land (200 \leq l_1 \leq 4500) \land (1200 \leq n \leq 2000) \land \neg (200 \leq (l_1+n) \leq 4500): & - \infty \\ 
-%d_1 \land \neg (200 \leq l_1 \leq 4500) \land (1200 \leq n \leq 2000) : & -\infty \\  
-%d_1 \land (200 \leq l_1 \leq 4500) \land \neg(1200 \leq n \leq 2000) : & +\infty \\  
-%d_1 \land \neg (200 \leq l_1 \leq 4500) \land \neg(1200 \leq n \leq 2000) : & +\infty \\  
-%0 \leq n \leq 400 :& -\infty \\
-%\neg(0 \leq n \leq 400) :& +\infty \\
-%\neg d_1 \land (200 \leq l_1 \leq 4500) \land (0 \leq n \leq 400) \land (200 \leq (l_1+n) \leq 4500): & l_1 +n \\ 
-%\neg d_1 \land (200 \leq l_1 \leq 4500) \land (0 \leq n \leq 400) \land \neg (200 \leq (l_1+n) \leq 4500): & - \infty \\ 
-%\neg d_1 \land \neg(200 \leq l_1 \leq 4500) \land (0 \leq n \leq 400) : & -\infty \\  
-%\neg d_1 \land (200 \leq l_1 \leq 4500) \land \neg(0 \leq n \leq 400) : & +\infty \\  
-%\neg d_1 \land \neg(200 \leq l_1 \leq 4500) \land \neg(0 \leq n \leq 400) : & +\infty \\  
-%\end{cases} \nonumber
-%\end{align}
-%}
-%%%%%%%%%%%%%%%%%%%%%
+\item In lines 17--20, we 
+maximize Q with each of the noise functions $N$ using a sequence of symbolic maximizations. Each noise variable assigns -$\infty$ for legal values of $n_l$ and $+\infty$ for illegal values of $n_l$ defined by the noise model $N(n_l,\vec{b},\vec{x})$. The $Q$ obtained by max'ing in $N(n|\vec{b}=1,l_1)$ from~\eqref{eq:noise} in our running example is 
 {\footnotesize
 \begin{align*}
 %Q =   
 \begin{cases}
-((l_1 \land (l_1+n)) \in \mathit{safe}) \land (n \in \mathit{legal}) &: l_1 + n\\
-(l_1  \in \mathit{safe}) \land  ((l_1+n) \notin \mathit{safe}) \land (n \in \mathit{legal}) &:  -\infty\\
-(n \notin \mathit{legal})&: +\infty\\
+l_1 \in \mathit{safe} \land (l_1+n) \in \mathit{safe} \land (n \in \mathit{legal}) &: l_1 + n\\
+(l_1  \notin \mathit{safe} \lor  (l_1+n) \notin \mathit{safe}) \land (n \in \mathit{legal}) &:  -\infty\\
+n \notin \mathit{legal} &: +\infty\\
 \end{cases}
 \end{align*}
 }
-where $\mathit{legal}$ noise value corresponds to [0,400] or [1200,2000] and $\mathit{safe}$ water levels to [200,4500]. 
-%The result assigns the value of $l_1+n$ to both safe water levels and legal noise ranges. Unsafe current or next state water levels (with legal noise) lead to -$\infty$ and illegal noise ranges cause the value to be +$\infty$.
+where $\mathit{safe}$ water levels correspond to the range [200,4500] and 
+$\mathit{legal}$ noise values corresponds to the range [0,400]. 
+%The result assigns the value of $l_1+n$ to both safe water levels and legal noise ranges. Unsafe current or next state water levels (with legal noise) lead to -$\infty$ and illegal noise ranges cause the value to be $+\infty$.
 
-The regressed stochastic $Q_a^{h}(\vec{y},\vec{n})$ from Alg~\ref{alg:regress} is now minimized over the noise variables $\vec{n}$ in line 7 of Alg~\ref{alg:vi}. Intuitively this continuous minimization will never choose +$\infty$ as there is always some legal noise value which insures that the illegal noise values are never chosen. Each partition $i$ of this intermediate $Q$ is considered for a continuous minimization separately with the final result a $\casemin$ (definition follows from $\casemax$) on all the individual minimum results: $\casemin_i \min_n \phi_i(\vec{b},\vec{x},\vec{n}) f_i(\vec{b},\vec{x},\vec{n})$.  
-%%%%%%%%%%%%%%%%%% TODO: Can take this piece out completely
-We demonstrate the steps of this algorithm for the third partition of the regressed $Q$ defined as:
-{\footnotesize
-\begin{align*}
-d_1 \land (200\leq l_1\leq 4500) &\land (1200\leq n\leq 2000) \\
-& \land (200\leq (l_1+n)\leq 4500): l_1 +n 
-\end{align*}}
-For each partition the logical constraints are used to derive the (a) lower bound on $n$ ($LB =$ 1200, $200 -l_1$); (b) upper bound on $n$ ($UB =$ 2000, $4500- l_1$)  and (c) constraints independent of $n$ ($IND= d_1, 200 \leq l_1 \leq 4500$). In case of several bounds on $n$ the maximum of all lower bounds and the minimum of all upper bounds is desired.:
-{\footnotesize
-\begin{center}
-\begin{tabular}{r c c c l}
-&
-$
-LB =  
-\begin{cases}
- l_1 < -1000 : & 200 - l_1 \\ 
- l_1 > -1000 : & 1200 \\ 
-\end{cases} 
-$
-\\
-&
-$ UB =  
-\begin{cases}
-l_1 >2500 : & 4500 - l_1 \\ 
-l_1<2500 : & 2000 \\ 
-\end{cases} 
-$
-\end{tabular}
-\end{center}
-}
-The minima points of upper and lower bounds are evaluated for the leaf value which equals to substituting the bounds instead of the noise variable $n$ in the leaf function $n+ l_1$:
-{\footnotesize
+\item Next, the regressed $Q_a^{h}(\vec{y},\vec{n})$ from
+  Alg~\ref{alg:regress} is minimized over the noise variables
+  $\vec{n}$ in line 7 of Alg~\ref{alg:vi}.  Intuitively, this
+  continuous minimization will never choose $+\infty$ as there is
+  always some legal noise value that can be chosen leading to
+  $Q_a^{h}(\vec{y},\vec{n}) < +\infty$.  We refer to~\cite{sdp_aaai}
+  for details of continuous variable maximization (from which
+  minimization follows).  Even though the minimizing $n$ will be a
+  function of $l_1$, for simplicity, let us assume in the first two
+  partitions that $n=0$ is the minimizer.  After this substitution and
+  $\casemin$'ing (follows from $\casemax$) the partitions together as
+  required in the $\min_n$ operation, we obtain the following result:
 \begin{align}
-Q =  
+Q^1_{\mathit{no}\text{-}\mathit{drain}} =  
 \begin{cases}
- l_1\leq - 1798 :&  2000 + l_1 \\
- l_1\leq - 1000 :&  200 \\
- l_1\leq  3300 :&  1200.48 + l_1 \\
-  l_1\geq  3300 :&  4500 \\
-\end{cases} \nonumber
+l_1 \in \mathit{safe}     &: l_1\\
+l_1  \notin \mathit{safe} &: -\infty\\
+\end{cases} \label{eq:finalq}
 \end{align}
-}
-Natural constraints on bounds $\LB \leq \UB$ and the $IND$ constraints are also considered for the minimization on a single partition to obtain: 
-{\footnotesize
-\begin{align}
-Q =  
-\begin{cases}
-d_1 \land ( 2000 \leq l_1 \leq 3300 ):&  1200.48 + l_1 \\
-\text{otherwise} :&  + \infty \\ 
-\end{cases} \nonumber
-\end{align}
-}
-%%%%%%%%%%%%%%%%%End of take this out
-The final result of a continuous minimization is a $\casemin$ over all partitions which results in the following Q-value:
-{\footnotesize
-\begin{align}
-Q^1_{\mathit{no}-\mathit{drain}} =  
-\begin{cases}
-d_1 \land (200 \leq l_1 \leq 2506) : & 1200.48 + l_1 \\
-\neg d_1 \land (200 \leq l_1 \leq 4098) : & l_1 \\
-\text{otherwise} : & -\infty \\ 
-\end{cases} \nonumber
-\end{align}
-}
+Here, we see Nature would have minimized rainfall to minimize reward
+and that no $+\infty$ values remain as the $+\infty$ partition was
+dominated by other partitions of lesser value after the minimizing
+substitution for $n$ and $\casemin$ of all partitions as done in the
+$\min_n$ operation.
 
-The resulting Q-value with minimal noise is maximized over the continuous action parameter (not available in our example) in line 8. A discrete $\casemax$ on the set of discrete actions for all $Q$-functions defines the final $V$:
-{\footnotesize
+\item The resulting Q-value with minimal noise would now be maximized over any continuous action parameters (not available in our example) in line 8.  
+
+\item Now we have $Q^1_{\mathit{no}\text{-}\mathit{drain}}$.  Once we
+  have obtained $Q^1_{\mathit{drain}}$ in a similar manner (for simplicity,
+  let us assume it is the same as~\eqref{eq:finalq} but with $l_1$
+  replaced with $l_1-2000$), we would $\casemax$ these two functions
+  together to arrive at our final $V^1$:
 \begin{align}
 V^1 =  
 \begin{cases}
-d_1 \land (2506 \leq l_1 \leq 4484): & 1 \\
-d_1 \land (200 \leq l_1 \leq 2506): & 1200.48 + l_1 \\
-\neg d_1 \land (4098 \leq l_1 \leq 4504) : & 1 \\
-\neg d_1 \land (200 \leq l_1 \leq 4098) : & l_1 \\
-\text{otherwise} : & -\infty \\ 
+(200 \leq l_1 \leq 4500): & l_1 \;\; \hfill (\mathit{no}\text{-}\mathit{drain}) \\
+(4500 \leq l_1 \leq 6500): & l_1-2000 \;\; \hfill (\mathit{drain}) \\
+\text{otherwise} : & -\infty \;\; \hfill (\mathit{uncontrollable}) \\ 
 \end{cases} \nonumber
 \end{align}
-}
+While we used approximated $Q$-values for space and readability reasons
+by making simplifying assumptions (described above), we can still understand
+the meaning of the final form of $V^1$.  If the dam levels are high -- we drain,
+if lower -- we do not drain.
+We remark that the $-\infty$ that occurs here indicates that these 
+values of $l_1$ are \emph{not robustly controllable} over a horizon of 1,
+i.e., there exist legal choices of noise that occur with probability
+greater than $\alpha$ used to define $N$ preventing the agent from
+choosing an action that avoids a state trajectory in the illegal
+$-\infty$ region defined by the reward.
 \end{itemize}
+
 To implement the case statements efficiently with continuous
 variables, extended Algebraic Decision diagrams (XADDs) are used from
 ~\cite{sanner_uai11} extended from ADDs
@@ -734,11 +704,27 @@ variables, extended Algebraic Decision diagrams (XADDs) are used from
 
 In summary we remark that all operations including the
 continuous max and min operations preserve the LCF property,
-hence all operations for Robust SDP can be performed exactly in
+hence all operations for Robust SDP (RSDP) can be performed exactly in
 closed-form -- a novel result for robust solutions to hybrid MDPs
 with state-dependent noise.
 
 \section{Empirical Results}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[tbp!]
+%\vspace{-2mm}
+\centering
+
+\includegraphics[width=0.42\textwidth]{Figures/Nodes.pdf}\\
+\vspace{-3mm}
+\includegraphics[width=0.42\textwidth]{Figures/Time.pdf}
+\vspace{-3mm}
+\caption{\footnotesize Space and elapsed time (between current and previous horizon) vs. horizon.
+}
+\label{fig:SpaceTime}
+\vspace{-1mm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure*}[tbp!]
@@ -750,35 +736,17 @@ with state-dependent noise.
 \vspace{-6mm}
 \caption{\footnotesize
 {\it (left)}  $V^7(l_1,\vec{b}=0)$ \textsc{Reservoir Control} problem;
-{\it (middle)} $V^4(k,v,z=true,g=false)$ \textsc{Space Telescope Control} problem.
-{\it (right)}  $V^4(x,y,l=false)$ \textsc{UAV Navigation} problem;
+{\it (middle)} $V^4(k,v,z=true,g=false)$ \textsc{Space Telescope Control} problem; 
+{\it (right)}  $V^4(x,y,l=false)$ \textsc{UAV Navigation} problem.
 }
 \label{fig:Value}
-%\vspace{-5mm}
+\vspace{-5mm}
 \end{figure*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure}[tbp!]
-\vspace{-2mm}
-\centering
-
-\includegraphics[width=0.42\textwidth]{Figures/Nodes.pdf}\\
-\vspace{-2mm}
-\includegraphics[width=0.42\textwidth]{Figures/Time.pdf}
-
-\vspace{-2mm}
-\caption{\footnotesize Space and elapsed time (between current and previous horizon) vs. horizon.
-}
-\label{fig:SpaceTime}
-\vspace{-4mm}
-\end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \label{sec:results}
 
-We evaluated Robust SDP on the \textsc{Reservoir Control} problem used as a running example,
+We evaluated RSDP on the \textsc{Reservoir Control} problem used as a running example,
 a \textsc{UAV Navigation} problem  and
 a \textsc{Space Telescope Control} problem --- all risk-sensitive
 problems as described below.\footnote{All source code and domain definitions
@@ -949,7 +917,7 @@ complex forms of linearly state dependent noise.
 
 This work extends results in HMDP in AI
 ~\cite{boyan01,feng04,li05,kveton06,phase07,hao09,sdp_aaai} and hybrid
-system control literature ~\cite{Henzinger:1997,Hu:2000,DeSHee:2009}
+system control literature~\cite{Henzinger:1997,Hu:2000,DeSHee:2009}
 to handled state-dependent noise.
 
 In the hybrid control literature, a challenging topic is to solve the
@@ -970,14 +938,13 @@ in the chance-constrained predictive stochastic sub-area, that finds
 the optimal sequence of control inputs subject to the constraint that
 the probability of failure must be below a user-specified
 threshold \cite{Blackmore:2011}. However all the previous work in this
-sub-are is focused on linear systems subject to Gaussian uncertainty
+sub-area is focused on linear systems subject to Gaussian uncertainty
 and state-independence
 noise \cite{Schwarm:1999,Li:2002,Ono:2008,Blackmore:2011} or resort to
 approximation techniques \cite{Blackmore:2010}.  We note that 
-our approach is not approximate and can optimally solve problems with
+our approach is not approximate and can provably provide robust solutions to problems with
 state-dependent noise in a receding horizon control framework that
-answers the robust controllability question for the first time for such
-problems.
+answers the robust controllability question for \emph{all} states.
 
 \section{Concluding Remarks}
 
@@ -1011,28 +978,26 @@ problems.
 %              Can handle nonlinear with RTDP... instantiate state
 %              prior to backup!!!
 
-This work has combined symbolic techniques and data structures from
+This work has combined symbolic techniques from
 the HMDP literature in AI with techniques from chance-constrained
-control theory to provide closed-form robust solutions to hybrid MDPs
-with state-dependent noise.
-%a range of
-%problems with general continuous transitions and state-dependent noise
-%for which no general robust closed-form solutions previously existed.
+control theory to find provably robust solutions over \emph{all} states
+on problems with piecewise linear transitions and state-dependent noise
+for which no general exact closed-form solutions previously existed.
 %Using these techniques we were able to find optimal policies and
 %answer questions of robust controllability for a variety of highly
 %risk-sensitive applications from AI planning, control theory, and
 %operations research such as \textsc{UAV Navigation}, \textsc{Space
 %  Telescope Control}, and \textsc{Reservoir Control}.  
-Combining this receding
-horizon control approach with initial-state focused search techniques as in
-HAO*~\cite{hao09} should preserve our strong robust optimality
-guarantees while increasing scalability.
-%substantially increasing the scalability of our
-%approach in exchange for restricting solution optimality to a known
-%set of initial states.
+For future work, combining RSDP with
+search techniques as in HAO*~\cite{hao09} will preserve 
+robust optimality guarantees for a set of initial states while
+substantially increasing scalability.  Furthermore,
+~\cite{Ono:2008} observe that the probability of failure
+(risk) need not be allocated uniformly at each decision stage --- we
+can dynamically allocate risk over decisions to achieve
+robust controllability for a larger set of states.
 
 {\footnotesize
-
 \section*{Acknowledgements}
 
 NICTA is funded by the Australian Government as represented by

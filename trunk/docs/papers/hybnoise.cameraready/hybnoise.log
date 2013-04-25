@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011/Cygwin) (format=pdflatex 2012.5.9)  25 APR 2013 00:37
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011/Cygwin) (format=pdflatex 2012.5.9)  25 APR 2013 14:41
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -330,102 +330,115 @@ Underfull \hbox (badness 1502) in paragraph at lines 175--188
  []
 
 
-Overfull \hbox (9.65631pt too wide) detected at line 253
+Underfull \hbox (badness 1033) in paragraph at lines 205--220
+\OT1/ptm/m/it/10 graph (DAG)\OT1/ptm/m/n/10 . For bi-nary vari-ables $\OML/cmm/
+m/it/10 b[]$ \OT1/ptm/m/n/10 ($\OT1/cmr/m/n/10 1 \OMS/cmsy/m/n/10 ^^T \OML/cmm/
+m/it/10 i \OMS/cmsy/m/n/10 ^^T \OML/cmm/m/it/10 a$\OT1/ptm/m/n/10 ),
+ []
+
+
+Overfull \hbox (9.65631pt too wide) detected at line 254
 \OML/cmm/m/it/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 n[]\OMS/cmsy/m/n/10 j[]\OML
 /cmm/m/it/10 ; []; a; []\OT1/cmr/m/n/10 ) = []  \OML/cmm/m/it/10 :
  []
 
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 269.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 270.
 
-Overfull \hbox (4.92047pt too wide) in paragraph at lines 296--296
+Overfull \hbox (4.92047pt too wide) in paragraph at lines 297--297
 [] 
  []
 
 [2]
-Overfull \hbox (2.49379pt too wide) in paragraph at lines 336--336
+Overfull \hbox (2.49379pt too wide) in paragraph at lines 337--337
 [] 
  []
 
 
-Overfull \hbox (6.5084pt too wide) in paragraph at lines 388--388
+Overfull \hbox (6.5084pt too wide) in paragraph at lines 389--389
 [] 
  []
 
-LaTeX Font Info:    Try loading font information for OT1+pcr on input line 429.
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 430.
 
 (/usr/share/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
-Overfull \hbox (2.31433pt too wide) in paragraph at lines 484--515
+Overfull \hbox (2.31433pt too wide) in paragraph at lines 486--517
  [] 
  []
 
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <7> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 540.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 544.
 
-Underfull \hbox (badness 10000) detected at line 543
+Underfull \hbox (badness 10000) detected at line 547
 [][]
  []
 
 
-Underfull \hbox (badness 10000) detected at line 587
+Overfull \hbox (2.94685pt too wide) in paragraph at lines 588--588
+[]  
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 591
 [][]
  []
 
-LaTeX Font Info:    Try loading font information for OMS+ptm on input line 594.
+[3]
+LaTeX Font Info:    Try loading font information for OMS+ptm on input line 598.
 
-(/usr/share/texmf-dist/tex/latex/psnfss/omsptm.fd
+ (/usr/share/texmf-dist/tex/latex/psnfss/omsptm.fd
 File: omsptm.fd 
 )
 LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 594.
- [3]
-Underfull \hbox (badness 1082) in paragraph at lines 650--654
-\OT1/ptm/m/n/10 min-i-mized over the noise vari-ables $[]$ in line 7 of
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 598.
+
+Underfull \hbox (badness 1590) in paragraph at lines 642--647
+ \OT1/ptm/m/n/10 where $[]$ wa-ter lev-els cor-re-spond to the range
  []
 
-[4] <Figures/reserV7New.pdf, id=40, 361.35pt x 216.81pt>
+[4] <Figures/Nodes.pdf, id=41, 361.35pt x 216.81pt>
+File: Figures/Nodes.pdf Graphic file (type pdf)
+ <use Figures/Nodes.pdf>
+Package pdftex.def Info: Figures/Nodes.pdf used on input line 718.
+(pdftex.def)             Requested size: 212.47287pt x 127.4834pt.
+
+<Figures/Time.pdf, id=42, 361.35pt x 216.81pt>
+File: Figures/Time.pdf Graphic file (type pdf)
+ <use Figures/Time.pdf>
+Package pdftex.def Info: Figures/Time.pdf used on input line 720.
+(pdftex.def)             Requested size: 212.47287pt x 127.4834pt.
+
+<Figures/reserV7New.pdf, id=43, 361.35pt x 216.81pt>
 File: Figures/reserV7New.pdf Graphic file (type pdf)
 
 <use Figures/reserV7New.pdf>
-Package pdftex.def Info: Figures/reserV7New.pdf used on input line 747.
+Package pdftex.def Info: Figures/reserV7New.pdf used on input line 733.
 (pdftex.def)             Requested size: 166.94463pt x 100.16718pt.
- <Figures/telesV4.pdf, id=41, 361.35pt x 216.81pt>
+ <Figures/telesV4.pdf, id=44, 361.35pt x 216.81pt>
 File: Figures/telesV4.pdf Graphic file (type pdf)
 
 <use Figures/telesV4.pdf>
-Package pdftex.def Info: Figures/telesV4.pdf used on input line 748.
+Package pdftex.def Info: Figures/telesV4.pdf used on input line 734.
 (pdftex.def)             Requested size: 166.94463pt x 100.16718pt.
- <Figures/uavV4.pdf, id=42, 361.35pt x 216.81pt>
+ <Figures/uavV4.pdf, id=45, 361.35pt x 216.81pt>
 File: Figures/uavV4.pdf Graphic file (type pdf)
 
 <use Figures/uavV4.pdf>
-Package pdftex.def Info: Figures/uavV4.pdf used on input line 749.
+Package pdftex.def Info: Figures/uavV4.pdf used on input line 735.
 (pdftex.def)             Requested size: 166.94463pt x 100.16718pt.
- <Figures/Nodes.pdf, id=43, 361.35pt x 216.81pt>
-File: Figures/Nodes.pdf Graphic file (type pdf)
 
-<use Figures/Nodes.pdf>
-Package pdftex.def Info: Figures/Nodes.pdf used on input line 767.
-(pdftex.def)             Requested size: 212.47287pt x 127.4834pt.
- <Figures/Time.pdf, id=44, 361.35pt x 216.81pt>
-File: Figures/Time.pdf Graphic file (type pdf)
-
-<use Figures/Time.pdf>
-Package pdftex.def Info: Figures/Time.pdf used on input line 769.
-(pdftex.def)             Requested size: 212.47287pt x 127.4834pt.
-
-Underfull \hbox (badness 1354) in paragraph at lines 785--785
+Underfull \hbox (badness 1354) in paragraph at lines 753--753
 [][]\OT1/ptm/m/n/9 All source code and do-main def-i-ni-tions can be found at
  []
 
 LaTeX Font Info:    Font shape `OT1/ptm/bx/sc' in size <10> not available
-(Font)              Font shape `OT1/ptm/b/sc' tried instead on input line 838.
+(Font)              Font shape `OT1/ptm/b/sc' tried instead on input line 806.
 Missing character: There is no Â in font ptmr7t!
 Missing character: There is no ´ in font ptmr7t!
 [5 <./Figures/Nodes.pdf> <./Figures/Time.pdf>]
-Overfull \hbox (8.22433pt too wide) in paragraph at lines 917--917
+Overfull \hbox (8.22433pt too wide) in paragraph at lines 885--885
 [] 
  []
 
@@ -433,8 +446,13 @@ Missing character: There is no â in font ptmr7t!
 Missing character: There is no € in font ptmr7t!
 Missing character: There is no ™ in font ptmr7t!
 
-Underfull \hbox (badness 1400) in paragraph at lines 1014--1033
-\OT1/ptm/m/n/10 Com-bin-ing this re-ced-ing hori-zon con-trol ap-proach with
+Underfull \hbox (badness 1237) in paragraph at lines 981--999
+\OT1/ptm/m/n/10 This work has com-bined sym-bolic tech-niques from the
+ []
+
+
+Underfull \hbox (badness 2828) in paragraph at lines 981--999
+\OT1/ptm/m/n/10 HMDP lit-er-a-ture in AI with tech-niques from chance-
  []
 
 (./hybnoise.bbl
@@ -488,13 +506,13 @@ Underfull \hbox (badness 1400) in paragraph at lines 171--175
 
 ) [7] (./hybnoise.aux) ) 
 Here is how much of TeX's memory you used:
- 3923 strings out of 493629
- 49880 string characters out of 3148772
- 160991 words of memory out of 3000000
- 7125 multiletter control sequences out of 15000+200000
+ 3928 strings out of 493629
+ 49946 string characters out of 3148772
+ 160031 words of memory out of 3000000
+ 7130 multiletter control sequences out of 15000+200000
  42099 words of font info for 91 fonts, out of 3000000 for 9000
  831 hyphenation exceptions out of 8191
- 38i,20n,24p,655b,395s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 38i,20n,24p,406b,395s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc}</us
 r/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-
 dist/fonts/type1/public/amsfonts/cmextra/cmex7.pfb></usr/share/texmf-dist/fonts
@@ -518,7 +536,7 @@ usr/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb></usr/share/
 texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texmf-dist/fonts/type
 1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
 </usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on hybnoise.pdf (7 pages, 2256444 bytes).
+Output written on hybnoise.pdf (7 pages, 2255237 bytes).
 PDF statistics:
  185 PDF objects out of 1000 (max. 8388607)
  132 compressed objects within 2 object streams
