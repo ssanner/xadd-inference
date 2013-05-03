@@ -60,15 +60,15 @@ Branch and Bound Search (BnB).\hfill\; \\
 \State $\w^* \gets \tilde{\w}$
 \State $loss_{min} \gets \sum_{i=1}^N \tilde{l}_i$ \Comment{Set initial bound to $L(\tilde{\w})$}
 \State $\l_\emptyset \gets $ all decisions $l_i$ unassigned
-\State \Call{Branch-and-Bound}{$\l_\emptyset, 0$}
+\State \Call{Branch-and-Bound}{$\l_\emptyset$}
 \State \Return $\w^*$
 \Statex
-\Procedure{Branch-and-Bound}{$\l, loss$}
+\Procedure{Branch-and-Bound}{$\l$}
    \If {(all components of $\l$ are assigned)}
       \State $\w^* \gets$ LP solution for $\l$ 
       \State $loss_{min} \gets loss$
    \Else
-      \State $i \gets \argmax_{i \text{unassigned} \in \l} |\tilde{\w}^Tx_i|$
+      \State $i \gets \argmax_{i \text{unassigned} \in \l} |\tilde{\w}^T\boldsymbol{x_i}|$
       \State $\l' \gets$ \Call{Propagate-Loss}{$\l, i, \tilde{l}_i$}
       \If {$\sum_i l_i' < loss_{min}$}
          \State \Call{Branch-and-Bound}{$\l'$}
@@ -143,17 +143,13 @@ of pruning suboptimal branches (lines 16 and 19).
 
 To detect whether a point $\p \in \R^D$ is an interior point
 of the convex hull created by other points $\p_1,
-\p_2, \dots, \p_k \in \R^D$, we approach the problem
-using the Barycentric coordinate system.  Then point $\p$ is
-an interior point of the convex hull created by points $\p_1,
-\p_2, \dots, \p_k$ if the homogeneous barycentric
-coordinates of $\p$ with respect to $\p_1,
-\p_2, \dots, \p_k$ are all non-negative. This is
-equivalent to checking whether the following linear constraints over
+\p_2, \dots, \p_k \in \R^D$, we simply check whether 
+the following linear constraints over
 $\mathbf{u}$ are feasible (e.g., by calling an LP solver):
 $$
 u_i \geq 0 \text{ for } i = 1,2, \dots, k \land \sum_{i=1}^k u_i = 1 \land \sum_{i=1}^k u_i \p_i = \p. 
 $$ If a feasible $\mathbf{u}$ exists, then point $\p$
-lies in the convex hull of points $\p_1, \p_2, \dots,
+is a convex combination of points $\p_1, \p_2, \dots,
+\p_k$ (with coefficients $u_1, \dots, u_k$), therefore $\p$ lies in the convex hull of points $\p_1, \p_2, \dots,
 \p_k$, otherwise it does not.
 

@@ -21,7 +21,7 @@ to find the one with minimal 0--1 loss.
 \end{figure}
 
 To formulate the approach discussed above, we write 
-the 0--1 loss for $\xi$ in homogenous notation as follows:
+the 0--1 loss for $\xi$ in non-homogenous notation as follows:
 \begin{equation}\label{eq:loss}
 L(w_0,\w) = \sum_{i=1}^N \mathbb{I} [w_0 + t_i (\w^T \xi) < 0].
 \end{equation}
@@ -40,33 +40,27 @@ L(w_0,\w) = \sum_{i=1}^N \mathbb{I} [w_0 + t_i (\w^T \xi) < 0].
 %$w_0$ is zero, the decision hyperplane must go through the origin,
 %which is very rare in practice. Thus, it is reasonable to assume that
 %$w_0 \not= 0$. 
-As noted previously, if both $w_0$ and $w$ are scaled by $|w_0|$, the
+As noted previously, if both $w_0$ and $\w$ are scaled by $\frac{1}{|w_0|}$, the
 solution is unchanged.  Specifically, there are two
 cases: first, if $w_0>0$, then the loss function is:
 \begin{align*}
 L(w_0,\w) &= \sum_{i=1}^N \mathbb{I} [w_0 + t_i (\w^T \xi) < 0] \\
-&=\sum_{i=1}^N \mathbb{I} [t_i (\frac{w_0}{|w_0|} + \frac{1}{|w_0|}\w^T \xi) < 0]  \\
-&= \sum_{i=1}^N \mathbb{I} [t_i (1 + \w'^T \xi) < 0] = L(1, \w')
+&=\sum_{i=1}^N \mathbb{I} [\frac{w_0}{w_0} + \frac{t_i}{w_0}\w^T \xi < 0]  \\
+&= \sum_{i=1}^N \mathbb{I} [1 + t_i\w'^T \xi < 0] = L(1, \w')
 \end{align*}
-where $\w'$ is defined as $\w' = \frac{1}{w_0}\w$. The equation of the
-decision hyperplane is as follows:
-\begin{align*}
-w_0 + \w^T\x = 0 \; & \Leftrightarrow \; \frac{w_0}{|w_0|} + \frac{1}{|w_0|} \w^T \x  = 0 \\ 
-& \Leftrightarrow \; 1 + \w'^T \x = 0
-\end{align*}
-Second, if $w_0 < 0$, then $\w' = \frac{1}{w_0}\w = -\frac{1}{|w_0|}\w$, and the loss function is 
+where we have defined $\w' = \frac{1}{w_0}\w$. 
+
+Second, if $w_0 < 0$, the loss function is 
 \begin{align*}
 L(w_0,\w) &= \sum_{i=1}^N \mathbb{I} [w_0 + t_i (\w^T \xi) < 0] \\
-&=\sum_{i=1}^N \mathbb{I} [t_i (\frac{w_0}{|w_0|} + \frac{1}{|w_0|}\w^T \xi) < 0]  \\
-&= \sum_{i=1}^N \mathbb{I} [t_i (-1 - \w'^T \xi) < 0] 
-= L(-1, -\w'),
-\end{align*}
-and the equation of the decision hyperplane is 
-\begin{align*}
-w_0 + \w^T\x = 0 \; & \Leftrightarrow \; \frac{w_0}{|w_0|} + \frac{1}{|w_0|} \w^T \x  = 0 \\& \Leftrightarrow \; -1 - \w'^T \x = 0 \; \Leftrightarrow \; 1 + \w'^T \x = 0
-\end{align*}
-It can be seen that the equation of the decision hyperplane ($1 +
-\w'^T \x = 0$) is the same in both cases, and the loss
+&=\sum_{i=1}^N \mathbb{I} [\frac{w_0}{-w_0} + \frac{t_i}{-w_0}\w^T \xi) < 0]  \\
+&= \sum_{i=1}^N \mathbb{I} [-1 - t_i \w'^T \xi) < 0] 
+= L(-1, -\w').
+\end{align*} 
+
+It can be seen that the equation of the decision hyperplane is the same in both cases 
+($w_0 + \w^T\x = 0 \;  \Leftrightarrow \; 1 + \w'^T \x = 0)$
+and the loss
 function is either $L(1, \w')$ or $L(-1, -\w')$, i.e., the bias term
 is now a either $1$ or $-1$. As shall be
 seen next, this fact is critically important for the purpose of the
