@@ -2,7 +2,7 @@
 \label{cha:Smoothlossapprox}
 
 The non-smooth, non-differentiable 0--1 loss can be
-approximated by the smooth, differential sigmoidal loss 
+approximated by a smooth differentiable loss (a modification of sigmoidal loss)
 $$l_i = \mathbb{I} [t_i \w^T \xi \leq 0] \approx \frac{1}{1 + e^{Kt_i \w^T \xi }} = \tilde{l}_i^K.$$
 This approximation is illustrated by Figure \ref{fig:sla.smooth} (top) for different
 values of the \emph{precision constant} $K \in \R^+$ that modulates smoothness.
