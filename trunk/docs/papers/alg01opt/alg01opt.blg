@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2012)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: alg01opt.aux
+The style file: icml2013.bst
+Database file #1: alg01opt.bib
+Warning--there's a number but no volume in nphard
+Warning--there's a number but no volume in outliers
+You've used 15 entries,
+            2773 wiz_defined-function locations,
+            687 strings with 6969 characters,
+and the built_in function-call counts, 6863 in all, are:
+= -- 626
+> -- 374
+< -- 14
++ -- 126
+- -- 111
+* -- 520
+:= -- 1044
+add.period$ -- 48
+call.type$ -- 15
+change.case$ -- 82
+chr.to.int$ -- 15
+cite$ -- 32
+duplicate$ -- 325
+empty$ -- 563
+format.name$ -- 142
+if$ -- 1468
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 12
+newline$ -- 84
+num.names$ -- 60
+pop$ -- 152
+preamble$ -- 1
+purify$ -- 67
+quote$ -- 0
+skip$ -- 262
+stack$ -- 0
+substring$ -- 239
+swap$ -- 48
+text.length$ -- 4
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 165
+warning$ -- 2
+while$ -- 59
+width$ -- 0
+write$ -- 201
+(There were 2 warnings)

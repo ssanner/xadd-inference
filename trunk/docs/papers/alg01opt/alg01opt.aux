@@ -29,46 +29,47 @@
 \newlabel{eq:predictor}{{1}{2}{}{equation.2.1}{}}
 \newlabel{eq:objective}{{3}{2}{}{equation.2.3}{}}
 \newlabel{eq:loss01}{{4}{2}{}{equation.2.4}{}}
-\newlabel{cha:branchandbound}{{3}{2}{}{section.3}{}}
+\newlabel{cha:branchandbound}{{3}{3}{}{section.3}{}}
 \newlabel{eq:loss01_data}{{8}{3}{}{equation.3.8}{}}
 \newlabel{eq:bb_obj}{{9}{3}{}{equation.3.9}{}}
-\newlabel{alg:BnB.Final}{{3}{3}{Branch and Bound Search (BnB).\hfill \; \\ \text {\hspace {1.4cm}} $Input$: Training data $(\boldsymbol {X},\t )$. \\ \text {\hspace {1.4cm}} $Output$: Weights $\w ^*$ minimizing 0--1 loss}{figure.3}{}}
+\newlabel{alg:BnB.Final}{{1}{3}{}{algorithm.1}{}}
 \newlabel{cha:combinatorialsearch}{{4}{4}{}{section.4}{}}
 \newlabel{eq:loss}{{10}{4}{}{equation.4.10}{}}
-\newlabel{fig:cs_intro}{{4}{4}{\footnotesize This plot illustrates the idea behind the combinatorial search approach. {\bf H} is the optimal decision hyperplane to separate the two classes. {\bf H'} is obtained from {\bf H} so that it goes through the two nearest points A and B without changing the class assignments or loss value}{figure.4}{}}
-\citation{Hooke}
-\newlabel{eq:matrix}{{11}{5}{}{equation.4.11}{}}
-\newlabel{alg:cs.prioritized}{{5}{5}{Prioritized Combinatorial Search (PCS).\hfill \; \\ \text {\hspace {1.4cm}} $Input$: Training data $(\x ,\t )$. \\ \text {\hspace {1.4cm}} $Output$: Weights $\w ^*$ minimizing 0--1 loss}{figure.5}{}}
+\newlabel{fig:cs_intro}{{3}{4}{\footnotesize This plot illustrates the idea behind the combinatorial search approach. {\bf H} is the optimal decision hyperplane to separate the two classes. {\bf H'} is obtained from {\bf H} so that it goes through the two nearest points A and B without changing the class assignments or loss value}{figure.3}{}}
+\newlabel{alg:cs.prioritized}{{2}{5}{}{algorithm.2}{}}
 \newlabel{cha:Smoothlossapprox}{{5}{5}{}{section.5}{}}
+\citation{Hooke}
 \citation{linearSVM}
 \citation{bpm}
 \citation{ucidata}
-\newlabel{fig:sla.smooth}{{6}{6}{\footnotesize (top) Sigmoid approximation $\tilde {l}_i^K$ of 0--1 loss for varying $K$. (bottom) Comparison of $\sum _{i=1}^N \tilde {l}_i^K$ and $\sum _{i=1}^N l_i$ of the 0--1 loss for sample data vs. $w_1$ with other components of $\w $ held fixed. The plot on the right is a close-up of the plot on the left around the global minimum}{figure.6}{}}
-\newlabel{alg:sla.algorithm}{{7}{6}{Smooth 0--1 Loss Approximation (SLA). \\ \text {\hspace {1.4cm}} $Input$: Training data $(\boldsymbol {X},\t )$. \\ \text {\hspace {1.4cm}} $Output$: Weights $\w ^*$ minimizing 0--1 loss}{figure.7}{}}
-\newlabel{alg:sla.range}{{8}{6}{\footnotesize Range Optimization for SLA.\hfill \;\\ \text {\hspace {1.4cm}} $Input$: $\w $, $K$, radius $R$, step size $\epsilon _S$. \\ \text {\hspace {1.4cm}} $Output$: Approx. optimal solution $\w ^*$}{figure.8}{}}
+\newlabel{fig:sla.smooth}{{4}{6}{\footnotesize (top) Sigmoid approximation $\tilde {l}_i^K$ of 0--1 loss for varying $K$. (bottom) Comparison of $\sum _{i=1}^N \tilde {l}_i^K$ and $\sum _{i=1}^N l_i$ of the 0--1 loss for sample data vs. $w_1$ with other components of $\w $ held fixed. The plot on the right is a close-up of the plot on the left around the global minimum}{figure.4}{}}
 \newlabel{cha:results}{{6}{6}{}{section.6}{}}
+\newlabel{alg:sla.algorithm}{{3}{6}{}{algorithm.3}{}}
+\newlabel{alg:sla.range}{{4}{6}{}{algorithm.4}{}}
 \citation{Ding}
 \citation{wu07}
 \citation{lossdesign}
-\bibdata{alg01opt}
-\bibcite{Bartlett}{{1}{2003}{{Bartlett et~al.}}{{Bartlett, Jordan, and McAuliffe}}}
-\bibcite{nphard}{{2}{2003}{{Ben-David et~al.}}{{Ben-David, Eiron, and Long}}}
-\newlabel{fig:621a}{{9}{7}{(left) This plot shows the 0--1 loss values by SLA algorithm comparing to other methods over 200 synthetic datasets of $N=500, D=5$ with optimal 0--1 loss in the range of $[30, 100]$. (right) Same, but in the presence of 15\% noise}{figure.9}{}}
+\citation{collobert}
+\newlabel{fig:621a}{{5}{7}{(left) This plot shows the 0--1 loss values by SLA algorithm comparing to other methods over 200 synthetic datasets of $N=500, D=5$ with optimal 0--1 loss in the range of $[30, 100]$. (right) Same, but in the presence of 15\% noise}{figure.5}{}}
 \newlabel{cha:conclusions}{{7}{7}{}{section.7}{}}
 \newlabel{tab:losses0noise}{{1}{8}{0--1 loss values of comparing algorithms on original data. Column `{\bf \%}' shows the improvement in percentage of the best of novel algorithms (SLA, CSA, PCS, BnB) over the best of existing algorithms (BPM, SVM, LR). As can be seen, novel algorithms represent a significant improvement in 0--1 loss optimization}{table.1}{}}
 \newlabel{tab:losses1noise}{{2}{8}{0--1 loss values when 10\% noise is added to original data}{table.2}{}}
 \newlabel{tab:runningtimes}{{3}{8}{This table reports running times corresponding to test result given in Table \ref {tab:losses0noise}. T1 is the total running time for BPM, SVM, LR, SLA, CSA (these are fast, so not time limited). T0 is the time to reach the given solutions for PCS, BnB (their running time is unknown as they are terminated after 300 seconds). $T0=n/a$ means the corresponding algorithm could not find any better solution than the initial approximation within the given time limit. Note that SVM and LR has linear running time. It can be seen, that among novel algorithms, SLA is significantly better than others}{table.3}{}}
 \newlabel{tab:ucierrorrates}{{4}{8}{Prediction error rates (given in \%) of each classifier for each UCI dataset (with 10\% noise). The improvement column shows the percent improvement of SLA over the best result of other methods ($-$ indicates SLA was worse). It can be seen that SLA offers lower held-out test error rates in five of the seven datasets indicating the robustness of 0--1 loss on noisy datasets with outliers and effectiveness of SLA in finding good solutions to the 0--1 loss optimization problem}{table.4}{}}
-\bibcite{Vapnik}{{3}{1995}{{Cortes \& Vapnik}}{{Cortes and Vapnik}}}
-\bibcite{Ding}{{4}{2010}{{Ding \& Vishwanathan}}{{Ding and Vishwanathan}}}
-\bibcite{linearSVM}{{5}{2008}{{Fan et~al.}}{{Fan, Chang, Hsieh, Wang, and Lin}}}
-\bibcite{Feldman}{{6}{2009}{{Feldman et~al.}}{{Feldman, Guruswami, Raghavendra, and Wu}}}
-\bibcite{ucidata}{{7}{2010}{{Frank \& Asuncion}}{{Frank and Asuncion}}}
-\bibcite{Hooke}{{8}{1961}{{Hooke \& Jeeves}}{{Hooke and Jeeves}}}
-\bibcite{bandb}{{9}{1960}{{Land \& Doig}}{{Land and Doig}}}
-\bibcite{outliers}{{10}{2010}{{Long \& Servedio}}{{Long and Servedio}}}
-\bibcite{lossdesign}{{11}{2008}{{Masnadi-Shirazi \& Vasconcelos}}{{Masnadi-Shirazi and Vasconcelos}}}
-\bibcite{McAllester}{{12}{2007}{{McAllester}}{{}}}
-\bibcite{bpm}{{13}{2001}{{Minka}}{{}}}
-\bibcite{wu07}{{14}{2007}{{Wu \& Liu}}{{Wu and Liu}}}
+\bibdata{alg01opt}
+\bibcite{Bartlett}{{1}{2003}{{Bartlett et~al.}}{{Bartlett, Jordan, and McAuliffe}}}
+\bibcite{nphard}{{2}{2003}{{Ben-David et~al.}}{{Ben-David, Eiron, and Long}}}
+\bibcite{collobert}{{3}{2006}{{Collobert et~al.}}{{Collobert, Sinz, Weston, and Bottou}}}
+\bibcite{Vapnik}{{4}{1995}{{Cortes \& Vapnik}}{{Cortes and Vapnik}}}
+\bibcite{Ding}{{5}{2010}{{Ding \& Vishwanathan}}{{Ding and Vishwanathan}}}
+\bibcite{linearSVM}{{6}{2008}{{Fan et~al.}}{{Fan, Chang, Hsieh, Wang, and Lin}}}
+\bibcite{Feldman}{{7}{2009}{{Feldman et~al.}}{{Feldman, Guruswami, Raghavendra, and Wu}}}
+\bibcite{ucidata}{{8}{2010}{{Frank \& Asuncion}}{{Frank and Asuncion}}}
+\bibcite{Hooke}{{9}{1961}{{Hooke \& Jeeves}}{{Hooke and Jeeves}}}
+\bibcite{bandb}{{10}{1960}{{Land \& Doig}}{{Land and Doig}}}
+\bibcite{outliers}{{11}{2010}{{Long \& Servedio}}{{Long and Servedio}}}
+\bibcite{lossdesign}{{12}{2008}{{Masnadi-Shirazi \& Vasconcelos}}{{Masnadi-Shirazi and Vasconcelos}}}
+\bibcite{McAllester}{{13}{2007}{{McAllester}}{{}}}
+\bibcite{bpm}{{14}{2001}{{Minka}}{{}}}
+\bibcite{wu07}{{15}{2007}{{Wu \& Liu}}{{Wu and Liu}}}
 \bibstyle{icml2013}
