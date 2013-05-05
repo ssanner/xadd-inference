@@ -44,67 +44,65 @@ linear program (LP) solver to minimize $\sum_{i=1}^D w_i$
 (to obtain a unique solution) subject to the constraints induced by $\l^*$.
 
 %=================================================
-\begin{figure}[t!]
-\vspace{-3mm}
-\caption{
-Branch and Bound Search (BnB).\hfill\; \\
-\text{\hspace{1.4cm}} $Input$: Training data $(\boldsymbol{X},\t)$. \\
-\text{\hspace{1.4cm}} $Output$: Weights $\w^*$ minimizing 0--1 loss.
-}
+\begin{algorithm}[t!]
+%\vspace{-3mm}
+\caption{Branch and Bound Search (BnB)}
 \label{alg:BnB.Final}
 {\footnotesize
 \begin{algorithmic}[1]
-\Function{Find-Optimal-01Loss-BnB}{$\X, \t$}
-\State $\tilde{\w} \gets \w^*_{\mathit{SVM}}$ from SVM solution for $(\boldsymbol{X},\t)$
-\State $\tilde{\l} \gets $ loss vector implied by $\tilde{\w}$
-\State $\w^* \gets \tilde{\w}$
-\State $loss_{min} \gets \sum_{i=1}^N \tilde{l}_i$ \Comment{Set initial bound to $L(\tilde{\w})$}
-\State $\l_\emptyset \gets $ all decisions $l_i$ unassigned
-\State \Call{Branch-and-Bound}{$\l_\emptyset$}
-\State \Return $\w^*$
-\Statex
-\Procedure{Branch-and-Bound}{$\l$}
-   \If {(all components of $\l$ are assigned)}
-      \State $\w^* \gets$ LP solution for $\l$ 
-      \State $loss_{min} \gets loss$
-   \Else
-      \State $i \gets \argmax_{i \text{unassigned} \in \l} |\tilde{\w}^T\boldsymbol{x_i}|$
-      \State $\l' \gets$ \Call{Propagate-Loss}{$\l, i, \tilde{l}_i$}
-      \If {$\sum_i l_i' < loss_{min}$}
-         \State \Call{Branch-and-Bound}{$\l'$}
-      \EndIf
-      \State $\l' \gets$ \Call{Propagate-Loss}{$\l, i, 1 - \tilde{l}_i$}
-      \If {$\sum_i l_i' < loss_{min}$}
-         \State \Call{Branch-and-Bound}{$\l'$}
-      \EndIf
-   \EndIf
-\EndProcedure
-\Statex
-\Function{Propagate-Loss}{$\l, i, lossValue$} 
-   \State $\l' \gets \l$
-   \State $l_i' \gets lossValue$   
-   \State $\t' \gets $ targets prediction vector implied by $\l'$ 
-   \State Let $\Phi =$ convex hull of $\{ \boldsymbol{x_k} \; | \; t_k'=t_i' \}$ 
-   \If {$\exists \boldsymbol{x_j} \in \Phi$ s.t. $t_j' = -t_j$}
-      \State $l_i' \gets +\infty$ \Comment{conflict -- infeasible}
-   \Else
-   \For{p:=1 \text{ {\bf to} } N}
-      \If{$\boldsymbol{x_p} \in \Phi$ AND $l_p$ unassigned}
-         \State $t_p' \gets t_i'$ \Comment{propagate assign}
-         \State $l_p' \gets \mathbb{I} [t_p' \not= t_p]$
-      \EndIf
-   \EndFor
-   \EndIf  
-   \State \Return $\l'$ \Comment{implied loss vector assignments}
-\EndFunction
-\Statex
-\EndFunction
-\end{algorithmic}}
-\vspace{-4mm}
-\end{figure}
+\INPUT {Training data $(\boldsymbol{X},\t)$}
+\OUTPUT {Weights $\w^*$ minimizing 0--1 loss}
+\FUNCTION {{\sc Find-Optimal-01Loss-BnB}($\X, \t$)}
+\STATE $\tilde{\w} \gets \w^*_{\mathit{SVM}}$ from SVM solution for $(\boldsymbol{X},\t)$
+\STATE $\tilde{\l} \gets $ loss vector implied by $\tilde{\w}$
+\STATE $\w^* \gets \tilde{\w}$
+\STATE $loss_{min} \gets \sum_{i=1}^N \tilde{l}_i$ \COMMENT{Set initial bound to $L(\tilde{\w})$}
+\STATE $\l_\emptyset \gets $ all decisions $l_i$ unassigned
+\STATE {\sc Branch-and-Bound}($\l_\emptyset$)
+\STATE {\bfseries return} $\w^*$
+\STATE
+\FUNCTION {{\sc Branch-and-Bound}($\l$)}
+   \IF {(all components of $\l$ are assigned)}
+      \STATE $\w^* \gets$ LP solution for $\l$ 
+      \STATE $loss_{min} \gets loss$
+   \ELSE
+      \STATE $i \gets \argmax_{i \text{unassigned} \in \l} |\tilde{\w}^T\boldsymbol{x_i}|$
+      \STATE $\l' \gets$ {\sc Propagate-Loss} $(\l, i, \tilde{l}_i)$
+      \IF {$\sum_i l_i' < loss_{min}$}
+         \STATE {\sc Branch-and-Bound}{$(\l')$}
+      \ENDIF
+      \STATE $\l' \gets$ {\sc Propagate-Loss}{$(\l, i, 1 - \tilde{l}_i)$}
+      \IF {$\sum_i l_i' < loss_{min}$}
+         \STATE {\sc Branch-and-Bound}{($\l'$)}
+      \ENDIF
+   \ENDIF
+\ENDFUNCTION
+\STATE
+\FUNCTION {{\sc Propagate-Loss}($\l, i, lossValue$)} 
+   \STATE $\l' \gets \l$
+   \STATE $l_i' \gets lossValue$   
+   \STATE $\t' \gets $ targets prediction vector implied by $\l'$ 
+   \STATE Let $\Phi =$ convex hull of $\{ \boldsymbol{x_k} \; | \; t_k'=t_i' \}$ 
+   \IF {$\exists \boldsymbol{x_j} \in \Phi$ s.t. $t_j' = -t_j$}
+      \STATE $l_i' \gets +\infty$ \COMMENT{conflict -- infeasible}
+   \ELSE
+   \FOR{p:=1 \text{ {\bf to} } N}
+      \IF{$\boldsymbol{x_p} \in \Phi$ AND $l_p$ unassigned}
+         \STATE $t_p' \gets t_i'$ \COMMENT{propagate assignment}
+         \STATE $l_p' \gets \mathbb{I} [t_p' \not= t_p]$
+      \ENDIF
+   \ENDFOR
+   \ENDIF  
+   \STATE {\bfseries return} $\l'$ \COMMENT{implied loss vector assignments}
+\ENDFUNCTION
+\ENDFUNCTION
+\end{algorithmic}
+}
+%\vspace{-4mm}
+\end{algorithm}
 %=================================================
 
-In Figure~\ref{alg:BnB.Final} we provide the full BnB algorithm that
+In Algorithm~\ref{alg:BnB.Final} we provide the full BnB algorithm that
 searches for the optimal $\l^*$ from~\eqref{eq:bb_obj}.  The key idea
 of the algorithm is to build a search tree of assignments while
 tracking the minimum loss solution $\w^*$ and value $loss_{min}$ to

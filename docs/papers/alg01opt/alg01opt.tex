@@ -11,21 +11,14 @@
 \usepackage{graphicx} % more modern
 %\usepackage{epsfig} % less modern
 \usepackage{subfigure} 
-\usepackage{enumerate}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{framed}
-\usepackage{url}
-\usepackage{multirow}
-%\usepackage{algorithm}
-\usepackage{algpseudocode}
-%\usepackage{algorithmic}
-
 
 % For citations
 \usepackage{natbib}
 
 % For algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+%\usepackage[noend]{algpseudocode}
 
 % As of 2011, we use the hyperref package to produce hyperlinks in the
 % resulting PDF.  If this breaks your system, please commend out the
@@ -37,18 +30,26 @@
 % this with the following command.
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 
-%\COMMENT begins comment
-%\ENDCOMMENT ends comment
-\long\def\COMMENT#1\ENDCOMMENT{\message{(Commented text...)}\par}
-
 % Employ the following version of the ``usepackage'' statement for
 % submitting the draft version of the paper for review.  This will set
 % the note in the first column to ``Under review.  Do not distribute.''
-\usepackage{icml2013} 
+\usepackage[accepted]{icml2013} 
 % Employ this version of the ``usepackage'' statement after the paper has
 % been accepted, when creating the final version.  This will set the
 % note in the first column to ``Proceedings of the...''
 % \usepackage[accepted]{icml2013}
+
+\usepackage{enumerate}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{framed}
+\usepackage{url}
+\usepackage{multirow}
+%\usepackage{algpseudocode}
+
+%\COMMENT begins comment
+%\ENDCOMMENT ends comment
+\long\def\MYCOMMENT#1\ENDMYCOMMENT{\message{(Commented text...)}\par}
 
 \def\R{\mathbb{R}}
 \def\S{\mathbb{S}}
@@ -80,9 +81,9 @@
 % submissions: the style file will automatically remove it for you
 % unless you've provided the [accepted] option to the icml2013
 % package.
-\icmlauthor{Tan T. Nguyen}{tan1889@gmail.com}
-\icmladdress{ANU, Canberra, ACT 0200}
-\icmlauthor{Scott P. Sanner}{ssanner@nicta.com.anu}
+\icmlauthor{Tan T. Nguyen}{t258.nguyen@qut.edu.au}
+\icmladdress{QUT, Brisbane, QLD 4001}
+\icmlauthor{Scott P. Sanner}{ssanner@nicta.com.au}
 \icmladdress{NICTA \& ANU, Canberra, ACT 2601}
 
 % You may provide any keywords that you 

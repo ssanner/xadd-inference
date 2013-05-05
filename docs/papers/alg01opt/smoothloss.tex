@@ -38,10 +38,10 @@ for zeroing in on the optimum 0--1 loss value: start with a small
 value of $K$ and iteratively increase it; at each iteration with a
 fixed $K$, initialize with the solution from the previous iteration
 and perform coordinate descent to locally optimize each $w_i$ ($0 \leq
-i \leq D$) in turn.  This is summarized in the SLA algorithm of
-Figure~\ref{alg:sla.algorithm}.  Of key importance here is the local
+i \leq D$) in turn.  This is summarized in the SLA algorithm 
+(Algorithm~\ref{alg:sla.algorithm}).  Of key importance here is the local
 search \textsc{Grad-Desc-in-Range} algorithm defined in
-Figure~\ref{alg:sla.range}.  Because of local optima (that increase
+Algorithm~\ref{alg:sla.range}.  Because of local optima (that increase
 with $K$) this is a mixture of gradient descent, pattern search
 methods~\cite{Hooke}, and a hill-climbing heuristic.  In short, this
 hybrid local search algorithm iterates between gradient descent to
@@ -52,76 +52,72 @@ for SLA are the following: $r_R = 2^{-1}, R0 = 8, r_\epsilon = 2^{-1},
 \epsilon_{S0} = 0.2, r_K = 10, K_{MIN} = 2, \quad K_{MAX} = 200$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure}
-\vspace{-3mm}
-\caption{
-Smooth 0--1 Loss Approximation (SLA). \\
-\text{\hspace{1.4cm}} $Input$: Training data $(\boldsymbol{X},\t)$. \\
-\text{\hspace{1.4cm}} $Output$: Weights $\w^*$ minimizing 0--1 loss.
-}
+\begin{algorithm}
+%\vspace{-3mm}
+\caption{Smooth 0--1 Loss Approximation (SLA)}
 \label{alg:sla.algorithm}
 {\footnotesize
 \begin{algorithmic}[1]
-\Function{Find-SLA-Solution}{$\X, \t$} \Comment{returns $\w^*$}
-   \State $\w^* \gets \w^*_{\mathit{SVM}}$ from SVM solution for $(\boldsymbol{X},\t)$
-   \State $R \gets R0$
-   \State $\epsilon_S \gets \epsilon_{S0}$
-   \State $K \gets K_{MIN}$
-   \While {$K \leq K_{MAX}$}
-      \State $\w^* \gets$ \Call{Grad-Desc-in-Range}{$\w^*, K, R, \epsilon_S$}
-      \State $K \gets r_K.K$
-      \State $R \gets r_R.R$
-      \State $\epsilon_S \gets r_\epsilon.\epsilon_S$
-   \EndWhile
-   \State \Return $\w^*$
-\EndFunction
+\INPUT {Training data $(\X,\t)$}
+\OUTPUT {Weights $\w^*$ (approx.) minimizing 0--1 loss}
+\FUNCTION {{\sc Find-SLA-Solution}($\X, \t$)} %\COMMENT{returns $\w^*$}
+   \STATE $\w^* \gets \w^*_{\mathit{SVM}}$ from SVM solution for $(\boldsymbol{X},\t)$
+   \STATE $R \gets R0$
+   \STATE $\epsilon_S \gets \epsilon_{S0}$
+   \STATE $K \gets K_{MIN}$
+   \WHILE {$K \leq K_{MAX}$}
+      \STATE $\w^* \gets$ {\sc Grad-Desc-in-Range}($\w^*, K, R, \epsilon_S$)
+      \STATE $K \gets r_K.K$
+      \STATE $R \gets r_R.R$
+      \STATE $\epsilon_S \gets r_\epsilon.\epsilon_S$
+   \ENDWHILE
+   \STATE {\bfseries return} $\w^*$
+\ENDFUNCTION
 \end{algorithmic}}
-\vspace{-4mm}
-\end{figure}
+%\vspace{-4mm}
+\end{algorithm}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure}[t!]
-\vspace{-3mm}
-\caption{\footnotesize
-Range Optimization for SLA.\hfill\;\\
-\text{\hspace{1.4cm}} $Input$: $\w$, $K$, radius $R$, step size $\epsilon_S$. \\
-\text{\hspace{1.4cm}} $Output$: Approx. optimal solution $\w^*$ 
-}
+\begin{algorithm}[t!]
+%\vspace{-3mm}
+\caption{Range Optimization for SLA}
 \label{alg:sla.range}
 {\footnotesize
 \begin{algorithmic}[1]
-\Function{Grad-Desc-in-Range}{$\w, K, R, \epsilon_S$} 
-\Repeat
-   \Statex \Comment{{\bf Stage 1}: Find a local minimum \hfill$\qquad\qquad$ \;}
-   \State $\w^* \gets \w$
-   \Repeat
-      \State $r \gets max_{rate}$
-      \State $\w \gets (\w^* - r \nabla L_K(\w^*))$
-      \While{$(r \!\! \geq \!\! min_{rate}) \!\! \land \!\! (L_K(\!\w^*) \!\! - \!\! L_K(\w) \!\! < \!\! \epsilon_L) $}
-         \State $r \gets 0.1 r$
-         \State $\w \gets (\w^* - r\nabla L_K(\w^*))$
-      \EndWhile
-      \If{$r \geq min_{rate}$}
-         \State $\w^* \gets \w$
-      \EndIf
-   \Until{$(-\epsilon_G \preccurlyeq  \nabla L_K(\w^*) \preccurlyeq \epsilon_G) \lor (r < min_{rate})$}
-   \Statex \Comment{{\bf Stage 2}: Probe in radius $R$ to escape minimum}
-   \For {$i=0$ to $D$}
-      \For{$step \! \in \! \{\epsilon_S,\! -\epsilon_S, 2\epsilon_S,\! -2\epsilon_S, \dots, R, \! -R \}$}
-         \State $\w \gets \w^*$  
-         \State $w_i \gets w_i + step$
-         \If{$L_K(\w^*) - L_K(\w) \geq \epsilon_L$}
-            \State {\bf go to step 3}
-         \EndIf       
-      \EndFor
-   \EndFor
-%   \Statex
-\Until{$L_K(\w^*) - L_K(\w) < \epsilon_L$}
-\State \Return $\w^*$
-\EndFunction
+\INPUT {$\w$, $K$, radius $R$, step size $\epsilon_S$}
+\OUTPUT {Approx. optimal solution $\w^*$} 
+
+\FUNCTION{{\sc Grad-Desc-in-Range}($\w, K, R, \epsilon_S$)} 
+\REPEAT
+   \STATE \COMMENT {{\it Stage 1: Find a local minimum} \hfill$\qquad\qquad$ \;}
+   \STATE $\w^* \gets \w$
+   \REPEAT
+      \STATE $r \gets max_{rate}$
+      \STATE $\w \gets (\w^* - r \nabla L_K(\w^*))$
+      \WHILE{$(r \!\! \geq \!\! min_{rate}) \!\! \land \!\! (L_K(\!\w^*) \!\! - \!\! L_K(\w) \!\! < \!\! \epsilon_L) $}
+         \STATE $r \gets 0.1 r$
+         \STATE $\w \gets (\w^* - r\nabla L_K(\w^*))$
+      \ENDWHILE
+      \IF{$r \geq min_{rate}$}
+         \STATE $\w^* \gets \w$
+      \ENDIF
+   \UNTIL{$(-\epsilon_G \preccurlyeq  \nabla L_K(\w^*) \preccurlyeq \epsilon_G) \lor (r < min_{rate})$}
+   \STATE \COMMENT{\it Stage 2: Probe in radius $R$ to escape minimum}
+   \FOR {$i=0$ to $D$}
+      \FOR {$step \! \in \! \{\epsilon_S,\! -\epsilon_S, 2\epsilon_S,\! -2\epsilon_S, \dots, R, \! -R \}$}
+         \STATE $\w \gets \w^*$  
+         \STATE $w_i \gets w_i + step$
+         \IF{$L_K(\w^*) - L_K(\w) \geq \epsilon_L$}
+            \STATE {\bf go to step 3}
+         \ENDIF       
+      \ENDFOR
+   \ENDFOR
+\UNTIL{$L_K(\w^*) - L_K(\w) < \epsilon_L$}
+\STATE {\bfseries return} $\w^*$
+\ENDFUNCTION
 \end{algorithmic}}
-\vspace{-4mm}
-\end{figure}
+%\vspace{-4mm}
+\end{algorithm}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

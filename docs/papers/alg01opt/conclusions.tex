@@ -2,12 +2,12 @@
 %\section{Conclusions}
 \label{cha:conclusions}
 
-\COMMENT
+\MYCOMMENT
 % See original background content
 In short, others have looked at robust solutiosn, but no one
 has looked at directly optimizing 0--1 loss with one
 exception.
-\ENDCOMMENT
+\ENDMYCOMMENT
 
 We have explored a variety of algorithms for direct 0--1 loss
 optimization and have shown one of these approaches --- smooth
@@ -16,13 +16,16 @@ state-of-the-art classification algorithms and often better in the
 presence of outliers.  While other works have investigated
 classification methods that are robust to outliers, including
 t-logistic regression \cite{Ding}, robust truncated hinge loss
-\cite{wu07}, and SavageBoost \cite{lossdesign}, we are unaware of any
+\cite{wu07}, SavageBoost \cite{lossdesign},
+we are unaware of any
 work that has successfully directly optimized 0--1 loss --- our
-primary goal in this paper.  We believe this work reiterates the
+primary goal in this paper. The work of \cite{collobert} showed that
+researchers should also explore non-convex approaches as they 
+sometimes give clear benefits. We believe this work reiterates the
 importance of 0--1 loss for its robustness properties while providing
 evidence that it can be effectively optimized in practice.
 
-\COMMENT
+\MYCOMMENT
 
 \subsection{Future Work}
 \label{sec:concl.futurework}
@@ -42,4 +45,4 @@ Newton's method \cite{Steihaug}.
 
 Boosting?
 
-\ENDCOMMENT
+\ENDMYCOMMENT

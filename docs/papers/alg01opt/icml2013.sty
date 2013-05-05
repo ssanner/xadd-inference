@@ -3,6 +3,8 @@
 % This file contains the LaTeX formatting parameters for a two-column 
 % conference proceedings that is 8.5 inches wide by 11 inches high.  
 
+% Modified by  Fei Sha  4/24/2013: (1) remove the extra whitespace after the first author's email address (in %the camera-ready version) (2) change the Proceeding ... of ICML 2010 to 2013 so PDF's metadata will show up % correctly
+
 % Modified by Sanjoy Dasgupta, 2013: changed years, location
 %
 % Modified by Francesco Figari, 2012: changed years, location
@@ -61,8 +63,8 @@
 % Use fancyhdr package
 \RequirePackage{fancyhdr}
 \RequirePackage{color}
-%\RequirePackage{algorithm}
-%\RequirePackage{algorithmic}
+\RequirePackage{algorithm}
+\RequirePackage{algorithmic}
 \RequirePackage{natbib}
 \RequirePackage{eso-pic} % used by \AddToShipoutPicture 
 
@@ -80,7 +82,7 @@
   \hypersetup{ %
     pdftitle={},
     pdfauthor={},
-    pdfsubject={Proceedings of the International Conference on Machine Learning 2010},
+    pdfsubject={Proceedings of the International Conference on Machine Learning 2013},
     pdfkeywords={},
     pdfborder=0 0 0,
     pdfpagemode=UseNone,
@@ -337,7 +339,7 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
   \ifdefined\icmlanyauthors
     \addstringtofullauthorlist{, #1}
   \else
-    \addstringtofullauthorlist{#1}
+    \addstringtofullauthorlist{#1}%
     \gdef\icmlanyauthors{1}
   \fi
   \ifdefined\nohyperref\else\ifdefined\hypersetup
