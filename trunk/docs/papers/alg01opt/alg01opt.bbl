@@ -1,4 +1,4 @@
-\begin{thebibliography}{15}
+\begin{thebibliography}{16}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -61,6 +61,12 @@ Hooke, R. and Jeeves, T.A.
 Land, A.~H. and Doig, A.~G.
 \newblock {An Automatic Method for Solving Discrete Programming Problems}.
 \newblock \emph{Econometrica}, 28:\penalty0 497--520, 1960.
+
+\bibitem[Li \& Lin(2007)Li and Lin]{ling}
+Li, Ling and Lin, Hsuan-Tien.
+\newblock Optimizing 0-1 loss for perceptrons by random coordinate descent.
+\newblock In \emph{Proceedings of the 2007 International Joint Conference on
+  Neural Networks}, 2007.
 
 \bibitem[Long \& Servedio(2010)Long and Servedio]{outliers}
 Long, Phil and Servedio, Rocco.

@@ -85,7 +85,7 @@ Sonar  	& 208 & 60 & 16 & 0 & 0 & 0 			& 0 & 0 & 0 & 0\%\\
 \centering
 \begin{tabular}{|cc|  ccc|cccc|c|}
 \hline\hline
-{\bf Dataset} && {\bf BPM} & {\bf SVM} & {\bf LR} & {\bf SLA} & {\bf CSA} & {\bf PCS} & {\bf BnB} & {\bf \% }\\
+{\bf Dataset} && {\bf BPM} & {\bf SVM} & {\bf LR} & {\bf SLA} & {\bf CSA} & {\bf PCS} & {\bf BnB} & {\bf Improvement \% }\\
 \hline
 Breast 	&& 55 & 52 & 51 & 47 		& 39 & 44 & 45 & 23.5\%\\  
 Bupa 	&& 154 & 154 & 152 & 104 	& 111 & 102 & 146 & 32.9\%\\   
@@ -96,7 +96,10 @@ Pima 	&& 241 & 235 & 230 & 194 	& 195 & 213 & 221 & 15.7\%\\
 Sonar 	&& 22 & 18 & 19 & 13 		& 19 & 19 & 2 & 88.9\%\\ 
 \hline\hline
 \end{tabular}
-\caption{0--1 loss values when 10\% noise is added to original data.} 
+\caption{0--1 loss values when 10\% noise is added to original data.
+Column `{\bf \%}' shows the improvement in percentage of the
+  best of novel algorithms (SLA, CSA, PCS, BnB) over the best of
+  existing algorithms (BPM, SVM, LR).} 
 \label{tab:losses1noise}
 \end{table*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -120,15 +123,16 @@ Pima & 0.65 & 0.03 & 0.04 & 0.89 & 157.38 && 63.30 & 89.89 \\
 Sonar & 0.37 & 0.54 & 0.13 & 4.32 & 302.58 && n/a & n/a \\
 \hline
 \end{tabular}}
-\caption{This table reports running times corresponding to test result
+\caption{This table reports running times corresponding to test results 
   given in Table \ref{tab:losses0noise}. T1 is the total running time
   for BPM, SVM, LR, SLA, CSA (these are fast, so not time limited). T0
   is the time to reach the given solutions for PCS, BnB (their running
   time is unknown as they are terminated after 300 seconds). $T0=n/a$
   means the corresponding algorithm could not find any better solution
   than the initial approximation within the given time limit. Note
-  that SVM and LR has linear running time. It can be seen, that among
-  novel algorithms, SLA is significantly better than others. }
+  that SVM and LR have small, roughly linear running times. 
+  Among novel algorithms, it can be seen
+  that SLA is significantly faster. }
 \label{tab:runningtimes}
 \end{table*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -164,11 +168,13 @@ Sonar && $28.24 \pm 6.60$ & $28.29 \pm 5.90$ & $28.07 \pm 6.26$ & $27.71 \pm 5.6
 
 \noindent\emph{Optimality of Solutions on Real-World Datasets:} We
 evaluated various algorithms on the UCI datasets given in Table
-\ref{tab:losses0noise}). This test compares the optimality of the returned
+\ref{tab:losses0noise}. This test compares the optimality of the returned
 solutions of all algorithms: BnB, PCS, CSA, SLA, SVM, Bayes point
-machine (BPM), and logistic regression (LR). In this test, datasets
-are tested with each of the algorithms in two scenarios: without noise
-and with 10\% noise.  The size of the testing datasets do not allow an
+machine (BPM), and logistic regression (LR). 
+%In this test, datasets
+%are tested with each of the algorithms in two scenarios: without noise
+%and with 10\% noise.  
+The size of the testing datasets do not allow an
 exhaustive search, hence a time threshold of 300 seconds is set for
 BnB, PCS.  
 

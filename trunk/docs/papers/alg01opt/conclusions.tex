@@ -9,19 +9,20 @@ has looked at directly optimizing 0--1 loss with one
 exception.
 \ENDMYCOMMENT
 
-We have explored a variety of algorithms for direct 0--1 loss
-optimization and have shown one of these approaches --- smooth
-0--1 loss approximation (SLA) --- is fastest and performs as well as
-state-of-the-art classification algorithms and often better in the
-presence of outliers.  While other works have investigated
-classification methods that are robust to outliers, including
-t-logistic regression \cite{Ding}, robust truncated hinge loss
-\cite{wu07}, SavageBoost \cite{lossdesign},
-we are unaware of any
-work that has successfully directly optimized 0--1 loss --- our
-primary goal in this paper. The work of \cite{collobert} showed that
-researchers should also explore non-convex approaches as they 
-sometimes give clear benefits. We believe this work reiterates the
+%We have explored a variety of algorithms for direct 0--1 loss
+%optimization and have shown one of these approaches --- smooth
+%0--1 loss approximation (SLA) --- is fastest and performs as well as
+%state-of-the-art classification algorithms and often better in the
+%presence of outliers.  
+While other works have investigated classification methods that are
+robust to outliers, including t-logistic regression \cite{Ding},
+robust truncated hinge loss \cite{wu07}, SavageBoost
+\cite{lossdesign}, and \cite{collobert} (which shows that a non-convex
+piecewise linear approximation of 0--1 loss can be
+efficiently optimized), in this work we have chosen to \emph{directly}
+optimize 0--1 loss using search-based techniques (some with strong
+finite time guarantees) in contrast to the randomized descent approach
+of~\cite{ling}.  Empirical results demonstrate the
 importance of 0--1 loss for its robustness properties while providing
 evidence that it can be effectively optimized in practice.
 
