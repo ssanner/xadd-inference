@@ -174,7 +174,7 @@ parenthetical expression provides the \emph{optimal policy}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Note that illegal state values are defined using $-\infty$, in this case having the capacity lower than zero at any time and having capacity higher than that of the total $C$. If our objective is to maximize the long-term \emph{value} $V$ (i.e.,the sum of rewards received over an infinite horizon of actions), we show that the optimal value function can be derived in closed-form. 
 For a single-item continuous state and action inventory CAIC problem the optimal value function is defined as below:
-\vspace{-4mm}
+\vspace{-3mm}
 \begin{align}
 V = \begin{cases}
 (x < 0 \vee x>500) &: -\infty \\
@@ -890,7 +890,7 @@ In this section we present the Symbolic value iteration algorithm (SVI) for HMDP
 
 
 \Begin{
-    $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
+    $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $v_i \to v_i'$ ($\equiv$ all $b_i \to b_i'$ and all $ x_i \to x_i'$)} \;
 %    \emph{// Continuous regression marginal integration}\\
 %    \For {all $x'_j$ in $Q$}{
 %         $Q := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y}) \, d_{x'_j}$\;
@@ -1046,31 +1046,39 @@ of the intended Q-function. In \textsc{CAIC} discrete marginalization of the boo
 \linesnumbered
 \begin{algorithm}[t!]
 \vspace{-.5mm}
+\SetKwFunction{solveForVar}{SolveForVar}
 \dontprintsemicolon
 \Begin{
-	$LB=UB=IND=Cons=\emptyset$ , $\mathit{Case_{max}} = \emptyset$ \;
-     \For { $\phi_i \in f$ (\emph{ for all partitions of $f$ perform maximization})}  
+	$LB \,=\,- \infty$ , 
+	$UB\,=\,+ \infty$, 
+	$IND,CONS \,=\,\mathit{true}$ , 
+	$\mathit{Case_{max}} \,=\, \emptyset$ \;
+     \For {$\phi_i \in f$ (\emph{for all partitions of $f$ perform maximization})}  
      {
      	\For{ $c_i \in \phi_i$ (\emph{For all conditions $c$ of $\phi_i$})}
-     	{
-     		\If {$c_i \leq y $} {$LB := [LB,c_i ]$ \emph{//Add constraint $c_i$ to  lower bound set} } 	
-     		\If {$c_i \geq y $}	{$UB := [UB,c_i ]$ \emph{//Add constraint $c_i$ to  upper bound set} }   	
-     		\Else {$IND := [IND,c_i ]$ \emph{//Add constraint $c_i$ to  independent constraint set} }    	
-     	}
-     	%\While { $i <  }
+     	{     		
+     		\If {$c_i \leq y $} {$LB \,:=\, casemax(LB, c_i )$ \emph{//Add  $c_i$ to  LB, take max of all LBs}\; }
+     		\If {$c_i \geq y $}	{$UB \,:=\, casemin(UB,c_i )$ \emph{//Add $c_i$ to  UB, take min of all UBs} \;	}
+     		\Else {$IND \,:=\, [IND,c_i ]$ \emph{//Add constraint $c_i$ to  independent constraint set}\;}
+     	}    	
+     }
+	$\mathit{Root}\,:=\,$ \solveForVar(y, f_i) \;
      	
-     	$LB = casemax(LB_i,LB_{i+1})$ \emph{//Take maximum of all lower bounds}\; 
-     	$UB = casemin(UB_i,UB_{i+1})$ \emph{//Take minimum of all upper bounds}\;
-     	$\mathit{Root}:=(\dfrac{\partial}{\partial y} f_i=0)$ \;
      	\If {($\mathit{Root} \neq \mathit{null}$)}
-     	 {$Cons = (\mathbb{I}\left[ LB \right] \leq \mathbb{I}\left[ \mathit{Root} \right]) \wedge (\mathbb{I}\left[ \mathit{Root} \right] \leq \mathbb{I}\left[ UB \right])$} 
-     	 \Else {$Cons = (\mathbb{I}\left[ LB \right] \leq \mathbb{I}\left[ UB \right])$}
-     	 \emph{//Conditions and value of continuous max for this partition} \;      
-     	$\mathit{Max}= IND \wedge Cons : casemax(f_i\left\lbrace y/LB \right\rbrace,f_i \left\lbrace y/UB \right\rbrace 		,f_i\left\lbrace y/ \mathit{Root}\right\rbrace)$\;
-     	\emph{//Take maximum of this partition and all other partitions} \;      
-     	$\mathit{Case_{max}} = max(\mathit{Case_{max}} ,\mathit{Max}) $\;
-      }
-  
+     	 {
+     	 		$CONS = (\mathbb{I} \left[ LB \right] \leq \mathbb{I} \left[ \mathit{Root} \right] ) 
+     	 		\wedge (\mathbb{I} \left[ \mathit{Root} \right] \leq \mathbb{I} \left[ UB \right] )$\;
+     	 } 
+     	 \Else
+     	  {
+     	 	$CONS \,:=\, (\mathbb{I} \left[ LB \right] \leq \mathbb{I} \left[ UB \right])$\;
+     	 }
+     	 	
+     	\emph{//Conditions and value of continuous max for this partition\; }   
+     	$\mathit{Max} \,:=\,  IND \wedge CONS : \casemax (f_i\left \lbrace y/LB \right \rbrace, f_i \left \lbrace y/UB \right \rbrace 		,f_i \left \lbrace y/ \mathit{Root} \right \rbrace)$\;
+     	\emph{//Take maximum of this partition and all other partitions\;}       
+     	$\mathit{Case_{max}} \,:=\, max(\mathit{Case_{max}} ,\mathit{Max}) $  
+        
      \Return{$\mathit{Case_{max}} $} \;
 }
 \caption{\footnotesize \texttt{Continuous Maximization}($y$, $f(\vec{b},\vec{x},y)$) $\longrightarrow(max_{y}f(\vec{b},\vec{x},y))$ \label{alg:contMax}}
@@ -1095,11 +1103,13 @@ $f$ consist of conjunctions of non-negated linear inequalities and
 possibly negated boolean variables --- conditions easy to enforce
 since negation inverts inequalities, e.g., $\neg [x < 2] \equiv [x \geq 2]$
 and disjunctions can be split across multiple non-disjunctive, 
-disjoint case partitions.} Each step of this algorithm is followed using one of the partitions of the Q-function in (~\ref{recent_q}) in this case the first partition with the constraints of 
+disjoint case partitions.} 
+Each step of this algorithm is followed using one of the partitions of the Q-function in (~\ref{recent_q}) in this case the first partition with the constraints of 
 $\phi_i(x,d,a) \equiv d \land (0 \leq x \leq 500) \land (x \geq 150) \land ((x+a) \leq 650) \land ((x+a) \geq 150) $ and function value of $ f_i(x,d,a) = 150 - 0.1 * a - 0.05 * x$.
 
-For each of the constraints $c_i$ in each partition $\phi_i$ the lower and upper bounds and independent constraints are determined in 4--10 where $\LB = (150 - x, 0) , \UB= (650 - x, 1000000) $ and $\IND=(d,x \geq 0 , x \leq 500) $ where the $0$ and $1000000$ are the natural lower and upper bounds on any inventory item $x$.
-A unique LB and UB and the root of the function are computed in lines 13--15 by taking the maximum of the lower bounds and the minimum of the upper bounds as the best bounds in the current partition and line 15 takes any roots of the leaf function (not applicable to the current $f_i$): 
+To begin the set of lower bound $LB$ is set to $-\infty$ and upper bound $UB$ to $\infty$. Constraint variables $IND$ and $CONS$ are assumed to be true and the result of the $\casemax$ is set to empty. 
+For each of the constraints $c_i$ in each partition $\phi_i$ the lower and upper bounds and independent constraints are determined in 5--10 where $\LB = (150 - x, 0) , \UB= (650 - x, 1000000) $ and $\IND=(d,x \geq 0 , x \leq 500) $ where the $0$ and $1000000$ are the natural lower and upper bounds on any inventory item $x$.
+A unique LB and UB is defined by taking the maximum of the lower bounds and the minimum of the upper bounds as the best bounds in the current partition and line 15 takes any roots of the leaf function (not applicable to the current $f_i$): 
 {%\footnotesize
 \begin{align*}
 \LB = \casemax(0,150-x) & = \begin{cases}
@@ -1112,7 +1122,7 @@ x \leq -1000000: &1000000\\
 \end{cases}
 \end{align*}
 }  
-The boundary constraints in lines 16--19 are added to the independent constraints as the constraint of the final maximum $\mathit{Max}$:
+The boundary constraints in lines 14--17 are added to the independent constraints as the constraint of the final maximum $\mathit{Max}$:
 {%\footnotesize 
 \begin{equation*}
 \CONS_{\LB \leq \UB} \sq = \sq [0 \leq 1000000] \land [0 \leq 150 - x] \land [150 - x \leq 1000000] \land [150-x \leq 650 -x] \land [0 \leq 650 - x] 
@@ -1138,7 +1148,7 @@ x \leq -1000000: & \sqm 150 - 0.1 * (1000000) - 0.05 * x =  -99850 -0.05 * x\\
 x \leq 150: & \sqm 135.00075 + 0.05 * x\\ 
 \end{cases}
 \end{align*}}
-Where the resulting maximum is according to the $\casemax$ operator defined in the previous section and the partition of $x \leq -1000000:  -99850 -0.05 * x$ is omitted due to inconsistency. Taking this $\max_y$ is performed in line 21 for each partition using both independent and boundary constraints. Returning to~\eqref{eq:casemax_max}, we find that we have now specified the inner operation (shown in the $\Box$) which is defined as the following for this partition.\footnote{ These last two results are defined by taking out all inconsistent partitions. This is done using efficient pruning techniques mentioned in the next section.}
+Where the resulting maximum is according to the $\casemax$ operator defined in the previous section and the partition of $x \leq -1000000:  -99850 -0.05 * x$ is omitted due to inconsistency. Taking this $\max_y$ is performed in line 19 for each partition using both independent and boundary constraints. Returning to~\eqref{eq:casemax_max}, we find that we have now specified the inner operation (shown in the $\Box$) which is defined as the following for this partition.\footnote{ These last two results are defined by taking out all inconsistent partitions. This is done using efficient pruning techniques mentioned in the next section.}
 \begin{align*}
 \Max & = 
 \begin{cases}
@@ -1146,7 +1156,7 @@ d \land (150 \leq x \leq 500):    & \sqm 150 - 0.05 * x \\
 \text{\normalsize otherwise} : & -\infty\\ 
 \end{cases}
 \end{align*}
-To complete the maximization for an entire case statement $f$, we need only apply the above procedure to each case partition of $f$ and then $\casemax$ all of these results in line 23: 
+To complete the maximization for an entire case statement $f$, we need only apply the above procedure to each case partition of $f$ and then $\casemax$ all of these results in line 21: 
 \begin{align*}
 Q & = 
 \begin{cases}
@@ -1342,7 +1352,7 @@ A node $F_i^{var}$ in $f_{XADD}$ is redundant if its constraints can be addresse
 Figure ~\ref{fig:path_formula} (c) prunes (b) of the redundant node 1.
 \end{mydef}
 
-%In our DCSA-MDP framework we assume polynomial leaves and limit decisions to linear or quadratic inequalities. %In general proving polynomial decisions are canonical is possible using Algebraic geometry given the order of the polynomials, but it is not reasonably computational as there is no bound on the running time. 
+%In our CA-MDP framework we assume polynomial leaves and limit decisions to linear or quadratic inequalities. %In general proving polynomial decisions are canonical is possible using Algebraic geometry given the order of the polynomials, but it is not reasonably computational as there is no bound on the running time. 
 %The following corollary proves that there is a canonical form for polynomial functions.
 
 %\begin{corollary} ~\cite{cox}
@@ -1477,11 +1487,14 @@ Using the function \emph{GetNode} (Algorithm\ref{algGetNode}) any redundant deci
 \centering
 %\subfigure{
 %\hspace{-20mm}
-\vspace{-3mm}
-\includegraphics[width=0.8\textwidth]{Figures1/diagrams/redundancy.pdf}
+%\vspace{-3mm}
+\includegraphics[width=0.65\textwidth]{Figures1/diagrams/redundancy.pdf}
+%\vspace{-3mm}
+\hspace{10mm}
+\includegraphics[width=0.2\textwidth]{Figures2/diagrams/counterexample.pdf}
 \vspace{-2mm}
 
-\caption{\footnotesize Using pruning algorithms for inconsistency and redundancy. Top-left figure is reduced to the bottom-left figure using the LP-Solver which recognizes the parent-child relation. The middle figure is reduced to the right-most figure using the SAT-Solver. The paths of each node in the middle graph are demonstrated. These paths along with the child-parent implications in the KB can reduce the redundant node A.}
+\caption{\footnotesize (Left) Using pruning algorithms for inconsistency and redundancy. Top-left figure is reduced to the bottom-left figure using the LP-Solver which recognizes the parent-child relation. The middle figure is reduced to the right-most figure using the SAT-Solver. The paths of each node in the middle graph are demonstrated. These paths along with the child-parent implications in the KB can reduce the redundant node A. (Right) A counterexample for an XADD that is not canonical even after applying consistency and redundancy checking. The bottom diagram is the true value of the XADD which can not be derived after pruning.}
 \label{fig:canonical}
 \vspace{-6mm}
 \end{figure}
@@ -1599,6 +1612,18 @@ The recursive property of the algorithm now traverses backwards from the leaf no
 
 We use a SAT-solver (minisat) to entail this sentence and since the result is true, we can prune the true branch returning node B represented in the right-hand diagram of  Figure ~\ref{fig:canonical}. A similar approach is performed for the high branch in lines 16--17. The returned value is the true or false branch if the parent node can be pruned else a new node is built using line 19 of Algorithm \ref{algGetNode}. 
 
+%%%added after taking canonical proof out
+Unlike BDDs and ADDs proving canonicity for XADDs is not applicable. As a counterexample consider the simple XADD in the top right diagram of Figure ~\ref{fig:canonical} where the values as below: 
+\begin{align*}
+\begin{cases}
+x<1&: 1 
+x>3&:3
+1<x<3&: 2
+\end{cases}
+\end{align*}
+As the values suggest, there is no need to branch on $x<2$ in this function thus it can be removed from the tree. According to the pruning techniques mentioned, this XADD is neither inconsistent nor redundant. To remove the node, a reordering of the decision nodes is required which will effect the structure of the tree, changing it to a new XADD. For this reason, although consistency and redundancy checking takes care of most unwanted branches, there is no guarantee that a given XADD is minimal,  after applying the two pruning techniques. The bottom right diagram of Figure ~\ref{fig:canonical} is the true value this XADD holds which is a different XADD.
+
+%%%
 In principle exact SDP solutions can be obtained for arbitrary symbolic functions, we  restrict XADDs to use polynomial functions only. %This allow unique and canonical form for all functions and equations in the decision nodes and leaves, which further minimizes redundancy in an XADD.
 Having proved the main properties of an XADD, next we present the operations and algorithms required for SDP for XADDs.
 
@@ -1644,7 +1669,7 @@ According to the previous section on SDP unary operations, scalar multipication 
 Restriction of a variable $x_i$ in an XADD ($F$) to some formula $\phi$ is performed by appending $\phi$ to each of the decision nodes while leaves are not affected. %The true of false branches according to $\phi_i \wedge \phi$ instead of $\phi_i$.
 For a binary variable restriction to a single variable $x_i$ is equal to taking the true or false branch according to that variable 
 ($F|_{x_i=true}$) or ($F|_{x_i=false}$). 
-This operation can also be used to $\texttt{marginalize}$ or $\texttt{sum\_out}$ boolean variables in a DCSA-MDP. 
+This operation can also be used to $\texttt{marginalize}$ or $\texttt{sum\_out}$ boolean variables in a CA-HMDP. 
 $\sum_{x_i \in X_i}$ eliminates a variable $x_i$ from an XADD and computed as the sum of the \emph{true} and \emph{false} restricted functions ($F|_{x_i=true} \oplus \ F|_{x_i=false}$). We omit the restriction and marginalization algorithms for XADDs since they are identical to the same operations for ADDs. 
 
 Substitution for a given function $f$ is performed by applying $\sigma$ the set of variables and their substitutions to each inequality operand such that $\phi_i\sigma: f_i\sigma$. The substitution operand effects both leaves and decision nodes and changes them according to the variable substitute. 
@@ -1660,12 +1685,14 @@ For the continuous maximization $max_y$ each XADD path from root to leaf node is
 \begin{figure}[t!]
 %\centering
 %\subfigure{
-\hspace{-20mm}
-\vspace{-15mm}
-\includegraphics[width=1.27\textwidth]{Figures1/diagrams/maximum_cont_action2.pdf}
-\vspace{-40mm}
+%\hspace{-20mm}
+%\vspace{-15mm}
+\includegraphics[width=0.97 \textwidth]{Figures2/diagrams/maximum_cont_action3.pdf}
+%\vspace{-40mm}
 
-\caption{\footnotesize Representing one step of Continuous Maximization algorithm using XADDs. The upper and lower bounds of action $a$ and the root is represented by XADDs and substituted inside the leaf node. The maximum of the upper and lower bound is then represented. The final result takes the maximum of this and the root considering the constraints and independent decisions and also linearizing the decision nodes.}
+\caption{\footnotesize Representing one step of Continuous Maximization algorithm using XADDs. This partition has conditions: 
+$\phi_i ( x,d,y ) \equiv \neg d \wedge ( x>2 ) \wedge ( -10 < y < 10) \wedge ( -2 < x+y < 2 )$  
+and value $f_i ( x,y ) = 39- y^2 -x^2 - 2a \times x$. The upper and lower bounds of action $y$ and the root is represented by XADDs and substituted inside the leaf node. The maximum of the upper and lower bound is then represented after linearizing the result. The final result takes the maximum of this and the root considering the constraints and independent decisions.}
 \label{fig:xadd_max}
 \vspace{-8mm}
 \end{figure}
@@ -1735,8 +1762,8 @@ For \emph{all} binary operations, the function \emph{Apply}($F_1,F_2,\mathit{op}
 
 Two canonical XADD operands $F_1$ and $F_2$ and a binary operator $\mathit{op} \in \{ \oplus, \ominus, \otimes , \max , \min \} $ are the input to the \emph{Apply} algorithm (Algorithm \ref{algApply}). The output result is a canonical XADD $F_r$. 
 If the result of \emph{Apply}($F_1,F_2,\mathit{op}$) is a quick computation as in line 3, 
-it can be immediately returned. Else it checks the \emph{ApplyCache} in line 6 for any previously stored apply result.  If there is not a cache hit, the earliest variable in the ordering to branch is chosen according to \emph{ChooseVarBranch}
-(Algorithm~\ref{algChooseVarBranch}). Two recursive \emph{Apply} calls are then made on the branches of this variable to compute $F_l$ and $F_h$. \emph{GetNode} checks for any redundancy in line 23 before storing it in the cache and returning the resulting XADD. We cover these steps in-depth in the following sections.
+it can be immediately returned. Else it checks the \emph{ApplyCache} in line 6 for any previously stored apply result.  If there is not a cache hit, the earliest variable in the ordering to branch is chosen according to \emph{ChooseEarliestVar}
+(Algorithm~\ref{ChooseEarliestVar}). Two recursive \emph{Apply} calls are then made on the branches of this variable to compute $F_l$ and $F_h$. \emph{GetNode} checks for any redundancy in line 23 before storing it in the cache and returning the resulting XADD. We cover these steps in-depth in the following sections.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{algorithm}[t!]
@@ -1769,7 +1796,7 @@ $F_2$ (root node id for operand 2)}
     }
    \Return{$\mathit{var}$}\;
 }
-\caption{{\sc ChooseVarBranch}($F_1,F_2$)  \label{algChooseVarBranch}}
+\caption{{\sc ChooseEarliestVar}($F_1,F_2$)  \label{algChooseVarBranch}}
 \end{algorithm}
 %\vspace{-3mm}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1795,15 +1822,25 @@ $F_2$ (root node id for operand 2)}
 	 \hline
 8&          $F_1  \otimes F_2; F_1=0$ &0\\
 	 \hline
-9&          $\max (F_1  , F_2)$ &pic\\
+9&          $F_1  \oplus \infty $ & $\infty$\\
 	 \hline
-10&          $\min (F_1, F_2)$ &pic\\
+10&          $F_1  \otimes \infty ; F_1 \neq 0$ & $\infty$\\
 	 \hline
-11&	  other& $\mathit{null}$\\
+11&          $\max (F_1  , +\infty)$ & $\infty$\\
+	 \hline
+12&          $\max (F_1, -\infty)$ & $F_1$\\
+	 \hline
+13&          $\max (F_1  , F_2)$ &pic\\
+	 \hline
+14&          $\min (F_1, F_2)$ &pic\\
+	 \hline
+13&	  other& $\mathit{null}$\\
          \hline
     \end{tabular}
   \caption{Input case and result for the method \emph{ComputeResult}
-  for binary operations  $\oplus$,  $\ominus$ and $\otimes$ for XADDs.}
+  for binary operations  $\oplus$,  $\ominus$ and $\otimes$ for XADDs.
+  %\footnote{Note that for lines 9--12 the zero case should be tested first.}
+  }
   \label{tab:ComputeResultXADD}
 \end{center}
 \vspace{-10mm}
@@ -1814,7 +1851,7 @@ $F_2$ (root node id for operand 2)}
 \begin{algorithm}[t!]
 \SetKwFunction{computeResult}{{\sc ComputeResult}}
 \SetKwFunction{apply}{Apply} \SetKwFunction{getNode}{{\sc GetNode}}
-\SetKwFunction{chooseVarBranch}{{\sc ChooseVarBranch}}
+\SetKwFunction{chooseEarliestVar}{{\sc ChooseEarliestVar}}
 \SetKwInOut{Input}{input} \SetKwInOut{Output}{output}
 
 \Input{$F_1$ (root node id for operand 1),\\
@@ -1832,7 +1869,7 @@ $\mathit{op}$ (binary operator, $\mathit{op} \in \{
    \If{$\langle F_1,F_2,\mathit{op}\rangle \rightarrow F_r$ is not in \emph{ApplyCache}}
    {
       //choose variable to brach\\
-      var = \chooseVarBranch{$F_1,F_2$}\; 
+      var = \chooseEarliestVar{$F_1,F_2$}\; 
    //set up nodes for recursion\\
    \eIf{$F_1$ is non-terminal $\wedge\ var=F^{var}_1$}
    {
@@ -1870,13 +1907,20 @@ The function \emph{ComputeResult}  determines if the result of a computation can
 If the result of 	\emph{ComputeResult} is empty, in the next step we check the  \emph{ApplyCache} for any previously computed operation using this set of operands and operations. To increase the chance of a match, all items stored in a cache are made canonical.
 
 \textbf{Recursive computation}:
-If a call to Apply is unable to immediately compute a result or reuse a previously cached computation, we must recursively compute the result. For this we have four cases based on the variable $var$ chosen by \emph{ChooseVarBranch}:
+If a call to Apply is unable to immediately compute a result or reuse a previously cached computation, we must recursively compute the result. If both operands are constant terminal nodes the function \emph{ComputeResult} takes care of the result and for the rest of the cases one of the following conditions applies: 
 \begin{itemize}
-\item $F_1$ is a non-terminal node and $F_1^{var} =var $: The high and low branch of the first operand passed to a recursive \emph{Apply} is equal to the high and low branches of $F_1$. 
-\item $F_1$ is non-terminal nodes and $F_1^{var} \neq var $: In this case only the low branch of the final computation of the first operand is set to $F_1$.
-\item $F_2$ is a non-terminal node and $F_2^{var} =var $: The high and low branch of the second operand passed to a recursive \emph{Apply} is equal to the high and low branches of $F_2$. 
-\item $F_2$ is non-terminal nodes and $F_2^{var} \neq var $: In this case only the high branch of the final computation of the first operand is set to $F_2$.
-
+\item $F_1$ or $F_2$ is a constant terminal node or $F_1^{var} \neq F_2^{var} $: The high and low branch of the operand chosen by \emph{ChooseEarliestVar} (here $F_2$) is applied with the other operand $F_1$ and the result of these two \emph{Apply} functions are used with an $\mathit{if}$ decision node on $F_2^{var}$ for a canonical result:
+\begin{align*}
+F_h &= Apply (F_1 , F_{2,h},op) \\
+F_l &= Apply (F_1 , F_{2,l},op)  \\
+F_r &= GetNode (F_2^{var} , F_h,F_l) 
+\end{align*}
+\item $F_1$ and $F_2$ is constant nodes and $F_1^{var} = F_2^{var} $: Here branching is an $if$ statement on $F_1^{var} (=F_2^{var})$ with the true case applied to the high branches of $F_1$ and $F_2$ and the false case is defined as the result of the \emph{Apply} function on the low branches:
+\begin{align*}
+F_h &= Apply (F_{1,h} , F_{2,h},op)  \\
+F_l &= Apply (F_{1,l} , F_{2,l},op)  \\
+F_r &= GetNode (F_1^{var} , F_h,F_l)  \\
+\end{align*}
 \end{itemize}
 
 Finally for the high and low branch of the final computation, two recursive calls are made to \emph{Apply} and the result is in a canonical form returned by \emph{GetNode}. 
@@ -1896,186 +1940,7 @@ the results in this paper can be found online at
 
 \subsection{Domains}
 
-%\paragraph{\Knapsack}
-%
-%We have three continuous state variables: $k \in [0,100]$ indicating
-%knapsack weight, and two sources of knapsack contents: $x_i \in
-%[0,100]$ for $i \in \{ 1,2 \}$.  We have two actions $\mathit{move}_i$
-%for $i \in \{ 1,2 \}$ that can move {\bf all} of a resource from $x_i$ to
-%the knapsack {\bf if} the knapsack weight remains below
-%its capacity of $100$.  We get an immediate reward for any weight added 
-%to the knapsack.
-%
-%We can formalize the transition and reward for \Knapsack\ 
-%action $\mathit{move}_i$ $(i \in \{ 1,2 \})$
-%using conditional equations, where $(k,x_1,x_2)$
-%and $(k',x_1',x_2')$ are respectively the pre- and post-action
-%state and $R$ is immediate reward:
-%
-%\vspace{-2mm}
-%%; following is the state-update
-%%equation for action $\mathit{move}_i$ ($i \in \{ 1,2 \}$): 
-%{\footnotesize
-%%\begin{tabular}{l l}
-%%\hspace{-2mm} $k' = \begin{cases}
-%%k + x_i \leq 100 : & k + x_i \\
-%%k + x_i > 100 :    & k \\
-%%\end{cases}$ & $R = \begin{cases}
-%%k + x_i \leq 100 : & x_i \\
-%%k + x_i > 100 :    & 0 \\
-%%\end{cases}$\\
-%%\hspace{-2mm} $x_i' = \begin{cases}
-%%k + x_i \leq 100 : & 0 \\
-%%k + x_i > 100 :    & x_i \\
-%%\end{cases}$ & $x_j' = x_j, \; (j \neq i)$
-%%\end{tabular}}
-%\begin{align*}
-%k' = \begin{cases}
-%k + x_i \leq 100 : & k + x_i \\
-%k + x_i > 100 :    & k \\
-%\end{cases}
-%\hspace{4mm}
-%x_i' = \begin{cases}
-%k + x_i \leq 100 : & 0 \\
-%k + x_i > 100 :    & x_i \\
-%\end{cases}
-%\hspace{2mm}
-%x_j' = x_j
-%\;(j \neq i)
-% \hspace{6mm}
-%R = \begin{cases}
-%k + x_i \leq 100 : & x_i \\
-%k + x_i > 100 :    & 0 \\
-%\end{cases}
-%\end{align*}}
-%If our objective is to maximize the long-term \emph{value} $V$ (i.e.,
-%the sum of rewards received over an infinite horizon of actions), then
-%we can write the optimal value achievable from a given state in \Knapsack\ 
-%as a function of state variables:
-%
-%\vspace{-2mm}
-%{%\footnotesize
-%%\begin{tabular}{l}
-%%$
-%\begin{align*}
-%V = \begin{cases}
-%x_1 + k > 100 \land x_2 + k > 100 : & 0 \\
-%x_1 + k > 100 \land x_2 + k \leq 100 : & x_2 \\
-%x_1 + k \leq 100 \land x_2 + k > 100 : & x_1 \\
-%%x_1 + k \leq 100 \land x_2 + k \leq 100 \land x_2 > x_1 : & x_2 \\
-%%x_1 + k \leq 100 \land x_2 + k \leq 100 \land x_2 \leq x_1 : & x_1 \\
-%x_1 + x_2 + k > 100 \land x_{1/2} + k \leq 100 \land x_2 > x_1 : & x_2 \\
-%x_1 + x_2 + k > 100 \land x_{1/2} + k \leq 100 \land x_2 \leq x_1 : & x_1 \\
-%x_1 + x_2 + k \leq 100: & \hspace{-7mm} x_1 + x_2 \\
-%\end{cases} 
-%%$
-%%\end{tabular}
-%\end{align*}
-%}
-%Reading this as a decision list, one will see this encodes the following:
-%(a) if both resources are too large for the knapsack, 0 reward is obtained, (b) otherwise if only one item can fit, the reward is for the largest item that fits, (c) otherwise if both items can fit then reward $x_1 + x_2$ is obtained.  Here we note
-%that the value function is piecewise linear, but it contains decision
-%boundaries like $x_1 + x_2 + k \leq 100$ that are clearly non-rectangular;
-%rectangular boundaries are restricted to conjunctions of simple
-%inequalities of a continuous variable and a constant (e.g., $x_1 \leq
-%5 \land x_2 > 2 \land k \geq 0$). 
-%
-%What is interesting to note is that although \Knapsack\ is very
-%simple, no previous algorithm in the HMDP literature has been
-%proposed to exactly solve it due to the nature of its non-rectangular
-%piecewise optimal value function.  
-
 \paragraph{\MarsRover}
-%We consider two versions for a \textsc{Discrete Action} setting of a \MarsRover. A rover is supposed to approach one or more target points and take images of these points. Actions may consume time and energy.  There are also some domain constraints, e.g., some pictures can be taken only in a certain time window and can require different levels of energy to be performed. For a linear version of this problem,  \textsc{Discrete Action} \MarsRoverL  has two continuous variables,
-%time $t$ and energy $e$.  For each target point $i$ ($i
-%= 1 \ldots k$), there is a boolean variable $p_i$ indicating whether the
-%rover is at point $i$.
-%
-%There are $k(k-1)$ actions $\mathit{move}_i$ that move the rover from
-%point $i$ to point $j \neq i$.  There are another $k$ actions
-%$\mathit{take\-pic}_i$ that take a picture at point $i$, which are
-%conditioned on linear expressions over the time and energy
-%variables. e.g., the transition function for taking a picture and the energy and time are provided below: 
-%\begin{align*}
-%\mathit{take\-pic '}_i & = 
-%\begin{cases}
-%(e > 3) \land (t \geq 3600) \land\ (t \leq 50400) : & 1 \\
-%\text{\normalsize otherwise}: & \mathit{take\-pic}_i \\
-%\end{cases}\\
-%%\hspace{4mm}
-% \mathit{t'} & = 
-%\begin{cases}
-%(e > 3) \land (t \geq 3600) \land\ (t \leq 50400) \land \neg \mathit{take\-pic}_i: & t+600 \\
-%\text{\normalsize otherwise}: & t \\
-%\end{cases}\\
-%%\hspace{4mm}
-% \mathit{e'} & = 
-%\begin{cases}
-%(e > 3) \land (t \geq 3600) \land\ (t \leq 50400) \land \neg \mathit{take\-pic}_i: & e-3 \\
-%\text{\normalsize otherwise}: & e \\
-%\end{cases}
-%\end{align*}
-%
-%The reward is also a function of time and energy, e.g., the
-%reward for action $\mathit{take\-pic}_i$ is given by:
-%
-%\vspace{-4mm}
-%{%\footnotesize
-%\begin{align*}
-%R_{\mathit{take\-pic}_i}(e,t,p_i) & = 
-%\begin{cases}
-%(e > 3 + 0.0002*t) \land (t \geq 3600) \land\ (t \leq 50400) \land p_i: & 110\\
-%\text{\normalsize otherwise}: & 0\\
-%\end{cases}
-%\end{align*}}
-%\vspace{-2mm}
-%
-%which shows that to get a reward of 110, 
-%the rover must take a picture at point $i$ 
-%between times 3600 and 50400 with a required energy reserve
-%that increases as the day progresses.
-%
-%A non-linear version of \textsc{Discrete Action}  \MarsRoverNL has two continuous variables --- geographic coordinates $(x,y)$ --- and $k$ boolean variables $h_i$ for each picture point $i$ indicating whether the
-%rover \emph{has already taken} a picture of point $i$.  There is a
-%single $\mathit{move}$ action in this domain --- it simply reduces the
-%distance from the rover to a specific point by $\frac{1}{3}$ of the 
-%current distance.  The intent of this action is to represent the fact that a rover may move progressively more slowly as it approaches a target position in order to reach the
-%position with high accuracy. 
-%There are another $k$ actions $\mathit{take\-pic}_i$ that take a picture at point $i$, which are conditioned on \emph{nonlinear} expressions over the continuous
-%$x$ and $y$ variables. The formalized transition function for this action is defined as the following:
-%%\vspace{-3mm}
-%{%\footnotesize
-%\begin{align}
-%\mathit{take\-pic '}_i & = 
-%\begin{cases}
-%x^2 + y^2 < 4 : & 1 \\
-%x^2 + y^2 \geq 4 \land  \mathit{take\-pic}_i : & 1 \\
-%x^2 + y^2 \geq 4 \land  \neg \mathit{take\-pic}_i : & 0 \\
-%\end{cases} \label{trans:nonlin} 
-%\end{align}
-%}
-%%\vspace{-3mm} 
-%The reward is also a function of $x$ and $y$, the reward for action $\mathit{take\-pic}_i$ is given by:
-%%\vspace{-3mm}
-%{%\footnotesize
-%\begin{align}
-%R_{\mathit{take\-pic}_i}(x,y,h_i) & = 
-%\begin{cases}
-%x^2 + y^2 < 4 \land h_i : & 0 \\
-%x^2 + y^2 < 4 \land \neg h_i : & 4 - x^2 - y^2 \\
-%x^2 + y^2 \geq 4 : & 0
-%\end{cases} \label{rew:nonlin} 
-%\end{align}
-%}
-%%\vspace{-3mm}
-%This indicates that if the rover has not already taken a picture of
-%point $i$ and the rover is within a radius of 2 from the picture point
-%$(0,0)$, then the rover receives a reward that is quadratically
-%proportional to the distance from the picture point.  Hence for
-%various points, the rover has to trade-off whether to take each picture
-%at its current position, or to get a larger reward by
-%first moving and potentially getting closer before taking the picture.
-
 A \MarsRover state consists of its continuous position $x$ along a given route.  In a given time step, the rover may move a continuous distance $y \in [-10,10]$.  The rover receives its greatest reward for taking a picture at $x=0$, which quadratically decreases to zero at the boundaries of the range $x \in [-2,2]$.  The rover will
 automatically take a picture when it starts a time step within the range $x \in [-2,2]$ and it only receives this reward once.
 
@@ -2103,13 +1968,13 @@ b \lor x < -2 \lor x > 2 : & 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[t!]
 %\centering
-\begin{minipage}[b]{0.47\linewidth}
-\includegraphics[width=0.8\textwidth]{Figures1/camdp/v1_mr.pdf}\\
-\vspace{-2mm}
-\includegraphics[width=0.8\textwidth]{Figures1/camdp/v2_mr.pdf}\\
-\vspace{-2mm}
-\includegraphics[width=0.8\textwidth]{Figures1/camdp/v3_mr.pdf}
-\vspace{-3mm}
+\begin{minipage}[b]{0.48\linewidth}
+\includegraphics[width=0.95\textwidth]{Figures2/diagrams/v1_2d.pdf}\\
+%\vspace{-2mm}
+\includegraphics[width=0.95\textwidth]{Figures2/diagrams/v2_2d.pdf}\\
+%\vspace{-2mm}
+\includegraphics[width=0.95\textwidth]{Figures2/diagrams/v3_2d.pdf}
+%\vspace{-3mm}
 
 %\parbox{2.8in}{
 \caption{\footnotesize Optimal sum of rewards (value) 
@@ -2130,14 +1995,13 @@ $V^2(x)$, up to $x = \pm 22$.}
 %\centering
 %\subfigure{
 %\hspace{-1mm}
-\begin{minipage}[b]{0.53\linewidth}
-\includegraphics[width=0.9\textwidth]{Figures1/camdp/v2_mr_dd.pdf}
-\vspace{2mm}
+\begin{minipage}[b]{0.48\linewidth}
+\includegraphics[width=1\textwidth]{Figures2/diagrams/roverdot.pdf}
+\vspace{6mm}
 
 \caption{\footnotesize Optimal value function $V^1(x)$ for the
-\textsc{Continuous Action}  \MarsRover\ problem represented as an extended algebraic decision
-diagram (XADD).  Here the solid lines represent the $\true$ branch for
-the decision and the dashed lines the $\false$ branch.  To evaluate
+\textsc{Continuous Action}  \MarsRover\ problem represented as an (XADD) equal to the second diagram on the left. 
+To evaluate
 $V^1(x)$ for any state $x$, one simply traverses the diagram in a
 decision-tree like fashion until a leaf is reached where the
 non-parenthetical expression provides the \emph{optimal value} and the
@@ -2146,7 +2010,7 @@ parenthetical expression provides the \emph{optimal policy}
 \label{fig:opt_val_pol}
 \vspace{-5mm}
 \end{minipage}
-\vspace{-5mm}
+%\vspace{-5mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 If our objective is to maximize the long-term \emph{value} $V$ (i.e.,
@@ -2220,69 +2084,6 @@ For both the \textsc{Discrete Action} and \textsc{Continuous Action} \MarsRover\
 we have run experiments to evaluate our SDP solution 
 in terms of time and space cost while varying the horizon and problem size.
 
-%Because the reward and transition functions for \textsc{Discrete Action}  \MarsRoverL\ use piecewise linear case statements, we note the optimal value function in this domain is also piecewise linear.  
-%To show results of the pruning techniques of the previous section, Hence in this domain, we use a linear constraint feasibility checker to prune unreachable paths in the XADD, we also compare solutions for \MarsRover with and without this pruning.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{figure*}[t]
-%\centering
-%\includegraphics[width=0.42\textwidth]{Figures1/cmdp/SpaceVsPictureLinear.pdf}
-%\hspace{5mm}
-%\includegraphics[width=0.42\textwidth]{Figures1/cmdp/SpaceVsPictures.pdf}
-%\includegraphics[width=0.42\textwidth]{Figures1/cmdp/TimeVsPicturesLinear.pdf}
-%\hspace{5mm}
-%\includegraphics[width=0.42\textwidth]{Figures1/cmdp/TimeVsPictures.pdf}
-%\caption{%\footnotesize 
-%Space (\# XADD nodes in value function) 
-%and time to optimally solve different problem 
-%sizes of the two \textsc{Discrete Action}  \MarsRover~domains for varying horizon lengths.}
-%\label{fig:all_lin}
-%\vspace{-5mm}
-%\end{figure*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%In Figure~\ref{fig:all_lin}, for both the \textsc{Discrete Action}  \MarsRoverL\ and \textsc{Discrete Action}  \MarsRoverNL\ domains, we show how the number of nodes of the value function XADD (proportional to the space required to represent the value function) varies for each iteration (horizon) and different problem sizes (given by the number of pictures).  We first note that the nonlinear variant appears \emph{much} harder for SDP (much more time required and larger value functions) than for the linear variant --- this is largely due to the fact that the XADD can be optimally pruned in the linear variant.  Secondly, we note an apparent superlinear growth in space and time required to solve each problem as a function of the number of picture points --- this likely reflects the superlinear growth of combinations of pictures that must be jointly considered as the number of pictures increases.  Finally, from these graphs it is hard to summarize general algorithm behavior as a function of horizon, but it appears for the linear problem variant that both the time  and space grow linearly as a function of horizon --- this will be confirmed in the next experiments.  
-
-%Figure~\ref{fig:lin3} shows the amount of time for each iteration of SDP vs. horizon for \MarsRoverL\ with three picture points for SDP with and without XADD pruning.  Here we see an impressive reduction in time and space as a function of horizon with pruning.  Without pruning, both time and space grow super-linearly with the horizon, while with pruning time and space appear to grow linearly with the horizon.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{figure*}[t]
-%\centering
-%%\subfigure{
-%\includegraphics[width=0.4\textwidth]{Figures1/cmdp/SpaceVsHorizonRoverLinear3.pdf}
-%\hspace{5mm}
-%\includegraphics[width=0.4\textwidth]{Figures1/cmdp/TimeVsHorizonRoverLinear3.pdf}
-%%}
-%%\vspace{-3mm}
-%\caption{%\footnotesize 
-%Space (\# XADD nodes in value function) and
-%time for different iterations (horizons) of SDP on \textsc{Discrete Action} \MarsRoverL\ 
-%with 3 image target points.  Results shown for SDP with and without XADD 
-%infeasible path pruning.}
-%\label{fig:lin3}
-%\vspace{-3mm}
-%\end{figure*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{figure*}[t]
-%\centering
-%%\subfigure{
-%\includegraphics[width=0.31\textwidth]{Figures1/cmdp/Knapsack.pdf}
-%\includegraphics[width=0.31\textwidth]{Figures1/cmdp/MarsRoverLinear2.pdf}
-%\includegraphics[width=0.31\textwidth]{Figures1/cmdp/MarsNonlinear.pdf}
-%%}
-%%\vspace{-3mm}
-%\caption{%\footnotesize 
-%\emph{Optimal} value function (vertical axis) for different domains showing 
-%\emph{non-rectangular} piecewise boundaries.  From left to right, \Knapsack\ 
-%($H = \infty$, horizontal axes $x_2$ and $x_1$),
-%\MarsRoverL\ with two pictures ($H = 8$, horizontal axes $\mathit{energy}$ and 
-%$\mathit{time}$), and \MarsRoverNL\ with one picture ($H = 3$, horizontal axes 
-%$y$ and $x$).}
-%\label{fig:plot3D}
-%\vspace{-5mm}
-%\end{figure*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%In Figure~\ref{fig:plot3D}, we show the exact optimal value function on the vertical axis  for three domains, \Knapsack\, \textsc{Discrete Action}  \MarsRoverL ~and \textsc{Discrete Action}  \MarsRoverNL, as a function of two continuous state variables shown on the horizontal axes.
-%We notice here that the piecewise boundaries for all three plots clearly demonstrate non-rectangular boundaries. In particular, the value function plot for the \MarsRover demonstrates nonlinear piecewise boundaries with each piece being a nonlinear function of the state --- it has the shape of stacked quadratic cones with each lower cone representing the cost of first moving from points farther away from the picture being receiving the value for taking the picture within the radius limits.
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure*}[t]
 \centering
@@ -2294,8 +2095,8 @@ in terms of time and space cost while varying the horizon and problem size.
 \vspace{-3mm}
 \caption{%\footnotesize 
 Space (\# XADD nodes in value function) and
-time for different iterations (horizons) of SDP on Nonlinear \textsc{Continuous Action}  \MarsRover\ with 3 different results based on pruning techniques. Results are shown for  the XADD 
- with no pruning technique, with only inconsistency checking (using LP-solver) and with both the inconsistent and redundancy checking (using LP-Solver and SAT-Solver).}
+time for different iterations (horizons) of SDP on Nonlinear \textsc{Continuous Action}  \MarsRover\ with 4 different results based on pruning techniques. Results are shown for  the XADD 
+ with no pruning technique, with only consistency checking (using LP-solver) and with both the consistency and redundancy checking (using LP-Solver and SAT-Solver) with the approach explained in the previous section and with a numerical precision heuristic.} %does it need more explaining? 
 \label{fig:roverTS}
 \vspace{-6mm}
 \end{figure*}
@@ -2307,18 +2108,17 @@ time for different iterations (horizons) of SDP on Nonlinear \textsc{Continuous 
 \vspace{2mm}
 \centering
 %\subfigure{
-\includegraphics[width=0.45\textwidth]{Figures2/camdp/RoverResHorizonNode.pdf}
-\includegraphics[width=0.45\textwidth]{Figures2/camdp/RoverResHorizonTime.pdf}
+\includegraphics[width=0.45\textwidth]{Figures2/camdp/DisRoverNode.pdf}
+\includegraphics[width=0.45\textwidth]{Figures2/camdp/DisRoverTime.pdf}
 %}
 \vspace{-2mm}
 \caption{%\footnotesize 
-Space and elapsed time vs. horizon for a fixed discritization of 5 for the \textsc{Discrete Action} \MarsRover\ and 8 for the \WaterReservoir to show how the number of nodes and time increases with each horizons. 
+Space and elapsed time vs. horizon for a fixed discritization of 4 and 8 for the \MarsRover to show how the number of nodes and time increases for each horizon. 
 }
 \label{fig:roverDisTS}
 \vspace{-5mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
 \begin{figure}[tbp!]
@@ -2336,37 +2136,71 @@ Space and elapsed time vs. horizon for a fixed horizon of 3 and different proble
 \vspace{-5mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%FOR THESIS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
+%\begin{figure}[tbp!]
+%\vspace{-2mm}
+%\centering
+%%\subfigure{
+%\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover2.pdf}
+%\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover4.pdf}
+%\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover6.pdf}
+%\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover8.pdf}
+%\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover10.pdf}
+%
+%%}
+%\vspace{-2mm}
+%\caption{%\footnotesize 
+%Horizon 3 of the value function for different number of \textsc{Discrete Action} \MarsRover\. Convergence towards the real value of $V^3$ as defined in Figure ~\ref{fig:opt_val_pol} is garanteed as the number of discretizations of the action space increases.
+%}
+%\label{fig:roverDisV}
+%\vspace{-5mm}
+%\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%To the best of our knowledge, these results demonstrate the first exact analytical solutions for HMDPs having optimal value functions with general linear and even nonlinear piecewise boundaries.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
 \begin{figure}[tbp!]
-\vspace{-2mm}
+\vspace{2mm}
 \centering
 %\subfigure{
-\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover2.pdf}
-\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover4.pdf}
-\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover6.pdf}
-\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover8.pdf}
-\includegraphics[width=0.18\textwidth]{Figures2/camdp/rover10.pdf}
-
+\includegraphics[width=0.45\textwidth]{Figures2/camdp/DisResNode.pdf}
+\includegraphics[width=0.45\textwidth]{Figures2/camdp/DisResTime.pdf}
 %}
 \vspace{-2mm}
 \caption{%\footnotesize 
-Horizon 3 of the value function for different number of \textsc{Discrete Action} \MarsRover\. Convergence towards the real value of $V^3$ as defined in Figure ~\ref{fig:opt_val_pol} is garanteed as the number of discretizations of the action space increases.
-}
-\label{fig:roverDisV}
+Space and elapsed time vs. horizon for a fixed discritization of 4 and 8 for the \WaterReservoir.}
+\label{fig:resDisTS}
 \vspace{-5mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%To the best of our knowledge, these results demonstrate the first exact analytical solutions for HMDPs having optimal value functions with general linear and even nonlinear piecewise boundaries.
-
+%(for thesis) not here: change diagram 10 to 4 diagrams. 2 for rover ( cont, 4a,8a ) and 2 for res ( cont , 4a,8a) One plot for one problem and show 4,8 and cont.: Show cont. + disc. in one diagram (show for both rover and reservoir ) 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% policy2, v2plot.pdf, v9plot
+% annotation?
+\begin{figure*}[tbp!]
+\vspace{-2mm}
+\centering
+\includegraphics[width=0.29\textwidth]{Figures2/camdp/rover3d4.pdf}
+\includegraphics[width=0.29\textwidth]{Figures2/camdp/rover3d7.pdf}
+\includegraphics[width=0.29\textwidth]{Figures2/camdp/rover3d10.pdf}
+\vspace{-3mm}
+\caption{%\footnotesize 
+4, 7 and 10 \textsc{Discrete Actions} of the \WaterReservoir problem for different water levels in iteration $V^3$. Each discretization draws the value closer to that of the continuous action \WaterReservoir in Figure ~\ref{fig:v2plots}.  
+}
+\label{fig:discreteplots}
+\vspace{-4mm}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 For the \textsc{Continuous Action} \MarsRover problem, we present the time and space analysis for the problem description defined in the introduction in Figure~\ref{fig:roverTS}. Here three evaluations are performed based on the pruning algorithms in the previous section. We note that without the LP-Solver Algorithm~\ref{algPrune}, the algorithm can not go beyond the forth iteration as it produces many inconsistent nodes. For the redundancy check of Algorithm~\ref{algRedundant}, as it can be seen in the graph, a reduction of at most 25 \% is achieved. The time required to remove redundancy has increased due to the calls made to the SAT-Solver.  In this setting, very little node reduction can be gained from redundancy pruning. The time has increased rapidly after the second iteration for the redundancy pruning due to the equivalence checking of the SAT-Solver. This suggests that in some domains using redundancy pruning in not efficient and should be omitted from the final results. We next show results for the  \WaterReservoir and \InventoryControl problem without redundancy pruning. 
 
-Next we present the analysis of the \textsc{Discrete Action} \MarsRover\ domains.Figure ~\ref{fig:roverDisTS} shows how time and space costs of different horizons increases for a fixed action discritization of 10.
+Next we present the analysis of the \textsc{Discrete Action} \MarsRover\ domains.Figure ~\ref{fig:roverDisTS} shows how time and space costs of different horizons increases for a fixed action discritization of 4 and 8.
 Note that one of the caveats of using a discrete setting is defining the actual discrete actions. While in the continuous setting an action is defined between a large high and low range (e.g $a \in$ [$-1000000,1000000$]) allowing the SDP algorithm to choose the best possible action among all the answers, for a discrete setting, knowing the range to discretize the action becomes very important. As an example in the rover description, allowing actions to be far from the center (e.g. $a \in$ [$-20,20$]) does not result in a converged solution. Finding this range is one of the drawbacks of using a discrete setting. 
 
-On the other hand, the level of discretization within this range also is very important. To show this visually Figure ~\ref{fig:rover_discrete} shows the results of the 4th iteration for 3 different discretizations compared to the continuous result. This figure proves the need to partition the action space within the predefined range more finely, but as figure ~\ref{fig:roverDisSize} shows  the effect of varying the  problem size for the fixed horizon of 4, this leads to increasing time and space costs. 
+On the other hand, the level of discretization within this range also is very important. To show this visually Figure ~\ref{fig:rover_discrete} shows the results of the 4th iteration for 3 different discretizations compared to the continuous result. This figure proves the need to partition the action space within the predefined range more finely, but as figure ~\ref{fig:roverDisSize} shows  the effect of varying the  problem size for the fixed horizon of 4, this leads to increasing time and space costs. Here the results of different level of discretization is similar for \WaterReservoir.
 
+Also Figure ~\ref{fig:resDisTS} presents the number of nodes and time for different horizons of 4 and 8 discrete actions in the \WaterReservoir domain. While the first two iterations the time and nodes follows closely as the number of actions doubles, for higher iterations more time and space is required. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
 %\begin{figure}[tbp!]
@@ -2388,8 +2222,9 @@ On the other hand, the level of discretization within this range also is very im
 %\end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % In this setting, very little node reduction can be gained from redundancy pruning due to the different water levels and their correlation. The time has increased rapidly after the second iteration for the redundancy pruning due to the equivalence checking of the SAT-Solver. This suggests that in some domains using redundancy pruning in not efficient and should be omitted from the final results. We next show results for the \InventoryControl problem without redundancy pruning. 
+Figure ~\ref{fig:discreteplots} shows 3 discretizations of the \WaterReservoir problem. For the left figure 4 discrete actions, the middle figure 7 actions and the right figure uses 10 discrete actions to represent the value of the third iteration according to water levels $l_1$ and $l_2$. The figures suggest that finer grain discretization results in better results, closer to that of the continuous action value in middle picture of Figure ~\ref{fig:v2plots}. 
 
-In Figure~\ref{fig:v2plots}, we show a plot of 
+In Figure ~\ref{fig:v2plots}, we show a plot of 
 the optimal closed-form policy at $h=2$: the solution interleaves $\mathit{drain}(e)$ and $\mathit{no}$-$\mathit{drain}(e)$ where even horizons are the latter;
 here we see that we avoid draining for the longest elapsed time $e$ 
 when $l_2$ is low (wait for rain to replenish) and $l_1$ is high (draining
@@ -2405,7 +2240,7 @@ for the longest total elapsed time over 6 decision stages.
 \centering
 \includegraphics[width=0.29\textwidth]{Figures2/camdp/q3.pdf}
 \includegraphics[width=0.29\textwidth]{Figures2/camdp/v3.pdf}
-\includegraphics[width=0.31\textwidth]{Figures2/camdp/v6.pdf}
+\includegraphics[width=0.29\textwidth]{Figures2/camdp/v6.pdf}
 \vspace{-3mm}
 \caption{%\footnotesize 
 \WaterReservoir: 
