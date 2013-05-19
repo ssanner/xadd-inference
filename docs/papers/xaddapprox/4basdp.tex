@@ -25,7 +25,7 @@ a_p(\vec{y}_p) \}$, where $\vec{y}_k \in \mathbb{R}^{|\vec{y}_k|}$
 ($1 \leq k \leq p$) denote continuous parameters for action $a_k$.
 
 An HMDP model also requires the following: (i) a joint state transition
-model $P(\vec{b}',\vec{x}'|\cdots,a,\vec{y})$, which specifies the
+model $P(\vec{b}',\vec{x}'|\vec{b},\vec{x},a,\vec{y})$, which specifies the
 probability of the next state $(\vec{b}',\vec{x}')$ conditioned on a
 subset of the previous and next state and action $a(\vec{y})$; (ii) a
 reward function $R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}')$,
@@ -57,7 +57,7 @@ where we assume starting state $(\vec{b}_0,\vec{x}_0)$ at $h=0$.
    $V^0:=0, h:=0$\;
    \While{$h < H$}{
        $h:=h+1$\;
-       \ForEach {$a(\vec{y}) \in A$}{
+       \ForEach {$a \in A$}{
               $Q_a^{h}(\vec{y}):=\,$\regress{$V^{h-1},a,\vec{y}$}\;
               $Q_a^{h}\! := \! \max_{\vec{y}} \, Q_a^{h}(\vec{y})$ \emph{// Parameter $\max$}\;
               $V^{h} \! := \! \max_a \, Q_a^{h}$ $\,$ \emph{// Max all $Q_a$}\;
@@ -123,7 +123,7 @@ results in Section~\ref{sec:empirical}.
 
 
 \Begin{
-   $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
+   $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// Rename all symbolic //variables $b_i \to b_i'$ and all $ x_i \to x_i'$} \;
    $Q := R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}') \oplus (\gamma \cdot Q)$ \;
    \emph{// Any var order with child before parent}\;
    \ForEach { $v_k'$ in $Q$}  

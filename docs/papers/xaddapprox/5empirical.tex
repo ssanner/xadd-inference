@@ -17,7 +17,7 @@ To do this, we evaluated BASDP on three different domains ---
 \MarsRoverUni, \MarsRoverBi and \Invent --- detailed next.
 
 \MarsRoverUni:
-This is a unidimensional continuous Mars Rover domain motivated by
+An unidimensional continuous Mars Rover domain motivated by
 Bresina {\it et al}~\cite{bresina02} used in order to visualize the
 value function and the effects of varying levels of approximation.
 The position of the rover is represented by a single continuous
@@ -28,6 +28,7 @@ problem for the instance shown below, there are two picture
 points and taking pictures is recorded in two boolean variables
 ($tp_1$ and $tp_2$). The dynamics for action $move(a_x)$ is as
 follows: {\footnotesize
+\vspace{-2mm}
 \begin{align*}
 tp_1' &= \begin{cases}
 tp_1 \vee (x>40 \wedge x<60)&: 1\\
@@ -38,7 +39,8 @@ tp_2 \vee (x>-60 \wedge x<-40)&: 1\\
 else&: 0\\
 \end{cases}\\
 x' &=  x +a_x\\
-R & = R_1 + R_2 + R_3\\
+R & = R_1 + R_2 - 0.1*|a_x|\\
+%R & = R_1 + R_2 + R_3\\
 R_1 & = \begin{cases} 
 (tp_1') \wedge (\neg tp_1) \wedge (x > 50) &: 40 - 0.2*(x -50)\\
 (tp_1') \wedge (\neg tp_1) \wedge (x < 50) &: 40 - 0.2*(50-x)\\
@@ -51,16 +53,17 @@ R_2 & = \begin{cases}
 (tp_2') \wedge ( tp_2) &:  1.2\\
 else &: -1\\
 \end{cases} \\
-R_3 & = \begin{cases} 
-a_x > 0 &: -0.1*a_x\\
-a_x < 0 &: 0.1*a_x\\
-\end{cases} \\
+%R_3 & = \begin{cases} 
+%a_x > 0 &: -0.1*a_x\\
+%a_x < 0 &: 0.1*a_x\\
+%\end{cases} \\
 \end{align*} }
-\vspace{-10mm}
+\vspace{-12 mm}
 
-In Figure~\ref{fig:rover1dv6}, we plot different value functions obtained by compressing with different levels --- in general we note that a larger $\epsilon$ results in a looser fit, but we note that there are some exceptions, owing to the greedy nature of successive pairwise merging for XADDs described in Section~\ref{sec:approx}.
+In Figure~\ref{fig:rover1dv6}, we plot different value functions obtained by compressing with different levels --- we note that in general larger $\epsilon$ results in a looser fit, but there are exceptions, owing to the greedy nature of successive pairwise merging for XADDs described in Section~\ref{sec:approx}.
 
-\MarsRoverBi: In this multivariant version of a \MarsRover~domain there are no picture points but the rover is expected to follow a path. The position is represented by a pair of continuous variables $(x,y)$. There is only one action, $move(a_x,a_y)$, where $|a_x| < 10$ and $|a_y| < 10$. The new position is given by $(x',y') = ( x+a_x, y+a_y)$. The reward increases with $x$ and decreases with the absolute value of $y$, that is:
+\MarsRoverBi: In this multivariant version of a \MarsRover~domain %there are no picture points but
+ the rover is expected to follow a path. The position is represented by a pair of continuous variables $(x,y)$. There is only one action, $move(a_x,a_y)$, where $|a_x| < 10$ and $|a_y| < 10$. The new position is given by $(x',y') = ( x+a_x, y+a_y)$. The reward increases with $x$ and decreases with the absolute value of $y$, that is:
 
 \vspace{-6mm}
 {\footnotesize
@@ -87,7 +90,7 @@ else: & -1\\
 }
 \caption {\footnotesize
 	Value function at iteration 6 for the \MarsRoverBi domain;
-	{\it (top)} Exact value function; 	{\it (bottom)} Approximate value function with error bounded 5\% per iteration;
+	{\it (a)} Exact value function; 	{\it (b)} Approximate value function with error bounded 5\% per iteration;
 	{\it (left)} 3D Plots; {\it (right)} XADD Diagrams.
 }
 \label{fig:Mars2DV6}
@@ -125,7 +128,7 @@ continuous resources that can be bought and sold. There are $n$
 $order$-$i$ actions for each resource, $ 1 \leq i \leq
 n$. The maximum amount of each resource that is sold on one iteration
 depends on a stochastic demand variable $d$ that is true with $60\%$
-probability. The resource $x_i'$ for action $order$-$i$ is given by:
+probability. The reward is equal to the sum of the resources sold in this iteration.The resource $x_i'$ for action $order$-$i$ is given by:
 
 \vspace{-7mm}
 {\footnotesize
@@ -150,7 +153,7 @@ x_j' & = \begin{cases}
 (\neg d') \wedge (x_j > 50) &: x_j - 50\\
 (\neg d') \wedge (x_j < 50) &:  0\\
 \end{cases} \\
-R & = \sum_{k} {(x_k' - x_k)}\\
+%R & = \sum_{k} {(x_k' - x_k)}\\
 %R & = \begin{cases} 
 %(d') &: \sum_{k} {x_k' - x_k}\\
 %(d') \wedge (\neg d) \wedge (x < 50) &: 40 - 0.2*(50-x)\\
@@ -167,6 +170,6 @@ approximation compresses the XADD significantly, even for small
 $\epsilon$.  We witness approximately 10$\times$ savings in time over
 the exact solution even for small $\epsilon$ and when we examine the
 actual error (right) of the BASDP solutions (compared to the exact
-solution), we see that the actual error tends to be around
-$\frac{1}{3}$ of the bounded error estimated by BASDP.
+solution), we see that it tends to be less than
+$\frac{1}{3}$ of the BASDP error bound.
 
