@@ -22,7 +22,8 @@ b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where each $b_i \in \{ 0,1 \}$
 ($1 \leq j \leq m$) is continuous. We also assume a finite set of $p$
 parametrized actions $A = \{ a_1(\vec{y}_1), \ldots,
 a_p(\vec{y}_p) \}$, where $\vec{y}_k \in \mathbb{R}^{|\vec{y}_k|}$
-($1 \leq k \leq p$) denote continuous parameters for action $a_k$.
+($1 \leq k \leq p$) denote continuous parameters for respective
+action $a_k$ (often we drop the subscript, e.g., $a(\vec{y})$).
 
 An HMDP model also requires the following: (i) a joint state transition
 model $P(\vec{b}',\vec{x}'|\vec{b},\vec{x},a,\vec{y})$, which specifies the
@@ -167,8 +168,8 @@ values) such as
 %{\footnotesize
 \begin{align*}
 R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}') = \begin{cases}
-b \land x_1 \leq x_2 + 1 : & \!\!1 - x_1' + 2x_2' \\
-\neg b \lor x_1 > x_2 + 1:     & \!\!3y + 2x_2 \\
+b \land x_1 \leq x_2 \! + \! 1 : & \!\!1 - x_1' + 2x_2' \\
+\neg b \lor x_1 > x_2 \! + \! 1:     & \!\!3y + 2x_2 \\
 \end{cases} %\label{eq:linear_reward}
 \end{align*}%}
 The above transition and reward constraints ensure that all derived
@@ -187,7 +188,7 @@ iteration}~\cite{bellman}, which is a dynamic programming algorithm
 for constructing optimal policies.  It proceeds by constructing a
 series of $h$-stage-to-go optimal value functions
 $V^h(\vec{b},\vec{x})$.  Initializing $V^0(\vec{b},\vec{x}) = 0$, we
-define the quality $Q_a^{h}(\vec{b},\vec{x},\vec{y})$ of taking action
+define the \emph{quality} $Q_a^{h}(\vec{b},\vec{x},\vec{y})$ of taking action
 $a(\vec{y})$ in state $(\vec{b},\vec{x})$ and acting so as to obtain
 $V^{h-1}(\vec{b},\vec{x})$ thereafter as the following:
 \vspace{-2.5mm}
@@ -195,7 +196,7 @@ $V^{h-1}(\vec{b},\vec{x})$ thereafter as the following:
 \begin{align}
 Q_a^{h}(\vec{b},\vec{x},\vec{y}) = \sum_{\vec{b}'} & \hspace{-1.0mm} \int_{\vec{x}'} \hspace{-1.0mm} \Bigg[ 
 \prod_{k=1}^{n+m} P(v_k'| \vec{b},\vec{x}, \vec{v}'_{<k}, a,\vec{y}) \cdot \label{eq:qfun} \\ 
-& \!\! \left( R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}') + \gamma V^{h-1}(\vec{b}',\vec{x}') d\vec{x}' \right)  \Bigg] \nonumber
+& \!\!\!\! \left( R(\vec{b},\vec{x},a,\vec{y},\vec{b}',\vec{x}') + \gamma V^{h-1}(\vec{b}',\vec{x}') \right)  \Bigg] d\vec{x}' \nonumber
 \end{align}}
 Given $Q_a^h(\vec{b},\vec{x})$ for each $a \in A$, we can proceed
 to define the $h$-stage-to-go value function as the maximizing action parameter
@@ -220,8 +221,8 @@ dynamic programming algorithm.  BASDP is provided in
 Algorithm~\ref{alg:basdp} along with a regression subroutine in
 Algorithm~\ref{alg:regress}; BASDP is a modified version of
 SDP~\cite{zamani12} to support the HMDP model with next-state
-dependent reward function and sychronic arcs given in the previous
-section and the crucial addition of line \ref{approxline}, which uses
+dependent reward function and synchronic arcs as defined previously 
+along with the crucial addition of line \ref{approxline}, which uses
 the \texttt{XADDComp} compression method described in
 Section~\ref{sec:approx}.  Error is cumulative over each horizon, so for example,
 the maximum possible error incurred in an \emph{undiscounted} BASDP solution

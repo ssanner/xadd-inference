@@ -17,7 +17,7 @@ To do this, we evaluated BASDP on three different domains ---
 \MarsRoverUni, \MarsRoverBi and \Invent --- detailed next.
 
 \MarsRoverUni:
-An unidimensional continuous Mars Rover domain motivated by
+A unidimensional continuous Mars Rover domain motivated by
 Bresina {\it et al}~\cite{bresina02} used in order to visualize the
 value function and the effects of varying levels of approximation.
 The position of the rover is represented by a single continuous
@@ -26,17 +26,17 @@ specific positions.  There is only one action $\mathit{move}(a_x)$,
 where $a_x$ is the movement distance. In the description of the
 problem for the instance shown below, there are two picture
 points and taking pictures is recorded in two boolean variables
-($tp_1$ and $tp_2$). The dynamics for action $move(a_x)$ is as
+($tp_1$ and $tp_2$). The dynamics for deterministic action $move(a_x)$ are as
 follows: {\footnotesize
 \vspace{-2mm}
 \begin{align*}
 tp_1' &= \begin{cases}
-tp_1 \vee (x>40 \wedge x<60)&: 1\\
-else&: 0\\
+tp_1 \vee (x>40 \wedge x<60)&: 1.0\\
+else&: 0.0\\
 \end{cases}\\
 tp_2' &= \begin{cases}
-tp_2 \vee (x>-60 \wedge x<-40)&: 1\\
-else&: 0\\
+tp_2 \vee (x>-60 \wedge x<-40)&: 1.0\\
+else&: 0.0\\
 \end{cases}\\
 x' &=  x +a_x\\
 R & = R_1 + R_2 - 0.1*|a_x|\\
@@ -62,7 +62,7 @@ else &: -1\\
 
 In Figure~\ref{fig:rover1dv6}, we plot different value functions obtained by compressing with different levels --- we note that in general larger $\epsilon$ results in a looser fit, but there are exceptions, owing to the greedy nature of successive pairwise merging for XADDs described in Section~\ref{sec:approx}.
 
-\MarsRoverBi: In this multivariant version of a \MarsRover~domain %there are no picture points but
+\MarsRoverBi: In this multivariate version of a \MarsRover~domain %there are no picture points but
  the rover is expected to follow a path. The position is represented by a pair of continuous variables $(x,y)$. There is only one action, $move(a_x,a_y)$, where $|a_x| < 10$ and $|a_y| < 10$. The new position is given by $(x',y') = ( x+a_x, y+a_y)$. The reward increases with $x$ and decreases with the absolute value of $y$, that is:
 
 \vspace{-6mm}
@@ -165,7 +165,7 @@ x_j' & = \begin{cases}
 
 Figure \ref{fig:Value} shows the time, space, and actual error of the
 BASDP solutions vs. the exact solution for one \MarsRoverBi\ domain and one 
-\Invent\ domain.  In the space plots (left) we notice how the
+\Invent\ domain.  In the space plots (left), we note how the
 approximation compresses the XADD significantly, even for small
 $\epsilon$.  We witness approximately 10$\times$ savings in time over
 the exact solution even for small $\epsilon$ and when we examine the
