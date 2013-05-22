@@ -55,7 +55,7 @@ f_2 & = \displaystyle \frac{x}{5} - \frac{y}{2}
 
 We begin with a brief introduction to the extended algebraic decision
 diagram (XADD), then in Section~\ref{sec:approx} we contribute
-approximation techniques for XADDs and in Section~\ref{sec:basdp}, we
+approximation techniques for XADDs.  In Section~\ref{sec:basdp}, we
 will show how this approximation can be used in a bounded
 approximate symbolic dynamic programming algorithm for hybrid MDPs.
 
@@ -136,14 +136,14 @@ represent well-defined functions.
 Since $\phi_i$ can be written in disjunctive normal form (DNF), i.e.,
 $\phi_i \equiv \bigvee_{j=0}^{n_i} \theta_{ij}$ where $\theta_{ij}$
 represents a conjunction of linear constraints over $\vec{x}$ and a
-(partial) truth assignment to $\vec{b}$ corresponding to $j$th path
+(partial) truth assignment to $\vec{b}$ corresponding to the $j$th path
 from the XADD root to leaf $f_i$, we observe that every
 $\theta_{ij}$ contains a bounded convex linear polytope ($\vec{x}$ is
 finitely bounded in all dimensions as initially defined).  
-We formally define the union of all convex linear polytopes contained in 
+We formally define the set of all convex linear polytopes contained in 
 $\phi_i$ as
 %\begin{equation*}
-$C(\phi_i) = \bigcup_j \PT(\theta_{ij})$, 
+$C(\phi_i) = \{ \PT(\theta_{ij}) \}_j$, 
 %\end{equation*}
 where $\PT$ extracts the subset of linear constraints from
 $\theta_{ij}$. Figure~\ref{fig:symbex}(top left) illustrates the different
