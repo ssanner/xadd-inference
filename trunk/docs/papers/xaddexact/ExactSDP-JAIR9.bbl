@@ -74,12 +74,6 @@ Bryant, R.~E. \BBOP1986\BBCP.
   {M}anipulation\BBCQ\
 \newblock {\Bem {IEEE} Transactions on Computers}, {\Bem 35\/}(8), 677--691.
 
-\bibitem[\protect\BCAY{Cox, Little,\ \BBA\ O'Shea}{Cox et~al.}{2007}]{cox}
-Cox, D., Little, J., \BBA\ O'Shea, D. \BBOP2007\BBCP.
-\newblock {\Bem Ideals, varieties and algorithms. An introduction to
-  computational algebraic geometry and commutative algebra}.
-\newblock Springer, New York.
-
 \bibitem[\protect\BCAY{Dean\ \BBA\ Kanazawa}{Dean\ \BBA\ Kanazawa}{1989}]{dbn}
 Dean, T.\BBACOMMA\  \BBA\ Kanazawa, K. \BBOP1989\BBCP.
 \newblock \BBOQ A model for reasoning about persistence and causation\BBCQ\
@@ -91,6 +85,13 @@ Delgado, K.~V., Sanner, S., \BBA\ de~Barros, L.~N. \BBOP2010\BBCP.
 \newblock \BBOQ Efficient solutions to factored mdp with imprecise transition
   probabilities\BBCQ\
 \newblock {\Bem Artificial Intelligence Journal (AIJ)}, {\Bem 175}, 1498--1527.
+
+\bibitem[\protect\BCAY{Een\ \BBA\ Sörensson}{Een\ \BBA\
+  Sörensson}{2005}]{minisat}
+Een, N.\BBACOMMA\  \BBA\ Sörensson, N. \BBOP2005\BBCP.
+\newblock \BBOQ Minisat v1.13-a sat solver with conflict-clause
+  minimization\BBCQ\
+\newblock In {\Bem SAT-2005}, Scotland.
 
 \bibitem[\protect\BCAY{Feng, Dearden, Meuleau,\ \BBA\ Washington}{Feng
   et~al.}{2004}]{feng04}
