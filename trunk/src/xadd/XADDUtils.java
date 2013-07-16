@@ -93,7 +93,7 @@ public class XADDUtils {
 		// bvars, dvars, "y") + "\n\n\n");
 
 		int xadd2u = TestXADD.TestBuild(xadd_context,
-				"./src/xadd/uniform_mix.xadd");
+				"./src/xadd/ex/uniform_mix.xadd");
 		//int xadd2u = TestXADD.TestBuild(xadd_context,
 		//		"./src/xadd/triangle_mix.xadd");
 
