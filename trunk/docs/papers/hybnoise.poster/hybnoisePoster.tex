@@ -1,0 +1,353 @@
+%% Copyright: National ICT Australia, 2005-2006
+%% Author   : Alexander Smola
+%%            Choon Hui Teo
+%%            Le Song
+%% License  : This file is licensed under the GNU Public License. See
+%%            www.gnu.org for details on the license.
+
+\documentclass[a0, landscape]{nictalaymanlandscape}
+
+\usepackage{mdwlist}
+\usepackage{shadow}
+\usepackage{times}
+\usepackage{algorithmic}
+\usepackage{moreverb}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{multirow}
+\usepackage{fancybox}
+\usepackage{pifont}
+
+\graphicspath{{./}{./eps/}}
+
+\newcommand{\casemax}{\mathrm{casemax}}
+\newcommand{\casemin}{\mathrm{casemin}}
+\newcommand{\UB}{\mathit{UB}}
+\newcommand{\LB}{\mathit{LB}}
+\newcommand{\IND}{\mathit{Ind}}
+\newcommand{\CONS}{\mathit{Cons}}
+\newcommand{\Root}{\mathit{Root}}
+\newcommand{\Max}{\mathit{Max}}
+\newcommand{\sq}{\hspace{-1mm}}
+\newcommand{\sqm}{\hspace{-2mm}}
+
+%------------------------------------------------------------
+% number of columns in the poster:
+%------------------------------------------------------------
+
+%\columnfrac{0.3}% three columns
+\columnfrac{0.32}% three columns
+
+%%%%%%%%%%%%%%% local definitions %%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\bl}[1]{{\color{nictablue}#1}}
+
+%------------------------------------------------------------
+% Now we start our poster:
+
+%------------------------------------------------------------
+
+%%%%%%%%% define headers %%%%%%%%%%%%
+\title{Robust Optimization for Hybrid MDPs \\with State-dependent Noise}
+%\staff{Authors}
+\authors{Zahra Zamani \& Scott Sanner (NICTA \& the ANU), Karina Valdivia Delgado \& Leliane Nunes de Barros (University of Sao Paulo, Brazil) %[0.2in]
+}
+
+
+\content{
+
+\begin{pcolumn}
+\section{Highlight}
+{\textbf{\color{red} Goal:}} Robust Dynamic Programming solutions to non-deterministic hybrid MDPs:\\
+\vspace{-1em}
+\begin{center}
+ \shadowbox{
+ \begin{minipage}{0.8\columnwidth}
+{\color{nictablue} 
+\vspace{-.35em} 
+\begin{center} 
+\begin{align}
+V^{h}(\vec{b},\vec{x})  &= \max_{a \in A} \max_{\vec{y} \in \mathbb{R}^{|\vec{y}|}} \min_{\vec{n} \in \mathbb{R}^{|\vec{e}|}} \left\{ Q^{h}_a(\vec{b},\vec{x},\vec{y},\vec{n}) \right\} \label{eq:vfun}
+\\
+Q_a^{h}(\vec{b},\vec{x},\vec{y},\vec{n}) \!  &= \!
+\max\!\Big(\!\!N(n_1|\vec{b},\vec{x},\Pi^{*,H}),\!\ldots\!, \max\!\Big(\!\!N(n_e|\vec{b},\vec{x},\Pi^{*,H}), \nonumber \\
+&
+\sum_{\vec{b}'} \int P(\vec{b}',\vec{x}'|\vec{b},\vec{x},a,\vec{y},\vec{n}) \! 
+\Big[ R(\vec{b},\vec{x},\vec{b}',\vec{x}',a,\vec{y}) + \gamma V^{h-1}(\vec{b}',\vec{x}') d\vec{x}' \Big] \Big) \! \cdots \! \Big)\label{eq:qfun}
+% V^{\Pi^{*,H}}(\vec{b},\vec{x}) &= \min_{\vec{n}} \, \max\!\Big(N(n_1|\vec{b},\vec{x},\Pi^{*,H}),\ldots,\\
+%& \max\!\Big(N(n_e|\vec{b},\vec{x},\Pi^{*,H}), E_{\Pi^{*,H}} \Big[ r^h \!\! + \! \gamma V^{\Pi^{*,H-1}} \! \! (\vec{b}',\!\vec{x}') \Big| \vec{b}_0,\!\vec{x}_0\Big] \Big) \!\! \cdots \!\! \Big)
+\end{align}
+\end{center}\vspace{-0.5em} }
+ \end{minipage}
+}
+\end{center}
+\begin{tabular}{ll}
+{\textbf{\color{red} Tools:}}
+& 1: Symbolic Dynamic Programming approach(SDP)\\
+& 2: Efficient data-structure of Extended ADDs (XADDs)\\
+\end{tabular}
+\section{Hybrid MDPs with continuous noise}
+\begin{itemize}
+\item { \color{red} Discrete and Continuous (Hybrid) State Space} : $(\vec{b},\vec{x})$ where $b_i \in \{ 0,1 \}$ and $x_j \in \mathbb{R}$.
+\item {\color{red} Hybrid Action Space} : $A = \{a_1(\vec{y}_1), \ldots, a_p(\vec{y}_p) \}$, with parameter $\vec{y}_k \in \mathbb{R}^{|\vec{y}_k|}$.
+\item {\color{red} Continuous Uncertainty} : Intermediate noise variables $\vec{n} = n_1, \ldots , n_e$ where $n_l \in \mathbb{R}$.
+\item {\color{red}Transition Model} : Joint DBN of Conditional Probability Functions (CPF) and Piecewise Linear Equations (PLE):
+{%\footnotesize
+\begin{equation}
+P(\vec{b}',\vec{x}'|\vec{b},\vec{x},a,\vec{y},\vec{n}) = 
+\prod_{i=1}^a P(b_i'|\vec{b},\vec{x},\vec{b}',\vec{x}',a,\vec{y},\vec{n}) 
+  \prod_{j=1}^c P(x_j'|\vec{b},\vec{x},\vec{b}',\vec{x}',a,\vec{y},\vec{n})\nonumber 
+\end{equation}}
+\begin{align} 
+P(b_1'\sq=\sq1l_1,\vec{b},n) = 
+\begin{cases}
+b_1: 0.0\\
+\neg b_1 :  1.0
+\end{cases} , \hspace{3mm}
+P(l'_1|l_1,n, a& =\mathit{drain}) = \delta \left( l_1'  - (n + l_1 - 2000) \right) \label{eq:drain_trans}\nonumber \\
+\vspace{-5mm}
+\hspace{-6mm}
+\vspace{-10mm}
+\end{align} 
+\item {\color{red}Noise Model} : Non-deterministic noise interval constraint function $N(n_l| \vec{b},\vec{x},a,\vec{y})$: %for each $n_l$ such that if $P(n_l| \vec{b},\vec{x},a,\vec{y}) = \mathcal{N}(n_l; \mu; \sigma^2)$ and $\alpha = 0.95$  then we know that that the 95\% of the probability mass lies within $\mu \pm 2\sigma$:
+\begin{align}
+N(n|\vec{b},l_1) = \begin{cases}
+\vec{b} = 4 \wedge (1200 \leq n \leq 2000) &: -\infty \\
+\vec{b} \neq 4  \wedge (0 \leq n \leq 400)&: -\infty \\
+\text{otherwise} &: +\infty
+\end{cases}
+\end{align}
+\item {\color{red}Reward Model} : Piecewise Linear function
+\begin{align}
+R(l_1,l_1',\vec{b},\vec{b}',a) &= 
+\begin{cases}
+(200 \! \leq \! l_1 \! \leq \! 4500) \wedge (200 \! \leq \! l_1' \! \leq \! 4500) & \!\! : l_1'\\
+\text{otherwise} & \!\! : -\infty\\
+\end{cases}
+\end{align}
+\end{itemize}
+\vspace{-1em}
+\section{Case statements and operators}
+{\color{red} \bf Support for Unary and Binary operations $c\cdot f$ , $-f$, , $\oplus$,$\ominus$, $\otimes$, as well as symbolic Maximization and Minimization} 
+\vspace{-14mm}
+{%\footnotesize 
+\begin{center}
+\begin{tabular}{r c c c l}
+&
+\hspace{-6mm} 
+  $\begin{cases}
+    \phi_1: & f_1 \\ 
+    \phi_2: & f_2 \\ 
+  \end{cases}$
+$\oplus$
+&
+\hspace{-4mm}
+  $\begin{cases}
+    \psi_1: & g_1 \\ 
+    \psi_2: & g_2 \\ 
+  \end{cases}$
+&
+\hspace{-2mm} 
+$ = $
+&
+\hspace{-2mm}
+  $\begin{cases}
+  \phi_1 \wedge \psi_1: & f_1 + g_1 \\ 
+  \phi_1 \wedge \psi_2: & f_1 + g_2 \\ 
+  \phi_2 \wedge \psi_1: & f_2 + g_1 \\ 
+  \phi_2 \wedge \psi_2: & f_2 + g_2 \\ 
+  \end{cases}$
+\end{tabular}
+\end{center}
+}
+%\vspace{-6mm}
+%{\color{red} \bf Support for Symbolic Maximization and Minimization}
+%\vspace{-16mm}
+%{%\footnotesize
+%\begin{center}
+%\begin{tabular}{r c c c l}
+%&
+%\hspace{-7mm} $\casemax \Bigg(
+%  \begin{cases}
+%    \phi_1: \hspace{-2mm} & \hspace{-2mm} f_1 \\ 
+%    \phi_2: \hspace{-2mm} & \hspace{-2mm} f_2 \\ 
+%  \end{cases}$
+%$,$
+%&
+%\hspace{-4mm}
+%  $\begin{cases}
+%    \psi_1: \hspace{-2mm} & \hspace{-2mm} g_1 \\ 
+%    \psi_2: \hspace{-2mm} & \hspace{-2mm} g_2 \\ 
+%  \end{cases} \Bigg)$
+%&
+%\hspace{-4mm} 
+%$ = $
+%&
+%\hspace{-4mm}
+%  $\begin{cases}
+%  \phi_1 \wedge \psi_1 \wedge f_1 > g_1    : & \hspace{-2mm} f_1 \\ 
+%  \phi_1 \wedge \psi_1 \wedge f_1 \leq g_1 : & \hspace{-2mm} g_1 \\ 
+%  \phi_1 \wedge \psi_2 \wedge f_1 > g_2    : & \hspace{-2mm}f_1 \\ 
+%  \phi_1 \wedge \psi_2 \wedge f_1 \leq g_2 : & \hspace{-2mm} g_2 \\ 
+%  \vdots & \vdots
+%%  \phi_2 \wedge \psi_1 \wedge f_2 > g_1    : & \hspace{-2mm} f_2 \\ 
+%%  \phi_2 \wedge \psi_1 \wedge f_2 \leq g_1 : & \hspace{-2mm} g_1 \\ 
+%%  \phi_2 \wedge \psi_2 \wedge f_2 > g_2    : & \hspace{-2mm} f_2 \\ 
+%%  \phi_2 \wedge \psi_2 \wedge f_2 \leq g_2 : & \hspace{-2mm} g_2 \\ 
+%  \end{cases}$
+%\end{tabular}
+%\end{center}
+%}
+
+
+\end{pcolumn}
+%
+\hfill
+%
+\begin{pcolumn}
+
+%\section{Optimization}
+\section{Theoretical Contribution}
+\vspace{-2em}
+
+\subsection{Hybrid Regression}
+%{\bf \color{red} 
+{To implement (2) using SDP operations on case statements:} 
+\vspace{-.85em}
+\begin{center}
+\shadowbox{
+\begin{minipage}{0.9\columnwidth}\color{nictablue}
+\footnotetext{
+Nature never chooses illegal noise value of noise $n_l$ where $N(n_l| \vec{b},\vec{x},a,\vec{y}) = +\infty$. Thus
+$N(n_l| \vec{b},\vec{x},a,\vec{y}) = -\infty$ is ``max'ed'' in
+with the value function, effectively vanishing due to the identity
+$\max(v,-\infty) = v$.
+}
+\begin{align*}
+& \hspace{9mm} Q_a = Prime(V) \;\; \mbox{\color{black} [$\forall b_i \to b_i'$ , $\forall x_i \to x_i'$]} \nonumber\\
+&\mbox{\color{black} If $R$ contains primed variables: $Q_a := R(\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y}) \oplus (\gamma \cdot Q_a)$}\\
+%& \hspace{9mm} Q := R(\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y}) \oplus (\gamma \cdot Q) \\
+&\mbox{\color{black} For all $x'_j$ in $Q$ (Marginal Integration)}\\
+& \hspace{9mm} Q_a := \int Q \otimes P(x_j'|\vec{b},\vec{b}',\vec{x},a,\vec{y},\vec{n}) \, d_{x'_j} \nonumber \\
+&\mbox{\color{black} For all $b'_i$ in $Q$ (Marginal Summation) }\\
+& \hspace{9mm} Q_a := \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y},\vec{n}) \right]|_{b_i' = 1}  \oplus \left[ Q \otimes P(b_i'|\vec{b},\vec{x},a,\vec{y},\vec{n}) \right]|_{b_i' = 0} \nonumber \\
+&\mbox{\color{black} If $R$ does not contain primed variables: $Q_a := R(\vec{b},\vec{b}',\vec{x},\vec{x}',a,\vec{y}) \oplus (\gamma \cdot Qa)$}\\
+&\mbox{\color{black} For all $n_l$ in $Q_a$}\\
+& \hspace{9mm} Q_a(\vec{y},\vec{n}) := \casemax_{n_l} \, ( Q_a, N(n_l, \vec{b},\vec{x})) \;\; \mbox{\color{black} [Sequence of $\max$-in for noise variables]}\nonumber \\
+\end{align*}
+\end{minipage}
+}
+\end{center}
+\vspace{-.1em}
+
+
+\subsection{Robust Symbolic Dynamic Programming}
+Consider a reservoir with water level $l_1 \in \mathbb{R}$
+and actions $\{ \mathit{drain}, \mathit{no}\text{-}\mathit{drain} \}$. Using the models of (3),(4) and (5) we can solve (1) and (2) symbolically: 
+
+\vspace{-.5em}
+\begin{center}
+\shadowbox{
+\begin{minipage}{0.9\columnwidth}\color{nictablue}
+\begin{align*}
+&\mbox{\color{black} Prime the previous value function:}\\
+& \hspace{9mm} Q=V^0\sigma=0 \\
+&\mbox{\color{black} Reward function in (5) contains $l'_1$:}\\
+& \hspace{9mm} Q=R\oplus \gamma\cdot 0 = R\\ 
+&\mbox{\color{black} Apply discrete and continuous regression}\\
+& \hspace{9mm} Q =   \begin{cases}
+(200 \leq l_1 \leq 4500) \wedge (200 \leq (l_1 + n) \leq 4500) &: \hspace{-1mm} l_1 + n\\
+\text{otherwise} &: -\infty\\
+\end{cases}\\
+&\mbox{\color{black} Maximize w.r.t each $n$, assigning -$\infty$ for legal and $+\infty$ for illegal values}\\
+& \hspace{9mm} Q =   
+\begin{cases}
+l_1 \in \mathit{safe} \land (l_1+n) \in \mathit{safe} \land (n \in \mathit{legal}) &: l_1 + n\\
+(l_1  \notin \mathit{safe} \lor  (l_1+n) \notin \mathit{safe}) \land (n \in \mathit{legal}) &:  -\infty\\
+n \notin \mathit{legal} &: +\infty\\
+\end{cases}\\
+&\mbox{\color{black} Compute (1) by minimizing ($\casemin$) w.r.t noise variables $\vec{n}$}\\
+& \hspace{9mm}Q^1_{\mathit{no}\text{-}\mathit{drain}} =  
+\begin{cases}
+l_1 \in \mathit{safe}     &: l_1\\
+l_1  \notin \mathit{safe} &: -\infty\\
+\end{cases}\\
+&\mbox{\color{black} Next maximize over continuous action parameters (not applicable)}\\
+&\mbox{\color{black} Perform $\casemax$ with $Q^1_{\mathit{drain}}$}\\
+& \hspace{9mm} V^1 =  \begin{cases}
+(200 \leq l_1 \leq 4500): & l_1 \;\; \hfill (\mathit{no}\text{-}\mathit{drain}) \\
+(4500 \leq l_1 \leq 6500): & l_1-2000 \;\; \hfill (\mathit{drain}) \\
+\text{otherwise} : & -\infty \;\; \hfill (\mathit{uncontrollable}) \\ 
+\vspace{-1.5em}
+\end{cases} \\
+\end{align*}
+\vspace{-1em}
+\end{minipage}
+}
+\end{center}
+\end{pcolumn}
+%
+\hfill
+%
+\begin{pcolumn}
+\section{Extended ADDs (XADDs)}
+\vspace{-0.5em}
+\begin{minipage}{0.4\columnwidth}
+\vspace{-5mm}
+\includegraphics[width=0.85\textwidth]{v1_mr.pdf}\\
+\vspace{-6mm}
+\includegraphics[width=0.85\textwidth]{v2_mr.pdf}\\
+\vspace{-2mm}
+\includegraphics[width=0.85\textwidth]{v3_mr.pdf}
+\vspace{-3mm}
+\end{minipage}
+\vspace{-1mm}
+\begin{minipage}{0.45\columnwidth}
+\hspace{-5mm}\includegraphics[width=0.9\textwidth]{v2_mr_dd.pdf}
+\end{minipage}
+\vspace{-1mm}
+\section{Empirical Results}
+\vspace{-8mm}
+\includegraphics[width=0.5\textwidth]{Nodes.pdf}
+\vspace{2mm}
+\includegraphics[width=0.5\textwidth]{Time.pdf}
+\vspace{-9mm}
+\hspace{70mm}
+{\footnotesize
+\textit{Space and elapsed time (between current and previous horizon) vs. horizon.}}
+\\
+\\
+\\
+{\bf \color{red} Reservoir Control}: Maintaining maximal reservoir levels subject to uncertain amounts of rainfall to avoid underflow or overflow conditions.\\
+{\color{red} \bf UAV Navigation}: Planning to take aircraft to a goal given time or fuel constraints and known areas of state-dependent turbulence.\\
+{\color{red} \bf Space Telescope Control}: Managing inertial moments and rotational velocities as the telescope maneuvers since noise increases in unstable telescope positions.
+\\
+\\
+\vspace{-8mm}
+\includegraphics[width=0.3\textwidth]{reserV7New.pdf}
+\includegraphics[width=0.3\textwidth]{telesV4.pdf}
+\includegraphics[width=0.3\textwidth]{uavV4.pdf}
+{\footnotesize
+{\it (left)}  $V^7(l_1,\vec{b}=0)$ \textsc{Reservoir Control} problem;
+{\it (middle)} $V^4(k,v,z=true,g=false)$ \textsc{Space Telescope Control} problem; 
+{\it (right)}  $V^4(x,y,l=false)$ \textsc{UAV Navigation} problem.
+}
+\section{Summary}
+\vspace{-1.7em}
+\begin{itemize}
+\item {\color{red} \bf Mixed Techniques} from symbolic hybrid MDPs and chance-constrained control theory resulting in robust solutions over \emph{all} states
+\item {\color{red} \bf First exact solution} to hybrid state and action problems with piecewise linear transitions and state-dependent noise.
+\end{itemize}
+
+\end{pcolumn}
+}
+
+\notes{}
+
+\begin{document}
+\makeposter
+\end{document}
