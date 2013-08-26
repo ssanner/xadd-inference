@@ -133,7 +133,7 @@
   \geometry{papersize={119cm, 88cm}}
   \geometry{textwidth=116cm, textheight=88cm}
 \else\ifanull
-  \geometry{papersize={118.82cm, 83.96cm}}
+  \geometry{papersize={83.96cm,118.82cm}}
   \geometry{textwidth=82.96cm, textheight=117.82cm}
 \else\ifaeins
   \geometry{papersize={83.96cm, 59.4cm}}
