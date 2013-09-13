@@ -24,7 +24,7 @@ import camdp.HierarchicalParser;
 public class TestXADD {
 
 	/**
-	 * @param args
+	 * @param args  .... ..............................................
 	 */
 	
 	public static void main(String[] args) throws Exception {
