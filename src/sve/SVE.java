@@ -1,4 +1,4 @@
-/* Symbolic Variable Elimination
+/* Symbolic Variable Elimination.
  * 
  * @author Scott Sanner (ssanner@gmail.com)
  * @author Ehsan Abbasnejad
