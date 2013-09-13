@@ -1,6 +1,5 @@
-package hadiPractice;
+package sveApprox;
 
-import sve.GraphicalModel;
 import xadd.ExprLib;
 import xadd.XADD;
 

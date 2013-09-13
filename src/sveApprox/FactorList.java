@@ -1,4 +1,4 @@
-package hadiPractice;
+package sveApprox;
 
 import java.util.*;
 

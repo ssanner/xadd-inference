@@ -1,4 +1,4 @@
-package hadiPractice;
+package sveApprox;
 
 import org.junit.Test;
 
@@ -7,12 +7,12 @@ import java.util.HashSet;
 
 /**
  * Created by Hadi M Afshar
- * Date: 13/09/13
- * Time: 2:43 PM
+ * Date: 11/09/13
+ * Time: 1:29 AM
  */
-public class FactorListTest {
+public class XADDFactoryTest {
     @Test
-    public void testInfer() throws Exception {
+    public void testXaddInstantiation() {
         XADDFactory factory = new XADDFactory();
         factory.putContinuousVariable("d", -10, 20);
         factory.putContinuousVariable("x1", -10, 20);
@@ -27,20 +27,17 @@ public class FactorListTest {
         System.out.println("x1f.getScopeVars() = " + x1f.getScopeVars());
         System.out.println("x2f.getScopeVars() = " + x2f.getScopeVars());
 
-        //********
-        HQuery q = new HQuery(
-                new HashSet<VariableValue>(Arrays.asList(
-//                        new VariableValue("x1", "5"),
-                        new VariableValue("x2", "6")
-                )),
-                Arrays.asList("d"));
+        //**********  Test instantiation of XADDs
+        System.out.println("***\n");
 
-
-        FactorList l = new FactorList(df, x1f, x2f);
-
-        XADDFactory.HFactor resultF = l.infer(q, Arrays.asList("d", "x2", "x1"));
-        System.out.println("resultF = " + resultF);
-        System.out.println("resultF.getXADDNodeString() = " + resultF.getXADDNodeString());
+        System.out.println("x1f = " + x1f);
+        System.out.println("x1f.getXADDNodeString() = " + x1f.getXADDNodeString());
+        XADDFactory.HFactor instantiatedX1f = x1f.instantiate(new HashSet<VariableValue>(Arrays.asList(
+                new VariableValue("x1", "5"),
+                new VariableValue("x2", "50")
+        )));
+        System.out.println("instantiatedX1f = " + instantiatedX1f);
+        System.out.println("instantiatedX1f.getXADDNodeString() = " + instantiatedX1f.getXADDNodeString());
 
     }
 }
