@@ -54,11 +54,46 @@
 
 
 \begin{abstract}
-Many real-world decision-theoretic planning problems can naturally be modeled using continuous states and actions. Problems such as the multi-item Inventory problem \cite{Scarf_Karlin58} have long been solved in the operation research literature using discrete variable MDPs or approximating the optimal value for continuous domains. Other work similar to that of Gaussian control deals with general continuous domains but can not handle piecewise values on the state space. Here we propose a framework to find the first exact optimal piecewise solution for problems modeled using multi-variate continuous state and action variables.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Revise general argument: 
+%
+% - OR, control, AI need continuous vars
+% - all existing multivariate methods focus on approximate solutions
+% - we present first exact solution for multivariate discrete action case 
+%   then extend to continuous actions
+% - we also introduce the XADD to maintain a compact form for the 
+%   value function
+%
+% Need to highly the technical contributions and exactness and also
+% high-dimensional applications to avoid requests for comparison
+% to existing continuous solvers (for which code is not published!).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Many real-world decision-theoretic planning problems can naturally be
+modeled using continuous states and actions. Problems such as the
+multi-item Inventory problem \cite{Scarf_Karlin58} have long been
+solved in the operation research literature using discrete variable
+MDPs or approximating the optimal value for continuous domains. Other
+work similar to that of Gaussian control deals with general continuous
+domains but can not handle piecewise values on the state space. Here
+we propose a framework to find the first exact optimal piecewise
+solution for problems modeled using multi-variate continuous state and
+action variables.
 
-We define a Symbolic Dynamic Programming (SDP) approach using the \emph{case} calculus which provides a closed-form solution for all DP operations (e.g. continuous maximization and integration). Solutions are provided for discrete action Hybrid(i.e. discrete and continuous) state MDPs (HMDPs) using polynomial transitions with discrete noise and arbitrary reward functions. Solutions to continuous action HMDPs with piecewise linear (or quadratic) discrete noise transition and reward functions are also derived. 
+We define a Symbolic Dynamic Programming (SDP) approach using the
+\emph{case} calculus which provides a closed-form solution for all DP
+operations (e.g. continuous maximization and integration). Solutions
+are provided for discrete action Hybrid(i.e. discrete and continuous)
+state MDPs (HMDPs) using polynomial transitions with discrete noise
+and arbitrary reward functions. Solutions to continuous action HMDPs
+with piecewise linear (or quadratic) discrete noise transition and
+reward functions are also derived.
 
-Apart from the solution to general HMDPs, our other contribution is the compact representation of XADDs - a continuous variable extension of Algebraic decision diagrams (ADDs) - with related properties and algorithms. This allows us to empirically provide efficient results for HMDPs showing the \emph{first optimal automated solution} on various continuous domains. 
+Apart from the solution to general HMDPs, our other contribution is
+the compact representation of XADDs - a continuous variable extension
+of Algebraic decision diagrams (ADDs) - with related properties and
+algorithms. This allows us to empirically provide efficient results
+for HMDPs showing the \emph{first optimal automated solution} on
+various continuous domains.
 \end{abstract}
 
 \section{Introduction}
