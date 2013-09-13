@@ -17,9 +17,9 @@ public class XADDFactoryTest {
         factory.putContinuousVariable("d", -10, 20);
         factory.putContinuousVariable("x1", -10, 20);
         factory.putContinuousVariable("x2", -10, 20);
-        XADDFactory.HFactor df = factory.putNewFactorWithContinuousVars("U(d,0,0,10)");
-        XADDFactory.HFactor x1f = factory.putNewFactorWithContinuousVars("0.05*U(x1,0,0,10) + 0.85*N(x1,d,2,2.5) + 0.1*T(x1,10,1,0)");
-        XADDFactory.HFactor x2f = factory.putNewFactorWithContinuousVars("0.05*U(x2,0,0,10) + 0.85*N(x2,d,2,2.5) + 0.1*T(x2,10,1,0)");
+        HFactor df = factory.putNewFactorWithContinuousVars("U(d,0,0,10)");
+        HFactor x1f = factory.putNewFactorWithContinuousVars("0.05*U(x1,0,0,10) + 0.85*N(x1,d,2,2.5) + 0.1*T(x1,10,1,0)");
+        HFactor x2f = factory.putNewFactorWithContinuousVars("0.05*U(x2,0,0,10) + 0.85*N(x2,d,2,2.5) + 0.1*T(x2,10,1,0)");
         System.out.println("df = " + df);
         System.out.println("x1f = " + x1f);
         System.out.println("x2f = " + x2f);
@@ -32,7 +32,7 @@ public class XADDFactoryTest {
 
         System.out.println("x1f = " + x1f);
         System.out.println("x1f.getXADDNodeString() = " + x1f.getXADDNodeString());
-        XADDFactory.HFactor instantiatedX1f = x1f.instantiate(new HashSet<VariableValue>(Arrays.asList(
+        HFactor instantiatedX1f = x1f.instantiate(new HashSet<VariableValue>(Arrays.asList(
                 new VariableValue("x1", "5"),
                 new VariableValue("x2", "50")
         )));

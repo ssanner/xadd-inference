@@ -9,12 +9,12 @@ import java.util.*;
  */
 public class FactorList {
     private XADDFactory factory = null;
-    private List<XADDFactory.HFactor> factors = new ArrayList<XADDFactory.HFactor>();
+    private List<HFactor> factors = new ArrayList<HFactor>();
     private Set<String> scopeVars = new HashSet<String>();
 
-    public FactorList(XADDFactory.HFactor... factors) {
+    public FactorList(HFactor... factors) {
         for (int i = 1; i < factors.length; i++) {
-            XADDFactory.HFactor f = factors[i];
+            HFactor f = factors[i];
             if (factory == null) {
                 factory = f.getFactory();
             } else if (f.getFactory() != factory) {
@@ -26,7 +26,7 @@ public class FactorList {
         }
     }
 
-    public XADDFactory.HFactor infer(HQuery q) {
+    public HFactor infer(HQuery q) {
         return infer(q, bestVariableOrder());
     }
 
@@ -34,10 +34,10 @@ public class FactorList {
     return null;  //TODO implement...
     }
 
-    public XADDFactory.HFactor infer(HQuery q, List<String> varOrdering) {
+    public HFactor infer(HQuery q, List<String> varOrdering) {
 
         // 1. instantiation by evidence
-        List<XADDFactory.HFactor> instantiatedFactors = new ArrayList<XADDFactory.HFactor>();//(this.factors.size());
+        List<HFactor> instantiatedFactors = new ArrayList<HFactor>();//(this.factors.size());
         for (int i = 0; i < factors.size(); i++) {
             instantiatedFactors.add(factors.get(i).instantiate(q.getEvidence()));
         }
@@ -54,15 +54,15 @@ public class FactorList {
         return marginalizeWithVE(instantiatedFactors, orderedMarginalizingVariables);
     }
 
-    private XADDFactory.HFactor marginalizeWithVE(List<XADDFactory.HFactor> instantiatedFactors, List<String> varsToEliminate) {
-        Set<XADDFactory.HFactor> phi = new HashSet<XADDFactory.HFactor>(instantiatedFactors); // initialized with all factors
+    private HFactor marginalizeWithVE(List<HFactor> instantiatedFactors, List<String> varsToEliminate) {
+        Set<HFactor> phi = new HashSet<HFactor>(instantiatedFactors); // initialized with all factors
 
         for (int i = 0; i < varsToEliminate.size(); i++) {
             String z = varsToEliminate.get(i);
-            Set<XADDFactory.HFactor> factorsInvolvingZ = chooseFactorsIncluding(phi, z);
+            Set<HFactor> factorsInvolvingZ = chooseFactorsIncluding(phi, z);
             phi.removeAll(factorsInvolvingZ); // phi = phi \ factors that involve z
-            XADDFactory.HFactor psi = factory.multiply(factorsInvolvingZ);
-            XADDFactory.HFactor tau = factory.definiteIntegral(psi, z);
+            HFactor psi = factory.multiply(factorsInvolvingZ);
+            HFactor tau = factory.definiteIntegral(psi, z);
             phi.add(tau);
         }
 
@@ -73,9 +73,9 @@ public class FactorList {
 
     }
 
-    private Set<XADDFactory.HFactor> chooseFactorsIncluding(Set<XADDFactory.HFactor> factors, String var) {
-        Set<XADDFactory.HFactor> factorsWithVar = new HashSet<XADDFactory.HFactor>();
-        for (XADDFactory.HFactor f : factors) {
+    private Set<HFactor> chooseFactorsIncluding(Set<HFactor> factors, String var) {
+        Set<HFactor> factorsWithVar = new HashSet<HFactor>();
+        for (HFactor f : factors) {
             if (f.getScopeVars().contains(var)) {
                 factorsWithVar.add(f);
             }
