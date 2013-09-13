@@ -28,7 +28,7 @@ public class TestXADD {
 	 */
 	
 	public static void main(String[] args) throws Exception {
-		main1(args);
+		main4(args);
 	}
 	
 	public static void main4(String[] args) throws Exception {

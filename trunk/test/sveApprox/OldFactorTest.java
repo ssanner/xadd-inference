@@ -1,4 +1,4 @@
-package hadiPractice;
+package sveApprox;
 
 import junit.framework.Assert;
 import org.junit.Test;
