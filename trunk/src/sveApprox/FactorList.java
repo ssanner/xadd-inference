@@ -1,5 +1,7 @@
 package sveApprox;
 
+import xadd.XADD;
+
 import java.util.*;
 
 /**
@@ -13,7 +15,7 @@ public class FactorList {
     private Set<String> scopeVars = new HashSet<String>();
 
     public FactorList(HFactor... factors) {
-        for (int i = 1; i < factors.length; i++) {
+        for (int i = 0; i < factors.length; i++) {
             HFactor f = factors[i];
             if (factory == null) {
                 factory = f.getFactory();
@@ -31,7 +33,7 @@ public class FactorList {
     }
 
     private ArrayList<String> bestVariableOrder() {
-    return null;  //TODO implement...
+        return null;  //TODO implement...
     }
 
     public HFactor infer(HQuery q, List<String> varOrdering) {
@@ -41,6 +43,13 @@ public class FactorList {
         for (int i = 0; i < factors.size(); i++) {
             instantiatedFactors.add(factors.get(i).instantiate(q.getEvidence()));
         }
+        if (XADDFactory.DEBUG){
+            for (int i = 0; i < instantiatedFactors.size(); i++) {
+                System.out.println("instantiatedFactors.get("+i+").getXADDNodeString() = " + instantiatedFactors.get(i).getXADDNodeString());
+
+            }
+        }
+
 
         // 2. marginalize out variables that are not in query and are not already instantiated
         List<String> orderedMarginalizingVariables = new ArrayList<String>();
