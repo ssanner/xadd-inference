@@ -2,9 +2,11 @@ package sveApprox;
 
 import xadd.ExprLib;
 import xadd.XADD;
+import xadd.XADDUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -15,6 +17,8 @@ import java.util.Set;
  * A A Singleton Wrapper on xadd.XADD class.
  */
 public class XADDFactory {
+    public static final boolean DEBUG = true;
+
     private XADD context;
 
     public XADDFactory() {
@@ -27,6 +31,17 @@ public class XADDFactory {
 
         //todo: maybe they should be added to the _hsContinuousVars as well... but then what is _alContinuousVars....
     }
+
+    public Double getMinValue(String varName) {
+        return context._hmMinVal.get(varName);
+    }
+
+    public Double getMaxValue(String varName) {
+        return context._hmMaxVal.get(varName);
+
+    }
+
+
 
     public HFactor substitute(HFactor factor, HashMap<String, ExprLib.ArithExpr> valueAssignment) {
         if (valueAssignment.isEmpty()) return factor;
@@ -51,7 +66,7 @@ public class XADDFactory {
 
     public HFactor definiteIntegral(HFactor factor, String varName) {
         int integralNodeId = context.computeDefiniteIntegral(factor.getNodeId(), varName);
-        return new HFactor(this, "[[Integral{" + factor + "}]]", integralNodeId);
+        return new HFactor(this, "[[Integral{" + factor + "}d"+ varName + "]]", integralNodeId);
     }
 
     public Set<String> collectScopeVars(HFactor factor) {
@@ -63,4 +78,41 @@ public class XADDFactory {
         XADD.XADDNode root = context.getExistNode(factor.getNodeId());
         return root.toString(true);
     }
+
+    public Double evaluate(HFactor factor, Iterable<VariableValue> variableValues) {
+        //todo: now only continuous variables supported
+        HashMap<String, Double> continuousMap = new HashMap<String, Double>();
+        for (VariableValue v : variableValues) {
+            continuousMap.put(v.getVariable(), Double.valueOf(v.getValue()));
+        }
+
+        return context.evaluate(factor.getNodeId(), new HashMap<String, Boolean>(), continuousMap);
+    }
+
+    public HFactor scalarMultiply(HFactor f, double c) {
+        return new HFactor(this, "[" + c + " TIMES " + f.toString() + "]", context.scalarOp(f.getNodeId(), c, XADD.PROD));
+    }
+
+    //This function should not be used "ideally" since XADDFactory is meant to wrap all features of context
+//    @Deprecated
+//    public XADD getContext() {
+//        return context;
+//    }
+
+    //TODO visualization should IDEALLY be transmitted to another class....
+    public void visualize1DFactor(HFactor factor, String title) {
+        if (factor.getScopeVars().size() != 1) throw new RuntimeException("only one variable expected!");
+        if (factor.getFactory() != this) throw new RuntimeException("I just draw my own factors");
+
+        String var = factor.getScopeVars().iterator().next();
+
+        double min_val = getMinValue(var);
+        double max_val = getMaxValue(var);
+
+        XADDUtils.PlotXADD(context, factor.getNodeId(), min_val, 0.1d, max_val, var, title);
+//        double integral = XADDUtils.TestNormalize(factor.getFactory().getContext(), factor.getNodeId(), var);
+//        if (Math.abs(integral - 1d) > 0.001d)
+//            System.err.println("WARNING: distribition does not integrate out to 1: " + integral);
+    }
+
 }

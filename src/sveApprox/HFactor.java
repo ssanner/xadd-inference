@@ -3,6 +3,7 @@ package sveApprox;
 import xadd.ExprLib;
 import xadd.XADD;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -57,4 +58,18 @@ public class HFactor {
 
         return factory.substitute(this, relevantValueAssignment);
     }
-}   //end inner class.
+
+    public HFactor normalize() {
+        HFactor normalizationFactor = this;
+        for (String var : getScopeVars()) {
+            normalizationFactor = factory.definiteIntegral(normalizationFactor, var);
+        }
+
+        double norm = factory.evaluate(normalizationFactor, new ArrayList<VariableValue>());
+        if(XADDFactory.DEBUG) {
+            System.out.println("normalizing factor = " + (1.00d / norm));
+        }
+        return factory.scalarMultiply(this, 1.00d / norm);
+    }
+
+}

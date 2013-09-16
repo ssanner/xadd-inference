@@ -1,6 +1,9 @@
 package sveApprox;
 
+import junit.framework.Assert;
 import org.junit.Test;
+import sve.SVE;
+import xadd.XADDUtils;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -11,8 +14,27 @@ import java.util.HashSet;
  * Time: 2:43 PM
  */
 public class FactorListTest {
+    public static void main(String[] args) throws Exception {
+        FactorListTest instance = new FactorListTest();
+        instance.testInferOnQUERY1();
+    }
+
     @Test
-    public void testInfer() throws Exception {
+    public void testInferOnQUERY1() throws Exception {
+        /*
+            indices (
+                (i = 1 -- 2)
+               )
+
+            cevidence (
+                (x_1 = 5)
+                (x_2 = 6)
+               )
+
+            bevidence (
+            )
+            query (d)
+         */
         XADDFactory factory = new XADDFactory();
         factory.putContinuousVariable("d", -10, 20);
         factory.putContinuousVariable("x1", -10, 20);
@@ -30,7 +52,7 @@ public class FactorListTest {
         //********
         HQuery q = new HQuery(
                 new HashSet<VariableValue>(Arrays.asList(
-//                        new VariableValue("x1", "5"),
+                        new VariableValue("x1", "5"),     //todo comment this line
                         new VariableValue("x2", "6")
                 )),
                 Arrays.asList("d"));
@@ -42,5 +64,19 @@ public class FactorListTest {
         System.out.println("resultF = " + resultF);
         System.out.println("resultF.getXADDNodeString() = " + resultF.getXADDNodeString());
 
+        Assert.assertEquals(resultF.getScopeVars().size(), 1);
+        factory.visualize1DFactor(resultF, "non normalized result");
+
+        HFactor normalResultF = resultF.normalize();
+        System.out.println("normalResultF = " + normalResultF);
+        System.out.println("normalResultF.getXADDNodeString() = " + normalResultF.getXADDNodeString());
+
+        if (normalResultF.getScopeVars().size() == 1) {
+            factory.visualize1DFactor(normalResultF, "normalized result");
+//            SVE.ExportData(norm_result, q._sFilename + ".txt");
+        }
     }
+
+
+
 }
