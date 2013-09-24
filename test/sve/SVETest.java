@@ -2,8 +2,6 @@ package sve;
 
 
 import org.junit.Test;
-import sveApprox.HFactor;
-import xadd.XADDUtils;
 
 /**
  * Created by Hadi Afshar
