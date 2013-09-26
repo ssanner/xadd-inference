@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011/Cygwin) (format=pdflatex 2012.5.9)  25 APR 2013 14:41
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011/Cygwin) (format=pdflatex 2012.5.9)  26 SEP 2013 19:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -354,11 +354,6 @@ Overfull \hbox (2.49379pt too wide) in paragraph at lines 337--337
 [] 
  []
 
-
-Overfull \hbox (6.5084pt too wide) in paragraph at lines 389--389
-[] 
- []
-
 LaTeX Font Info:    Try loading font information for OT1+pcr on input line 430.
 
 (/usr/share/texmf-dist/tex/latex/psnfss/ot1pcr.fd
@@ -536,7 +531,7 @@ usr/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb></usr/share/
 texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texmf-dist/fonts/type
 1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
 </usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on hybnoise.pdf (7 pages, 2255237 bytes).
+Output written on hybnoise.pdf (7 pages, 2255257 bytes).
 PDF statistics:
  185 PDF objects out of 1000 (max. 8388607)
  132 compressed objects within 2 object streams

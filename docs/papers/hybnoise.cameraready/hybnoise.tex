@@ -381,15 +381,15 @@ is defined as the following:
 {\footnotesize
 \begin{align}
 Q_a^{h}&(\vec{b},\vec{x},\vec{y},\vec{n}) \! = \!
-\max\!\Big(\!\!N(n_1|\vec{b},\vec{x},\Pi^{*,H}),\!\ldots\!, \max\!\Big(\!\!N(n_e|\vec{b},\vec{x},\Pi^{*,H}), \nonumber \\
+\max\!\Big(\!\!N(n_1|\vec{b},\vec{x},a,\vec{y}),\!\ldots\!, \max\!\Big(\!\!N(n_e|\vec{b},\vec{x},a,\vec{y}), \nonumber \\
 & 
 \sum_{\vec{b}'} \int \prod_{i=1}^a P(b_i'|\vec{b},\vec{x},\vec{b}',\vec{x}',a,\vec{y},\vec{n}) \!
 \prod_{j=1}^c P(x_j'|\vec{b},\vec{x},\vec{b}',\vec{x}',a,\vec{y},\vec{n}) \! \nonumber \\
 & \qquad \qquad \; \Big[ R(\vec{b},\vec{x},\vec{b}',\vec{x}',a,\vec{y}) + \gamma V^{h-1}(\vec{b}',\vec{x}') d\vec{x}' \Big] \Big) \! \cdots \! \Big) \hspace{-2mm} \label{eq:qfun}
 \end{align}}
-Here the noise constraints $N(\vec{n},\vec{b},\vec{x})$ are ``max'ed''
+Here the noise constraints $N(n_l|\vec{b},\vec{x},a,\vec{y})$ are ``max'ed''
 in with the value function to ensure Nature chooses a legal setting 
-of $n_l$, effectively reducing each $\max$ to an identity operation.  
+of $n_l$, thus reducing each $\max$ to an identity operation.  
 
 Next, given $Q_a^h(\vec{b},\vec{x},\vec{y},\vec{n})$ as above for each
 $a \in A$, we can proceed to define the $h$-stage-to-go value function
