@@ -767,6 +767,8 @@ public static class OperExpr extends ArithExpr {
 
 	}
 
+    //todo commented by Hadi
+    /*
 	public boolean equals(Object o) {
 		if (o instanceof OperExpr) {
 			OperExpr e = (OperExpr) o;
@@ -778,8 +780,30 @@ public static class OperExpr extends ArithExpr {
 	public int hashCode() {
 		return _terms.toString().hashCode() - _type.hashCode();
 	}
+*/
+    //todo ADDED by Hadi
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-	public static ArithExpr Convert2OperExpr(FOPC.TFunction t) {
+        OperExpr operExpr = (OperExpr) o;
+
+        if (_terms != null ? !_terms.equals(operExpr._terms) : operExpr._terms != null) return false;
+        if (_type != operExpr._type) return false;
+
+        return true;
+    }
+
+    //todo added by hadi
+    @Override
+    public int hashCode() {
+        int result = _type != null ? _type.hashCode() : 0;
+        result = 31 * result + (_terms != null ? _terms.hashCode() : 0);
+        return result;
+    }
+
+    public static ArithExpr Convert2OperExpr(FOPC.TFunction t) {
 		// System.out.println("Convert2OperExpr: [" + t._nArity + "] "
 		// + t.toFOLString());
 		if (t._nArity == 0)
@@ -1739,8 +1763,9 @@ public static class OperExpr extends ArithExpr {
 				sb.append( (sb.length() != 0 ? ", " : "") + e.toString(format) );
 			return _funName + "(" + sb.toString() + ")";
 		}
-	
-		@Override
+
+        //todo commented by Hadi
+		/*@Override
 		public boolean equals(Object o) {
 			if (this.getClass().equals(o.getClass())) {
 				FunExpr f = (FunExpr)o;
@@ -1752,9 +1777,31 @@ public static class OperExpr extends ArithExpr {
 		@Override
 		public int hashCode() {
 			return _funName.hashCode() + _args.hashCode();
-		}
-	
-		public final static Class ARRAYLIST_ARITH_EXPR_CLASS = new ArrayList<ArithExpr>().getClass();
+		}*/
+
+        //todo added by Hadi
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            FunExpr funExpr = (FunExpr) o;
+
+            if (_args != null ? !_args.equals(funExpr._args) : funExpr._args != null) return false;
+            if (_funName != null ? !_funName.equals(funExpr._funName) : funExpr._funName != null) return false;
+
+            return true;
+        }
+
+        //todo added by Hadi
+        @Override
+        public int hashCode() {
+            int result = _funName != null ? _funName.hashCode() : 0;
+            result = 31 * result + (_args != null ? _args.hashCode() : 0);
+            return result;
+        }
+
+        public final static Class ARRAYLIST_ARITH_EXPR_CLASS = new ArrayList<ArithExpr>().getClass();
 
 		@Override
 		public ArithExpr substitute(HashMap<String, ArithExpr> subst) {
