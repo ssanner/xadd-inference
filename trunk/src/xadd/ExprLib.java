@@ -1587,6 +1587,11 @@ public abstract class ExprLib {
             return _df_unformatted.format(_dConstVal);
         }
 
+
+        //TODO This equality definition violates the rule that equal objects should have same hashCode.
+        // If XADD.PRECISION is non-zero, (there are cases where) this produces the bug:
+        // "java.lang.IllegalArgumentException: Comparison method violates its general contract!" in class OperExpr where terms are sorted.
+        // The solution seems to be: not using PRECISION in this method (using another method e.g. areSimilarEnough() for that purpose)
         public boolean equals(Object o) {
             if (o instanceof DoubleExpr) {
                 DoubleExpr d = (DoubleExpr) o;
