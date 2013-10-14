@@ -31,18 +31,20 @@
 \newtheorem{lemma}{Lemma}[section]
 \newtheorem{example}[lemma]{Example}
 
+\newcommand{\comment}[1]{}
+
 \newenvironment{mydef}[1][Definition]{\begin{trivlist}
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 
 %\jairheading{1}{1993}{1-15}{6/91}{9/91}
-\ShortHeadings{Exact Symbolic Solutions to MDPs}
+\ShortHeadings{Symbolic Dynamic Programming for Hybrid MDPs}
 {Zamani, Sanner}
 %\firstpageno{25}
 
 
 \begin{document}
 
-\title{Exact Symbolic Dynamic Programming for Hybrid State and Action MDPs}
+\title{Symbolic Dynamic Programming for Hybrid MDPs}
 
 \author{\name Zahra Zamani \email zahra.zamani@anu.edu.au \\
        \name Scott Sanner \email ssanner@nicta.com.au \\
@@ -68,57 +70,158 @@
 % high-dimensional applications to avoid requests for comparison
 % to existing continuous solvers (for which code is not published!).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Many real-world decision-theoretic planning problems can naturally be
-modeled using continuous states and actions. Problems such as the
-multi-item Inventory problem \cite{Scarf_Karlin58} have long been
-solved in the operation research literature using discrete variable
-MDPs or approximating the optimal value for continuous domains. Other
-work similar to that of Gaussian control deals with general continuous
-domains but can not handle piecewise values on the state space. Here
-we propose a framework to find the first exact optimal piecewise
-solution for problems modeled using multi-variate continuous state and
-action variables.
-
-We define a Symbolic Dynamic Programming (SDP) approach using the
-\emph{case} calculus which provides a closed-form solution for all DP
-operations (e.g. continuous maximization and integration). Solutions
-are provided for discrete action Hybrid(i.e. discrete and continuous)
-state MDPs (HMDPs) using polynomial transitions with discrete noise
-and arbitrary reward functions. Solutions to continuous action HMDPs
-with piecewise linear (or quadratic) discrete noise transition and
-reward functions are also derived.
-
-Apart from the solution to general HMDPs, our other contribution is
-the compact representation of XADDs - a continuous variable extension
-of Algebraic decision diagrams (ADDs) - with related properties and
-algorithms. This allows us to empirically provide efficient results
-for HMDPs showing the \emph{first optimal automated solution} on
-various continuous domains.
+Many real-world decision-theoretic planning problems are naturally
+modeled using hybrid (continuous and discrete) state and action
+spaces, yet little work has provided exact solutions for these
+problems in the general multivariate case.  In this work, we propose a
+novel symbolic dynamic programming (SDP) solution to obtain the exact
+closed-form value function and policy for two general classes of MDPs:
+(1) discrete action MDPs with multivariate hybrid state, discrete
+noise, arbitrary dynamics, and arbitrary reward functions and (2)
+multivariate hybrid state \emph{and} action MDPs with discrete noise,
+piecewise linear dynamics, and piecewise linear (or restricted
+piecewise quadratic) reward.  To address the inherent combinatorial
+aspects of SDP, we introduce the XADD -- a continuous variable
+extension of the algebraic decision diagram (ADD) -- that maintains
+compact representations of the exact value function and supports
+efficient implementation of SDP operations.  We provide illustrative
+empirical results for a variety of HMDPs demonstrating the
+\emph{first} automated closed-form, exact solutions to a variety of
+problems ranging from simple navigation tasks to reservoir control and
+multi-item inventory control.
 \end{abstract}
+
+%Many real-world decision-theoretic planning problems can be naturally 
+%modeled using continuous states and actions.  For example, in the well-studied 
+%\textsc{Multi-item Inventory Control} problem~\cite{Scarf_Karlin58} with 
+%continuous resources
+
+%, the state may be represented as a vector of continuous
+%variables representing the amount of each resource in stock and the action
+%can be represented as a continuous vector representing the amount of each
+%item to restock.
+
+%Problems such as the
+%multi-item Inventory problem  have long been
+%solved in the operation research literature using discrete variable
+%MDPs or approximating the optimal value for continuous domains. Other
+%work similar to that of Gaussian control deals with general continuous
+%domains but can not handle piecewise values on the state space. Here
+%we propose a framework to find the first exact optimal piecewise
+%solution for problems modeled using multi-variate continuous state and
+%action variables.
+
+%We define a Symbolic Dynamic Programming (SDP) approach using the
+%\emph{case} calculus which provides a closed-form solution for all DP
+%operations (e.g. continuous maximization and integration). Solutions
+%are provided for discrete action Hybrid(i.e. discrete and continuous)
+%state MDPs (HMDPs) using polynomial transitions with discrete noise
+%and arbitrary reward functions. Solutions to continuous action HMDPs
+%with piecewise linear (or quadratic) discrete noise transition and
+%reward functions are also derived.
+
+%Apart from the solution to general HMDPs, our other contribution is
+%the compact representation of XADDs - a continuous variable extension
+%of Algebraic decision diagrams (ADDs) - with related properties and
+%algorithms. This allows us to empirically provide efficient results
+%for HMDPs showing the \emph{first optimal automated solution} on
+%various continuous domains.
 
 \section{Introduction}
 \label{Introduction}
-Many stochastic planning problems in the real-world involving resources, time, or spatial configurations naturally use continuous variables in their state representation.  For example, in the \MarsRover\  problem \cite{bresina02}, a rover must manage bounded continuous resources of battery power and daylight time as it plans scientific discovery tasks for a set of landmarks on a given day or it may moving continuously while navigating. 
 
-Other examples include \InventoryControl\ problems \cite{Scarf_Karlin58} for continuous resources such as petroleum products where a business must decide what quantity of each item to order subject to uncertain demand, (joint) capacity constraints, and reordering costs; and  \WaterReservoir\ problems \cite{reservoir}, where a utility must manage continuous reservoir water levels in continuous time to avoid underflow while maximizing electricity generation revenue.
+Many real-world stochastic planning problems involving resources,
+time, or spatial configurations naturally use continuous variables in
+their state and action representations.  For example, in a
+\MarsRover\ problem~\cite{bresina02}, a rover must navigate within a
+continuous spatial environment and carry out assigned scientific
+discovery tasks; in \InventoryControl\ problems~\cite{Scarf_Karlin58}
+for continuous resources such as petroleum products, a business must
+decide what quantity of each item to order subject to uncertain
+demand, (joint) capacity constraints, and reordering costs; and in
+\WaterReservoir\ problems~\cite{reservoir}, a utility must manage
+continuous reservoir water levels in continuous time to avoid
+underflow while maximizing electricity generation revenue.
 
-%While all these problems are naturally modeled using discrete action hybrid (discrete and continuous) state Markov Decision Processes (DA-HMDPs) or continuous action hybrid MDPs (CA-HMDPs), there has been no prior work handling piecewise transitions. 
-%more here?
-Little progress has been made in the recent years in developing \emph{exact} solutions for HMDPs with multiple continuous state variables beyond the subset of HMDPs  which have an optimal \emph{hyper-rectangular piecewise linear value function} \cite{feng04,li05}. \emph{Exact} solutions to multivariate continuous state \emph{and} action settings have been limited to the control theory literature for the case of linear-quadratic Gaussian (LQG) control \cite{lqgc}. 
-%i.e., minimizing a quadratic cost function subject to linear dynamics with Gaussian noise in a partially observed setting.  
-However, the transition dynamics and reward (or cost) for such problems cannot be piecewise --- a crucial limitation preventing the application of such solutions to many planning and operation research (OR) problems. 
-Consider the famous OR problem of \InventoryControl in \cite{Scarf_Karlin58}: 
-\begin{example*} [\InventoryControl]
-Inventory control problems -- how much of an
-item to reorder subject to capacity constraints, demand, and optimization criteria-- date back to the 1950's with Scarf's optimal solution to the \emph{single-item capacitated inventory control} (SCIC) problem.
-\emph{Multi-item joint capacitated inventory (MJCIC) control} -- with upper limits
-on the total storage of all items-- has proved to be an NP-hard problem and
-as a consequence, most solutions resort to some form of
-approximation \cite{bitran,wusd10}; indeed, we are unaware of any 
-work which claims to find an exact closed-form non-myopic
-optimal policy for \emph{all} (continuous) inventory states for MJCIC 
-under linear reordering costs and linear holding costs.
-\end{example*}
+%Previous work on \emph{exact} solutions to multivariate continuous
+%state \emph{and} action settings has been quite limited.  There are
+%well-known exact solutions in the control theory literature for the
+%case of linear-quadratic Gaussian (LQG) control~\cite{lqgc}, i.e.,
+%minimizing a quadratic cost function subject to linear dynamics with
+%Gaussian noise in a partially observed setting.  
+%% Other work by Littman et al, Dearden, etc., rest is approximation.
+
+%However, the transition dynamics and reward (or cost) for such
+%problems cannot be piecewise --- a crucial limitation preventing the
+%application of such solutions to many planning and operations research
+%problems having piecewise rewards or transition dynamics.  For
+%example, in \MarsRover, a positive reward is often only available when strictly
+%defined target areas are reached, in \InventoryControl, a demand that
+%exceeds inventory results in unfulfilled demand, and
+%in \WaterReservoir, a reservoir that exceeds its capacity must shed
+%excess water in its outflow.  All of these scenarios require either
+%piecewise transition dynamics or reward structure.
+%all are beyond the
+
+%In this paper, we provide an exact \emph{symbolic dynamic programming} (SDP)
+%solution to a useful subset of continuous state and action Markov
+%decision processes (CSA-MDPs) with \emph{multivariate} continuous
+%state and actions, discrete noise, \emph{piecewise} linear dynamics,
+%and \emph{piecewise} linear (or restricted \emph{piecewise} quadratic)
+%reward.  To be concrete about the form of CSA-MDPs we can solve with
+%our SDP approach, let us formalize a simple \MarsRover\
+%problem:\footnote{For purposes of concise exposition and explanation
+%of the optimal value function and policy, this CSA-MDP example uses
+%continuous univariate state and action and deterministic transitions;
+%the empirical results will later discuss a range of CSA-MDPs with
+%multivariate continuous state and action and stochastic transitions.}
+
+Previous \emph{exact} solutions to multivariate continuous
+state \emph{and} action HMDPs have been quite limited.  There are
+well-known exact solutions in the control theory literature for the
+case of linear-quadratic Gaussian (LQG) control~\cite{lqgc}, i.e.,
+minimizing a quadratic cost function subject to linear dynamics with
+Gaussian noise in a partially observed setting.  However, the
+transition dynamics and reward (or cost) for such problems cannot be
+piecewise.  For HMDPs that allow piecewise transition dynamics, little
+progress has been made in recent years in developing \emph{exact}
+solutions for general classes of HMDPs beyond the subset of discrete
+action HMDPs which have an optimal \emph{hyper-rectangular piecewise
+  linear value function} \cite{feng04} --- a condition that precludes
+HMDPs with general linear dynamics (i.e., for any action, the next
+state is a linear combination of \emph{multiple} continuous variables
+in the previous state).
+
+In this work, however, we propose significant advances to the
+state-of-the-art by proposing novel symbolic dynamic programming (SDP)
+techniques to vastly extend the class of HMDPs for which exact
+solutions can be derived -- general piecewise linear dynamics and rewards in
+the continuous action case and arbitrary dynamics and rewards in the
+discrete action case.  As an important motivating example of the
+breakthroughs which this novel SDP approach permits, we note that some
+staple problems of the operations research literature such as
+inventory control can now be solved exactly with SDP thus yielding an
+optimal finite horizon policy for all (continuous) states --- we remark
+that this is the \emph{first} time such as exact solution has been possible
+for such problems after more than 50 years of research in this
+area~\cite{Scarf_Karlin58}.
+
+Since our results on inventory control represent a major advance
+in this work, let us pause to focus on this problem 
+as a motivating example.
+%\begin{example*} [\InventoryControl]
+In general Inventory control problems -- how much of an item to
+reorder subject to capacity constraints, demand, and optimization
+criteria-- date back to the 1950's with Scarf's optimal solution to
+the \emph{single-item capacitated inventory control} (SCIC) problem.
+\emph{Multi-item joint capacitated inventory control (MJCIC)} -- with
+upper limits on the total storage of all items-- has proved to be an
+NP-hard problem and as a consequence, most solutions resort to some
+form of approximation \cite{bitran,wusd10}; indeed, we are unaware of
+any work which claims to find an exact closed-form non-myopic optimal
+policy for \emph{all} (continuous) inventory states for MJCIC under
+linear reordering costs and linear holding costs.
+%\end{example*}
 
 To further clarify we provide two example of hybrid state \InventoryControl with discrete or continuous actions.
 \vspace{2mm}
