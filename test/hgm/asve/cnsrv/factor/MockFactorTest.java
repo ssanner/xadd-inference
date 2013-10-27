@@ -1,12 +1,13 @@
-package hgm.asve.factor;
+package hgm.asve.cnsrv.factor;
+
 
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Created by Hadi Afshar.
- * Date: 21/09/13
- * Time: 5:54 PM
+ * Date: 15/10/13
+ * Time: 7:57 AM
  */
 public class MockFactorTest {
     @Test

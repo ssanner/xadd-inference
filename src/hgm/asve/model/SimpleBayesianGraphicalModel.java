@@ -2,7 +2,7 @@ package hgm.asve.model;
 
 import hgm.Variable;
 import hgm.asve.FactorParentsTuple;
-import hgm.asve.factor.IFactor;
+import hgm.asve.factor.OLD_IFactor;
 
 import java.util.*;
 
@@ -11,7 +11,8 @@ import java.util.*;
  * Date: 19/09/13
  * Time: 2:38 PM
  */
-public class SimpleBayesianGraphicalModel<F extends IFactor> implements BayesianGraphicalModel<F> {
+@Deprecated
+public class SimpleBayesianGraphicalModel<F extends OLD_IFactor> implements BayesianGraphicalModel<F> {
     private Map<F, Set<F>> _childParentsMap;
     private List<F> _allFactorsSorted;
 
@@ -102,7 +103,7 @@ public class SimpleBayesianGraphicalModel<F extends IFactor> implements Bayesian
     }
 
     @Override
-    public F getFactor(Variable variable) {
+    public F getAssociatedFactor(Variable variable) {
         for (F f : _allFactorsSorted) {
              if (f.getAssociatedVar()==variable) return f;
         }
@@ -110,20 +111,20 @@ public class SimpleBayesianGraphicalModel<F extends IFactor> implements Bayesian
     }
 
     @Override
-    public List<F> getFactors(List<Variable> vars) {
+    public List<F> getAssociatedFactors(List<Variable> vars) {
         List<F> factors = new ArrayList<F>(vars.size());
         for (int i = 0; i < vars.size(); i++) {
-            factors.add(getFactor(vars.get(i)));
+            factors.add(getAssociatedFactor(vars.get(i)));
         }
         return factors;
     }
 
-    @Override
+    /*@Override
     public BayesianGraphicalModel<F> clone() {
         //only shallowly...
         return new SimpleBayesianGraphicalModel<F>(
                 new HashMap<F, Set<F>>(_childParentsMap),
                 new ArrayList<F>(_allFactorsSorted)
         );
-    }
+    }*/
 }

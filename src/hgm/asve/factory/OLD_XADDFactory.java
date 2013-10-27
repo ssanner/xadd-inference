@@ -2,7 +2,9 @@ package hgm.asve.factory;
 
 import hgm.InstantiatedVariable;
 import hgm.Variable;
-import hgm.asve.factor.XADDFactor;
+import hgm.asve.cnsrv.approxator.EfficientPathIntegralCalculator;
+import hgm.asve.cnsrv.approxator.MassThresholdXaddApproximator;
+import hgm.asve.factor.OLD_XADDFactor;
 import xadd.ExprLib;
 import xadd.XADD;
 import xadd.XADDUtils;
@@ -16,12 +18,17 @@ import java.util.*;
  * <p/>
  * A A Singleton Wrapper on xadd.XADD class.
  */
-public class XADDFactory implements FactorFactory<XADDFactor>{
+@Deprecated
+public class OLD_XADDFactory implements OLD_FactorFactory<OLD_XADDFactor> {
 
     private XADD _context;
+    private double _massThreshold;
+    private double _volumeThreshold;
 
-    public XADDFactory() {
+    public OLD_XADDFactory(double approximationMassThreshold, double approximationVolumeThreshold) {
         _context = new XADD();
+        _massThreshold = approximationMassThreshold;
+        _volumeThreshold = approximationVolumeThreshold;
     }
 
     public void putContinuousVariable(Variable var, double minValue, double maxValue) {
@@ -40,40 +47,48 @@ public class XADDFactory implements FactorFactory<XADDFactor>{
 
     }
 
-    public XADDFactor substitute(XADDFactor factor, HashMap<String, ExprLib.ArithExpr> valueAssignment) {
+    public OLD_XADDFactor substitute(OLD_XADDFactor factor, HashMap<String, ExprLib.ArithExpr> valueAssignment) {
         if (valueAssignment.isEmpty()) return factor;
 
         int newNodeId = _context.substitute(factor.getNodeId(), valueAssignment);
-        return new XADDFactor(this, "[[" + factor + "|" + valueAssignment + "]]", newNodeId);
+        return new OLD_XADDFactor(this, factor.getAssociatedVar(), "[[" + factor + "|" + valueAssignment + "]]", newNodeId);
     }
 
-    public XADDFactor putNewFactorWithContinuousVars(/*String varName, double minValue, double maxValue, */String function) {
+    public OLD_XADDFactor putNewFactorWithContinuousAssociatedVar(Variable associatedVar, /*String varName, double minValue, double maxValue, */String function) {
+        //make sure the associated variable is registered:
+//todo: do something with this:
+//        if ((_context._hmMinVal.get(associatedVar)==null) || (_context._hmMaxVal.get(associatedVar) == null)) {
+//            throw new RuntimeException("unregistered variable");
+//        }
+
         ArrayList l = new ArrayList(1);
         l.add("[" + function + "]");
         int cptId = _context.buildCanonicalXADD(l);
-        return new XADDFactor(this,/*varName, */function, cptId);
+        return new OLD_XADDFactor(this,associatedVar, function, cptId);
     }
 
     @Override
-    public XADDFactor multiply(Collection<XADDFactor> factors) {
+    public OLD_XADDFactor multiply(Collection<OLD_XADDFactor> factors) {
         int productNodeId = _context.ONE;
-        for (XADDFactor f : factors)
+        for (OLD_XADDFactor f : factors)
             productNodeId = _context.applyInt(productNodeId, f.getNodeId(), XADD.PROD);
-        return new XADDFactor(this, "[[PROD{" + factors.toString() + "}]]", productNodeId);
+        return new OLD_XADDFactor(this, null, "[[PROD{" + factors.toString() + "}]]", productNodeId);
     }
 
     @Override
-    public XADDFactor marginalize(XADDFactor factor, Variable variable) {
+    public OLD_XADDFactor marginalize(OLD_XADDFactor factor, Variable variable) {
         int integralNodeId = _context.computeDefiniteIntegral(factor.getNodeId(), variable.getName());
-        return new XADDFactor(this, "[[Integral{" + factor + "}d"+ variable + "]]", integralNodeId);
+        return new OLD_XADDFactor(this, null, "[[Marginalize{" + factor + "}d"+ variable + "]]", integralNodeId);
     }
 
     @Override
-    public XADDFactor approximate(XADDFactor factor) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public OLD_XADDFactor approximate(OLD_XADDFactor factor) {
+        MassThresholdXaddApproximator approximator = new MassThresholdXaddApproximator(_context, factor.getNodeId(), new EfficientPathIntegralCalculator(_context));
+        int approximatedNodeId = approximator.approximateXADD(_massThreshold, _volumeThreshold);//_context.approximateXADD(factor.getNodeId(), _massThreshold, _volumeThreshold);
+        return new OLD_XADDFactor(this, null, "[[Approx{" + factor + "}]]",approximatedNodeId);
     }
 
-    public Set<Variable> collectScopeVars(XADDFactor factor) {
+    public Set<Variable> collectScopeVars(OLD_XADDFactor factor) {
         //TODO if context works with variables then this wrapping process is not needed
         Set<String> varNames = _context.collectVars(factor.getNodeId());
         Set<Variable> vars = new HashSet<Variable>(varNames.size());
@@ -83,14 +98,14 @@ public class XADDFactory implements FactorFactory<XADDFactor>{
         return vars;
     }
 
-    public String getNodeString(XADDFactor factor) {
+    public String getNodeString(OLD_XADDFactor factor) {
         //return factory.context.getString(nodeId);
         XADD.XADDNode root = _context.getExistNode(factor.getNodeId());
         return root.toString(true);
     }
 
-    public Double evaluate(XADDFactor factor, Iterable<InstantiatedVariable> variableValues) {
-        //todo: now only continuous variables supported
+    public Double evaluate(OLD_XADDFactor factor, Iterable<InstantiatedVariable> variableValues) {
+        //todo: now only continuous variables are supported
         HashMap<String, Double> continuousMap = new HashMap<String, Double>();
         for (InstantiatedVariable v : variableValues) {
             continuousMap.put(v.getVariable().getName(), Double.valueOf(v.getValue()));
@@ -99,20 +114,14 @@ public class XADDFactory implements FactorFactory<XADDFactor>{
         return _context.evaluate(factor.getNodeId(), new HashMap<String, Boolean>(), continuousMap);
     }
 
-    public XADDFactor scalarMultiply(XADDFactor f, double c) {
-        return new XADDFactor(this, "[" + c + " TIMES " + f.toString() + "]", _context.scalarOp(f.getNodeId(), c, XADD.PROD));
+    public OLD_XADDFactor scalarMultiply(OLD_XADDFactor f, double c) {
+        return new OLD_XADDFactor(this, null, "[" + c + " TIMES " + f.toString() + "]", _context.scalarOp(f.getNodeId(), c, XADD.PROD));
     }
 
-    //This function should not be used "ideally" since XADDFactory is meant to wrap all features of context
-//    @Deprecated
-//    public XADD getContext() {
-//        return context;
-//    }
-
-    //TODO visualization should IDEALLY be transmitted to another class....
-    public void visualize1DFactor(XADDFactor factor, String title) {
+    //TODO visualization should IDEALLY be carried to another class....
+    public void visualize1DFactor(OLD_XADDFactor factor, String title) {
         if (factor.getScopeVars().size() != 1) throw new RuntimeException("only one variable expected!");
-        if (factor.getFactory() != this) throw new RuntimeException("I just draw my own factors");
+        if (factor.getFactory() != this) throw new RuntimeException("I can just draw my own factors");
 
         Variable var = factor.getScopeVars().iterator().next();
 

@@ -1,9 +1,8 @@
 package hgm.asve.model;
 
-import hgm.Variable;
 import hgm.asve.FactorParentsTuple;
-import hgm.asve.factor.IFactor;
-import hgm.asve.factor.MockFactor;
+import hgm.asve.factor.OLD_IFactor;
+import hgm.asve.factor.OLD_MockFactor;
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -13,27 +12,21 @@ import org.junit.Test;
  * Time: 3:43 PM
  */
 public class SimpleBayesianGraphicalModelTest {
-//    Variable a = new Variable("A");
-//    Variable b = new Variable("B");
-//    Variable c = new Variable("C");
-//    Variable d = new Variable("D");
-//    Variable e = new Variable("E");
-//    Variable f = new Variable("F");
 
-    IFactor fA = new MockFactor("A");
-    IFactor fB = new MockFactor("B");
-    IFactor fC = new MockFactor("C");
-    IFactor fD = new MockFactor("D");
-    IFactor fE = new MockFactor("E");
-    IFactor fF = new MockFactor("F");
+    OLD_IFactor fA = new OLD_MockFactor("A");
+    OLD_IFactor fB = new OLD_MockFactor("B");
+    OLD_IFactor fC = new OLD_MockFactor("C");
+    OLD_IFactor fD = new OLD_MockFactor("D");
+    OLD_IFactor fE = new OLD_MockFactor("E");
+    OLD_IFactor fF = new OLD_MockFactor("F");
 
     SimpleBayesianGraphicalModel model = new SimpleBayesianGraphicalModel(
-            new FactorParentsTuple(fA, new IFactor[]{}),
-            new FactorParentsTuple(fB, new IFactor[]{}),
-            new FactorParentsTuple(fC, new IFactor[]{}),
-            new FactorParentsTuple(fD, new IFactor[]{fB, fC}),
-            new FactorParentsTuple(fE, new IFactor[]{fA, fD}),
-            new FactorParentsTuple(fF, new IFactor[]{fE}));
+            new FactorParentsTuple(fA, new OLD_IFactor[]{}),
+            new FactorParentsTuple(fB, new OLD_IFactor[]{}),
+            new FactorParentsTuple(fC, new OLD_IFactor[]{}),
+            new FactorParentsTuple(fD, new OLD_IFactor[]{fB, fC}),
+            new FactorParentsTuple(fE, new OLD_IFactor[]{fA, fD}),
+            new FactorParentsTuple(fF, new OLD_IFactor[]{fE}));
 
     @Test
     public void testCalcMaxDistanceFromLeaf() {

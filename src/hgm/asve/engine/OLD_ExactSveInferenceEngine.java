@@ -1,8 +1,8 @@
 package hgm.asve.engine;
 
 import hgm.*;
-import hgm.asve.factor.IFactor;
-import hgm.asve.factory.FactorFactory;
+import hgm.asve.factor.OLD_IFactor;
+import hgm.asve.factory.OLD_FactorFactory;
 
 import java.util.*;
 
@@ -11,13 +11,13 @@ import java.util.*;
  * Date: 11/09/13
  * Time: 5:04 PM
  */
-public class ExactSveInferenceEngine <T extends IFactor> implements FactorSetBasedInferenceEngine<T> {
-    //    private XADDFactory factory = null;
+@Deprecated
+public class OLD_ExactSveInferenceEngine<T extends OLD_IFactor> implements OLD_FactorSetBasedInferenceEngine<T> {
     private List<T> _factors = null;
-    private FactorFactory<T> _factory;
+    private OLD_FactorFactory<T> _factory;
     private Set<Variable> _scopeVariables = new HashSet<Variable>();
 
-    public ExactSveInferenceEngine(FactorFactory<T> factory, Collection<T> factorsToInferOn) {
+    public OLD_ExactSveInferenceEngine(OLD_FactorFactory<T> factory, Collection<T> factorsToInferOn) {
         _factory = factory;
 
         takeFactors(factorsToInferOn);
@@ -29,7 +29,7 @@ public class ExactSveInferenceEngine <T extends IFactor> implements FactorSetBas
         _factors = new ArrayList(factors);
 
         _scopeVariables.clear();
-        for (IFactor f : factors) {
+        for (OLD_IFactor f : factors) {
             _scopeVariables.addAll(f.getScopeVars());
         }
 

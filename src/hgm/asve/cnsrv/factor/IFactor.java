@@ -1,4 +1,4 @@
-package hgm.asve.factor;
+package hgm.asve.cnsrv.factor;
 
 import hgm.Variable;
 
@@ -15,12 +15,9 @@ import java.util.Set;
  */
 public interface IFactor {
     /**
-     * @return The variable associated with the factor. Null if none.
-     */
-    public Variable getAssociatedVar();
-
-    /**
      * @return All scope variables (INCLUDING the associated variable)
      */
-    public Set<Variable> getScopeVars();
+    public Set<String> getScopeVars();
+
+    public String getHelpingText();
 }

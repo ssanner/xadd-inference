@@ -2,9 +2,9 @@ package hgm.asve.engine;
 
 import hgm.IQuery;
 import hgm.Variable;
-import hgm.asve.factory.FactorFactory;
+import hgm.asve.factor.OLD_IFactor;
+import hgm.asve.factory.OLD_FactorFactory;
 import hgm.asve.model.BayesianGraphicalModel;
-import hgm.asve.factor.IFactor;
 
 import java.util.*;
 
@@ -13,11 +13,12 @@ import java.util.*;
  * Date: 19/09/13
  * Time: 4:02 PM
  */
-public class ApproxSveInferenceEngine<F extends IFactor> implements InferenceEngine<F> {
+@Deprecated
+public class OLD_ApproxSveInferenceEngine<F extends OLD_IFactor> implements InferenceEngine<F> {
     private int _numberOfFactorsLeadingToJointFactorApproximation;
 
     private BayesianGraphicalModel<F> _model;
-    private FactorFactory<F> _factory;
+    private OLD_FactorFactory<F> _factory;
 
     class FactorSet extends HashSet<F> {
         public FactorSet() {
@@ -37,7 +38,7 @@ public class ApproxSveInferenceEngine<F extends IFactor> implements InferenceEng
         }
     }
 
-    public ApproxSveInferenceEngine(BayesianGraphicalModel model, FactorFactory<F> factory, int numberOfFactorsLeadingToJointFactorApproximation) {
+    public OLD_ApproxSveInferenceEngine(BayesianGraphicalModel model, OLD_FactorFactory<F> factory, int numberOfFactorsLeadingToJointFactorApproximation) {
         _model = model;
         _factory = factory;
         _numberOfFactorsLeadingToJointFactorApproximation = numberOfFactorsLeadingToJointFactorApproximation;
@@ -47,7 +48,7 @@ public class ApproxSveInferenceEngine<F extends IFactor> implements InferenceEng
     public F infer(IQuery query) {
         //topologically score the graph:
         Map<F, Integer> factorScoreMap = new HashMap<F, Integer>();
-        List<F> qFactors = _model.getFactors(query.getQueries());
+        List<F> qFactors = _model.getAssociatedFactors(query.getQueries());
         List<Variable> nonRemovableVariables = new ArrayList<Variable>();
         nonRemovableVariables.addAll(query.getQueries());
         nonRemovableVariables.addAll(query.getNonInstantiatedEvidenceVariables());
@@ -79,7 +80,7 @@ public class ApproxSveInferenceEngine<F extends IFactor> implements InferenceEng
                 // E.g. if parents(X)={A,B} (i.e. f(X,A,B) where f is the factor associated with variable X) then:
                 // adding f(X,A,B) to { {f1(A,C,D),f2(C,E)}, {f3(G,H),f4(I)} }and performing step 2 ends in:
                 // { {f3(G,H),f4(I)}, {f(X,A,B),f1(A,C,D),f2(C,E)} }
-                Set<Variable> chosenFactorVars = chosenF.getScopeVars();//_model.get.getParents(chosenF);
+                Set<Variable> chosenFactorVars = chosenF.getScopeVars();//model.get.getParents(chosenF);
                 for (Iterator<FactorSet> jointSetIterator = collectionOfJointFactorSets.iterator();
                      jointSetIterator.hasNext(); ) {
                     FactorSet jointSet = jointSetIterator.next();

@@ -5,6 +5,7 @@ package hgm;
  * Date: 11/09/13
  * Time: 8:49 PM
  */
+@Deprecated
 public class InstantiatedVariable {
     private Variable _variable;
     private String _value;
