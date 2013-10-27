@@ -1,6 +1,6 @@
 package hgm.asve.engine;
 
-import hgm.asve.factor.IFactor;
+import hgm.asve.factor.OLD_IFactor;
 
 import java.util.Collection;
 
@@ -14,7 +14,8 @@ import java.util.Collection;
  * an inference engine that exclusively needs a collection of factors
  * @param <E> factor
  */
-public interface FactorSetBasedInferenceEngine<E extends IFactor> extends  InferenceEngine<E> {
+@Deprecated
+public interface OLD_FactorSetBasedInferenceEngine<E extends OLD_IFactor> extends  InferenceEngine<E> {
     /**
      * This method should be called before inference
      * @param factors A collection of factors is enough for inference and can be changed...

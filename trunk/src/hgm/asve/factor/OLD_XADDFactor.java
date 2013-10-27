@@ -3,7 +3,7 @@ package hgm.asve.factor;
 import hgm.Configurations;
 import hgm.InstantiatedVariable;
 import hgm.Variable;
-import hgm.asve.factory.XADDFactory;
+import hgm.asve.factory.OLD_XADDFactory;
 import xadd.ExprLib;
 
 import java.util.ArrayList;
@@ -15,23 +15,29 @@ import java.util.Set;
 * Date: 13/09/13
 * Time: 8:55 PM
 */
-public class XADDFactor implements IFactor{
-    private XADDFactory _factory;
+@Deprecated
+public class OLD_XADDFactor implements OLD_IFactor {
+    private OLD_XADDFactory _factory;
     private Set<Variable> _scopeVars;
     private String _factorString;
     private int _nodeId; //hook of the xadd node in the factory
+    private Variable _associatedVar;
 
-    public XADDFactor(XADDFactory factory, String factorString, int nodeId) {
+    public OLD_XADDFactor(OLD_XADDFactory factory, Variable associatedVar, String factorString, int nodeId) {
         this._factory = factory;
         this._factorString = factorString;
         this._nodeId = nodeId;
+        this._associatedVar = associatedVar;
 
         _scopeVars = factory.collectScopeVars(this);
+
+        //test:
+        if (associatedVar != null && !_scopeVars.contains(associatedVar)) throw new RuntimeException("associated factor not in scope!");
     }
 
     @Override
     public Variable getAssociatedVar() {
-        return null;  //todo
+        return _associatedVar;
     }
 
     public int getNodeId() {
@@ -43,7 +49,7 @@ public class XADDFactor implements IFactor{
         return _scopeVars;
     }
 
-    public XADDFactory getFactory() {
+    public OLD_XADDFactory getFactory() {
         return _factory;
     }
 
@@ -56,7 +62,7 @@ public class XADDFactor implements IFactor{
         return _factory.getNodeString(this);
     }
 
-    public XADDFactor instantiate(Set<InstantiatedVariable> valueAssignment) {
+    public OLD_XADDFactor instantiate(Set<InstantiatedVariable> valueAssignment) {
         HashMap<String, ExprLib.ArithExpr> relevantValueAssignment = new HashMap<String, ExprLib.ArithExpr>();
         for (InstantiatedVariable instantiatedVariable : valueAssignment) {
             if (_scopeVars.contains(instantiatedVariable.getVariable())) {
@@ -68,8 +74,8 @@ public class XADDFactor implements IFactor{
         return _factory.substitute(this, relevantValueAssignment);
     }
 
-    public XADDFactor normalize() {
-        XADDFactor normalizationFactor = this;
+    public OLD_XADDFactor normalize() {
+        OLD_XADDFactor normalizationFactor = this;
         for (Variable var : getScopeVars()) {
             normalizationFactor = _factory.marginalize(normalizationFactor, var);
         }

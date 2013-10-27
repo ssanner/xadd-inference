@@ -9,6 +9,7 @@ package hgm;
 /*
  A wrapper for variable name and properties...
  */
+@Deprecated
 public class Variable {
     private String _name;
 

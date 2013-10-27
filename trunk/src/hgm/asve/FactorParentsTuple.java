@@ -1,7 +1,6 @@
 package hgm.asve;
 
-import hgm.Variable;
-import hgm.asve.factor.IFactor;
+import hgm.asve.factor.OLD_IFactor;
 
 /**
  * Created by Hadi Afshar.
@@ -12,7 +11,8 @@ import hgm.asve.factor.IFactor;
 /**
  * An intermediate simple wrapper
  */
-public class FactorParentsTuple<F extends IFactor> {
+@Deprecated
+public class FactorParentsTuple<F extends OLD_IFactor> {
     private F[] _parents;
     private F _factor;
 

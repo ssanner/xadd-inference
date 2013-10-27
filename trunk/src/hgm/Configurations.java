@@ -7,4 +7,6 @@ package hgm;
  */
 public class Configurations {
     public static final boolean DEBUG = true;
+
+    public static final boolean DEBUG_XADD_PATH_MASS = true;
 }
