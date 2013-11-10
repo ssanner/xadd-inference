@@ -10,21 +10,39 @@ import java.util.*;
  * Date: 16/10/13
  * Time: 6:01 AM
  */
-public class SiblingXaddApproximator {
+public class SiblingXaddApproximator implements Approximator{
     private XADD context;
-//    private XADD.XADDNode rootXadd;
     private PathIntegralOnLeafFunctionCalculator pathValueCalculator;
 
-    public SiblingXaddApproximator(XADD context/*, XADD.XADDNode rootXadd*/, PathIntegralOnLeafFunctionCalculator pathValueCalculator) {
-        this.context = context;
-//        this.rootXadd = rootXadd;
+    int maxDesiredNumberOfNodes;
+    double siblingDiffThreshold;
+
+    public SiblingXaddApproximator(PathIntegralOnLeafFunctionCalculator pathValueCalculator,
+                                   int maxDesiredNumberOfNodes, double siblingDiffThreshold) {
         this.pathValueCalculator = pathValueCalculator;
+
+        this.maxDesiredNumberOfNodes = maxDesiredNumberOfNodes;
+        this.siblingDiffThreshold = siblingDiffThreshold;
     }
-    public XADD.XADDNode approximateXADD(XADD.XADDNode rootXadd, int maxDesiredNumberOfNodes, double siblingDiffThreshold) {
+
+    public SiblingXaddApproximator(XADD context, PathIntegralOnLeafFunctionCalculator pathValueCalculator,
+                                   int maxDesiredNumberOfNodes, double siblingDiffThreshold) {
+
+        this (pathValueCalculator, maxDesiredNumberOfNodes, siblingDiffThreshold);
+        setupWithContext(context);
+    }
+
+    @Override
+    public void setupWithContext(XADD context) {
+        this.context = context;
+    }
+
+    @Override
+    public XADD.XADDNode approximateXadd(XADD.XADDNode rootXadd/*, int maxDesiredNumberOfNodes, double siblingDiffThreshold*/) {
         XADD.XADDNode node = rootXadd;
 
-        int i=0;
-        for(;;) {
+        int i = 0;
+        for (; ; ) {
             if (context.getNodeCount(context._hmNode2Int.get(node)) <= maxDesiredNumberOfNodes) break;
             XADD.XADDNode approxNode = approximationIteration(node, siblingDiffThreshold);
             if (approxNode == node) break;
@@ -40,12 +58,11 @@ public class SiblingXaddApproximator {
     }
 
     //Important note: approximation is based on the paths from root not on the nodes
-
     public XADD.XADDNode approximationIteration(XADD.XADDNode rootXadd, double siblingDiffThreshold) {
         //todo 1: since this map is used in each iteration, its results should be cached
         //todo 2: check that values are always positive. If not figure out why. If there is no solution figure out if abs() should be used.
         Map<List<XADD.XADDNode>, Double> pathValueMap =
-                pathValueCalculator.calculatePathValueMap(rootXadd, LeafFunction.squaredErrorWithSibling(context));
+                pathValueCalculator.calculatePathValueMap(rootXadd, context, LeafFunction.squaredErrorWithSibling(context));
 
         List<Map.Entry<List<XADD.XADDNode>, Double>> sortedPathValues =
                 new ArrayList<Map.Entry<List<XADD.XADDNode>, Double>>(pathValueMap.entrySet());
@@ -91,7 +108,7 @@ public class SiblingXaddApproximator {
     }
 
     protected XADD.XADDNode leafSubstituteWithSibling(List<XADD.XADDNode> pathFromRootToThisXADD, //inclusive
-                                                   Collection<List<XADD.XADDNode>> completePathsToLeavesToBeMergedWithTheirSiblings) {
+                                                      Collection<List<XADD.XADDNode>> completePathsToLeavesToBeMergedWithTheirSiblings) {
         XADD.XADDNode modifiedXADD;
 
         XADD.XADDNode thisXADD = pathFromRootToThisXADD.get(pathFromRootToThisXADD.size() - 1);

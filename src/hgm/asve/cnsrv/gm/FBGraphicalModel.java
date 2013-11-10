@@ -62,9 +62,8 @@ public class FBGraphicalModel {
     public void instantiateGMTemplate(HashMap<String, ArrayList<Integer>> var2expansion) {
 
         _context = new XADD();
-        //todo commented for a while .... XADD.ROUND_PRECISION = Integer.MAX_VALUE;
-        System.out.println("GM: XADD.ROUND_PRECISION = " + XADD.ROUND_PRECISION);
-        XADD.PRECISION = 0.0d; //maximum precision to prevent hashCode collision //todo since it is static, this is useless
+        if (XADD.PRECISION != 0.0d) throw new RuntimeException("0 persicion expected"); //maximum precision to prevent hashCode collision //todo since it is static, this is useless
+        if (XADD.ROUND_PRECISION != null) throw new RuntimeException("null round precision expected");
         _varFactorMap = new HashMap<String, Factor>();
 //        _hsVariables = new HashSet<String>();
 

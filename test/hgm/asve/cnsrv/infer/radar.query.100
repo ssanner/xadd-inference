@@ -1,0 +1,12 @@
+indices (
+  (i = 1 -- 3)
+)
+
+cevidence (
+)
+
+bevidence (
+  (b_1 = false)
+)
+
+query (x_3 o_2)

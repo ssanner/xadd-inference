@@ -48,8 +48,13 @@ public class MockFactorFactory implements FactorFactory<MockFactor> {
     }
 
     @Override
-    public MockFactor approximate(MockFactor factor, double param1, double param2) {
+    public MockFactor approximate(MockFactor factor/*, double param1, double param2*/) {
         return new MockFactor(APPROXIMATE + "(\"" + factor.getHelpingText() + "\")");
+    }
+
+    @Override
+    public MockFactor approximateMultiply(Collection<MockFactor> factors) {
+        return approximate(multiply(factors));
     }
 
     class MultOfVarsFactor extends MockFactor{

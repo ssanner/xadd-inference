@@ -40,15 +40,15 @@ public class PathIntegralOnLeafFunctionCalculatorTest {
 
         int rootId = context.buildCanonicalXADDFromString(xaddString);
 
-        PathIntegralOnLeafFunctionCalculator testCalc = new PathToXaddExpansionBasedIntegralCalculator(context);
+        PathIntegralOnLeafFunctionCalculator testCalc = new PathToXaddExpansionBasedIntegralCalculator();
         LeafFunction identityFunc = LeafFunction.identityFunction();
         LeafFunction oneFunc = LeafFunction.oneFunction(context);
-        Map<List<XADD.XADDNode>, Double> testPathMassMap = testCalc.calculatePathValueMap(context.getExistNode(rootId), identityFunc);
-        Map<List<XADD.XADDNode>, Double> testPathVolumeMap = testCalc.calculatePathValueMap(context.getExistNode(rootId), oneFunc);
+        Map<List<XADD.XADDNode>, Double> testPathMassMap = testCalc.calculatePathValueMap(context.getExistNode(rootId), context, identityFunc);
+        Map<List<XADD.XADDNode>, Double> testPathVolumeMap = testCalc.calculatePathValueMap(context.getExistNode(rootId), context, oneFunc);
 
-        PathIntegralOnLeafFunctionCalculator calc3 = new EfficientPathIntegralCalculator(context);
-        Map<List<XADD.XADDNode>, Double> pathMassMap3 = calc3.calculatePathValueMap(context.getExistNode(rootId), identityFunc);
-        Map<List<XADD.XADDNode>, Double> pathVolumeMap3 = calc3.calculatePathValueMap(context.getExistNode(rootId), oneFunc);
+        PathIntegralOnLeafFunctionCalculator calc3 = new EfficientPathIntegralCalculator();
+        Map<List<XADD.XADDNode>, Double> pathMassMap3 = calc3.calculatePathValueMap(context.getExistNode(rootId), context, identityFunc);
+        Map<List<XADD.XADDNode>, Double> pathVolumeMap3 = calc3.calculatePathValueMap(context.getExistNode(rootId), context, oneFunc);
 
         Assert.assertEquals(testPathVolumeMap, pathVolumeMap3);
         Assert.assertEquals(testPathMassMap, pathMassMap3);

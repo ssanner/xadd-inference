@@ -57,7 +57,7 @@ public class CurveFitting<F extends IFactor> {
         int m = weightsMatrix.getRowDimension();
         if (basisFunctions.size() != m) throw new RuntimeException("unexpected result");
 
-        printMatrix("weightsMatrix", weightsMatrix);
+//        printMatrix("weightsMatrix", weightsMatrix);
 
         return weightsMatrix.getColumn(0);
     }
@@ -74,7 +74,7 @@ public class CurveFitting<F extends IFactor> {
 
         RealMatrix identityMatrix = MatrixUtils.createRealIdentityMatrix(phiTphi.getColumnDimension());
         RealMatrix lambdaI = identityMatrix.scalarMultiply(regularizationCoefficient);
-        printMatrix("lambda I", lambdaI);
+//        printMatrix("lambda I", lambdaI);
 
 
         LUDecomposition luDecomposition = new LUDecomposition(lambdaI.add(phiTphi));
@@ -92,7 +92,7 @@ public class CurveFitting<F extends IFactor> {
 
     //todo move to a util class
     public static void printMatrix(String txt, RealMatrix m) {
-        System.out.println(txt + " = ");
+        System.out.println("MATRIX " + txt + " = ");
         for (int i=0; i<m.getRowDimension(); i++) {
             double[] row = m.getRow(i);
             System.out.print("|");

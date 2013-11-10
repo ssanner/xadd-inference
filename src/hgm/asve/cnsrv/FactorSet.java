@@ -11,6 +11,7 @@ import java.util.Set;
  * Date: 7/10/13
  * Time: 3:12 AM
  */
+@Deprecated
 public class FactorSet extends HashSet<Factor> {
     public FactorSet() {
         super();

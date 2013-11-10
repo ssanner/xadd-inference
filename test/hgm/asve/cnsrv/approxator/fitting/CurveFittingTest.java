@@ -21,8 +21,8 @@ import java.util.*;
 public class CurveFittingTest {
     public static void main(String[] args) throws Exception {
         CurveFittingTest instance = new CurveFittingTest();
-//        instance.testFittingWithMock();
-        instance.testFittingWithXaddFactors();
+        instance.testFittingWithMock();
+//        instance.testFittingWithXaddFactors();
     }
 
     @Test
@@ -46,9 +46,9 @@ public class CurveFittingTest {
 
     @Test
     public void testFittingWithMock() throws Exception {
-        double lowerBound = -100d;
-        double higherBound = 100d;
-        int basisFunctionsMaxPower = 2;
+        double lowerBound = -10d;
+        double higherBound = 10d;
+        int basisFunctionsMaxPower = 16;
         double regularizationCoefficient = 0.1;
 
         UniformRealDistribution distribution = new UniformRealDistribution(lowerBound, higherBound);
@@ -59,7 +59,7 @@ public class CurveFittingTest {
             public double func(double... effectiveVars) {
                 double x = effectiveVars[0];
                 double y = effectiveVars[1];
-                return x * x * x * x + (y + 3) * (y + 3);
+                return (x>-3 && x<3 && y>-3 && y<3) ? 1 : 0;//x * x * x * x + (y + 3) * (y + 3);
             }
         };
 
@@ -124,7 +124,7 @@ public class CurveFittingTest {
         UniformRealDistribution distribution = new UniformRealDistribution(lowerBound, higherBound);
         int numSamples = 1000;
         List<String> variables = Arrays.asList("x", "y");
-        final BaselineXaddFactorFactory factory = new BaselineXaddFactorFactory(new XADD());
+        final BaselineXaddFactorFactory factory = new BaselineXaddFactorFactory(new XADD(), null /*I think approximator is not needed here*/);
 
 
         Function target = new Function(variables) {

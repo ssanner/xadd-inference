@@ -83,8 +83,9 @@ public class OLD_XADDFactory implements OLD_FactorFactory<OLD_XADDFactor> {
 
     @Override
     public OLD_XADDFactor approximate(OLD_XADDFactor factor) {
-        MassThresholdXaddApproximator approximator = new MassThresholdXaddApproximator(_context, factor.getNodeId(), new EfficientPathIntegralCalculator(_context));
-        int approximatedNodeId = approximator.approximateXADD(_massThreshold, _volumeThreshold);//_context.approximateXADD(factor.getNodeId(), _massThreshold, _volumeThreshold);
+        MassThresholdXaddApproximator approximator = new MassThresholdXaddApproximator(_context, new EfficientPathIntegralCalculator(), _massThreshold, _volumeThreshold);
+        int approximatedNodeId =
+                _context._hmNode2Int.get(approximator.approximateXadd(_context._hmInt2Node.get(factor.getNodeId())));//_context.approximateXADD(factor.getNodeId(), _massThreshold, _volumeThreshold);
         return new OLD_XADDFactor(this, null, "[[Approx{" + factor + "}]]",approximatedNodeId);
     }
 

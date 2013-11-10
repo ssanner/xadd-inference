@@ -1,7 +1,9 @@
 package hgm.asve.cnsrv.infer;
 
+import hgm.asve.cnsrv.approxator.EfficientPathIntegralCalculator;
+import hgm.asve.cnsrv.approxator.MassThresholdXaddApproximator;
+import hgm.asve.cnsrv.approxator.SiblingXaddApproximator;
 import hgm.asve.cnsrv.factory.ModelBasedXaddFactorFactory;
-import hgm.asve.cnsrv.factory.ModelBasedXaddFactorFactoryWithSiblingApprox;
 import hgm.asve.cnsrv.gm.FBQuery;
 import hgm.asve.cnsrv.factor.Factor;
 import org.junit.Test;
@@ -22,30 +24,28 @@ public class ApproxSveInferenceEngineTest {
 //NOTE: "radar.query3" does not work (even with the old SVE)!
 
         //NOTE: MSE = -6.763313647249394!!!!    -6.770624969513447!
-        instance.testApproxVsExactSVE("./src/sve/radar.gm", "./src/sve/radar.query.4", 0.01, Double.POSITIVE_INFINITY, 1);
-
-        /////////////////////////////////////
-
+        instance.testMassThresholdApproxVsExactSVE("./src/sve/radar.gm", "./src/sve/radar.query.4", 0/*0.04*/, Double.POSITIVE_INFINITY, 1);
 //        instance.testSiblingApproximation("./src/sve/radar.gm", "./src/sve/radar.query.4", 5, 0.01, 1);
 
     }
 
     @Test
-    public void testApproxVsExactSVE(String gmFile, String qFile,
-                                     double massThreshold, double volumeThreshold, int numberOfFactorsLeadingToJoint) {
+    public void testMassThresholdApproxVsExactSVE(String gmFile, String qFile,
+                                                  double massThreshold, double volumeThreshold, int numberOfFactorsLeadingToJoint) {
         Boolean doApproxAndExactInference = true;
         Boolean doOldSVE = false;
 //        Boolean doExactInference = true;
 
         FBQuery q = new FBQuery(qFile);
-        ModelBasedXaddFactorFactory factory = new ModelBasedXaddFactorFactory(gmFile, q);
+        ModelBasedXaddFactorFactory factory = ModelBasedXaddFactorFactory.newInstance(gmFile, q,
+                new MassThresholdXaddApproximator(new EfficientPathIntegralCalculator(), massThreshold, volumeThreshold));
 
         Records approxRecords = null;
 
         Factor approxResultF = null;//inferHack(Arrays.asList("x_1", "x_2", "b_1", "o_1"));
         if (doApproxAndExactInference) {
-            ApproxSveInferenceEngine approx = new ApproxSveInferenceEngine(factory, numberOfFactorsLeadingToJoint,
-                    massThreshold, volumeThreshold);
+//            LazyApproxSveInferenceEngine approx = new LazyApproxSveInferenceEngine(factory, numberOfFactorsLeadingToJoint); //, massThreshold, volumeThreshold);
+            ApproxSveInferenceEngine approx = new ApproxSveInferenceEngine(factory, numberOfFactorsLeadingToJoint); //, massThreshold, volumeThreshold);
 
 //        Factor approxResultF = approx.infer();
             approxResultF = approx.infer();
@@ -55,7 +55,7 @@ public class ApproxSveInferenceEngineTest {
 //            System.out.println("resultF = " + approxResultF);
 
             //todo
-//            factory.getVisualizer().visualizeFactor(approxResultF, ("approx normalized result"));
+            factory.getVisualizer().visualizeFactor(approxResultF, ("approx normalized result"));
 
 
             approxRecords = approx.getRecords();
@@ -94,7 +94,7 @@ public class ApproxSveInferenceEngineTest {
 
 
             //todo recent
-//            factory.getVisualizer().visualizeFactor(exactResultF, "exact II");
+            factory.getVisualizer().visualizeFactor(exactResultF, "exact II");
 
 //            }
 
@@ -112,7 +112,7 @@ public class ApproxSveInferenceEngineTest {
             System.out.println("----------- . . . . . . . . . . . . .---------------");
 
 
-            double mES = factory.meanSquaredError(approxResultF, exactResultF);
+            double mES = factory.meanSquaredError(approxResultF, exactResultF, false);
             System.out.println("mES = " + mES);
 
 //            try {
@@ -127,16 +127,18 @@ public class ApproxSveInferenceEngineTest {
     }
 
 
+    @Deprecated    // Sibling approximation is not used any more
     private void testSiblingApproximation(String gmFile, String qFile,
-                                          double maxDesiredNumberOfNodes, double siblingDifThreshold, int numberOfFactorsLeadingToJoint) {
+                                          int maxDesiredNumberOfNodes, double siblingDifThreshold, int numberOfFactorsLeadingToJoint) {
 
         FBQuery q = new FBQuery(qFile);
-        ModelBasedXaddFactorFactoryWithSiblingApprox factory = new ModelBasedXaddFactorFactoryWithSiblingApprox(gmFile, q);
+//        ModelBasedXaddFactorFactoryWithSiblingApprox factory = new ModelBasedXaddFactorFactoryWithSiblingApprox(gmFile, q);
+        ModelBasedXaddFactorFactory factory = ModelBasedXaddFactorFactory.newInstance(gmFile, q, new SiblingXaddApproximator(new EfficientPathIntegralCalculator(),
+                maxDesiredNumberOfNodes, siblingDifThreshold));
 
         Records approxRecords;
         Factor approxResultF;
-        ApproxSveInferenceEngine approx = new ApproxSveInferenceEngine(factory, numberOfFactorsLeadingToJoint,
-                maxDesiredNumberOfNodes, siblingDifThreshold);
+        ApproxSveInferenceEngine approx = new ApproxSveInferenceEngine(factory, numberOfFactorsLeadingToJoint); //, maxDesiredNumberOfNodes, siblingDifThreshold);
 
         approxResultF = approx.infer();
         factory.getVisualizer().visualizeFactor(approxResultF, ("approx normalized result"));
@@ -159,7 +161,7 @@ public class ApproxSveInferenceEngineTest {
         System.out.println("----------- . . . . . . . . . . . . .---------------");
 
 
-        double mES = factory.meanSquaredError(approxResultF, exactResultF);
+        double mES = factory.meanSquaredError(approxResultF, exactResultF, false);
         System.out.println("mES = " + mES);
 
     }

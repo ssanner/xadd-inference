@@ -2,6 +2,7 @@ package hgm.asve.cnsrv.approxator.fitting;
 
 import hgm.asve.Pair;
 import hgm.asve.XaddPath;
+import hgm.asve.cnsrv.approxator.Approximator;
 import hgm.asve.cnsrv.approxator.sampler.GridSampler;
 import hgm.asve.cnsrv.factor.Factor;
 import hgm.asve.cnsrv.factory.ElementaryFactorFactory;
@@ -14,12 +15,48 @@ import java.util.*;
  * Date: 23/10/13
  * Time: 2:03 PM
  */
-public class CurveFittingBasedXaddApproximator {
-    private XADD context;
-    private CurveFitting<Factor> curveFitting;
+public class CurveFittingBasedXaddApproximator implements Approximator {
+    public static boolean ZERO_REGIONS_CAN_BE_MERGED_WITH_NONZERO_REGIONS = false;
 
-    public CurveFittingBasedXaddApproximator(final XADD context) {
+    private XADD context = null;
+    private CurveFitting<Factor> curveFitting = null;
+    private DivergenceMeasure divergenceMeasure;
+
+    //parameters:
+    int maxPower;
+    int sampleNumPerContinuousVar;
+    double regularizationCoefficient;
+    double maxAcceptableMeanSquaredErrorPerSiblingMerge;
+    int minimumNumberOfNodesToTriggerApproximation;
+
+    public CurveFittingBasedXaddApproximator(XADD context, DivergenceMeasure divergenceMeasure,
+                                             int maxPower, int sampleNumPerContinuousVar, double regularizationCoefficient,
+                                             double maxAcceptableMeanSquaredErrorPerSiblingMerge,
+                                             int minimumNumberOfNodesToTriggerApproximation) {
+        this(divergenceMeasure, maxPower, sampleNumPerContinuousVar,
+                regularizationCoefficient, maxAcceptableMeanSquaredErrorPerSiblingMerge, minimumNumberOfNodesToTriggerApproximation);
+
+        setupWithContext(context);
+    }
+
+    public CurveFittingBasedXaddApproximator(DivergenceMeasure divergenceMeasure,
+                                             int maxPower, int sampleNumPerContinuousVar, double regularizationCoefficient,
+                                             double maxAcceptableMeanSquaredErrorPerSiblingMerge,
+                                             int minimumNumberOfNodesToTriggerApproximation) {
+        this.divergenceMeasure = divergenceMeasure;
+
+        this.maxPower = maxPower;
+        this.sampleNumPerContinuousVar = sampleNumPerContinuousVar;
+        this.regularizationCoefficient = regularizationCoefficient;
+        this.maxAcceptableMeanSquaredErrorPerSiblingMerge = maxAcceptableMeanSquaredErrorPerSiblingMerge;
+        this.minimumNumberOfNodesToTriggerApproximation = minimumNumberOfNodesToTriggerApproximation;
+
+    }
+
+    @Override
+    public void setupWithContext(final XADD context) {
         this.context = context;
+
         curveFitting = new CurveFitting<Factor>(new ElementaryFactorFactory<Factor>() {
             Factor one = new Factor(context.ONE, context, "ONE");
 
@@ -37,7 +74,6 @@ public class CurveFittingBasedXaddApproximator {
                 }
 
                 String str = sb.delete(sb.length() - 1, sb.length()).append("])").toString();
-                System.out.println("str = " + str);
                 int id = context.buildCanonicalXADDFromString(str);
                 return new Factor(id, context, str);
             }
@@ -49,20 +85,110 @@ public class CurveFittingBasedXaddApproximator {
         });
     }
 
-    public XADD.XADDNode approximateXaddByLeafPowerDecrease(XADD.XADDNode rootXadd,
-                                                            int maxPower,
-                                                            int sampleNumPerContinuousVar,
-                                                            double regularizationCoefficient) {
-        Map<XaddPath, Pair<List<Map<String, Double>>, List<Double>>> regionSampleTargetMap = generatePathMappedToSamplesAndTargets(rootXadd, sampleNumPerContinuousVar);
+    @Override
+    public XADD.XADDNode approximateXadd(XADD.XADDNode root) {
+        int rootNodeCount = context.getNodeCount(context._hmNode2Int.get(root));
+        if (rootNodeCount < minimumNumberOfNodesToTriggerApproximation) return root;
+
+        RegionSamplingDataBase mappingFromRegionsToSamplesAndTargets =
+                null;
+        try {
+            mappingFromRegionsToSamplesAndTargets = generatePathMappedToSamplesAndTargets(root, sampleNumPerContinuousVar);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
+        return approximateXadd(new XaddPath(Arrays.asList(root), context), mappingFromRegionsToSamplesAndTargets,
+                maxPower, regularizationCoefficient,
+                maxAcceptableMeanSquaredErrorPerSiblingMerge);
+    }
+
+    private XADD.XADDNode approximateXadd(XaddPath pathToCurrentNode, //inclusive
+                                          RegionSamplingDataBase mappingFromRegionsToSamplesAndTargets,
+                                          int maxPower, double regularizationCoefficient,
+                                          double maxAcceptableMeanSquaredErrorPerSiblingMerge) {
+
+        SamplingDB currentPathSamples = mappingFromRegionsToSamplesAndTargets.getAccumulatedSamplingInfo(pathToCurrentNode);
+        if (currentPathSamples.isEmpty()) {
+            //there is no sampling data for this path.
+            System.out.println("No samples for path: " + pathToCurrentNode + " exists.");
+            return null;
+        }
+
+        XADD.XADDNode lastPathNode = pathToCurrentNode.getLastNode();
+        if (ZERO_REGIONS_CAN_BE_MERGED_WITH_NONZERO_REGIONS || !zeroSampleExistIn(currentPathSamples)) {
+            XADD.XADDTNode approximatedNode = singleNodeApproximation(lastPathNode, currentPathSamples, maxPower, regularizationCoefficient);
+            double mse = divergenceMeasure.calcDivergenceBetweenApproximatingNodeAndSamples(context, approximatedNode, currentPathSamples);
+//            System.out.println(divergenceMeasure.measureName() + " = " + mse);
+
+            if (mse <= maxAcceptableMeanSquaredErrorPerSiblingMerge) return approximatedNode;
+
+        }
+
+        if (lastPathNode instanceof XADD.XADDTNode)
+            return lastPathNode;//approximatedNode; //todo: should I approximate the leaf in any expense?//lastPathNode; //approximation is impossible
+
+        XADD.XADDINode iNode = (XADD.XADDINode) lastPathNode;
+        XADD.XADDNode low = context._hmInt2Node.get(iNode._low);
+        XADD.XADDNode high = context._hmInt2Node.get(iNode._high);
+
+        pathToCurrentNode.add(low);
+        XADD.XADDNode approxLow = approximateXadd(pathToCurrentNode,
+                mappingFromRegionsToSamplesAndTargets, maxPower, regularizationCoefficient, maxAcceptableMeanSquaredErrorPerSiblingMerge);
+
+        pathToCurrentNode.setLastNodeTo(high);
+        XADD.XADDNode approxHigh = approximateXadd(pathToCurrentNode,
+                mappingFromRegionsToSamplesAndTargets, maxPower, regularizationCoefficient, maxAcceptableMeanSquaredErrorPerSiblingMerge);
+        pathToCurrentNode.removeLastNode();
+
+        if (approxLow == null) {
+            //todo: But what if the current node contains Boolean variables, should I assign values to them? I should check....
+            //todo: what if the decision leading to the chosen child implies that a continuous variable have a particular value?
+            return approxHigh;
+        }
+
+        if (approxHigh == null) {
+            return approxLow; //todo: same concerns...
+        }
+
+        Integer approxLowId = context._hmNode2Int.get(approxLow);
+        Integer approxHighId = context._hmNode2Int.get(approxHigh);
+        if (approxLowId.equals(approxHighId)) {
+            if (ZERO_REGIONS_CAN_BE_MERGED_WITH_NONZERO_REGIONS)
+                throw new RuntimeException("how is it that the parent cannot be approximated but the children's approximation leads to the same stuff?");
+            else {
+                System.out.print("Parent of these two nodes could not be approximated: approxHigh = " + approxHigh + " and ");
+                System.out.println("approxLow = " + approxLow);
+                return approxHigh;
+            }
+
+        }
+        return context.getExistNode(context.getINode(iNode._var, approxLowId, approxHighId));
+    }
+
+    private boolean zeroSampleExistIn(SamplingDB samples) {
+        for (Double target : samples.getTargets()) {
+            if (target == 0) return true;
+        }
+        return false;
+    }
+
+
+    //todo: do not take input parameters from outside...
+    public XADD.XADDNode approximateXaddByLeafPowerDecreaseWithoutMerging(XADD.XADDNode rootXadd,
+                                                                          int maxPower,
+                                                                          int sampleNumPerContinuousVar,
+                                                                          double regularizationCoefficient) {
+        RegionSamplingDataBase regionSampleTargetMap = generatePathMappedToSamplesAndTargets(rootXadd, sampleNumPerContinuousVar);
 
         Map<XaddPath, XADD.XADDTNode> pathNewLeafMap = new HashMap<XaddPath, XADD.XADDTNode>(regionSampleTargetMap.size());
 
-        for (Map.Entry<XaddPath, Pair<List<Map<String, Double>>, List<Double>>> regionSampleTarget : regionSampleTargetMap.entrySet()) {
+        for (Map.Entry<XaddPath, SamplingDB> regionSampleTarget : regionSampleTargetMap.entrySet()) {
             XaddPath region = regionSampleTarget.getKey();
-            List<Map<String, Double>> samples = regionSampleTarget.getValue().getFirstEntry();
-            List<Double> targets = regionSampleTarget.getValue().getSecondEntry();
+            SamplingDB samplingDB = regionSampleTarget.getValue();
 
-            XADD.XADDTNode approxNode = leafApproximation(region.getLeaf(), samples, targets, maxPower, regularizationCoefficient);
+            XADD.XADDTNode approxNode = singleNodeApproximation(region.getLeaf(), samplingDB, /*samples, targets,*/ maxPower, regularizationCoefficient);
             pathNewLeafMap.put(region, approxNode);
         }
 
@@ -105,7 +231,8 @@ public class CurveFittingBasedXaddApproximator {
                         context._hmNode2Int.get(newLowChild), context._hmNode2Int.get(newHighChild)));
     }
 
-    public Map<XaddPath, Pair<List<Map<String, Double>> /*continuous varAssigns*/, List<Double> /*targets*/>> generatePathMappedToSamplesAndTargets(
+    //public //Map<XaddPath, Pair<List<Map<String, Double>> /*continuous varAssigns*/, List<Double> /*targets*/>>
+    public RegionSamplingDataBase generatePathMappedToSamplesAndTargets(
             XADD.XADDNode root,
             int sampleNumPerContinuousVar) {
         Pair<List<String>, List<String>> binaryVarsAndContinuousVars = collectionAllBinaryAndContinuousVars(root);
@@ -134,9 +261,11 @@ public class CurveFittingBasedXaddApproximator {
             allVarIncVals[i + offset] = (max - min) / (double) sampleNumPerContinuousVar;
         }
 
-        //todo instead of such complicated structure you need a DB object
-        Map<XaddPath, Pair<List<Map<String, Double>> /*continuous varAssigns*/, List<Double> /*targets*/>> pathInfoDatabase = new
-                HashMap<XaddPath, Pair<List<Map<String, Double>>, List<Double>>>();
+        RegionSamplingDataBase pathInfoDatabase = new RegionSamplingDataBase();
+//        Map<XaddPath, Pair<List<Map<String, Double>> /*continuous varAssigns*/, List<Double> /*targets*/>> pathInfoDatabase = new
+//                HashMap<XaddPath, Pair<List<Map<String, Double>>, List<Double>>>();
+
+
         GridSampler sampler = new GridSampler(allVariables, allMinValues, allMaxValues, allVarIncVals);
         Iterator<double[]> sampleIterator = sampler.getSampleIterator();
         while (sampleIterator.hasNext()) {
@@ -152,15 +281,7 @@ public class CurveFittingBasedXaddApproximator {
             XaddPath activatedRegion = activatedPathAndEvaluation.getFirstEntry();
             Double target = activatedPathAndEvaluation.getSecondEntry();
 
-            Pair<List<Map<String, Double>>, List<Double>> regionInfoDB = pathInfoDatabase.get(activatedRegion);
-            if (regionInfoDB == null) {
-                regionInfoDB = new Pair<List<Map<String, Double>>, List<Double>>(new ArrayList<Map<String, Double>>(), new ArrayList<Double>());
-                pathInfoDatabase.put(activatedRegion, regionInfoDB);
-            }
-            List<Map<String, Double>> currentAssignments = regionInfoDB.getFirstEntry(); //todo: what if the current sample already exists in the region DB? does it end in 0 determinant?
-            List<Double> currentTargets = regionInfoDB.getSecondEntry();
-            currentAssignments.add(continuousAssignment);
-            currentTargets.add(target);
+            pathInfoDatabase.addSamplingInfo(activatedRegion, continuousAssignment, target);
         }
         return pathInfoDatabase;
     }
@@ -228,23 +349,25 @@ public class CurveFittingBasedXaddApproximator {
     }
 
 
-    public XADD.XADDTNode leafApproximation(XADD.XADDTNode leaf,
-                                            List<Map<String, Double>> pathSamples,
-                                            List<Double> regionTargetAssignments,
-                                            int maxPower,
-                                            double regularizationCoefficient) {
-        assert pathSamples.size() == regionTargetAssignments.size();
-
+    public XADD.XADDTNode singleNodeApproximation(XADD.XADDNode node,
+                                                  SamplingDB samplingDB,
+                                                  int maxPower,
+                                                  double regularizationCoefficient) {
         HashSet<String> localVars = new HashSet<String>();
-        leaf.collectVars(localVars);
+        node.collectVars(localVars);
 
 
-        if (localVars.isEmpty()) return leaf; // a constant leaf cannot be approximated by this method.
+        if (localVars.isEmpty()) {
+            if (node instanceof XADD.XADDTNode)
+                return (XADD.XADDTNode) node; // a constant leaf cannot be approximated by this method.
+            throw new RuntimeException("an unexpected inner node with no variable");
+        }
 
         //Note: only local samples i.e. samples of local vars should be passed otherwise the determinant will be zero!!!!!!!!!!!!!!!!!!!
         List<Factor> basisFunctions = curveFitting.calculateBasisFunctions(maxPower, new ArrayList<String>(localVars));
-        System.out.println("basisFunctions = " + basisFunctions);
-        double[] weights = curveFitting.solveWeights(basisFunctions, pathSamples, regionTargetAssignments, regularizationCoefficient);
+//        System.out.println("basisFunctions = " + basisFunctions);
+//        double[] weights = curveFitting.solveWeights(basisFunctions, pathSamples, regionTargetAssignments, regularizationCoefficient);
+        double[] weights = curveFitting.solveWeights(basisFunctions, samplingDB.getSamples(), samplingDB.getTargets(), regularizationCoefficient);
 
         //summation of products of w_i in basis_i
         int combinationXaddId = context.ZERO;

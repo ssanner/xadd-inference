@@ -13,14 +13,15 @@ import java.util.*;
  */
 
 public class EfficientPathIntegralCalculator implements PathIntegralOnLeafFunctionCalculator {
-    private XADD context;
+    private XADD context = null;
 
-    public EfficientPathIntegralCalculator(XADD context) {
-        this.context = context;
-    }
+//    public EfficientPathIntegralCalculator(XADD context) {
+//        this.context = context;
+//    }
 
     @Override
-    public Map<List<XADD.XADDNode>, Double> calculatePathValueMap(XADD.XADDNode rootNode, LeafFunction leafFunction) {
+    public Map<List<XADD.XADDNode>, Double> calculatePathValueMap(XADD.XADDNode rootNode, XADD context, LeafFunction leafFunction) {
+        this.context = context;
         return processForAllPaths(rootNode, new ArrayList<XADD.XADDINode>(), new ArrayList<Boolean>(), leafFunction);
     }
 

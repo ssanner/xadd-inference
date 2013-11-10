@@ -62,6 +62,7 @@ public class ExactSveInferenceEngine {
             if (!sortedVariables.containsAll(varSet))
                 throw new RuntimeException(sortedVariables + " does not contain all elements of " + varSet);
         }
+        System.out.println("sortedVariables (var elimination order) = " + sortedVariables);
 
         //****
 
@@ -76,7 +77,7 @@ public class ExactSveInferenceEngine {
         ArrayList<Factor> factors_with_var = new ArrayList<Factor>();
         ArrayList<Factor> factors_without_var = new ArrayList<Factor>();
         for (String var : vars_to_eliminate) {
-//            System.out.println("Eliminating: " + var);
+            System.out.println("Eliminating: " + var);
             _records.desiredVariableEliminationOrder.add(var);
             _records.variablesActuallyMarginalized.add(var);
 
@@ -86,6 +87,7 @@ public class ExactSveInferenceEngine {
             // Multiply factors that contain variable and marginalize out variable,
             // adding this new factor and all without the variable to the factors list
             Factor xadd_with_var = _factory.multiply(factors_with_var);
+//            System.out.println("Marginalizing out: " + _factory.getContext().getString(xadd_with_var._xadd));
             _records.recordFactor(xadd_with_var);
 
             Factor xadd_marginal = _factory.marginalize(xadd_with_var, var);
@@ -155,6 +157,11 @@ public class ExactSveInferenceEngine {
 
     private void recursivelyPopulateAncestorSet(String var, Set<String> ancestorSet) {
         Set<String> parents = _factory.getParents(var);
+        if (parents == null) {
+            System.err.println("unknown variable " + var +"!!!");
+            return;
+        }
+
         for (String parent : parents) {
             recursivelyPopulateAncestorSet(parent, ancestorSet);
         }

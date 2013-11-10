@@ -16,7 +16,8 @@ public interface FactorFactory<F extends IFactor> extends ElementaryFactorFactor
 
     F marginalize(F factor, String variable);
 
-    //todo should accept parameters as a class
-    F approximate(F factor, double param1, double param2);
+    F approximate(F factor);
+
+    F approximateMultiply(Collection<F> factors);
 
 }

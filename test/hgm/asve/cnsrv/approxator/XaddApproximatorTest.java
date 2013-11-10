@@ -53,9 +53,9 @@ public class XaddApproximatorTest {
 //        int newRoot1 = approximator1.approximateXADD(MASS_THRESHOLD, VOLUME_THRESHOLD);
 
         SiblingXaddApproximator approximator2 = new SiblingXaddApproximator(context,
-                new EfficientPathIntegralCalculator(context));
+                new EfficientPathIntegralCalculator(), MAX_DESIRED_NUMBER_OF_NODES, SIBLING_DIFF_THRESHOLD);
 //                new PathToXaddExpansionBasedIntegralCalculator(context));
-        XADD.XADDNode newRoot2Node = approximator2.approximateXADD(context.getExistNode(rootId), MAX_DESIRED_NUMBER_OF_NODES, SIBLING_DIFF_THRESHOLD);
+        XADD.XADDNode newRoot2Node = approximator2.approximateXadd(context.getExistNode(rootId));//, MAX_DESIRED_NUMBER_OF_NODES, SIBLING_DIFF_THRESHOLD);
         int newRoot2 = context._hmNode2Int.get(newRoot2Node);
 
 //        XADDUtils.PlotXADD(context, newRoot1, -2, 0.01, 15, "x", "mass threshold approximator");

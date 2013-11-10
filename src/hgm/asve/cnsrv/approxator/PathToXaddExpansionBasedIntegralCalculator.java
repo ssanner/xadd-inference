@@ -15,9 +15,9 @@ import java.util.*;
 public class PathToXaddExpansionBasedIntegralCalculator implements PathIntegralOnLeafFunctionCalculator {
     private XADD context;
 
-    public PathToXaddExpansionBasedIntegralCalculator(XADD context) {
-        this.context = context;
-    }
+//    public PathToXaddExpansionBasedIntegralCalculator(XADD context) {
+//        this.context = context;
+//    }
 
     /**
      * @param node Input xadd node id
@@ -87,7 +87,8 @@ public class PathToXaddExpansionBasedIntegralCalculator implements PathIntegralO
 
 
     @Override
-    public Map<List<XADD.XADDNode>, Double> calculatePathValueMap(XADD.XADDNode rootNode, LeafFunction leafFunction) {
+    public Map<List<XADD.XADDNode>, Double> calculatePathValueMap(XADD.XADDNode rootNode, XADD context, LeafFunction leafFunction) {
+        this.context = context;
         Map<List<XADD.XADDNode>, XADD.XADDNode> pathToXaddExpansion = calculatePathToXaddMapping(rootNode, leafFunction);
         return calculatePathMassMapFromPathExpansion(pathToXaddExpansion);
     }
