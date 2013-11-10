@@ -13,13 +13,29 @@ import java.util.*;
  * Time: 6:31 PM
  */
 public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
-    protected XADD context;
+    private XADD context;
     protected FactorVisualizer visualizer;
-    protected Set<Factor> permanentFactors;
+    private Set<Factor> permanentFactors;
 
-    public BaselineXaddFactorFactory(XADD context) {
-        visualizer = new FactorVisualizer(this);
+    protected Approximator approximator;
+
+    private Factor one;
+    private Factor zero; //pos/neg infinite may be needed as well...
+
+
+    public BaselineXaddFactorFactory(XADD context, Approximator approximator) {
         this.context = context;
+        this.approximator = approximator;
+
+        one = new Factor(context.ONE, context, "ONE");
+        zero = new Factor(context.ZERO, context, "ZERO");
+
+        // instantiate default permanent factors:
+        permanentFactors = new HashSet<Factor>();
+        permanentFactors.add(one);
+        permanentFactors.add(zero);
+
+        visualizer = new FactorVisualizer(this);
     }
 
     public void makePermanent(Collection<Factor> factors) {
@@ -68,12 +84,12 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         return multiply(fs);
     }
 
-    public double meanSquaredError(Factor f1, Factor f2) {
+    public double meanSquaredError(Factor f1, Factor f2, boolean debug) {
 //        XADD.HADI_DEBUG = true;
         Factor diff = subtract(f1, f2);  //visualizer.visualizeFactor(diff, "diff");
         Factor dif2 = power(diff, 2); //visualizer.visualizeFactor(dif2,"dif2");
         List<String> scopeVars = new ArrayList<String>(dif2.getScopeVars());
-        debugMSE(dif2, scopeVars);
+        if (debug) debugMSE(dif2, scopeVars);
 
         Factor mseFactor = dif2;
         for (String var : scopeVars) {
@@ -102,7 +118,7 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         }
 
         //Xadd of the leaf of each path (constraint on the path decisions) is returned:
-        PathToXaddExpansionBasedIntegralCalculator calc = new PathToXaddExpansionBasedIntegralCalculator(context);
+        PathToXaddExpansionBasedIntegralCalculator calc = new PathToXaddExpansionBasedIntegralCalculator();
         Map<List<XADD.XADDNode>, XADD.XADDNode> pathToXaddMap = calc.calculatePathToXaddMapping(context.getExistNode(factor._xadd), LeafFunction.identityFunction());
         System.out.println("#paths: = " + pathToXaddMap.size());
 
@@ -164,9 +180,10 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
     @Override
     public Factor marginalize(Factor factor, String variable) {
         // Take appropriate action based on whether var is boolean or continuous
-        int bool_var_index = context.getBoolVarIndex(variable);
+//        int bool_var_index = context._alBooleanVars.contains(variable)//context.getBoolVarIndex(variable);
         int xadd_marginal = -1;
-        if (bool_var_index > 0) {
+        if (context._alBooleanVars.contains(variable)){//(bool_var_index > 0) {
+            int bool_var_index = context.getBoolVarIndex(variable); //todo I am not even sure about this, check it....
             // Sum out boolean variable
             int restrict_high = context.opOut(factor._xadd, bool_var_index, XADD.RESTRICT_HIGH);
             int restrict_low = context.opOut(factor._xadd, bool_var_index, XADD.RESTRICT_LOW);
@@ -178,10 +195,11 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         return new Factor(xadd_marginal, context, "{" + factor.getHelpingText() + "|!" + variable + "}");
     }
 
+/*
     @Override
-    public Factor approximate(Factor factor, double massThreshold, double volumeThreshold) {
+    public Factor approximate(Factor factor){double massThreshold, double volumeThreshold) {
         return approximate2(factor, massThreshold, volumeThreshold,
-//                new PathToXaddExpansionBasedMassCalculator(context)
+//////                new PathToXaddExpansionBasedMassCalculator(context)
                 new EfficientPathIntegralCalculator(context)
         );
     }
@@ -190,6 +208,40 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         MassThresholdXaddApproximator approximator = new MassThresholdXaddApproximator(context, factor._xadd, calculator);
         int approxId = approximator.approximateXADD(massThreshold, volumeThreshold);
         return new Factor(approxId, context, "~" + factor.getHelpingText());
+    }
+*/
+
+    @Deprecated
+    @Override
+    public Factor approximate(Factor factor) {
+//        MassThresholdXaddApproximator approximator = new MassThresholdXaddApproximator(context, new EfficientPathIntegralCalculator(context), massThreshold, volumeThreshold);
+        XADD.XADDNode approxNode = approximator.approximateXadd(context.getExistNode(factor._xadd));
+        return new Factor(context._hmNode2Int.get(approxNode), context, "~" + factor.getHelpingText());
+    }
+
+    @Override
+    public Factor approximateMultiply(Collection<Factor> factors) {
+        //todo maybe the factors should be sorted due to their size in the beginning...
+        int mult_xadd = context.ONE;
+        String text = "(";
+        for (Factor f : factors) {
+            mult_xadd = context.applyInt(mult_xadd, f._xadd, XADD.PROD);
+
+//            Factor ____originalFactor = new Factor(mult_xadd, context, "");
+//            visualizer.visualizeFactor(____originalFactor, "exact");
+//            System.out.println("...... exact factor.toString() = " + ____originalFactor.toString());
+
+            XADD.XADDNode multNode = approximator.approximateXadd(context.getExistNode(mult_xadd));
+            mult_xadd = context._hmNode2Int.get(multNode);
+
+//            Factor ____newFactor = new Factor(mult_xadd, context, "");
+//            visualizer.visualizeFactor(____newFactor, "approx");
+//            System.out.println("..........APPROX f.toString() = " + ____newFactor.toString());
+
+            text += (f.getHelpingText() + ".");
+        }
+        return new Factor(mult_xadd, context, text.substring(0, text.length() - 1) + ")");
+
     }
 
     public double valueOfOneConstantFactor(Factor constFactor) {
@@ -215,7 +267,11 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
 
     @Override
     public Factor one() {
-        return  new Factor(context.ONE, context, "ONE");
+        return  one;//new Factor(context.ONE, context, "ONE");
+    }
+
+    public Factor zero() {
+        return zero;
     }
 
     @Override
@@ -227,7 +283,7 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         }
 
         String str = sb.delete(sb.length() - 1, sb.length()).append("])").toString();
-        System.out.println("str = " + str);
+//        System.out.println("str = " + str);
         int id = context.buildCanonicalXADDFromString(str);
         return new Factor(id, context, str);
     }
@@ -276,4 +332,5 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
 
         return sum / (double) numberOfSamples;
     }
+
 }

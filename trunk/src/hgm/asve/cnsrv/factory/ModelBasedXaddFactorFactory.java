@@ -3,7 +3,6 @@ package hgm.asve.cnsrv.factory;
 import hgm.asve.cnsrv.approxator.*;
 import hgm.asve.cnsrv.gm.FBGraphicalModel;
 import hgm.asve.cnsrv.gm.FBQuery;
-import hgm.asve.cnsrv.factor.FactorVisualizer;
 import hgm.asve.cnsrv.factor.Factor;
 import xadd.XADD;
 
@@ -21,17 +20,46 @@ public class ModelBasedXaddFactorFactory extends BaselineXaddFactorFactory {
     protected Map<String, Set<String>> varParentsMap;
     protected FBQuery query;
 
-    public ModelBasedXaddFactorFactory(String modelFileName, FBQuery instantiatingQuery) {
-        super(null);
+    public static ModelBasedXaddFactorFactory newInstance(String modelFileName, FBQuery query, Approximator approximator) {
+        FBGraphicalModel gm = new FBGraphicalModel(modelFileName);
+
+        gm.instantiateGMTemplate(query.getVar2Expansion());
+        XADD context = gm._context;
+
+        //now context is made and can be passed to the approximator:
+        approximator.setupWithContext(context);
+
+        //and to the (parent) constructor of this class:
+        return new ModelBasedXaddFactorFactory(gm, query, approximator, context);
+    }
+
+    private ModelBasedXaddFactorFactory(FBGraphicalModel gm, FBQuery instantiatingQuery, Approximator approximator, XADD context) {
+       super(context, approximator);
+        this.gm = gm;
+        this.query = instantiatingQuery;
+
+        // instantiating factory with query
+        instantiatedVarFactorMap = gm.instantiateByVariableAssignment(gm._varFactorMap, query.getContinuousInstantiatedEvidence(), query.getBooleanInstantiatedEvidence());
+        instantiatedFactorVarMap = invertMap(instantiatedVarFactorMap);
+        varParentsMap = populateVarParentMap(instantiatedVarFactorMap);
+
+        //the factors associated with variables will never be flushed away.
+        makePermanent(instantiatedFactorVarMap.keySet());
+    }
+   /* private ModelBasedXaddFactorFactory(String modelFileName, FBQuery instantiatingQuery, Approximator approximator) {
+        super(null, approximator); //this is a little hack since context is not created yet...
         gm = new FBGraphicalModel(modelFileName);
         query = instantiatingQuery;
         instantiateFactoryWithQuery(instantiatingQuery);
 
+        //now context is made and can be passed to the approximator:
+        approximator.setupWithContext(context);
+
         //the factors associated with variables will never be flushed away.
         permanentFactors = new HashSet<Factor>(instantiatedFactorVarMap.keySet());
-    }
+    }*/
 
-    private void instantiateFactoryWithQuery(FBQuery q) {
+    /*private void instantiateFactoryWithQuery(FBQuery q) {
         // instantiateGMTemplate:
         gm.instantiateGMTemplate(q.getVar2Expansion());
         this.context = gm._context;
@@ -39,18 +67,11 @@ public class ModelBasedXaddFactorFactory extends BaselineXaddFactorFactory {
         instantiatedVarFactorMap = gm.instantiateByVariableAssignment(gm._varFactorMap, q.getContinuousInstantiatedEvidence(), q.getBooleanInstantiatedEvidence());
         instantiatedFactorVarMap = invertMap(instantiatedVarFactorMap);
         varParentsMap = populateVarParentMap(instantiatedVarFactorMap);
-    }
+    }*/
 
     public FBQuery getQuery() {
         return query;
     }
-
-
-    //    @Deprecated
-//    public Factor approximate(Factor factor, double massThreshold, double volumeThreshold) {
-//        int approximatedNodeId = context.approximateXADD(factor._xadd, massThreshold, volumeThreshold);
-//        return new Factor(approximatedNodeId, context, "~" + factor.getHelpingText());
-//    }
 
 
     public String getAssociatedVariable(Factor factor) {
@@ -109,10 +130,10 @@ public class ModelBasedXaddFactorFactory extends BaselineXaddFactorFactory {
     }
 
 
-    public int countLeafCount(Factor approxResultF) {
+   /* public int countLeafCount(Factor approxResultF) {
         return context.getLeafCount(approxResultF._xadd);
     }
-
+*/
     public Collection<? extends String> getAllVariables() {
         return this.gm.getAllVariables();
     }

@@ -18,12 +18,8 @@ public class  XADDTest {
     XADD context = new XADD();
 
     public static void main(String[] args) {
-        String a = "";
-        String b = null;
-        if (b instanceof String) System.out.println("b is string");
-        System.out.println("a==b = " + a.equals(b) );
-//        XADDTest instance = new XADDTest();
-//        instance.testMarginalization1();
+        XADDTest instance = new XADDTest();
+        instance.testMarginalization1();
 //        instance.testXaddMultiplication();
 //        instance.testBasic();
 //        instance.testMultiplicationOrder();
@@ -81,15 +77,15 @@ public class  XADDTest {
 //        context.getGraph(rootId).launchViewer();
         XADDUtils.PlotXADD(context, rootId, -2, 0.01, 15, "x", "ORIGINAL GRAPH test");
 
-        MassThresholdXaddApproximator approximator = new MassThresholdXaddApproximator(context, rootId, new EfficientPathIntegralCalculator(context));
-        int newRoot = approximator.approximateXADD(3, 100);//context.approximateXADD(rootId, 3, 100);
-        System.out.println("context.getExistNode(newRoot) = " + context.getExistNode(newRoot));
+        MassThresholdXaddApproximator approximator = new MassThresholdXaddApproximator(context, new EfficientPathIntegralCalculator(), 3, 100);
+        int newRootId = context._hmNode2Int.get(approximator.approximateXadd(context.getExistNode(rootId)));//context.approximateXADD(rootId, 3, 100);
+        System.out.println("context.getExistNode(newRootId) = " + context.getExistNode(newRootId));
 
 //        boolean merged = context.mergeNodes(rootId, 1000.5, 1000);
 //        System.out.println("merged = " + merged);
 
-        XADDUtils.PlotXADD(context, newRoot, -2, 0.01, 15, "x", "APPROX test");
-        context.getGraph(newRoot).launchViewer();
+        XADDUtils.PlotXADD(context, newRootId, -2, 0.01, 15, "x", "APPROX test");
+        context.getGraph(newRootId).launchViewer();
 
     }
 

@@ -36,7 +36,7 @@ public class IntegralTest {
         switch (makeContextType) {
             case 0:  //factory
                 FBQuery q = new FBQuery(qFile);
-                ModelBasedXaddFactorFactory factory = new ModelBasedXaddFactorFactory(gmFile, q);
+                ModelBasedXaddFactorFactory factory = ModelBasedXaddFactorFactory.newInstance(gmFile, q, null /*approximator*/);
                 context = factory.getContext();
 
                 break;

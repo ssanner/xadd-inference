@@ -23,7 +23,7 @@ import java.util.HashMap;
  * Time: 10:26 AM
  */
 public class GeneralVisualizationUtils {
-    public static double PRECISION = 1d;
+    public static double PRECISION =0.25d;
 
     public static void plot(Function function, double lowerBound, double upperBound, String title) {
         String[] varNames = function.getEffectiveVarNames();

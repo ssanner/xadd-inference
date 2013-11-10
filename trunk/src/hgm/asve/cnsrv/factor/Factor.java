@@ -39,6 +39,10 @@ public class Factor implements IFactor{
         return _helpingText;
     }
 
+    public XADD.XADDNode getNode(){
+        return _localContext.getExistNode(_xadd);
+    }
+
     public int getLeafCount() {
         return _localContext.getLeafCount(_xadd);
     }

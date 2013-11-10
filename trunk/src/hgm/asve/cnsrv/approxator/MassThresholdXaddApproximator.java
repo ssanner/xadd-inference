@@ -11,25 +11,51 @@ import java.util.*;
  * Time: 12:00 PM
  */
 
-public class MassThresholdXaddApproximator {
-    private XADD context;
+public class MassThresholdXaddApproximator implements Approximator{
+    private XADD context = null;
     private Map<List<XADD.XADDNode>, Double> pathMassMap;
     private Map<List<XADD.XADDNode>, Double> pathVolumeMap;
-    private int rootXaddId;
+//    private int rootXaddId;
 
-    public MassThresholdXaddApproximator(final XADD context, int rootXaddId, PathIntegralOnLeafFunctionCalculator pathValueCalculator) {
-        this.context = context;
-        this.rootXaddId = rootXaddId;
+    private PathIntegralOnLeafFunctionCalculator pathValueCalculator;
 
-        XADD.XADDNode rootXadd = context.getExistNode(rootXaddId);
-        pathMassMap = pathValueCalculator.calculatePathValueMap(rootXadd, LeafFunction.identityFunction());
-        pathVolumeMap = pathValueCalculator.calculatePathValueMap(rootXadd, LeafFunction.oneFunction(context));
+    private double massThreshold;
+    private double volumeThreshold;
+
+    public MassThresholdXaddApproximator(PathIntegralOnLeafFunctionCalculator pathValueCalculator,
+                                         double massThreshold, double volumeThreshold) {
+        this.pathValueCalculator = pathValueCalculator;
+        this.massThreshold = massThreshold;
+        this.volumeThreshold = volumeThreshold;
     }
 
-    public int approximateXADD(double massThreshold, double volumeThreshold) {
-        int rootId = this.rootXaddId;
+    public MassThresholdXaddApproximator(XADD context,
+                                         PathIntegralOnLeafFunctionCalculator pathValueCalculator,
+                                         double massThreshold, double volumeThreshold) {
 
-        //todo I wonder if only in this phase mass and volume should be calculated....!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        this(pathValueCalculator, massThreshold, volumeThreshold);
+
+        setupWithContext(context);
+    }
+
+    @Override
+    public void setupWithContext(XADD context) {
+        this.context = context;
+    }
+
+    @Override
+    public XADD.XADDNode approximateXadd(XADD.XADDNode rootXadd) {
+//        XADD.XADDNode rootXadd = context.getExistNode(rootXaddId);
+        pathMassMap = pathValueCalculator.calculatePathValueMap(rootXadd, context, LeafFunction.identityFunction());
+        pathVolumeMap = pathValueCalculator.calculatePathValueMap(rootXadd, context, LeafFunction.oneFunction(context));
+
+        return context._hmInt2Node.get(approximateXADD(context._hmNode2Int.get(rootXadd)));
+    }
+
+    //todo use nodes rather than ids everywhere...
+    private int approximateXADD(int rootId/*double massThreshold, double volumeThreshold*/) {
+//        int rootId = this.rootXaddId;
+
         while (context.getNode(rootId) instanceof XADD.XADDINode) {
             System.out.println("---*---");
             int newRootId = mergeNodes(rootId, massThreshold, volumeThreshold);
@@ -92,27 +118,6 @@ public class MassThresholdXaddApproximator {
 
         return returnedXaddNodeId;
     }
-
-    /*Map<List<XADD.XADDNode>, Double> calculatePathMassMap(Map<List<XADD.XADDNode>, XADD.XADDNode> pathMultiplexer) {
-        Map<List<XADD.XADDNode>, Double> map = new HashMap<List<XADD.XADDNode>, Double>(pathMultiplexer.size());
-        for (List<XADD.XADDNode> path : pathMultiplexer.keySet()) {
-            XADD.XADDNode node = pathMultiplexer.get(path);
-            int nodeId = context._hmNode2Int.get(node);
-
-            HashSet<String> vars = node.collectVars();
-
-            int massNodeId = nodeId; // in case their is no variable in the node, it is its own mass
-
-            for (String var : vars) {
-                massNodeId = context.computeDefiniteIntegral(massNodeId, var);
-            }
-
-            XADD.XADDTNode mass = (XADD.XADDTNode) context.getExistNode(massNodeId);
-            map.put(path, ((ExprLib.DoubleExpr) mass._expr)._dConstVal);
-        }
-
-        return map;
-    }*/
 
 
     /**
