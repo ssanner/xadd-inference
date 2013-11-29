@@ -20,7 +20,7 @@ figure(2);
 
 contourf(x,y,z);
 
-eps_file = [file_path, '.contour.eps'];
+eps_file = [file_path, '-contour.eps'];
 print('-depsc', eps_file);
 disp(eps_file);
 system(['epstopdf ', eps_file]);

@@ -1,6 +1,5 @@
-package hgm.asve.cnsrv.approxator.fitting;
+package hgm.asve.cnsrv.approxator.regression;
 
-import hgm.asve.Pair;
 import hgm.asve.XaddPath;
 
 import java.util.*;
@@ -38,6 +37,10 @@ public class RegionSamplingDataBase {
 
     public Set<XaddPath> allRegions() {
         return regionInfoMap.keySet();
+    }
+
+    public SamplingDB getSamplingInfo(XaddPath path) {
+        return regionInfoMap.get(path);
     }
 
     /**

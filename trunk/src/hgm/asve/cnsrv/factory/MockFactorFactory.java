@@ -21,8 +21,8 @@ public class MockFactorFactory implements FactorFactory<MockFactor> {
         Collections.sort(sortedFactors, new Comparator<MockFactor>() {
             @Override
             public int compare(MockFactor f1, MockFactor f2) {
-                if (f1.getHelpingText().length() <   f2.getHelpingText().length()) return -1;
-                if (f1.getHelpingText().length() >   f2.getHelpingText().length()) return 1;
+                if (f1.getHelpingText().length() < f2.getHelpingText().length()) return -1;
+                if (f1.getHelpingText().length() > f2.getHelpingText().length()) return 1;
                 if (f1.getHelpingText().hashCode() < f2.getHelpingText().hashCode()) return -1;
                 if (f1.getHelpingText().hashCode() > f2.getHelpingText().hashCode()) return 1;
 
@@ -57,11 +57,12 @@ public class MockFactorFactory implements FactorFactory<MockFactor> {
         return approximate(multiply(factors));
     }
 
-    class MultOfVarsFactor extends MockFactor{
+    class MultOfVarsFactor extends MockFactor {
         /**
          * a list of (possibly many repeated) variables to be multiplied together
          */
         private List<String> elements;
+
         public MultOfVarsFactor(String factorText, List<String> elements) {
             super(factorText);
             this.elements = elements;
@@ -92,12 +93,13 @@ public class MockFactorFactory implements FactorFactory<MockFactor> {
 
     @Override
     public double evaluate(MockFactor factor, Map<String, Double> completeVariableAssignment) {
-        if (!(factor instanceof MultOfVarsFactor)) throw new RuntimeException("only implemented for multiplication of factors");
+        if (!(factor instanceof MultOfVarsFactor))
+            throw new RuntimeException("only implemented for multiplication of factors");
         double d = 1;
-        for (String var : ((MultOfVarsFactor)factor).getElements()) {
+        for (String var : ((MultOfVarsFactor) factor).getElements()) {
             Double value = completeVariableAssignment.get(var);
             if (value == null) throw new RuntimeException("no assignment for variable: " + var + " found");
-            d*= value;
+            d *= value;
         }
 
         return d;

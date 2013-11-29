@@ -14,7 +14,7 @@ import java.util.*;
  * Date: 24/09/13
  * Time: 11:09 PM
  */
-public class  XADDTest {
+public class XADDTest {
     XADD context = new XADD();
 
     public static void main(String[] args) {
@@ -159,7 +159,7 @@ public class  XADDTest {
     }
 
     @Test
-    public void testXaddMultiplication(){
+    public void testXaddMultiplication() {
         int id1 = context.buildCanonicalXADDFromString("" +
                 "([1*x < 0] " +
                 "   ([-1 * x])" +
@@ -170,7 +170,7 @@ public class  XADDTest {
     }
 
     @Test
-    public void testMarginalization1(){
+    public void testMarginalization1() {
         int id1 = context.buildCanonicalXADDFromFile("./test/hgm/asve/xadd/xaddTest1.txt");
         context._hmMinVal.put("o_1", -10d);
         context._hmMinVal.put("x_2", -10d);
@@ -178,9 +178,9 @@ public class  XADDTest {
         context._hmMaxVal.put("x_2", 20d);
 
         XADD.XADDNode node1 = context.getExistNode(id1);
-        Factor f = new Factor(id1,context, "?");
+        Factor f = new Factor(id1, context, "?");
         for (String var : node1.collectVars()) {
-            System.out.println("marginalizing var = " +var);
+            System.out.println("marginalizing var = " + var);
             f = marginalize(f, var); //visualizer.visualizeFactor(mseFactor, "after marginalizing" + var);
         }
 
@@ -192,14 +192,14 @@ public class  XADDTest {
         int mult_xadd = context.ONE;
         String text = "(";
         for (Factor f : factors) {
-            mult_xadd = context.applyInt(mult_xadd, f._xadd, XADD.PROD);
+            mult_xadd = context.applyInt(mult_xadd, f.getXaddId(), XADD.PROD);
             text += (f.getHelpingText() + ".");
         }
         return new Factor(mult_xadd, context, text.substring(0, text.length() - 1) + ")");
     }
 
     public Factor subtract(Factor f1, Factor f2) {
-        int subXaddId = context.applyInt(f1._xadd, f2._xadd, XADD.MINUS);
+        int subXaddId = context.applyInt(f1.getXaddId(), f2.getXaddId(), XADD.MINUS);
         return new Factor(subXaddId, context, "MINUS(" + f1.getHelpingText() + ", " + f2.getHelpingText() + ")");
     }
 
@@ -220,7 +220,7 @@ public class  XADDTest {
 
         Factor mseFactor = dif2;
         for (String var : scopeVars) {
-            System.out.println("marginalizing var = " +var);
+            System.out.println("marginalizing var = " + var);
             mseFactor = marginalize(mseFactor, var); //visualizer.visualizeFactor(mseFactor, "after marginalizing" + var);
         }
         return valueOfOneConstantFactor(mseFactor);
@@ -232,12 +232,12 @@ public class  XADDTest {
         int xadd_marginal = -1;
         if (bool_var_index > 0) {
             // Sum out boolean variable
-            int restrict_high = context.opOut(factor._xadd, bool_var_index, XADD.RESTRICT_HIGH);
-            int restrict_low = context.opOut(factor._xadd, bool_var_index, XADD.RESTRICT_LOW);
+            int restrict_high = context.opOut(factor.getXaddId(), bool_var_index, XADD.RESTRICT_HIGH);
+            int restrict_low = context.opOut(factor.getXaddId(), bool_var_index, XADD.RESTRICT_LOW);
             xadd_marginal = context.apply(restrict_high, restrict_low, XADD.SUM);
         } else {
             // Integrate out continuous variable
-            xadd_marginal = context.computeDefiniteIntegral(factor._xadd, variable);
+            xadd_marginal = context.computeDefiniteIntegral(factor.getXaddId(), variable);
         }
         return new Factor(xadd_marginal, context, "{" + factor.getHelpingText() + "|!" + variable + "}");
     }
@@ -252,7 +252,7 @@ public class  XADDTest {
     }
 
     public double valueOfOneConstantFactor(Factor constFactor) {
-        return context.evaluate(constFactor._xadd, new HashMap<String, Boolean>() /*EMPTY_BOOL*/, new HashMap<String, Double>()/*EMPTY_DOUBLE*/);
+        return context.evaluate(constFactor.getXaddId(), new HashMap<String, Boolean>() /*EMPTY_BOOL*/, new HashMap<String, Double>()/*EMPTY_DOUBLE*/);
     }
 
 

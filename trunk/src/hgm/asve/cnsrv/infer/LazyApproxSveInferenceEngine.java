@@ -11,7 +11,7 @@ import java.util.*;
  * Created by Hadi Afshar.
  * Date: 19/09/13
  * Time: 4:02 PM
- *
+ * <p/>
  * It is lazy since multiplication is done as late as possible
  */
 @Deprecated
@@ -177,8 +177,6 @@ public class LazyApproxSveInferenceEngine {
 //        _factory.getVisualizer().visualizeFactor(multipliedRemainedFactors, ("Last step before normalization"));
 
         _records.recordFactor(multipliedRemainedFactors);
-
-
 
 
         Factor finalResult;

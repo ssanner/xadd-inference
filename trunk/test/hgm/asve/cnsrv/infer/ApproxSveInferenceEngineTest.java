@@ -24,14 +24,14 @@ public class ApproxSveInferenceEngineTest {
 //NOTE: "radar.query3" does not work (even with the old SVE)!
 
         //NOTE: MSE = -6.763313647249394!!!!    -6.770624969513447!
-        instance.testMassThresholdApproxVsExactSVE("./src/sve/radar.gm", "./src/sve/radar.query.4", 0/*0.04*/, Double.POSITIVE_INFINITY, 1);
+        instance.testMassThresholdApproxVsExactSVE("./src/sve/radar.gm", "./src/sve/radar.query.4", 0/*0.04*/, Double.POSITIVE_INFINITY);
 //        instance.testSiblingApproximation("./src/sve/radar.gm", "./src/sve/radar.query.4", 5, 0.01, 1);
 
     }
 
     @Test
     public void testMassThresholdApproxVsExactSVE(String gmFile, String qFile,
-                                                  double massThreshold, double volumeThreshold, int numberOfFactorsLeadingToJoint) {
+                                                  double massThreshold, double volumeThreshold) {
         Boolean doApproxAndExactInference = true;
         Boolean doOldSVE = false;
 //        Boolean doExactInference = true;
@@ -45,7 +45,7 @@ public class ApproxSveInferenceEngineTest {
         Factor approxResultF = null;//inferHack(Arrays.asList("x_1", "x_2", "b_1", "o_1"));
         if (doApproxAndExactInference) {
 //            LazyApproxSveInferenceEngine approx = new LazyApproxSveInferenceEngine(factory, numberOfFactorsLeadingToJoint); //, massThreshold, volumeThreshold);
-            ApproxSveInferenceEngine approx = new ApproxSveInferenceEngine(factory, numberOfFactorsLeadingToJoint); //, massThreshold, volumeThreshold);
+            ApproxSveInferenceEngine approx = new ApproxSveInferenceEngine(factory); //, massThreshold, volumeThreshold);
 
 //        Factor approxResultF = approx.infer();
             approxResultF = approx.infer();
@@ -138,7 +138,7 @@ public class ApproxSveInferenceEngineTest {
 
         Records approxRecords;
         Factor approxResultF;
-        ApproxSveInferenceEngine approx = new ApproxSveInferenceEngine(factory, numberOfFactorsLeadingToJoint); //, maxDesiredNumberOfNodes, siblingDifThreshold);
+        ApproxSveInferenceEngine approx = new ApproxSveInferenceEngine(factory); //, maxDesiredNumberOfNodes, siblingDifThreshold);
 
         approxResultF = approx.infer();
         factory.getVisualizer().visualizeFactor(approxResultF, ("approx normalized result"));

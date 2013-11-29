@@ -1,5 +1,6 @@
-package hgm.asve.cnsrv.approxator.fitting;
+package hgm.asve.cnsrv.approxator.regression.measures;
 
+import hgm.asve.cnsrv.approxator.regression.SamplingDB;
 import xadd.XADD;
 
 /**
@@ -9,5 +10,6 @@ import xadd.XADD;
  */
 public interface DivergenceMeasure {
     public String measureName();
+
     public double calcDivergenceBetweenApproximatingNodeAndSamples(XADD context, XADD.XADDTNode approxNode, SamplingDB samples);
 }

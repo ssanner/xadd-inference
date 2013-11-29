@@ -15,6 +15,7 @@ public abstract class Function {
     public Function(List<String> effectiveVarNames) {
         this(effectiveVarNames.toArray(new String[0]));
     }
+
     public Function(String[] effectiveVarNames) {
         this.effectiveVarNames = effectiveVarNames;
         inputArgumentDimension = effectiveVarNames.length;

@@ -121,7 +121,7 @@ public class OLD_ExactSveInferenceEngineTest {
 
         QueryImpl q = new QueryImpl(
                 new HashSet<InstantiatedVariable>(
-                //Arrays.asList(
+                        //Arrays.asList(
 //                        new InstantiatedVariable(x1, "5"),     //todo WHAT IF WE HAVE INSTANTIATION????
 //                        new InstantiatedVariable(x2, "6")
                 ),

@@ -1,4 +1,4 @@
-package hgm.asve.cnsrv.approxator.fitting;
+package hgm.asve.cnsrv.approxator.regression;
 
 import hgm.asve.cnsrv.factor.IFactor;
 import hgm.asve.cnsrv.factory.ElementaryFactorFactory;
@@ -14,10 +14,10 @@ import java.util.Map;
  * Date: 20/10/13
  * Time: 6:20 PM
  */
-public class CurveFitting<F extends IFactor> {
+public class Regression<F extends IFactor> {
     ElementaryFactorFactory<F> factory;
 
-    public CurveFitting(ElementaryFactorFactory<F> factory) {
+    public Regression(ElementaryFactorFactory<F> factory) {
         this.factory = factory;
     }
 
@@ -64,7 +64,7 @@ public class CurveFitting<F extends IFactor> {
 
 
     /**
-     * @param phi design matrix &phi;
+     * @param phi                       design matrix &phi;
      * @param regularizationCoefficient Regularization coefficient &lambda;
      * @return <p>(&lambda; . <b>I</b> + &phi;<sup>T</sup> . &phi;)<sup>-1</sup> . &phi;<sup>T</sup>
      */
@@ -93,10 +93,10 @@ public class CurveFitting<F extends IFactor> {
     //todo move to a util class
     public static void printMatrix(String txt, RealMatrix m) {
         System.out.println("MATRIX " + txt + " = ");
-        for (int i=0; i<m.getRowDimension(); i++) {
+        for (int i = 0; i < m.getRowDimension(); i++) {
             double[] row = m.getRow(i);
             System.out.print("|");
-            for (int j=0; j<row.length; j++) {
+            for (int j = 0; j < row.length; j++) {
                 System.out.format("%15f ", row[j]);
             }
             System.out.println("|");
@@ -138,6 +138,8 @@ public class CurveFitting<F extends IFactor> {
 
         int loopNum = 1;
         int d = variables.size();
+
+        if (d == 0) return factors;
 
         for (; ; ) {
             List<int[]> varIndexesList = nestedLoops(loopNum++, d);

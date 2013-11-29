@@ -13,17 +13,15 @@ import java.util.*;
  * Time: 4:02 PM
  */
 public class ApproxSveInferenceEngine {
-    public static boolean NORMALIZE_RESULT = false; //todo tempo
+    public static boolean NORMALIZE_RESULT = true;//true;//false; //todo tempo
 
     private ModelBasedXaddFactorFactory factory;
     private Records _records;
 
-    public ApproxSveInferenceEngine(ModelBasedXaddFactorFactory factory
-            , int numberOfFactorsLeadingToJointFactorApproximation //todo, instead of num. of factors, if approx. num. of leaves (of a set of factors) is used, it might be better
-    ) {
+    public ApproxSveInferenceEngine(ModelBasedXaddFactorFactory factory) {
 
         this.factory = factory;
-        _records = new Records("approximate SVE");
+        _records = new Records("approximate-SVE");
 
     }
 
@@ -45,6 +43,7 @@ public class ApproxSveInferenceEngine {
      *         3. Factor multiplication (and approximation) is performed lazily (i.e. as late as possible)
      */
     public Factor infer() {
+        System.out.println("NORMALIZE_RESULT = " + NORMALIZE_RESULT);
         FBQuery query = factory.getQuery();
         _records.set("query.variables", query.getQueryVariables().toString());
         _records.set("query.continuous.instantiated.evidence", query.getContinuousInstantiatedEvidence().toString());
@@ -121,9 +120,9 @@ public class ApproxSveInferenceEngine {
                 if (!removableVarsExclusivelyUsedInNewJointFactor.isEmpty()) {
                     for (String varToMarginalize : removableVarsExclusivelyUsedInNewJointFactor) {
                         System.out.println("varToMarginalize = " + varToMarginalize);
-                        System.out.println("2.1 chosenF = " + chosenF);
+//                        System.out.println("2.1 chosenF = " + chosenF);
                         chosenF = factory.marginalize(chosenF, varToMarginalize); //todo: do I need approximation here as well?
-                        System.out.println("2.2 chosenF = " + chosenF);
+//                        System.out.println("2.2 chosenF = " + chosenF);
                         _records.variablesActuallyMarginalized.add(varToMarginalize);
                     }
                 }
@@ -138,10 +137,9 @@ public class ApproxSveInferenceEngine {
                 //5. Add the new joint factor set to the relevant set:
                 processedJointFactors.add(chosenF);
 
-                //todo tempo
-                /*Set<Factor> factorsInUse = new HashSet<Factor>(processedJointFactors);
+                Set<Factor> factorsInUse = new HashSet<Factor>(processedJointFactors);
                 factorsInUse.addAll(factorScoreMap.keySet());
-                factory.flushFactorsExcept(factorsInUse);*/
+                factory.flushFactorsExcept(factorsInUse);
             } //end while
         }
 
@@ -171,20 +169,11 @@ public class ApproxSveInferenceEngine {
 
         _records.recordFinalResult(finalResult);
 
-        //todo tempo
-        /*factory.makePermanent(Arrays.asList(finalResult));
-        factory.flushFactorsExcept(Collections.EMPTY_LIST);*/
+        factory.makePermanent(Arrays.asList(finalResult));
+        factory.flushFactorsExcept(Collections.EMPTY_LIST);
         return finalResult;
     }
 
-    /* private Set<Factor> getAllFactors(Set<FactorSet> collectionOfJointFactorSets) {
-         Set<Factor> allFactors = new HashSet<Factor>();
-         for (FactorSet factorSet : collectionOfJointFactorSets) {
-             allFactors.addAll(factorSet);
-         }
-         return allFactors;
-     }
- */
     private Factor heuristicallyChooseBestFactor(List<Factor> factors) {
         //todo definitely needs to be re-written. NOW DUMMY:
         if (factors.isEmpty()) throw new RuntimeException("what?");
@@ -217,6 +206,9 @@ public class ApproxSveInferenceEngine {
 
         int maxParentScore = 0;
         Set<String> parents = factory.getParents(var);
+        if (parents == null) {
+            throw new RuntimeException("NULL parents for " + var);
+        }
         for (String parent : parents) {
             maxParentScore = Math.max(maxParentScore, topologicallyScoreSelfAndAncestors(parent, variableScoreMap));
         }

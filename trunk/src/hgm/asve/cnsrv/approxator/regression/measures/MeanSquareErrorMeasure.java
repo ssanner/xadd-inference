@@ -1,6 +1,7 @@
-package hgm.asve.cnsrv.approxator.fitting;
+package hgm.asve.cnsrv.approxator.regression.measures;
 
 import hgm.asve.Pair;
+import hgm.asve.cnsrv.approxator.regression.SamplingDB;
 import xadd.XADD;
 
 import java.util.HashMap;

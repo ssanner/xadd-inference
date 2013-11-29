@@ -1,6 +1,7 @@
 package hgm.asve.cnsrv.factory;
 
 import hgm.asve.cnsrv.approxator.*;
+import hgm.asve.cnsrv.approxator.sampler.GridSampler;
 import hgm.asve.cnsrv.factor.Factor;
 import hgm.asve.cnsrv.factor.FactorVisualizer;
 import xadd.XADD;
@@ -47,13 +48,13 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
 
         //permanent factors remain untouched:
         for (Factor f : permanentFactors) {
-            Integer xaddId = f._xadd;
+            Integer xaddId = f.getXaddId();
             context.addSpecialNode(xaddId);
         }
 
         //special factors remain untouched:
         for (Factor f : specialFactors) {
-            Integer xaddId = f._xadd;
+            Integer xaddId = f.getXaddId();
             context.addSpecialNode(xaddId);
         }
 
@@ -65,14 +66,14 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         int mult_xadd = context.ONE;
         String text = "(";
         for (Factor f : factors) {
-            mult_xadd = context.applyInt(mult_xadd, f._xadd, XADD.PROD);
+            mult_xadd = context.applyInt(mult_xadd, f.getXaddId(), XADD.PROD);
             text += (f.getHelpingText() + ".");
         }
         return new Factor(mult_xadd, context, text.substring(0, text.length() - 1) + ")");
     }
 
     public Factor subtract(Factor f1, Factor f2) {
-        int subXaddId = context.applyInt(f1._xadd, f2._xadd, XADD.MINUS);
+        int subXaddId = context.applyInt(f1.getXaddId(), f2.getXaddId(), XADD.MINUS);
         return new Factor(subXaddId, context, "MINUS(" + f1.getHelpingText() + ", " + f2.getHelpingText() + ")");
     }
 
@@ -94,7 +95,7 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         Factor mseFactor = dif2;
         for (String var : scopeVars) {
 //            getVisualizer().visualizeFactor(mseFactor, "before marginalization");
-            System.out.println("marginalizing var = " + var);
+//            System.out.println("marginalizing var = " + var);
             mseFactor = marginalize(mseFactor, var);
 //            visualizer.visualizeFactor(mseFactor, "after marginalizing" + var);
         }
@@ -112,14 +113,14 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         String var2 = vars.get(1);
         int bool_var1_index = context.getBoolVarIndex(var1);
         int bool_var2_index = context.getBoolVarIndex(var2);
-        if (bool_var1_index > 0 || bool_var2_index >0) {
+        if (bool_var1_index > 0 || bool_var2_index > 0) {
             System.err.println("Not covered this case");
             return;
         }
 
         //Xadd of the leaf of each path (constraint on the path decisions) is returned:
         PathToXaddExpansionBasedIntegralCalculator calc = new PathToXaddExpansionBasedIntegralCalculator();
-        Map<List<XADD.XADDNode>, XADD.XADDNode> pathToXaddMap = calc.calculatePathToXaddMapping(context.getExistNode(factor._xadd), LeafFunction.identityFunction());
+        Map<List<XADD.XADDNode>, XADD.XADDNode> pathToXaddMap = calc.calculatePathToXaddMapping(context.getExistNode(factor.getXaddId()), LeafFunction.identityFunction());
         System.out.println("#paths: = " + pathToXaddMap.size());
 
         //now: I marginalize var1 on each path xadd:
@@ -136,7 +137,7 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         for (List<XADD.XADDNode> path : pathToVar1MarginalizedXaddMap.keySet()) {
             XADD.XADDNode v1Marginal = pathToVar1MarginalizedXaddMap.get(path);
             int marginalizedBothVarsNodeId = context.computeDefiniteIntegral(context._hmNode2Int.get(v1Marginal), var2);
-            Factor marginalizedBothVarsFactor = new Factor(marginalizedBothVarsNodeId,context, "?");
+            Factor marginalizedBothVarsFactor = new Factor(marginalizedBothVarsNodeId, context, "?");
             pathToBothVarsMarginalizedXaddMap.put(path, this.valueOfOneConstantFactor(marginalizedBothVarsFactor));
 //            visualizer.visualizeFactor(new Factor(marginalizedVar1NodeId, context, "..."), "a factor");
         }
@@ -182,15 +183,15 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         // Take appropriate action based on whether var is boolean or continuous
 //        int bool_var_index = context._alBooleanVars.contains(variable)//context.getBoolVarIndex(variable);
         int xadd_marginal = -1;
-        if (context._alBooleanVars.contains(variable)){//(bool_var_index > 0) {
+        if (context._alBooleanVars.contains(variable)) {//(bool_var_index > 0) {
             int bool_var_index = context.getBoolVarIndex(variable); //todo I am not even sure about this, check it....
             // Sum out boolean variable
-            int restrict_high = context.opOut(factor._xadd, bool_var_index, XADD.RESTRICT_HIGH);
-            int restrict_low = context.opOut(factor._xadd, bool_var_index, XADD.RESTRICT_LOW);
+            int restrict_high = context.opOut(factor.getXaddId(), bool_var_index, XADD.RESTRICT_HIGH);
+            int restrict_low = context.opOut(factor.getXaddId(), bool_var_index, XADD.RESTRICT_LOW);
             xadd_marginal = context.apply(restrict_high, restrict_low, XADD.SUM);
         } else {
             // Integrate out continuous variable
-            xadd_marginal = context.computeDefiniteIntegral(factor._xadd, variable);
+            xadd_marginal = context.computeDefiniteIntegral(factor.getXaddId(), variable);
         }
         return new Factor(xadd_marginal, context, "{" + factor.getHelpingText() + "|!" + variable + "}");
     }
@@ -215,7 +216,7 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
     @Override
     public Factor approximate(Factor factor) {
 //        MassThresholdXaddApproximator approximator = new MassThresholdXaddApproximator(context, new EfficientPathIntegralCalculator(context), massThreshold, volumeThreshold);
-        XADD.XADDNode approxNode = approximator.approximateXadd(context.getExistNode(factor._xadd));
+        XADD.XADDNode approxNode = approximator.approximateXadd(context.getExistNode(factor.getXaddId()));
         return new Factor(context._hmNode2Int.get(approxNode), context, "~" + factor.getHelpingText());
     }
 
@@ -225,7 +226,7 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         int mult_xadd = context.ONE;
         String text = "(";
         for (Factor f : factors) {
-            mult_xadd = context.applyInt(mult_xadd, f._xadd, XADD.PROD);
+            mult_xadd = context.applyInt(mult_xadd, f.getXaddId(), XADD.PROD);
 
 //            Factor ____originalFactor = new Factor(mult_xadd, context, "");
 //            visualizer.visualizeFactor(____originalFactor, "exact");
@@ -245,15 +246,29 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
     }
 
     public double valueOfOneConstantFactor(Factor constFactor) {
-        return context.evaluate(constFactor._xadd, new HashMap<String, Boolean>() /*EMPTY_BOOL*/, new HashMap<String, Double>()/*EMPTY_DOUBLE*/);
+        return context.evaluate(constFactor.getXaddId(), new HashMap<String, Boolean>() /*EMPTY_BOOL*/, new HashMap<String, Double>()/*EMPTY_DOUBLE*/);
     }
 
     public Factor normalize(Factor f) {
-        int xadd_norm = f._xadd;
-        for (String var : f._vars)
+        int xadd_norm = f.getXaddId();
+        for (String var : f.getScopeVars())
             xadd_norm = context.computeDefiniteIntegral(xadd_norm, var);
-        double norm = context.evaluate(xadd_norm, new HashMap<String, Boolean>() /*EMPTY_BOOL*/, new HashMap<String, Double>()/*EMPTY_DOUBLE*/);
-        xadd_norm = context.scalarOp(f._xadd, 1d / norm, XADD.PROD);
+
+
+        Double norm = context.evaluate(xadd_norm, new HashMap<String, Boolean>() /*EMPTY_BOOL*/, new HashMap<String, Double>()/*EMPTY_DOUBLE*/);
+        if (norm.equals(0d) || norm.isInfinite() || norm.isNaN()) {
+            System.out.println("NOTE: Infinite integral in normalization happens if in the borders of the valid space (near min and max), \n function is not zero and whence approximated by a function that is non-zero beyond that cube. \n While integration is calculated from -infty to infty, this problem happens.... ");
+            System.out.println("f = " + f);
+            System.out.println("f.getScopeVars() = " + f.getScopeVars());
+            System.out.println("context._hmInt2Node(xadd_norm) = " + context._hmInt2Node.get(xadd_norm));
+            this.getVisualizer().visualizeFactor(f, "f");
+            for (String var : f.getScopeVars()) {
+                xadd_norm = context.computeDefiniteIntegral(xadd_norm, var);
+                getVisualizer().visualizeFactor(new Factor(xadd_norm, context, ""), "after marg." + var);
+            }
+            throw new RuntimeException("invalid normalization factor: " + norm);
+        }
+        xadd_norm = context.scalarOp(f.getXaddId(), 1d / norm, XADD.PROD);
         return new Factor(xadd_norm, context, "Norm" + f.getHelpingText());
     }
 
@@ -267,7 +282,7 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
 
     @Override
     public Factor one() {
-        return  one;//new Factor(context.ONE, context, "ONE");
+        return one;//new Factor(context.ONE, context, "ONE");
     }
 
     public Factor zero() {
@@ -290,7 +305,7 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
 
     @Override
     public double evaluate(Factor factor, Map<String, Double> completeContinuousVariableAssignment) {
-        return context.evaluate(factor._xadd, new HashMap<String, Boolean>(), new HashMap<String, Double>(completeContinuousVariableAssignment));
+        return context.evaluate(factor.getXaddId(), new HashMap<String, Boolean>(), new HashMap<String, Double>(completeContinuousVariableAssignment));
     }
 
     public Double getMinValue(String varName) {
@@ -325,12 +340,83 @@ public class BaselineXaddFactorFactory implements FactorFactory<Factor> {
         for (Double i = lowBound; i < highBound; i += epsilon) {
             continuousAssignment.clear();
             continuousAssignment.put(x, i);
-            pSample = context.evaluate(p._xadd, emptyBooleanAssignment, continuousAssignment);
-            qSample = context.evaluate(q._xadd, emptyBooleanAssignment, continuousAssignment);
+            pSample = context.evaluate(p.getXaddId(), emptyBooleanAssignment, continuousAssignment);
+            qSample = context.evaluate(q.getXaddId(), emptyBooleanAssignment, continuousAssignment);
             sum += Math.log(pSample / (double) qSample) * pSample;
         }
 
         return sum / (double) numberOfSamples;
     }
+
+    public double mseApproxDivergence(Factor p, Factor q, int sampleNumPerContinuousVar) {
+
+        //1. collect vars:
+        Set<String> allPVars = p.getScopeVars();
+        Set<String> allQVars = q.getScopeVars();
+
+        if (!allPVars.equals(allQVars)) throw new RuntimeException("scope mismatch! between p.vars= " + p + " and q.vars= " + q);
+
+        List<String> binaryVars = new ArrayList<String>();
+        List<String> continuousVars = new ArrayList<String>();
+        for (String var : allPVars) {
+            if (context._alBooleanVars.contains(var)) {
+                binaryVars.add(var);
+            } else {
+                continuousVars.add(var);
+            }
+        }
+
+        //2. feed vars to Grid sampler:
+        String[] allVariables = new String[binaryVars.size() + continuousVars.size()];
+        double[] allMinValues = new double[binaryVars.size() + continuousVars.size()];
+        double[] allMaxValues = new double[binaryVars.size() + continuousVars.size()];
+        double[] allVarIncVals = new double[binaryVars.size() + continuousVars.size()];
+
+        for (int i = 0; i < binaryVars.size(); i++) {
+            allVariables[i] = binaryVars.get(i);
+            allMinValues[i] = 0;
+            allMaxValues[i] = 1;
+            allVarIncVals[i] = 1;
+        }
+        int offset = binaryVars.size();
+        for (int i = 0; i < continuousVars.size(); i++) {
+            String var = continuousVars.get(i);
+            Double min = context._hmMinVal.get(var);
+            Double max = context._hmMaxVal.get(var);
+            allVariables[i + offset] = var;
+            allMinValues[i + offset] = min;
+            allMaxValues[i + offset] = max;
+            allVarIncVals[i + offset] = (max - min) / (double) sampleNumPerContinuousVar;
+        }
+
+        GridSampler sampler = new GridSampler(allVariables, allMinValues, allMaxValues, allVarIncVals);
+
+        // 3. calc targets and final results:
+        int sampleCounter = 0;
+        double totalSquaredError = 0d;
+        Iterator<double[]> sampleIterator = sampler.getSampleIterator();
+
+        while (sampleIterator.hasNext()) {
+            double[] sample = sampleIterator.next();
+
+            //3.1 refactor grid sampler's results to assignments:
+            HashMap<String, Boolean> booleanAssignment = new HashMap<String, Boolean>(offset);
+            HashMap<String, Double> continuousAssignment = new HashMap<String, Double>(sample.length - offset);
+            for (int i = 0; i < offset; i++) {
+                booleanAssignment.put(allVariables[i], sample[i] != 0);
+            }
+            for (int i = offset; i < sample.length; i++) {
+                continuousAssignment.put(allVariables[i], sample[i]);
+            }
+
+            Double pTarget = context.evaluate(p.getXaddId(), booleanAssignment, continuousAssignment);
+            Double qTarget = context.evaluate(q.getXaddId(), booleanAssignment, continuousAssignment);
+            totalSquaredError += ((pTarget - qTarget)*(pTarget - qTarget));
+            sampleCounter++;
+        }
+
+        return totalSquaredError / (double) sampleCounter;
+    }
+
 
 }

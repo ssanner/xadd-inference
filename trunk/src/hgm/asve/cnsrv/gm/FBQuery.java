@@ -22,6 +22,7 @@ public class FBQuery {
     public Map<String, Double> getContinuousInstantiatedEvidence() {
         return q._hmCVarAssign;
     }
+
     public Map<String, Boolean> getBooleanInstantiatedEvidence() {
         return q._hmBVarAssign;
     }
@@ -35,8 +36,8 @@ public class FBQuery {
         return q._alQueryVars;
     }
 
-    public HashMap<String,ArrayList<Integer>> getVar2Expansion(){
-         return q._hmVar2Expansion;
+    public HashMap<String, ArrayList<Integer>> getVar2Expansion() {
+        return q._hmVar2Expansion;
     }
 
     public Set<String> fetchInstantiatedEvidenceVariables() {

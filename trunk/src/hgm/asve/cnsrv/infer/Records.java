@@ -38,7 +38,7 @@ public class Records {
 
 
         for (String record : recordedFactorSets) {
-           str.append(record);
+            str.append(record);
         }
 
         str.append("\n").append(title).append(".#maxFactorNode = ").append(maxFactorNodeCount);

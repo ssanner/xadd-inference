@@ -23,15 +23,16 @@ import java.util.HashMap;
  * Time: 10:26 AM
  */
 public class GeneralVisualizationUtils {
-    public static double PRECISION =0.25d;
+    public static double PRECISION = 0.25d;
 
     public static void plot(Function function, double lowerBound, double upperBound, String title) {
         String[] varNames = function.getEffectiveVarNames();
 
         switch (function.getInputArgumentDimension()) {
-            case 2: plot3DSurfXADD(function,
-                    lowerBound, PRECISION,  upperBound,
-                    lowerBound, PRECISION, upperBound, varNames[0], varNames[1], title);
+            case 2:
+                plot3DSurfXADD(function,
+                        lowerBound, PRECISION, upperBound,
+                        lowerBound, PRECISION, upperBound, varNames[0], varNames[1], title);
                 break;
             default:
                 throw new RuntimeException("not supported");
@@ -53,9 +54,9 @@ public class GeneralVisualizationUtils {
                                        double low_x, double inc_x, double high_x, double low_y, double inc_y, double high_y,
                                        HashMap<String, Boolean> static_bvars, HashMap<String, Double> static_dvars,
                                        String xVar, String yVar, String title) {
-        int sampleX= (int) Math.round( (high_x-low_x)/inc_x);
-        int sampleY= (int) Math.round( (high_y-low_y)/inc_y);
-        if (sampleX != sampleY){
+        int sampleX = (int) Math.round((high_x - low_x) / inc_x);
+        int sampleY = (int) Math.round((high_y - low_y) / inc_y);
+        if (sampleX != sampleY) {
             System.out.println("samples X and Y must be equal for Surface Plot, using X samples");
         }
         plot3DSurfXADD(function, low_x, high_x, low_y, high_y, (int) Math.ceil((high_x - low_x) / inc_x),
@@ -68,16 +69,16 @@ public class GeneralVisualizationUtils {
                                        String xVar, String yVar, String title) {
 
         ArrayList<Float> alX = new ArrayList<Float>(nSamples);
-        float inc_x = (float) (high_x-low_x)/nSamples;
+        float inc_x = (float) (high_x - low_x) / nSamples;
         float temp_x = (float) low_x;
-        for (int i=0;i<nSamples; i++){
+        for (int i = 0; i < nSamples; i++) {
             temp_x += inc_x;
             alX.add(temp_x);
         }
         ArrayList<Float> alY = new ArrayList<Float>(nSamples);
-        float inc_y = (float) (high_y-low_y)/nSamples;
+        float inc_y = (float) (high_y - low_y) / nSamples;
         float temp_y = (float) low_y;
-        for (int i=0;i<nSamples; i++){
+        for (int i = 0; i < nSamples; i++) {
             temp_y += inc_y;
             alY.add(temp_y);
         }
@@ -87,7 +88,7 @@ public class GeneralVisualizationUtils {
         }
 
         PrintStream ps = null;
-        String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "").replace(".dot","") + ".txt";
+        String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "").replace(".dot", "") + ".txt";
         title = RemovePathAndExt(title);
         try {
             ps = new PrintStream(new FileOutputStream(filename));
@@ -106,10 +107,10 @@ public class GeneralVisualizationUtils {
                 float x = alX.get(j);
                 float y = alY.get(i);
 
-                static_dvars.put(xVar, (double)x);
-                static_dvars.put(yVar, (double)y);
+                static_dvars.put(xVar, (double) x);
+                static_dvars.put(yVar, (double) y);
                 float z = (float) function.func(x, y);//context.evaluate(xadd, static_bvars, static_dvars).floatValue();
-                if (Float.isInfinite(z)) z=Float.NaN;
+                if (Float.isInfinite(z)) z = Float.NaN;
                 static_dvars.remove(xVar);
                 static_dvars.remove(yVar);
 
@@ -125,14 +126,14 @@ public class GeneralVisualizationUtils {
 
         // Create a Simple 2D XY plot window.
         JSurfacePanel jsp = new JSurfacePanel();
-        jsp.setTitleText(title + " X = "+ xVar+ " Y = "+ yVar);
+        jsp.setTitleText(title + " X = " + xVar + " Y = " + yVar);
 
         JFrame jf = new JFrame(title);
         jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         ArraySurfaceModel sm = new ArraySurfaceModel();
-        sm.setValues(xArr[0][0],xArr[alY.size()-1][alX.size()-1],
-                yArr[0][0],yArr[alY.size()-1][alX.size()-1],alX.size(), zArr, null);
+        sm.setValues(xArr[0][0], xArr[alY.size() - 1][alX.size() - 1],
+                yArr[0][0], yArr[alY.size() - 1][alX.size() - 1], alX.size(), zArr, null);
         sm.setDisplayXY(true);
         sm.setDisplayZ(true);
         sm.setDisplayGrids(true);
@@ -162,6 +163,7 @@ public class GeneralVisualizationUtils {
     public static class ExportActionListener implements ActionListener {
         String _filename = null;
         JSurfacePanel _jsp = null;
+
         public ExportActionListener(JSurfacePanel jsp, String fname) {
             _jsp = jsp;
             _filename = fname;

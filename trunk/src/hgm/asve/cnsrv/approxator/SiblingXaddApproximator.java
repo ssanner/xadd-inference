@@ -10,7 +10,8 @@ import java.util.*;
  * Date: 16/10/13
  * Time: 6:01 AM
  */
-public class SiblingXaddApproximator implements Approximator{
+@Deprecated
+public class SiblingXaddApproximator implements Approximator {
     private XADD context;
     private PathIntegralOnLeafFunctionCalculator pathValueCalculator;
 
@@ -28,7 +29,7 @@ public class SiblingXaddApproximator implements Approximator{
     public SiblingXaddApproximator(XADD context, PathIntegralOnLeafFunctionCalculator pathValueCalculator,
                                    int maxDesiredNumberOfNodes, double siblingDiffThreshold) {
 
-        this (pathValueCalculator, maxDesiredNumberOfNodes, siblingDiffThreshold);
+        this(pathValueCalculator, maxDesiredNumberOfNodes, siblingDiffThreshold);
         setupWithContext(context);
     }
 

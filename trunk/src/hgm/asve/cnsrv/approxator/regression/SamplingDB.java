@@ -1,4 +1,4 @@
-package hgm.asve.cnsrv.approxator.fitting;
+package hgm.asve.cnsrv.approxator.regression;
 
 import hgm.asve.Pair;
 
@@ -51,7 +51,7 @@ public class SamplingDB {  //todo, keeping the list of variables for each valuat
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("SamplingDB: <");
-        for (int i=0; i<size(); i++) {
+        for (int i = 0; i < size(); i++) {
             sb.append(continuousVarAssignSamples.get(i)).append(": ").append(targetValues.get(i)).append("\n");
         }
         sb.append(">");
@@ -60,5 +60,13 @@ public class SamplingDB {  //todo, keeping the list of variables for each valuat
 
     public boolean isEmpty() {
         return targetValues.isEmpty();
+    }
+
+    public static SamplingDB unionOfSamplingDBs(SamplingDB... dbs) {
+        SamplingDB union = new SamplingDB();
+        for (SamplingDB db : dbs) {
+            union.addAllSamplingInfo(db);
+        }
+        return union;
     }
 }

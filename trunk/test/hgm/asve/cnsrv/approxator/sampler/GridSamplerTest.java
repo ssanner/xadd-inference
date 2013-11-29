@@ -23,11 +23,12 @@ public class GridSamplerTest {
         int counter = 0;
         Iterator<double[]> sampleIterator = gs.getSampleIterator();
         while (sampleIterator.hasNext()) {
-            counter ++;
+            counter++;
             double[] next = sampleIterator.next();
         }
-        Assert.assertEquals(4*4*4, counter);
+        Assert.assertEquals(4 * 4 * 4, counter);
     }
+
     @Test
     public void testIterator2() throws Exception {
         GridSampler gs = new GridSampler(

@@ -1,5 +1,6 @@
 package hgm.DebugIntegral;
 
+import hgm.XaddVisualizer;
 import hgm.asve.cnsrv.factory.ModelBasedXaddFactorFactory;
 import hgm.asve.cnsrv.gm.FBQuery;
 import sve.GraphicalModel;
@@ -121,12 +122,12 @@ public class IntegralTest {
         int rootId = context.buildCanonicalXADDFromString(xaddStr);
         XADD.XADDNode root = context.getExistNode(rootId);
 
-        visualize(root, "root", context);
+        XaddVisualizer.visualize(root, "root", context);
 
         int marginalizedO1Id = context.computeDefiniteIntegral(rootId, "o_1");
         XADD.XADDNode marginO1 = context.getExistNode(marginalizedO1Id);
 
-        visualize(marginO1, "marginO1", context);
+        XaddVisualizer.visualize(marginO1, "marginO1", context);
 
         int marginalizedO1X2Id = context.computeDefiniteIntegral(marginalizedO1Id, "x_2");
         XADD.XADDTNode marginO1X2 = (XADD.XADDTNode) context.getExistNode(marginalizedO1X2Id);
@@ -142,37 +143,5 @@ public class IntegralTest {
 
     }
 
-    //todo move this visualizer and the rest to the the XADDUtils.
-    public static void visualize(XADD.XADDNode node, String title, XADD context) {
-        int numVars = node.collectVars().size();
-        if (numVars == 1) visualize1DimXadd(node, title, context);
-        else if (numVars == 2) visualize2DimXadd(node, title, context);
-        else System.err.println("a node with numVars = " + numVars + " cannot be visualized");
-    }
 
-    public static void visualize2DimXadd(XADD.XADDNode node, String title, XADD context) {
-
-        Iterator<String> iterator = node.collectVars().iterator();
-        String varX = iterator.next();
-        String varY = iterator.next();
-        double min_val_x = context._hmMinVal.get(varX);
-        double max_val_x = context._hmMaxVal.get(varX);
-        double min_val_y = context._hmMinVal.get(varY);
-        double max_val_y = context._hmMaxVal.get(varY);
-        XADDUtils.Plot3DSurfXADD(context, context._hmNode2Int.get(node),
-                min_val_x, 0.5d, max_val_x,
-                min_val_y, 0.5d, max_val_y,
-                varX, varY, title);
-    }
-
-    public static void visualize1DimXadd(XADD.XADDNode node, String title, XADD context) {
-        if (node.collectVars().size() != 1) throw new RuntimeException("only one variable expected!");
-
-        String var = node.collectVars().iterator().next();
-
-        double min_val = context._hmMinVal.get(var);
-        double max_val = context._hmMaxVal.get(var);
-
-        XADDUtils.PlotXADD(context, context._hmNode2Int.get(node), min_val, 0.1d, max_val, var, title);
-    }
 }

@@ -1,8 +1,7 @@
 package hgm.asve.cnsrv.infer;
 
-import hgm.asve.cnsrv.approxator.Approximator;
-import hgm.asve.cnsrv.approxator.fitting.CurveFittingBasedXaddApproximator;
-import hgm.asve.cnsrv.approxator.fitting.MeanSquareErrorMeasure;
+import hgm.asve.cnsrv.approxator.regression.DivisiveRegressionBasedXaddApproximator;
+import hgm.asve.cnsrv.approxator.regression.measures.MeanSquareErrorMeasure;
 import hgm.asve.cnsrv.factor.Factor;
 import hgm.asve.cnsrv.factory.ModelBasedXaddFactorFactory;
 import hgm.asve.cnsrv.gm.FBQuery;
@@ -21,14 +20,14 @@ public class LazyApproxSveInferenceEngineTest {
     public void testLazyVsNonLazy(String gmFile, String qFile, Boolean exclusivelyUseAncestorsOfQueryAndEvidenceFactors) throws Exception {
         FBQuery q = new FBQuery(qFile);
         ModelBasedXaddFactorFactory factory = ModelBasedXaddFactorFactory.newInstance(gmFile, q,
-                new CurveFittingBasedXaddApproximator(new MeanSquareErrorMeasure(), 2, 100, 0.01, 0.00002, 5)
+                new DivisiveRegressionBasedXaddApproximator(new MeanSquareErrorMeasure(), 2, 100, 0.01, 0.00002, 5)
 //                Approximator.DUMMY_APPROXIMATOR
         );
 
 
         ExactSveInferenceEngine exact = new ExactSveInferenceEngine(factory);
         LazyApproxSveInferenceEngine approx1 = new LazyApproxSveInferenceEngine(factory, 1);
-        ApproxSveInferenceEngine approx2 = new ApproxSveInferenceEngine(factory, 1);
+        ApproxSveInferenceEngine approx2 = new ApproxSveInferenceEngine(factory);
 
 
         Factor exactF = exact.infer(null, exclusivelyUseAncestorsOfQueryAndEvidenceFactors);

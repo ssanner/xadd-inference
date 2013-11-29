@@ -10,22 +10,22 @@ import java.util.Set;
  * Date: 2/10/13
  * Time: 12:17 AM
  */
-public class Factor implements IFactor{
-    public int _xadd;
-    public HashSet<String> _vars;
-    public XADD _localContext;
+public class Factor implements IFactor {
+    private int xaddId;
+    private HashSet<String> _vars;
+    private XADD _localContext;
 
     private String _helpingText;
 
     public Factor(int xadd, XADD context, String helpingText) {
-        _xadd = xadd;
+        xaddId = xadd;
         _localContext = context;
-        _vars = context.collectVars(_xadd);
+        _vars = context.collectVars(xaddId);
         _helpingText = helpingText;
     }
 
     public String toString() {
-        return "<"+_helpingText + ">: " + _vars + ":\n" + _localContext.getString(_xadd);
+        return "<" + _helpingText + ">: " + _vars + ":\n" + _localContext.getString(xaddId);
     }
 
     @Override
@@ -39,20 +39,31 @@ public class Factor implements IFactor{
         return _helpingText;
     }
 
-    public XADD.XADDNode getNode(){
-        return _localContext.getExistNode(_xadd);
+    public XADD.XADDNode getNode() {
+        return _localContext.getExistNode(xaddId);
     }
 
+    @Deprecated //always node rather than its id should be used
+    public int getXaddId() {
+        return xaddId;
+    }
+
+
+
     public int getLeafCount() {
-        return _localContext.getLeafCount(_xadd);
+        return _localContext.getLeafCount(xaddId);
     }
 
     public int getNodeCount() {
-        return _localContext.getNodeCount(_xadd);
+        return _localContext.getNodeCount(xaddId);
     }
 
     public int getBranchCount() {
-        return _localContext.getBranchCount(_xadd);
+        return _localContext.getBranchCount(xaddId);
+    }
+
+    public XADD getContext() {
+        return _localContext;
     }
 
     // NOTE: instantiated factors associated with different variables can point to a same xadd.
