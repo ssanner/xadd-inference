@@ -95,6 +95,26 @@ public class XaddPath extends ArrayList<XADD.XADDNode> {
             if (subPath.get(i) != this.get(i)) return false;
         }
         return true;
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        if (!super.equals(o)) return false;
+
+        XaddPath xaddNodes = (XaddPath) o;
+
+        if (!context.equals(xaddNodes.context)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + context.hashCode();
+        return result;
     }
 }

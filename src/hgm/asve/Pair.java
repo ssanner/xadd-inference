@@ -6,7 +6,7 @@ package hgm.asve;
  * Time: 6:59 PM
  */
 //Note: Scott has a similar class but since I am not sure about its Hash, I use this.
-public class Pair<K,V>{
+public class Pair<K, V> {
     private K entry1;
     private V entry2;
 

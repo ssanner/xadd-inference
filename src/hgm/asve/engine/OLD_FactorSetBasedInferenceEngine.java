@@ -12,12 +12,14 @@ import java.util.Collection;
 
 /**
  * an inference engine that exclusively needs a collection of factors
+ *
  * @param <E> factor
  */
 @Deprecated
-public interface OLD_FactorSetBasedInferenceEngine<E extends OLD_IFactor> extends  InferenceEngine<E> {
+public interface OLD_FactorSetBasedInferenceEngine<E extends OLD_IFactor> extends InferenceEngine<E> {
     /**
      * This method should be called before inference
+     *
      * @param factors A collection of factors is enough for inference and can be changed...
      */
     public void takeFactors(Collection<E> factors);

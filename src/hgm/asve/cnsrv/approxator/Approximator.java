@@ -11,7 +11,9 @@ public interface Approximator {
     /**
      * When the approximator is build (to be passed to factory) the context is not often ready.
      * Therefore before using approximator
+     *
      * @param context context should be passed to it via this (potentially heavy) method
+     *                TODO calc context statically and make yourself free of setup and all consequences...
      */
     void setupWithContext(XADD context);  //todo maybe context should be passed as an input argument to the following methods
 

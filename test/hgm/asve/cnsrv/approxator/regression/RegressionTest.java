@@ -1,4 +1,4 @@
-package hgm.asve.cnsrv.approxator.fitting;
+package hgm.asve.cnsrv.approxator.regression;
 
 import hgm.asve.cnsrv.factor.Factor;
 import hgm.asve.cnsrv.factor.MockFactor;
@@ -18,28 +18,28 @@ import java.util.*;
  * Date: 21/10/13
  * Time: 7:56 AM
  */
-public class CurveFittingTest {
+public class RegressionTest {
     public static void main(String[] args) throws Exception {
-        CurveFittingTest instance = new CurveFittingTest();
+        RegressionTest instance = new RegressionTest();
         instance.testFittingWithMock();
 //        instance.testFittingWithXaddFactors();
     }
 
     @Test
     public void nestedLoopsTest() {
-        Assert.assertEquals("[[0]]", CurveFitting.toStringNestedLoop(CurveFitting.nestedLoops(1, 1)));
-        Assert.assertEquals("[[0], [1], [2]]", CurveFitting.toStringNestedLoop(CurveFitting.nestedLoops(1, 3)));
-        Assert.assertEquals("[[0, 0, 0]]", CurveFitting.toStringNestedLoop(CurveFitting.nestedLoops(3, 1)));
-        Assert.assertEquals("[[0, 0, 0], [0, 0, 1], [0, 1, 1], [1, 1, 1]]", CurveFitting.toStringNestedLoop(CurveFitting.nestedLoops(3, 2)));
-        Assert.assertEquals("[[0, 0], [0, 1], [0, 2], [0, 3], [1, 1], [1, 2], [1, 3], [2, 2], [2, 3], [3, 3]]", CurveFitting.toStringNestedLoop(CurveFitting.nestedLoops(2, 4)));
+        Assert.assertEquals("[[0]]", Regression.toStringNestedLoop(Regression.nestedLoops(1, 1)));
+        Assert.assertEquals("[[0], [1], [2]]", Regression.toStringNestedLoop(Regression.nestedLoops(1, 3)));
+        Assert.assertEquals("[[0, 0, 0]]", Regression.toStringNestedLoop(Regression.nestedLoops(3, 1)));
+        Assert.assertEquals("[[0, 0, 0], [0, 0, 1], [0, 1, 1], [1, 1, 1]]", Regression.toStringNestedLoop(Regression.nestedLoops(3, 2)));
+        Assert.assertEquals("[[0, 0], [0, 1], [0, 2], [0, 3], [1, 1], [1, 2], [1, 3], [2, 2], [2, 3], [3, 3]]", Regression.toStringNestedLoop(Regression.nestedLoops(2, 4)));
         Assert.assertEquals("[[0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 1, 1], [0, 1, 2], [0, 2, 2], [1, 1, 1], [1, 1, 2], [1, 2, 2], [2, 2, 2]]",
-                CurveFitting.toStringNestedLoop(CurveFitting.nestedLoops(3, 3)));
+                Regression.toStringNestedLoop(Regression.nestedLoops(3, 3)));
     }
 
     @Test
     public void testCalculateBasisFunctions() throws Exception {
-        CurveFitting<MockFactor> curveFitting = new CurveFitting<MockFactor>(new MockFactorFactory());
-        List<MockFactor> basisFunctions = curveFitting.calculateBasisFunctions(3, Arrays.asList("x", "y", "z"));
+        Regression<MockFactor> regression = new Regression<MockFactor>(new MockFactorFactory());
+        List<MockFactor> basisFunctions = regression.calculateBasisFunctions(3, Arrays.asList("x", "y", "z"));
         Assert.assertEquals("[ONE, x, y, z, x.x, x.y, x.z, y.y, y.z, z.z, x.x.x, x.x.y, x.x.z, x.y.y, x.y.z, x.z.z, y.y.y, y.y.z, y.z.z, z.z.z]",
                 basisFunctions.toString());
     }
@@ -59,14 +59,14 @@ public class CurveFittingTest {
             public double func(double... effectiveVars) {
                 double x = effectiveVars[0];
                 double y = effectiveVars[1];
-                return (x>-3 && x<3 && y>-3 && y<3) ? 1 : 0;//x * x * x * x + (y + 3) * (y + 3);
+                return (x > -3 && x < 3 && y > -3 && y < 3) ? 1 : 0;//x * x * x * x + (y + 3) * (y + 3);
             }
         };
 
         GeneralVisualizationUtils.plot(target, lowerBound, higherBound, "exact");
 
         final MockFactorFactory mockFactory = new MockFactorFactory();
-        CurveFitting<MockFactor> fitting = new CurveFitting<MockFactor>(mockFactory);
+        Regression<MockFactor> fitting = new Regression<MockFactor>(mockFactory);
         final List<MockFactor> basisFunctions = fitting.calculateBasisFunctions(basisFunctionsMaxPower, variables);
         List<Map<String, Double>> sampleVarAssignments = new ArrayList<Map<String, Double>>(numSamples);
         List<Double> targetVarAssignments = new ArrayList<Double>(numSamples);
@@ -96,12 +96,12 @@ public class CurveFittingTest {
                 //reconstruct the map!
                 Map<String, Double> varAssign = new HashMap<String, Double>(2);
                 String[] varNames = getEffectiveVarNames();
-                for (int i=0; i< varNames.length; i++) {
+                for (int i = 0; i < varNames.length; i++) {
                     varAssign.put(varNames[i], effectiveVars[i]);
                 }
 
                 double totalValue = 0;
-                for (int i=0; i<basisFunctions.size(); i++){
+                for (int i = 0; i < basisFunctions.size(); i++) {
                     MockFactor basis = basisFunctions.get(i);
                     double basisValue = mockFactory.evaluate(basis, varAssign);
                     totalValue += (weights[i] * basisValue);
@@ -138,7 +138,7 @@ public class CurveFittingTest {
 
         GeneralVisualizationUtils.plot(target, lowerBound, higherBound, "exact");
 
-        CurveFitting<Factor> fitting = new CurveFitting<Factor>(factory);
+        Regression<Factor> fitting = new Regression<Factor>(factory);
         final List<Factor> basisFunctions = fitting.calculateBasisFunctions(basisFunctionsMaxPower, variables);
         List<Map<String, Double>> sampleVarAssignments = new ArrayList<Map<String, Double>>(numSamples);
         List<Double> targetVarAssignments = new ArrayList<Double>(numSamples);
@@ -168,12 +168,12 @@ public class CurveFittingTest {
                 //reconstruct the map!
                 Map<String, Double> varAssign = new HashMap<String, Double>(2);
                 String[] varNames = getEffectiveVarNames();
-                for (int i=0; i< varNames.length; i++) {
+                for (int i = 0; i < varNames.length; i++) {
                     varAssign.put(varNames[i], effectiveVars[i]);
                 }
 
                 double totalValue = 0;
-                for (int i=0; i<basisFunctions.size(); i++){
+                for (int i = 0; i < basisFunctions.size(); i++) {
                     Factor basis = basisFunctions.get(i);
                     double basisValue = factory.evaluate(basis, varAssign);
                     totalValue += (weights[i] * basisValue);

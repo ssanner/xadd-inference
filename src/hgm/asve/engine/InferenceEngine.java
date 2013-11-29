@@ -15,5 +15,6 @@ import java.util.List;
 @Deprecated
 public interface InferenceEngine<F extends OLD_IFactor> {
     public F infer(IQuery q);
+
     public F infer(IQuery q, List<Variable> varOrdering);
 }

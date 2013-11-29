@@ -11,30 +11,26 @@ import java.util.*;
  * Time: 12:00 PM
  */
 
-//Should become deprecated by Robust mass threshold approximator
-public class MassThresholdXaddApproximator implements Approximator {
+public class RobustMassThresholdXaddApproximator implements Approximator {
     private XADD context = null;
     private Map<List<XADD.XADDNode>, Double> pathMassMap;
     private Map<List<XADD.XADDNode>, Double> pathVolumeMap;
-//    private int rootXaddId;
 
     private PathIntegralOnLeafFunctionCalculator pathValueCalculator;
 
-    private double massThreshold;
-    private double volumeThreshold;
+    private int desiredNumberOfLeaves;
 
-    public MassThresholdXaddApproximator(PathIntegralOnLeafFunctionCalculator pathValueCalculator,
-                                         double massThreshold, double volumeThreshold) {
+    public RobustMassThresholdXaddApproximator(PathIntegralOnLeafFunctionCalculator pathValueCalculator,
+                                               int desiredNumberOfLeaves) {
         this.pathValueCalculator = pathValueCalculator;
-        this.massThreshold = massThreshold;
-        this.volumeThreshold = volumeThreshold;
+        this.desiredNumberOfLeaves = desiredNumberOfLeaves;
     }
 
-    public MassThresholdXaddApproximator(XADD context,
-                                         PathIntegralOnLeafFunctionCalculator pathValueCalculator,
-                                         double massThreshold, double volumeThreshold) {
+    public RobustMassThresholdXaddApproximator(XADD context,
+                                               PathIntegralOnLeafFunctionCalculator pathValueCalculator,
+                                               int desiredNumberOfLeaves) {
 
-        this(pathValueCalculator, massThreshold, volumeThreshold);
+        this(pathValueCalculator, desiredNumberOfLeaves);
 
         setupWithContext(context);
     }
@@ -46,25 +42,11 @@ public class MassThresholdXaddApproximator implements Approximator {
 
     @Override
     public XADD.XADDNode approximateXadd(XADD.XADDNode rootXadd) {
-//        XADD.XADDNode rootXadd = context.getExistNode(rootXaddId);
         pathMassMap = pathValueCalculator.calculatePathValueMap(rootXadd, context, LeafFunction.identityFunction());
         pathVolumeMap = pathValueCalculator.calculatePathValueMap(rootXadd, context, LeafFunction.oneFunction(context));
 
-        return context._hmInt2Node.get(approximateXADD(context._hmNode2Int.get(rootXadd)));
-    }
-
-    //todo use nodes rather than ids everywhere...
-    private int approximateXADD(int rootId/*double massThreshold, double volumeThreshold*/) {
-//        int rootId = this.rootXaddId;
-
-        while (context.getNode(rootId) instanceof XADD.XADDINode) {
-            System.out.println("---*---");
-            int newRootId = mergeNodes(rootId, massThreshold, volumeThreshold);
-            if (newRootId == rootId) break;
-            rootId = newRootId;
-        }
-
-        return rootId;
+//        return context._hmInt2Node.get(approximateXADD(context._hmNode2Int.get(rootXadd)));
+        return mergeNodes(rootXadd, desiredNumberOfLeaves);
     }
 
     class CompletePath {
@@ -77,18 +59,65 @@ public class MassThresholdXaddApproximator implements Approximator {
         }
     }
 
-    /**
-     * @param rootXaddNodeId  input xadd node id
-     * @param massThreshold   mass threshold
-     * @param volumeThreshold volume threshold
-     * @return node id of the xadd in which paths with mass and volume less than specified thresholds are merged.
-     */
-    public int mergeNodes(int rootXaddNodeId, double massThreshold, double volumeThreshold) {
+    public XADD.XADDNode mergeNodes(XADD.XADDNode rootXaddNode, int desiredNumberOfLeaves) {
+
+        List<List<XADD.XADDNode>> sortedPaths = new ArrayList<List<XADD.XADDNode>>(pathMassMap.keySet());
+        Collections.sort(sortedPaths, new Comparator<List<XADD.XADDNode>>() {
+            @Override
+            public int compare(List<XADD.XADDNode> p1, List<XADD.XADDNode> p2) {
+                Double mass1 = pathMassMap.get(p1);
+                Double mass2 = pathMassMap.get(p2);
+
+                if (mass1 <= 0) mass1 = Double.MAX_VALUE; // 0 regions should not be merged
+                if (mass2 <= 0) mass2 = Double.MAX_VALUE; // 0 regions should not be merged
+
+                if (mass1 < mass2) return -1;
+                if (mass1 > mass2) return 1;
+                return 0;
+            }
+        });
 
         Set<CompletePath> chosenCompletePathsToBeMerged = new HashSet<CompletePath>();
 
-        Double totalMass = 0d;
-        Double totalVolume = 0d;
+//        int numberOfNonMassivePaths = Math.max(0, sortedPaths.size() - desiredNumberOfLeaves);
+//        if (numberOfNonMassivePaths < 2 ) return rootXaddNode;
+
+        System.out.println("sortedPaths size = " + sortedPaths.size());
+//        System.out.println("numberOfNonMassivePaths = " + numberOfNonMassivePaths);
+
+        //for test
+        for (int i = 0; i < sortedPaths.size(); i++) {
+            List<XADD.XADDNode> path = sortedPaths.get(i);
+            Double m = pathMassMap.get(path);
+            System.out.println("m = " + m);
+        }
+
+
+        Set<XADD.XADDTNode> encounteredLeaves = new HashSet<XADD.XADDTNode>();
+        double totalMass = 0;
+        double totalVolume = 0;
+        for (int i = 0; i < sortedPaths.size(); i++) {
+            List<XADD.XADDNode> nonMassivePath = sortedPaths.get(i);
+            Double mass = pathMassMap.get(nonMassivePath);
+            Double volume = pathVolumeMap.get(nonMassivePath);
+
+            if (mass <= 0) break;
+            if (volume > Integer.MAX_VALUE) break;
+
+            totalMass += mass;
+            System.out.println("mass = " + mass);
+            totalVolume += volume;
+            System.out.println("volume = " + volume);
+            chosenCompletePathsToBeMerged.add(new CompletePath(nonMassivePath, volume));
+            encounteredLeaves.add((XADD.XADDTNode) nonMassivePath.get(nonMassivePath.size() - 1));
+            if (encounteredLeaves.size() >= desiredNumberOfLeaves) break;
+            System.out.println("encounteredLeaves.size = " + encounteredLeaves.size());
+        }
+
+        if (encounteredLeaves.size() < desiredNumberOfLeaves) return rootXaddNode;
+
+
+/*
         for (List<XADD.XADDNode> path : pathMassMap.keySet()) {
             Double mass = pathMassMap.get(path);
             Double volume = pathVolumeMap.get(path);
@@ -102,22 +131,22 @@ public class MassThresholdXaddApproximator implements Approximator {
         }
 
         if (chosenCompletePathsToBeMerged.size() < 2)
-            return rootXaddNodeId; //nothing is merged.
+            return rootXaddNode; //nothing is merged.
+*/
 
         double averageMass = (totalVolume <= 0) ? 0 : (totalMass / totalVolume);
 //            if (DEBUG_XADD_PATH_MASS) System.out.println("averageMass = " + averageMass);
 
-        int returnedXaddNodeId;
-        int substitutingTermNodeId = context.getTermNode(new ExprLib.DoubleExpr(averageMass));
+        XADD.XADDNode returnedXaddNode;
+        XADD.XADDTNode substitutingTermNode = (XADD.XADDTNode) context.getExistNode(context.getTermNode(new ExprLib.DoubleExpr(averageMass)));
 
         List<XADD.XADDNode> completePathFromRoot = new ArrayList<XADD.XADDNode>();
-        completePathFromRoot.add(context.getExistNode(rootXaddNodeId)); // the root itself
-        returnedXaddNodeId = context._hmNode2Int.get(
-                leafSubstituteXADD(completePathFromRoot,
-                        chosenCompletePathsToBeMerged,
-                        (XADD.XADDTNode) context.getExistNode(substitutingTermNodeId)));
+        completePathFromRoot.add(rootXaddNode); // the root itself
+        returnedXaddNode = leafSubstituteXADD(completePathFromRoot,
+                chosenCompletePathsToBeMerged,
+                substitutingTermNode);
 
-        return returnedXaddNodeId;
+        return returnedXaddNode;
     }
 
 

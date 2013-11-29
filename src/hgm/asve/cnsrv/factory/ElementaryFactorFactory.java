@@ -16,7 +16,6 @@ public interface ElementaryFactorFactory<F extends IFactor> {
     F one();
 
     /**
-     *
      * @param vars array of variables v_1, v_2, ...
      * @return a variable that corresponds the expression v_1.v_2....
      */

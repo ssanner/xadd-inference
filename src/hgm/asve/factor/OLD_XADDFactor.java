@@ -11,10 +11,10 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
-* Created by Hadi M Afshar
-* Date: 13/09/13
-* Time: 8:55 PM
-*/
+ * Created by Hadi M Afshar
+ * Date: 13/09/13
+ * Time: 8:55 PM
+ */
 @Deprecated
 public class OLD_XADDFactor implements OLD_IFactor {
     private OLD_XADDFactory _factory;
@@ -32,7 +32,8 @@ public class OLD_XADDFactor implements OLD_IFactor {
         _scopeVars = factory.collectScopeVars(this);
 
         //test:
-        if (associatedVar != null && !_scopeVars.contains(associatedVar)) throw new RuntimeException("associated factor not in scope!");
+        if (associatedVar != null && !_scopeVars.contains(associatedVar))
+            throw new RuntimeException("associated factor not in scope!");
     }
 
     @Override
@@ -81,7 +82,7 @@ public class OLD_XADDFactor implements OLD_IFactor {
         }
 
         double norm = _factory.evaluate(normalizationFactor, new ArrayList<InstantiatedVariable>());
-        if(Configurations.DEBUG) {
+        if (Configurations.DEBUG) {
             System.out.println("normalizing factor = " + (1.00d / norm));
         }
         return _factory.scalarMultiply(this, 1.00d / norm);

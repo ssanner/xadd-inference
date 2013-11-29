@@ -105,7 +105,7 @@ public class SimpleBayesianGraphicalModel<F extends OLD_IFactor> implements Baye
     @Override
     public F getAssociatedFactor(Variable variable) {
         for (F f : _allFactorsSorted) {
-             if (f.getAssociatedVar()==variable) return f;
+            if (f.getAssociatedVar() == variable) return f;
         }
         return null; //not found
     }

@@ -13,8 +13,7 @@ import java.util.Map;
 public abstract class LeafFunction {
 
     /**
-     *
-     * @param leaf leaf for which the function is calculated
+     * @param leaf       leaf for which the function is calculated
      * @param pathToLeaf path does not include the leaf node itself
      * @return function of the leaf (and its path)
      */
@@ -32,6 +31,7 @@ public abstract class LeafFunction {
     public static LeafFunction oneFunction(final XADD context) {
         return new LeafFunction() {
             XADD.XADDNode one = context.getExistNode(context.ONE);
+
             @Override
             public XADD.XADDNode func(XADD.XADDTNode leaf, List<XADD.XADDINode> pathToLeaf) {
                 return one;
@@ -48,7 +48,7 @@ public abstract class LeafFunction {
             public XADD.XADDNode func(XADD.XADDTNode leaf, List<XADD.XADDINode> pathToLeaf) {
                 XADD.XADDNode infinity = context.getExistNode(context.POS_INF);
 
-                if (pathToLeaf.size()<1) return infinity; //no parent hence no sibling
+                if (pathToLeaf.size() < 1) return infinity; //no parent hence no sibling
 
                 XADD.XADDINode parent = pathToLeaf.get(pathToLeaf.size() - 1);
 //                System.out.println("leaf = " + leaf);

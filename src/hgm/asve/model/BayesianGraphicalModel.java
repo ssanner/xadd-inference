@@ -11,8 +11,9 @@ import java.util.Set;
  * Date: 19/09/13
  * Time: 2:32 PM
  */
-public interface BayesianGraphicalModel<F extends OLD_IFactor>{
+public interface BayesianGraphicalModel<F extends OLD_IFactor> {
     Set<F> getParents(F factor);
+
     int calcMaxDistanceFromLeaf(F factor);
 
     /**

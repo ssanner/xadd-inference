@@ -13,6 +13,8 @@ import java.util.Collection;
 @Deprecated
 public interface OLD_FactorFactory<E extends OLD_IFactor> {
     E multiply(Collection<E> factors);
+
     E marginalize(E factor, Variable v);
+
     E approximate(E factor);
 }

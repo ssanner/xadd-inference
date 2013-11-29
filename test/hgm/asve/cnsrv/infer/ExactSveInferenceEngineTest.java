@@ -53,7 +53,7 @@ public class ExactSveInferenceEngineTest {
 
 //        FBXADDFactorFactory factory2 = new FBXADDFactorFactory(gmFile, -1, -1);
         FBQuery q = new FBQuery(qFile);
-        ModelBasedXaddFactorFactory factory = ModelBasedXaddFactorFactory.newInstance(gmFile, q, null /*I think no approximator is needed here*/);
+        ModelBasedXaddFactorFactory factory = ModelBasedXaddFactorFactory.newInstance(gmFile, q, Approximator.DUMMY_APPROXIMATOR /*I think no approximator is needed here*/);
 
         ExactSveInferenceEngine exact = new ExactSveInferenceEngine(factory);
         Factor exactResultF = exact.infer(null, true);
@@ -80,7 +80,7 @@ public class ExactSveInferenceEngineTest {
         System.out.println("exactRecords = " + exactRecords);
 
         System.out.println("----------- F I N A L   F A C T O R S --------------");
-        System.out.printf("old SVE final Result Record = \t\t\t\t\t\t\t\t\t\t\t [#Node: %d][#Leaf: %d][#path: %d]\n",oldNodeCount, oldLeafCount, oldPathCount);
+        System.out.printf("old SVE final Result Record = \t\t\t\t\t\t\t\t\t\t\t [#Node: %d][#Leaf: %d][#path: %d]\n", oldNodeCount, oldLeafCount, oldPathCount);
         System.out.println("exactRecords.getFinalResultRecord() = " + exactRecords.getFinalResultRecord());
         System.out.println("----------- . . . . . . . . . . . . .---------------");
 

@@ -34,7 +34,7 @@ public class ModelBasedXaddFactorFactory extends BaselineXaddFactorFactory {
     }
 
     private ModelBasedXaddFactorFactory(FBGraphicalModel gm, FBQuery instantiatingQuery, Approximator approximator, XADD context) {
-       super(context, approximator);
+        super(context, approximator);
         this.gm = gm;
         this.query = instantiatingQuery;
 
@@ -46,28 +46,6 @@ public class ModelBasedXaddFactorFactory extends BaselineXaddFactorFactory {
         //the factors associated with variables will never be flushed away.
         makePermanent(instantiatedFactorVarMap.keySet());
     }
-   /* private ModelBasedXaddFactorFactory(String modelFileName, FBQuery instantiatingQuery, Approximator approximator) {
-        super(null, approximator); //this is a little hack since context is not created yet...
-        gm = new FBGraphicalModel(modelFileName);
-        query = instantiatingQuery;
-        instantiateFactoryWithQuery(instantiatingQuery);
-
-        //now context is made and can be passed to the approximator:
-        approximator.setupWithContext(context);
-
-        //the factors associated with variables will never be flushed away.
-        permanentFactors = new HashSet<Factor>(instantiatedFactorVarMap.keySet());
-    }*/
-
-    /*private void instantiateFactoryWithQuery(FBQuery q) {
-        // instantiateGMTemplate:
-        gm.instantiateGMTemplate(q.getVar2Expansion());
-        this.context = gm._context;
-
-        instantiatedVarFactorMap = gm.instantiateByVariableAssignment(gm._varFactorMap, q.getContinuousInstantiatedEvidence(), q.getBooleanInstantiatedEvidence());
-        instantiatedFactorVarMap = invertMap(instantiatedVarFactorMap);
-        varParentsMap = populateVarParentMap(instantiatedVarFactorMap);
-    }*/
 
     public FBQuery getQuery() {
         return query;
@@ -129,11 +107,6 @@ public class ModelBasedXaddFactorFactory extends BaselineXaddFactorFactory {
         return varParents;
     }
 
-
-   /* public int countLeafCount(Factor approxResultF) {
-        return context.getLeafCount(approxResultF._xadd);
-    }
-*/
     public Collection<? extends String> getAllVariables() {
         return this.gm.getAllVariables();
     }

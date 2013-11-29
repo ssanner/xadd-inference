@@ -43,8 +43,8 @@ public static final boolean DEBUG_XADD_PATH_MASS = true;
 
     */
 /**
-     * @return node id of the modified (approximated) XADD.
-     *//*
+ * @return node id of the modified (approximated) XADD.
+ *//*
 
     @Deprecated
     public int mergeNodes(int rootXaddNodeId, double massThreshold, double volumeThreshold) {
@@ -106,12 +106,12 @@ public static final boolean DEBUG_XADD_PATH_MASS = true;
 
     */
 /**
-     * @param thisXADD          The XADD in which a group of terminals should be replaced by a single terminal
-     * @param completePathsToLeavesToBeSubstituted
-     *                          list of terminals should be replaced
-     * @param replacingTerminal replacing terminal
-     * @return id of the resulting xadd, NULL if constraints (i.e. the conjunction of path decisions) is not satisfiable.
-     *//*
+ * @param thisXADD          The XADD in which a group of terminals should be replaced by a single terminal
+ * @param completePathsToLeavesToBeSubstituted
+ *                          list of terminals should be replaced
+ * @param replacingTerminal replacing terminal
+ * @return id of the resulting xadd, NULL if constraints (i.e. the conjunction of path decisions) is not satisfiable.
+ *//*
 
     public XADDNode leafSubstituteXADD(XADDNode thisXADD,
                                        List<XADDINode> pathFromRootToThisXADD,
@@ -173,13 +173,13 @@ public static final boolean DEBUG_XADD_PATH_MASS = true;
 
 
 
-    /*/
+ /*/
 /*********************************************************************************
 
 
-    public PathMassCalculator computePathMass(int xaddNodeId) {
-        PathMassCalculator massCalculator = new PathMassCalculator(xaddNodeId);
-        reduceProcessXADDLeaf(xaddNodeId, massCalculator, */
+ public PathMassCalculator computePathMass(int xaddNodeId) {
+ PathMassCalculator massCalculator = new PathMassCalculator(xaddNodeId);
+ reduceProcessXADDLeaf(xaddNodeId, massCalculator, */
 /* canonical_reorder *//*
 false);
 

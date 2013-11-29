@@ -3,7 +3,6 @@ package hgm.asve.cnsrv.factor;
 import hgm.asve.cnsrv.factory.BaselineXaddFactorFactory;
 import xadd.XADDUtils;
 
-import javax.swing.*;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -18,7 +17,7 @@ import java.util.Iterator;
  */
 public class FactorVisualizer {
     public double PRECISION_1D = 0.5;
-    public double PRECISION_2D = 0.2;
+    public double PRECISION_2D = 0.5;
     private BaselineXaddFactorFactory factory;
 
     public FactorVisualizer(BaselineXaddFactorFactory factory) {
@@ -32,7 +31,7 @@ public class FactorVisualizer {
                     + " | " + factory.getQuery().getBooleanInstantiatedEvidence()
                     + ", " + factory.getQuery().getContinuousInstantiatedEvidence();
         }*/
-        switch (factor.getScopeVars().size()){
+        switch (factor.getScopeVars().size()) {
             case 0:
 //                JOptionPane.showMessageDialog(null, factor.toString());
                 System.out.println("[VISUAL] factor = " + factor);
@@ -74,7 +73,7 @@ public class FactorVisualizer {
 //        System.out.println("min_val = " + min_val);
 //        System.out.println("max_val = " + max_val);
 
-        XADDUtils.PlotXADD(factory.getContext(), factor._xadd, min_val, 0.1d, max_val, var, title);
+        XADDUtils.PlotXADD(factory.getContext(), factor.getXaddId(), min_val, 0.1d, max_val, var, title);
 //        double integral = XADDUtils.TestNormalize(factor.getFactory().getContext(), factor.getNodeId(), var);
 //        if (Math.abs(integral - 1d) > 0.001d)
 //            System.err.println("WARNING: distribition does not integrate out to 1: " + integral);
@@ -92,7 +91,7 @@ public class FactorVisualizer {
 
         assert (min_val_x != null && max_val_x != null && min_val_y != null && max_val_y != null);
 
-        XADDUtils.Plot3DSurfXADD(factor._localContext, factor._xadd,
+        XADDUtils.Plot3DSurfXADD(factor.getContext(), factor.getXaddId(),
                 min_val_x, PRECISION_2D, max_val_x,
                 min_val_y, PRECISION_2D, max_val_y,
                 varX, varY, title);
@@ -102,9 +101,9 @@ public class FactorVisualizer {
     private void dataExport1D(Factor factor, String filename) throws FileNotFoundException {
         PrintStream ps;
         ps = new PrintStream(new FileOutputStream(filename));
-        String var = factor._vars.iterator().next();
-        double low = factor._localContext._hmMinVal.get(var);
-        double high = factor._localContext._hmMaxVal.get(var);
+        String var = factor.getScopeVars().iterator().next();
+        double low = factor.getContext()._hmMinVal.get(var);
+        double high = factor.getContext()._hmMaxVal.get(var);
 
         HashMap<String, Double> dvars = new HashMap<String, Double>();
 
@@ -117,7 +116,7 @@ public class FactorVisualizer {
         for (int i = 0; i < alX.size(); i++) {
             double x = alX.get(i);
             dvars.put(var, x);
-            double y = factor._localContext.evaluate(factor._xadd, new HashMap<String, Boolean>() /*empty bool*/, dvars);
+            double y = factor.getContext().evaluate(factor.getXaddId(), new HashMap<String, Boolean>() /*empty bool*/, dvars);
             dvars.remove(var);
 
             ps.println(x + "\t" + y);
@@ -141,13 +140,13 @@ public class FactorVisualizer {
         HashMap<String, Boolean> static_bvars = new HashMap<String, Boolean>();
         HashMap<String, Double> static_dvars = new HashMap<String, Double>();
 
-        Iterator iter = factor._vars.iterator();
+        Iterator iter = factor.getScopeVars().iterator();
         String varX = (String) iter.next();
         String varY = (String) iter.next();
-        double low_x = factor._localContext._hmMinVal.get(varX);
-        double high_x = factor._localContext._hmMaxVal.get(varX);
-        double low_y = factor._localContext._hmMinVal.get(varY);
-        double high_y = factor._localContext._hmMaxVal.get(varY);
+        double low_x = factor.getContext()._hmMinVal.get(varX);
+        double high_x = factor.getContext()._hmMaxVal.get(varX);
+        double low_y = factor.getContext()._hmMinVal.get(varY);
+        double high_y = factor.getContext()._hmMaxVal.get(varY);
         double inc_x = 0.5d;
         double inc_y = inc_x;
 
@@ -170,11 +169,11 @@ public class FactorVisualizer {
 
                 static_dvars.put(varX, x);
                 static_dvars.put(varY, y);
-                double z = factor._localContext.evaluate(factor._xadd, static_bvars, static_dvars);
+                double z = factor.getContext().evaluate(factor.getXaddId(), static_bvars, static_dvars);
                 if (divisor != null) {
                     // System.out.println(static_bvars + " " + static_dvars);
                     // System.out.println(divisor._localContext.getString(divisor._xadd));
-                    z /= divisor._localContext.evaluate(divisor._xadd, static_bvars, static_dvars);
+                    z /= divisor.getContext().evaluate(divisor.getXaddId(), static_bvars, static_dvars);
                     if (Double.isInfinite(z) || Double.isNaN(z) || z < 0d)
                         z = 0d;
                 }

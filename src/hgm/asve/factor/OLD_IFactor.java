@@ -13,9 +13,10 @@ import java.util.Set;
 /*
  An interface of all factors
  */
-    @Deprecated
+@Deprecated
 public interface OLD_IFactor {
     //todo: associated variable is a characteristic fo model not factor.
+
     /**
      * @return The variable associated with the factor. Null if none.
      */

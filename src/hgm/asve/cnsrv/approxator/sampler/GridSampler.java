@@ -15,6 +15,7 @@ public class GridSampler {
 
     int n;
     double[] firstOutput;
+
     public GridSampler(String[] cVars, double[] cVarMinValues, double[] cVarMaxValues, double[] cVarGridIncValues) {
         this.cVars = cVars;
         this.cVarMinValues = cVarMinValues;
@@ -44,9 +45,9 @@ public class GridSampler {
             public double[] next() {
                 double[] currentOutput = nextOutput.clone();
 
-                int index = nextOutput.length-1;
-                try{
-                increaseEntry(index, nextOutput);
+                int index = nextOutput.length - 1;
+                try {
+                    increaseEntry(index, nextOutput);
                 } catch (IndexOutOfBoundsException e) {
                     nextOutput = null;
                 }

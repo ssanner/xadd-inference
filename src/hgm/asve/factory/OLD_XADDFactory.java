@@ -64,7 +64,7 @@ public class OLD_XADDFactory implements OLD_FactorFactory<OLD_XADDFactor> {
         ArrayList l = new ArrayList(1);
         l.add("[" + function + "]");
         int cptId = _context.buildCanonicalXADD(l);
-        return new OLD_XADDFactor(this,associatedVar, function, cptId);
+        return new OLD_XADDFactor(this, associatedVar, function, cptId);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class OLD_XADDFactory implements OLD_FactorFactory<OLD_XADDFactor> {
     @Override
     public OLD_XADDFactor marginalize(OLD_XADDFactor factor, Variable variable) {
         int integralNodeId = _context.computeDefiniteIntegral(factor.getNodeId(), variable.getName());
-        return new OLD_XADDFactor(this, null, "[[Marginalize{" + factor + "}d"+ variable + "]]", integralNodeId);
+        return new OLD_XADDFactor(this, null, "[[Marginalize{" + factor + "}d" + variable + "]]", integralNodeId);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class OLD_XADDFactory implements OLD_FactorFactory<OLD_XADDFactor> {
         MassThresholdXaddApproximator approximator = new MassThresholdXaddApproximator(_context, new EfficientPathIntegralCalculator(), _massThreshold, _volumeThreshold);
         int approximatedNodeId =
                 _context._hmNode2Int.get(approximator.approximateXadd(_context._hmInt2Node.get(factor.getNodeId())));//_context.approximateXADD(factor.getNodeId(), _massThreshold, _volumeThreshold);
-        return new OLD_XADDFactor(this, null, "[[Approx{" + factor + "}]]",approximatedNodeId);
+        return new OLD_XADDFactor(this, null, "[[Approx{" + factor + "}]]", approximatedNodeId);
     }
 
     public Set<Variable> collectScopeVars(OLD_XADDFactor factor) {
@@ -94,7 +94,7 @@ public class OLD_XADDFactory implements OLD_FactorFactory<OLD_XADDFactor> {
         Set<String> varNames = _context.collectVars(factor.getNodeId());
         Set<Variable> vars = new HashSet<Variable>(varNames.size());
         for (String varName : varNames) {
-             vars.add(new Variable(varName));
+            vars.add(new Variable(varName));
         }
         return vars;
     }

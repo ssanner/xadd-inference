@@ -239,7 +239,7 @@ public class OLD_ApproxSveInferenceEngineTest {
         }
 */
 
-       //-------------
+        //-------------
         //Comparing with simple SVE:
         OLD_ExactSveInferenceEngine<OLD_XADDFactor> exactEngine = new OLD_ExactSveInferenceEngine<OLD_XADDFactor>(factory,
                 Arrays.asList(df, x1f, x2f));
@@ -247,7 +247,6 @@ public class OLD_ApproxSveInferenceEngineTest {
         if (resultF.getScopeVars().size() == 1) {
             factory.visualize1DFactor(exactResultF, "non normalized exact result");
         }
-
 
 
     }

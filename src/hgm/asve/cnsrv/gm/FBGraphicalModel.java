@@ -62,7 +62,8 @@ public class FBGraphicalModel {
     public void instantiateGMTemplate(HashMap<String, ArrayList<Integer>> var2expansion) {
 
         _context = new XADD();
-        if (XADD.PRECISION != 0.0d) throw new RuntimeException("0 persicion expected"); //maximum precision to prevent hashCode collision //todo since it is static, this is useless
+        if (XADD.PRECISION != 0.0d)
+            throw new RuntimeException("0 persicion expected"); //maximum precision to prevent hashCode collision //todo since it is static, this is useless
         if (XADD.ROUND_PRECISION != null) throw new RuntimeException("null round precision expected");
         _varFactorMap = new HashMap<String, Factor>();
 //        _hsVariables = new HashSet<String>();
@@ -155,10 +156,10 @@ public class FBGraphicalModel {
         for (String associatedVar : unInstantiatedVarFactorMap.keySet()) {
             Factor unInstantiatedFactor = unInstantiatedVarFactorMap.get(associatedVar);
 
-            int instantiatedXaddNodId = unInstantiatedFactor._xadd;
+            int instantiatedXaddNodId = unInstantiatedFactor.getXaddId();
             HashMap<String, ArithExpr> substitution = new HashMap<String, ArithExpr>();
 
-            for (String scopeVar : unInstantiatedFactor._vars) {
+            for (String scopeVar : unInstantiatedFactor.getScopeVars()) {
                 Boolean bAssign = booleanAssignmentMap.get(scopeVar);
                 if (bAssign != null) {
                     // Boolean assignment -- restrict
@@ -322,7 +323,7 @@ public class FBGraphicalModel {
         }
     }
 
-    public Set<String> getAllVariables(){
+    public Set<String> getAllVariables() {
         return _varFactorMap.keySet();
     }
 

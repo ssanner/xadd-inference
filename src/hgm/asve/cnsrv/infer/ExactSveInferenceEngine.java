@@ -104,7 +104,7 @@ public class ExactSveInferenceEngine {
         Factor result = _factory.multiply(factors);
         _records.recordFactor(result);
         Factor norm_result = _factory.normalize(result);
-        _records.set("remaining.variables", norm_result._vars.toString());
+        _records.set("remaining.variables", norm_result.getScopeVars().toString());
 
         //test reduction:
 //        int reducedId = _factory.context.reduceLP(norm_result._xadd, true);
@@ -123,7 +123,7 @@ public class ExactSveInferenceEngine {
         factors_with_var.clear();
         factors_without_var.clear();
         for (Factor f : factor_source)
-            if (f._vars.contains(split_var))
+            if (f.getScopeVars().contains(split_var))
                 factors_with_var.add(f);
             else
                 factors_without_var.add(f);
@@ -136,7 +136,7 @@ public class ExactSveInferenceEngine {
         g.setMultiEdges(false);
         for (String v : variables) {
             Factor f = _factory.getAssociatedInstantiatedFactor(v);
-            g.addAllUniLinks(f._vars, f._vars);
+            g.addAllUniLinks(f.getScopeVars(), f.getScopeVars());
         }
         // g.launchViewer();
 
@@ -158,7 +158,7 @@ public class ExactSveInferenceEngine {
     private void recursivelyPopulateAncestorSet(String var, Set<String> ancestorSet) {
         Set<String> parents = _factory.getParents(var);
         if (parents == null) {
-            System.err.println("unknown variable " + var +"!!!");
+            System.err.println("unknown variable " + var + "!!!");
             return;
         }
 
