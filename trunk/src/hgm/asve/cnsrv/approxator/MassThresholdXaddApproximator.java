@@ -93,7 +93,7 @@ public class MassThresholdXaddApproximator implements Approximator {
             Double mass = pathMassMap.get(path);
             Double volume = pathVolumeMap.get(path);
 
-            if (mass > 0 && mass <= massThreshold && volume <= volumeThreshold) {
+            if (volume <=0 || (mass > 0 && mass <= massThreshold && volume <= volumeThreshold)) {
                 chosenCompletePathsToBeMerged.add(new CompletePath(path, volume));
 
                 totalMass += mass;

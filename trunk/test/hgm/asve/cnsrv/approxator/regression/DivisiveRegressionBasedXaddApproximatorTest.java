@@ -1,6 +1,6 @@
 package hgm.asve.cnsrv.approxator.regression;
 
-import hgm.XaddVisualizer;
+import hgm.utils.vis.XaddVisualizer;
 import hgm.asve.XaddPath;
 import hgm.asve.cnsrv.approxator.Approximator;
 import hgm.asve.cnsrv.approxator.regression.measures.MeanSquareErrorMeasure;

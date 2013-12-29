@@ -1,4 +1,4 @@
-package hgm;
+package hgm.utils.vis;
 
 import xadd.XADD;
 import xadd.XADDUtils;

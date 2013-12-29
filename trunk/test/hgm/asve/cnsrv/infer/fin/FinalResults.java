@@ -51,7 +51,11 @@ public class FinalResults {
 //                new Info(SOURCE_PATH + "radar.gm   ", SOURCE_PATH + "radar.query.4   ", DESTIN_PATH, "radar-query.4   ", "radar-4   "),  //2D
 //                new Info(SOURCE_PATH + "tracking.gm", SOURCE_PATH + "tracking.query.2", DESTIN_PATH, "tracking-query.2", "tracking-2"),
 //                new Info(SOURCE_PATH + "tracking.gm", SOURCE_PATH + "tracking.query.3", DESTIN_PATH, "tracking-query.3", "tracking-3"),
-                new Info(SOURCE_PATH + "tracking.gm", SOURCE_PATH + "tracking.query.a", DESTIN_PATH, "tracking-query-a", "tracking-a"),
+//                new Info(SOURCE_PATH + "tracking.gm", SOURCE_PATH + "tracking.query.a", DESTIN_PATH, "tracking-query-a", "tracking-a"),
+                //for powerpoint:
+//                new Info(SOURCE_PATH + "powerpoint.gm", SOURCE_PATH + "powerpoint.query.1", DESTIN_PATH, "powerpoint-query-a", "powerpoint-a"),
+                new Info(SOURCE_PATH + "traffic.gm", SOURCE_PATH + "traffic.query.2", DESTIN_PATH, "traffic-query-I", "traffic-I"),
+
         };
 
 
@@ -63,34 +67,37 @@ public class FinalResults {
 
 
 
+
 /*
 
 // ****************** MASS-THRESHOLD *******************[for radar Q2]
+
             double massThreshold2 = 0.040;
             infoList.add(generateApproximateSveInferenceResults(inputInfoArray[i],
                     new MassThresholdXaddApproximator(new EfficientPathIntegralCalculator(), massThreshold2, Double.MAX_VALUE),
-                    "mass-threshold-approx-" + massThreshold2 + "-", true)); //todo commented tempo
+                    "mass-threshold-approx-" + massThreshold2 + "-", true));
 
             double massThreshold3 = 0.0185;
             infoList.add(generateApproximateSveInferenceResults(inputInfoArray[i],
                     new MassThresholdXaddApproximator(new EfficientPathIntegralCalculator(), massThreshold3, Double.MAX_VALUE),
-                    "mass-threshold-approx-" + massThreshold3 + "-", true)); //todo commented tempo
+                    "mass-threshold-approx-" + massThreshold3 + "-", true));
 
             double massThreshold1 = 0.01;
             infoList.add(generateApproximateSveInferenceResults(inputInfoArray[i],
                     new MassThresholdXaddApproximator(new EfficientPathIntegralCalculator(), massThreshold1, Double.MAX_VALUE),
-                    "mass-threshold-approx-" + massThreshold1 + "-", true)); //todo commented tempo
+                    "mass-threshold-approx-" + massThreshold1 + "-", true));
 
 
             double massThreshold = 0.0018;
             infoList.add(generateApproximateSveInferenceResults(inputInfoArray[i],
                     new MassThresholdXaddApproximator(new EfficientPathIntegralCalculator(), massThreshold, Double.MAX_VALUE),
-                    "mass-threshold-approx-" + massThreshold + "-", true)); //todo commented tempo
+                    "mass-threshold-approx-" + massThreshold + "-", true));
 
 
 // ****************** END MASS-THRESHOLD **********[for radar Q2]
 
 */
+
 
 
 
@@ -110,13 +117,14 @@ public class FinalResults {
 
 
 
+/*
 
 
 
-        /*    double[] params4 = {
+            double[] params4 = {
                     1, //max power
                     100, // sample per var
-                    0.000005, // max mse with sibling
+                    0.00000025, // max mse with sibling
                     30 //node trigger
             };
             infoList.addAll(Arrays.asList(generateApproximateSveInferenceResults(inputInfoArray[i],
@@ -150,9 +158,9 @@ public class FinalResults {
 
 
             double[] params8 = {
-                    2, //max power
-                    50, // sample per var
-                    0.00005, // max mse with sibling
+                    3, //max power
+                    100, // sample per var
+                    0.0000001, // max mse with sibling
                     30 //node trigger
             };
             infoList.addAll(Arrays.asList(generateApproximateSveInferenceResults(inputInfoArray[i],
@@ -167,9 +175,9 @@ public class FinalResults {
                     "divisive-fitting-approx-" + "Power-" + params8[0] + "-Samples-" + params8[1] + "-sibling-error-" + params8[2] + "-", true)));
 
             double[] params5 = {
-                    2, //max power
-                    50, // sample per var
-                    0.000005, // max mse with sibling
+                    3, //max power
+                    100, // sample per var
+                    0.00000025, // max mse with sibling
                     30 //node trigger
             };
             infoList.addAll(Arrays.asList(generateApproximateSveInferenceResults(inputInfoArray[i],
@@ -183,7 +191,44 @@ public class FinalResults {
                     ),
                     "divisive-fitting-approx-" + "Power-" + params5[0] + "-Samples-" + params5[1] + "-sibling-error-" + params5[2] + "-", true)));
 
+
+            double[] params15 = {
+                    3, //max power
+                    100, // sample per var
+                    0.0000004, // max mse with sibling
+                    30 //node trigger
+            };
+            infoList.addAll(Arrays.asList(generateApproximateSveInferenceResults(inputInfoArray[i],
+                    new DivisiveRegressionBasedXaddApproximator(
+                            new MeanSquareErrorMeasure(),
+                            (int) params15[0], //max power
+                            (int) params15[1], //340 sample per continuous var
+                            0.01, //regularization
+                            params15[2], //0.00000017 max error by sibling
+                            (int) params15[3]//5 //node trigger
+                    ),
+                    "divisive-fitting-approx-" + "Power-" + params15[0] + "-Samples-" + params15[1] + "-sibling-error-" + params15[2] + "-", true)));
+
+
+            double[] params16 = {
+                    5, //max power
+                    100, // sample per var
+                    0.00000025, // max mse with sibling
+                    30 //node trigger
+            };
+            infoList.addAll(Arrays.asList(generateApproximateSveInferenceResults(inputInfoArray[i],
+                    new DivisiveRegressionBasedXaddApproximator(
+                            new MeanSquareErrorMeasure(),
+                            (int) params16[0], //max power
+                            (int) params16[1], //340 sample per continuous var
+                            0.01, //regularization
+                            params16[2], //0.00000017 max error by sibling
+                            (int) params16[3]//5 //node trigger
+                    ),
+                    "divisive-fitting-approx-" + "Power-" + params16[0] + "-Samples-" + params16[1] + "-sibling-error-" + params16[2] + "-", true)));
+
 */
+
  /*
             double[] params2 = {
                     3, //max power
@@ -315,6 +360,7 @@ public class FinalResults {
 
 
             // ******** AGGLOMERATIVE *****************
+            /*
             int maxPower = 2;
             int maxNumberOfRegions = 10;
             int sampleNumPerContinuousVar = 30;
@@ -332,7 +378,7 @@ public class FinalResults {
                     "agglomerative-fitting-approx-" + maxPower + "-" + maxNumberOfRegions + "-" + sampleNumPerContinuousVar + "-" + divergenceMeasure.measureName(), true // compare with exact
             ));
 
-
+*/
         }
         makeInfoFile(DESTIN_PATH + "info.txt", infoList);
 
@@ -392,6 +438,10 @@ public class FinalResults {
         factory.getVisualizer().visualizeFactor(exactResultF, type + info.title);
         info.dimension = factory.getVisualizer().dataExportFactor(exactResultF, info.destinationPath + info.destinationFile);
         info.records = exactRecords;
+
+        //XADD:
+//        factory.getContext().getGraph(exactResultF.getXaddId()).launchViewer();
+
 
         return info;
     }
@@ -513,4 +563,5 @@ public class FinalResults {
                     "}\n\n";
         }
     }
+
 }

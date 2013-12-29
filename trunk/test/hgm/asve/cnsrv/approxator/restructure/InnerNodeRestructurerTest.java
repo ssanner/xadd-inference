@@ -1,7 +1,7 @@
 package hgm.asve.cnsrv.approxator.restructure;
 
 
-import hgm.XaddVisualizer;
+import hgm.utils.vis.XaddVisualizer;
 import org.junit.Test;
 import xadd.XADD;
 
