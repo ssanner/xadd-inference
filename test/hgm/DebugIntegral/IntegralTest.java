@@ -1,15 +1,13 @@
 package hgm.DebugIntegral;
 
-import hgm.XaddVisualizer;
+import hgm.utils.vis.XaddVisualizer;
 import hgm.asve.cnsrv.factory.ModelBasedXaddFactorFactory;
 import hgm.asve.cnsrv.gm.FBQuery;
 import sve.GraphicalModel;
 import sve.Query;
 import xadd.XADD;
-import xadd.XADDUtils;
 
 import java.util.HashMap;
-import java.util.Iterator;
 
 /**
  * Created by Hadi Afshar.
