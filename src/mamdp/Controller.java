@@ -54,7 +54,6 @@ public class Controller {
     
     private static String DomainDirectory(String domain) {        
         return Controller.DomainsDirectory() +
-        		File.separator + "trunk" +
         		File.separator + SOURCE_DIR +
         		File.separator + "mamdp" +
         		File.separator + Controller.DOMAIN_DIR +
@@ -175,8 +174,8 @@ public class Controller {
         int constraintsID = Controller.BuildXADD(constraintsFile);
         int rewardID = Controller.BuildXADD(rewardFile);
 
-        //Controller.PlotXADD(constraintsID, "Constraints");
-        //Controller.PlotXADD(rewardID, "Reward");
+        Controller.PlotXADD(constraintsID, "Constraints");
+        Controller.PlotXADD(rewardID, "Reward");
         
         int aVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("a"), false);
         int bVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("b"), false);
