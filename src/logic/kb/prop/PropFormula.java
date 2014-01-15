@@ -6,55 +6,56 @@ import java.util.*;
 
 public class PropFormula {
 
-	public abstract static class Term {
-		// Not efficient, but String representation should 
-		// contain relevant information
-		public int hashCode() {
-			return toString().hashCode();
-		}
-		public boolean equals(Object o) {
-			return toString().equals(o.toString());
-		}
-	}
+    public abstract static class Term {
+        // Not efficient, but String representation should
+        // contain relevant information
+        public int hashCode() {
+            return toString().hashCode();
+        }
 
-	public abstract static class BinConn // BinaryConnective
-			extends Term {
+        public boolean equals(Object o) {
+            return toString().equals(o.toString());
+        }
+    }
 
-		public final static int INVALID = 0;
-		public final static int AND = 1;
-		public final static int OR = 2;
-		public final static int IMPLIES = 3;
-		public final static int EQUIV = 4;
+    public abstract static class BinConn // BinaryConnective
+            extends Term {
 
-		public abstract Term getLTerm();
+        public final static int INVALID = 0;
+        public final static int AND = 1;
+        public final static int OR = 2;
+        public final static int IMPLIES = 3;
+        public final static int EQUIV = 4;
 
-		public abstract Term getRTerm();
+        public abstract Term getLTerm();
 
-		public abstract int getType();
+        public abstract Term getRTerm();
 
-	}
+        public abstract int getType();
 
-	public abstract static class UnConn // UnaryConnective
-			extends Term {
+    }
 
-		public final static int INVALID = 0;
-		public final static int NEG = 1;
+    public abstract static class UnConn // UnaryConnective
+            extends Term {
 
-		public abstract Term getTerm();
+        public final static int INVALID = 0;
+        public final static int NEG = 1;
 
-		public abstract int getType();
+        public abstract Term getTerm();
 
-	}
+        public abstract int getType();
 
-	public abstract static class Prop extends Term {
+    }
 
-		public abstract int getID(); // Unique id for a literal
-	}
+    public abstract static class Prop extends Term {
 
-	public abstract static class TruthConstant extends Term {
+        public abstract int getID(); // Unique id for a literal
+    }
 
-		public abstract boolean getTruthValue();
+    public abstract static class TruthConstant extends Term {
 
-	}
+        public abstract boolean getTruthValue();
+
+    }
 
 }

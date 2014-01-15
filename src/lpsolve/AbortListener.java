@@ -23,22 +23,22 @@ package lpsolve;
 /**
  * Classes that implement this interface may be passed
  * to the <code>putAbortfunc</code> method of the <code>LpSolve</code> class.
- * 
+ *
  * @author Juergen Ebert
  * @see LpSolve#putAbortfunc
  * @see "lp_solve documentation for 'put_abortfunc'"
  */
 public interface AbortListener {
 
-	/**
-	 * When set, the abort routine is called regularly during solve(). 
-	 * The user can do whatever he wants in this routine.
-	 * 
-	 * @param problem the problem this Listener was defined for
-	 * @param userhandle the userhandle object that was passed to <code>putAbortfunc</code>
-	 * @return if true, then lp_solve aborts the solver and returns with an appropriate code
-	 * @throws LpSolveException
-	 */
-	public boolean abortfunc(LpSolve problem, Object userhandle) throws LpSolveException;
+    /**
+     * When set, the abort routine is called regularly during solve().
+     * The user can do whatever he wants in this routine.
+     *
+     * @param problem    the problem this Listener was defined for
+     * @param userhandle the userhandle object that was passed to <code>putAbortfunc</code>
+     * @return if true, then lp_solve aborts the solver and returns with an appropriate code
+     * @throws LpSolveException
+     */
+    public boolean abortfunc(LpSolve problem, Object userhandle) throws LpSolveException;
 
 }

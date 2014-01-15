@@ -148,8 +148,18 @@ public abstract class ExprLib {
                     rank_this = 5;  // Put function expressions after main arithmetic expressions (0-4)
                 if (rank_other == null) rank_other = 5;
                 return rank_this - rank_other;
-            } else
-                return this.hashCode() - o.hashCode();
+            } else {
+                if (this.equals(o))
+                    return 0;
+                else {
+                    //todo commented by Hadi
+//                    return this.hashCode() - o.hashCode();
+                    //todo added by Hadi
+                    if (this.hashCode() < o.hashCode()) return -1;
+                    if (this.hashCode() > o.hashCode()) return 1;
+                    return 0;
+                }
+            }
         }
     }
 
@@ -764,9 +774,42 @@ public abstract class ExprLib {
             }
 
             _terms = new ArrayList<ArithExpr>(terms);
-            if (_type == ArithOperation.SUM || _type == ArithOperation.PROD)
+            if (_type == ArithOperation.SUM || _type == ArithOperation.PROD) {
+//                try {
                 Collections.sort(_terms);
-
+//                } catch (IllegalArgumentException e) { //todo try/catch added by Hadi
+//                    System.err.println("java.lang.IllegalArgumentException: Comparison method violates its general contract!");
+                //todo Figure out the source of problem...
+//                    for (ArithExpr a : _terms) {
+//                        for (ArithExpr b : _terms) {
+//                            if ((a.hashCode() == b.hashCode()) && (!a.equals(b) || a != b)) {
+//                                System.out.println("1. a = " + a);
+//                                System.out.println("1. b = " + b);
+//                            }
+//
+//                            if ((a.equals(b) || b.equals(a) || a == b) && (a.hashCode() != b.hashCode())) {
+//                                System.out.println("2. a = " + a);
+//                                System.out.println("2. b = " + b);
+//
+//                            }
+//                            for (ArithExpr c : _terms) {
+//                                if (a.compareTo(b) < 0 && b.compareTo(c) < 0 && (a.compareTo(c) >= 0)) {
+//                                    System.out.println("a = " + a);
+//                                    System.out.println("b = " + b);
+//                                    System.out.println("c = " + c);
+//                                    System.out.println("a.hashCode() = " + a.hashCode());
+//                                    System.out.println("b.hashCode() = " + b.hashCode());
+//                                    System.out.println("c.hashCode() = " + c.hashCode());
+//
+//                                    System.out.println("a.compareTo(b) = " + a.compareTo(b));/
+//                                    System.out.println("b.compareTo(c) = " + b.compareTo(c));
+//                                    System.out.println("a.compareTo(c) = " + a.compareTo(c));
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+            }
         }
 
         public boolean equals(Object o) {
@@ -777,7 +820,7 @@ public abstract class ExprLib {
                 return false;
         }
 
-// COMMENTED BY HADI
+        // COMMENTED BY HADI
 //	public int hashCode() {
 //		return _terms.toString().hashCode() - _type.hashCode();
 //	}
@@ -1588,7 +1631,7 @@ public abstract class ExprLib {
         }
 
 
-        //TODO This equality definition violates the rule that equal objects should have same hashCode.
+        //TODO This equality definition violates the rule that equal objects should have same hashCode. It is also "non-transitive"!
         // If XADD.PRECISION is non-zero, (there are cases where) this produces the bug:
         // "java.lang.IllegalArgumentException: Comparison method violates its general contract!" in class OperExpr where terms are sorted.
         // The solution seems to be: not using PRECISION in this method (using another method e.g. areSimilarEnough() for that purpose)
@@ -1597,6 +1640,7 @@ public abstract class ExprLib {
                 DoubleExpr d = (DoubleExpr) o;
                 if (this._dConstVal == d._dConstVal) return true;
                 else {
+
                     Double dif = this._dConstVal - d._dConstVal;
                     if ((Double.isInfinite(dif) ||
                             Double.isNaN(dif))) return false;
@@ -1636,7 +1680,15 @@ public abstract class ExprLib {
         public ArithExpr round() {
             if (Double.isInfinite(_dConstVal) || Double.isNaN(_dConstVal) || this == ONE || this == ZERO || this == NEG_ONE)
                 return this;
-            return new DoubleExpr((Math.round(_dConstVal * XADD.ROUND_PRECISION) * 1d) / XADD.ROUND_PRECISION);
+            //todo commented by hadi/scott
+//            return new DoubleExpr((Math.round(_dConstVal * XADD.ROUND_PRECISION) * 1d) / XADD.ROUND_PRECISION);
+            //todo added by hadi/scott:
+            if (XADD.ROUND_PRECISION == null) return new DoubleExpr(_dConstVal);
+            else {
+                //todo: Warning by Hadi
+//                System.err.println("Note that this kind of rounding produces lots of approximation errors...");
+                return new DoubleExpr((Math.round(_dConstVal * XADD.ROUND_PRECISION) * 1d) / XADD.ROUND_PRECISION);
+            }
         }
 
     }
@@ -1759,7 +1811,7 @@ public abstract class ExprLib {
                 return false;
         }
 
-//      COMMENTED BY HADI
+        //      COMMENTED BY HADI
 //		@Override
 //		public int hashCode() {
 //			return _funName.hashCode() + _args.hashCode();

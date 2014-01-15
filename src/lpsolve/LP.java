@@ -15,353 +15,354 @@ import java.text.*;
 
 public class LP {
 
-	public static final boolean SHOW_ADDED_CONSTRAINTS = false;
-	public static final boolean SHOW_SOLVER_RESULT = false;
-	
-	public static final boolean USE_EPSILON_ON_INVERSION = false;
-	public static final double  EPSILON = 1e-6d;
-	
-	public static final int MAXIMIZE = 1;
-	public static final int MINIMIZE = 2;
+    public static final boolean SHOW_ADDED_CONSTRAINTS = false;
+    public static final boolean SHOW_SOLVER_RESULT = false;
 
-	// Flag that determines whether last solution should be
-	// used as starting point (true) or whether to resolve
-	// the problem from scratch (false). Should try both
-	// settings... not clear that using previous solution helps.
-	public static final boolean SET_STARTING_POINT = false;
+    public static final boolean USE_EPSILON_ON_INVERSION = false;
+    public static final double EPSILON = 1e-6d;
 
-	public static long _lTime;
+    public static final int MAXIMIZE = 1;
+    public static final int MINIMIZE = 2;
 
-	public static DecimalFormat _df = new DecimalFormat("#.###");
+    // Flag that determines whether last solution should be
+    // used as starting point (true) or whether to resolve
+    // the problem from scratch (false). Should try both
+    // settings... not clear that using previous solution helps.
+    public static final boolean SET_STARTING_POINT = false;
 
-	// Previous solution info
-	public int _nVars;
-	public int _nObjType;
-	public double[] _obj;
-	public double[] _x;
-	public long _lSolnTime;
-	public double _dObjValue;
-	public int _nConsAdded;
-	public int _status;
-	public LpSolve _solver = null;
+    public static long _lTime;
 
-	/*
-	 * Vars are numbered 0..(nvars-1), objective is coef on these vars, obj_type
-	 * is LP.MINIMIZE or LP.MAXIMIZE
-	 */
-	public LP(int nvars, double[] objective, int obj_type) {
-		this(nvars, null, null, objective, obj_type);
-	}
+    public static DecimalFormat _df = new DecimalFormat("#.###");
 
-	public LP(int nvars, double[] lower_bounds, double[] upper_bounds,
-			double[] objective, int obj_type) {
+    // Previous solution info
+    public int _nVars;
+    public int _nObjType;
+    public double[] _obj;
+    public double[] _x;
+    public long _lSolnTime;
+    public double _dObjValue;
+    public int _nConsAdded;
+    public int _status;
+    public LpSolve _solver = null;
 
-		try {
+    /*
+     * Vars are numbered 0..(nvars-1), objective is coef on these vars, obj_type
+     * is LP.MINIMIZE or LP.MAXIMIZE
+     */
+    public LP(int nvars, double[] objective, int obj_type) {
+        this(nvars, null, null, objective, obj_type);
+    }
 
-			// Create a new Cplex object and get license
-			_nVars = nvars;
-			_solver = LpSolve.makeLp(0, nvars);
-			_solver.setVerbose(LpSolve.CRITICAL);
-			_nConsAdded = 0;
+    public LP(int nvars, double[] lower_bounds, double[] upper_bounds,
+              double[] objective, int obj_type) {
 
-			// Initialize the objective
-			_nObjType = obj_type;
-			_obj = objective;
-			if (obj_type == LP.MINIMIZE) {
-				_solver.setMinim();
-			} else if (obj_type == LP.MAXIMIZE) {
-				_solver.setMaxim();
-			} else {
-				System.out.println("Illegal objective type: " + obj_type);
-				System.exit(1);
-			}
-			_solver.setObjFn(pad(_obj));
+        try {
 
-			// Initialize bounds
-			double[] lb = null;
-			double[] ub = null;
-			if (lower_bounds != null && upper_bounds != null) {
-				lb = lower_bounds;
-				ub = upper_bounds;
-			} else {
-				lb = new double[nvars];
-				ub = new double[nvars];
-				for (int i = 0; i < nvars; i++) {
-					lb[i] = -Double.MAX_VALUE;
-					ub[i] = Double.MAX_VALUE;
-				}
-			}
-			for (int i = 0; i < nvars; i++) {
-				//addGeqConstraint(genUnitVector(i), lb[i]);
-				//addLeqConstraint(genUnitVector(i), ub[i]);
-				_solver.setLowbo(i + 1, lb[i]);
-				_solver.setUpbo(i + 1, ub[i]);
-			}
+            // Create a new Cplex object and get license
+            _nVars = nvars;
+            _solver = LpSolve.makeLp(0, nvars);
+            _solver.setVerbose(LpSolve.CRITICAL);
+            _nConsAdded = 0;
 
-		} catch (LpSolveException e) {
-			System.err.println("Concert exception '" + e + "' caught");
-			System.exit(1);
-		}
-	}
+            // Initialize the objective
+            _nObjType = obj_type;
+            _obj = objective;
+            if (obj_type == LP.MINIMIZE) {
+                _solver.setMinim();
+            } else if (obj_type == LP.MAXIMIZE) {
+                _solver.setMaxim();
+            } else {
+                System.out.println("Illegal objective type: " + obj_type);
+                System.exit(1);
+            }
+            _solver.setObjFn(pad(_obj));
 
-	public void setBinary(int var_id) {
-		try {
-			_solver.setBinary(var_id, true);
-		} catch (LpSolveException e) {
-			System.err.println("Concert exception '" + e + "' caught");
-			System.exit(1);
-		}
-	}
-	
-	public void addEqConstraint(double[] coefs, double rhs_value) {
+            // Initialize bounds
+            double[] lb = null;
+            double[] ub = null;
+            if (lower_bounds != null && upper_bounds != null) {
+                lb = lower_bounds;
+                ub = upper_bounds;
+            } else {
+                lb = new double[nvars];
+                ub = new double[nvars];
+                for (int i = 0; i < nvars; i++) {
+                    lb[i] = -Double.MAX_VALUE;
+                    ub[i] = Double.MAX_VALUE;
+                }
+            }
+            for (int i = 0; i < nvars; i++) {
+                //addGeqConstraint(genUnitVector(i), lb[i]);
+                //addLeqConstraint(genUnitVector(i), ub[i]);
+                _solver.setLowbo(i + 1, lb[i]);
+                _solver.setUpbo(i + 1, ub[i]);
+            }
 
-		try {
-			if (SHOW_ADDED_CONSTRAINTS)
-				System.out.println("Added constraint: " + PrintVector(coefs) + " == " + rhs_value);
-			_solver.addConstraint(pad(coefs), LpSolve.EQ, rhs_value);
-			_nConsAdded++;
-		} catch (LpSolveException e) {
-			System.err.println("Exception '" + e + "' caught");
-			System.exit(1);
-		}
+        } catch (LpSolveException e) {
+            System.err.println("Concert exception '" + e + "' caught");
+            System.exit(1);
+        }
+    }
 
-	}
+    public void setBinary(int var_id) {
+        try {
+            _solver.setBinary(var_id, true);
+        } catch (LpSolveException e) {
+            System.err.println("Concert exception '" + e + "' caught");
+            System.exit(1);
+        }
+    }
 
-	public void addGeqConstraint(double[] coefs, double rhs_value) {
+    public void addEqConstraint(double[] coefs, double rhs_value) {
 
-		try {
-			if (SHOW_ADDED_CONSTRAINTS)
-				System.out.println("Added constraint: " + PrintVector(coefs) + " >= " + rhs_value);
-			_solver.addConstraint(pad(coefs), LpSolve.GE, rhs_value);
-			_nConsAdded++;
-		} catch (LpSolveException e) {
-			System.err.println("Exception '" + e + "' caught");
-			System.exit(1);
-		}
+        try {
+            if (SHOW_ADDED_CONSTRAINTS)
+                System.out.println("Added constraint: " + PrintVector(coefs) + " == " + rhs_value);
+            _solver.addConstraint(pad(coefs), LpSolve.EQ, rhs_value);
+            _nConsAdded++;
+        } catch (LpSolveException e) {
+            System.err.println("Exception '" + e + "' caught");
+            System.exit(1);
+        }
 
-	}
-	
-	public void addGTConstraint(double[] coefs, double rhs_value) {
+    }
 
-		// 2x + 3y > 5
-		// (-1)(2x + 3y) <= 5(-1)
-		// -2x - 3y <= -5
-		try {
-			if (USE_EPSILON_ON_INVERSION)
-				rhs_value += EPSILON; // Makes constraint tighter to counter numerical precision
-			if (SHOW_ADDED_CONSTRAINTS)
-				System.out.println("Added constraint: " + PrintVector(invert(coefs)) + " <= " + -rhs_value);
-			_solver.addConstraint(pad(invert(coefs)), LpSolve.LE, -rhs_value);
-			_nConsAdded++;
-		} catch (LpSolveException e) {
-			System.err.println("Exception '" + e + "' caught");
-			System.exit(1);
-		}
+    public void addGeqConstraint(double[] coefs, double rhs_value) {
 
-	}
+        try {
+            if (SHOW_ADDED_CONSTRAINTS)
+                System.out.println("Added constraint: " + PrintVector(coefs) + " >= " + rhs_value);
+            _solver.addConstraint(pad(coefs), LpSolve.GE, rhs_value);
+            _nConsAdded++;
+        } catch (LpSolveException e) {
+            System.err.println("Exception '" + e + "' caught");
+            System.exit(1);
+        }
 
-	public void addLeqConstraint(double[] coefs, double rhs_value) {
+    }
 
-		try {
-			if (SHOW_ADDED_CONSTRAINTS)
-				System.out.println("Added constraint: " + PrintVector(coefs) + " <= " + rhs_value);
-			_solver.addConstraint(pad(coefs), LpSolve.LE, rhs_value);
-			_nConsAdded++;
-		} catch (LpSolveException e) {
-			System.err.println("Exception '" + e + "' caught");
-			System.exit(1);
-		}
+    public void addGTConstraint(double[] coefs, double rhs_value) {
 
-	}
-	
-	public void addLTConstraint(double[] coefs, double rhs_value) {
+        // 2x + 3y > 5
+        // (-1)(2x + 3y) <= 5(-1)
+        // -2x - 3y <= -5
+        try {
+            if (USE_EPSILON_ON_INVERSION)
+                rhs_value += EPSILON; // Makes constraint tighter to counter numerical precision
+            if (SHOW_ADDED_CONSTRAINTS)
+                System.out.println("Added constraint: " + PrintVector(invert(coefs)) + " <= " + -rhs_value);
+            _solver.addConstraint(pad(invert(coefs)), LpSolve.LE, -rhs_value);
+            _nConsAdded++;
+        } catch (LpSolveException e) {
+            System.err.println("Exception '" + e + "' caught");
+            System.exit(1);
+        }
 
-		// 2x + 3y < 5 (this is crazy, multiply by -1 doesn`t change the strictness of equality! (using an epsilon does) )
-		// (-1)(2x + 3y) >= 5(-1)
-		// -2x - 3y >= -5
-		try {
-			if (USE_EPSILON_ON_INVERSION)
-				rhs_value -= EPSILON; // Makes constraint tighter to counter numerical precision
-			if (SHOW_ADDED_CONSTRAINTS)
-				System.out.println("Added constraint: " + PrintVector(invert(coefs)) + " >= " + -rhs_value);
-			_solver.addConstraint(pad(invert(coefs)), LpSolve.GE, -rhs_value);
-			_nConsAdded++;
-		} catch (LpSolveException e) {
-			System.err.println("Exception '" + e + "' caught");
-			System.exit(1);
-		}
+    }
 
-	}
+    public void addLeqConstraint(double[] coefs, double rhs_value) {
 
-	/* Should use previous solution if resolving */
-	public double[] solve() {
+        try {
+            if (SHOW_ADDED_CONSTRAINTS)
+                System.out.println("Added constraint: " + PrintVector(coefs) + " <= " + rhs_value);
+            _solver.addConstraint(pad(coefs), LpSolve.LE, rhs_value);
+            _nConsAdded++;
+        } catch (LpSolveException e) {
+            System.err.println("Exception '" + e + "' caught");
+            System.exit(1);
+        }
 
-		ResetTimer();
+    }
 
-		try {
-			_status = _solver.solve();
-			if (SHOW_SOLVER_RESULT)
-				System.out.println("Solver result [" + _status + "]: "
-						+ _solver.getStatustext(_status));
+    public void addLTConstraint(double[] coefs, double rhs_value) {
 
-			// Get solution
-			_x = _solver.getPtrVariables();
+        // 2x + 3y < 5 (this is crazy, multiply by -1 doesn`t change the strictness of equality! (using an epsilon does) )
+        // (-1)(2x + 3y) >= 5(-1)
+        // -2x - 3y >= -5
+        try {
+            if (USE_EPSILON_ON_INVERSION)
+                rhs_value -= EPSILON; // Makes constraint tighter to counter numerical precision
+            if (SHOW_ADDED_CONSTRAINTS)
+                System.out.println("Added constraint: " + PrintVector(invert(coefs)) + " >= " + -rhs_value);
+            _solver.addConstraint(pad(invert(coefs)), LpSolve.GE, -rhs_value);
+            _nConsAdded++;
+        } catch (LpSolveException e) {
+            System.err.println("Exception '" + e + "' caught");
+            System.exit(1);
+        }
 
-			// Compute and check the objective value for this solution
-			_dObjValue = computeObjective();
-			double diff = Math.abs(_dObjValue - _solver.getObjective());
-			// This warning shows often in maximization of error when the obj is above 1E10, then the error indeed is above 1E-4,
-			// this could be avoided using relative error with the line below.
-			//if ( Math.abs(_solver.getObjective()) > 1d ) diff = diff/Math.abs(_solver.getObjective());
-			if (_status != LpSolve.INFEASIBLE && diff > 1e-4d) {
-				System.out.println("WARNING: Internal Calculations vs. LpSolve Mismatch: Dif "+ diff +" Sol = "+ LP.PrintVector(_x));
-				System.out.println("         " + _dObjValue + " vs. "
-						+ _solver.getObjective() + "\n         ** Can ignore if problem was infeasible.");
-			}
+    }
 
-		} catch (LpSolveException e) {
-			System.err.println("Exception '" + e + "' caught");
-			System.exit(1);
-		}
+    /* Should use previous solution if resolving */
+    public double[] solve() {
 
-		_lSolnTime = GetElapsedTime();
+        ResetTimer();
 
-		return _x;
-	}
+        try {
+            _status = _solver.solve();
+            if (SHOW_SOLVER_RESULT)
+                System.out.println("Solver result [" + _status + "]: "
+                        + _solver.getStatustext(_status));
 
-	/* Compute objective value */
-	public double computeObjective() {
-		double obj_val = 0.0d;
-		for (int i = 0; i < _x.length; i++) {
-			//System.out.println("obj_val += " + _x[i] + " * " + _obj[i]);
-			obj_val += _x[i] * _obj[i];
-		}
-		//System.out.println("obj_val = " + obj_val);
-		return obj_val;
-	}
+            // Get solution
+            _x = _solver.getPtrVariables();
 
-	/* Release license and free memory */
-	public void free() {
-		_solver.deleteLp();
-	}
+            // Compute and check the objective value for this solution
+            _dObjValue = computeObjective();
+            double diff = Math.abs(_dObjValue - _solver.getObjective());
+            // This warning shows often in maximization of error when the obj is above 1E10, then the error indeed is above 1E-4,
+            // this could be avoided using relative error with the line below.
+            //if ( Math.abs(_solver.getObjective()) > 1d ) diff = diff/Math.abs(_solver.getObjective());
+            //todo the following if statement temporarily commented by Hadi
+            /*if (_status != LpSolve.INFEASIBLE && diff > 1e-4d) {
+                System.out.println("WARNING: Internal Calculations vs. LpSolve Mismatch: Dif " + diff + " Sol = " + LP.PrintVector(_x));
+                System.out.println("         " + _dObjValue + " vs. "
+                        + _solver.getObjective() + "\n         ** Can ignore if problem was infeasible.");
+            }
+*/
+        } catch (LpSolveException e) {
+            System.err.println("Exception '" + e + "' caught");
+            System.exit(1);
+        }
 
-	/* LP Solve ignores vector element 0 */
-	public double[] pad(double[] v) {
-		double[] n = new double[v.length + 1];
-		for (int i = 0; i < v.length; i++)
-			n[i + 1] = v[i];
-		return n;
-	}
-	
-	public double[] invert(double[] v) {
-		double[] v2 = new double[v.length];
-		for (int i = 0; i < v.length; i++)
-			v2[i] = -v[i];
-		return v2;
-	}
+        _lSolnTime = GetElapsedTime();
 
-	public double[] genUnitVector(int i) {
-		double[] v = new double[_nVars];
-		// Rely on Java's default initialization of arrays to 0
-		v[i] = 1d;
-		return v;
-	}
+        return _x;
+    }
 
-	////////////////////////////////////////////////////////////////////////////
-	// Static Routines
-	////////////////////////////////////////////////////////////////////////////
+    /* Compute objective value */
+    public double computeObjective() {
+        double obj_val = 0.0d;
+        for (int i = 0; i < _x.length; i++) {
+            //System.out.println("obj_val += " + _x[i] + " * " + _obj[i]);
+            obj_val += _x[i] * _obj[i];
+        }
+        //System.out.println("obj_val = " + obj_val);
+        return obj_val;
+    }
 
-	public static void ResetTimer() {
-		_lTime = System.currentTimeMillis();
-	}
+    /* Release license and free memory */
+    public void free() {
+        _solver.deleteLp();
+    }
 
-	// Get the elapsed time since resetting the timer
-	public static long GetElapsedTime() {
-		return System.currentTimeMillis() - _lTime;
-	}
+    /* LP Solve ignores vector element 0 */
+    public double[] pad(double[] v) {
+        double[] n = new double[v.length + 1];
+        for (int i = 0; i < v.length; i++)
+            n[i + 1] = v[i];
+        return n;
+    }
 
-	////////////////////////////////////////////////////////////////////////////
-	// Test Routine
-	////////////////////////////////////////////////////////////////////////////
+    public double[] invert(double[] v) {
+        double[] v2 = new double[v.length];
+        for (int i = 0; i < v.length; i++)
+            v2[i] = -v[i];
+        return v2;
+    }
 
-	public static void main(String[] args) {
+    public double[] genUnitVector(int i) {
+        double[] v = new double[_nVars];
+        // Rely on Java's default initialization of arrays to 0
+        v[i] = 1d;
+        return v;
+    }
 
-		System.out.println("JVM - " + System.getProperty("sun.arch.data.model") + "-bit");
-		
-		// How many vars
-		int nvars = 3;
+    ////////////////////////////////////////////////////////////////////////////
+    // Static Routines
+    ////////////////////////////////////////////////////////////////////////////
 
-		// Maximize 1x_0 + 2x_1 + 3x_2
-		double[] obj_coef = { 1.0, 2.0, 3.0 };
+    public static void ResetTimer() {
+        _lTime = System.currentTimeMillis();
+    }
 
-		// Set lower bounds of -100.0 for each var
-		double[] lb = { -100.0, -100.0, -100.0 };
+    // Get the elapsed time since resetting the timer
+    public static long GetElapsedTime() {
+        return System.currentTimeMillis() - _lTime;
+    }
 
-		// Set upper bounds of 100.0 for each var
-		double[] ub = { 100.0, 100.0, 100.0 };
+    ////////////////////////////////////////////////////////////////////////////
+    // Test Routine
+    ////////////////////////////////////////////////////////////////////////////
 
-		// Initialize LP to maximize objective
-		LP lp = new LP(nvars, lb, ub, obj_coef, LP.MAXIMIZE);
+    public static void main(String[] args) {
 
-		// Add constraint 1: -x1 + x2 + x3 <= 20
-		double[] con1_coef = { -1.0, 1.0, 1.0 };
-		lp.addLeqConstraint(con1_coef, 20.0);
+        System.out.println("JVM - " + System.getProperty("sun.arch.data.model") + "-bit");
 
-		// Add constraint 2: x1 - 3 x2 + x3 <= 30
-		double[] con2_coef = { 1.0, -3.0, 1.0 };
-		lp.addLeqConstraint(con2_coef, 30.0);
+        // How many vars
+        int nvars = 3;
 
-		// Solve and print solution
-		SolveAndPrint(lp);
+        // Maximize 1x_0 + 2x_1 + 3x_2
+        double[] obj_coef = {1.0, 2.0, 3.0};
 
-		// Add constraint 3: x1 + x2 <= 100
-		double[] con3_coef = { 1.0, 1.0, 0.0 };
-		lp.addLeqConstraint(con3_coef, 100.0);
+        // Set lower bounds of -100.0 for each var
+        double[] lb = {-100.0, -100.0, -100.0};
 
-		// Make x2 binary from here out
-		lp.setBinary(2);
-		
-		// Resolve and print solution
-		SolveAndPrint(lp);
+        // Set upper bounds of 100.0 for each var
+        double[] ub = {100.0, 100.0, 100.0};
 
-		// Add constraint 4: x1 + x2 <= 70
-		double[] con4_coef = { 0.0, 1.0, 1.0 };
-		lp.addLeqConstraint(con4_coef, 70.0);
+        // Initialize LP to maximize objective
+        LP lp = new LP(nvars, lb, ub, obj_coef, LP.MAXIMIZE);
 
-		// Resolve and print solution
-		SolveAndPrint(lp);
-		
-		// Now make it infeasible
-		lp.addGeqConstraint(con4_coef, 71.0);
-		
-		// Resolve and print solution
-		SolveAndPrint(lp);
-	}
+        // Add constraint 1: -x1 + x2 + x3 <= 20
+        double[] con1_coef = {-1.0, 1.0, 1.0};
+        lp.addLeqConstraint(con1_coef, 20.0);
 
-	public static void SolveAndPrint(LP lp) {
+        // Add constraint 2: x1 - 3 x2 + x3 <= 30
+        double[] con2_coef = {1.0, -3.0, 1.0};
+        lp.addLeqConstraint(con2_coef, 30.0);
 
-		// Now solve and print values
-		System.out.println("\n========================\n");
-		double[] soln = lp.solve();
-		double obj_val = 0.0d;
-		for (int i = 0; i < soln.length; i++) {
+        // Solve and print solution
+        SolveAndPrint(lp);
 
-			// Print out settings of each variable
-			System.out.println("Var x_" + i + " = " + soln[i]);
-		}
-		System.out.println("Objective value = " + _df.format(lp._dObjValue));
-		System.out.println("Solution status = " + lp._status);
-		System.out.println("Solution time   = " + lp._lSolnTime);
-		// lp._solver.printSolution(lp._nVars);
-		// lp._solver.printLp();
-	}
+        // Add constraint 3: x1 + x2 <= 100
+        double[] con3_coef = {1.0, 1.0, 0.0};
+        lp.addLeqConstraint(con3_coef, 100.0);
 
-	public static String PrintVector(double[] v) {
-		StringBuffer sb = new StringBuffer("[ ");
-		for (int i = 0; i < v.length; i++) {
-			sb.append("x_" + i + "=" + _df.format(v[i]) + " ");
-		}
-		sb.append("]");
-		return sb.toString();
-	}
+        // Make x2 binary from here out
+        lp.setBinary(2);
+
+        // Resolve and print solution
+        SolveAndPrint(lp);
+
+        // Add constraint 4: x1 + x2 <= 70
+        double[] con4_coef = {0.0, 1.0, 1.0};
+        lp.addLeqConstraint(con4_coef, 70.0);
+
+        // Resolve and print solution
+        SolveAndPrint(lp);
+
+        // Now make it infeasible
+        lp.addGeqConstraint(con4_coef, 71.0);
+
+        // Resolve and print solution
+        SolveAndPrint(lp);
+    }
+
+    public static void SolveAndPrint(LP lp) {
+
+        // Now solve and print values
+        System.out.println("\n========================\n");
+        double[] soln = lp.solve();
+        double obj_val = 0.0d;
+        for (int i = 0; i < soln.length; i++) {
+
+            // Print out settings of each variable
+            System.out.println("Var x_" + i + " = " + soln[i]);
+        }
+        System.out.println("Objective value = " + _df.format(lp._dObjValue));
+        System.out.println("Solution status = " + lp._status);
+        System.out.println("Solution time   = " + lp._lSolnTime);
+        // lp._solver.printSolution(lp._nVars);
+        // lp._solver.printLp();
+    }
+
+    public static String PrintVector(double[] v) {
+        StringBuffer sb = new StringBuffer("[ ");
+        for (int i = 0; i < v.length; i++) {
+            sb.append("x_" + i + "=" + _df.format(v[i]) + " ");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
 }

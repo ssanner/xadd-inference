@@ -12,130 +12,132 @@ import java.util.concurrent.TimeUnit;
 
 public class Driver {
 
-	static enum Experiments {
-		prefs, score
-	};
+    static enum Experiments {
+        prefs, score
+    }
 
-	private static Args getArgs(Experiments ex, int no_items) {
-		switch (ex) {
-		case prefs:
-			return PrefsGibbs.getArgs(no_items);
+    ;
 
-		case score:
-			return ScoreGibbs.getArgs(no_items);
-		}
+    private static Args getArgs(Experiments ex, int no_items) {
+        switch (ex) {
+            case prefs:
+                return PrefsGibbs.getArgs(no_items);
 
-		return null;
-	}
+            case score:
+                return ScoreGibbs.getArgs(no_items);
+        }
 
-	private static Gibbs getInstance(Experiments ex, String p, String l,
-			Args arg, boolean evaluate_exact) {
-		switch (ex) {
-		case prefs:
-			return new PrefsGibbs(p, l, "./src/prefs/models/utility.xadd",
-					arg.dsTrain, evaluate_exact);
+        return null;
+    }
 
-		case score:
-			return new ScoreGibbs(p, l, arg.dsTrain, evaluate_exact);
-		}
+    private static Gibbs getInstance(Experiments ex, String p, String l,
+                                     Args arg, boolean evaluate_exact) {
+        switch (ex) {
+            case prefs:
+                return new PrefsGibbs(p, l, "./src/prefs/models/utility.xadd",
+                        arg.dsTrain, evaluate_exact);
 
-		return null;
-	}
+            case score:
+                return new ScoreGibbs(p, l, arg.dsTrain, evaluate_exact);
+        }
 
-	private static class RunInstance implements Callable<String>, Runnable {
+        return null;
+    }
 
-		private Gibbs g;
-		private Args arg;
-		private Double sum;
-		private TreeMap<String, Double> percentage;
-		private int u;
-		private String str = "";
+    private static class RunInstance implements Callable<String>, Runnable {
 
-		@Override
-		public void run() {
+        private Gibbs g;
+        private Args arg;
+        private Double sum;
+        private TreeMap<String, Double> percentage;
+        private int u;
+        private String str = "";
 
-			System.gc();
+        @Override
+        public void run() {
 
-			g.prepareInference(u);
-			for (double e : arg.epsilon) {
-				for (int i = 0; i < arg.no_experiments; i++) {
-					g.infer(e);
-					Common.println(">> user: " + u + ", epsilon: "
-							+ Double.toString(e) + ", experiment: " + (i + 1)
-							+ " is starting");
-					Common.println(
-							">> user: " + u + ", epsilon: "
-									+ Double.toString(e) + ", experiment: "
-									+ (i + 1) + " is starting",
-							Common._RESULTS_WRITER);
-					double d = g.test(arg.dsTest);
-					Common.println("-------");
-					Common.println("-------", Common._RESULTS_WRITER);
-					String s = g._prefDs.getPreferenceFilename() + ":" + u
-							+ ":" + Double.toString(e) + ":" + i;
-					str = str + "\n" + s;
-					percentage.put(str, d);
-					sum += d;
-				}
-			}
+            System.gc();
 
-		}
+            g.prepareInference(u);
+            for (double e : arg.epsilon) {
+                for (int i = 0; i < arg.no_experiments; i++) {
+                    g.infer(e);
+                    Common.println(">> user: " + u + ", epsilon: "
+                            + Double.toString(e) + ", experiment: " + (i + 1)
+                            + " is starting");
+                    Common.println(
+                            ">> user: " + u + ", epsilon: "
+                                    + Double.toString(e) + ", experiment: "
+                                    + (i + 1) + " is starting",
+                            Common._RESULTS_WRITER);
+                    double d = g.test(arg.dsTest);
+                    Common.println("-------");
+                    Common.println("-------", Common._RESULTS_WRITER);
+                    String s = g._prefDs.getPreferenceFilename() + ":" + u
+                            + ":" + Double.toString(e) + ":" + i;
+                    str = str + "\n" + s;
+                    percentage.put(str, d);
+                    sum += d;
+                }
+            }
 
-		@Override
-		public String call() throws Exception {
-			run();
-			Common.println(str);
+        }
 
-			return str;
-		}
+        @Override
+        public String call() throws Exception {
+            run();
+            Common.println(str);
 
-	}
+            return str;
+        }
 
-	public static void main(String[] args) {
-		TreeMap<String, Double> percentage = new TreeMap<String, Double>();
-		Double sum = new Double(0);
-		Gibbs g = null;
-		Common.init();
-		ExecutorService executor = Executors.newFixedThreadPool(4);
-		ArrayList<RunInstance> threads = new ArrayList<RunInstance>();
+    }
 
-		for (Experiments ex : Experiments.values()) {
-			// Experiments ex = Experiments.score; {
-			for (int no_items = 4; no_items <= 20; no_items += 2) {
-				Args arg = getArgs(ex, no_items);
-				boolean evaluate_exact;
-				if (no_items < 8) {
-					evaluate_exact = true;
-				} else {
-					evaluate_exact = false;
-				}
-				for (String l : arg.likelihood) {
-					for (String p : arg.prior) {
-						for (int u = 0; u < 1 /* arg.dsTrain.getUsersCount() */; u++) {
-							g = getInstance(ex, p, l, arg, evaluate_exact);
-							RunInstance r = new RunInstance();
-							r.arg = arg;
-							r.g = g;
-							r.percentage = percentage;
-							r.sum = sum;
+    public static void main(String[] args) {
+        TreeMap<String, Double> percentage = new TreeMap<String, Double>();
+        Double sum = new Double(0);
+        Gibbs g = null;
+        Common.init();
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+        ArrayList<RunInstance> threads = new ArrayList<RunInstance>();
 
-							threads.add(r);
-						}
-					}
-				}
-				Common.println("");
-				Common.flush();
-			}
-		}
+        for (Experiments ex : Experiments.values()) {
+            // Experiments ex = Experiments.score; {
+            for (int no_items = 4; no_items <= 20; no_items += 2) {
+                Args arg = getArgs(ex, no_items);
+                boolean evaluate_exact;
+                if (no_items < 8) {
+                    evaluate_exact = true;
+                } else {
+                    evaluate_exact = false;
+                }
+                for (String l : arg.likelihood) {
+                    for (String p : arg.prior) {
+                        for (int u = 0; u < 1 /* arg.dsTrain.getUsersCount() */; u++) {
+                            g = getInstance(ex, p, l, arg, evaluate_exact);
+                            RunInstance r = new RunInstance();
+                            r.arg = arg;
+                            r.g = g;
+                            r.percentage = percentage;
+                            r.sum = sum;
 
-		try {
-			executor.invokeAll(threads, 2, TimeUnit.HOURS);
-			executor.shutdown();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		Common.close();
-		Common.println(percentage);
-		Common.println("average: " + sum / (double) percentage.size());
-	}
+                            threads.add(r);
+                        }
+                    }
+                }
+                Common.println("");
+                Common.flush();
+            }
+        }
+
+        try {
+            executor.invokeAll(threads, 2, TimeUnit.HOURS);
+            executor.shutdown();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Common.close();
+        Common.println(percentage);
+        Common.println("average: " + sum / (double) percentage.size());
+    }
 }

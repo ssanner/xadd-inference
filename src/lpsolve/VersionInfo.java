@@ -22,52 +22,52 @@ package lpsolve;
 
 /**
  * Contains the full version info for a lp_solve library instance.
- * 
+ *
  * @author Juergen Ebert
  */
 public class VersionInfo {
-	
-	private int _majorversion;
-	private int _minorversion;
-	private int _release;
-	private int _build;
 
-	/**
-	 * Creates a new instance of this class
-	 */
-	public VersionInfo(int major, int minor, int release, int build) {
-		_majorversion = major;
-		_minorversion = minor;
-		_release = release;
-		_build = build;
-	}
+    private int _majorversion;
+    private int _minorversion;
+    private int _release;
+    private int _build;
 
-	/**
-	 * @return value of the build attribute
-	 */
-	public int getBuild() {
-		return _build;
-	}
+    /**
+     * Creates a new instance of this class
+     */
+    public VersionInfo(int major, int minor, int release, int build) {
+        _majorversion = major;
+        _minorversion = minor;
+        _release = release;
+        _build = build;
+    }
 
-	/**
-	 * @return value of the majorversion attribute
-	 */
-	public int getMajorversion() {
-		return _majorversion;
-	}
+    /**
+     * @return value of the build attribute
+     */
+    public int getBuild() {
+        return _build;
+    }
 
-	/**
-	 * @return value of the minorversion attribute
-	 */
-	public int getMinorversion() {
-		return _minorversion;
-	}
+    /**
+     * @return value of the majorversion attribute
+     */
+    public int getMajorversion() {
+        return _majorversion;
+    }
 
-	/**
-	 * @return value of the release attribute
-	 */
-	public int getRelease() {
-		return _release;
-	}
+    /**
+     * @return value of the minorversion attribute
+     */
+    public int getMinorversion() {
+        return _minorversion;
+    }
+
+    /**
+     * @return value of the release attribute
+     */
+    public int getRelease() {
+        return _release;
+    }
 
 }

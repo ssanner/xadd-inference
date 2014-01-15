@@ -22,23 +22,23 @@ package lpsolve;
 
 /**
  * Exception thrown by the native methods in the C stub DLL.
- * 
+ *
  * @author Juergen Ebert
  */
 public class LpSolveException extends Exception {
 
-	/**
-	 * 
-	 */
-	public LpSolveException() {
-		super();
-	}
+    /**
+     *
+     */
+    public LpSolveException() {
+        super();
+    }
 
-	/**
-	 * @param arg0
-	 */
-	public LpSolveException(String arg0) {
-		super(arg0);
-	}
+    /**
+     * @param arg0
+     */
+    public LpSolveException(String arg0) {
+        super(arg0);
+    }
 
 }

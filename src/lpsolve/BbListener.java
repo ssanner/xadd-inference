@@ -22,9 +22,9 @@ package lpsolve;
 
 /**
  * Classes that implement this interface may be passed
- * to the <code>putbbBranchfunc</code> and <code>putbbNodefunc</code> method 
+ * to the <code>putbbBranchfunc</code> and <code>putbbNodefunc</code> method
  * of the <code>LpSolve</code> class.
- * 
+ *
  * @author Juergen Ebert
  * @see LpSolve#putBbBranchfunc
  * @see LpSolve#putBbNodefunc
@@ -33,14 +33,14 @@ package lpsolve;
  */
 public interface BbListener {
 
-	/**
-	 * TODO: add documentation when available
-	 *  
-	 * @param problem the problem this Listener was defined for
-	 * @param userhandle the userhandle object that was passed to <code>putLogfunc</code>
-	 * @param buf the log message
-	 * @throws LpSolveException
-	 */
-	public int bbfunc(LpSolve problem, Object userhandle, int message) throws LpSolveException;
+    /**
+     * TODO: add documentation when available
+     *
+     * @param problem    the problem this Listener was defined for
+     * @param userhandle the userhandle object that was passed to <code>putLogfunc</code>
+     * @param buf        the log message
+     * @throws LpSolveException
+     */
+    public int bbfunc(LpSolve problem, Object userhandle, int message) throws LpSolveException;
 
 }

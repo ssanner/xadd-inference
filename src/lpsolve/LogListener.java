@@ -23,22 +23,22 @@ package lpsolve;
 /**
  * Classes that implement this interface may be passed
  * to the <code>putLogfunc</code> method of the <code>LpSolve</code> class.
- * 
+ *
  * @author Juergen Ebert
  * @see LpSolve#putLogfunc
  * @see "lp_solve documentation for 'put_logfunc'"
  */
 public interface LogListener {
 
-	/**
-	 * When set, the log routine is called when lp_solve has someting 
-	 * to report (error conditions or so).
-	 *  
-	 * @param problem the problem this Listener was defined for
-	 * @param userhandle the userhandle object that was passed to <code>putLogfunc</code>
-	 * @param buf the log message
-	 * @throws LpSolveException
-	 */
-	public void logfunc(LpSolve problem, Object userhandle, String buf) throws LpSolveException;
+    /**
+     * When set, the log routine is called when lp_solve has someting
+     * to report (error conditions or so).
+     *
+     * @param problem    the problem this Listener was defined for
+     * @param userhandle the userhandle object that was passed to <code>putLogfunc</code>
+     * @param buf        the log message
+     * @throws LpSolveException
+     */
+    public void logfunc(LpSolve problem, Object userhandle, String buf) throws LpSolveException;
 
 }
