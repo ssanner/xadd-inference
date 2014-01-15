@@ -1,4 +1,4 @@
-package hgm.preference.db;
+package hgm.preference;
 
 /**
  * Created by Hadi Afshar.
