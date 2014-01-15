@@ -12,9 +12,9 @@ import java.util.HashSet;
  * Date: 18/12/13
  * Time: 6:50 PM
  */
-public class RejectionBasedSliceSamplingTest {
+public class RejectionBasedSliceSamplerTest {
     public static void main(String[] args) {
-        RejectionBasedSliceSamplingTest instance = new RejectionBasedSliceSamplingTest();
+        RejectionBasedSliceSamplerTest instance = new RejectionBasedSliceSamplerTest();
         instance.basicTest();
     }
 
@@ -32,7 +32,7 @@ public class RejectionBasedSliceSamplingTest {
 //        context.getGraph(rootId).launchViewer("test");
         XaddVisualizer.visualize(root, "test", context);
 
-        RejectionBasedSliceSampling sampler = new RejectionBasedSliceSampling(context, root);
+        RejectionBasedSliceSampler sampler = new RejectionBasedSliceSampler(context, root);
         for (int i = 0; i < 10; i++) {
             VarAssignment assign= sampler.sample();
             System.out.println("t = " + assign);
@@ -55,7 +55,7 @@ public class RejectionBasedSliceSamplingTest {
         context.getGraph(rootId).launchViewer("test");
         XaddVisualizer.visualize(root, "test", context);
 
-        RejectionBasedSliceSampling sampler = new RejectionBasedSliceSampling(context, root);
+        Sampler sampler = new RejectionBasedSliceSampler(context, root);
         for (int i = 0; i < 10; i++) {
             VarAssignment assign= sampler.sample();
             System.out.println("t = " + assign);
