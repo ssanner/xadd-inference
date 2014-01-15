@@ -38,4 +38,13 @@ public class VarAssignment{
     public int numberOfVars() {
         return booleanVarAssign.size() + continuousVarAssign.size();
     }
+
+    public void assignContinuousVariable(String var, Double value) {
+        if (!continuousVarAssign.containsKey(var)) throw new RuntimeException("no such continuous variable exists: " + var);
+        continuousVarAssign.put(var, value);
+    }
+
+    public double getContinuousVar(String var) {
+        return continuousVarAssign.get(var);
+    }
 }

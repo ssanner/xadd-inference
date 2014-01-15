@@ -12,6 +12,7 @@ import xadd.XADD;
 // 2. nest the samples in these 2^n partitions. remove empty partitions (or somehow do not create them in the first place)
 // 3. chose a partitioning decision that partitions the space in such a way that the samples in one side of it are associated with a unique target value (or minimum target flags) (in average?) greedily.
 // ...
+    @Deprecated //never completed...
 public class InnerNodeRestructurer {
     public XADD.XADDNode restructure(XADD.XADDNode root) {
         return null;
