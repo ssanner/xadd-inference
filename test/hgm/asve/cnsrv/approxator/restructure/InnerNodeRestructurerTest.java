@@ -10,6 +10,7 @@ import xadd.XADD;
  * Date: 15/11/13
  * Time: 12:05 PM
  */
+@Deprecated //never completed...
 public class InnerNodeRestructurerTest {
     public static void main(String[] args) throws Exception {
         InnerNodeRestructurerTest instance = new InnerNodeRestructurerTest();

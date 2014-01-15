@@ -11,14 +11,20 @@ import org.junit.Test;
 public class SVETest {
     public static void main(String[] args) {
         SVETest s = new SVETest();
-        s.testOnQUERY1();
+        s.testOnQUERY();
     }
-    @Test
-    public void testOnQUERY1(){
-        GraphicalModel gm = new GraphicalModel("./src/sve/tracking.gm");
-        SVE sve = new SVE(gm);
-        GraphicalModel.Factor result1 = sve.infer(new Query("./src/sve/tracking.query.1"));
 
+    @Test
+    public void testOnQUERY() {
+        runSve("./src/sve/competition.gm", "./src/sve/competition.query.1");
+//        runSve("./src/sve/tracking.gm", "./src/sve/tracking.query.1");
+//        runSve("./src/sve/radar.gm", "./src/sve/radar.query.4");
+    }
+
+    public void runSve(String gmFileName, String queryFileName) {
+        GraphicalModel gm = new GraphicalModel(gmFileName);
+        SVE sve = new SVE(gm);
+        GraphicalModel.Factor result1 = sve.infer(new Query(queryFileName));
     }
 
 }
