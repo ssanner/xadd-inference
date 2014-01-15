@@ -11,5 +11,6 @@ public class SamplingFailureException extends  RuntimeException {
     }
 
     public SamplingFailureException() {
+        super();
     }
 }

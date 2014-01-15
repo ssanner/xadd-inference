@@ -10,236 +10,239 @@
 package camdp;
 
 // Packages to import
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
 /**
  * Tokenizes a generic text document
- * 
- * @version 1.0
+ *
  * @author Scott Sanner
+ * @version 1.0
  * @language Java (JDK 1.3)
- **/
+ */
 public class TokenStream {
 
-	/** Static Constants **/
-	protected static final int EOF = -1;
+    /**
+     * Static Constants *
+     */
+    protected static final int EOF = -1;
 
-	/** Non-static Data Members **/
-	protected String _sFilename;
-	protected BufferedReader _brInput;
-	protected int _nLine;
-	protected int _nLinePos;
-	protected int _nPos;
-	protected boolean _bInMath;
-	protected boolean _bPushBack;
-	protected char _cPushBack;
+    /**
+     * Non-static Data Members *
+     */
+    protected String _sFilename;
+    protected BufferedReader _brInput;
+    protected int _nLine;
+    protected int _nLinePos;
+    protected int _nPos;
+    protected boolean _bInMath;
+    protected boolean _bPushBack;
+    protected char _cPushBack;
 
-	/**
-	 * Constructor - default
-	 **/
-	public TokenStream() {
-		_sFilename = null;
-		_brInput = null;
-		_nPos = -1; // No chars read yet
-		_nLinePos = -1; // No chars read yet
-		_nLine = 1; // Start at line 1
-		_bInMath = false;
-		_bPushBack = false;
-	}
+    /**
+     * Constructor - default
+     */
+    public TokenStream() {
+        _sFilename = null;
+        _brInput = null;
+        _nPos = -1; // No chars read yet
+        _nLinePos = -1; // No chars read yet
+        _nLine = 1; // Start at line 1
+        _bInMath = false;
+        _bPushBack = false;
+    }
 
-	/**
-	 * Process a String for tokenizing
-	 * 
-	 * @param content
-	 *            String content from which to load data
-	 **/
-	public void openFromStringContent(String content) throws TokenStreamException {
+    /**
+     * Process a String for tokenizing
+     *
+     * @param content String content from which to load data
+     */
+    public void openFromStringContent(String content) throws TokenStreamException {
 
-		// Initialize components
-		_sFilename = "[local string content]";
-		_nPos = _nLinePos = -1; // No chars read yet
-		_nLine = 1; // Start at line 1
-		if (_brInput != null) {
-			close();
-		}
+        // Initialize components
+        _sFilename = "[local string content]";
+        _nPos = _nLinePos = -1; // No chars read yet
+        _nLine = 1; // Start at line 1
+        if (_brInput != null) {
+            close();
+        }
 
-		_brInput = new BufferedReader(new StringReader(content));
-	}
-	
-	/**
-	 * Open a file for tokenizing
-	 * 
-	 * @param filename
-	 *            File from which to load data
-	 **/
-	public void open(String name) throws TokenStreamException {
+        _brInput = new BufferedReader(new StringReader(content));
+    }
 
-		// Initialize components
-		_sFilename = name;
-		_nPos = _nLinePos = -1; // No chars read yet
-		_nLine = 1; // Start at line 1
-		if (_brInput != null) {
-			close();
-		}
+    /**
+     * Open a file for tokenizing
+     *
+     * @param filename File from which to load data
+     */
+    public void open(String name) throws TokenStreamException {
 
-		// Open the specified file
-		try {
+        // Initialize components
+        _sFilename = name;
+        _nPos = _nLinePos = -1; // No chars read yet
+        _nLine = 1; // Start at line 1
+        if (_brInput != null) {
+            close();
+        }
 
-			if (name.toLowerCase().startsWith("http://")) {
-				URL url = new URL(name);
-				InputStream is = url.openConnection().getInputStream();
-				_brInput = new BufferedReader(new InputStreamReader(is));
-			} else {
-				_brInput = new BufferedReader(new FileReader(name));
-			}
+        // Open the specified file
+        try {
 
-		} catch (MalformedURLException ex) {
-			_sFilename = null;
-			_brInput = null;
-			throw new TokenStreamException("Malformed URL", name);
-		} catch (FileNotFoundException ex) {
-			_sFilename = null;
-			_brInput = null;
-			throw new TokenStreamException("File not found", name);
-		} catch (IOException ex) {
-			_sFilename = null;
-			_brInput = null;
-			throw new TokenStreamException("IOException: " + ex, name);
-		}
-	}
+            if (name.toLowerCase().startsWith("http://")) {
+                URL url = new URL(name);
+                InputStream is = url.openConnection().getInputStream();
+                _brInput = new BufferedReader(new InputStreamReader(is));
+            } else {
+                _brInput = new BufferedReader(new FileReader(name));
+            }
 
-	/**
-	 * Close the file currently being tokenized
-	 **/
-	public void close() throws TokenStreamException {
+        } catch (MalformedURLException ex) {
+            _sFilename = null;
+            _brInput = null;
+            throw new TokenStreamException("Malformed URL", name);
+        } catch (FileNotFoundException ex) {
+            _sFilename = null;
+            _brInput = null;
+            throw new TokenStreamException("File not found", name);
+        } catch (IOException ex) {
+            _sFilename = null;
+            _brInput = null;
+            throw new TokenStreamException("IOException: " + ex, name);
+        }
+    }
 
-		// Close the reader and reset
-		try {
-			if (_brInput != null) {
-				_brInput.close();
-				_brInput = null;
-			}
+    /**
+     * Close the file currently being tokenized
+     */
+    public void close() throws TokenStreamException {
 
-		} catch (IOException ex) {
-			throw new TokenStreamException("IOException: " + ex, _sFilename,
-					_nLine, _nPos);
-		}
-	}
+        // Close the reader and reset
+        try {
+            if (_brInput != null) {
+                _brInput.close();
+                _brInput = null;
+            }
 
-	/**
-	 * Returns the next Token from a TokenStream or null if the end of the
-	 * stream has been reached. Throws a TokenStreamException if there is an IO
-	 * error.
-	 * 
-	 * @return The next token or null (if no tokens remain)
-	 **/
-	public Token nextToken() throws TokenStreamException {
+        } catch (IOException ex) {
+            throw new TokenStreamException("IOException: " + ex, _sFilename,
+                    _nLine, _nPos);
+        }
+    }
 
-		StringBuffer token = new StringBuffer();
-		char[] cbuf = new char[1];
-		int token_len, cur_line_pos, cur_line;
+    /**
+     * Returns the next Token from a TokenStream or null if the end of the
+     * stream has been reached. Throws a TokenStreamException if there is an IO
+     * error.
+     *
+     * @return The next token or null (if no tokens remain)
+     */
+    public Token nextToken() throws TokenStreamException {
 
-		// Read a character at a time from the current line,
-		// return on EOF or when current token complete
-		while (true) {
+        StringBuffer token = new StringBuffer();
+        char[] cbuf = new char[1];
+        int token_len, cur_line_pos, cur_line;
 
-			// Read a character, check for EOF
-			try {
-				if (_bPushBack) {
-					_bPushBack = false;
-					cbuf[0] = _cPushBack;
-				} else if (_brInput.read(cbuf, 0, 1) == EOF) {
-					token_len = token.length();
-					if (token_len > 0) {
-						return new Token(token.toString(), _sFilename, _nPos
-								- token_len, _nLine, _nLinePos - token_len);
-					} else {
-						return null;
-					}
-				} else {
-					++_nPos; // Read was successful
-				}
+        // Read a character at a time from the current line,
+        // return on EOF or when current token complete
+        while (true) {
 
-				// Use temp line pos to retain current position
-				// in case a newline resets it, otherwise position
-				// will be calculated incorrectly when token returned
-				cur_line = _nLine;
-				cur_line_pos = ++_nLinePos;
+            // Read a character, check for EOF
+            try {
+                if (_bPushBack) {
+                    _bPushBack = false;
+                    cbuf[0] = _cPushBack;
+                } else if (_brInput.read(cbuf, 0, 1) == EOF) {
+                    token_len = token.length();
+                    if (token_len > 0) {
+                        return new Token(token.toString(), _sFilename, _nPos
+                                - token_len, _nLine, _nLinePos - token_len);
+                    } else {
+                        return null;
+                    }
+                } else {
+                    ++_nPos; // Read was successful
+                }
 
-			} catch (IOException ex) {
-				throw new TokenStreamException("IOException: " + ex,
-						_sFilename, _nLine, _nPos);
-			}
+                // Use temp line pos to retain current position
+                // in case a newline resets it, otherwise position
+                // will be calculated incorrectly when token returned
+                cur_line = _nLine;
+                cur_line_pos = ++_nLinePos;
 
-			// Handle bracket
-			if (cbuf[0] == '[') {
-				_bInMath = true;
-			} else if (cbuf[0] == ']') {
-				_bInMath = false;
-			}
+            } catch (IOException ex) {
+                throw new TokenStreamException("IOException: " + ex,
+                        _sFilename, _nLine, _nPos);
+            }
 
-			// Handle newline
-			if (cbuf[0] == '\n') {
-				++_nLine;
-				_nLinePos = -1;
-			}
+            // Handle bracket
+            if (cbuf[0] == '[') {
+                _bInMath = true;
+            } else if (cbuf[0] == ']') {
+                _bInMath = false;
+            }
 
-			// ////////////////////////////////////////////////////////
-			// Students: Modify the following section of code to
-			// handle additional delimiters, lowercase conversion
-			// etc...
-			// ////////////////////////////////////////////////////////
+            // Handle newline
+            if (cbuf[0] == '\n') {
+                ++_nLine;
+                _nLinePos = -1;
+            }
 
-			// This is a valid, non-tag character so decide what to
-			// do... namely, if char is a delimiter then return the
-			// current token if it exists.
-			if (!_bInMath &&
-					(!Character.isLetterOrDigit(cbuf[0]) && cbuf[0] != '-' && cbuf[0] != '_'
-					 && cbuf[0] != '\'')) {
+            // ////////////////////////////////////////////////////////
+            // Students: Modify the following section of code to
+            // handle additional delimiters, lowercase conversion
+            // etc...
+            // ////////////////////////////////////////////////////////
 
-				// A delimiter so return token if non-empty,
-				// otherwise ignore character and continue
-				boolean ws = isWhiteSpace(cbuf[0]);
-				if (!ws) {
-					if (token.length() > 0 && cbuf[0] != ']') {
-						_cPushBack = cbuf[0];
-						_bPushBack = true;
-					} else {
-						token.append(cbuf[0]);
-					}
-				}
+            // This is a valid, non-tag character so decide what to
+            // do... namely, if char is a delimiter then return the
+            // current token if it exists.
+            if (!_bInMath &&
+                    (!Character.isLetterOrDigit(cbuf[0]) && cbuf[0] != '-' && cbuf[0] != '_'
+                            && cbuf[0] != '\'')) {
 
-				token_len = token.length();
-				if (token_len > 0) {
-					return new Token(token.toString(), _sFilename, _nPos
-							- token_len, cur_line, cur_line_pos - token_len);
-				}
+                // A delimiter so return token if non-empty,
+                // otherwise ignore character and continue
+                boolean ws = isWhiteSpace(cbuf[0]);
+                if (!ws) {
+                    if (token.length() > 0 && cbuf[0] != ']') {
+                        _cPushBack = cbuf[0];
+                        _bPushBack = true;
+                    } else {
+                        token.append(cbuf[0]);
+                    }
+                }
 
-			} else {
+                token_len = token.length();
+                if (token_len > 0) {
+                    return new Token(token.toString(), _sFilename, _nPos
+                            - token_len, cur_line, cur_line_pos - token_len);
+                }
 
-				// Character is a letter or digit, so append
-				token.append(cbuf[0]);
-			}
+            } else {
 
-			// ////////////////////////////////////////////////////////
-		}
-	}
+                // Character is a letter or digit, so append
+                token.append(cbuf[0]);
+            }
 
-	public static boolean isWhiteSpace(char c) {
-		switch (c) {
-		case ' ':
-			return true;
-		case '\n':
-			return true;
-		case '\t':
-			return true;
-		case '\r':
-			return true;
-		default:
-			return false;
-		}
-	}
+            // ////////////////////////////////////////////////////////
+        }
+    }
+
+    public static boolean isWhiteSpace(char c) {
+        switch (c) {
+            case ' ':
+                return true;
+            case '\n':
+                return true;
+            case '\t':
+                return true;
+            case '\r':
+                return true;
+            default:
+                return false;
+        }
+    }
 
 }

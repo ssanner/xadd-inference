@@ -21,37 +21,37 @@ class MinIntHeap {
     // is the first.  Actual array size is always at least
     // 1 + sz.
     public int[] a;                      // array
-    public int   sz = 0;                 // num elements
-    
+    public int sz = 0;                 // num elements
+
     public final static int DEF_SZ = 32; // default heap size
-    
+
     /**
      * Build a priority queue from scratch
      */
     public MinIntHeap() {
-	a  = new int[DEF_SZ];
-	sz = 0;
+        a = new int[DEF_SZ];
+        sz = 0;
     }
 
     /**
      * Build a priority queue from an integer array
-     */ 
+     */
     public MinIntHeap(int[] val, int size) {
-	a = new int[size + 1];
+        a = new int[size + 1];
 
-	// a[1] is the first element, a[0] is unused
-	System.arraycopy(val, 0, a, 1, size);
-	sz = size;
-	buildHeap();
+        // a[1] is the first element, a[0] is unused
+        System.arraycopy(val, 0, a, 1, size);
+        sz = size;
+        buildHeap();
     }
 
     /**
      * Turn the array into a heap
      */
     public void buildHeap() {
-	for (int i = sz >> 1; i >= 1; i--) {
-	    heapify(i);
-	}
+        for (int i = sz >> 1; i >= 1; i--) {
+            heapify(i);
+        }
     }
 
     /**
@@ -59,34 +59,34 @@ class MinIntHeap {
      * subtree
      */
     public void heapify(int i) {
-	
-	int l, r, largest;
-	boolean cont = true;
 
-	while (cont) {
+        int l, r, largest;
+        boolean cont = true;
 
-	    l = 2 * i; // The left subnode
-	    r = l + 1; // The right subnode
-	    
-	    if (l <= sz && a[l] < a[i]) {
-		largest = l;
-	    } else {
-		largest = i;
-	    }	    
-	    
-	    if (r <= sz && a[r] < a[largest]) {
-		largest = r;
-	    }
-	    
-	    if (largest != i) {
-		int temp = a[i];
-		a[i] = a[largest];
-		a[largest] = temp;
+        while (cont) {
+
+            l = 2 * i; // The left subnode
+            r = l + 1; // The right subnode
+
+            if (l <= sz && a[l] < a[i]) {
+                largest = l;
+            } else {
+                largest = i;
+            }
+
+            if (r <= sz && a[r] < a[largest]) {
+                largest = r;
+            }
+
+            if (largest != i) {
+                int temp = a[i];
+                a[i] = a[largest];
+                a[largest] = temp;
                 i = largest; // heapify(largest)
-	    } else {
-		cont = false; // No need to recurse
-	    }
-	}
+            } else {
+                cont = false; // No need to recurse
+            }
+        }
     }
 
     /**
@@ -94,77 +94,77 @@ class MinIntHeap {
      */
     public void insert(int key) {
 
-	// Expand the array?
-	if (sz + 1 >= a.length - 1) {
-	    int temp[] = new int[a.length * 2];
-	    System.arraycopy(a, 0, temp, 0, a.length);
-	    a = temp;
-	}
+        // Expand the array?
+        if (sz + 1 >= a.length - 1) {
+            int temp[] = new int[a.length * 2];
+            System.arraycopy(a, 0, temp, 0, a.length);
+            a = temp;
+        }
 
-	// Find a place to insert the key
-	int i = ++sz;
-	int parent;
-	while (i > 1 && a[parent = (i >> 1)] > key) {
-	    a[i] = a[parent];
-	    i = parent;
-	}
-	a[i] = key;
+        // Find a place to insert the key
+        int i = ++sz;
+        int parent;
+        while (i > 1 && a[parent = (i >> 1)] > key) {
+            a[i] = a[parent];
+            i = parent;
+        }
+        a[i] = key;
     }
 
     /**
      * Remove the max element from the queue
      */
     public int removeMin() {
-	if (sz == 0) {
-	    return (-1);
-	}
+        if (sz == 0) {
+            return (-1);
+        }
 
-	int max = a[1];
-	a[1] = a[sz];
-	sz--;
-	heapify(1);
+        int max = a[1];
+        a[1] = a[sz];
+        sz--;
+        heapify(1);
 
-	return max;
+        return max;
     }
-    
+
     /**
      * Check the max element in the queue but do not remove
      */
     public int min() {
-	if (sz > 0) {
-	    return a[1];
-	} else {
-	    return (-1);
-	}
+        if (sz > 0) {
+            return a[1];
+        } else {
+            return (-1);
+        }
     }
-    
+
     /**
      * Is heap empty?
      */
     public boolean isEmpty() {
-	return (sz == 0);
+        return (sz == 0);
     }
 
     /**
      * Clear the heap
      */
     public void clear() {
-	sz = 0;
+        sz = 0;
     }
-    
+
     /**
      * Print the current heap
      */
     public String printHeap() {
-	StringBuffer sb1 = new StringBuffer();
-	StringBuffer sb2 = new StringBuffer();
-	for (int i = 1; i <= sz; i++) {
-	    sb1.append(i + " ");
-	    sb2.append(a[i] + " ");
-	}
-	return sb2.toString() + "\n" + sb1.toString();
+        StringBuffer sb1 = new StringBuffer();
+        StringBuffer sb2 = new StringBuffer();
+        for (int i = 1; i <= sz; i++) {
+            sb1.append(i + " ");
+            sb2.append(a[i] + " ");
+        }
+        return sb2.toString() + "\n" + sb1.toString();
     }
-    
+
     /**
      * Testing method
      */

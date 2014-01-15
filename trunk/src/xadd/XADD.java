@@ -81,10 +81,13 @@ public class XADD {
     public final static String STRING_TAB = "   ";
 
     //Precision constants
-    public static double PRECISION = 1e-10;   //'final' removed by Hadi (see equality() of class DoubleExpr for the reason behind it)
-    public final static double DEFAULT_UPPER_BOUND = 1e+10d;
+    /**
+     * NOTE: all precision parameters are reset since in case leaves are of degree more than 1, they produce significant errors. (Hadi)
+     */
+    public static double PRECISION = 0.0;//1e-10;//0.0;//1e-10;   //'final' removed by Hadi. Hadi makes it 0.0 (see equality() of class DoubleExpr for the reason behind it)
+    public final static double DEFAULT_UPPER_BOUND = Double.MAX_VALUE;//1e+10d; //change by Hadi
     public final static double DEFAULT_LOWER_BOUND = -DEFAULT_UPPER_BOUND;
-    public static int ROUND_PRECISION = 1000000;
+    public static final Integer ROUND_PRECISION = null;//1000000;//changed by Hadi. Null represents no rounding (solves lots of problems)
 
     //XADD Variable Maintenance
     public HashSet<String> _hsBooleanVars = new HashSet<String>();
@@ -1902,7 +1905,7 @@ public class XADD {
     }
 
     public class XADDLeafDefIntegral extends XADDLeafIndefIntegral {
-        public int _runningSum; // XADD for the running sum of all leaf substitutions      //todo Made public by Hadi
+        public int _runningSum; // XADD for the running sum of all leaf substitutions      //Made public by Hadi
 
         public final static boolean DEBUG_XADD_DEF_INTEGRAL = false;
 
@@ -2349,11 +2352,20 @@ public class XADD {
             _high = high;
         }
 
+        @Override
         public int hashCode() {
-            return (_var) + (_low << 10) - (_high << 20) + (_high >>> 20)
-                    - (_low >>> 10);
+            int result = _var;
+            result = 31 * result + _low;
+            result = 31 * result + _high;
+            return result;
         }
 
+        /*
+                public int hashCode() {
+                    return (_var) + (_low << 10) - (_high << 20) + (_high >>> 20)
+                            - (_low >>> 10);
+                }
+        */
         public boolean equals(Object o) {
             if (o instanceof XADDINode) {
                 XADDINode n = (XADDINode) o;
@@ -2791,7 +2803,6 @@ public class XADD {
 //		else
 //			return t._annotate.evaluate(cont_assign);
 //	}
-
 
 
 }

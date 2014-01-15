@@ -1,6 +1,8 @@
 package logic.kb.fol.kif;
 
-/** CUP generated class containing symbol constants. */
+/**
+ * CUP generated class containing symbol constants.
+ */
 public class Symbol {
 
     /* Local vas */
@@ -10,76 +12,202 @@ public class Symbol {
 
     /* Constructors and methods */
     public Symbol(int id, int line) {
-	_nID = id;
-	_value = null;	
-	_nLine = line;
+        _nID = id;
+        _value = null;
+        _nLine = line;
     }
 
     public Symbol(int id, String s, int line) {
-	_nID = id;
-	_value = s;
-	_nLine = line;
+        _nID = id;
+        _value = s;
+        _nLine = line;
     }
 
     public Symbol(Integer i, int line) {
-	_nID = INTEGER;
-	_value = i;
-	_nLine = line;
+        _nID = INTEGER;
+        _value = i;
+        _nLine = line;
     }
 
     public Symbol(Double d, int line) {
-	_nID = DOUBLE;
-	_value = d;
-	_nLine = line;
+        _nID = DOUBLE;
+        _value = d;
+        _nLine = line;
     }
 
     public String toString() {
-	String name;
-	switch (_nID) {
-	case LPAREN:  { name = "'('"; } break; 
-	case GREATER: { name = "'>'"; } break; 
-	case SEMI:    { name = "';'"; } break; 
-	case COLON:   { name = "':'"; } break; 
-	case EXISTS:  { name = "EXISTS"; } break; 
-	case FORALL:  { name = "FORALL"; } break; 
-	case LESS:    { name = "'<'"; } break; 
-	case RPAREN:  { name = "')'"; } break; 
-	case NOT:     { name = "'~'"; } break; 
-	case AND:     { name = "'^'"; } break; 
-	case OR:      { name = "'|'"; } break; 
-	case BANG:    { name = "'!'"; } break; 
-	case COMMA:   { name = "','"; } break; 
-	case DIV:     { name = "'/'"; } break; 
-	case PLUS:    { name = "'+'"; } break; 
-	case MINUS:   { name = "'-'"; } break; 
-	case LESSEQ:  { name = "'<='"; } break; 
-	case DOT:     { name = "'.'"; } break; 
-	case EOF:     { name = "[EOF]"; } break; 
-	case EQUAL:   { name = "'='"; } break; 
-	case TRUE:    { name = "'true'"; } break; 
-	case error:   { name = "[ERROR]"; } break; 
-	case MOD:     { name = "'%'"; } break; 
-	case NEWLINE: { name = "[NEWLINE]"; } break; 
-	case IMPLY:   { name = "'=>'"; } break;
-	case QST:     { name = "'?'"; } break; 
-	case LBRACK:  { name = "'['"; } break; 
-	case TIMES:   { name = "'*'"; } break; 
-	case RBRACK:  { name = "']'"; } break; 
-	case NEQUAL:  { name = "'~='"; } break; 
-	case EQUIV:   { name = "'<=>'"; } break; 
-	case GREATEREQ: { name = "'>='"; } break; 
-	case COUNT:   { name = "'#'"; } break; 
-	case FALSE:   { name = "'false'"; } break; 
-	case LCBRACE: { name = "'{'"; } break; 
-	case RCBRACE: { name = "'}'"; } break; 
-	case VARIABLE: {name = "VAR:'?" + _value.toString() + "'"; } break;
-	case COMMENT: { name = "COMMENT:'" + _value.toString() + "'"; } break;
-	case IDENT:   { name = "IDENT:'"   + _value.toString() + "'"; } break;
-	case INTEGER: { name = "INTEGER:'" + _value.toString() + "'"; } break;
-	case DOUBLE:  { name = "DOUBLE:'"  + _value.toString() + "'"; } break;
-	default: { name = "[UNKNOWN AT LINE " + _nLine + "]"; } break;
-	}
-	return name;
+        String name;
+        switch (_nID) {
+            case LPAREN: {
+                name = "'('";
+            }
+            break;
+            case GREATER: {
+                name = "'>'";
+            }
+            break;
+            case SEMI: {
+                name = "';'";
+            }
+            break;
+            case COLON: {
+                name = "':'";
+            }
+            break;
+            case EXISTS: {
+                name = "EXISTS";
+            }
+            break;
+            case FORALL: {
+                name = "FORALL";
+            }
+            break;
+            case LESS: {
+                name = "'<'";
+            }
+            break;
+            case RPAREN: {
+                name = "')'";
+            }
+            break;
+            case NOT: {
+                name = "'~'";
+            }
+            break;
+            case AND: {
+                name = "'^'";
+            }
+            break;
+            case OR: {
+                name = "'|'";
+            }
+            break;
+            case BANG: {
+                name = "'!'";
+            }
+            break;
+            case COMMA: {
+                name = "','";
+            }
+            break;
+            case DIV: {
+                name = "'/'";
+            }
+            break;
+            case PLUS: {
+                name = "'+'";
+            }
+            break;
+            case MINUS: {
+                name = "'-'";
+            }
+            break;
+            case LESSEQ: {
+                name = "'<='";
+            }
+            break;
+            case DOT: {
+                name = "'.'";
+            }
+            break;
+            case EOF: {
+                name = "[EOF]";
+            }
+            break;
+            case EQUAL: {
+                name = "'='";
+            }
+            break;
+            case TRUE: {
+                name = "'true'";
+            }
+            break;
+            case error: {
+                name = "[ERROR]";
+            }
+            break;
+            case MOD: {
+                name = "'%'";
+            }
+            break;
+            case NEWLINE: {
+                name = "[NEWLINE]";
+            }
+            break;
+            case IMPLY: {
+                name = "'=>'";
+            }
+            break;
+            case QST: {
+                name = "'?'";
+            }
+            break;
+            case LBRACK: {
+                name = "'['";
+            }
+            break;
+            case TIMES: {
+                name = "'*'";
+            }
+            break;
+            case RBRACK: {
+                name = "']'";
+            }
+            break;
+            case NEQUAL: {
+                name = "'~='";
+            }
+            break;
+            case EQUIV: {
+                name = "'<=>'";
+            }
+            break;
+            case GREATEREQ: {
+                name = "'>='";
+            }
+            break;
+            case COUNT: {
+                name = "'#'";
+            }
+            break;
+            case FALSE: {
+                name = "'false'";
+            }
+            break;
+            case LCBRACE: {
+                name = "'{'";
+            }
+            break;
+            case RCBRACE: {
+                name = "'}'";
+            }
+            break;
+            case VARIABLE: {
+                name = "VAR:'?" + _value.toString() + "'";
+            }
+            break;
+            case COMMENT: {
+                name = "COMMENT:'" + _value.toString() + "'";
+            }
+            break;
+            case IDENT: {
+                name = "IDENT:'" + _value.toString() + "'";
+            }
+            break;
+            case INTEGER: {
+                name = "INTEGER:'" + _value.toString() + "'";
+            }
+            break;
+            case DOUBLE: {
+                name = "DOUBLE:'" + _value.toString() + "'";
+            }
+            break;
+            default: {
+                name = "[UNKNOWN AT LINE " + _nLine + "]";
+            }
+            break;
+        }
+        return name;
     }
 
     /* IDs */

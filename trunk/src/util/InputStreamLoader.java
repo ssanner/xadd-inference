@@ -15,36 +15,35 @@
 package util;
 
 // Packages to import
+
 import java.io.*;
 import java.net.*;
 
 /**
- * @version   1.0
- * @author    Scott Sanner
- * @language  Java (JDK 1.3)
- **/
+ * @author Scott Sanner
+ * @version 1.0
+ * @language Java (JDK 1.3)
+ */
 public class InputStreamLoader {
 
     /* Returns null of OpenStream failed */
     public static InputStream OpenStream(String surl) {
 
         InputStream in;
-	
+
         try {
             File ff = new File(surl);
             in = new FileInputStream(ff);
-        }
-        catch (Exception ignore) {
+        } catch (Exception ignore) {
             try {
                 URL url = new URL(surl);
                 in = url.openStream();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.err.println("Failed to open: '" + surl + "'");
                 return null;
             }
         }
 
-	return in;
-    }	
+        return in;
+    }
 }

@@ -23,24 +23,24 @@ package lpsolve;
 /**
  * Classes that implement this interface may be passed
  * to the <code>putMsgfunc</code> method of the <code>LpSolve</code> class.
- * 
+ *
  * @author Juergen Ebert
  * @see LpSolve#putMsgfunc
  * @see "lp_solve documentation for 'put_msgfunc'"
  */
 public interface MsgListener {
 
-	/**
-	 * This routine is called when a situation specified in the mask parameter
-	 * of putMsgfunc occurs. 
-	 * Note that this routine is called while solving the model. 
-	 * This can be usefull to follow the solving progress.
-	 *  
-	 * @param problem the problem this Listener was defined for
-	 * @param userhandle the userhandle object that was passed to <code>putMsgfunc</code>
-	 * @param msg event code why this method was called
-	 * @throws LpSolveException
-	 */
-	public void msgfunc(LpSolve problem, Object userhandle, int msg) throws LpSolveException;
+    /**
+     * This routine is called when a situation specified in the mask parameter
+     * of putMsgfunc occurs.
+     * Note that this routine is called while solving the model.
+     * This can be usefull to follow the solving progress.
+     *
+     * @param problem    the problem this Listener was defined for
+     * @param userhandle the userhandle object that was passed to <code>putMsgfunc</code>
+     * @param msg        event code why this method was called
+     * @throws LpSolveException
+     */
+    public void msgfunc(LpSolve problem, Object userhandle, int msg) throws LpSolveException;
 
 }

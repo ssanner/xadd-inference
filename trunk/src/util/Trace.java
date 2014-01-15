@@ -22,33 +22,33 @@ public class Trace {
     private PrintStream m_osOut;
     private int m_nTraceLevel;
     private boolean m_bDebug;
-    
+
     public Trace() {
-	m_bDebug = true;
-	m_osOut = System.out;
-	m_nTraceLevel = 0;
+        m_bDebug = true;
+        m_osOut = System.out;
+        m_nTraceLevel = 0;
     }
-    
+
     public Trace(String filename, int tl, boolean debug) {
-	m_bDebug = debug;
-	if (!debug) return;
-	try {
-	    m_osOut = new PrintStream(new FileOutputStream(filename)); 
-	} catch (FileNotFoundException e) {
-	    System.out.println(e);
-	    System.exit(1);
-	}
-	m_nTraceLevel = tl;
+        m_bDebug = debug;
+        if (!debug) return;
+        try {
+            m_osOut = new PrintStream(new FileOutputStream(filename));
+        } catch (FileNotFoundException e) {
+            System.out.println(e);
+            System.exit(1);
+        }
+        m_nTraceLevel = tl;
     }
-    
+
     public void M(int level, String msg) {
-	if (m_bDebug && level <= m_nTraceLevel) 
-	    m_osOut.println(msg);
+        if (m_bDebug && level <= m_nTraceLevel)
+            m_osOut.println(msg);
     }
 
     public void M(int level, String msg, int i1, int i2) {
-	if (m_bDebug && level <= m_nTraceLevel) 
-	    m_osOut.println(msg + ":" + i1 + ":" + i2);
+        if (m_bDebug && level <= m_nTraceLevel)
+            m_osOut.println(msg + ":" + i1 + ":" + i2);
     }
 }
 
