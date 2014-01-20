@@ -11,11 +11,21 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
+import util.IntTriple;
+import xadd.ExprLib;
+import xadd.ExprLib.ArithExpr;
 import xadd.ExprLib.VarExpr;
 import xadd.XADD;
+import xadd.XADD.BoolDec;
+import xadd.XADD.DeltaFunctionSubstitution;
 import xadd.XADD.XADDLeafMinOrMax;
 import xadd.XADDUtils;
+import camdp.CAction;
 import camdp.CAMDP.FileOptions;
 
 /**
@@ -31,34 +41,45 @@ public class Controller {
     private static final String SOURCE_DIR = "src";
     private static final String DOMAIN_DIR = "domains";
     
+    private static String RootDirectoryPath = "";
     private static String DomainDirectoryPath = "";
     
     private static XADD context = null;
 
+    private enum Domains {
+    	MATCHING_PENNIES,
+    	CONTINGENT_CLAIM
+    };
+    
     private static void Usage() {
         System.out.println("\n" + Controller.USAGE_STRING);
         System.exit(1);
     }   
 
-    private static String DomainsDirectory() {
+    private static String ProjectRootDirectory() {
         
-        if(Controller.DomainDirectoryPath.isEmpty()) {
-            Controller.DomainDirectoryPath = System.getProperty("user.dir");
-            //+
-             //                           File.separator + SOURCE_DIR + 
-              //                          File.separator + Controller.DOMAIN_DIR;
+        if(Controller.RootDirectoryPath.isEmpty()) {
+            Controller.RootDirectoryPath = System.getProperty("user.dir") +
+        	    				File.separator + SOURCE_DIR +
+    	    					File.separator + "mamdp";
         }
         
-        return Controller.DomainDirectoryPath;
+        return Controller.RootDirectoryPath;
     }
     
-    private static String DomainDirectory(String domain) {        
-        return Controller.DomainsDirectory() +
-        		File.separator + SOURCE_DIR +
-        		File.separator + "mamdp" +
-        		File.separator + Controller.DOMAIN_DIR +
-        		File.separator + domain;
+    private static String DomainDirectory(String domain) {
+	
+	if(Controller.DomainDirectoryPath.isEmpty()) {
+	    Controller.DomainDirectoryPath = Controller.ProjectRootDirectory() +
+    					File.separator + Controller.DOMAIN_DIR;
+	}
+	
+        return Controller.DomainDirectoryPath + File.separator + domain;
     }    
+
+    /*-------------------------------------------------------------------------
+     * XADD related functions 
+     *-----------------------------------------------------------------------*/
     
     private static XADD getXADD() {
         
@@ -68,22 +89,6 @@ public class Controller {
         
         return context;
      }    
-    
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-        
-        /*----------------------------------------------------------------------
-         * Parse the input arguments
-         ---------------------------------------------------------------------*/
-        
-        //if (args.length != 1) {
-        //    Controller.Usage();
-       // }
-        
-        Controller.MatchingPennies();
-    }
     
     private static int BuildXADD(String fileLocation) {
         
@@ -143,13 +148,224 @@ public class Controller {
         
         return max._runningResult;
     }
+
+    public static int regressBooleanVariable(int qFuncID, Integer cpfID, String var) {
+
+        // Get cpf for boolean var'
+        int var_id = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec(var), false);
+        Integer dd_cpf = cpfID;
+        
+        qFuncID = Controller.getXADD().apply(qFuncID, dd_cpf, XADD.PROD);
+
+        // Following is a safer way to marginalize (instead of using opOut
+        // based on apply) in the event that two branches of a boolean variable
+        // had equal probability and were collapsed.
+        int restrict_high = Controller.getXADD().opOut(qFuncID, var_id, XADD.RESTRICT_HIGH);
+        int restrict_low = Controller.getXADD().opOut(qFuncID, var_id, XADD.RESTRICT_LOW);
+        qFuncID = Controller.getXADD().apply(restrict_high, restrict_low, XADD.SUM);
+
+        return qFuncID;
+    }    
+    
+    public static int regressContinuousVariable(int qFuncID, Integer cpfID, String var) {
+
+        // Get cpf for continuous var'
+        //int var_id = Controller.getXADD()._cvar2ID.get(var);
+        Integer dd_conditional_sub = cpfID;
+
+        // Perform regression via delta function substitution
+        qFuncID = Controller.getXADD().reduceProcessXADDLeaf(dd_conditional_sub,
+        	Controller.getXADD().new DeltaFunctionSubstitution(var, qFuncID), true);
+
+        return qFuncID;
+    }    
+    
+    // Works backward from this root factor
+    private static Graph buildDBNDependencyDAG(Integer cpfID, HashSet<String> vars, HashSet<String> hsVars) {
+        Graph g = new Graph(true, false, true, false);
+        HashSet<String> already_seen = new HashSet<String>();
+
+        // We don't want to generate parents for the following "base" variables
+        already_seen.addAll(hsVars);
+
+        for (String var : vars)
+            Controller.buildDBNDependencyDAGInt(cpfID, var, g, already_seen);
+
+        return g;
+    }    
+    
+    // Consider that vars belong to a parent factor, recursively call
+    // for every child factor and link child to parent
+    //
+    // have R(x1i,b1i,x2'), DAG has (b1i -> x1i -> R), (b1i -> R), (x2' -> R)... {x1i, b1i, x2'}
+    // recursively add in parents for each of x2', xli, bli
+    private static void buildDBNDependencyDAGInt(Integer cpfID, String parent_var, Graph g, HashSet<String> already_seen) {
+        
+	if (already_seen.contains(parent_var))
+            return;
+        
+	already_seen.add(parent_var);
+        
+	Integer dd_cpf = cpfID;
+        if (dd_cpf == null) {
+            System.err.println("Could not find CPF definition for variable '" + parent_var);
+            System.exit(1);
+        }
+        
+        HashSet<String> children = Controller.getXADD().collectVars(dd_cpf);
+        for (String child_var : children) {
+            // In the case of boolean variables, the dual action diagram contains the parent,
+            // because this is not a substitution, it is a distribution over the parent.
+            // Hence we need to explicitly prevent boolean variable self-loops -- this is not
+            // an error.
+            if (!child_var.equals(parent_var)) {
+                g.addUniLink(child_var, parent_var);
+                //System.out.println("Adding link " + child_var + " --> " + parent_var);
+            } else if (child_var.equals(parent_var)) {
+                // SUSPICIOUS CODE :p (avoid removing variables that dont have dependencies
+                g.addNode(parent_var);
+            }
+            
+            Controller.buildDBNDependencyDAGInt(cpfID, child_var, g, already_seen);
+        }
+    }    
+    
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        
+        /*----------------------------------------------------------------------
+         * Parse the input arguments
+         ---------------------------------------------------------------------*/
+        
+        //Controller.MatchingPennies();
+        Controller.FiniteHorizonStochasticGame("sequential_matching_pennies", 5);
+    }    
+    
+    /**
+     * Finite Horizon Stochastic Game
+     */
+    private static void FiniteHorizonStochasticGame(String domainName, Integer numIterations) {
+	
+        String domainDir = Controller.DomainDirectory(domainName);
+        String rewardFile = domainDir + File.separator + "reward.xadd";
+        String constraintsFile = domainDir + File.separator + "constraints.xadd";
+        String transitionsFile = domainDir + File.separator + "transitions.xadd";
+        String logFile = domainDir + File.separator + domainName + ".log";
+        String plot2DFile = domainDir + File.separator + "plot";
+
+        Integer maxID = null;
+        Integer prevID = null;        
+        Integer vFuncID = Controller.getXADD().ZERO;
+        Integer qFuncID = null;
+        
+        double discountValue = 1.0;
+        
+        HashMap<String, ArithExpr> hmPrimeSubs = new HashMap<String, ArithExpr>();
+        HashSet<String> hsVariables = new HashSet<String>();
+        HashSet<String> hsBooleanVariables = new HashSet<String>();
+        HashSet<String> hsContinuousVariables = new HashSet<String>();
+        
+        PrintStream logStream = null;
+
+        int currIterationNum = 0;
+        
+        /*
+         * 0. Set up 
+         */
+
+        try {
+            logStream = new PrintStream(new FileOutputStream(logFile));
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        
+        // Build the XADDs
+        int constraintsID = Controller.BuildXADD(constraintsFile);
+        int rewardID = Controller.BuildXADD(rewardFile);
+        int transitionsID = Controller.BuildXADD(transitionsFile);
+
+        Controller.PlotXADD(constraintsID, "Constraints");
+        Controller.PlotXADD(rewardID, "Reward");
+        Controller.PlotXADD(transitionsID, "Transition CPF");
+
+        int aVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("a"), false);
+        int bVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("b"), false);
+
+        int pTID = Controller.getXADD().getTermNode(new VarExpr("p"));
+        int pFID = Controller.getXADD().scalarOp(Controller.getXADD().scalarOp(pTID, -1, XADD.PROD), 1, XADD.SUM);
+
+        hmPrimeSubs.put("x", new VarExpr("x'"));
+        hmPrimeSubs.put("a", new VarExpr("a'"));
+        hmPrimeSubs.put("b", new VarExpr("b'"));
+        
+        hsBooleanVariables.add("a");
+        hsBooleanVariables.add("b");
+        hsContinuousVariables.add("x");
+        
+        hsVariables.addAll(hsBooleanVariables);        
+        hsVariables.addAll(hsContinuousVariables);
+        
+        /*
+         *	1.  
+         */
+        
+        while (currIterationNum < numIterations) {
+            currIterationNum++;
+
+            System.out.println("Iteration number: " + currIterationNum);
+            
+            // Prime the vFuncID
+            prevID = vFuncID;
+            
+            // Iterate over each action
+            maxID = null;
+            
+            // Prime the value function
+            Controller.PlotXADD(vFuncID, "Value before Subs");
+            qFuncID = Controller.getXADD().substitute(vFuncID, hmPrimeSubs);
+            Controller.PlotXADD(qFuncID, "Value after Subs");
+            
+            // Discount
+            qFuncID = Controller.getXADD().scalarOp(qFuncID, discountValue, XADD.PROD);
+            
+            HashSet<String> varsToRegress = Controller.getXADD().collectVars(qFuncID);
+            Graph g = Controller.buildDBNDependencyDAG(transitionsID, varsToRegress, varsToRegress);            
+            List variableEliminationOrder = g.topologicalSort(true);
+            
+            // Regress each variable in the topological order
+            for(Object obj : variableEliminationOrder) {
+        	String varToEliminate = (String) obj;
+        	
+        	if(hsBooleanVariables.contains(varToEliminate)) {
+        	    qFuncID = regressBooleanVariable(qFuncID, transitionsID, varToEliminate);
+        	} else if (hsContinuousVariables.contains(varToEliminate)) {
+        	    qFuncID = regressContinuousVariable(qFuncID, transitionsID, varToEliminate);
+        	}
+            }
+            
+            // Add reward
+            qFuncID = Controller.getXADD().apply(rewardID, qFuncID, XADD.SUM);
+            Controller.PlotXADD(qFuncID, "Value after reward");
+            
+            vFuncID = qFuncID;
+            
+            // Check for convergence
+            if(prevID.equals(vFuncID)) {
+        	System.out.println("Converged at iteration " + currIterationNum);
+        	break;
+            }
+        }
+    }
     
     /**
      * Matching pennies example
      */
     private static void MatchingPennies() {
         
-        String domainDir = DomainDirectory("matching_pennies");
+        String domainDir = Controller.DomainDirectory("matching_pennies");
         String rewardFile = domainDir + File.separator + "reward.xadd";
         String constraintsFile = domainDir + File.separator + "constraints.xadd";
         String plot2DFile = domainDir + File.separator + "plot";
@@ -157,7 +373,6 @@ public class Controller {
 
         Integer vFuncID = null;
         PrintStream logStream = null;
-        //Double probHead = 0.5; //The probability that Player 1 chooses Heads \pi_a_{T}
         
         try {
             logStream = new PrintStream(new FileOutputStream(logFile));
@@ -180,11 +395,8 @@ public class Controller {
         int aVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("a"), false);
         int bVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("b"), false);
         
-        //int pTrueID = context.getTermNode(new DoubleExpr(probHead));
-        //int pFalseID = context.getTermNode(new DoubleExpr(1 - probHead));
-        
         int pTID = Controller.getXADD().getTermNode(new VarExpr("p"));
-        int pFID = Controller.getXADD().getTermNode(new VarExpr("1 - p"));
+        int pFID = Controller.getXADD().scalarOp(Controller.getXADD().scalarOp(pTID, -1, XADD.PROD), 1, XADD.SUM);
         
         vFuncID = rewardID;
         
@@ -196,8 +408,8 @@ public class Controller {
         int lowID  = Controller.getXADD().opOut(rewardID, aVarID, XADD.RESTRICT_LOW);
         
         vFuncID = Controller.getXADD().apply(Controller.getXADD().apply(highID, pTID, XADD.PROD), 
-                                            Controller.getXADD().apply(lowID, pFID, XADD.PROD), 
-                                                                        XADD.SUM);
+                                             Controller.getXADD().apply(lowID, pFID, XADD.PROD), 
+                                                    				XADD.SUM);
         
         Controller.PlotXADD(vFuncID, "After 1");
         
@@ -215,9 +427,6 @@ public class Controller {
         /*
          * 3. Max out the ...
          */
-        
-        //vFuncID = context.apply(vFuncID, constraintsID, XADD.PROD);        
-        //Controller.PlotXADD(vFuncID, "After 3 a");
         
         vFuncID = Controller.maxOutVar(vFuncID, "p", 0, 1, logStream);        
         Controller.PlotXADD(vFuncID, "After 3");
