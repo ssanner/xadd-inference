@@ -15,25 +15,18 @@ import java.util.*;
 public class EfficientPathIntegralCalculator implements PathIntegralOnLeafFunctionCalculator {
     private XADD context = null;
 
-//    public EfficientPathIntegralCalculator(XADD context) {
-//        this.context = context;
-//    }
-
     @Override
     public Map<List<XADD.XADDNode>, Double> calculatePathValueMap(XADD.XADDNode rootNode, XADD context, LeafFunction leafFunction) {
         this.context = context;
         return processForAllPaths(rootNode, new ArrayList<XADD.XADDINode>(), new ArrayList<Boolean>(), leafFunction);
     }
 
-    private Map<List<XADD.XADDNode>, Double> processForAllPaths(XADD.XADDNode lastNode, /*int id, */
+    private Map<List<XADD.XADDNode>, Double> processForAllPaths(XADD.XADDNode lastNode,
                                                                 ArrayList<XADD.XADDINode> pathDecisionNodes, ArrayList<Boolean> pathDecisionValues,
                                                                 LeafFunction leafFunction) {
 
         if (lastNode instanceof XADD.XADDTNode) {
             Double leafMass = marginalizeAllPathVarsOnLeaf(pathDecisionNodes, pathDecisionValues, (XADD.XADDTNode) lastNode, leafFunction);
-
-            //todo this linke is hack HACK hack!!!!!!!
-//            leafMass = Math.abs(leafMass);
 
             Map<List<XADD.XADDNode>, Double> map = new HashMap<List<XADD.XADDNode>, Double>();
             List<XADD.XADDNode> completePath = new ArrayList<XADD.XADDNode>(pathDecisionNodes.size() + 1);
@@ -45,7 +38,6 @@ public class EfficientPathIntegralCalculator implements PathIntegralOnLeafFuncti
         }
 
         XADD.XADDINode iNode = (XADD.XADDINode) lastNode;
-//       XADD.Decision d = context._alOrder.get(iNode._var);
 
         //for children the this node itself should be in the path:
         pathDecisionNodes.add(iNode);
@@ -60,9 +52,6 @@ public class EfficientPathIntegralCalculator implements PathIntegralOnLeafFuncti
 
         //collect entries of maps of both low and high children:
         map.putAll(map2);
-//        System.out.println("---------------------------");
-//        System.out.println("map = " + map);
-//        System.out.println("---------------------------");
 
         // last decision nodes and values should be removed from the list before the process ends:
         pathDecisionNodes.remove(pathDecisionNodes.size() - 1);
@@ -71,7 +60,7 @@ public class EfficientPathIntegralCalculator implements PathIntegralOnLeafFuncti
         return map;
     }
 
-    private ArrayList<XADD.Decision> getDecisionsOutOfInnerNodes(ArrayList<XADD.XADDINode> innerNodes) {
+    private ArrayList<XADD.Decision> extractDecisionsOutOfInnerNodes(ArrayList<XADD.XADDINode> innerNodes) {
         ArrayList<XADD.Decision> decisions = new ArrayList<XADD.Decision>(innerNodes.size());
         for (XADD.XADDINode innerNode : innerNodes) {
             decisions.add(context._alOrder.get(innerNode._var));
@@ -87,10 +76,10 @@ public class EfficientPathIntegralCalculator implements PathIntegralOnLeafFuncti
      * @param leafNode          leaf
      */
     public Double marginalizeAllPathVarsOnLeaf(ArrayList<XADD.XADDINode> pathDecisionNodes,
-                                               ArrayList<Boolean> decision_values /*, ExprLib.ArithExpr leaf_val*/,
+                                               ArrayList<Boolean> decision_values,
                                                XADD.XADDTNode leafNode,
                                                LeafFunction leafFunction) {
-        ArrayList<XADD.Decision> pathDecisions = getDecisionsOutOfInnerNodes(pathDecisionNodes);
+        ArrayList<XADD.Decision> pathDecisions = extractDecisionsOutOfInnerNodes(pathDecisionNodes);
 
         HashSet<String> pathVars = new HashSet<String>();
         for (XADD.XADDINode decision : pathDecisionNodes) {
@@ -111,13 +100,6 @@ public class EfficientPathIntegralCalculator implements PathIntegralOnLeafFuncti
 //        int leafNodeId = context._hmNode2Int.get(leafNode);
 
         XADD.XADDNode pathMassXaddNode;
-
-        /*if (substituteLeafWithONE) {
-            pathMassXaddNode = computeDefiniteConditionalIntegral(context.getExistNode(context.ONE), pathVars, pathDecisions, decision_values);
-        } else {
-            pathMassXaddNode = computeDefiniteConditionalIntegral(leafNode, pathVars, pathDecisions, decision_values);
-        }
-*/
 
         pathMassXaddNode = computeDefiniteConditionalIntegral(leafFunction.func(leafNode, pathDecisionNodes), pathVars, pathDecisions, decision_values);
 
@@ -154,13 +136,10 @@ public class EfficientPathIntegralCalculator implements PathIntegralOnLeafFuncti
                                       ArrayList<XADD.Decision> decisions, ArrayList<Boolean> decision_values) {
 
         Integer ret;
-//        XADD.XADDNode n = context.getExistNode(id);
 
         if (n instanceof XADD.XADDTNode) {
             return conditionalIntegrator.processXADDLeaf(decisions, decision_values,
-                    ((XADD.XADDTNode) n)._expr); // Assuming that to have
-            // a node id means
-            // canonical
+                    ((XADD.XADDTNode) n)._expr);
         }
 
         // If its an internal node, check the reduce cache
@@ -185,7 +164,7 @@ public class EfficientPathIntegralCalculator implements PathIntegralOnLeafFuncti
         decisions.remove(decisions.size() - 1);
         decision_values.remove(decision_values.size() - 1);
 
-        // Standard Reduce: getInode will handle the case of low == high
+        // Standard Reduce: getINode() will handle the case of low == high
         ret = context.getINode(iNode._var, low, high);
 
         // Put return value in cache and return

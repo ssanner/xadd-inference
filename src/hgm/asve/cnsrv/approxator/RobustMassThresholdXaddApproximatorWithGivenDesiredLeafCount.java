@@ -11,7 +11,7 @@ import java.util.*;
  * Time: 12:00 PM
  */
 
-public class RobustMassThresholdXaddApproximator implements Approximator {
+public class RobustMassThresholdXaddApproximatorWithGivenDesiredLeafCount implements Approximator {
     private XADD context = null;
     private Map<List<XADD.XADDNode>, Double> pathMassMap;
     private Map<List<XADD.XADDNode>, Double> pathVolumeMap;
@@ -20,15 +20,15 @@ public class RobustMassThresholdXaddApproximator implements Approximator {
 
     private int desiredNumberOfLeaves;
 
-    public RobustMassThresholdXaddApproximator(PathIntegralOnLeafFunctionCalculator pathValueCalculator,
-                                               int desiredNumberOfLeaves) {
+    public RobustMassThresholdXaddApproximatorWithGivenDesiredLeafCount(PathIntegralOnLeafFunctionCalculator pathValueCalculator,
+                                                                        int desiredNumberOfLeaves) {
         this.pathValueCalculator = pathValueCalculator;
         this.desiredNumberOfLeaves = desiredNumberOfLeaves;
     }
 
-    public RobustMassThresholdXaddApproximator(XADD context,
-                                               PathIntegralOnLeafFunctionCalculator pathValueCalculator,
-                                               int desiredNumberOfLeaves) {
+    public RobustMassThresholdXaddApproximatorWithGivenDesiredLeafCount(XADD context,
+                                                                        PathIntegralOnLeafFunctionCalculator pathValueCalculator,
+                                                                        int desiredNumberOfLeaves) {
 
         this(pathValueCalculator, desiredNumberOfLeaves);
 

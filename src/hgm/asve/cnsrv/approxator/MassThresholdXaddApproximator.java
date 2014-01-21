@@ -11,12 +11,11 @@ import java.util.*;
  * Time: 12:00 PM
  */
 
-//Should become deprecated by Robust mass threshold approximator
+//Should become deprecated by a Robust mass threshold approximator
 public class MassThresholdXaddApproximator implements Approximator {
     private XADD context = null;
     private Map<List<XADD.XADDNode>, Double> pathMassMap;
     private Map<List<XADD.XADDNode>, Double> pathVolumeMap;
-//    private int rootXaddId;
 
     private PathIntegralOnLeafFunctionCalculator pathValueCalculator;
 
@@ -46,7 +45,6 @@ public class MassThresholdXaddApproximator implements Approximator {
 
     @Override
     public XADD.XADDNode approximateXadd(XADD.XADDNode rootXadd) {
-//        XADD.XADDNode rootXadd = context.getExistNode(rootXaddId);
         pathMassMap = pathValueCalculator.calculatePathValueMap(rootXadd, context, LeafFunction.identityFunction());
         pathVolumeMap = pathValueCalculator.calculatePathValueMap(rootXadd, context, LeafFunction.oneFunction(context));
 
@@ -55,7 +53,6 @@ public class MassThresholdXaddApproximator implements Approximator {
 
     //todo use nodes rather than ids everywhere...
     private int approximateXADD(int rootId/*double massThreshold, double volumeThreshold*/) {
-//        int rootId = this.rootXaddId;
 
         while (context.getNode(rootId) instanceof XADD.XADDINode) {
             System.out.println("---*---");

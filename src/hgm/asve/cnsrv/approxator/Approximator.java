@@ -9,7 +9,7 @@ import xadd.XADD;
  */
 public interface Approximator {
     /**
-     * When the approximator is build (to be passed to factory) the context is not often ready.
+     * When the approximator is built (to be passed to factory) the context is not often ready.
      * Therefore before using approximator
      *
      * @param context context should be passed to it via this (potentially heavy) method
