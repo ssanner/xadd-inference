@@ -13,7 +13,7 @@ import java.util.Map;
 public interface PathIntegralOnLeafFunctionCalculator {
     /**
      * @param rootNode root xadd
-     * @return a map form a list of nodes from root to leaf (i.e. complete path) mapped to the integral of its leaf function
+     * @return a map form a list of nodes from root to leaf (i.e. complete path / region) mapped to the integral of its leaf function
      */
     Map<List<XADD.XADDNode>, Double> calculatePathValueMap(XADD.XADDNode rootNode, XADD context, LeafFunction leafFunction);
 }

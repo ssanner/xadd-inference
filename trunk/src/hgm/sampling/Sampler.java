@@ -35,9 +35,14 @@ public abstract class Sampler {
             } else cVars.add(var);
         }
 
+        //todo: I think these parameters are only used for visualization and should not be used ....
         for (String var : cVars) {
-            cVarMins.put(var, context._hmMinVal.get(var)); //todo check how XADD works for min and max of boolean variables...
-            cVarMaxes.put(var, context._hmMaxVal.get(var));
+            Double min = context._hmMinVal.get(var);
+            Double max = context._hmMaxVal.get(var);
+            if (min == null) throw new SamplingFailureException("No min value for sampling from variable " + var);
+            if (max == null) throw new SamplingFailureException("No max value for sampling from variable " + var);
+            cVarMins.put(var, min); //todo check how XADD works for min and max of boolean variables...
+            cVarMaxes.put(var, max);
         }
     }
 

@@ -1,5 +1,6 @@
 package hgm.preference.db;
 
+import hgm.asve.cnsrv.approxator.LeafThresholdXaddApproximator;
 import hgm.preference.PreferenceLearning;
 import hgm.sampling.VarAssignment;
 import hgm.utils.vis.XaddVisualizer;
@@ -19,21 +20,24 @@ public class DummyFeasiblePreferenceDatabaseTest {
     public static void main(String[] args) {
         DummyFeasiblePreferenceDatabaseTest instance = new DummyFeasiblePreferenceDatabaseTest();
 //        instance.basicTest();
-        instance.testLPSolverBug();
+//        instance.testLPSolverBug();
+        instance.approximationTest();
     }
     @Test
     public void basicTest() {
         XADD context = new XADD();
-        DummyFeasiblePreferenceDatabase db = new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, 1/*constraints*/, 2, 120);
-        PreferenceLearning learning = new PreferenceLearning(context, db, 0.0/*noise*/, "w");
+        DummyFeasiblePreferenceDatabase db = new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, 35/*constraints*/, 2, 120);
+        PreferenceLearning learning = new PreferenceLearning(context, db, 0.1/*noise*/, "w");
 
         // Pr(W | R^{n+1})
-        XADD.XADDNode posteriorUtilityWeights = learning.computePosteriorWeightVector(false);
+        XADD.XADDNode posteriorUtilityWeights = learning.computePosteriorWeightVector(false, -0.2);
         fixVarLimits(context, posteriorUtilityWeights, -30d, 60d);
 
-        context.getGraph(context._hmNode2Int.get(posteriorUtilityWeights)).launchViewer("test");
-        XaddVisualizer.visualize(posteriorUtilityWeights, "test", context);
+//        context.getGraph(context._hmNode2Int.get(posteriorUtilityWeights)).launchViewer("test");
+        XaddVisualizer.visualize(posteriorUtilityWeights, "original", context);
+        System.out.println("posteriorUtilityWeights.collectNodes().size() = " + posteriorUtilityWeights.collectNodes().size());
 
+        //init sample:
         double[] initialSample = db.getAuxiliaryWeightVector();
         System.out.println("Arrays.toString(initialSample) = " + Arrays.toString(initialSample));
 
@@ -45,6 +49,23 @@ public class DummyFeasiblePreferenceDatabaseTest {
 
         Assert.assertTrue(eval > 0.0);
 
+        //testing reduce...
+        XADD.XADDNode reducedPosterior = context.getExistNode(context.reduceLP(context._hmNode2Int.get(posteriorUtilityWeights)));
+//        fixVarLimits(context, reducedPosterior, -30d, 60d);
+
+//        context.getGraph(context._hmNode2Int.get(reducedPosterior)).launchViewer("reduce");
+        XaddVisualizer.visualize(reducedPosterior, "reduce", context);
+        System.out.println("reducedPosterior.size = " + reducedPosterior.collectNodes().size());
+
+        // testing approximation as well...
+
+        LeafThresholdXaddApproximator approximator = new LeafThresholdXaddApproximator(context, 0.01 /*threshold*/);
+        XADD.XADDNode approx = approximator.approximateXadd(reducedPosterior);
+//        fixVarLimits(context, approx, -30d, 60d);
+
+//        context.getGraph(context._hmNode2Int.get(approx)).launchViewer("approx");
+        XaddVisualizer.visualize(approx, "approx", context);
+        System.out.println("approx.collectNodes().size() = " + approx.collectNodes().size());
 
         //now I sample from it:
       /*  Sampler sampler = new GibbsSampler(context, utilityWeights);
@@ -63,6 +84,7 @@ public class DummyFeasiblePreferenceDatabaseTest {
         }
     }
 
+    //This retrieves a BUG in LP solver version 2
     @Test
     public void testLPSolverBug() {
         XADD context = new XADD();
@@ -85,6 +107,61 @@ public class DummyFeasiblePreferenceDatabaseTest {
 
         int reducedId = context.reduceLP(rootId);
         context.getGraph(reducedId).launchViewer("reduced");
+
+    }
+
+    @Test
+    public void approximationTest() {
+        XADD context = new XADD();
+        DummyFeasiblePreferenceDatabase db = new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, 3/*constraints*/, 2, 120);
+        PreferenceLearning learning = new PreferenceLearning(context, db, 0.1/*noise*/, "w");
+
+        // Pr(W | R^{n+1})
+        XADD.XADDNode posteriorUtilityWeights = learning.computePosteriorWeightVector(true, 0.001);
+        fixVarLimits(context, posteriorUtilityWeights, -30d, 60d);
+
+//        context.getGraph(context._hmNode2Int.get(posteriorUtilityWeights)).launchViewer("test");
+        XaddVisualizer.visualize(posteriorUtilityWeights, "original", context);
+        System.out.println("posteriorUtilityWeights.collectNodes().size() = " + posteriorUtilityWeights.collectNodes().size());
+
+/*
+        //init sample:
+        double[] initialSample = db.getAuxiliaryWeightVector();
+        System.out.println("Arrays.toString(initialSample) = " + Arrays.toString(initialSample));
+
+        VarAssignment initSampleAssign = learning.generateAWeightVectorHighlyProbablePosteriorly();
+        System.out.println("initSampleAssign = " + initSampleAssign);
+
+        Double eval = context.evaluate(context._hmNode2Int.get(posteriorUtilityWeights), initSampleAssign.getBooleanVarAssign(), initSampleAssign.getContinuousVarAssign());
+        System.out.println("eval = " + eval);
+
+        Assert.assertTrue(eval > 0.0);
+*/
+
+        //testing reduce...
+//        XADD.XADDNode reducedPosterior = context.getExistNode(context.reduceLP(context._hmNode2Int.get(posteriorUtilityWeights)));
+//        fixVarLimits(context, reducedPosterior, -30d, 60d);
+
+//        context.getGraph(context._hmNode2Int.get(reducedPosterior)).launchViewer("reduce");
+//        XaddVisualizer.visualize(reducedPosterior, "reduce", context);
+//        System.out.println("reducedPosterior.size = " + reducedPosterior.collectNodes().size());
+
+        // testing approximation as well...
+
+//        LeafThresholdXaddApproximator approximator = new LeafThresholdXaddApproximator(context, 0.01 /*threshold*/);
+//        XADD.XADDNode approx = approximator.approximateXadd(reducedPosterior);
+//        fixVarLimits(context, approx, -30d, 60d);
+
+//        context.getGraph(context._hmNode2Int.get(approx)).launchViewer("approx");
+//        XaddVisualizer.visualize(approx, "approx", context);
+//        System.out.println("approx.collectNodes().size() = " + approx.collectNodes().size());
+
+        //now I sample from it:
+      /*  Sampler sampler = new GibbsSampler(context, utilityWeights);
+        for (int i = 0; i < 50; i++) {
+            VarAssignment assign = sampler.sample();
+            System.out.println("t = " + assign);
+        }*/
 
     }
 

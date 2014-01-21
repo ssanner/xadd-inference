@@ -1,7 +1,6 @@
 package hgm.preference;
 
 import hgm.asve.cnsrv.approxator.EfficientPathIntegralCalculator;
-import hgm.asve.cnsrv.approxator.LeafThresholdXaddApproximator;
 import hgm.asve.cnsrv.approxator.RobustMassThresholdXaddApproximatorWithRelativeMassThreshold;
 import hgm.preference.db.PreferenceDatabase;
 import hgm.sampling.VarAssignment;
@@ -15,15 +14,15 @@ import java.util.List;
  * Created by Hadi Afshar.
  * Date: 19/12/13
  * Time: 8:36 PM
+ * //mass threshold does not work well.... Kept just to show the results...
  */
-//todo: DO NOT USE _hmMin/Max maps!!! so bug prone...
-public class PreferenceLearning {
+@Deprecated
+public class PreferenceLearningWithMassThresholdApprox {
     /*
     Prior weight of Ws is considered uniform in [-C, C]
      */
     public static final double C = 10.0; //todo range of uniform distributions should be decided in a more flexible way.
     public static final double EPSILON = 0.01; // deciding when preference should be considered as "equality"
-//    public static final int NUM_POSTERIOR_CALC_ITERATIONS_LEADING_TO_FLUSHING = 130; // the side effect is that the xadd should become permanent. SEEMS USELESS...
     DecimalFormat decimalFormat = new DecimalFormat("##.#######"); //used to convert doubles to strings //todo discuss the effect of this approximation with Scott...
 
     private  double indicatorNoise;
@@ -33,7 +32,7 @@ public class PreferenceLearning {
 
     private String weightVectorName;
 
-    public PreferenceLearning(XADD context, PreferenceDatabase db, double indicatorNoise, String weightVectorName) {
+    public PreferenceLearningWithMassThresholdApprox(XADD context, PreferenceDatabase db, double indicatorNoise, String weightVectorName) {
         this.context = context;
         this.db = db;
         this.weightVectorName = weightVectorName;
@@ -145,8 +144,8 @@ public class PreferenceLearning {
 
     }
 
-    public XADD.XADDNode computePosteriorWeightVector(boolean reduceXadd, double relativeLeafValueBelowWhichRegionsShouldBeTrimmed) {
-        XADD.XADDNode posterior = computeProbabilityOfWeightVector(db.getPreferenceResponses(), reduceXadd, relativeLeafValueBelowWhichRegionsShouldBeTrimmed);
+    public XADD.XADDNode computePosteriorWeightVector(boolean reduceXadd, double relativeMassBelowWhichRegionsAreTrimmed ) {
+        XADD.XADDNode posterior = computeProbabilityOfWeightVector(db.getPreferenceResponses(), reduceXadd, relativeMassBelowWhichRegionsAreTrimmed);
 
         context.addSpecialNode(context._hmNode2Int.get(posterior));
         context.flushCaches();
@@ -156,7 +155,7 @@ public class PreferenceLearning {
 
     //Pr(W | R^n)
     private XADD.XADDNode computeProbabilityOfWeightVector(List<Preference> preferenceAnswers/*, String weightVectorName*/,
-                                                           boolean doReduceLP, double relativeLeafValueBelowWhichRegionsShouldBeTrimmed) {
+                                                           boolean doReduceLP, double relativeMassBelowWhichRegionsShouldBeTrimmed) {
         Integer numAttribs = db.getNumberOfAttributes();
         XADD.XADDNode[] pWeights = new XADD.XADDNode[numAttribs];
 
@@ -171,7 +170,7 @@ public class PreferenceLearning {
         }
 
         //Pr(W | R^n)
-        XADD.XADDNode prior = computeProbabilityOfWeightVector(preferenceAnswers.subList(0, preferenceAnswers.size() - 1), doReduceLP, relativeLeafValueBelowWhichRegionsShouldBeTrimmed); //Pr(W|R^n)
+        XADD.XADDNode prior = computeProbabilityOfWeightVector(preferenceAnswers.subList(0, preferenceAnswers.size() - 1), doReduceLP, relativeMassBelowWhichRegionsShouldBeTrimmed); //Pr(W|R^n)
         Preference lastResponse = preferenceAnswers.get(preferenceAnswers.size() - 1); //q_{ab}
         // Pr(q_{ab} | W):
         XADD.XADDNode likelihood = computePreferenceLikelihoodGivenUtilityWeights(lastResponse/*, weightVectorName*/, numAttribs);
@@ -183,8 +182,8 @@ public class PreferenceLearning {
             multiply = context._hmInt2Node.get(context.reduceLP(context._hmNode2Int.get(multiply)));
         }
 
-        if (relativeLeafValueBelowWhichRegionsShouldBeTrimmed > 0 || (relativeLeafValueBelowWhichRegionsShouldBeTrimmed==0 && !doReduceLP)) {
-           LeafThresholdXaddApproximator approximator = new LeafThresholdXaddApproximator(context, relativeLeafValueBelowWhichRegionsShouldBeTrimmed);
+        if (relativeMassBelowWhichRegionsShouldBeTrimmed > 0 || (relativeMassBelowWhichRegionsShouldBeTrimmed==0 && !doReduceLP)) {
+            RobustMassThresholdXaddApproximatorWithRelativeMassThreshold approximator = new RobustMassThresholdXaddApproximatorWithRelativeMassThreshold(context, new EfficientPathIntegralCalculator(), relativeMassBelowWhichRegionsShouldBeTrimmed);//since the construction is light-weighted...
 //            XaddVisualizer.visualize(multiply, -30, 30, 0.5, "before", context);
 //            System.out.println("relativeMassBelowWhichRegionsShouldBeTrimmed = " + relativeMassBelowWhichRegionsShouldBeTrimmed);
             multiply = approximator.approximateXadd(multiply);
@@ -192,12 +191,6 @@ public class PreferenceLearning {
 
         }
 
-        /*if ((preferenceAnswers.size() % NUM_POSTERIOR_CALC_ITERATIONS_LEADING_TO_FLUSHING) == 0) {
-            System.err.println("flushing midst prior calculation...");
-            context.addSpecialNode(context._hmNode2Int.get(multiply));
-            context.flushCaches();
-        }
-*/
         return multiply;
     }
 

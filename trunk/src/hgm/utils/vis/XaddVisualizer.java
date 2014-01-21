@@ -12,6 +12,23 @@ import java.util.Iterator;
  */
 //todo merge with factor visualizer
 public class XaddVisualizer {
+    public static void visualize(XADD.XADDNode node, double min, double max, double step, String title, XADD context) {
+        int numVars = node.collectVars().size();
+        switch (numVars) {
+            case 0:
+                context.getGraph(context._hmNode2Int.get(node)).launchViewer();
+                break;
+            case 1:
+                visualize1DimXadd(node, min, max, step, title, context);
+                break;
+            case 2:
+                visualize2DimXadd(node, min, max, step, title, context);
+                break;
+            default:
+                System.err.println("a node with numVars = " + numVars + " cannot be visualized");
+        }
+    }
+
     public static void visualize(XADD.XADDNode node, String title, XADD context) {
         int numVars = node.collectVars().size();
         if (numVars == 1) visualize1DimXadd(node, title, context);
@@ -34,6 +51,17 @@ public class XaddVisualizer {
                 varX, varY, title);
     }
 
+    public static void visualize2DimXadd(XADD.XADDNode node,  double min, double max, double step, String title, XADD context) {
+
+        Iterator<String> iterator = node.collectVars().iterator();
+        String varX = iterator.next();
+        String varY = iterator.next();
+        XADDUtils.Plot3DSurfXADD(context, context._hmNode2Int.get(node),
+                min, step, max,
+                min, step, max,
+                varX, varY, title);
+    }
+
     public static void visualize1DimXadd(XADD.XADDNode node, String title, XADD context) {
         if (node.collectVars().size() != 1) throw new RuntimeException("only one variable expected!");
 
@@ -43,5 +71,13 @@ public class XaddVisualizer {
         double max_val = context._hmMaxVal.get(var);
 
         XADDUtils.PlotXADD(context, context._hmNode2Int.get(node), min_val, 0.1d, max_val, var, title);
+    }
+
+    public static void visualize1DimXadd(XADD.XADDNode node,  double min, double max, double step, String title, XADD context) {
+        if (node.collectVars().size() != 1) throw new RuntimeException("only one variable expected!");
+
+        String var = node.collectVars().iterator().next();
+
+        XADDUtils.PlotXADD(context, context._hmNode2Int.get(node), min, step, max, var, title);
     }
 }

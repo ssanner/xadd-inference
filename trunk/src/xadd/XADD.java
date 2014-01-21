@@ -594,6 +594,8 @@ public class XADD {
         return (ArrayList<String>) _alContinuousVars.clone();
     }
 
+    //todo this method should be renamed: since it generates a boolean var in case it does not exist, with the current naming, it is bug-prone.
+    @Deprecated
     public int getBoolVarIndex(String bool_name) {
         return getVarIndex(new BoolDec(bool_name), false);
     }
@@ -2352,6 +2354,7 @@ public class XADD {
             _high = high;
         }
 
+        //modified by Hadi
         @Override
         public int hashCode() {
             int result = _var;
@@ -2366,6 +2369,21 @@ public class XADD {
                             - (_low >>> 10);
                 }
         */
+        //added by Hadi
+        public XADDNode getLowChild() {
+            return _hmInt2Node.get(_low);
+        }
+
+        //added by Hadi
+        public XADDNode getHighChild() {
+            return _hmInt2Node.get(_high);
+        }
+
+        //added by Hadi
+        public Decision getDecision(){
+        return _alOrder.get(_var);
+        }
+
         public boolean equals(Object o) {
             if (o instanceof XADDINode) {
                 XADDINode n = (XADDINode) o;
