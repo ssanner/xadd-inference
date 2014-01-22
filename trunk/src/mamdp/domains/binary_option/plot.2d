@@ -1,4 +1,2 @@
-var x1  0 0.001 1
-var x2  0 0.001 1
-cassign sp 50
-cassign po 500
+var x1  0 0.1 10
+cassign sp 5
