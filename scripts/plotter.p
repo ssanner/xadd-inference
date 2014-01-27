@@ -53,14 +53,14 @@ if (valplot > 0) {
 				plot for [eps=0:Ncur]\
 					 (ap = f(eps), \
 					 sprintf("%s.cmdp.V_%d-%03d.txt",filename,V,ap))\
-				using 1:2 title sprintf("eps = %03d%",ap) \
+				using 1:2 title sprintf("eps = 0.%03d",ap) \
 				ls eps+1 w l
 			} else { if (valplot == 3) {
 				set palette color
 				splot for [eps=0:Ncur]\
 					(ap = f(eps), \
 					sprintf("%s.cmdp.V_%d-%03d.txt",filename,V,ap))\
-					using 1:2:3 title sprintf("eps = %03d%",ap)\
+					using 1:2:3 title sprintf("eps = 0.%03d",ap)\
 				w pm3d
 			} else {print("Wrong display val number")}
 			}	
@@ -76,7 +76,7 @@ set ylabel "Nodes"
 set output sprintf("%s-Nodes.eps",filename)
 
 plot for [eps=0:Ncur] (ap = f(eps), sprintf("%s_%03d.log",filename,ap))\
-	using 1:2 title sprintf("eps = %03d%",ap) \
+	using 1:2 title sprintf("eps = 0.%03d",ap) \
 	ls eps+1 with linespoints
 
 #Leaves
@@ -87,7 +87,7 @@ set ylabel "Leaves"
 set output sprintf("%s-Leaves.eps",filename)
 
 plot for [eps=0:Ncur] (ap = f(eps), sprintf("%s_%03d.log",filename,ap))\
-	using 1:3 title sprintf("eps = %03d%",ap) \
+	using 1:3 title sprintf("eps = 0.%03d",ap) \
 	ls eps+1 with linespoints
 
 #Branches
@@ -98,7 +98,7 @@ set ylabel "Branches"
 set output sprintf("%s-Branches.eps",filename)
 
 plot for [eps=0:Ncur] (ap = f(eps), sprintf("%s_%03d.log",filename,ap))\
-	using 1:4 title sprintf("eps = %03d%",ap) \
+	using 1:4 title sprintf("eps = 0.%03d",ap) \
 	ls eps+1 with linespoints
 
 #Memory
@@ -109,7 +109,7 @@ set ylabel "Memory Used(MB)"
 set output sprintf("%s-Memory.eps",filename)
 
 plot for [eps=0:Ncur] (ap = f(eps), sprintf("%s_%03d.log",filename,ap))\
-	using 1:5 title sprintf("eps = %03d%",ap) \
+	using 1:5 title sprintf("eps = 0.%03d",ap) \
 	ls eps+1 with linespoints
 
 #Time
@@ -120,7 +120,7 @@ set ylabel "Time Per Iteration"
 set output sprintf("%s-Time.eps",filename)
 
 plot for [eps=0:Ncur] (ap = f(eps), sprintf("%s_%03d.log",filename,ap))\
-	using 1:6 title sprintf("eps = %03d%",ap) \
+	using 1:6 title sprintf("eps = 0.%03d",ap) \
 	ls eps+1 with linespoints
 
 #TotTime
@@ -131,7 +131,7 @@ set ylabel "Cumulated Time"
 set output sprintf("%s-TotTime.eps",filename)
 
 plot for [eps=0:Ncur] (ap = f(eps), sprintf("%s_%03d.log",filename,ap))\
-	using 1:7 title sprintf("eps = %03d%",ap) \
+	using 1:7 title sprintf("eps = 0.%03d",ap) \
 	ls eps+1 with linespoints
 
 #Mav Val
@@ -142,7 +142,7 @@ set ylabel "Maximum of Value Function"
 set output sprintf("%s-MaxVal.eps",filename)
 
 plot for [eps=0:Ncur] (ap = f(eps), sprintf("%s_%03d.log",filename,ap))\
-	using 1:8 title sprintf("eps = %03d%",ap) \
+	using 1:8 title sprintf("eps = 0.%03d",ap) \
 	ls eps+1 with linespoints
 
 #MaxErr
@@ -152,6 +152,6 @@ set ylabel "Maximum Relative Error"
 
 set output sprintf("%s-MaxErr.eps",filename)
 
-plot for [eps=0:Ncur] (ap = f(eps), sprintf("%s_%03d.log",filename,ap))\
-	using 1:9 title sprintf("eps = %03d%",ap) \
+plot for [eps=1:Ncur] (ap = f(eps), sprintf("%s_%03d.log",filename,ap))\
+	using 1:9 title sprintf("eps = 0.%03d",ap) \
 	ls eps+1 with linespoints

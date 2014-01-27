@@ -288,7 +288,6 @@ public class XADD {
         return getTermNode(n._expr, n._annotate);
     }
 
-
     public int getTermNode(ArithExpr e, Object annotation) {
 
         if (USE_CANONICAL_NODES)
@@ -362,7 +361,6 @@ public class XADD {
         return id;
     }
 
-    //Create Canonical Inode
     public int getINodeCanon(int var, int low, int high) {
         int ind_true = getINode(var, /* low */ZERO, /* high */ONE);
         int ind_false = getINode(var, /* low */ONE, /* high */ZERO);
@@ -521,7 +519,34 @@ public class XADD {
         subst_cache.put(node_id, ret);
         return ret;
     }
+    
+    // XADD substitution -> replace terminal node from an assignment with a XADD
+    public Integer substituteXADD(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign, int newXADD_id){
+        // Get root
+        XADDNode n = getExistNode(node_id);
 
+        if (n instanceof XADDTNode){
+        	return newXADD_id;
+        }
+        
+        //(else) Traverse decision diagram until terminal found
+        if (n instanceof XADDINode) {
+	        XADDINode inode = (XADDINode) n;
+	        Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
+	        // Not all required variables were assigned
+	        if (branch_high == null)	return null;
+	    
+	        // Substitute down on next node
+	        int child = branch_high ? inode._high : inode._low;
+	        int newchild = substituteXADD(child, bool_assign, cont_assign, newXADD_id);
+	        
+	        if (branch_high) return getINodeCanon(inode._var, newchild, inode._low);
+	        /* else */ return getINodeCanon(inode._var, inode._high, newchild);
+        } 
+        else System.out.println("Error in substituteXADD, invalid XADDNode (not T or I node) " + n);
+        return null;
+	}
+    
     public void checkLocalOrderingAndExitOnError(int node) {
         XADDNode new_node = getExistNode(node);
         if (new_node instanceof XADDINode) {
@@ -843,28 +868,27 @@ public class XADD {
     ////////////////////////
     // Evaluation methods //
     ////////////////////////
-
+    public Boolean evaluateDecision(Decision d, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign) {
+        if (d instanceof TautDec)
+            return ((TautDec) d)._bTautology;
+        else if (d instanceof BoolDec)
+            return bool_assign.get(((BoolDec) d)._sVarName);
+        else if (d instanceof ExprDec) {
+        	if (SHOW_DECISION_EVAL) { System.out.println(" - " + ((ExprDec) d)._expr + ": " + ((ExprDec) d)._expr.evaluate(cont_assign));}
+        	return  ((ExprDec) d)._expr.evaluate(cont_assign);            
+        }
+        return null;
+    }
+    
     public Double evaluate(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign) {
-
         // Get root
         XADDNode n = getExistNode(node_id);
 
         // Traverse decision diagram until terminal found
         while (n instanceof XADDINode) {
             XADDINode inode = (XADDINode) n;
-            Decision d = _alOrder.get(inode._var);
-            Boolean branch_high = null;
-            if (d instanceof TautDec)
-                branch_high = ((TautDec) d)._bTautology;
-            else if (d instanceof BoolDec)
-                branch_high = bool_assign.get(((BoolDec) d)._sVarName);
-            else if (d instanceof ExprDec) {
-                branch_high = ((ExprDec) d)._expr.evaluate(cont_assign);
-                if (SHOW_DECISION_EVAL) {
-                    System.out.println(" - " + ((ExprDec) d)._expr + ": " + branch_high);
-                }
-            }
-
+            Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
+            
             // Not all required variables were assigned
             if (branch_high == null)
                 return null;
@@ -886,6 +910,27 @@ public class XADD {
         return e.evaluate(cont_assign);
     }
 
+    //Partial Evaluation, evaluates until a expression is obtained, but does not evaluate the expression
+    public Integer getLeaf(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign) {
+        // Get root
+    	int id = node_id;
+    	XADDNode n = getExistNode(node_id);
+        
+        // Traverse decision diagram until terminal found
+        while (n instanceof XADDINode) {
+        	XADDINode inode = (XADDINode) n;
+        	Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
+            // Not all required variables were assigned
+            if (branch_high == null)	return null;
+            // Advance down to next node
+            id = branch_high ? inode._high : inode._low;
+            n = getExistNode(id);
+        }
+        
+        // Now at a terminal node so evaluate expression
+        return id;
+    }
+    
     ///////////////////////////////////////
     //        Reduce  Methods           //
     //////////////////////////////////////
@@ -1339,7 +1384,6 @@ public class XADD {
         System.out.println("end;");
     }
 
-
     // Create graphical version of XADD
     public Graph getGraph(int id) {
         Graph g = new Graph(true /* directed */, false /* bottom-to-top */,
@@ -1526,6 +1570,35 @@ public class XADD {
         return sb.toString();
     }
 
+    ///////////////////////////////////////
+    // 			Mask Functions			 //
+    ///////////////////////////////////////    
+	
+    public Integer createPosInfMask(Integer id,
+			HashMap<String, Boolean> bool_assign,
+			HashMap<String, Double> cont_assign) {
+
+    		XADDNode n = getExistNode(id);
+
+            // Traverse decision diagram until terminal found
+    		if (n instanceof XADDINode) {
+                XADDINode inode = (XADDINode) n;
+                Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
+                
+                //Not all required variables were assigned
+                if (branch_high == null){
+                	return getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), createPosInfMask(inode._high, bool_assign, cont_assign));
+                }
+                
+                // Advance down to next node
+                return branch_high ? getINode(inode._var, POS_INF, createPosInfMask(inode._high, bool_assign, cont_assign)):
+                					 getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), POS_INF);
+            }
+    		
+            // else id is a TNode, trivial mask
+            return id;
+    }
+    
     ///////////////////////////////////////
     // 			Helper Classes 			 //
     ///////////////////////////////////////
@@ -2708,6 +2781,8 @@ public class XADD {
             return d;
         }
     }
+
+
 
 //	// USED PREVIOUSLY WHEN WORKING WITH DIVISORS, UNUSED NOW
 //  // KEEPING IN B/C WE MAY NEED TO WORK WITH POLY FRACTIONS IN FUTURE

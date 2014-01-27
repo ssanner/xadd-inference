@@ -9,7 +9,7 @@ max-values ()
 ibvariables()
 avariables(a)
 
-action move (-1000000<=a<=1000000)
+action move (-30<=a<=60)
 g' (g ([1.0]) ([x > 20] ([1.0]) ([0.0])) )
 x' ([x+a])
 
@@ -29,5 +29,5 @@ reward (g ([0]) ([x>20]
       )
 endaction
 discount 1.000000
+InitialState (0.0) (false)
 iterations 8
-

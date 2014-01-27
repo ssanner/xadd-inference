@@ -106,5 +106,6 @@ reward (d
 endaction
 
 discount 1.000000
+initialState (1000 1000) (false)
 iterations 12
 

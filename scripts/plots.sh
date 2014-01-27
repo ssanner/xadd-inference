@@ -36,13 +36,13 @@ rm tempfile
 
 cd ..
 home=$(pwd)
-resultsdir="./src/camdp/ex/$dirname/results"
-echo $home $resultsdir
-cd $resultsdir
-Vtext=($(ls $shortname*.txt))
-for file in "${Vtext[@]}"; do
-	$home/scripts/change3d.sh $file $home/results/$name/$file
-done  
-#mv $home/src/camdp/ex/$dirname/results/$shortname*.txt $home/results/$name
+#resultsdir="./src/camdp/ex/$dirname/results"
+#echo $home $resultsdir
+#cd $resultsdir
+#Vtext=($(ls $shortname*.txt))
+#for file in "${Vtext[@]}"; do
+#	$home/scripts/change3d.sh $file $home/results/$name/$file
+#done  
+mv $home/src/camdp/ex/$dirname/results/$shortname*.txt $home/results/$name
 cd $home/results/$name
 gnuplot $shortname$plot
