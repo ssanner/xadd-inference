@@ -42,7 +42,7 @@ public abstract class CAMDPsolver {
 
 	
 	/* For printing */
-	public final static String RESULTS_DIR = "results"; // Diagnostic output destination
+	public final static String RESULTS_DIR = "./results"; // Diagnostic output destination
 	
 	public static DecimalFormat _df = new DecimalFormat("#.########");
 	public PrintStream _logStream = null;
@@ -60,12 +60,15 @@ public abstract class CAMDPsolver {
     public void flushCaches(List<Integer> special_nodes) {}
     
     public void makeResultStream(){
+		int filenamestart = _mdp._problemFile.lastIndexOf('/');
+		String filename = _mdp._problemFile.substring(filenamestart,_mdp._problemFile.length()-5);
+		String problemType = _mdp.CONTINUOUS_ACTIONS? "/contact/":"/discact"; 
+		System.out.println("testing filename:" + problemType + filename);
     	try{
-    		System.out.println("testing filename:" + _mdp._problemFile);
-    		_resultStream = new PrintStream(new FileOutputStream(RESULTS_DIR+_mdp._problemFile + _solveMethod + ".rslt"));
+    		_resultStream = new PrintStream(new FileOutputStream(RESULTS_DIR + problemType + filename + _solveMethod + ".rslt"));
     	}
     	catch (FileNotFoundException e){
-    		System.err.println("Couldn't create result Stream for: "+RESULTS_DIR+_mdp._problemFile + ".rslt\nException:"+e);
+    		System.err.println("Couldn't create result Stream for: "+RESULTS_DIR + problemType + filename + _solveMethod + ".rslt\nException:"+e);
     	}
     }
     

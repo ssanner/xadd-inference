@@ -44,6 +44,7 @@ public class CAMDP {
 
     //Prune and Linear Flags
     public static boolean LINEAR_PROBLEM = true;
+    public static boolean CONTINUOUS_ACTIONS = true;
     public static boolean APPROX_PRUNING = true;
     public double APPROX_ERROR = 0.0d;
     public boolean APPROX_ALWAYS = false;
@@ -147,6 +148,7 @@ public class CAMDP {
         _hmName2Action = parser.getHashmap();
         _hmContRegrCache = new HashMap<IntTriple, Integer>();
 
+
         // Setup variable sets and lists
         _hsBoolSVars = new HashSet<String>(Intern(parser.getBVars()));
         _hsContSVars = new HashSet<String>(Intern(parser.getCVars()));
@@ -175,6 +177,7 @@ public class CAMDP {
             _hsBoolNSVars.add(prime_var);
         }
 
+        CONTINUOUS_ACTIONS = _hsContAVars.isEmpty()? false: true;
         // This helper class performs the regression
         _qfunHelper = new ComputeQFunction(_context, this);
         if ( !parser.get_initBVal().isEmpty() || !parser.get_initCVal().isEmpty() )_initialS = new State(parser.get_initCVal(), parser.get_initBVal());
