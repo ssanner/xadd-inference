@@ -110,6 +110,8 @@ public class CAMDP {
 
     public ComputeQFunction _qfunHelper = null;
 
+    public State _initialS = null;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors
     ////////////////////////////////////////////////////////////////////////////
@@ -175,6 +177,7 @@ public class CAMDP {
 
         // This helper class performs the regression
         _qfunHelper = new ComputeQFunction(_context, this);
+        if ( !parser.get_initBVal().isEmpty() || !parser.get_initCVal().isEmpty() )_initialS = new State(parser.get_initCVal(), parser.get_initBVal());
 
         // Setup a logger
         try {

@@ -29,6 +29,10 @@ public class ParseCAMDP {
     //	ArrayList<Integer> constraints = new ArrayList<Integer>();
     BigDecimal discount;
     Integer iterations;
+
+    HashMap<String, Double> _initCVal = new HashMap<String, Double>();
+    HashMap<String, Boolean> _initBVal = new HashMap<String, Boolean>();
+
     HashMap<String, CAction> _name2Action = new HashMap<String, CAction>();
 
     public ParseCAMDP(CAMDP camdp) {
@@ -289,7 +293,37 @@ public class ParseCAMDP {
             System.exit(1);
         }
         discount = ((BigDecimal) i.next());
+        
+        // Initial State declarations are optional
         o = i.next();
+        push_back = null;
+        if (!(o instanceof String) || !((String) o).equalsIgnoreCase("initialState")) {
+            System.out.println("Missing initial State declaration before " + o + "... assuming complete solution is intended.");
+            push_back = o;
+        } 
+        else {
+            o = i.next();
+            for (int index = 0; index < CVars.size(); index++) {
+                String var = CVars.get(index);
+                String val = ((ArrayList) o).get(index).toString();
+                if (!val.trim().equalsIgnoreCase("NA")) try {
+                    double ini_cval = Double.parseDouble(val);
+                    _initCVal.put(var, ini_cval);
+                } catch (NumberFormatException nfe) {
+                    exit("\nIllegal initial-cvalue: " + var + " = " + val + " @ index " + index);
+                }
+            }
+            o = i.next(); //
+            for (int index = 0; index < BVars.size(); index++) {
+                String var = BVars.get(index);
+                String val = ((ArrayList) o).get(index).toString();
+                if (val.trim().equalsIgnoreCase("true")) _initBVal.put(var, true);
+                else if (val.trim().equalsIgnoreCase("false")) _initBVal.put(var, false);
+                else exit("\nIllegal initial-bvalue: " + var + " = " + val + " @ index " + index);
+            }
+        }
+        
+        o = push_back == null ? i.next() : push_back; // Could have a saved object if init values declaration was missing
         if (!(o instanceof String)
                 || !((String) o).equalsIgnoreCase("iterations")) {
             System.out.println("Missing iterations declaration: " + o);
@@ -315,6 +349,21 @@ public class ParseCAMDP {
         this._maxCVal = _maxCVal;
     }
 
+    public HashMap<String, Double> get_initCVal() {
+        return _initCVal;
+    }
+    public void set_initCVal(HashMap<String, Double> initCVal) {
+        this._initCVal = initCVal;
+    }
+
+    public HashMap<String, Boolean> get_initBVal() {
+        return _initBVal;
+    }
+    
+    public void set_initBVal(HashMap<String, Boolean> _initBVal) {
+        this._initBVal = _initBVal;
+    }
+    
     private void parseActionParam(ArrayList<String> params) {
         // All actions required to have bounds, e.g.
         // [0, <, =, a1, <, =, 200, ^, 0, <, =, a2, <, =, 200]
@@ -389,5 +438,5 @@ public class ParseCAMDP {
     public HashMap<String, CAction> getHashmap() {
         return _name2Action;
     }
-
+    
 }
