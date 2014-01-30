@@ -23,8 +23,8 @@ import java.util.Map;
  * This is a an implementation of Gibbs sampler that calculates CDF per sample
  */
 public class GibbsSamplerWithCDFsPerSample extends Sampler {
-    public static final double SAMPLE_ACCURACY = 1E-6;
-    public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 20;
+    public static final double SAMPLE_ACCURACY = Double.MIN_VALUE;//1E-10;//1E-6;  //todo: on small leaves this causes problems!
+    public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 25;
     public static final int MAX_INITIAL_SAMPLING_TRIAL = 10000; //if the function is not positive, (initial) sample cannot be taken
     private List<String> allVars;
     private VarAssignment initialSample;
@@ -73,7 +73,7 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
             }
             for (String cVar : cVars) {
                 sampleSingleContinuousVar(cVar, reusableVarAssignment);
-                context.flushCaches();
+                context.flushCaches(); //todo is this line needed NOW? check....
             }
         }
         return reusableVarAssignment;
@@ -175,6 +175,8 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
     // returns int_{w=-infty}^{var} (func[var->w]dw) for instantiated function
     public Piecewise1DPolynomial makeCumulativeDistributionFunction(XADD.XADDNode func, String var, VarAssignment currentVarAssign) {
         //1. Make a uni-dimensional function where except 'var', all variables are instantiated due to the current var. assign.:
+
+        /*
         HashMap<String, Double> continuousVarAssign = currentVarAssign.getContinuousVarAssign();
         HashMap<String, ExprLib.ArithExpr> substitution = new HashMap<String, ExprLib.ArithExpr>(Math.max(0, continuousVarAssign.size() - 1)); //since one var is remained untouched...
         for (Map.Entry<String, Double> cVarValue : continuousVarAssign.entrySet()) {
@@ -187,13 +189,11 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
 
         int instantiatedXaddNodId = context.substitute(context._hmNode2Int.get(func), substitution);
         instantiatedXaddNodId = context.reduceLP(instantiatedXaddNodId);
+*/
 
-        // a pruned uni-var functions should be integrated easily:
-//        XADD.XADDNode uniVarFunc = context._hmInt2Node.get(instantiatedXaddNodId);
 
-        //todo: for instantiation and LP-reduce I am dependent on XADD but I should not be....
         OneDimIntegral integrator = new OneDimIntegral(context);
-        Piecewise1DPolynomial cdf = integrator.integrate(context.getExistNode(instantiatedXaddNodId));
+        Piecewise1DPolynomial cdf = integrator.integrate(func, var, currentVarAssign.getContinuousVarAssign());//context.getExistNode(instantiatedXaddNodId));
 
         //2. first integrate with an unspecified upper bound 't' and then replace 't' with 'var':
 //        if (allVars.contains("t")) throw new RuntimeException("a temporary variable already exist...");
@@ -202,34 +202,5 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
         return cdf;
     }
 
-  /*  @Deprecated
-    // integral_{-infinity}^{upperBound} func d_var
-    public XADD.XADDNode integrateWithUpperBound(XADD.XADDNode func, String var, String upperBound) {
-        String indicatorStr = "([" + var + "<" + upperBound + "] ([1]) ([0]))"; //TODO: THIS SHOULD BE DONE ONLY ONCE....
-        int indicatorId = context.buildCanonicalXADDFromString(indicatorStr);
-        int boundedFuncId = context.apply(context._hmNode2Int.get(func), indicatorId, XADD.PROD);
-
-        int integratedBoundedFuncId;
-        //todo this code is copied from Gibbs class. Test it...
-        if (context._hsBooleanVars.contains(var)) {
-            Integer bool_var_index = context.getBoolVarIndex(var);
-            // Sum out boolean variable
-            int restrict_high = context.opOut(boundedFuncId, bool_var_index, XADD.RESTRICT_HIGH);
-            int restrict_low = context.opOut(boundedFuncId, bool_var_index, XADD.RESTRICT_LOW);
-            integratedBoundedFuncId = context.apply(restrict_high, restrict_low, XADD.SUM);
-        } else {
-            // Integrate out continuous variable
-            integratedBoundedFuncId = context.computeDefiniteIntegral(boundedFuncId, var);
-        }
-        XADD.XADDNode result = context.getExistNode(integratedBoundedFuncId);
-        return result;
-    }*/
-
-    private XADD.XADDNode replaceVar(XADD.XADDNode node, String varToBeReplaced, String replacingVar) {
-        HashMap<String, ExprLib.ArithExpr> subst = new HashMap<String, ExprLib.ArithExpr>();
-        ExprLib.ArithExpr a = new ExprLib.VarExpr(replacingVar);
-        subst.put(varToBeReplaced, a);
-        return context.getExistNode(context.substitute(context._hmNode2Int.get(node), subst));
-    }
 
 }

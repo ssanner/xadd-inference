@@ -1,7 +1,10 @@
 package hgm.sampling.gibbs.integral;
 
+import hgm.sampling.SamplingFailureException;
 import xadd.ExprLib;
 import xadd.XADD;
+import xadd.XADD.*;
+import xadd.ExprLib.*;
 
 import java.util.*;
 
@@ -17,85 +20,139 @@ public class OneDimIntegral {
         this.context = context;
     }
 
-    public Piecewise1DPolynomial integrate(XADD.XADDNode node) {
+    public Piecewise1DPolynomial integrate(XADD.XADDNode node, String integrationVar) {
+        return integrate(node, integrationVar, new HashMap<String, Double>());
+    }
+
+    /**
+     * @param node                integrand
+     * @param integrationVar      integration variable
+     * @param continuousVarAssign a variable assignment according to which all variables expect the integration var are instantiated
+     * @return The integration of a uni-dimensional function where except the 'integration var', all variables are instantiated due to the given value in the assignment:
+     */
+    public Piecewise1DPolynomial integrate(XADD.XADDNode node, String integrationVar, HashMap<String, Double> continuousVarAssign) {
+        //Exclude the integration var from the assignment and replace doubles with expressions
+        HashMap<String, ExprLib.ArithExpr> substitution = new HashMap<String, ExprLib.ArithExpr>(Math.max(0, continuousVarAssign.size() - 1)); //since the int. var. is not added to it
+        for (Map.Entry<String, Double> cVarValue : continuousVarAssign.entrySet()) {
+            String cVar = cVarValue.getKey();
+            if (!cVar.equals(integrationVar)) { //var should be excluded!
+                Double cAssign = cVarValue.getValue();
+                substitution.put(cVar, new ExprLib.DoubleExpr(cAssign));
+            }
+        }
+
+        List<PolynomialInAnInterval> polynomials = substituteAndConvertToPiecewisePolynomial(node, substitution, new Interval(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+
+//        System.out.println("polynomials = " + polynomials);
+
+        return integrate(polynomials, integrationVar);
+    }
+
+    //no assumption...
+    private List<PolynomialInAnInterval> substituteAndConvertToPiecewisePolynomial(XADD.XADDNode node, HashMap<String, ArithExpr> subst,
+                                                                                   Interval inheritedInterval) {
+
+        if (node instanceof XADD.XADDTNode) {
+            List<PolynomialInAnInterval> results = new ArrayList<PolynomialInAnInterval>();
+            results.add(new PolynomialInAnInterval(inheritedInterval.getLowBound(), inheritedInterval.getHighBound(), ((XADD.XADDTNode) node)._expr.substitute(subst)));
+            return results;
+        }
+
+        XADD.XADDINode iNode = (XADD.XADDINode) node;
+        XADD.Decision decision = context._alOrder.get(iNode._var);
+
+        Interval thisDecisionBounds;
+
+        //substitution:
+        if (!(decision instanceof ExprDec)) {
+            throw new SamplingFailureException("is not implemented for boolean case YET. Error in substitution of decision: " + decision);
+        }
+        ExprLib.CompExpr comparableExpression = ((ExprDec) decision)._expr;
+        comparableExpression = comparableExpression.substitute(subst);
+        Expr canonExpr = comparableExpression.makeCanonical();
+//        System.out.println(comparableExpression + " ==canon=> " + canonExpr);
+        if (canonExpr instanceof CompExpr) {
+            thisDecisionBounds = fetchComparableExprBounds((CompExpr) canonExpr);
+        } else throw new SamplingFailureException("Expression: " + canonExpr + "cannot be parsed...");
+//            d = new ExprDec(comp);
+//            var = getVarIndex(d, true);
+//        if (d instanceof BoolDec) {
+        // This part is not tested hence commented...
+/*
+            // System.out.println(((BoolDec)d)._sVarName + ": " + subst);
+            ExprLib.VarExpr sub = (ExprLib.VarExpr) subst.get(((BoolDec) d)._sVarName);
+            if (sub != null) {
+                // There is a substitution for this BoolDec... get new var index
+                var = getVarIndex(new BoolDec(sub._sVarName), false);
+            }
+*/
+
+        Interval lowInterval = inheritedInterval.clone();
+        lowInterval.imposeMoreRestriction(thisDecisionBounds.highBound, thisDecisionBounds.lowBound); // they are swapped for the low child, note that one bound is NULL...
+
+        List<PolynomialInAnInterval> lowDataList = null;
+        if (lowInterval.isFeasible()) {
+            lowDataList = substituteAndConvertToPiecewisePolynomial(iNode.getLowChild(), subst, lowInterval);
+//            results.addAll(lowDataList);
+        }
+//        List<PolynomialInAnInterval> lowDataList = computePiecewisePolynomial(iNode.getLowChild());
+//        for (PolynomialInAnInterval lowData : lowDataList) {
+//            lowData.imposeMoreRestriction(thisDecisionBounds.getHighBound(), thisDecisionBounds.getLowBound()); //low and high bounds are swapped for the low child...
+//        }
+
+        inheritedInterval.imposeMoreRestriction(thisDecisionBounds.getLowBound(), thisDecisionBounds.highBound); //to be passed to the high child...
+        List<PolynomialInAnInterval> highDataList = null;
+        if (inheritedInterval.isFeasible()) {
+            highDataList = substituteAndConvertToPiecewisePolynomial(iNode.getHighChild(), subst, inheritedInterval);
+//            results.addAll(highDataList);
+        }
+//        for (PolynomialInAnInterval highData : highDataList) {
+//            highData.imposeMoreRestriction(thisDecisionBounds.getLowBound(), thisDecisionBounds.getHighBound()); //low and high bounds are swapped for the low child...
+//        }
+
+        if (lowDataList == null) return highDataList;
+        if (highDataList == null) return lowDataList;
+
+        //sorting:
+        if (lowDataList.get(0).getLowBound() < highDataList.get(0).getLowBound()) {
+            lowDataList.addAll(highDataList);
+            return lowDataList;
+        } else {
+            highDataList.addAll(lowDataList);
+            return highDataList;
+        }
+    }
+
+
+    //****************************************************************************
+  /*  public Piecewise1DPolynomial integrate(XADD.XADDNode node) {
         HashSet<String> vars = node.collectVars();
-        if (vars.size() != 1) throw new RuntimeException("For now only one var.... vars = " + vars);
+        if (vars.size() != 1) throw new RuntimeException("For now only one var.... for node: " + node);
         String var = vars.iterator().next();
 
-        List<IntervalPolynomial> piecewisePolynomial = computePiecewisePolynomial(node);
+        List<PolynomialInAnInterval> piecewisePolynomial = computePiecewisePolynomial(node);
         return integral(piecewisePolynomial, var);
-    }
+    }*/
 
-    class IntervalPolynomial {
-        private Double lowBound;
-        private Double highBound;
-
-        private ExprLib.ArithExpr polynomial;
-
-        public IntervalPolynomial(Double lowBound, Double highBound, ExprLib.ArithExpr polynomial) {
-            this.lowBound = lowBound;
-            this.highBound = highBound;
-            this.polynomial = polynomial;
-        }
-
-        void setLowBound(Double lowBound) {
-            this.lowBound = lowBound;
-        }
-
-        void setHighBound(Double highBound) {
-            this.highBound = highBound;
-        }
-
-        void setPolynomial(ExprLib.ArithExpr polynomial) {
-            this.polynomial = polynomial;
-        }
-
-        Double getLowBound() {
-            return lowBound;
-        }
-
-        Double getHighBound() {
-            return highBound;
-        }
-
-        ExprLib.ArithExpr getPolynomial() {
-            return polynomial;
-        }
-
-        @Override
-        public String toString() {
-            return polynomial + " : [" + lowBound + ", " + highBound + "]";
-        }
-        public void imposeMoreRestriction(Double lowBound, Double highBound) {
-            if (lowBound != null && lowBound> this.lowBound) {
-                this.lowBound = lowBound;
-            }
-
-            if (highBound != null && highBound < this.highBound) {
-                this.highBound = highBound;
-            }
-        }
-
-    }
-
-    private Piecewise1DPolynomial integral(List<IntervalPolynomial> piecewisePolynomial, String var) {
+    private Piecewise1DPolynomial integrate(List<PolynomialInAnInterval> piecewisePolynomial, String var) {
+        //todo only works for functions with no boolean variable...
 //        System.out.println("piecewisePolynomial = " + piecewisePolynomial);
         Piecewise1DPolynomial result = new Piecewise1DPolynomial(var);
         HashMap<String, Double> assign = new HashMap<String, Double>(1);
         double runningSum = 0.0d;
-        for (IntervalPolynomial intervalPoly : piecewisePolynomial) {
+        for (PolynomialInAnInterval intervalPoly : piecewisePolynomial) {
             ExprLib.ArithExpr indefIntegral = intervalPoly.getPolynomial().integrateExpr(var);
 
             assign.put(var, intervalPoly.getLowBound());
             Double l = indefIntegral.evaluate(assign);
-            if (l.isNaN()) l=0d; //this happens in the fist interval with lower bound -infty...
+            if (l.isNaN()) l = 0d; //this happens in the fist interval with lower bound -infty...
 
             assign.put(var, intervalPoly.getHighBound());
             Double h = indefIntegral.evaluate(assign);
 
 //            System.out.println("h = " + h);
 //            System.out.println("l = " + l);
-            Double intervalVol = h-l;
+            Double intervalVol = h - l;
 //            System.out.println("IntervalVol = " + intervalVol + "; for " + indefIntegral + " with max: " + assign);
 
 
@@ -108,72 +165,29 @@ public class OneDimIntegral {
     }
 
 
-    public List<IntervalPolynomial> computePiecewisePolynomial(XADD.XADDNode node) {
+    private Interval fetchComparableExprBounds(CompExpr comparableExpression) {
+        Interval interval = new Interval(null, null);
 
-        if (node instanceof XADD.XADDTNode) {
-            List<IntervalPolynomial> results = new ArrayList<IntervalPolynomial>();
-            results.add(new IntervalPolynomial(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, ((XADD.XADDTNode) node)._expr));
-            return results;
-        }
-
-        XADD.XADDINode iNode = (XADD.XADDINode) node;
-        XADD.Decision decision = context._alOrder.get(iNode._var);
-        IntervalPolynomial thisDecisionBounds = fetchDecisionBounds(decision);
-
-        List<IntervalPolynomial> lowDataList = computePiecewisePolynomial(iNode.getLowChild());
-        for (IntervalPolynomial lowData : lowDataList) {
-            lowData.imposeMoreRestriction(thisDecisionBounds.getHighBound(), thisDecisionBounds.getLowBound()); //low and high bounds are swapped for the low child...
-        }
-
-        List<IntervalPolynomial> highDataList = computePiecewisePolynomial(iNode.getHighChild());
-        for (IntervalPolynomial highData : highDataList) {
-            highData.imposeMoreRestriction(thisDecisionBounds.getLowBound(), thisDecisionBounds.getHighBound()); //low and high bounds are swapped for the low child...
-        }
-
-        //todo sort out (=)/null in the fetch...
-
-        Double lowDataLowBound = lowDataList.get(0).getLowBound();
-        if (lowDataLowBound == null || lowDataLowBound < highDataList.get(0).getLowBound()) {
-            lowDataList.addAll(highDataList);
-            return lowDataList;
-        } else {
-            highDataList.addAll(lowDataList);
-            return highDataList;
-        }
-    }
-
-
-    private IntervalPolynomial fetchDecisionBounds(XADD.Decision decision) {
-        IntervalPolynomial interval = new IntervalPolynomial(null, null, null);
-
-        ExprLib.CompExpr comparableExpression;
-        if (decision instanceof XADD.ExprDec) {
-            comparableExpression = ((XADD.ExprDec) decision)._expr;
-        } else {
-            throw new RuntimeException("processXADDLeaf: Unsupported decision type '" + decision + "'");
-        }
 
         //todo Only for debug...
         if (!comparableExpression._rhs.equals(ExprLib.ZERO)) {
             throw new RuntimeException("processXADDLeaf: Expected RHS = 0 for '" + comparableExpression + "'");
         }
 
-//        System.out.println("comp = " + comparableExpression);
-//        System.out.println("comp._type = " + comparableExpression._type);
-
-        /*if (comparableExpression._type == ExprLib.CompOperation.EQ) {
-            System.err.println("(=)!!!");
-            return null; // I do not care about equality since it does not affect integration (assuming there is no delta...) I consider that region as INFEASIBLE
-        }*/
-
-        if (comparableExpression._type != ExprLib.CompOperation.GT && comparableExpression._type != ExprLib.CompOperation.GT_EQ)
+         if (comparableExpression._type != ExprLib.CompOperation.GT && comparableExpression._type != ExprLib.CompOperation.GT_EQ)
             throw new RuntimeException("Not implemented for Comparable operation '" + comparableExpression._type + "' in " + comparableExpression);
 
         // I expect patterns like "(1 + (-0.2 * x))" or "(-0.2 * x)" in the LHS:
         ExprLib.ArithExpr lhs = comparableExpression._lhs;
-        if (!(lhs instanceof ExprLib.OperExpr)) {
+        if (lhs instanceof DoubleExpr) {
+            double c = ((DoubleExpr) lhs)._dConstVal;
+            if (c>0 || (c>=0 && comparableExpression._type == ExprLib.CompOperation.GT_EQ)) {
+                return new Interval(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY); //always true
+            } else {
+                return new Interval(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY); //always false
+            }
+        } else if (!(lhs instanceof ExprLib.OperExpr)) {
             throw new RuntimeException(lhs + " is not an operation...");
-//                continue; // if it is not an operation containing the integration variable I do not care what it is...(assuming that FEASIBILITY is checked...)
         }
 
         double a, b = 0.0d; // to have (b + a * x)
@@ -219,7 +233,6 @@ public class OneDimIntegral {
 
         return interval;
     }
-
 
 
 }

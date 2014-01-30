@@ -46,7 +46,7 @@ public class PreferenceLearningWithMassThresholdApprox {
         // in this version, the expression "int_w Pr(w|R^n)[\sum_d=1^D (w_d x_d)] dw"  is calculated for each X=[x_0, ...x_{D-1}] separately
         int chosenItemId = -1;
         double maxUtil = Double.NEGATIVE_INFINITY;
-        for (int itemId = 0; itemId<db.numberOfItems(); itemId++) {
+        for (int itemId = 0; itemId<db.getNumberOfItems(); itemId++) {
             Double[] item = db.getItemAttributeValues(itemId);
             double itemUtil = expectedItemUtility(item, utilityWeights, /*weightVectorName,*/ false);
             System.out.println("itemUtil of item #" + itemId + ": " + itemUtil);
@@ -76,7 +76,7 @@ public class PreferenceLearningWithMassThresholdApprox {
         int chosenItemId = -1;
         double maxUtil = Double.NEGATIVE_INFINITY;
         HashMap<String, Double> assignment = new HashMap<String, Double>(db.getNumberOfAttributes());
-        for (int itemId = 0; itemId<db.numberOfItems(); itemId++) {
+        for (int itemId = 0; itemId<db.getNumberOfItems(); itemId++) {
 
             //make a an assignment out of item attributes:
             Double[] item = db.getItemAttributeValues(itemId);

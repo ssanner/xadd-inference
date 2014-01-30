@@ -2,8 +2,7 @@ package hgm.sampling;
 
 import hgm.asve.Pair;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Hadi Afshar.
@@ -46,5 +45,21 @@ public class VarAssignment{
 
     public double getContinuousVar(String var) {
         return continuousVarAssign.get(var);
+    }
+
+    /**
+     * sorts variables in a Lexicographical order
+     */
+    public Double[] getContinuousVarAssignAsArray() {
+        SortedSet<String> sortedVars = new TreeSet<String>(continuousVarAssign.keySet());
+        Double[] result = new Double[sortedVars.size()];
+        int i=0;
+        Iterator iterator = sortedVars.iterator();
+        while (iterator.hasNext()) {
+            result[i++] = continuousVarAssign.get(iterator.next());
+
+        }
+
+        return result;
     }
 }

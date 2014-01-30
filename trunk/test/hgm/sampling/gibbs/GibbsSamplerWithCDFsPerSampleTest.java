@@ -56,7 +56,7 @@ public class GibbsSamplerWithCDFsPerSampleTest {
         double a = 0;
         double c = 10;
         double b = 25;
-        int numSamples = 10000;
+        int numSamples = 5000;
         double epsilon = 0.2; //tolerable divergence
 
 
@@ -81,7 +81,7 @@ public class GibbsSamplerWithCDFsPerSampleTest {
         double a = -30.0;
         double b = 10.0;  //note: c=0
         double w = -b/a;
-        int numSamples = 10000;
+        int numSamples = 5000;
         double epsilon = 0.9;
 
         int nodeId = context.buildCanonicalXADDFromString(
@@ -101,6 +101,7 @@ public class GibbsSamplerWithCDFsPerSampleTest {
         double c=0;
         testStatistics("y", numSamples, sampler,
                 a, b, (a + b + c) / 3.0, (a*a + b*b + c*c -a*b -a*c -b*c)/18.0, epsilon);
+        System.out.println("context._alOrder.size() = " + context._alOrder.size());
     }
 
     private void testStatistics(String varName, int numSamples, Sampler sampler,
