@@ -47,7 +47,9 @@ public class DummyFeasiblePreferenceDatabase implements PreferenceDatabase {
             double xW1 = utility(items.get(itemIndex1), auxiliaryWeightVector);
             double xW2 = utility(items.get(itemIndex2), auxiliaryWeightVector);
 
-            preferences.add(new Preference(itemIndex1, itemIndex2, xW1 > xW2 ? Preference.Choice.FIRST : Preference.Choice.SECOND));
+            if (xW1 > xW2) preferences.add(new Preference(itemIndex1, itemIndex2, Preference.Choice.FIRST));
+            else if (xW1 < xW2) preferences.add(new Preference(itemIndex1, itemIndex2, Preference.Choice.SECOND));
+            else preferences.add(new Preference(itemIndex1, itemIndex2, Preference.Choice.EQUAL));
         }
     }
 
@@ -83,7 +85,7 @@ public class DummyFeasiblePreferenceDatabase implements PreferenceDatabase {
     }
 
     @Override
-    public int numberOfItems() {
+    public int getNumberOfItems() {
         return items.size();
     }
 

@@ -1,8 +1,6 @@
 package hgm.preference;
 
-import hgm.asve.cnsrv.approxator.EfficientPathIntegralCalculator;
 import hgm.asve.cnsrv.approxator.LeafThresholdXaddApproximator;
-import hgm.asve.cnsrv.approxator.RobustMassThresholdXaddApproximatorWithRelativeMassThreshold;
 import hgm.preference.db.PreferenceDatabase;
 import hgm.sampling.VarAssignment;
 import xadd.XADD;
@@ -22,9 +20,9 @@ public class PreferenceLearning {
     Prior weight of Ws is considered uniform in [-C, C]
      */
     public static final double C = 10.0; //todo range of uniform distributions should be decided in a more flexible way.
-    public static final double EPSILON = 0.01; // deciding when preference should be considered as "equality"
+    public static double EPSILON = 0.01; // deciding when preference should be considered as "equality"
 //    public static final int NUM_POSTERIOR_CALC_ITERATIONS_LEADING_TO_FLUSHING = 130; // the side effect is that the xadd should become permanent. SEEMS USELESS...
-    DecimalFormat decimalFormat = new DecimalFormat("##.#######"); //used to convert doubles to strings //todo discuss the effect of this approximation with Scott...
+    DecimalFormat decimalFormat = new DecimalFormat("###.#################"); //used to convert doubles to strings //todo discuss the effect of this approximation with Scott...
 
     private  double indicatorNoise;
 
@@ -38,7 +36,8 @@ public class PreferenceLearning {
         this.db = db;
         this.weightVectorName = weightVectorName;
 
-        if (indicatorNoise>0.5 || indicatorNoise<0.0) System.err.println("indicator noise should be in [0, 0.5] to make sense.");
+//        if (indicatorNoise>0.5 || indicatorNoise<0.0) System.err.println("indicator noise should be in [0, 0.5] to make sense.");
+        if (indicatorNoise>=1 || indicatorNoise<0.0) System.err.println("indicator noise should be in [0, 1) to make sense.");
         this.indicatorNoise = indicatorNoise;
     }
 
@@ -47,7 +46,7 @@ public class PreferenceLearning {
         // in this version, the expression "int_w Pr(w|R^n)[\sum_d=1^D (w_d x_d)] dw"  is calculated for each X=[x_0, ...x_{D-1}] separately
         int chosenItemId = -1;
         double maxUtil = Double.NEGATIVE_INFINITY;
-        for (int itemId = 0; itemId<db.numberOfItems(); itemId++) {
+        for (int itemId = 0; itemId<db.getNumberOfItems(); itemId++) {
             Double[] item = db.getItemAttributeValues(itemId);
             double itemUtil = expectedItemUtility(item, utilityWeights, /*weightVectorName,*/ false);
             System.out.println("itemUtil of item #" + itemId + ": " + itemUtil);
@@ -77,7 +76,7 @@ public class PreferenceLearning {
         int chosenItemId = -1;
         double maxUtil = Double.NEGATIVE_INFINITY;
         HashMap<String, Double> assignment = new HashMap<String, Double>(db.getNumberOfAttributes());
-        for (int itemId = 0; itemId<db.numberOfItems(); itemId++) {
+        for (int itemId = 0; itemId<db.getNumberOfItems(); itemId++) {
 
             //make a an assignment out of item attributes:
             Double[] item = db.getItemAttributeValues(itemId);
@@ -117,7 +116,7 @@ public class PreferenceLearning {
     }
 
     public double expectedItemUtility(Double[] item, XADD.XADDNode utilityWeights/*, String weightVectorName*/, boolean plotGraph) {
-        String itemUtilStr = "([" + itemUtility(weightVectorName, item) + "])";
+        String itemUtilStr = "([" + itemUtilityStr(weightVectorName, item) + "])";
 //        System.out.println("itemUtilStr = " + itemUtilStr);
         XADD.XADDNode itemUtil = context.getExistNode(context.buildCanonicalXADDFromString(itemUtilStr));
         XADD.XADDNode expectedItemUtilForGivenW = multiply(utilityWeights, itemUtil); //P(W|R^n)[sum(w_d . x_d)] (W not marginalized yet)
@@ -174,7 +173,7 @@ public class PreferenceLearning {
         XADD.XADDNode prior = computeProbabilityOfWeightVector(preferenceAnswers.subList(0, preferenceAnswers.size() - 1), doReduceLP, relativeLeafValueBelowWhichRegionsShouldBeTrimmed); //Pr(W|R^n)
         Preference lastResponse = preferenceAnswers.get(preferenceAnswers.size() - 1); //q_{ab}
         // Pr(q_{ab} | W):
-        XADD.XADDNode likelihood = computePreferenceLikelihoodGivenUtilityWeights(lastResponse/*, weightVectorName*/, numAttribs);
+        XADD.XADDNode likelihood = computePreferenceLikelihoodGivenUtilityWeights(lastResponse/*, weightVectorName, numAttribs*/);
 
         XADD.XADDNode multiply = multiply(likelihood, prior);
 
@@ -209,21 +208,22 @@ public class PreferenceLearning {
     }
 
     private XADD.XADDNode indicator(String condition) { //noisy indicator
-        String s = "([" + condition + "] ([" + (1-indicatorNoise) + "]) ([" + (0 + indicatorNoise) + "]))";
+//        String s = "([" + condition + "] ([" + (1-indicatorNoise) + "]) ([" + (0 + indicatorNoise) + "]))";
+        String s = "([" + condition + "] ([1]) ([" + (0 + indicatorNoise) + "]))";
         int nodeId = context.buildCanonicalXADDFromString(s);
         return context.getExistNode(nodeId);
     }
 
     // Pr(q_{ab} | W)
-    private XADD.XADDNode computePreferenceLikelihoodGivenUtilityWeights(Preference preference/*, String weightVectorName*/, int numAttribs) {
+    private XADD.XADDNode computePreferenceLikelihoodGivenUtilityWeights(Preference preference/*, String weightVectorName, int numAttribs*/) {
         int itemId1 = preference.getItemId1();
         int itemId2 = preference.getItemId2();
         Double[] item1Attribs = db.getItemAttributeValues(itemId1);
         Double[] item2Attribs = db.getItemAttributeValues(itemId2);
 
 
-        String u1Str = itemUtility(weightVectorName, item1Attribs);
-        String u2Str = itemUtility(weightVectorName, item2Attribs);
+        String u1Str = itemUtilityStr(weightVectorName, item1Attribs);
+        String u2Str = itemUtilityStr(weightVectorName, item2Attribs);
         switch (preference.getPreferenceChoice()) {
             case FIRST:
                 return indicator("(" + u1Str + ") - (" + u2Str + ") > " + EPSILON);
@@ -237,7 +237,7 @@ public class PreferenceLearning {
     }
 
     //sum(x_i . w_i) where i = 0 to numAttribs - 1
-    private String itemUtility(String weightVectorName, Double[] itemAttributes) {
+    private String itemUtilityStr(String weightVectorName, Double[] itemAttributes) {
         StringBuilder sumW_iXx_i = new StringBuilder();
         for (int i = 0; i < itemAttributes.length; i++) {
             String w_iXx_i = doubleToString(itemAttributes[i]) + "*" + weightVectorName + "_" + i;

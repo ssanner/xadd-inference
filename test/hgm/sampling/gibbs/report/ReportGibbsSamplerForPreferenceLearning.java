@@ -58,7 +58,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
         }
 
         @Override
-        public int numberOfItems() {
+        public int getNumberOfItems() {
             return items.size();
         }
 

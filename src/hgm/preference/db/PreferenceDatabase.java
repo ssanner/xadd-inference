@@ -14,7 +14,7 @@ public interface PreferenceDatabase {
 
     int getNumberOfAttributes();
 
-    int numberOfItems();
+    int getNumberOfItems();
 
     List<Preference> getPreferenceResponses();
 

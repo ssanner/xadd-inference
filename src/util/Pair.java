@@ -21,8 +21,16 @@ public class Pair<K1, K2> implements Comparable {
         _o2 = o2;
     }
 
-    public int hashCode() {
+    // Hash changed by Hadi:
+    /*public int hashCode() {
         return _o1.hashCode() - _o2.hashCode();
+    }*/
+
+    @Override
+    public int hashCode() {
+        int result = _o1.hashCode();
+        result = 31 * result + _o2.hashCode();
+        return result;
     }
 
     public boolean equals(Object o) {

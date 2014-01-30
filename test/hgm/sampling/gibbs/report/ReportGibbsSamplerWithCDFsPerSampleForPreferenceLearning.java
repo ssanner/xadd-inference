@@ -58,7 +58,7 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
         }
 
         @Override
-        public int numberOfItems() {
+        public int getNumberOfItems() {
             return items.size();
         }
 
@@ -87,16 +87,26 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
         XADD.XADDNode utilityWeights = learning.computePosteriorWeightVector(false);
         fixVarLimits(context, utilityWeights, -30d, 60d);
 
-        context.getGraph(context._hmNode2Int.get(utilityWeights)).launchViewer("test");
-        XaddVisualizer.visualize(utilityWeights, "test", context);
+//        context.getGraph(context._hmNode2Int.get(utilityWeights)).launchViewer("test");
+//        XaddVisualizer.visualize(utilityWeights, "test", context);
 
 
         //now I sample from it:
         Sampler sampler = new GibbsSamplerWithCDFsPerSample(context, utilityWeights);
-        for (int i = 0; i < 10000; i++) {
-            VarAssignment assign = sampler.sample();
+        long t1 = System.currentTimeMillis();
+        for (int i = 1; /*i < 10000*/ ; i++) {
+            try {
+                VarAssignment assign = sampler.sample();
+            } catch (Exception e) {
+                e.printStackTrace();
+                sampler = new GibbsSamplerWithCDFsPerSample(context, utilityWeights);
+            }
 //            System.out.println("t = " + assign);
-            if (i%100 == 0) System.out.println("context._alOrder.size() = " + context._alOrder.size());
+            if (i % 1000 == 0) {
+                long t2 = System.currentTimeMillis();
+                System.out.println("Time for taking 1000 samples: " + (t2 - t1) + "\tcontext._alOrder.size() = " + context._alOrder.size());
+                t1 = t2;
+            }
         }
 
     }
@@ -166,7 +176,7 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
         }
     }
 
-    abstract class FunctionStat {
+    /*abstract class FunctionStat {
         private int sampleCounter;
         private double valueSum;
         private double sqValueSum;
@@ -201,7 +211,7 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
             valueSum = 0d;
             sqValueSum = 0d;
         }
-    }
+    }*/
 
 
 }

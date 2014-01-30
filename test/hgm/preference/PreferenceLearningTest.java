@@ -45,7 +45,7 @@ public class PreferenceLearningTest {
         }
 
         @Override
-        public int numberOfItems() {
+        public int getNumberOfItems() {
             return items.size();
         }
 
@@ -183,7 +183,7 @@ public class PreferenceLearningTest {
             }
 
             @Override
-            public int numberOfItems() {
+            public int getNumberOfItems() {
                 return items.size();
             }
 
