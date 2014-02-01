@@ -1,6 +1,7 @@
 package hgm.sampling.gibbs.report;
 
 import hgm.asve.cnsrv.approxator.LeafThresholdXaddApproximator;
+import hgm.preference.Choice;
 import hgm.preference.PreferenceLearning;
 import hgm.preference.PreferenceLearningTest;
 import hgm.preference.Preference;
@@ -37,9 +38,9 @@ public class ReportGibbsSamplerForPreferenceLearning {
 
     PreferenceDatabase testDB1 = new PreferenceDatabase() {
         Preference[] prefs = new Preference[]{
-                new Preference(1, 2, Preference.Choice.FIRST),
-                new Preference(1, 3, Preference.Choice.FIRST),
-//                new Preference(2, 3, Preference.Choice.FIRST),
+                new Preference(1, 2, Choice.FIRST),
+                new Preference(1, 3, Choice.FIRST),
+//                new Preference(2, 3, Choice.FIRST),
         };
 
         List<Double[]> items = new ArrayList<Double[]>(5);
@@ -81,7 +82,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
     @Test
     public void basicTest() {
         XADD context = new XADD();
-        PreferenceLearning learning = new PreferenceLearning(context, testDB1, 0.2, "w");
+        PreferenceLearning learning = new PreferenceLearning(context, testDB1, 0.2, "w", 0d);
 //        PreferenceLearning learning = new PreferenceLearning(context, new DummyPreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, 5, 2, 120), 0.2, false);
 
         // Pr(W | R^{n+1})
@@ -123,7 +124,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
                     shouldGenerateAnotherDatabase = false; //since there is no reason the current DB is not good enough
 
                     XADD context = new XADD();
-                    PreferenceLearning learning = new PreferenceLearning(context, db, 0.1, "w");
+                    PreferenceLearning learning = new PreferenceLearning(context, db, 0.1, "w", 0);
 
                     long time1 = System.currentTimeMillis();
                     // Pr(W | R^{n+1})
@@ -195,7 +196,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
                         new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
 
                 XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w");
+                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0);
 
                 long time1start = System.currentTimeMillis();
                 // Pr(W | R^{n+1})
@@ -266,7 +267,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
                         new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
 
                 XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w");
+                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0);
 
                 long time1start = System.currentTimeMillis();
 
@@ -331,7 +332,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
                                 0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
 
                 XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w");
+                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0);
 
                 long time1start = System.currentTimeMillis();
 
@@ -441,7 +442,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
                                 0, 5, numConstraints, numDims, numberOfItems);
 
                 XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w");
+                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0);
 
                 long time1start = System.currentTimeMillis();
 

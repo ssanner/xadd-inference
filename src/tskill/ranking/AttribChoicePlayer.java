@@ -7,6 +7,7 @@ import tskill.jskills.IPlayer;
  * Date: 25/01/14
  * Time: 11:26 PM
  */
+@Deprecated
 public class AttribChoicePlayer<A, C> implements IPlayer{
     A attribute;
     C choice;

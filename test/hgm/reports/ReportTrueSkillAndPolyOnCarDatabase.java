@@ -1,5 +1,6 @@
-package tskill.reports;
+package hgm.reports;
 
+import hgm.preference.Choice;
 import hgm.preference.Preference;
 import hgm.preference.PreferenceLearning;
 import hgm.preference.db.DiscretePreferenceDatabase;
@@ -13,7 +14,7 @@ import hgm.sampling.gibbs.GibbsSamplerWithCDFsPerSample;
 import tskill.jskills.trueskill.TwoTeamTrueSkillCalculator;
 import junit.framework.Assert;
 import org.junit.Test;
-import tskill.ranking.TrueSkillModel;
+import tskill.ranking.TrueSkillModelVersion1;
 import xadd.XADD;
 import tskill.jskills.*;
 
@@ -53,7 +54,7 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
             System.out.println("carDB.getAttribChoices(" + attribId + ") = " + carDB.getAttribChoices(attribId));
         }
 
-        TrueSkillModel<Integer, Double> model = new TrueSkillModel<Integer, Double>();
+        TrueSkillModelVersion1<Integer, Double> model = new TrueSkillModelVersion1<Integer, Double>();
         //1. creating players:
         for (Integer attribId = 0; attribId < attribCount; attribId++) {
             Collection<Double> attribChoicesCol = carDB.getAttribChoices(attribId);
@@ -77,7 +78,7 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
         int numLosses = 0;
         for (Preference testPref : chosenTestPrefs) {
             numComparisons++;
-            Preference.Choice predictedChoice = TrueSkillUtils.predictPreferenceChoice(testPref.getItemId1(), testPref.getItemId2(), carDB, model, 0 /*epsilon*/);
+            Choice predictedChoice = TrueSkillUtils.predictPreferenceChoice(testPref.getItemId1(), testPref.getItemId2(), carDB, model, 0 /*epsilon*/);
 //            System.out.println("prediction = " + predictedChoice + " .. testPref = " + testPref.getPreferenceChoice());
             if (!predictedChoice.equals(testPref.getPreferenceChoice())) {
                 numLosses++;
@@ -89,7 +90,7 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
 
             double averageLoss = numLosses / (double) numComparisons;
 //            System.out.println("averageLoss(" + numComparisons + ") = " + averageLoss);
-            System.out.println((numComparisons-1) + "\t" + averageLoss);
+            System.out.println((numComparisons - 1) + "\t" + averageLoss);
         }
 
     }
@@ -114,7 +115,6 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
         System.out.println("indicatorNoise = " + indicatorNoise + "\t#Samples = " + numberOfSamplesTakenFromPosterior + "\tLeaf trim = " + relativeLeafValueBelowWhichRegionsAreTrimmed);
 
 
-
         Set<Integer> adviserIds = new HashSet<Integer>();
         adviserIds.add(0); //only the first guy....
         DiscretePreferenceDatabase completeDatabase = //new BinarizedPreferenceDatabase(
@@ -135,8 +135,7 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
             PreferenceDatabase partialDB = new PartialPreferenceDatabase(completeDatabase, numConstraints);
 
             XADD context = new XADD();
-            PreferenceLearning learning = new PreferenceLearning(context, partialDB, indicatorNoise, "w");
-            PreferenceLearning.EPSILON = 0.0; //since in the car DB there is no equality...
+            PreferenceLearning learning = new PreferenceLearning(context, partialDB, indicatorNoise, "w", 0d);
 
             long time1start = System.currentTimeMillis();
             // Pr(W | R^{n+1})
@@ -173,7 +172,7 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
                 Double eval = context.evaluate(context._hmNode2Int.get(posterior), assign.getBooleanVarAssign(), assign.getContinuousVarAssign());
                 if (eval == null || eval <= 0.0) System.out.println("eval = " + eval);
                 Assert.assertTrue(eval > 0.0);
-                Double[] ws = assign.getContinuousVarAssignAsArray();
+                Double[] ws = assign.getContinuousVarAssignAsArray("w");
 //                System.out.println("--------------------------");
 //                System.out.println("ws = " + Arrays.toString(ws));
 //                System.out.println("a = " + Arrays.toString(a));
@@ -193,10 +192,10 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
 //            System.out.println("timesAIsGreaterThanB = " + timesAIsGreaterThanB);
 //            System.out.println("timesBIsGreaterThanA = " + timesBIsGreaterThanA);
             double maxCount = Math.max(timesAEqualsB, Math.max(timesAIsGreaterThanB, timesBIsGreaterThanA));
-            Preference.Choice predictedChoice;
-            if (maxCount == timesAIsGreaterThanB) predictedChoice = Preference.Choice.FIRST;
-            else if (maxCount == timesBIsGreaterThanA) predictedChoice = Preference.Choice.SECOND;
-            else predictedChoice = Preference.Choice.EQUAL;
+            Choice predictedChoice;
+            if (maxCount == timesAIsGreaterThanB) predictedChoice = Choice.FIRST;
+            else if (maxCount == timesBIsGreaterThanA) predictedChoice = Choice.SECOND;
+            else predictedChoice = Choice.EQUAL;
 
 //            System.out.println("nextPref.getPreferenceChoice() = " + nextPref.getPreferenceChoice());
 //            System.out.println("predictedChoice = " + predictedChoice);
@@ -205,7 +204,7 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
             }
 
             double averageLoss = numLosses / (double) numComparisons;
-            System.out.println("averageLoss(" + (numComparisons-1) + ") = " + averageLoss);
+            System.out.println("averageLoss(" + (numComparisons - 1) + ") = " + averageLoss);
 
             long time5samplesTaken = System.currentTimeMillis();
 

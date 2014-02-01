@@ -27,7 +27,7 @@ public class DummyFeasiblePreferenceDatabaseTest {
     public void basicTest() {
         XADD context = new XADD();
         DummyFeasiblePreferenceDatabase db = new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, 35/*constraints*/, 2, 120);
-        PreferenceLearning learning = new PreferenceLearning(context, db, 0.1/*noise*/, "w");
+        PreferenceLearning learning = new PreferenceLearning(context, db, 0.1/*noise*/, "w", 0);
 
         // Pr(W | R^{n+1})
         XADD.XADDNode posteriorUtilityWeights = learning.computePosteriorWeightVector(false, -0.2);
@@ -114,7 +114,7 @@ public class DummyFeasiblePreferenceDatabaseTest {
     public void approximationTest() {
         XADD context = new XADD();
         DummyFeasiblePreferenceDatabase db = new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, 3/*constraints*/, 2, 120);
-        PreferenceLearning learning = new PreferenceLearning(context, db, 0.1/*noise*/, "w");
+        PreferenceLearning learning = new PreferenceLearning(context, db, 0.1/*noise*/, "w", 0);
 
         // Pr(W | R^{n+1})
         XADD.XADDNode posteriorUtilityWeights = learning.computePosteriorWeightVector(true, 0.001);

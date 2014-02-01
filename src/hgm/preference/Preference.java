@@ -6,7 +6,6 @@ package hgm.preference;
  * Time: 11:29 PM
  */
 public class Preference {
-    public enum Choice {FIRST, SECOND, EQUAL}
     private int itemId1;
     private int itemId2;
     private Choice preferenceChoice;
@@ -29,10 +28,7 @@ public class Preference {
         return preferenceChoice;
     }
 
-    /*public int getChosenItemId() {
-        if (preferenceChoice == Choice.SECOND) return itemId2; else return itemId1; //todo what about equality?
-    }
-*/
+
     @Override
     public String toString() {
         return "#" + itemId1 + (preferenceChoice == Choice.FIRST ? ">" : (preferenceChoice == Choice.EQUAL ? "=" : "<")) +
