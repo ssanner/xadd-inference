@@ -1,6 +1,7 @@
 package hgm.sampling.gibbs.report;
 
 import hgm.asve.cnsrv.approxator.LeafThresholdXaddApproximator;
+import hgm.preference.Choice;
 import hgm.preference.Preference;
 import hgm.preference.PreferenceLearning;
 import hgm.preference.PreferenceLearningTest;
@@ -37,9 +38,9 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
 
     PreferenceDatabase testDB1 = new PreferenceDatabase() {
         Preference[] prefs = new Preference[]{
-                new Preference(1, 2, Preference.Choice.FIRST),
-                new Preference(1, 3, Preference.Choice.FIRST),
-//                new Preference(2, 3, Preference.Choice.FIRST),
+                new Preference(1, 2, Choice.FIRST),
+                new Preference(1, 3, Choice.FIRST),
+//                new Preference(2, 3, Choice.FIRST),
         };
 
         List<Double[]> items = new ArrayList<Double[]>(5);
@@ -81,7 +82,7 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
     @Test
     public void basicTest() {
         XADD context = new XADD();
-        PreferenceLearning learning = new PreferenceLearning(context, testDB1, 0.2, "w");
+        PreferenceLearning learning = new PreferenceLearning(context, testDB1, 0.2, "w", 0);
 
         // Pr(W | R^{n+1})
         XADD.XADDNode utilityWeights = learning.computePosteriorWeightVector(false);
@@ -132,7 +133,7 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
                         new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
 
                 XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w");
+                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0);
 
                 long time1start = System.currentTimeMillis();
                 // Pr(W | R^{n+1})

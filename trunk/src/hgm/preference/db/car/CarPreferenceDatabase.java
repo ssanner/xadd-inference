@@ -1,5 +1,6 @@
 package hgm.preference.db.car;
 
+import hgm.preference.Choice;
 import hgm.preference.Preference;
 import hgm.preference.db.DiscretePreferenceDatabase;
 import sve.gibbs.CSVHandler;
@@ -35,7 +36,7 @@ public class CarPreferenceDatabase implements DiscretePreferenceDatabase {
             //rawPref[0] is the user. rawPref[1] and [2] are the chosen and un-chosen items resp. with index starting from 1
             Integer adviserId = (int)(double)rawPref[0] - 1;
             if (trustedAdviserIds.contains(adviserId)) {
-            prefs.add(new Preference((int)(double)rawPref[1]-1, (int)(double)rawPref[2]-1, Preference.Choice.FIRST)); //always the first item is chosen over the second
+            prefs.add(new Preference((int)(double)rawPref[1]-1, (int)(double)rawPref[2]-1, Choice.FIRST)); //always the first item is chosen over the second
             }
         }
     }

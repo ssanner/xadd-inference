@@ -24,9 +24,9 @@ public class PreferenceLearningTest {
 
     PreferenceDatabase testDB1 = new PreferenceDatabase() {
         Preference[] prefs = new Preference[]{
-                new Preference(1, 2, Preference.Choice.FIRST),
-                new Preference(1, 3, Preference.Choice.FIRST),
-                new Preference(2, 3, Preference.Choice.FIRST),
+                new Preference(1, 2, Choice.FIRST),
+                new Preference(1, 3, Choice.FIRST),
+                new Preference(2, 3, Choice.FIRST),
         };
 
         List<Double[]> items = new ArrayList<Double[]>(5);
@@ -67,7 +67,7 @@ public class PreferenceLearningTest {
 
     @Test
     public void testBasic() {
-        PreferenceLearning learning = new PreferenceLearning(new XADD(), testDB1, 0, "w");
+        PreferenceLearning learning = new PreferenceLearning(new XADD(), testDB1, 0, "w", 0);
 
         // Pr(W | R^{n+1})
         XADD.XADDNode utilityWeights = learning.computePosteriorWeightVector(false);
@@ -78,7 +78,7 @@ public class PreferenceLearningTest {
 
     @Test
     public void testParametricVsNonParametricExpectedUtility() {
-        PreferenceLearning learning = new PreferenceLearning(new XADD(), testDB1, 0, "w");
+        PreferenceLearning learning = new PreferenceLearning(new XADD(), testDB1, 0, "w", 0);
         // Pr(W | R^{n+1})
         XADD.XADDNode utilityWeights = learning.computePosteriorWeightVector(false);
 
@@ -101,7 +101,7 @@ public class PreferenceLearningTest {
         PreferenceDatabase db = CarPreferenceDatabase.fetchCarPreferenceDataBase1stExperiment(advisers);
 
         XADD context = new XADD();
-        PreferenceLearning learning = new PreferenceLearning(context, db, 0, "w");
+        PreferenceLearning learning = new PreferenceLearning(context, db, 0, "w", 0);
 
         // Pr(W | R^{n+1})
         List<Preference> preferenceResponses = db.getPreferenceResponses();
@@ -135,7 +135,7 @@ public class PreferenceLearningTest {
 
             //
 
-            PreferenceLearning learning = new PreferenceLearning(new XADD(), db, 0, "w");
+            PreferenceLearning learning = new PreferenceLearning(new XADD(), db, 0, "w", 0);
 
             long time1 = System.currentTimeMillis();
             // Pr(W | R^{n+1})
@@ -165,7 +165,7 @@ public class PreferenceLearningTest {
                 for (int i = 0; i < preferenceCount; i++) {
                     int prefIndex1 = random.nextInt(itemCount - 1) + 1;
                     int prefIndex2 = random.nextInt(prefIndex1);
-                    preferences.add(new Preference(prefIndex1, prefIndex2, Preference.Choice.FIRST));
+                    preferences.add(new Preference(prefIndex1, prefIndex2, Choice.FIRST));
                 }
             }
 

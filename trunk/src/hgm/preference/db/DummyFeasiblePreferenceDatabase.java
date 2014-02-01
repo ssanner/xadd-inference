@@ -1,8 +1,10 @@
 package hgm.preference.db;
 
+import hgm.preference.Choice;
 import hgm.preference.Preference;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -47,18 +49,18 @@ public class DummyFeasiblePreferenceDatabase implements PreferenceDatabase {
             double xW1 = utility(items.get(itemIndex1), auxiliaryWeightVector);
             double xW2 = utility(items.get(itemIndex2), auxiliaryWeightVector);
 
-            if (xW1 > xW2) preferences.add(new Preference(itemIndex1, itemIndex2, Preference.Choice.FIRST));
-            else if (xW1 < xW2) preferences.add(new Preference(itemIndex1, itemIndex2, Preference.Choice.SECOND));
-            else preferences.add(new Preference(itemIndex1, itemIndex2, Preference.Choice.EQUAL));
+            if (xW1 > xW2) preferences.add(new Preference(itemIndex1, itemIndex2, Choice.FIRST));
+            else if (xW1 < xW2) preferences.add(new Preference(itemIndex1, itemIndex2, Choice.SECOND));
+            else preferences.add(new Preference(itemIndex1, itemIndex2, Choice.EQUAL));
         }
     }
 
     //return summation w_i*x_i
     private double utility(Double[] itemVector, double[] weightVector) {
         assert itemVector.length == weightVector.length;
-        double result = 0;
+        double result = 0d;
         for (int i = 0; i < itemVector.length; i++) {
-            result += itemVector[i] * weightVector[i];
+            result += (itemVector[i] * weightVector[i]);
         }
         return result;
     }
@@ -102,5 +104,30 @@ public class DummyFeasiblePreferenceDatabase implements PreferenceDatabase {
     @Override
     public double[] getAuxiliaryWeightVector() {
         return auxiliaryWeightVector;
+    }
+
+    @Deprecated
+    //for debugging:
+    public void test() {
+//        System.out.println("auxiliaryWeightVector = " + Arrays.toString(auxiliaryWeightVector));
+        for (Preference pref : preferences) {
+            Integer aId = pref.getItemId1();
+            Integer bId = pref.getItemId2();
+            Double[] a = getItemAttributeValues(aId);
+            Double[] b = getItemAttributeValues(bId);
+
+            double utilA = utility(a, auxiliaryWeightVector);
+            double utilB = utility(b, auxiliaryWeightVector);
+            if (utilA - utilB > 0) {
+                if (!pref.getPreferenceChoice().equals(Choice.FIRST))
+                    throw new RuntimeException("not >  !!!");
+            } else if (utilB - utilA > 0) {
+                if (!pref.getPreferenceChoice().equals(Choice.SECOND))
+                    throw new RuntimeException("not <  !!!");
+            } else {
+                if (!pref.getPreferenceChoice().equals(Choice.EQUAL))
+                    throw new RuntimeException("not =  !!!");
+            }
+        }
     }
 }

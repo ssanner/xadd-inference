@@ -48,8 +48,12 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
 
         if (initialSample != null) {
             Double initSampleValue = context.evaluate(context._hmNode2Int.get(root), initialSample.getBooleanVarAssign(), initialSample.getContinuousVarAssign());
-            if (initSampleValue <= 0.0)
+            if (initSampleValue <= 0.0) {//todo maybe the XADD is 0
+                System.out.println("initialSample = " + initialSample);
+                System.out.println("root = " + root);
+                System.out.println("................................... ");
                 throw new SamplingFailureException("valuation of the initial sample is not positive: " + initSampleValue);
+            }
         }
 //        else {
 //            System.err.println("Warning! NULL initial sample. The sampler tries to sample itself by rejection sampling....");

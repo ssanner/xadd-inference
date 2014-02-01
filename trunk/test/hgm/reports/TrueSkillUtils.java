@@ -1,10 +1,11 @@
-package tskill.reports;
+package hgm.reports;
 
+import hgm.preference.Choice;
 import hgm.preference.Preference;
 import hgm.preference.db.PreferenceDatabase;
 import tskill.jskills.*;
 import tskill.ranking.AttribChoicePlayer;
-import tskill.ranking.TrueSkillModel;
+import tskill.ranking.TrueSkillModelVersion1;
 
 import java.util.Collection;
 import java.util.Map;
@@ -15,9 +16,9 @@ import java.util.Map;
  * Time: 2:28 AM
  */
 public class TrueSkillUtils {
-    public static Preference.Choice predictPreferenceChoice(int itemId1, int itemId2,
+    public static Choice predictPreferenceChoice(int itemId1, int itemId2,
                                                       PreferenceDatabase db,
-                                                      TrueSkillModel model, double epsilon) {
+                                                      TrueSkillModelVersion1 model, double epsilon) {
         Double[] item1AttribValues = db.getItemAttributeValues(itemId1);
         Double[] item2AttribValues = db.getItemAttributeValues(itemId2);
 
@@ -33,14 +34,14 @@ public class TrueSkillUtils {
 
         }
 
-        if (util1 - util2 > epsilon) return Preference.Choice.FIRST;
-        if (util2 - util1 > epsilon) return Preference.Choice.SECOND;
-        return Preference.Choice.EQUAL;
+        if (util1 - util2 > epsilon) return Choice.FIRST;
+        if (util2 - util1 > epsilon) return Choice.SECOND;
+        return Choice.EQUAL;
     }
 
     public static Map<IPlayer, Rating> calculateNewRankingsGiven(Preference pref,
                                                            PreferenceDatabase db,
-                                                           TrueSkillModel<Integer, Double> model,
+                                                           TrueSkillModelVersion1<Integer, Double> model,
                                                            SkillCalculator calculator, GameInfo gameInfo) {
         Team team1 = createTeam(db.getItemAttributeValues(pref.getItemId1()), model);
         Team team2 = createTeam(db.getItemAttributeValues(pref.getItemId2()), model);
@@ -69,7 +70,7 @@ public class TrueSkillUtils {
         return newRatings;
     }
 
-    public static Team createTeam(Double[] itemAttributeValues, TrueSkillModel<Integer, Double> model) {
+    public static Team createTeam(Double[] itemAttributeValues, TrueSkillModelVersion1<Integer, Double> model) {
 //        System.out.println("item1AttribValues = " + Arrays.toString(itemAttributeValues));
         //making a team out of item1:
         Team team = new Team();

@@ -50,14 +50,12 @@ public class VarAssignment{
     /**
      * sorts variables in a Lexicographical order
      */
-    public Double[] getContinuousVarAssignAsArray() {
-        SortedSet<String> sortedVars = new TreeSet<String>(continuousVarAssign.keySet());
-        Double[] result = new Double[sortedVars.size()];
-        int i=0;
-        Iterator iterator = sortedVars.iterator();
-        while (iterator.hasNext()) {
-            result[i++] = continuousVarAssign.get(iterator.next());
-
+    public Double[] getContinuousVarAssignAsArray(String varNameBase) {
+        Double[] result = new Double[continuousVarAssign.size()];
+        for (int i=0; i<continuousVarAssign.size(); i++) {
+            Double value = continuousVarAssign.get(varNameBase + "_" + i);
+            if (value == null) throw new RuntimeException("cannot take the value of " + varNameBase + "_" + i);
+            result[i] = value;
         }
 
         return result;

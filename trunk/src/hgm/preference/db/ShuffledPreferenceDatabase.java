@@ -1,5 +1,6 @@
 package hgm.preference.db;
 
+import hgm.preference.Choice;
 import hgm.preference.Preference;
 
 import java.util.ArrayList;
@@ -37,16 +38,16 @@ public class ShuffledPreferenceDatabase implements DiscretePreferenceDatabase {
     }
 
     private Preference flip(Preference preference) {
-        Preference.Choice flippedChoice;
+        Choice flippedChoice;
         switch (preference.getPreferenceChoice()){
             case FIRST:
-                flippedChoice = Preference.Choice.SECOND;
+                flippedChoice = Choice.SECOND;
                 break;
             case SECOND:
-                flippedChoice = Preference.Choice.FIRST;
+                flippedChoice = Choice.FIRST;
                 break;
             case EQUAL:
-                flippedChoice = Preference.Choice.EQUAL;
+                flippedChoice = Choice.EQUAL;
                 break;
             default:
                 throw new RuntimeException("unexpected choice");

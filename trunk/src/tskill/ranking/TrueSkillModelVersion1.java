@@ -12,7 +12,8 @@ import java.util.*;
  * Date: 25/01/14
  * Time: 8:20 PM
  */
-public class TrueSkillModel<A, C> /*A: attrib type, C: choice type*/{
+@Deprecated
+public class TrueSkillModelVersion1<A, C> /*A: attrib type, C: choice type*/{
 
     public static final double INIT_MEAN = 0.0;
     public static final double INIT_STANDARD_DEVIATION = 10;//Double.POSITIVE_INFINITY;

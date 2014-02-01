@@ -20,25 +20,30 @@ public class PreferenceLearning {
     Prior weight of Ws is considered uniform in [-C, C]
      */
     public static final double C = 10.0; //todo range of uniform distributions should be decided in a more flexible way.
-    public static double EPSILON = 0.01; // deciding when preference should be considered as "equality"
+    //    public static double EPSILON = 0;//0.01; // deciding when preference should be considered as "equality"
 //    public static final int NUM_POSTERIOR_CALC_ITERATIONS_LEADING_TO_FLUSHING = 130; // the side effect is that the xadd should become permanent. SEEMS USELESS...
     DecimalFormat decimalFormat = new DecimalFormat("###.#################"); //used to convert doubles to strings //todo discuss the effect of this approximation with Scott...
 
-    private  double indicatorNoise;
+    private double indicatorNoise;
 
     private XADD context;
     private PreferenceDatabase db;
 
     private String weightVectorName;
 
-    public PreferenceLearning(XADD context, PreferenceDatabase db, double indicatorNoise, String weightVectorName) {
+    private double epsilon;
+
+    public PreferenceLearning(XADD context, PreferenceDatabase db, double indicatorNoise, String weightVectorName, double epsilon) {
         this.context = context;
         this.db = db;
         this.weightVectorName = weightVectorName;
 
 //        if (indicatorNoise>0.5 || indicatorNoise<0.0) System.err.println("indicator noise should be in [0, 0.5] to make sense.");
-        if (indicatorNoise>=1 || indicatorNoise<0.0) System.err.println("indicator noise should be in [0, 1) to make sense.");
+        if (indicatorNoise >= 1 || indicatorNoise < 0.0)
+            System.err.println("indicator noise should be in [0, 1) to make sense.");
         this.indicatorNoise = indicatorNoise;
+
+        this.epsilon = epsilon;
     }
 
 
@@ -46,11 +51,11 @@ public class PreferenceLearning {
         // in this version, the expression "int_w Pr(w|R^n)[\sum_d=1^D (w_d x_d)] dw"  is calculated for each X=[x_0, ...x_{D-1}] separately
         int chosenItemId = -1;
         double maxUtil = Double.NEGATIVE_INFINITY;
-        for (int itemId = 0; itemId<db.getNumberOfItems(); itemId++) {
+        for (int itemId = 0; itemId < db.getNumberOfItems(); itemId++) {
             Double[] item = db.getItemAttributeValues(itemId);
             double itemUtil = expectedItemUtility(item, utilityWeights, /*weightVectorName,*/ false);
             System.out.println("itemUtil of item #" + itemId + ": " + itemUtil);
-            if (itemUtil>maxUtil) {
+            if (itemUtil > maxUtil) {
                 maxUtil = itemUtil;
                 chosenItemId = itemId;
             }
@@ -59,9 +64,8 @@ public class PreferenceLearning {
     }
 
     /**
-     *
-     * @param utilityWeights Pr(w|R^n)
-//     * @param weightVectorName w
+     * @param utilityWeights           Pr(w|R^n)
+     *                                 //     * @param weightVectorName w
      * @param itemAttributesVectorName x
      * @return argmax_x {int_w Pr(w|R^n)[sum_d=1:D w_d.x_d]}
      */
@@ -76,19 +80,19 @@ public class PreferenceLearning {
         int chosenItemId = -1;
         double maxUtil = Double.NEGATIVE_INFINITY;
         HashMap<String, Double> assignment = new HashMap<String, Double>(db.getNumberOfAttributes());
-        for (int itemId = 0; itemId<db.getNumberOfItems(); itemId++) {
+        for (int itemId = 0; itemId < db.getNumberOfItems(); itemId++) {
 
             //make a an assignment out of item attributes:
             Double[] item = db.getItemAttributeValues(itemId);
-            for (int i =0; i<item.length; i++) {
-                assignment.put(itemAttributesVectorName+"_"+i, item[i]);    //x_i <-> item[i]
+            for (int i = 0; i < item.length; i++) {
+                assignment.put(itemAttributesVectorName + "_" + i, item[i]);    //x_i <-> item[i]
             }
 
 
             //todo: IMPORTANT: Only works for the case where nothing is boolean.....
             double itemExpectedUtil = context.evaluate(paramExpectedUtilNodeId, null, assignment);
 //            System.out.println("Expected itemUtil of item #" + itemId + ": " + itemExpectedUtil);
-            if (itemExpectedUtil>maxUtil) {
+            if (itemExpectedUtil > maxUtil) {
                 maxUtil = itemExpectedUtil;
                 chosenItemId = itemId;
             }
@@ -108,7 +112,7 @@ public class PreferenceLearning {
 
         //marginalize all w_i:
         int expectedItemUtilNodeId = context._hmNode2Int.get(expectedItemUtilForGivenW);
-        for (int i=0; i<vectorDimension; i++) {
+        for (int i = 0; i < vectorDimension; i++) {
             String w_i = weightVectorName + "_" + i;
             expectedItemUtilNodeId = context.computeDefiniteIntegral(expectedItemUtilNodeId, w_i);
         }
@@ -125,7 +129,7 @@ public class PreferenceLearning {
 
         //marginalize all w_i:
         int expectedItemUtilNodeId = context._hmNode2Int.get(expectedItemUtilForGivenW);
-        for (int i=0; i<item.length; i++) {
+        for (int i = 0; i < item.length; i++) {
             String w_i = weightVectorName + "_" + i;
             expectedItemUtilNodeId = context.computeDefiniteIntegral(expectedItemUtilNodeId, w_i);
         }
@@ -134,10 +138,10 @@ public class PreferenceLearning {
 
 
     /**
-     * @deprecated
      * @param reduceXadd whether to use LP-Reduce or not
-     * Warning: this method flushes everything in XADD except itself.
+     *                   Warning: this method flushes everything in XADD except itself.
      * @return Pr(W | R^n)
+     * @deprecated
      */
     public XADD.XADDNode computePosteriorWeightVector(boolean reduceXadd) {
         return computePosteriorWeightVector(reduceXadd, -1.0 /*negative means no mass simplification....*/);
@@ -161,11 +165,11 @@ public class PreferenceLearning {
 
         if (preferenceAnswers.isEmpty()) {
             // uniform distribution between -C and C:
-            for (int i=0; i<pWeights.length; i++) {
+            for (int i = 0; i < pWeights.length; i++) {
                 String w_i = weightVectorName + "_" + i;
                 pWeights[i] = uniformDistribution(w_i, -C, C);   // todo: do not forget that this initializes _hmMin/Max maps in an undesired way
 
-          }
+            }
             return multiply(pWeights);  //Pr(W)
         }
 
@@ -182,8 +186,8 @@ public class PreferenceLearning {
             multiply = context._hmInt2Node.get(context.reduceLP(context._hmNode2Int.get(multiply)));
         }
 
-        if (relativeLeafValueBelowWhichRegionsShouldBeTrimmed > 0 || (relativeLeafValueBelowWhichRegionsShouldBeTrimmed==0 && !doReduceLP)) {
-           LeafThresholdXaddApproximator approximator = new LeafThresholdXaddApproximator(context, relativeLeafValueBelowWhichRegionsShouldBeTrimmed);
+        if (relativeLeafValueBelowWhichRegionsShouldBeTrimmed > 0 || (relativeLeafValueBelowWhichRegionsShouldBeTrimmed == 0 && !doReduceLP)) {
+            LeafThresholdXaddApproximator approximator = new LeafThresholdXaddApproximator(context, relativeLeafValueBelowWhichRegionsShouldBeTrimmed);
 //            XaddVisualizer.visualize(multiply, -30, 30, 0.5, "before", context);
 //            System.out.println("relativeMassBelowWhichRegionsShouldBeTrimmed = " + relativeMassBelowWhichRegionsShouldBeTrimmed);
             multiply = approximator.approximateXadd(multiply);
@@ -201,7 +205,7 @@ public class PreferenceLearning {
     }
 
     private XADD.XADDNode uniformDistribution(String var, double min, double max) {
-        double u = 1.0 / (max -min);
+        double u = 1.0 / (max - min);
         String s = "([" + var + "<" + min + "] ([0]) ([" + var + "<" + max + "] ([" + u + "]) ([0])))";
         int nodeId = context.buildCanonicalXADDFromString(s);
         return context.getExistNode(nodeId);
@@ -226,11 +230,11 @@ public class PreferenceLearning {
         String u2Str = itemUtilityStr(weightVectorName, item2Attribs);
         switch (preference.getPreferenceChoice()) {
             case FIRST:
-                return indicator("(" + u1Str + ") - (" + u2Str + ") > " + EPSILON);
+                return indicator("(" + u1Str + ") - (" + u2Str + ") > " + epsilon);
             case SECOND:
-                return indicator("(" + u2Str + ") - (" + u1Str + ") > " + EPSILON);
+                return indicator("(" + u2Str + ") - (" + u1Str + ") > " + epsilon);
             case EQUAL:
-                return indicator("(" + u1Str + ") - (" + u2Str + ") <= " + EPSILON);
+                return indicator("(" + u1Str + ") - (" + u2Str + ") <= " + epsilon);
             default:
                 throw new RuntimeException("no valid preference");
         }
@@ -273,9 +277,8 @@ public class PreferenceLearning {
     }
 
     /**
-     *
      * @return an assignment for which the value of posterior is positive (and large), null if not known.
-     * This can be used as the initial sample in samplers...
+     *         This can be used as the initial sample in samplers...
      */
     public VarAssignment generateAWeightVectorHighlyProbablePosteriorly() {
 
@@ -284,7 +287,7 @@ public class PreferenceLearning {
 
         Integer dim = auxiliaryWeightVector.length;
         HashMap<String, Double> continuousVarAssign = new HashMap<String, Double>(dim);
-        for(int i=0; i< dim; i++) {
+        for (int i = 0; i < dim; i++) {
             continuousVarAssign.put(weightVectorName + "_" + i, auxiliaryWeightVector[i]);
         }
 

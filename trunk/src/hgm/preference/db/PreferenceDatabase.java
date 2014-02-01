@@ -10,7 +10,6 @@ import java.util.List;
  * Time: 8:33 PM
  */
 public interface PreferenceDatabase {
-//    String[] getAttributes();
 
     int getNumberOfAttributes();
 
