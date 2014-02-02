@@ -1,11 +1,13 @@
 package hgm.preference.db;
 
-import com.sun.javafx.collections.transformation.SortedList;
-import hgm.asve.BidirectionalMap;
 import hgm.preference.Preference;
-import util.Pair; //Since I need hash based equality...
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+//Since I need hash based equality...
 
 /**
  * Created by Hadi Afshar.
