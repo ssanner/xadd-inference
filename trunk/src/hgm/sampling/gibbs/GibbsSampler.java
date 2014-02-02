@@ -9,202 +9,212 @@ import xadd.XADD;
 import java.util.*;
 
 /**
- * Created by Hadi Afshar.
- * Date: 3/01/14
- * Time: 9:37 PM
+ * Created by Hadi Afshar. Date: 3/01/14 Time: 9:37 PM
  */
 public class GibbsSampler extends Sampler {
-    public static final double SAMPLE_ACCURACY = 1E-6;
-    public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 20;
-    public static final int MAX_INITIAL_SAMPLING_TRIAL = 10000; //if the function is not positive, (initial) sample cannot be taken
-    private Map<String, XADD.XADDNode> varCdfMap;
-    private List<String> allVars;
-    private VarAssignment initialSample;
 
-    @Deprecated
-    public GibbsSampler(XADD context, XADD.XADDNode root) {
-       this(context, root, null);
-    }
+	public static final double			SAMPLE_ACCURACY						= 1E-6;
+	public static final int				MAX_ITERATIONS_TO_APPROX_F_INVERSE	= 20;
+	public static final int				MAX_INITIAL_SAMPLING_TRIAL			= 10000;	// if the function is not positive, (initial) sample cannot be
+																						// taken
+	private Map<String, XADD.XADDNode>	varCdfMap;
+	private List<String>				allVars;
+	private VarAssignment				initialSample;
 
-    //Warning: This constructor performs XADD flushing
-    public GibbsSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample) {
-        super(context, root);
+	@Deprecated
+	public GibbsSampler(XADD context, XADD.XADDNode root) {
+		this(context, root, null);
+	}
 
-        allVars = new ArrayList<String>(bVars);
-        allVars.addAll(cVars);
+	// Warning: This constructor performs XADD flushing
+	public GibbsSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample) {
+		super(context, root);
 
-        varCdfMap = new HashMap<String, XADD.XADDNode>(allVars.size());
+		allVars = new ArrayList<String>(bVars);
+		allVars.addAll(cVars);
 
-        context.addSpecialNode(context._hmNode2Int.get(root));
+		varCdfMap = new HashMap<String, XADD.XADDNode>(allVars.size());
 
-        for (String var : allVars) {
-            XADD.XADDNode cdf = makeCumulativeDistributionFunction(root, var);
+		context.addSpecialNode(context._hmNode2Int.get(root));
 
-            //reducing and flushing:
-            Integer cdfId = context._hmNode2Int.get(cdf);
-//            try{
-//            Integer reducedCdfId = context.reduceLP(cdfId);
-//            }catch (Exception e) {
-//                context.getGraph(cdfId).launchViewer("cdf");
-//                throw new RuntimeException(e);
-//            }
-//            cdf = context.getExistNode(reducedCdfId);
-            context.addSpecialNode(cdfId);
-            context.flushCaches();
+		for (String var : allVars) {
+			XADD.XADDNode cdf = makeCumulativeDistributionFunction(root, var);
 
-            varCdfMap.put(var, cdf);
-        }
+			// reducing and flushing:
+			Integer cdfId = context._hmNode2Int.get(cdf);
+			// try{
+			// Integer reducedCdfId = context.reduceLP(cdfId);
+			// }catch (Exception e) {
+			// context.getGraph(cdfId).launchViewer("cdf");
+			// throw new RuntimeException(e);
+			// }
+			// cdf = context.getExistNode(reducedCdfId);
+			context.addSpecialNode(cdfId);
+			context.flushCaches();
 
-        this.initialSample = initialSample;
-        if (initialSample!=null){
-            Double initSampleValue = context.evaluate(context._hmNode2Int.get(root), initialSample.getBooleanVarAssign(), initialSample.getContinuousVarAssign());
-//            System.out.println("initSampleValue = " + initSampleValue);
-            if (initSampleValue <= 0.0) throw new SamplingFailureException("valuation of the initial sample is not positive: " + initSampleValue);
-        }
+			varCdfMap.put(var, cdf);
+		}
 
-//        System.out.println(" Gibbs sampler initialization finished");
-    }
+		this.initialSample = initialSample;
+		if (initialSample != null) {
+			Double initSampleValue = context.evaluate(	context._hmNode2Int.get(root),
+														initialSample.getBooleanVarAssign(),
+														initialSample.getContinuousVarAssign());
+			// System.out.println("initSampleValue = " + initSampleValue);
+			if (initSampleValue <= 0.0)
+				throw new SamplingFailureException("valuation of the initial sample is not positive: "
+							+ initSampleValue);
+		}
 
-    /**
-     *
-     * @return sample in a REUSABLE assignment
-     * @throws SamplingFailureException
-     */
-    @Override
-    public VarAssignment sample() throws SamplingFailureException {
-        if (super.reusableVarAssignment == null) { // (no sample is taken yet)
-            super.reusableVarAssignment = takeInitialSample();// initialization phase:
-        } else {
-            for (String bVar : bVars) {
-                sampleSingleVar(bVar, reusableVarAssignment);
-            }
-            for (String cVar : cVars) {
-                sampleSingleVar(cVar, reusableVarAssignment);
-            }
-        }
-        return reusableVarAssignment;
-    }
+		// System.out.println(" Gibbs sampler initialization finished");
+	}
 
-    /**
-     * uniformly sample each variable in the interval between its min and max values and reject the produced sample if its probability is not positive...
-     */
-    private VarAssignment takeInitialSample() throws SamplingFailureException {
-        if (initialSample != null) return initialSample;
+	/**
+	 * 
+	 * @return sample in a REUSABLE assignment
+	 * @throws SamplingFailureException
+	 */
+	@Override
+	public VarAssignment sample() throws SamplingFailureException {
+		if (super.reusableVarAssignment == null) { // (no sample is taken yet)
+			super.reusableVarAssignment = takeInitialSample();// initialization phase:
+		} else {
+			for (String bVar : bVars) {
+				sampleSingleVar(bVar, reusableVarAssignment);
+			}
+			for (String cVar : cVars) {
+				sampleSingleVar(cVar, reusableVarAssignment);
+			}
+		}
+		return reusableVarAssignment;
+	}
 
-        System.err.println("No initial sample passed to Gibbs sampler. Rejection sampling is used instead...");
+	/**
+	 * uniformly sample each variable in the interval between its min and max values and reject the produced sample if its probability is not
+	 * positive...
+	 */
+	private VarAssignment takeInitialSample() throws SamplingFailureException {
+		if (initialSample != null)
+			return initialSample;
 
-        int failureCount = 0;
+		System.err.println("No initial sample passed to Gibbs sampler. Rejection sampling is used instead...");
 
+		int failureCount = 0;
 
-        HashMap<String, Boolean> boolAssign = new HashMap<String, Boolean>(bVars.size());
-        HashMap<String, Double> contAssign = new HashMap<String, Double>(cVars.size());
+		HashMap<String, Boolean> boolAssign = new HashMap<String, Boolean>(bVars.size());
+		HashMap<String, Double> contAssign = new HashMap<String, Double>(cVars.size());
 
-        Double targetValue;
-        do {
-            if (failureCount++ > MAX_INITIAL_SAMPLING_TRIAL) throw new SamplingFailureException("Unable to take initial sample");
-            for (String bVar : bVars) {
-                boolAssign.put(bVar, super.randomBoolean());
-            }
-            for (String cVar : cVars) {
-                //todo I think minVal and maxVal are only used for visualization (not sure) and maybe should not used here... (should directly be fed to the class?)
-                Double minVarValue = context._hmMinVal.get(cVar);
-                Double maxVarValue = context._hmMaxVal.get(cVar);
-                if (maxVarValue == null) throw new RuntimeException("The max of scope of var " + cVar + " is unknown");
-                if (minVarValue == null) throw new RuntimeException("The min of scope of var " + cVar + " is unknown");
-                contAssign.put(cVar, super.randomDoubleUniformBetween(minVarValue, maxVarValue));
-            }
-            targetValue = context.evaluate(rootId, boolAssign, contAssign);
-        } while (targetValue <= 0.0); // a valid sample is found
+		Double targetValue;
+		do {
+			if (failureCount++ > MAX_INITIAL_SAMPLING_TRIAL)
+				throw new SamplingFailureException("Unable to take initial sample");
+			for (String bVar : bVars) {
+				boolAssign.put(bVar, super.randomBoolean());
+			}
+			for (String cVar : cVars) {
+				// todo I think minVal and maxVal are only used for visualization (not sure) and maybe should not used here... (should directly be fed
+				// to the class?)
+				Double minVarValue = context._hmMinVal.get(cVar);
+				Double maxVarValue = context._hmMaxVal.get(cVar);
+				if (maxVarValue == null)
+					throw new RuntimeException("The max of scope of var " + cVar + " is unknown");
+				if (minVarValue == null)
+					throw new RuntimeException("The min of scope of var " + cVar + " is unknown");
+				contAssign.put(cVar, super.randomDoubleUniformBetween(minVarValue, maxVarValue));
+			}
+			targetValue = context.evaluate(rootId, boolAssign, contAssign);
+		} while (targetValue <= 0.0); // a valid sample is found
 
-        return new VarAssignment(boolAssign, contAssign);
-    }
+		return new VarAssignment(boolAssign, contAssign);
+	}
 
-    /**
-     * @param varToBeSampled    var to be sampled from
-     * @param reusableVarAssign current assignment. the specified variable will be updated in this assignment
-     */
-    private void sampleSingleVar(String varToBeSampled, VarAssignment reusableVarAssign) {
-        //todo: What shall I do with binary variables:
+	/**
+	 * @param varToBeSampled
+	 *            var to be sampled from
+	 * @param reusableVarAssign
+	 *            current assignment. the specified variable will be updated in this assignment
+	 */
+	private void sampleSingleVar(String varToBeSampled, VarAssignment reusableVarAssign) {
+		// todo: What shall I do with binary variables:
 
-        XADD.XADDNode varCDF = varCdfMap.get(varToBeSampled);
-        int cdfId = context._hmNode2Int.get(varCDF);
+		XADD.XADDNode varCDF = varCdfMap.get(varToBeSampled);
+		int cdfId = context._hmNode2Int.get(varCDF);
 
+		Double maxVarValue = context._hmMaxVal.get(varToBeSampled);
+		Double minVarValue = context._hmMinVal.get(varToBeSampled);
 
-        Double maxVarValue = context._hmMaxVal.get(varToBeSampled);
-        Double minVarValue = context._hmMinVal.get(varToBeSampled);
+		// to calculate F(infinity):
+		reusableVarAssign.assignContinuousVariable(varToBeSampled, maxVarValue + 0.1 /* just to be exclusive */); // since it is reusable
 
-        //to calculate F(infinity):
-        reusableVarAssign.assignContinuousVariable(varToBeSampled, maxVarValue + 0.1 /*just to be exclusive*/); //since it is reusable
+		// inverse of cdfInfinity is the normalization factor:
+		Double cdfInfinity = context.evaluate(	cdfId, reusableVarAssignment.getBooleanVarAssign(),
+												reusableVarAssign.getContinuousVarAssign());
 
-        // inverse of cdfInfinity is the normalization factor:
-        Double cdfInfinity = context.evaluate(cdfId,
-                reusableVarAssignment.getBooleanVarAssign(), reusableVarAssign.getContinuousVarAssign());
+		double s = randomDoubleUniformBetween(0.0, cdfInfinity);
+		// now: F^{-1}(X=s) should be computed:
+		// Binary search algorithm:
+		double low = minVarValue;
+		double high = maxVarValue;
+		double approxS;
+		double average;
 
-        double s = randomDoubleUniformBetween(0.0, cdfInfinity);
-        //now: F^{-1}(X=s) should be computed:
-        //Binary search algorithm:
-        double low = minVarValue;
-        double high = maxVarValue;
-        double approxS;
-        double average;
+		// NOTE: the algorithm only works since there is no delta (i.e. no discontinuity in the CDF)
+		// however, counter is added in case XADD rounding causes problems
+		int counter = 0;
+		do {
+			average = (high + low) / 2.0;
+			reusableVarAssign.assignContinuousVariable(varToBeSampled, average); // here the sample is stored
+			approxS = context.evaluate(	cdfId, reusableVarAssign.getBooleanVarAssign(),
+										reusableVarAssign.getContinuousVarAssign());
+			if (approxS < s) {
+				low = average;
+			} else {
+				high = average;
+			}
+		} while ((Math.abs(approxS - s) > SAMPLE_ACCURACY) && counter++ < MAX_ITERATIONS_TO_APPROX_F_INVERSE);
+	}
 
-        //NOTE: the algorithm only works since there is no delta (i.e. no discontinuity in the CDF)
-        //however, counter is added in case XADD rounding causes problems
-        int counter = 0;
-        do {
-            average = (high + low) / 2.0;
-            reusableVarAssign.assignContinuousVariable(varToBeSampled, average);  //here the sample is stored
-            approxS = context.evaluate(cdfId,
-                    reusableVarAssign.getBooleanVarAssign(), reusableVarAssign.getContinuousVarAssign());
-            if (approxS < s) {
-                low = average;
-            } else {
-                high = average;
-            }
-        } while ((Math.abs(approxS - s) > SAMPLE_ACCURACY) && counter++ < MAX_ITERATIONS_TO_APPROX_F_INVERSE);
-    }
+	// returns int_{w=-infty}^{var} (func[var->w]dw)
+	public XADD.XADDNode makeCumulativeDistributionFunction(XADD.XADDNode func, String var) {
+		// first integrate with an unspecified upper bound 't' and then replace 't' with 'var'.
 
+		if (allVars.contains("t"))
+			throw new RuntimeException("a temporary variable already exist...");
 
-    // returns int_{w=-infty}^{var} (func[var->w]dw)
-    public XADD.XADDNode makeCumulativeDistributionFunction(XADD.XADDNode func, String var) {
-        // first integrate with an unspecified upper bound 't' and then replace 't' with 'var'.
+		XADD.XADDNode unspecifiedBoundedNode = integrateWithUpperBound(func, var, "t");
 
-        if (allVars.contains("t")) throw new RuntimeException("a temporary variable already exist...");
+		XADD.XADDNode cdf = replaceVar(unspecifiedBoundedNode, "t", var); // t is replaced here with
 
-        XADD.XADDNode unspecifiedBoundedNode = integrateWithUpperBound(func, var, "t");
+		return cdf;
+	}
 
-        XADD.XADDNode cdf = replaceVar(unspecifiedBoundedNode, "t", var); // t is replaced here with
+	// integral_{-infinity}^{upperBound} func d_var
+	public XADD.XADDNode integrateWithUpperBound(XADD.XADDNode func, String var, String upperBound) {
+		String indicatorStr = "([" + var + "<" + upperBound + "] ([1]) ([0]))";
+		int indicatorId = context.buildCanonicalXADDFromString(indicatorStr);
+		int boundedFuncId = context.apply(context._hmNode2Int.get(func), indicatorId, XADD.PROD);
 
-        return cdf;
-    }
+		int integratedBoundedFuncId;
+		// todo this code is copied from Gibbs class. Test it...
+		if (context._hsBooleanVars.contains(var)) {
+			Integer bool_var_index = context.getBoolVarIndex(var);
+			// Sum out boolean variable
+			int restrict_high = context.opOut(boundedFuncId, bool_var_index, XADD.RESTRICT_HIGH);
+			int restrict_low = context.opOut(boundedFuncId, bool_var_index, XADD.RESTRICT_LOW);
+			integratedBoundedFuncId = context.apply(restrict_high, restrict_low, XADD.SUM);
+		} else {
+			// Integrate out continuous variable
+			integratedBoundedFuncId = context.computeDefiniteIntegral(boundedFuncId, var);
+		}
+		XADD.XADDNode result = context.getExistNode(integratedBoundedFuncId);
+		return result;
+	}
 
-    // integral_{-infinity}^{upperBound} func d_var
-    public XADD.XADDNode integrateWithUpperBound(XADD.XADDNode func, String var, String upperBound) {
-        String indicatorStr = "([" + var + "<" + upperBound + "] ([1]) ([0]))";
-        int indicatorId = context.buildCanonicalXADDFromString(indicatorStr);
-        int boundedFuncId = context.apply(context._hmNode2Int.get(func), indicatorId, XADD.PROD);
-
-        int integratedBoundedFuncId;
-        //todo this code is copied from Gibbs class. Test it...
-        if (context._hsBooleanVars.contains(var)) {
-            Integer bool_var_index = context.getBoolVarIndex(var);
-            // Sum out boolean variable
-            int restrict_high = context.opOut(boundedFuncId, bool_var_index, XADD.RESTRICT_HIGH);
-            int restrict_low = context.opOut(boundedFuncId, bool_var_index, XADD.RESTRICT_LOW);
-            integratedBoundedFuncId = context.apply(restrict_high, restrict_low, XADD.SUM);
-        } else {
-            // Integrate out continuous variable
-            integratedBoundedFuncId = context.computeDefiniteIntegral(boundedFuncId, var);
-        }
-        XADD.XADDNode result = context.getExistNode(integratedBoundedFuncId);
-        return result;
-    }
-
-    private XADD.XADDNode replaceVar(XADD.XADDNode node, String varToBeReplaced, String replacingVar) {
-        HashMap<String, ExprLib.ArithExpr> subst = new HashMap<String, ExprLib.ArithExpr>();
-        ExprLib.ArithExpr a = new ExprLib.VarExpr(replacingVar);
-        subst.put(varToBeReplaced, a);
-        return context.getExistNode(context.substitute(context._hmNode2Int.get(node), subst));
-    }
+	private XADD.XADDNode replaceVar(XADD.XADDNode node, String varToBeReplaced, String replacingVar) {
+		HashMap<String, ExprLib.ArithExpr> subst = new HashMap<String, ExprLib.ArithExpr>();
+		ExprLib.ArithExpr a = new ExprLib.VarExpr(replacingVar);
+		subst.put(varToBeReplaced, a);
+		return context.getExistNode(context.substitute(context._hmNode2Int.get(node), subst));
+	}
 
 }
