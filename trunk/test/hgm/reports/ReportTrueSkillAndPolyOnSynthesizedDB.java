@@ -15,263 +15,292 @@ import hgm.sampling.MetropolisHastingsSampler;
 import hgm.sampling.RejectionSampler;
 import hgm.sampling.Sampler;
 import hgm.sampling.VarAssignment;
+import hgm.utils.Utils;
+
 import org.junit.Test;
+
 import xadd.XADD;
 
 import java.util.*;
 
 /**
- * Created by Hadi Afshar.
- * Date: 30/01/14
- * Time: 12:58 AM
+ * Created by Hadi Afshar. Date: 30/01/14 Time: 12:58 AM
  */
 public class ReportTrueSkillAndPolyOnSynthesizedDB {
-    @Test
-    public void test1() {
 
-    }
+	@Test
+	public void test1() {
 
-    public static void main(String[] args) {
-//        ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning instance = new ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning();
-//        instance.basicTest();
-//        instance.dummyFeasibleTest();
+	}
 
-    }
+	public static void main(String[] args) {
+		// ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning instance = new ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning();
+		// instance.basicTest();
+		// instance.dummyFeasibleTest();
+		ReportTrueSkillAndPolyOnSynthesizedDB instance = new ReportTrueSkillAndPolyOnSynthesizedDB();
+		instance.predictionTestOnDummyFeasibleModelUsingMetropolisAndProjection();
+	}
 
-    @Test
-    public void predictionTestOnDummyFeasibleModel() {
-        double indicatorNoise = 0.0;
-        boolean reduceLP = true;
-        double relativeLeafValueBelowWhichRegionsAreTrimmed = -0.01;
-        int numberOfSamples = 1000;
+	@Test
+	public void predictionTestOnDummyFeasibleModel() {
+		double indicatorNoise = 0.0;
+		boolean reduceLP = true;
+		double relativeLeafValueBelowWhichRegionsAreTrimmed = -0.01;
+		int numberOfSamples = 1000;
 
-        System.out.println("#Samples:" + numberOfSamples + "\t relLeafThreshold:" + relativeLeafValueBelowWhichRegionsAreTrimmed + "\t indicator noise:" + indicatorNoise);
+		System.out.println("#Samples:" + numberOfSamples + "\t relLeafThreshold:"
+					+ relativeLeafValueBelowWhichRegionsAreTrimmed + "\t indicator noise:" + indicatorNoise);
 
-        List<Pair<String, PreferenceLearningPredictor>> predictors = new ArrayList<Pair<String, PreferenceLearningPredictor>>(Arrays.asList(
-                new Pair<String, PreferenceLearningPredictor>("poly", new PolytopePrefLearningPredictorUsingGibbs(indicatorNoise, reduceLP, numberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, 0)),
-                new Pair<String, PreferenceLearningPredictor>("true.skill", new TrueSkillPrefLearningPredictor(0))
-        ));
+		List<Pair<String, PreferenceLearningPredictor>> predictors = new ArrayList<Pair<String, PreferenceLearningPredictor>>(
+					Arrays.asList(	new Pair<String, PreferenceLearningPredictor>("poly",
+												new PolytopePrefLearningPredictorUsingGibbs(indicatorNoise, reduceLP,
+															numberOfSamples,
+															relativeLeafValueBelowWhichRegionsAreTrimmed, 0)),
+									new Pair<String, PreferenceLearningPredictor>("true.skill",
+												new TrueSkillPrefLearningPredictor(0))));
 
-        preferencePredictionOnDummyFeasibleModel(predictors);
-    }
+		preferencePredictionOnDummyFeasibleModel(predictors);
+	}
 
-    @Test
-    public void predictionTestOnDummyFeasibleModelUsingMetropolisAndProjection() {
-        double indicatorNoise = 0.0;
-        boolean reduceLP = true;
-        double relativeLeafValueBelowWhichRegionsAreTrimmed = -0.01;
-        int numberOfSamples = 1000;
+	@Test
+	public void predictionTestOnDummyFeasibleModelUsingMetropolisAndProjection() {
+		double indicatorNoise = 0.0;
+		boolean reduceLP = true;
+		double relativeLeafValueBelowWhichRegionsAreTrimmed = -0.01;
+		int numberOfSamples = 1000;
 
-        System.out.println("#Samples:" + numberOfSamples + "\t relLeafThreshold:" + relativeLeafValueBelowWhichRegionsAreTrimmed + "\t indicator noise:" + indicatorNoise);
+		System.out.println("#Samples:" + numberOfSamples + "\t relLeafThreshold:"
+					+ relativeLeafValueBelowWhichRegionsAreTrimmed + "\t indicator noise:" + indicatorNoise);
 
-        List<Pair<String, PreferenceLearningPredictor>> predictors = new ArrayList<Pair<String, PreferenceLearningPredictor>>(Arrays.asList(
-                new Pair<String, PreferenceLearningPredictor>("metro", new PolytopePrefLearningPredictor(
-                        indicatorNoise, reduceLP, numberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, 0) {
-                    @Override
-                    public Sampler makeNewSampler(XADD context, XADD.XADDNode posterior, VarAssignment initAssignment) {
-                        return new MetropolisHastingsSampler(context, posterior, initAssignment);
-                    }
-                }),
-                new Pair<String, PreferenceLearningPredictor>("rej", new PolytopePrefLearningPredictor(
-                        indicatorNoise, reduceLP, numberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, 0) {
-                    @Override
-                    public Sampler makeNewSampler(XADD context, XADD.XADDNode posterior, VarAssignment initAssignment) {
-                        return new RejectionSampler(context, posterior, initAssignment, 1);
-                    }
-                }
-                )));
+		List<Pair<String, PreferenceLearningPredictor>> predictors = new ArrayList<Pair<String, PreferenceLearningPredictor>>(
+					Arrays.asList(new Pair<String, PreferenceLearningPredictor>("metro",
+								new PolytopePrefLearningPredictor(indicatorNoise, reduceLP, numberOfSamples,
+											relativeLeafValueBelowWhichRegionsAreTrimmed, 0) {
 
-        preferencePredictionOnDummyFeasibleModel(predictors);
-    }
+									@Override
+									public Sampler makeNewSampler(XADD context, XADD.XADDNode posterior,
+												VarAssignment initAssignment) {
+										return new MetropolisHastingsSampler(context, posterior, initAssignment);
+									}
+								}), new Pair<String, PreferenceLearningPredictor>("rej",
+								new PolytopePrefLearningPredictor(indicatorNoise, reduceLP, numberOfSamples,
+											relativeLeafValueBelowWhichRegionsAreTrimmed, 0) {
 
-    //#Samples vs Loss
-    @Test
-    public void roleOfSampleNumInPolytopePrefPredictionTestOnDummyFeasibleModelAndGibbs() {
-        double indicatorNoise = 0.0;
-        boolean reduceLP = true;
-        double relativeLeafValueBelowWhichRegionsAreTrimmed = -0.01;
-        int burnedSamples = 100;
-        int maxNumberOfSamples = 10000 + burnedSamples;
-        int[] sampleNums = new int[]{1, 10, 50, 100, 200, 500, 1000, 2000, 4000, 6000, 8000, 10000};
+									@Override
+									public Sampler makeNewSampler(XADD context, XADD.XADDNode posterior,
+												VarAssignment initAssignment) {
+										return new RejectionSampler(context, posterior, initAssignment, 1);
+									}
+								})));
 
-        System.out.println("#BurnedSamples=" + burnedSamples + "\t#samples:" + Arrays.toString(sampleNums) + "\t relLeafThreshold:" + relativeLeafValueBelowWhichRegionsAreTrimmed + "\t indicator noise:" + indicatorNoise);
+		preferencePredictionOnDummyFeasibleModel(predictors);
+	}
 
-        testingTheEffectOfNumberOfSamplesInPreferencePredictionOnDummyFeasibleModel(burnedSamples,
-                new PolytopePrefLearningPredictorUsingGibbs(indicatorNoise, reduceLP, maxNumberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, 0), sampleNums);
-    }
+	// #Samples vs Loss
+	@Test
+	public void roleOfSampleNumInPolytopePrefPredictionTestOnDummyFeasibleModelAndGibbs() {
+		double indicatorNoise = 0.0;
+		boolean reduceLP = true;
+		double relativeLeafValueBelowWhichRegionsAreTrimmed = -0.01;
+		int burnedSamples = 100;
+		int maxNumberOfSamples = 10000 + burnedSamples;
+		int[] sampleNums = new int[] { 1, 10, 50, 100, 200, 500, 1000, 2000, 4000, 6000, 8000, 10000 };
 
-    /**
-     * *******************************
-     */
-    public static void preferencePredictionOnDummyFeasibleModel(List<Pair<String /*name*/, PreferenceLearningPredictor>> predictors) {
-        System.out.println(" #constraints and/or #dims vs. Loss");
-        int numberOfItems = 500; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
-        int minDim = 10;
-        int maxDim = 10;
-        int minNumConstraints = 1;
-        int maxNumConstraints = 60;
-        int numberOfTestComparisonsPerDatabase = 60000;
-        int numRepeatingEachExperiment = 10;
+		System.out.println("#BurnedSamples=" + burnedSamples + "\t#samples:" + Arrays.toString(sampleNums)
+					+ "\t relLeafThreshold:" + relativeLeafValueBelowWhichRegionsAreTrimmed + "\t indicator noise:"
+					+ indicatorNoise);
 
-        for (int numDims = minDim; numDims <= maxDim; numDims++) {
+		testingTheEffectOfNumberOfSamplesInPreferencePredictionOnDummyFeasibleModel(burnedSamples,
+																					new PolytopePrefLearningPredictorUsingGibbs(
+																								indicatorNoise,
+																								reduceLP,
+																								maxNumberOfSamples,
+																								relativeLeafValueBelowWhichRegionsAreTrimmed,
+																								0), sampleNums);
+	}
 
-            for (int numConstraints = minNumConstraints; numConstraints <= maxNumConstraints; numConstraints++) {
+	/**
+	 * *******************************
+	 */
+	public static void preferencePredictionOnDummyFeasibleModel(
+				List<Pair<String /* name */, PreferenceLearningPredictor>> predictors) {
+		System.out.println(" #constraints and/or #dims vs. Loss");
+		int numberOfItems = 500; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
+		int minDim = 10;
+		int maxDim = 10;
+		int minNumConstraints = 1;
+		int maxNumConstraints = 60;
+		int numberOfTestComparisonsPerDatabase = 60000;
+		int numRepeatingEachExperiment = 10;
 
-                Map<String, Double> predictor2averageLossMap = new HashMap<String, Double>();
-                Map<String, Double> predictor2expectedSquareLoss = new HashMap<String, Double>();
-                for (Pair<String, PreferenceLearningPredictor> predictor : predictors) {
-                    predictor2averageLossMap.put(predictor.getFirstEntry(), 0d);
-                    predictor2expectedSquareLoss.put(predictor.getFirstEntry(), 0d);
-                }
-                for (int experimentRepetitionCounter = 0; experimentRepetitionCounter < numRepeatingEachExperiment; experimentRepetitionCounter++) {
+		for (int numDims = minDim; numDims <= maxDim; numDims++) {
 
-                    PreferenceDatabase completeDatabase =
-                            new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0d, 5d,
-                                    numConstraints + numberOfTestComparisonsPerDatabase /*more preferences used for testing*/,
-                                    numDims, numberOfItems /*number of items*/);
+			for (int numConstraints = minNumConstraints; numConstraints <= maxNumConstraints; numConstraints++) {
 
-                    PreferenceDatabase trainingDb = new PartialPreferenceDatabase(completeDatabase, numConstraints);
+				Map<String, Double> predictor2averageLossMap = new HashMap<String, Double>();
+				Map<String, Double> predictor2expectedSquareLoss = new HashMap<String, Double>();
+				for (Pair<String, PreferenceLearningPredictor> predictor : predictors) {
+					predictor2averageLossMap.put(predictor.getFirstEntry(), 0d);
+					predictor2expectedSquareLoss.put(predictor.getFirstEntry(), 0d);
+				}
+				for (int experimentRepetitionCounter = 0; experimentRepetitionCounter < numRepeatingEachExperiment; experimentRepetitionCounter++) {
 
-                    for (Pair<String, PreferenceLearningPredictor> strPredictor : predictors) { //for different predictors same date is used for fair ness
-                        String predName = strPredictor.getFirstEntry();
-                        PreferenceLearningPredictor predictor = strPredictor.getSecondEntry();
+					PreferenceDatabase completeDatabase = new DummyFeasiblePreferenceDatabase(
+								-PreferenceLearning.C,
+								PreferenceLearning.C,
+								0d,
+								5d,
+								numConstraints + numberOfTestComparisonsPerDatabase /* more preferences used for testing */,
+								numDims, numberOfItems /* number of items */);
 
-                        List<Pair<String, Double>> info = predictor.learnToPredict(trainingDb);
+					PreferenceDatabase trainingDb = new PartialPreferenceDatabase(completeDatabase, numConstraints);
 
-                        long time5testingStart = System.currentTimeMillis();
+					for (Pair<String, PreferenceLearningPredictor> strPredictor : predictors) { // for different predictors same date is used for fair
+																								// ness
+						String predName = strPredictor.getFirstEntry();
+						PreferenceLearningPredictor predictor = strPredictor.getSecondEntry();
 
-                        int numLosses = 0;
-                        for (int testCounter = 0; testCounter < numberOfTestComparisonsPerDatabase; testCounter++) {
+						List<Pair<String, Double>> info = predictor.learnToPredict(trainingDb);
 
-                            Preference testPref = completeDatabase.getPreferenceResponses().get(numConstraints + testCounter);
-                            Integer aId = testPref.getItemId1();
-                            Integer bId = testPref.getItemId2();
-                            Double[] a = completeDatabase.getItemAttributeValues(aId);
-                            Double[] b = completeDatabase.getItemAttributeValues(bId);
+						long time5testingStart = System.currentTimeMillis();
 
-                            Choice predictedChoice = predictor.predictPreferenceChoice(a, b);
+						int numLosses = 0;
+						for (int testCounter = 0; testCounter < numberOfTestComparisonsPerDatabase; testCounter++) {
 
+							Preference testPref = completeDatabase.getPreferenceResponses()
+										.get(numConstraints + testCounter);
+							Integer aId = testPref.getItemId1();
+							Integer bId = testPref.getItemId2();
+							Double[] a = completeDatabase.getItemAttributeValues(aId);
+							Double[] b = completeDatabase.getItemAttributeValues(bId);
 
-                            if (!predictedChoice.equals(testPref.getPreferenceChoice())) {
-                                numLosses++;
+							Choice predictedChoice = predictor.predictPreferenceChoice(a, b);
 
-                            }
+							if (!predictedChoice.equals(testPref.getPreferenceChoice())) {
+								numLosses++;
 
-                        }//end test for
+							}
 
-                        double averageLoss = numLosses / (double) numberOfTestComparisonsPerDatabase;
-                        System.out.print("[" + predName + ":]\t averageLoss(" + numDims + ":" + numConstraints + ") = " + averageLoss + "\t\t");
+						}// end test for
 
-                        predictor2averageLossMap.put(predName, predictor2averageLossMap.get(predName) + (averageLoss / (double) numRepeatingEachExperiment));
-                        predictor2expectedSquareLoss.put(predName, predictor2expectedSquareLoss.get(predName) + (averageLoss * averageLoss / (double) numRepeatingEachExperiment));
+						double averageLoss = numLosses / (double) numberOfTestComparisonsPerDatabase;
+						System.out.print("[" + predName + ":]\t averageLoss(" + numDims + ":" + numConstraints + ") = "
+									+ averageLoss + "\t\t");
 
-//                        long time6testingEnd = System.currentTimeMillis();
+						predictor2averageLossMap.put(predName, predictor2averageLossMap.get(predName)
+									+ (averageLoss / (double) numRepeatingEachExperiment));
+						predictor2expectedSquareLoss.put(predName, predictor2expectedSquareLoss.get(predName)
+									+ (averageLoss * averageLoss / (double) numRepeatingEachExperiment));
 
-                    /*// #Dims \t\t #Constraints \t\t time for 1. Posterior calc \t\t posterior nodes \t\t Elapsed time for 3. w_i - CDF calculated: \t\t Elapsed time for 4. sampling:
-                    System.out.println("[" + predName + ":]\t" +	numDims + " \t\t " + numConstraints + "\t\t\t" + info +
-                            //(time2posteriorCalculated - time1start) + "\t\t (" + posteriorNodeCount +
-//                        ")\t\t" + //(time4samplerInitialized - time3posteriorReduced) +
-//                        "\t\t " + (time5samplesTaken - time3posteriorReduced) +
-                            "\t\t" + (time6testingEnd - time5testingStart));*/
-                    }//end predictor loop
-                    System.out.print("\n");
-                }//end repetition loop
-                Map<String, Double> pred2Sigma = new HashMap<String, Double>();// root E(X^2) - E(X)^2
-                for (String predName : predictor2averageLossMap.keySet()) {
-                    pred2Sigma.put(predName, Math.sqrt(predictor2expectedSquareLoss.get(predName) - Math.pow(predictor2averageLossMap.get(predName),2d)));
-                }
-                System.out.println("(#DIM:" + numDims + "/CNST:" + numConstraints + ") >>>>>>>>> predictor2AverageLossMap = " + predictor2averageLossMap + "\t\t predicator2sigma = " + pred2Sigma);
-            } // end numConstraints for
-        } // end numDim for
+						// long time6testingEnd = System.currentTimeMillis();
 
-    }
+						/* // #Dims \t\t #Constraints \t\t time for 1. Posterior calc \t\t posterior nodes \t\t Elapsed time for 3. w_i - CDF
+						 * calculated: \t\t Elapsed time for 4. sampling: System.out.println("[" + predName + ":]\t" + numDims + " \t\t " +
+						 * numConstraints + "\t\t\t" + info + //(time2posteriorCalculated - time1start) + "\t\t (" + posteriorNodeCount + // ")\t\t" +
+						 * //(time4samplerInitialized - time3posteriorReduced) + // "\t\t " + (time5samplesTaken - time3posteriorReduced) + "\t\t" +
+						 * (time6testingEnd - time5testingStart)); */
 
-    //#samples vs. loss
-    public static void testingTheEffectOfNumberOfSamplesInPreferencePredictionOnDummyFeasibleModel(
-            int burnedSamples,
-            PolytopePrefLearningPredictor predictor, int[] numSamples) {
-        System.out.println("SAMPLES vs LOSS");
+					}// end predictor loop
+					System.out.print("\n");
 
-        int numberOfItems = 500; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
-        int minDim = 10;
-        int maxDim = 10;
-        int[] numConstraintsArray = new int[]{/*2, 4, 8, 12, 16, 24, */36, 48};
-//        int minNumConstraints = 16;
-//        int maxNumConstraints = 40;
-        int numberOfTestComparisonsPerDatabase = 60000;
+					Utils.save(completeDatabase, "completeDatabase_" + experimentRepetitionCounter + "_"
+								+ numConstraints + "_" + numDims + ".mat");
 
-//        int maxSampleNum = numSamples[0];
-//        for (int sampleNum : numSamples) {
-//            maxSampleNum = Math.max(maxSampleNum, sampleNum);
-//        }
+				}// end repetition loop
+				Map<String, Double> pred2Sigma = new HashMap<String, Double>();// root E(X^2) - E(X)^2
+				for (String predName : predictor2averageLossMap.keySet()) {
+					pred2Sigma.put(	predName,
+									Math.sqrt(predictor2expectedSquareLoss.get(predName)
+												- Math.pow(predictor2averageLossMap.get(predName), 2d)));
+				}
+				System.out.println("(#DIM:" + numDims + "/CNST:" + numConstraints
+							+ ") >>>>>>>>> predictor2AverageLossMap = " + predictor2averageLossMap
+							+ "\t\t predicator2sigma = " + pred2Sigma);
 
+			} // end numConstraints for
+		} // end numDim for
 
-        for (int numDims = minDim; numDims <= maxDim; numDims++) {
-            for (int numConstraints : numConstraintsArray) {
+	}
 
-                PreferenceDatabase completeDatabase =
-                        new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0d, 5d,
-                                numConstraints + numberOfTestComparisonsPerDatabase /*more preferences used for testing*/,
-                                numDims, numberOfItems /*number of items*/);
+	// #samples vs. loss
+	public static void testingTheEffectOfNumberOfSamplesInPreferencePredictionOnDummyFeasibleModel(int burnedSamples,
+				PolytopePrefLearningPredictor predictor, int[] numSamples) {
+		System.out.println("SAMPLES vs LOSS");
 
-                PreferenceDatabase trainingDb = new PartialPreferenceDatabase(completeDatabase, numConstraints);
+		int numberOfItems = 500; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
+		int minDim = 10;
+		int maxDim = 10;
+		int[] numConstraintsArray = new int[] {/* 2, 4, 8, 12, 16, 24, */36, 48 };
+		// int minNumConstraints = 16;
+		// int maxNumConstraints = 40;
+		int numberOfTestComparisonsPerDatabase = 60000;
 
+		// int maxSampleNum = numSamples[0];
+		// for (int sampleNum : numSamples) {
+		// maxSampleNum = Math.max(maxSampleNum, sampleNum);
+		// }
 
-                List<Pair<String, Double>> info = predictor.learnToPredict(trainingDb);
-                System.out.println("Learning completed: " + info);
+		for (int numDims = minDim; numDims <= maxDim; numDims++) {
+			for (int numConstraints : numConstraintsArray) {
 
+				PreferenceDatabase completeDatabase = new DummyFeasiblePreferenceDatabase(
+							-PreferenceLearning.C,
+							PreferenceLearning.C,
+							0d,
+							5d,
+							numConstraints + numberOfTestComparisonsPerDatabase /* more preferences used for testing */,
+							numDims, numberOfItems /* number of items */);
 
-                Map<Integer, Double> sampleCountToLossMap = new HashMap<Integer, Double>();
+				PreferenceDatabase trainingDb = new PartialPreferenceDatabase(completeDatabase, numConstraints);
 
-                for (int numSample : numSamples) {
+				List<Pair<String, Double>> info = predictor.learnToPredict(trainingDb);
+				System.out.println("Learning completed: " + info);
 
-                    int numLosses = 0;
-                    for (int testCounter = 0; testCounter < numberOfTestComparisonsPerDatabase; testCounter++) {
+				Map<Integer, Double> sampleCountToLossMap = new HashMap<Integer, Double>();
 
-                        Preference testPref = completeDatabase.getPreferenceResponses().get(numConstraints + testCounter);
-                        Integer aId = testPref.getItemId1();
-                        Integer bId = testPref.getItemId2();
-                        Double[] a = completeDatabase.getItemAttributeValues(aId);
-                        Double[] b = completeDatabase.getItemAttributeValues(bId);
+				for (int numSample : numSamples) {
 
-                        Choice predictedChoice = predictor.predictPreferenceChoice(a, b, burnedSamples, numSample);
+					int numLosses = 0;
+					for (int testCounter = 0; testCounter < numberOfTestComparisonsPerDatabase; testCounter++) {
 
+						Preference testPref = completeDatabase.getPreferenceResponses().get(numConstraints
+																										+ testCounter);
+						Integer aId = testPref.getItemId1();
+						Integer bId = testPref.getItemId2();
+						Double[] a = completeDatabase.getItemAttributeValues(aId);
+						Double[] b = completeDatabase.getItemAttributeValues(bId);
 
-                        if (!predictedChoice.equals(testPref.getPreferenceChoice())) {
-                            numLosses++;
+						Choice predictedChoice = predictor.predictPreferenceChoice(a, b, burnedSamples, numSample);
 
-                        }
+						if (!predictedChoice.equals(testPref.getPreferenceChoice())) {
+							numLosses++;
 
-                    }//end predictor loop
+						}
 
-                    double averageLoss = numLosses / (double) numberOfTestComparisonsPerDatabase;
-                    sampleCountToLossMap.put(numSample, averageLoss);
+					}// end predictor loop
 
-                }//end sample loop
+					double averageLoss = numLosses / (double) numberOfTestComparisonsPerDatabase;
+					sampleCountToLossMap.put(numSample, averageLoss);
 
-                System.out.print("dim/constr(" + numDims + ":" + numConstraints + ") \t " + sampleCountToLossMap);
-                System.out.print("\n");
-            } // end numConstraints for
-        } // end numDim for
+				}// end sample loop
 
-    }
+				System.out.print("dim/constr(" + numDims + ":" + numConstraints + ") \t " + sampleCountToLossMap);
+				System.out.print("\n");
+			} // end numConstraints for
+		} // end numDim for
 
+	}
 
-    //TODO
-    //TODO
-    /*private void sample2DToMatlabFile(String var1, String var2, int numSamples, Sampler sampler) throws FileNotFoundException {
-        PrintStream ps;
-        ps = new PrintStream(new FileOutputStream(SCATTER_2D_FILENAME));
-
-        for (int i = 0; i < numSamples; i++) {
-            VarAssignment assign = sampler.sample();
-            double x1 = assign.getContinuousVar(var1);
-            double x2 = assign.getContinuousVar(var2);
-            ps.println(x1 + "\t" + x2);
-        }
-
-        ps.close();
-
-    }*/
+	// TODO
+	// TODO
+	/* private void sample2DToMatlabFile(String var1, String var2, int numSamples, Sampler sampler) throws FileNotFoundException { PrintStream ps; ps
+	 * = new PrintStream(new FileOutputStream(SCATTER_2D_FILENAME));
+	 * 
+	 * for (int i = 0; i < numSamples; i++) { VarAssignment assign = sampler.sample(); double x1 = assign.getContinuousVar(var1); double x2 =
+	 * assign.getContinuousVar(var2); ps.println(x1 + "\t" + x2); }
+	 * 
+	 * ps.close();
+	 * 
+	 * } */
 
 }
