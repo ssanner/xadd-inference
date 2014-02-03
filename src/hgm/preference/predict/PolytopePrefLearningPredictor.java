@@ -6,6 +6,7 @@ import hgm.preference.PreferenceLearning;
 import hgm.preference.db.PreferenceDatabase;
 import hgm.preference.predict.PreferenceLearningPredictor;
 import hgm.sampling.Sampler;
+import hgm.sampling.SamplingFailureException;
 import hgm.sampling.VarAssignment;
 import hgm.sampling.gibbs.GibbsSamplerWithCDFsPerSample;
 import xadd.XADD;
@@ -15,12 +16,12 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
-* Created by Hadi Afshar.
-* Date: 2/02/14
-* Time: 5:32 AM
-*/
+ * Created by Hadi Afshar.
+ * Date: 2/02/14
+ * Time: 5:32 AM
+ */
 public class PolytopePrefLearningPredictor implements PreferenceLearningPredictor {
-  boolean DEBUG_MODE = true;
+    boolean DEBUG_MODE = true;
     private double indicatorNoise;
     private boolean reduceLP;
     private int numberOfSamples;
@@ -30,10 +31,10 @@ public class PolytopePrefLearningPredictor implements PreferenceLearningPredicto
     private List<Double[]> takenSamples;
 
     public PolytopePrefLearningPredictor(double indicatorNoise,
-                                  boolean reduceLP,
-                                  int numberOfSamples,
-                                  double relativeLeafValueBelowWhichRegionsAreTrimmed,
-                                  double epsilon) {
+                                         boolean reduceLP,
+                                         int numberOfSamples,
+                                         double relativeLeafValueBelowWhichRegionsAreTrimmed,
+                                         double epsilon) {
         this.indicatorNoise = indicatorNoise;
         this.reduceLP = reduceLP;
         this.numberOfSamples = numberOfSamples;
@@ -84,13 +85,20 @@ public class PolytopePrefLearningPredictor implements PreferenceLearningPredicto
 
     @Override
     public Choice predictPreferenceChoice(Double[] a, Double[] b) {
+        return predictPreferenceChoice(a, b, 0, takenSamples.size());
+    }
+
+    public Choice predictPreferenceChoice(Double[] a, Double[] b, int numberOfBurnedSamples, int numberOfSamplesTakenIntoAccount) {
+        if (numberOfSamplesTakenIntoAccount + numberOfBurnedSamples > takenSamples.size()) throw new SamplingFailureException(
+                "Out of bound exception: #Burned= " + numberOfBurnedSamples + "\t#effective samples= " + numberOfSamplesTakenIntoAccount + "\t exceeds: " + takenSamples.size());
         Choice predictedChoice;
 
         int timesAIsGreaterThanB = 0;
         int timesBIsGreaterThanA = 0;
         int timesAEqualsB = 0;
 
-        for (Double[] sampledW : takenSamples) {
+        for (int i = 0; i < numberOfSamplesTakenIntoAccount; i++) {
+            Double[] sampledW = takenSamples.get(takenSamples.size() - 1 -i); //I take the samples backward to increase the effect of sample burning
             double utilA = util(a, sampledW);
             double utilB = util(b, sampledW);
             if (utilA - utilB > 0) {
