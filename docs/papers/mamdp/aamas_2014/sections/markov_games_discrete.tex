@@ -1,0 +1,82 @@
+\section{Discrete Stochastic Games}
+\label{sec:dsg}
+
+Discrete state stochastic games (DSGs) are formally defined by the tuple \\
+$ \left\langle S, A_{1 \ldots n}, T, R_{1 \ldots n} \right\rangle $.
+$S$ is a set of discrete states and $A_i$ is the action set available to agent $i$. 
+$A$ represents the joint action space 
+$ A_1 \times \ldots \times A_n $. T is a transition function 
+$T : S \times A \rightarrow \Delta$ where $\Delta$ is the set of 
+probability distributions over the state space $S$. The reward function
+$R_i : S \times A \rightarrow \mathbb{R}$ encodes the preferences
+agent $i$. In a stochastic game a policy $\pi : S \rightarrow \sigma(A)$ 
+yields probability
+distributions over the agent's actions for each state in $S$. As a result,
+the optimal policy in a stochastic game may be stochastic. The goal of 
+each agent in a stochastic game is to maximise its expected 
+discounted future rewards.
+
+Zero-sum discrete stochastic games impose a condition on the reward
+structure of the game, whereby the goals of each agent are diametrically
+opposed to one another. Under this restriction, the game can be expressed
+using a single reward function. Each agent attempts to 
+maximise its expected discounted future rewards in the minimax sense.
+Zero-sum stochastic games can be solved using a technique analogous
+to value iteration in MDPs \cite{Littman_ICML_1994}. Under this view
+the value of a state \emph{s} in a stochastic game is 
+
+\begin{equation}
+\label{eq:dsgvfunc}
+  V^{h}(s) = \max_{\pi_{a_1} \in \sigma(A_1)}\min_{\pi_{a_2} \in \sigma(A_2)} \sum_{a_1 \in A_1} \sum_{a_2 \in A_2} Q^{h}(s, a_1, a_2) \cdot \pi_{a_1} \cdot \pi_{a_2},
+\end{equation}
+
+where $a_i$ is an action from $A_i$ and $\pi_{a_i}$ is a policy defined 
+over the probability distributions of $A_i$.  It is well known that 
+Equation \ref{eq:dsgvfunc} can be further simplified to
+%by considering that in a zero-sum game 
+%the opponent will act to minimise the agent's return. Thus the value
+%function can be re-written as
+
+\begin{equation}
+\label{eq:dsgvfunccompact}
+  V^{h}(s) = \max_{\pi_{a_1} \in \sigma(A_1)} \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot \pi_{a_1}.
+\end{equation}
+
+The value of taking action $a_1$ against action $a_2$ in state $s$ is given by
+
+\begin{equation}
+\label{eq:dsgdiscqfunc}
+  Q^{h}(s, a_1, a_2) = R(s, a_1, a_2) + \gamma \sum_{s' \in S} T(s, a_1, a_2, s') V^{h-1}(s'). \\
+\end{equation}
+
+The value function for the opponent can be calculated by applying symmetric
+reasoning and the Minimax theorem \cite{Neumann_MA_1928}. 
+
+\subsection{Solution Techniques}
+\label{subsec:dsgsolution}
+
+The value function shown in Equation \ref{eq:dsgvfunccompact} can be solved for each
+$s \in S$ by reformulating it as the following linear optimisation problem:
+
+\begin{align*}
+\text{maximise}   & \qquad V^{h}(s) \\
+\text{subject to}   & \qquad \pi_{a_1} \geq 0 \qquad \forall a_1 \in A_1 \\
+                          & \qquad \sum_{a_1 \in A_1} \pi_{a_1} = 1 \\
+                          & \qquad V^{h}(s) \leq \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot \pi_{a_1} \qquad \forall a_2 \in A_2
+\end{align*}
+
+We note that two transformations have been applied in the 
+reformulation process. Firstly, we define $V(s)$ to be
+$ \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot \pi_{a_1}$,
+the value of the inner minimisation. Secondly, we note that the minimum
+of a set is less than or equal to the minimum of all elements in the set, 
+that is $V(s) = \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot \pi_{a_1} \equiv V(s) \leq  \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot \pi_{a_1} \quad \forall a_2 \in A_2$.
+
+%We begin the reformulation process replacing the equality operator with 
+%the inequality $\leq$. Both operators are equivalent when performed
+%within a $max$ operator.
+%The $min$ operator can then be expanded 
+%to a series of linear constraints, one for each $a_2 \in A_2$. 
+
+%In the next section we illustrate we can use this reformulation as the basis
+%for solutions to continuous state Zero-sum stochastic games.

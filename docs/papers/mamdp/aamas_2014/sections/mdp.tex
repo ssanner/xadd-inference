@@ -1,0 +1,37 @@
+\section{Markov Decision Processes}
+\label{sec:mdp}
+
+A Markov Decision Process (MDP) \cite{Howard_1960} is defined by the tuple
+$ \left\langle S, A, T, R, h, \gamma \right\rangle$. $S$ and $A$ 
+specify a finite set of states and actions, respectively.
+$T$ is a transition function $T : S \times A \rightarrow S$ which 
+defines the effect of an action on the state. $R$ is the
+reward function $R : S \times A \rightarrow \mathbb{R}$ which 
+encodes the preferences of the agent. The horizon $h$ represents the 
+number of decision steps until termination and the discount factor $\gamma$ 
+is used to discount future rewards. In general, an agent's objective is 
+to find a policy, $\pi : S \rightarrow A$, which maximises the expected 
+sum of discounted rewards over horizon $h$.
+
+Value iteration \cite{Bellman_1957} is a general dynamic programming 
+algorithm used solve MDPs. For each horizon $h$, two functions form 
+the basis of the algorithm: $V^{h}(s)$, the value of state $s$, and 
+$Q^{h}(s, a)$, the value of taking action $a$ in state $s$. The two 
+functions satisfy the following recursive relationship:
+\begin{align}
+  Q^{h}(s, a) &= R(s, a) + \gamma \sum_{s' \in S} T(s, a, s') V^{h-1}(s') \\
+  V^{h}(s) &= \max_{a \in A} Q^{h}(s, a).
+\end{align}
+
+The algorithm is executed by first initialising $V^{0}$  to $R(s, a)$. 
+Then for each $h$, the value function for $V^{h}(s)$ is calculated from $V^{h-1}(s)$
+until the intended $h$-stage-to-go value function is computed.
+Value iteration converges linearly in the number of iterations to the true
+values of $Q(s, a)$ and $V(s)$ \cite{Bertsekas_1987}.
+
+MDPs can be used to model multiagent systems under the assumption 
+that other agents are part of the environment and have fixed behaviour. 
+As a result, they ignore the difference between responsive agents and 
+a passive environment \cite{Hu_ICML_1998}. In the next section we 
+present a game theoretic framework which generalises MDPs to 
+situations with two or more agents.

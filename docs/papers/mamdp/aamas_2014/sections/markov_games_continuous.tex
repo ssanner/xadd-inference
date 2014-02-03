@@ -1,0 +1,83 @@
+\section{Continuous Stochastic Games}
+\label{sec:csg}
+
+Continuous state stochastic games (CSGs) are formally defined by the tuple \\
+$ \left\langle \vec{x}, A_{1 \ldots n}, T, R_{1 \ldots n} \right\rangle $.
+States are represented by a vectors of continuous variables, $\vec{x} = \left(x_1, \ldots, x_m \right)$, 
+where $x_i \in \mathbb{R}$. The other components of the tuple are
+as previously defined for DSGs in Section \ref{sec:dsg}.
+
+Zero-sum continuous stochastic games can be defined by the following
+recursive functions
+\begin{equation}
+\label{eq:csgvfunccompact}
+  V^{h}(\vec{x}) = \max_{\pi_{a_1} \in \sigma(A_1)} \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(\vec{x}, a_1, a_2) \cdot \pi_{a_1}.
+\end{equation}
+
+\begin{equation}
+\label{eq:csgdiscqfunc}
+  Q^{h}(\vec{x}, a_1, a_2) = R(\vec{x}, a_1, a_2) + \gamma \int T(\vec{x}, a_1, a_2, \vec{x}') V^{h-1}(\vec{x}') d\vec{x}' .
+\end{equation}
+
+%Discrete state stochastic games can be generalised to the continuous case by
+%representing state $s$ by a vector of continuous state variables 
+%$\vec{x} = \left(x_1, \ldots, x_m \right)$.
+
+%Incorporating $\vec{x}$ into the value function in Equation \ref{eq:discvfunc} gives
+%
+%\begin{equation}
+%\label{eq:contvfunc}
+  %V^{h-1}(\vec{x}) = \max_{\pi_{a_1} \in \sigma(A_1)} \left[ \min_{a_2 \in A_2} \int \sum_{a_1 \in A_1} Q(\vec{x}, a_1, a_2) \cdot \pi_{a_1} d\vec{x} \right]. 
+%\end{equation}
+%
+%We note that the function contained within $\left[ \cdot \right]$ is essentially
+%$V^{h}(\vec{x})$, the value function in the future, that is,
+%
+%\begin{equation}
+%V^{h}(\vec{x}) = \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q(\vec{x}, a_1, a_2) \cdot \pi_{a_1}. 
+%\end{equation}
+%
+%The continuous state equivalent of Equation \ref{eq:discqfunc} is given
+%by
+%
+%\begin{equation}
+%\label{eq:contqfunc}
+  %Q(\vec{x}, a_1, a_2) = R(\vec{x}, a_1, a_2) + \gamma \sum_{s' \in S} T(\vec{x}, a_1, a_2, s') V(\vec{x}'). \\
+%\end{equation}
+
+\subsection{Solution Techniques}
+
+Equation \ref{eq:csgvfunccompact} can be solved using a technique 
+analogous to that presented in Section \ref{subsec:dsgsolution}. 
+Namely, the CSG formulation of the value function can be re-written 
+as the following optimisation problem:
+
+\begin{subequations}
+\begin{align}
+\text{maximise} & \qquad V(\vec{x}) \\
+\text{subject to} & \qquad \pi_{a_1} \geq 0 \qquad \forall a_1 \in A_1 \\
+                        & \qquad \sum_{a_1 \in A_1} \pi_{a_1} = 1 \\
+                        & \qquad V(\vec{x}) \leq \sum_{a_1 \in A_1} Q(\vec{x}, a_1, a_2) \cdot \pi_{a_1} \qquad \forall a_2 \in A_2 \label{eq:bilinearconstraint}
+\end{align}
+\end{subequations}
+
+This optimisation problem cannot be easily solved using existing techniques
+due to two factors: there are infinitely many states in $\vec{x}$ and
+constraint \ref{eq:bilinearconstraint} is bilinear in $\vec{x}$ and 
+$\pi_{a_1}$. Solving bilinear programs optimally is known to be
+NP-hard \cite{Bennett_COA_1993, Petrik_JoMLR_2011}.
+
+We note that by restricting the reward function $ R(\vec{x}, a_1, a_2) $ 
+to be piecewise constant, the previously bilinear constraint \ref{eq:bilinearconstraint}
+is made piecewise linear. This resulting subclass of zero-sum continuous stochastic
+games can then be solved optimally a given horizon $h$ using symbolic 
+dynamic programming techniques \cite{Zamani_AAAI_2012}.
+
+%-  So your contribution is simply in identifying what form of Q(x) gives a solution you know how to compute 
+% proving that Q(x) will retain this form for an arbitrary horizon... 
+% - so the solution stays closed-form and computable for any horizon (otherwise it is not a computable solution).
+
+In the next section we present an overview of symbolic dynamic 
+programming, its implementation, and show how it can be used to 
+calculate exact solutions to this subclass of continuous zero-sum 
+stochastic games.

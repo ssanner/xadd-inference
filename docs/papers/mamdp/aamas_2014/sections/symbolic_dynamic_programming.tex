@@ -1,0 +1,217 @@
+\section{Symbolic Dynamic Programming}
+\label{sec:sdp}
+
+Symbolic dynamic programming (SDP) \cite{Boutilier_IJCAI_2001} is 
+the process of performing dynamic programming via symbolic 
+manipulation. In the following sections we present a brief overview
+of SDP and the data structures used to perform operations.
+
+\subsection{Case Representation}
+
+Symbolic dynamic programming assumes that all continuous symbolic 
+functions can be represented in case form \cite{Boutilier_IJCAI_2001}.
+
+\begin{equation}
+  f = 
+    \begin{cases}
+      \phi_1: & f_1 \\ 
+      \vdots & \vdots\\ 
+      \phi_k: & f_k \\ 
+    \end{cases} \nonumber
+\end{equation}
+
+$\phi_i$ are logical formulae defined over the state $\vec{x}$ 
+and can include arbitrary logical combinations of boolean variables and 
+linear inequalities over continuous variables. Each $\phi_i$ will be 
+disjoint from the other $\phi_j$ ($j \neq i$) and may not 
+exhaustively cover the state space. Hence, \emph{f} may only be a 
+partial function. The $f_i$ may be either linear or quadratic 
+in the continuous parameters. Operations on $f_i$ preserve the 
+continuous nature of the function $f$.
+ 
+%Symbolic dynamic programming assumes that all symbolic functions 
+%can be represented in case form \cite{Boutilier_IJCAI_2001}, that is,
+%
+%\begin{equation}
+  %f = 
+    %\begin{cases}
+      %\phi_1: & f_1 \\ 
+      %\vdots & \vdots\\ 
+      %\phi_k: & f_k \\ 
+    %\end{cases} \nonumber
+%\end{equation}
+%
+%where $\phi_i$ are logical formulae defined over the state $\vec{x}$ 
+%that can include arbitrary logical ($\land, \lor, \neg$) combinations of 
+%boolean variables and linear inequalities ($\geq, >, \leq, <$) over 
+%continuous variables. The function \emph{f} is required to be continuous.
+%
+%Each $\phi_i$ will be disjoint from the other $\phi_j$ ($j \neq i$); 
+%however the $\phi_i$ may not exhaustively cover the state space, hence
+%\emph{f} may only be a partial function and may be undefined for 
+%some variable assignments. The $f_i$ may be either linear or quadratic 
+%in the continuous parameters according to the same restrictions as for 
+%$R(\vec{x}, a, \vec{y})$.
+
+\subsection{Case Operations}
+
+Unary operations on a case statement \emph{f}, such as scalar 
+multiplication $c \cdot f$ where $ c \in \mathbb{R} $ or negation $-f$,
+are applied to each $f_i$ ($1 \leq i \leq k$). 
+
+Binary operations on two case statements are executed in two stages.
+Firstly, the cross-product of the logical partitions of each case statement 
+is taken, producing paired partitions. Finally, the binary operation 
+is applied to the resulting paired partitions. The ``cross-sum'' $\oplus$
+operation can be performed on two cases in the following manner:
+
+\begin{center}
+  \begin{tabular}{r c c c l}
+  &
+    $\begin{cases}
+        \phi_1: \hspace{-1mm} & \hspace{-1mm} f_1  \\ 
+        \phi_2: \hspace{-1mm} & \hspace{-1mm} f_2  \\ 
+    \end{cases}$
+  $,$
+  &
+  \hspace{-4mm}
+    $\begin{cases}
+        \psi_1: \hspace{-1mm} & \hspace{-1mm} g_1  \\ 
+        \psi_2: \hspace{-1mm} & \hspace{-1mm} g_2  \\ 
+    \end{cases}$
+  &
+  \hspace{-4mm} 
+  $ = $
+  &
+  \hspace{-4mm}
+    $\begin{cases}
+      \psi_1 \wedge \psi_1: & f_1 + g_1 \\
+      \psi_1 \wedge \psi_2: & f_1 + g_2 \\
+      \psi_2 \wedge \psi_1: & f_2 + g_1 \\
+      \psi_2 \wedge \psi_2: & f_2 + g_2  \\
+    \end{cases}$
+  \end{tabular}
+\end{center}
+
+``cross-subtraction''  $\ominus$ and ``cross-multiplication'' $\otimes$
+are defined in a similar manner but with the addition operator replaced
+by the subtraction and multiplication operators, respectively.
+Some partitions resulting from case operators may be inconsistent and 
+are thus removed. 
+
+Maximisation over cases, known as $\casemax$, is defined as:
+\begin{center}
+  \begin{tabular}{r c c c l}
+  &
+  \hspace{-7mm} $\casemax \Bigg(
+    \begin{cases}
+        \phi_1: \hspace{-1mm} & \hspace{-1mm} f_1 \\ 
+        \phi_2: \hspace{-1mm} & \hspace{-1mm} f_2 \\ 
+    \end{cases}$
+  $,$
+  &
+  \hspace{-4mm}
+    $\begin{cases}
+        \psi_1: \hspace{-1mm} & \hspace{-1mm} g_1 \\ 
+        \psi_2: \hspace{-1mm} & \hspace{-1mm} g_2 \\ 
+    \end{cases} \Bigg)$
+  &
+  \hspace{-4mm} 
+  $ = $
+  &
+  \hspace{-4mm}
+    $\begin{cases}
+      \phi_1 \wedge \psi_1 \wedge f_1 > g_1    : & \hspace{-2mm} f_1 \\ 
+      \phi_1 \wedge \psi_1 \wedge f_1 \leq g_1 : & \hspace{-2mm} g_1 \\ 
+      \phi_1 \wedge \psi_2 \wedge f_1 > g_2    : & \hspace{-2mm} f_1 \\ 
+      \phi_1 \wedge \psi_2 \wedge f_1 \leq g_2 : & \hspace{-2mm} g_2 \\ 
+      \vdots & \vdots
+    \end{cases}$
+  \end{tabular}
+\end{center}
+
+$\casemax$ preserves the linearity of its inputs. If the $f_i$ or 
+$g_i$ are quadratic then the expressions $f_i > g_i$ or 
+$f_i \leq g_i$ will be at most univariate quadratic and any such 
+constraint can be linearised into a combination of at most two linear 
+inequalities by completing the square.
+
+\subsection{Extended Algebraic Decision Diagrams for Case Statements}
+
+Case statements and their operations are implemented using Extended 
+Algebraic Decision Diagrams (XADDs) \cite{Sanner_UAI_2011}.
+XADDs provide a compact data structure with which to maintain
+compact forms of $Q(\vec{x}, a_1, a_2)$ and $V(\vec{x})$. 
+XADDs also permit the use of linear constraint feasibility checkers to 
+prune unreachable paths in the XADD.
+
+\subsection{SDP Solution Continuous Stochastic Games}
+
+Symbolic dynamic programming can be used to find a closed-form
+solution to a continuous stochastic game over an arbitrary horizon.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{.5em}
+\linesnumbered
+\begin{algorithm}[H]
+  \vspace{-.5mm}
+  \dontprintsemicolon
+  \SetKwFunction{regress}{Regress}
+  
+  \Begin{
+    $V^0:=0, h:=0$\;
+    \While{$h < H$}{
+      $h:=h+1$\;
+      
+      $Q^h := \int V^{h-1} \otimes T(\vec{x}', \vec{x}, a_1, a_2) d_{\vec{x}'}$\;
+      $Q^h := R(\vec{x}, a_1, a_2) \oplus (\gamma \otimes Q^h)$\;
+      
+      %$V^{h} := \casemax_{\pi_{a_1} \in \sigma(A_1)} \, Q_a^{h}$ $,$ \;      
+      
+      %\ForEach {$a(\vec{y}) \in A$}{
+        %$Q_a^{h}(\vec{y})\,:=\,$\regress{$V^{h-1},a,\vec{y}$}\;
+        %$Q_a^{h} := \casemin_{a_2 \in A_2} \, Q_a^{h}(\vec{y})$ $\,$\;
+        %$V^{h} := \casemax_{\pi_{a_1} \in \sigma(A_1)} \, Q_a^{h}$ $,$ \;        
+      %}
+      
+      \If{$V^h = V^{h-1}$} {
+        break 
+        $\,$ \emph{// Terminate if early convergence}\;
+      }
+    }    
+    \Return{$(V^h)$} \;
+  }
+  \caption{
+    \footnotesize \texttt{VI}(CSG, $H$) $\longrightarrow$ $(V^h)$ 
+    \label{alg:vi}
+  }
+  \vspace{-1mm}
+\end{algorithm}
+\decmargin{.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{.5em}
+\linesnumbered
+\begin{algorithm}[H]
+  \vspace{-.5mm}
+  \dontprintsemicolon
+  \SetKwFunction{remapWithPrimes}{Prime}
+  %\SetKwFunction{sumout}{sumout}
+
+  \Begin{
+    $Q=$ \remapWithPrimes{$V$} $\,$ \emph{// All $ x_i \to x_i'$} \;
+    \emph{// Continuous regression marginal integration}\\
+    \For {all $x'_j$ in $Q$}{
+      $Q := \int Q \otimes P(x_j'|\vec{x}, a_1, a_2) d_{x'_j}$\;
+    }
+    \Return{$R(\vec{x}, a_1, a_2) \oplus (\gamma \otimes Q)$} \;
+  }
+  \caption{
+    \label{alg:regress}
+    \footnotesize \texttt{Regress}($V, a_1, a_2$) $\longrightarrow$ $Q$   
+  }
+  \vspace{-1mm}
+\end{algorithm}
+\decmargin{.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

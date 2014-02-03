@@ -1,0 +1,67 @@
+\section{Empirical Results}
+\label{sec:results}
+
+We evaluated the performance of our novel solution technique on an 
+American option quitting game. The domain and results are presented
+below.
+
+\subsubsection{American Option Quitting Game}
+
+American options are financial instruments which allow an investor to
+bet on the outcome of a yes/no proposition. The proposition typically
+relates to whether the price of a particular asset that underlies the option
+will rise above or fall below a specified amount, known as the strike
+price. When the option reaches maturity the investor receives a fixed
+pay-off if their bet was correct and nothing otherwise. An American 
+option can be exercised by an investor at any time during its lifetime.
+
+We analyse the valuation of an American option as an extensive form
+zero-sum game between an investor and the issuer of the option.
+The problem has two states, one continuous variable $v \in \mathbb{R}$ for the 
+market value of the option and one discrete variable $i \in \mathbb{R}$ for the 
+investor's inventory of options. 
+
+At each time step the investor has three binary actions, 
+$b \in \left\{true, false\right\}$ to buy an option from the issuer, 
+$s \in \left\{true, false\right\}$ to sell an option, and 
+$h \in \left\{true, false\right\}$ to hold the option. 
+
+The issuer has two binary actions, 
+ $n \in \left\{true, false\right\}$ to offer a narrow bid-ask spread for the
+option, and $w \in \left\{true, false\right\}$ to offer a wide spread.
+
+The joint actions of the investor and issuer, $a_{\text{inv}}$ and 
+$a_{\text{iss}}$, are assumed to have an impact on the market value
+of the option. For simplicity we assume that the value may increase or
+decrease by fixed step sizes given by $u$ and $-u$, respectively.
+
+\begin{equation*}
+P(v' | v, i, a_{\text{inv}}, a_{\text{iss}}) = \delta \left[ v' - \begin{cases}
+      (c)  : & v \\ 
+      (e) \wedge (i > 0): & v + u \\ 
+      (b) \wedge (s) : & v - u \\ 
+    \end{cases} \right] \\    
+\end{equation*}
+
+The transition function for inventory $i$ is 
+\begin{equation*}
+P(i' | v, i, a_{\text{inv}}, a_{\text{iss}}) = \delta \left[ i' - \begin{cases}
+      (e) : & 0 \\ 
+      (b) \wedge (s) : & i + 1 \\ 
+      otherwise: & i \\ 
+    \end{cases} \right] \\    
+\end{equation*}
+
+The Dirac function $\delta[\cdot]$ensures that the transitions are valid conditional
+probability functions that integrate to 1.
+
+The reward obtained by the investor at each time step is given by,
+\begin{equation}
+  R = 
+    \begin{cases}
+      (e) \wedge (v > \text{strike-price}) \wedge (i > 0) : & 1 \\ 
+      (e) \wedge (v < \text{strike-price}) \wedge (i > 0) : & -1 \\ 
+      otherwise: & 0 \\
+    \end{cases} \nonumber
+\end{equation}
+

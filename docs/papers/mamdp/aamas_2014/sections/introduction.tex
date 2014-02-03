@@ -1,0 +1,35 @@
+\section{Introduction}
+%-----------------------------------------------------------------------------
+%  What is the problem
+%  Why is it interesting
+%  What are your contributions
+%  What is the outline
+%-----------------------------------------------------------------------------
+
+Modelling sequential competitive interactions between agents \\has 
+important applications within economics and decision making. 
+Stochastic games \cite{Shapley_PotNAoS_1953} provide framework 
+a to model sequential interactions between multiple
+non-cooperative \\agents. Zero-sum stochastic games stipulate that the
+participating agents have diametrically opposing goals. 
+Littman \cite{Littman_ICML_1994} presented a multiagent reinforcement
+learning solution to discrete state zero-sum stochastic games. 
+Closed form solutions for the continuous state case, however, 
+remain unknown. Continuous state zero-sum stochastic games provide
+a convenient framework with which to model many important financial
+and economic domains, such as option valuation on derivative markets.
+
+In this paper we present a novel technique to calculate a closed-form
+solution to a subclass of continuous state zero-sum stochastic games. 
+We show that by using symbolic dynamic programming we can calculate
+closed-form solutions for arbitrary horizons.
+
+We begin by presenting Markov Decision Processes (MDPs) and value
+iteration \cite{Bellman_1957}, a commonly used dynamic programming
+solution. We then describe both discrete and continuous stochastic 
+games, game theoretic generalisations of the MDP framework. 
+Following this we show how Symbolic Dynamic Programming (SDP) 
+\cite{Boutilier_IJCAI_2001} can be used to calculate exact solutions
+to a particular subclass of continuous zero-sum stochastic games. 
+Finally, we present an empirical evaluation of our novel technique on 
+an American option quitting game.
