@@ -5,13 +5,18 @@ import hgm.preference.Choice;
 import hgm.preference.Preference;
 import hgm.preference.PreferenceLearning;
 import hgm.preference.db.DummyFeasiblePreferenceDatabase;
-import hgm.preference.db.DummyMultiSeedPreferenceDatabase;
 import hgm.preference.db.PartialPreferenceDatabase;
 import hgm.preference.db.PreferenceDatabase;
 import hgm.preference.predict.PolytopePrefLearningPredictor;
+import hgm.preference.predict.PolytopePrefLearningPredictorUsingGibbs;
 import hgm.preference.predict.PreferenceLearningPredictor;
 import hgm.preference.predict.TrueSkillPrefLearningPredictor;
+import hgm.sampling.MetropolisHastingsSampler;
+import hgm.sampling.RejectionSampler;
+import hgm.sampling.Sampler;
+import hgm.sampling.VarAssignment;
 import org.junit.Test;
+import xadd.XADD;
 
 import java.util.*;
 
@@ -43,16 +48,45 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
         System.out.println("#Samples:" + numberOfSamples + "\t relLeafThreshold:" + relativeLeafValueBelowWhichRegionsAreTrimmed + "\t indicator noise:" + indicatorNoise);
 
         List<Pair<String, PreferenceLearningPredictor>> predictors = new ArrayList<Pair<String, PreferenceLearningPredictor>>(Arrays.asList(
-                new Pair<String, PreferenceLearningPredictor>("poly", new PolytopePrefLearningPredictor(indicatorNoise, reduceLP, numberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, 0)),
+                new Pair<String, PreferenceLearningPredictor>("poly", new PolytopePrefLearningPredictorUsingGibbs(indicatorNoise, reduceLP, numberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, 0)),
                 new Pair<String, PreferenceLearningPredictor>("true.skill", new TrueSkillPrefLearningPredictor(0))
         ));
 
         preferencePredictionOnDummyFeasibleModel(predictors);
     }
 
+    @Test
+    public void predictionTestOnDummyFeasibleModelUsingMetropolisAndProjection() {
+        double indicatorNoise = 0.0;
+        boolean reduceLP = true;
+        double relativeLeafValueBelowWhichRegionsAreTrimmed = -0.01;
+        int numberOfSamples = 1000;
+
+        System.out.println("#Samples:" + numberOfSamples + "\t relLeafThreshold:" + relativeLeafValueBelowWhichRegionsAreTrimmed + "\t indicator noise:" + indicatorNoise);
+
+        List<Pair<String, PreferenceLearningPredictor>> predictors = new ArrayList<Pair<String, PreferenceLearningPredictor>>(Arrays.asList(
+                new Pair<String, PreferenceLearningPredictor>("metro", new PolytopePrefLearningPredictor(
+                        indicatorNoise, reduceLP, numberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, 0) {
+                    @Override
+                    public Sampler makeNewSampler(XADD context, XADD.XADDNode posterior, VarAssignment initAssignment) {
+                        return new MetropolisHastingsSampler(context, posterior, initAssignment);
+                    }
+                }),
+                new Pair<String, PreferenceLearningPredictor>("rej", new PolytopePrefLearningPredictor(
+                        indicatorNoise, reduceLP, numberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, 0) {
+                    @Override
+                    public Sampler makeNewSampler(XADD context, XADD.XADDNode posterior, VarAssignment initAssignment) {
+                        return new RejectionSampler(context, posterior, initAssignment, 1);
+                    }
+                }
+                )));
+
+        preferencePredictionOnDummyFeasibleModel(predictors);
+    }
+
     //#Samples vs Loss
     @Test
-    public void roleOfSampleNumInPolytopePrefPredictionTestOnDummyFeasibleModel() {
+    public void roleOfSampleNumInPolytopePrefPredictionTestOnDummyFeasibleModelAndGibbs() {
         double indicatorNoise = 0.0;
         boolean reduceLP = true;
         double relativeLeafValueBelowWhichRegionsAreTrimmed = -0.01;
@@ -63,7 +97,7 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
         System.out.println("#BurnedSamples=" + burnedSamples + "\t#samples:" + Arrays.toString(sampleNums) + "\t relLeafThreshold:" + relativeLeafValueBelowWhichRegionsAreTrimmed + "\t indicator noise:" + indicatorNoise);
 
         testingTheEffectOfNumberOfSamplesInPreferencePredictionOnDummyFeasibleModel(burnedSamples,
-                new PolytopePrefLearningPredictor(indicatorNoise, reduceLP, maxNumberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, 0), sampleNums);
+                new PolytopePrefLearningPredictorUsingGibbs(indicatorNoise, reduceLP, maxNumberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, 0), sampleNums);
     }
 
     /**

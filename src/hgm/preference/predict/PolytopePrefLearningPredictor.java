@@ -20,7 +20,7 @@ import java.util.List;
  * Date: 2/02/14
  * Time: 5:32 AM
  */
-public class PolytopePrefLearningPredictor implements PreferenceLearningPredictor {
+public abstract class PolytopePrefLearningPredictor implements PreferenceLearningPredictor {
     boolean DEBUG_MODE = true;
     private double indicatorNoise;
     private boolean reduceLP;
@@ -61,7 +61,7 @@ public class PolytopePrefLearningPredictor implements PreferenceLearningPredicto
 
         //extra reduction phase.... long time3posteriorReduced = System.currentTimeMillis();
 
-        Sampler sampler = new GibbsSamplerWithCDFsPerSample(context, posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
+        Sampler sampler = makeNewSampler(context, posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
 
         takenSamples = new ArrayList<Double[]>(numberOfSamples);
 
@@ -83,6 +83,8 @@ public class PolytopePrefLearningPredictor implements PreferenceLearningPredicto
         return info;
     }
 
+    public abstract Sampler makeNewSampler(XADD context, XADD.XADDNode posterior, VarAssignment initAssignment);
+
     @Override
     public Choice predictPreferenceChoice(Double[] a, Double[] b) {
         return predictPreferenceChoice(a, b, 0, takenSamples.size());
@@ -98,7 +100,7 @@ public class PolytopePrefLearningPredictor implements PreferenceLearningPredicto
         int timesAEqualsB = 0;
 
         for (int i = 0; i < numberOfSamplesTakenIntoAccount; i++) {
-            Double[] sampledW = takenSamples.get(takenSamples.size() - 1 -i); //I take the samples backward to increase the effect of sample burning
+            Double[] sampledW = takenSamples.get(i + numberOfBurnedSamples); //I take the samples backward to increase the effect of sample burning
             double utilA = util(a, sampledW);
             double utilB = util(b, sampledW);
             if (utilA - utilB > 0) {
