@@ -76,7 +76,7 @@ public class TrueSkillModelVersion2 {
                 double v = Math.abs(values1[id] - values2[id]); //absolute since it does not matter, in which side the player has played...
                 if (v == 0.0) throw new RuntimeException("unexpected v == 0");
 
-                player.updateRating(new Rating(newUnNormRanking.getMean() / v, newUnNormRanking.getStandardDeviation() / Math.sqrt(v))); //mind the div...
+                player.updateRating(new Rating(newUnNormRanking.getMean() / v, newUnNormRanking.getStandardDeviation() / v)); //mind the div...
             }
         }
     }
@@ -97,7 +97,7 @@ public class TrueSkillModelVersion2 {
             if (v > 0.0) {
                 IdPlayer player = players.get(i);
                 team.addPlayer(player,
-                        new Rating(player.getRating().getMean() * v, player.getRating().getStandardDeviation() * Math.sqrt(v))); //mind the multiplication....
+                        new Rating(player.getRating().getMean() * v, player.getRating().getStandardDeviation() * v)); //mind the multiplication....
             }
         }
 
