@@ -118,8 +118,10 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
             for (int numConstraints = minNumConstraints; numConstraints <= maxNumConstraints; numConstraints++) {
 
                 Map<String, Double> predictor2averageLossMap = new HashMap<String, Double>();
+                Map<String, Double> predictor2expectedSquareLoss = new HashMap<String, Double>();
                 for (Pair<String, PreferenceLearningPredictor> predictor : predictors) {
                     predictor2averageLossMap.put(predictor.getFirstEntry(), 0d);
+                    predictor2expectedSquareLoss.put(predictor.getFirstEntry(), 0d);
                 }
                 for (int experimentRepetitionCounter = 0; experimentRepetitionCounter < numRepeatingEachExperiment; experimentRepetitionCounter++) {
 
@@ -161,8 +163,9 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                         System.out.print("[" + predName + ":]\t averageLoss(" + numDims + ":" + numConstraints + ") = " + averageLoss + "\t\t");
 
                         predictor2averageLossMap.put(predName, predictor2averageLossMap.get(predName) + (averageLoss / (double) numRepeatingEachExperiment));
+                        predictor2expectedSquareLoss.put(predName, predictor2expectedSquareLoss.get(predName) + (averageLoss * averageLoss / (double) numRepeatingEachExperiment));
 
-                        long time6testingEnd = System.currentTimeMillis();
+//                        long time6testingEnd = System.currentTimeMillis();
 
                     /*// #Dims \t\t #Constraints \t\t time for 1. Posterior calc \t\t posterior nodes \t\t Elapsed time for 3. w_i - CDF calculated: \t\t Elapsed time for 4. sampling:
                     System.out.println("[" + predName + ":]\t" +	numDims + " \t\t " + numConstraints + "\t\t\t" + info +
@@ -173,7 +176,11 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                     }//end predictor loop
                     System.out.print("\n");
                 }//end repetition loop
-                System.out.println("(#DIM:" + numDims + "/CNST:" + numConstraints + ") >>>>>>>>> predictor2AverageLossMap = " + predictor2averageLossMap);
+                Map<String, Double> pred2Sigma = new HashMap<String, Double>();// root E(X^2) - E(X)^2
+                for (String predName : predictor2averageLossMap.keySet()) {
+                    pred2Sigma.put(predName, Math.sqrt(predictor2expectedSquareLoss.get(predName) - Math.pow(predictor2averageLossMap.get(predName),2d)));
+                }
+                System.out.println("(#DIM:" + numDims + "/CNST:" + numConstraints + ") >>>>>>>>> predictor2AverageLossMap = " + predictor2averageLossMap + "\t\t predicator2sigma = " + pred2Sigma);
             } // end numConstraints for
         } // end numDim for
 
