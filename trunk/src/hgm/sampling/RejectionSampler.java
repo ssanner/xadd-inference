@@ -41,8 +41,8 @@ public class RejectionSampler extends Sampler {
 	public VarAssignment sample() throws SamplingFailureException {
 		if (super.reusableVarAssignment == null) { // (no sample is taken yet)
 			if (_initialSample == null) {
-				super.reusableVarAssignment = MetropolisHastings.takeInitialSample(	super.context, super.rootId,
-																					super.cVars, super.bVars);// initialization phase:
+				super.reusableVarAssignment = MetropolisHastingsSampler.takeInitialSample(super.context, super.rootId,
+                        super.cVars, super.bVars);// initialization phase:
 			} else {
 				super.reusableVarAssignment = _initialSample;
 			}
