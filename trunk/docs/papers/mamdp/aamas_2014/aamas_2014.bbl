@@ -1,0 +1,74 @@
+\begin{thebibliography}{10}
+
+\bibitem{Bellman_1957}
+R.~E. Bellman.
+\newblock {\em Dynamic Programming}.
+\newblock Princeton University Press, Princeton, {NJ}, 1957.
+
+\bibitem{Bennett_COA_1993}
+K.~P. Bennett and O.~L. Mangasarian.
+\newblock Bilinear separation of two sets in n-space.
+\newblock {\em Comput. Optim. Appl.}, 2(3):207--227, Nov. 1993.
+
+\bibitem{Bertsekas_1987}
+D.~P. Bertsekas.
+\newblock {\em Dynamic Programming: Deterministic and Stochastic Models}.
+\newblock Prentice-Hall, Inc., Upper Saddle River, NJ, USA, 1987.
+
+\bibitem{Boutilier_IJCAI_2001}
+C.~Boutilier, R.~Reiter, and B.~Price.
+\newblock Symbolic dynamic programming for first-order mdps.
+\newblock In {\em Proceedings of the Seventeenth International Joint Conference
+  on Artificial Intelligence (IJCAI-01)}, volume~1 of {\em IJCAI}, pages 690 --
+  697, Seattle, 2001.
+
+\bibitem{Howard_1960}
+R.~A. Howard.
+\newblock {\em Dynamic Programming and Markov Processes}.
+\newblock The M.I.T. Press, 1960.
+
+\bibitem{Hu_ICML_1998}
+J.~Hu and M.~P. Wellman.
+\newblock Multiagent reinforcement learning: Theoretical framework and an
+  algorithm.
+\newblock In {\em Proceedings of the Fifteenth International Conference on
+  Machine Learning}, ICML, pages 242--250, San Francisco, CA, USA, 1998. Morgan
+  Kaufmann Publishers Inc.
+
+\bibitem{Littman_ICML_1994}
+M.~L. Littman.
+\newblock Markov games as a framework for multi-agent reinforcement learning.
+\newblock In {\em Proceedings of the 11th International Conference on Machine
+  Learning Machine Learning}, ICML, pages 157--163, San Francisco, California,
+  USA, 1994. Morgan Kaufmann Publishers Inc.
+
+\bibitem{Neumann_MA_1928}
+J.~Neumann.
+\newblock Zur theorie der gesellschaftsspiele.
+\newblock {\em Mathematische Annalen}, 100(1):295--320, 1928.
+
+\bibitem{Petrik_JoMLR_2011}
+M.~Petrik and S.~Zilberstein.
+\newblock Robust approximate bilinear programming for value function
+  approximation.
+\newblock {\em Journal of Machine Learning Research}, 12:3027--3063, 2011.
+
+\bibitem{Sanner_UAI_2011}
+S.~Sanner, K.~Delgado, and L.~Nunes~de Barros.
+\newblock Symbolic dynamic programming for discrete and continuous state mdps.
+\newblock In {\em Proceedings of the 27th Conference on Uncertainty in
+  Artificial Intelligence (UAI-11)}, UAI, pages 1--10, Barcelona, Spain, 2011.
+
+\bibitem{Shapley_PotNAoS_1953}
+L.~S. Shapley.
+\newblock Stochastic games.
+\newblock {\em Proceedings of the National Academy of Sciences},
+  39(10):1095--1100, 1953.
+
+\bibitem{Zamani_AAAI_2012}
+Z.~Zamani and S.~Sanner.
+\newblock Symbolic dynamic programming for continuous state and action mdps.
+\newblock In {\em Proceedings of the 26th Conference on Artificial Intelligence
+  (AAAI-12)}, AAAI, pages 1--7, Toronto, Canada, 2012.
+
+\end{thebibliography}
