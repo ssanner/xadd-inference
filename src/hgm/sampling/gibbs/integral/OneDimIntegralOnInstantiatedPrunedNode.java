@@ -13,6 +13,7 @@ import java.util.List;
  * Date: 20/01/14
  * Time: 1:33 PM
  */
+@Deprecated
 // Just for test.
 public class OneDimIntegralOnInstantiatedPrunedNode {
     private XADD context;

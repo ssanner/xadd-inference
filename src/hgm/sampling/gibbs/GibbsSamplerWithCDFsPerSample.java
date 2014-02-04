@@ -29,6 +29,8 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
     private List<String> allVars;
     private VarAssignment initialSample;
 
+    protected OneDimIntegral integrator;
+
     @Deprecated
     public GibbsSamplerWithCDFsPerSample(XADD context, XADD.XADDNode root) {
         this(context, root, null);
@@ -37,6 +39,7 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
     // NOTE: persists the root so that it will not be flushed...
     public GibbsSamplerWithCDFsPerSample(XADD context, XADD.XADDNode root, VarAssignment initialSample) {
         super(context, root);
+        integrator = new OneDimIntegral(context);
 
         allVars = new ArrayList<String>(bVars);
         allVars.addAll(cVars);
@@ -124,7 +127,7 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
      * @param varToBeSampled    var to be sampled from
      * @param reusableVarAssign current assignment. the specified variable will be updated in this assignment
      */
-    private void sampleSingleContinuousVar(String varToBeSampled, VarAssignment reusableVarAssign) {
+    protected void sampleSingleContinuousVar(String varToBeSampled, VarAssignment reusableVarAssign) {
 
 //        XADD.XADDNode varCDF = makeCumulativeDistributionFunction(root, varToBeSampled, reusableVarAssign);
 //        int cdfId = context._hmNode2Int.get(varCDF);
@@ -196,7 +199,7 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
 */
 
 
-        OneDimIntegral integrator = new OneDimIntegral(context);
+//        OneDimIntegral integrator = new OneDimIntegral(context);
         Piecewise1DPolynomial cdf = integrator.integrate(func, var, currentVarAssign.getContinuousVarAssign());//context.getExistNode(instantiatedXaddNodId));
 
         //2. first integrate with an unspecified upper bound 't' and then replace 't' with 'var':

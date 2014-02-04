@@ -11,8 +11,13 @@ import xadd.XADD;
  * Time: 4:06 PM
  */
 public class PolytopePrefLearningPredictorUsingGibbs extends PolytopePrefLearningPredictor {
-    public PolytopePrefLearningPredictorUsingGibbs(double indicatorNoise, boolean reduceLP, int numberOfSamples, double relativeLeafValueBelowWhichRegionsAreTrimmed, double epsilon) {
-        super(indicatorNoise, reduceLP, numberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, epsilon);
+    public PolytopePrefLearningPredictorUsingGibbs(double indicatorNoise,
+                                                   boolean reduceLP,
+                                                   int numberOfSamples,
+                                                   double relativeLeafValueBelowWhichRegionsAreTrimmed,
+                                                   double epsilon,
+                                                   int burnedSamples) {
+        super(indicatorNoise, reduceLP, numberOfSamples, relativeLeafValueBelowWhichRegionsAreTrimmed, epsilon, burnedSamples);
     }
 
     @Override

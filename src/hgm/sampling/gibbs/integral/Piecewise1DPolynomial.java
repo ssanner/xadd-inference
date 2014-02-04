@@ -14,20 +14,20 @@ import xadd.ExprLib.*;
  * Time: 2:56 AM
  */
 public class Piecewise1DPolynomial {
-    private String var;
+    protected String var;
 
     /**
      * A single entry map to set the value of the var for the purpose of expression evaluation
      */
-    private HashMap<String, Double> assign;
+    protected HashMap<String, Double> assign;
     /**
      * mapping from the start point of each interval to the expression associated to that interval:
      */
-    private SortedMap<Double, ArithExpr> intervalStartToExpressionMap;
+    protected SortedMap<Double, ArithExpr> intervalStartToExpressionMap;
     /**
      * Start point of each interval
      */
-    private TreeSet<Double> startPoints;
+    protected TreeSet<Double> startPoints;
 
 
     public Piecewise1DPolynomial(String var) {

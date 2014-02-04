@@ -29,17 +29,20 @@ public abstract class PolytopePrefLearningPredictor implements PreferenceLearnin
     private double epsilon;
 
     private List<Double[]> takenSamples;
+    private int burnedSamples;
 
     public PolytopePrefLearningPredictor(double indicatorNoise,
                                          boolean reduceLP,
                                          int numberOfSamples,
                                          double relativeLeafValueBelowWhichRegionsAreTrimmed,
-                                         double epsilon) {
+                                         double epsilon,
+                                         int burnedSamples) {
         this.indicatorNoise = indicatorNoise;
         this.reduceLP = reduceLP;
         this.numberOfSamples = numberOfSamples;
         this.relativeLeafValueBelowWhichRegionsAreTrimmed = relativeLeafValueBelowWhichRegionsAreTrimmed;
         this.epsilon = epsilon;
+        this.burnedSamples =burnedSamples;
     }
 
     @Override
@@ -83,11 +86,11 @@ public abstract class PolytopePrefLearningPredictor implements PreferenceLearnin
         return info;
     }
 
-    public abstract Sampler makeNewSampler(XADD context, XADD.XADDNode posterior, VarAssignment initAssignment);
+    public abstract Sampler makeNewSampler(XADD context, XADD.XADDNode posterior, VarAssignment assignment);
 
     @Override
     public Choice predictPreferenceChoice(Double[] a, Double[] b) {
-        return predictPreferenceChoice(a, b, 0, takenSamples.size());
+        return predictPreferenceChoice(a, b, burnedSamples, takenSamples.size() - burnedSamples);  //note that 100 samples are burnt...
     }
 
     public Choice predictPreferenceChoice(Double[] a, Double[] b, int numberOfBurnedSamples, int numberOfSamplesTakenIntoAccount) {

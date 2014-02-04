@@ -49,7 +49,7 @@ public class OneDimIntegral {
     }
 
     //no assumption...
-    private List<PolynomialInAnInterval> substituteAndConvertToPiecewisePolynomial(XADD.XADDNode node, HashMap<String, ArithExpr> subst,
+    public List<PolynomialInAnInterval> substituteAndConvertToPiecewisePolynomial(XADD.XADDNode node, HashMap<String, ArithExpr> subst,
                                                                                    Interval inheritedInterval) {
 
         if (node instanceof XADD.XADDTNode) {
@@ -124,19 +124,9 @@ public class OneDimIntegral {
     }
 
 
-    //****************************************************************************
-  /*  public Piecewise1DPolynomial integrate(XADD.XADDNode node) {
-        HashSet<String> vars = node.collectVars();
-        if (vars.size() != 1) throw new RuntimeException("For now only one var.... for node: " + node);
-        String var = vars.iterator().next();
 
-        List<PolynomialInAnInterval> piecewisePolynomial = computePiecewisePolynomial(node);
-        return integral(piecewisePolynomial, var);
-    }*/
-
-    private Piecewise1DPolynomial integrate(List<PolynomialInAnInterval> piecewisePolynomial, String var) {
+    public Piecewise1DPolynomial integrate(List<PolynomialInAnInterval> piecewisePolynomial, String var) {
         //todo only works for functions with no boolean variable...
-//        System.out.println("piecewisePolynomial = " + piecewisePolynomial);
         Piecewise1DPolynomial result = new Piecewise1DPolynomial(var);
         HashMap<String, Double> assign = new HashMap<String, Double>(1);
         double runningSum = 0.0d;

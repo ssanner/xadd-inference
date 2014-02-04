@@ -5,7 +5,6 @@ import hgm.preference.db.PreferenceDatabase;
 import hgm.sampling.VarAssignment;
 import xadd.XADD;
 
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 
@@ -15,18 +14,16 @@ import java.util.List;
  * Time: 8:36 PM
  */
 //todo: DO NOT USE _hmMin/Max maps!!! so bug prone...
-public class PreferenceLearning {
+public class PreferenceLearning extends StringBasedXaddGenerator {
     /*
     Prior weight of Ws is considered uniform in [-C, C]
      */
     public static final double C = 10.0; //todo range of uniform distributions should be decided in a more flexible way.
     //    public static double EPSILON = 0;//0.01; // deciding when preference should be considered as "equality"
 //    public static final int NUM_POSTERIOR_CALC_ITERATIONS_LEADING_TO_FLUSHING = 130; // the side effect is that the xadd should become permanent. SEEMS USELESS...
-    DecimalFormat decimalFormat = new DecimalFormat("###.#################"); //used to convert doubles to strings //todo discuss the effect of this approximation with Scott...
 
     private double indicatorNoise;
 
-    private XADD context;
     private PreferenceDatabase db;
 
     private String weightVectorName;
@@ -34,7 +31,7 @@ public class PreferenceLearning {
     private double epsilon;
 
     public PreferenceLearning(XADD context, PreferenceDatabase db, double indicatorNoise, String weightVectorName, double epsilon) {
-        this.context = context;
+        super(context);
         this.db = db;
         this.weightVectorName = weightVectorName;
 
@@ -165,7 +162,7 @@ public class PreferenceLearning {
 
         if (preferenceAnswers.isEmpty()) {
             // uniform distribution between -C and C:
-            for (int i = 0; i < pWeights.length; i++) {
+            for (int i = 0; i < pWeights.length; i++) {           //todo what if the prior has another form!!!!
                 String w_i = weightVectorName + "_" + i;
                 pWeights[i] = uniformDistribution(w_i, -C, C);   // todo: do not forget that this initializes _hmMin/Max maps in an undesired way
 
@@ -204,19 +201,9 @@ public class PreferenceLearning {
         return multiply;
     }
 
-    private XADD.XADDNode uniformDistribution(String var, double min, double max) {
-        double u = 1.0 / (max - min);
-        String s = "([" + var + "<" + min + "] ([0]) ([" + var + "<" + max + "] ([" + u + "]) ([0])))";
-        int nodeId = context.buildCanonicalXADDFromString(s);
-        return context.getExistNode(nodeId);
-    }
 
-    private XADD.XADDNode indicator(String condition) { //noisy indicator
-//        String s = "([" + condition + "] ([" + (1-indicatorNoise) + "]) ([" + (0 + indicatorNoise) + "]))";
-        String s = "([" + condition + "] ([1]) ([" + (0 + indicatorNoise) + "]))";
-        int nodeId = context.buildCanonicalXADDFromString(s);
-        return context.getExistNode(nodeId);
-    }
+
+
 
     // Pr(q_{ab} | W)
     private XADD.XADDNode computePreferenceLikelihoodGivenUtilityWeights(Preference preference/*, String weightVectorName, int numAttribs*/) {
@@ -230,11 +217,11 @@ public class PreferenceLearning {
         String u2Str = itemUtilityStr(weightVectorName, item2Attribs);
         switch (preference.getPreferenceChoice()) {
             case FIRST:
-                return indicator("(" + u1Str + ") - (" + u2Str + ") > " + epsilon);
+                return indicator("(" + u1Str + ") - (" + u2Str + ") > " + epsilon, indicatorNoise);
             case SECOND:
-                return indicator("(" + u2Str + ") - (" + u1Str + ") > " + epsilon);
+                return indicator("(" + u2Str + ") - (" + u1Str + ") > " + epsilon, indicatorNoise);
             case EQUAL:
-                return indicator("(" + u1Str + ") - (" + u2Str + ") <= " + epsilon);
+                return indicator("(" + u1Str + ") - (" + u2Str + ") <= " + epsilon, indicatorNoise);
             default:
                 throw new RuntimeException("no valid preference");
         }
@@ -251,10 +238,7 @@ public class PreferenceLearning {
         return sumW_iXx_i.toString();
     }
 
-    // I do not want to use toString() method since it may generate strings like: 5.788825006847187E-4 which cannot be parsed afterwards.
-    private String doubleToString(Double d) {
-        return decimalFormat.format(d);
-    }
+
 
     //sum(x_i . w_i) where i = 0 to (dimension - 1)
     private String parametricItemUtility(String weightVectorName, String itemAttributesName, int dimension) {
@@ -265,15 +249,6 @@ public class PreferenceLearning {
         }
         sumW_iXx_i.deleteCharAt(sumW_iXx_i.length() - 1); //delete last '+'
         return sumW_iXx_i.toString();
-    }
-
-    private XADD.XADDNode multiply(XADD.XADDNode... nodes) {
-        int mult_xadd = context.ONE;
-        for (XADD.XADDNode n : nodes) {
-            mult_xadd = context.applyInt(mult_xadd, context._hmNode2Int.get(n), XADD.PROD);
-        }
-
-        return context.getExistNode(mult_xadd);
     }
 
     /**
