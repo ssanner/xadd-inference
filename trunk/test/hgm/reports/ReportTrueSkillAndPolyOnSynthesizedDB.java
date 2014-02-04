@@ -265,7 +265,8 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
 
 	}
 
-	private static void addToHashMap(HashMap<String, ArrayList<Double>> maps, final String name, final double val) {
+	private static void addToHashMap(HashMap<String, ArrayList<Double>> maps, final String key, final double val) {
+		String name = key.replace(".", "_");
 		if (!maps.containsKey(name)) {
 			maps.put(name, new ArrayList<Double>());
 		}
