@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -78,11 +80,31 @@ public class Utils {
 		writeMat(filename, list);
 	}
 
+	public static void writeMatMap(String filename, HashMap<String, ArrayList<Double>> map) {
+		ArrayList<MLArray> list = new ArrayList<MLArray>();
+		for (String key : map.keySet()) {
+			MLDouble m = toMLDouble(key, map.get(key));
+			list.add(m);
+		}
+
+		writeMat(filename, list);
+	}
+
 	public static MLDouble toMLDouble(String name, double[] val) {
 		MLDouble d = new MLDouble(name, new int[] { 1, val.length });
 
 		for (int j = 0; j < val.length; j++) {
 			d.set(val[j], 0, j);
+		}
+
+		return d;
+	}
+
+	public static MLDouble toMLDouble(String name, List<Double> val) {
+		MLDouble d = new MLDouble(name, new int[] { 1, val.size() });
+
+		for (int j = 0; j < val.size(); j++) {
+			d.set(val.get(j), 0, j);
 		}
 
 		return d;
@@ -145,4 +167,5 @@ public class Utils {
 		}
 		return t;
 	}
+
 }

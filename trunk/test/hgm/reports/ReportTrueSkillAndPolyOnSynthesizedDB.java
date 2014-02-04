@@ -38,7 +38,6 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
 		// instance.basicTest();
 		// instance.dummyFeasibleTest();
 
-		
 		// System.out.println(System.getProperty("java.library.path"));
 
 		ReportTrueSkillAndPolyOnSynthesizedDB instance = new ReportTrueSkillAndPolyOnSynthesizedDB();
@@ -136,6 +135,7 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
 		int maxNumConstraints = 60;
 		int numberOfTestComparisonsPerDatabase = 60000;
 		int numRepeatingEachExperiment = 10;
+		HashMap<String, ArrayList<Double>> result_maps = new HashMap<String, ArrayList<Double>>();
 
 		for (int numDims = minDim; numDims <= maxDim; numDims++) {
 
@@ -163,6 +163,8 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
 																								// ness
 						String predName = strPredictor.getFirstEntry();
 						PreferenceLearningPredictor predictor = strPredictor.getSecondEntry();
+
+						long timeStampStartTrain = System.currentTimeMillis();
 
 						List<Pair<String, Double>> info = predictor.learnToPredict(trainingDb);
 
@@ -196,6 +198,17 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
 						predictor2expectedSquareLoss.put(predName, predictor2expectedSquareLoss.get(predName)
 									+ (averageLoss * averageLoss / (double) numRepeatingEachExperiment));
 
+						addToHashMap(result_maps, "numDims", numDims);
+						addToHashMap(result_maps, "numConstraints", numConstraints);
+						addToHashMap(	result_maps, "numberOfTestComparisonsPerDatabase",
+										numberOfTestComparisonsPerDatabase);
+						addToHashMap(result_maps, "averageLoss", averageLoss);
+						addToHashMap(result_maps, "trainTime", time5testingStart - timeStampStartTrain);
+
+						Utils.writeMatMap("results_" + predName + ".mat", result_maps);
+
+						// addToHashMap(result_maps, "averageLoss", averageLoss);
+
 						// long time6testingEnd = System.currentTimeMillis();
 
 						/* // #Dims \t\t #Constraints \t\t time for 1. Posterior calc \t\t posterior nodes \t\t Elapsed time for 3. w_i - CDF
@@ -224,6 +237,13 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
 			} // end numConstraints for
 		} // end numDim for
 
+	}
+
+	private static void addToHashMap(HashMap<String, ArrayList<Double>> maps, final String name, final double val) {
+		if (!maps.containsKey(name)) {
+			maps.put(name, new ArrayList<Double>());
+		}
+		maps.get(name).add(val);
 	}
 
 	// #samples vs. loss
