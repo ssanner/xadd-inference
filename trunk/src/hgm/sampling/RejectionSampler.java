@@ -8,7 +8,7 @@ import xadd.XADD.XADDNode;
 public class RejectionSampler extends Sampler {
 
 	private VarAssignment	_initialSample;
-	private int				_M;
+	private double			_M;
 
 	public RejectionSampler(XADD context, XADDNode root) {
 		super(context, root);
@@ -22,17 +22,23 @@ public class RejectionSampler extends Sampler {
 		init(initialSample);
 	}
 
-	public RejectionSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample, int leapSize) {
+	public RejectionSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample, double M) {
 		super(context, root);
 
-		init(initialSample, leapSize);
+		init(initialSample, M);
 	}
 
 	private void init(VarAssignment initialSample) {
-		init(initialSample, 100);
+		double min, max, g = 1;
+		for (String cVar : cVars) {
+			min = context._hmMinVal.get(cVar);
+			max = context._hmMaxVal.get(cVar);
+			g = (max - min) * g;
+		}
+		init(initialSample, g + 10);
 	}
 
-	private void init(VarAssignment initialSample, final int M) {
+	private void init(VarAssignment initialSample, final double M) {
 		_initialSample = null;
 		_M = M;
 	}
@@ -41,8 +47,9 @@ public class RejectionSampler extends Sampler {
 	public VarAssignment sample() throws SamplingFailureException {
 		if (super.reusableVarAssignment == null) { // (no sample is taken yet)
 			if (_initialSample == null) {
-				super.reusableVarAssignment = MetropolisHastingsSampler.takeInitialSample(super.context, super.rootId,
-                        super.cVars, super.bVars);// initialization phase:
+				super.reusableVarAssignment = MetropolisHastingsSampler.takeInitialSample(	super.context,
+																							super.rootId,
+																							super.cVars, super.bVars);// initialization phase:
 			} else {
 				super.reusableVarAssignment = _initialSample;
 			}

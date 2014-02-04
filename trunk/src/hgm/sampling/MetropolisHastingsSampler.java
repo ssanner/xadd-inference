@@ -66,26 +66,18 @@ public class MetropolisHastingsSampler extends Sampler {
 		HashMap<String, Boolean> boolAssign = new HashMap<String, Boolean>(bVars.size());
 		HashMap<String, Double> contAssign = new HashMap<String, Double>(cVars.size());
 
-		int failureCount = 0;
-
-		Double targetValue;
-		do {
-			if (failureCount++ > GibbsSampler.MAX_INITIAL_SAMPLING_TRIAL)
-				throw new SamplingFailureException("Unable to take initial sample");
-			for (String bVar : bVars) {
-				boolAssign.put(bVar, Sampler.randomBoolean());
-			}
-			for (String cVar : cVars) {
-				Double minVarValue = context._hmMinVal.get(cVar);
-				Double maxVarValue = context._hmMaxVal.get(cVar);
-				if (maxVarValue == null)
-					throw new RuntimeException("The max of scope of var " + cVar + " is unknown");
-				if (minVarValue == null)
-					throw new RuntimeException("The min of scope of var " + cVar + " is unknown");
-				contAssign.put(cVar, Sampler.randomDoubleUniformBetween(minVarValue, maxVarValue));
-			}
-			targetValue = context.evaluate(rootId, boolAssign, contAssign);
-		} while (targetValue <= 0.0); // a valid sample is found
+		for (String bVar : bVars) {
+			boolAssign.put(bVar, Sampler.randomBoolean());
+		}
+		for (String cVar : cVars) {
+			Double minVarValue = context._hmMinVal.get(cVar);
+			Double maxVarValue = context._hmMaxVal.get(cVar);
+			if (maxVarValue == null)
+				throw new RuntimeException("The max of scope of var " + cVar + " is unknown");
+			if (minVarValue == null)
+				throw new RuntimeException("The min of scope of var " + cVar + " is unknown");
+			contAssign.put(cVar, Sampler.randomDoubleUniformBetween(minVarValue, maxVarValue));
+		}
 
 		return new VarAssignment(boolAssign, contAssign);
 	}
