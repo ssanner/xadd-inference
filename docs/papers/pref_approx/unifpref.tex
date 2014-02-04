@@ -357,10 +357,10 @@ Now that we have posterior beliefs in our utility weighting
 $P(\vec{w}|R^n)$, we would like to perform at least two types of inference:
 \begin{itemize}
 \item {\it Item with maximum expected utility:} 
-\begin{align*}
+\begin{align}
 \label{eq:maxEU}
 & \argmax_{\vec{x}} \; \E_{\vec{w}} \left[ u(\vec{x}|\vec{w}) \big| R^n \right]\\ & = \argmax_{\vec{x}} \int_{\vec{w}} P(\vec{w}|R^n) \left[ \sum_{d=1}^{D} \vec{w}_d \vec{x}_d \right] d\vec{w}
-\end{align*}
+\end{align}
 \item {\it Probability of preference outcomes:} 
 \begin{align*}
 P(q_{ab} | R^n) \; & = \int_\vec{w} P(q_{ab} | \vec{w}) P(\vec{w}|R^n) d\vec{w}s
@@ -404,7 +404,8 @@ f =
   \phi_1 & f_1 \\ 
   \vdots & \vdots \\ 
   \phi_k & f_k \\ 
-\end{cases} \label{eq:case}
+\end{cases} 
+\label{eq:case}
 \end{align}
 } Here, the $f_i$ may be \emph{polynomial} functions of $\vec{w}$ (although
 initially the functions $f_i$ will be constant or linear, we will see
