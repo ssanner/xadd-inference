@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.9.26)  4 FEB 2014 16:48
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.9.26)  4 FEB 2014 18:51
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -428,131 +428,103 @@ Package pdftex.def Info: polytope.pdf used on input line 332.
 (pdftex.def)             Requested size: 202.3529pt x 121.82077pt.
  [2]
 
-LaTeX Warning: Citation `uai11' on page 3 undefined on input line 398.
+LaTeX Warning: Citation `uai11' on page 3 undefined on input line 399.
 
 
-Overfull \hbox (3.25473pt too wide) in paragraph at lines 483--513
+! Package amsmath Error: Multiple \label's: label 'eq:maxEU' will be lost.
+
+See the amsmath package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.408 \end{align}
+                 
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Overfull \hbox (3.25473pt too wide) in paragraph at lines 484--514
  [] 
  []
 
 [3 <./polytope.pdf>]
-Overfull \hbox (6.60144pt too wide) in paragraph at lines 567--587
- [] 
- []
+
+LaTeX Warning: Citation `sve11' on page 4 undefined on input line 542.
 
 
-Overfull \hbox (47.96466pt too wide) in paragraph at lines 616--616
-[] 
- []
+LaTeX Warning: Citation `bahar93add' on page 4 undefined on input line 567.
 
 
-Overfull \hbox (37.14407pt too wide) detected at line 634
-\U/msb/m/n/10 I\OT1/cmr/m/n/10 [\OMS/cmsy/m/n/10 ^^@\OML/cmm/m/it/10 w[] > w[] 
-\OMS/cmsy/m/n/10 ^^@ \OT1/cmr/m/n/10 1] \OMS/cmsy/m/n/10 
- \U/msb/m/n/10 I\OT1/cmr/m/n/10 [\OMS/cmsy/m/n/10 ^^@\OML/cmm/m/it/10 w[] > \OM
-S/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 1] \OMS/cmsy/m/n/10 
- \U/msb/m/n/10 I\OT1/cmr/m/n/10 [\OML/cmm/m/it/10 w[] \OT1/cmr/m/n/10 + 1 \OML/
-cmm/m/it/10 > w[] \OMS/cmsy/m/n/10 ^^@ \OT1/cmr/m/n/10 1] \OMS/cmsy/m/n/10 
- \U/msb/m/n/10 I\OT1/cmr/m/n/10 [\OML/cmm/m/it/10 w[] \OT1/cmr/m/n/10 + 1 \OML/
-cmm/m/it/10 > \OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 1]
- []
-
-<norm_unif_tree.pdf, id=40, 553.06625pt x 211.79124pt>
-File: norm_unif_tree.pdf Graphic file (type pdf)
-
-<use norm_unif_tree.pdf>
-Package pdftex.def Info: norm_unif_tree.pdf used on input line 649.
-(pdftex.def)             Requested size: 354.12144pt x 135.60733pt.
- <norm_unif.pdf, id=41, 534.99875pt x 635.37375pt>
-File: norm_unif.pdf Graphic file (type pdf)
-
-<use norm_unif.pdf>
-Package pdftex.def Info: norm_unif.pdf used on input line 651.
-(pdftex.def)             Requested size: 101.17645pt x 120.15994pt.
-
-Overfull \hbox (25.88pt too wide) in paragraph at lines 648--653
- [] 
- []
+LaTeX Warning: Citation `uai11' on page 4 undefined on input line 570.
 
 
-LaTeX Warning: Citation `bahar93add' on page 4 undefined on input line 667.
+LaTeX Warning: Reference `fig:xadd_tree' on page 4 undefined on input line 571.
 
 
-LaTeX Warning: Citation `uai11' on page 4 undefined on input line 670.
+
+LaTeX Warning: Citation `bahar93add' on page 4 undefined on input line 574.
 
 
-LaTeX Warning: Citation `bahar93add' on page 4 undefined on input line 674.
-
-[4] <dim_constraint_time.pdf, id=49, 597.23125pt x 845.1575pt>
-File: dim_constraint_time.pdf Graphic file (type pdf)
-
-<use dim_constraint_time.pdf>
-Package pdftex.def Info: dim_constraint_time.pdf used on input line 708.
-(pdftex.def)             Requested size: 303.53708pt x 429.54158pt.
-
-Overfull \hbox (64.1427pt too wide) in paragraph at lines 708--711
- [][] 
- []
+LaTeX Warning: Reference `fig:xadd_tree' on page 4 undefined on input line 585.
 
 
-Overfull \hbox (3.80205pt too wide) in paragraph at lines 734--734
-[] 
- []
+
+LaTeX Warning: Reference `fig:xadd_tree' on page 4 undefined on input line 586.
 
 
-LaTeX Warning: Citation `keeney_raiffa76' on page 5 undefined on input line 758
+
+LaTeX Warning: Citation `keeney_raiffa76' on page 4 undefined on input line 622
 .
 
 
-LaTeX Warning: Citation `bacchus_grove' on page 5 undefined on input line 758.
+LaTeX Warning: Citation `bacchus_grove' on page 4 undefined on input line 622.
 
 
-LaTeX Warning: Citation `collab_filtering' on page 5 undefined on input line 76
-7.
+LaTeX Warning: Citation `collab_filtering' on page 4 undefined on input line 63
+1.
 
-[5 <./dim_constraint_time.pdf> <./norm_unif_tree.pdf> <./norm_unif.pdf>]
 No file unifpref.bbl.
-[6
+[4] (./unifpref.aux)
 
-] (./unifpref.aux) ) 
+LaTeX Warning: There were undefined references.
+
+ ) 
 Here is how much of TeX's memory you used:
- 4339 strings out of 493311
- 58928 string characters out of 6137856
- 151307 words of memory out of 5000000
- 7692 multiletter control sequences out of 15000+600000
- 35589 words of font info for 85 fonts, out of 8000000 for 9000
+ 4288 strings out of 493311
+ 58145 string characters out of 6137856
+ 151258 words of memory out of 5000000
+ 7654 multiletter control sequences out of 15000+600000
+ 27761 words of font info for 62 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
- 38i,24n,24p,947b,347s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/base/8r
-.enc}</usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.
-pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pf
-b></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb>
-</usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
-/usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.pf
-b></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
-></usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><
-/usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></u
-sr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr
-/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/l
-ocal/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/loc
-al/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/
-texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/tex
-live/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texliv
-e/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2
-013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/20
-13/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2013
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2013/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2013/te
-xmf-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb></usr/local/texlive/2013/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/local/texlive/2013/texmf-
-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2013/te
-xmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2013/texmf-dist/f
-onts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1
-/urw/times/utmri8a.pfb>
-Output written on unifpref.pdf (6 pages, 276538 bytes).
+ 38i,15n,24p,947b,247s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
+exlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/te
+xlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/local/texl
+ive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/local/texliv
+e/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive
+/2013/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.pfb></usr/local/texl
+ive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texli
+ve/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive
+/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2
+013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/201
+3/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/local/texlive/2013/
+texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2013/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2013/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2013/texmf-di
+st/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2013/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2013/texmf-dist/fon
+ts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2013/texmf-dist/font
+s/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2013/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2013/texmf-dist/fonts/ty
+pe1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2013/texmf-dist/font
+s/type1/urw/times/utmb8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/ur
+w/times/utmr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/ut
+mri8a.pfb>
+Output written on unifpref.pdf (4 pages, 229760 bytes).
 PDF statistics:
- 146 PDF objects out of 1000 (max. 8388607)
- 104 compressed objects within 2 object streams
+ 113 PDF objects out of 1000 (max. 8388607)
+ 81 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 27 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 6 words of extra memory for PDF output out of 10000 (max. 10000000)
 

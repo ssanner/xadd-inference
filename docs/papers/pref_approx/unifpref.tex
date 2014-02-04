@@ -363,7 +363,7 @@ $P(\vec{w}|R^n)$, we would like to perform at least two types of inference:
 \end{align*}
 \item {\it Probability of preference outcomes:} 
 \begin{align*}
-P(q_{ab} | R^n) \; & = \int_\vec{w} P(q_{ab} | \vec{w}) P(\vec{w}|R^n) d\vec{w}
+P(q_{ab} | R^n) \; & = \int_\vec{w} P(q_{ab} | \vec{w}) P(\vec{w}|R^n) d\vec{w}s
 \end{align*}
 \end{itemize}
 If using likelihood form~\eqref{eq:p_qij_hat}, we note that both
@@ -535,7 +535,17 @@ We have almost all of the operations needed to perform Uniform BPPL
 inference as defined in Section~\ref{sec:bppl_inference}, except for a
 method to compute each of the integrals $\int_{w_1},\ldots,\int_{w_D}$
 w.r.t. the convex polytope constraints such as those shown in
-Figure~\ref{fig:polytope}. The objective of preference learning as in Equation \ref Details of how integration is performed in such cases are presented in \cite{sve11}. However, integration 
+Figure~\ref{fig:polytope}. Finding the maximum Expected Utility 
+that is required for preference learning can be done by performing the following steps:
+\begin{itemize}
+\item finding the posterior by symbolic multiplication of the prior and the likelihood
+\item performing symbolic integral as detailed in \cite{sve11}
+\item finding the symbolic maximum as introduced earlier
+\end{itemize}
+Even though this procedure will produce the exact solution as the number 
+of preferences increase, computing the integral becomes prohibitively hard. 
+This is mainly because as the number of instances (that will introduce constraints as
+in Figure \ref{fig:polytope}) increase, the resulting polytope becomes 
 
 - indefinite on XADD
 - traverses XADD to leaves
@@ -622,12 +632,12 @@ users in a Bayesian \emph{collaborative filtering}~\cite{collab_filtering}
 framework?
 \end{itemize}
 
-\section*{Acknowledgements}
-
-NICTA is funded by the Australian Government as represented by
-the Department of Broadband, Communications and the Digital
-Economy and the Australian Research Council through the ICT
-Centre of Excellence program.
+%\section*{Acknowledgements}
+%
+%NICTA is funded by the Australian Government as represented by
+%the Department of Broadband, Communications and the Digital
+%Economy and the Australian Research Council through the ICT
+%Centre of Excellence program.
 
 \bibliography{unifpref}
 \bibliographystyle{plain}
