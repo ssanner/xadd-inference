@@ -37,6 +37,10 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
 		// ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning instance = new ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning();
 		// instance.basicTest();
 		// instance.dummyFeasibleTest();
+
+		
+		// System.out.println(System.getProperty("java.library.path"));
+
 		ReportTrueSkillAndPolyOnSynthesizedDB instance = new ReportTrueSkillAndPolyOnSynthesizedDB();
 		instance.predictionTestOnDummyFeasibleModelUsingMetropolisAndProjection();
 	}
