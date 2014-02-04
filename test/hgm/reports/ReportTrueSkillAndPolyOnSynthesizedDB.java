@@ -165,7 +165,7 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
 						PreferenceLearningPredictor predictor = strPredictor.getSecondEntry();
 
 						long timeStampStartTrain = System.currentTimeMillis();
-
+						
 						List<Pair<String, Double>> info = predictor.learnToPredict(trainingDb);
 
 						long time5testingStart = System.currentTimeMillis();

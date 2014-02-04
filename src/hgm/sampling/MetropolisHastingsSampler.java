@@ -1,13 +1,9 @@
 package hgm.sampling;
 
-import hgm.sampling.gibbs.GibbsSampler;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
-import java.util.Hashtable;
 
 import xadd.XADD;
 import xadd.XADD.XADDNode;
@@ -18,7 +14,7 @@ public class MetropolisHastingsSampler extends Sampler {
 	private HashMap<String, Double>	_lastPoint;
 	private int						_iteration			= 0;
 	private VarAssignment			_initialSample;
-	private int						_leapSize			= 1;
+	private int						_leapSize			= 10;
 
 	public MetropolisHastingsSampler(XADD context, XADDNode root) {
 		super(context, root);
@@ -59,6 +55,7 @@ public class MetropolisHastingsSampler extends Sampler {
 		} else {
 			generateSample();
 		}
+
 		return reusableVarAssignment;
 	}
 
@@ -69,23 +66,26 @@ public class MetropolisHastingsSampler extends Sampler {
 		for (String bVar : bVars) {
 			boolAssign.put(bVar, Sampler.randomBoolean());
 		}
-		for (String cVar : cVars) {
-			Double minVarValue = context._hmMinVal.get(cVar);
-			Double maxVarValue = context._hmMaxVal.get(cVar);
-			if (maxVarValue == null)
-				throw new RuntimeException("The max of scope of var " + cVar + " is unknown");
-			if (minVarValue == null)
-				throw new RuntimeException("The min of scope of var " + cVar + " is unknown");
-			contAssign.put(cVar, Sampler.randomDoubleUniformBetween(minVarValue, maxVarValue));
-		}
+
+		do { // generate a sample that does not have zero probability
+			for (String cVar : cVars) {
+				Double minVarValue = context._hmMinVal.get(cVar);
+				Double maxVarValue = context._hmMaxVal.get(cVar);
+				if (maxVarValue == null)
+					throw new RuntimeException("The max of scope of var " + cVar + " is unknown");
+				if (minVarValue == null)
+					throw new RuntimeException("The min of scope of var " + cVar + " is unknown");
+
+				contAssign.put(cVar, Sampler.randomDoubleUniformBetween(minVarValue, maxVarValue));
+			}
+		} while (context.evaluate(rootId, null, contAssign) == null || context.evaluate(rootId, null, contAssign) == 0);
 
 		return new VarAssignment(boolAssign, contAssign);
 	}
 
 	// assumes the lastpoint is already initialized ....
 	public void generateSample() {
-		final double transitionVariance = 5.;
-		final long startTime = System.currentTimeMillis();
+		final double transitionVariance = 15.;
 
 		HashMap<String, Double> w = _lastPoint;
 		_iteration++;
@@ -99,10 +99,10 @@ public class MetropolisHastingsSampler extends Sampler {
 			if (pw == -1) {
 				pw = logProbability(w);
 			}
-			a = logRatio(pw, pwp);
-			u = Math.log(_randomGenerator.nextDouble());
-			if (a >= 0 || (a < 0 && a >= u)) {
-				w = wp;
+			a = Math.exp(logRatio(pw, pwp));
+			u = _randomGenerator.nextDouble();
+			if (a > 0 && u <= a) {
+				copyTo(wp, w);
 				_lastPoint = w;
 				pw = pwp;
 			}
@@ -110,6 +110,12 @@ public class MetropolisHastingsSampler extends Sampler {
 
 		for (String key : w.keySet()) {
 			super.reusableVarAssignment.getContinuousVarAssign().put(key, w.get(key));
+		}
+	}
+
+	private void copyTo(final HashMap<String, Double> from, HashMap<String, Double> to) {
+		for (String key : from.keySet()) {
+			to.put(key, from.get(key));
 		}
 	}
 

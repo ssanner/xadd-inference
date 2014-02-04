@@ -47,6 +47,9 @@ public class RejectionSampler extends Sampler {
 	public VarAssignment sample() throws SamplingFailureException {
 		if (super.reusableVarAssignment == null) { // (no sample is taken yet)
 			if (_initialSample == null) {
+				for (String cVar : cVars) {
+
+				}
 				super.reusableVarAssignment = MetropolisHastingsSampler.takeInitialSample(	super.context,
 																							super.rootId,
 																							super.cVars, super.bVars);// initialization phase:
@@ -81,7 +84,7 @@ public class RejectionSampler extends Sampler {
 			g = 1.0 / g; // probability
 			p = super.context.evaluate(super.rootId, null, sample);
 			u = Sampler.randomDoubleUniformBetween(0, 1);
-			if (u < p / (_M * g)) {
+			if (u < (p / (_M * g))) {
 				accepted = true;
 			}
 		} while (!accepted);
