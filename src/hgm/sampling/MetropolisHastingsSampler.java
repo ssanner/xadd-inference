@@ -85,7 +85,7 @@ public class MetropolisHastingsSampler extends Sampler {
 
 	// assumes the lastpoint is already initialized ....
 	public void generateSample() {
-		final double transitionVariance = 15.;
+		final double transitionVariance = 1.;
 
 		HashMap<String, Double> w = _lastPoint;
 		_iteration++;

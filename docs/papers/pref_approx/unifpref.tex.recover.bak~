@@ -6,8 +6,6 @@
 \usepackage{epsfig,subfigure}
 \usepackage{amsmath,amsfonts,amssymb,amsthm}
 \usepackage{array}
-\usepackage{natbib}
-\usepackage{algorithmic}
 
 
 \frenchspacing
@@ -359,13 +357,12 @@ Now that we have posterior beliefs in our utility weighting
 $P(\vec{w}|R^n)$, we would like to perform at least two types of inference:
 \begin{itemize}
 \item {\it Item with maximum expected utility:} 
-\begin{align}
-\label{eq:maxEU}
+\begin{align*}
 & \argmax_{\vec{x}} \; \E_{\vec{w}} \left[ u(\vec{x}|\vec{w}) \big| R^n \right]\\ & = \argmax_{\vec{x}} \int_{\vec{w}} P(\vec{w}|R^n) \left[ \sum_{d=1}^{D} \vec{w}_d \vec{x}_d \right] d\vec{w}
-\end{align}
+\end{align*}
 \item {\it Probability of preference outcomes:} 
 \begin{align*}
-P(q_{ab} | R^n) \; & = \int_\vec{w} P(q_{ab} | \vec{w}) P(\vec{w}|R^n) d\vec{w}s
+P(q_{ab} | R^n) \; & = \int_\vec{w} P(q_{ab} | \vec{w}) P(\vec{w}|R^n) d\vec{w}
 \end{align*}
 \end{itemize}
 If using likelihood form~\eqref{eq:p_qij_hat}, we note that both
@@ -385,8 +382,9 @@ At first, this would seem quite difficult --- the boundaries in any
 dimension in Figure~\ref{fig:polytope} may be a piecewise function of
 the other dimensions --- but on closer inspection, there is a
 systematic way to compute these integrals if given the right
-representation.  This is discussed in \cite{sve11}
+representation.  We discuss this next.
 
+\section{Symbolic Variable Elimination in Discrete/Continuous Graphical Models}
 
 In this section, we introduce a \emph{case} notation and operations
 for piecewise polynomial functions and demonstrate that all Uniform
@@ -405,8 +403,7 @@ f =
   \phi_1 & f_1 \\ 
   \vdots & \vdots \\ 
   \phi_k & f_k \\ 
-\end{cases} 
-\label{eq:case}
+\end{cases} \label{eq:case}
 \end{align}
 } Here, the $f_i$ may be \emph{polynomial} functions of $\vec{w}$ (although
 initially the functions $f_i$ will be constant or linear, we will see
@@ -533,6 +530,23 @@ later in Section~\ref{sec:xadd} will be able to exploit the internal
 decision structure of this maximization to represent it much more
 compactly.
 
+We have almost all of the operations needed to perform Uniform BPPL
+inference as defined in Section~\ref{sec:bppl_inference}, except for a
+method to compute each of the integrals $\int_{w_1},\ldots,\int_{w_D}$
+w.r.t. the convex polytope constraints such as those shown in
+Figure~\ref{fig:polytope}. The objective of preference learning as in Equation \ref Details of how integration is performed in such cases are presented in \cite{sve11}. However, integration 
+
+- indefinite on XADD
+- traverses XADD to leaves
+- each path to leaves specifies a disjoint interval given by constant [LB, UB] 
+  (can eval indef integral at two points and subtract, this is the mass of the mixture of uniforms in that interval)
+- builds a number line with mixture of uniforms (computes normalizer Z)
+- draws u ~ U(0,1) and proceeds to determine sampled value
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Extended ADDs (XADDs) for Case Statements}
 
 \label{sec:xadd}
@@ -574,62 +588,6 @@ required for inference in Section~\ref{sec:pe_model_infer} and hence
 efficiently perform the Uniform BPPL queries from
 Section~\ref{sec:bppl_inference} as we demonstrate next.
 
-
-\section{Practical Bayesian inference}
-We have almost all of the operations needed to perform Uniform BPPL
-inference as defined in Section~\ref{sec:bppl_inference}, except for a
-method to compute each of the integrals $\int_{w_1},\ldots,\int_{w_D}$
-w.r.t. the convex polytope constraints such as those shown in
-Figure~\ref{fig:polytope}. Finding the maximum Expected Utility 
-that is required for preference learning can be done by performing the following steps:
-\begin{itemize}
-\item finding the posterior by symbolic multiplication of the prior and the likelihood
-\item performing symbolic integral as detailed in \cite{sve11}
-\item finding the symbolic maximum as introduced earlier
-\end{itemize}
-Even though this procedure will produce the exact solution as the number 
-of preferences increase, computing the integral becomes prohibitively hard. 
-This is due to the fact that as the number of instances (that will introduce constraints as
-in Figure \ref{fig:polytope}) increase, the posterior becomes more complex and leads to a blow-up in the integration for calculating the posterior. As such we introduce a more efficient way to perform integration that will asymptotically converge to the true posterior computed symbolically. 
-
-
-\begin{figure}
-	\centering
-	\includegraphics[width=.5\textwidth]{fastgibbs}
-	\caption{A cartoon illustration of how the sampler works. Since the reordering of the 
-		blocks according to their probability won't change the sampler's result, we start from higher probable ones to achieve better performance.}
-\end{figure}
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{algorithm}[h]
-  \begin{algorithmic}
-    \STATE { each path to leaves specifies a disjoint interval $[$LB, UB$]$]}
-      \STATE{$u \sim U(0,1)$}
-      \FOR{ $i \to k$ }	
-      \STATE{update $Z_i$}
-      \FOR{ $j \to i$ } %\COMMENT{ sample up to jth rectangle }
-      \IF{ $i = j$ }
-      \STATE{$p_j = \frac{M_j}{Z_i}$ }
-      \ELSE
-      \STATE{$p_j = M_j(\frac{1}{Z_i} - \frac{1}{Z_{i-1}})$ }
-      \ENDIF
-      \IF{$u < p_j$}
-      \RETURN {$j$}
-      \ENDIF 
-      \STATE{$u = u-p_j$} 
-      \ENDFOR
-      \ENDFOR
-  \end{algorithmic}
-  \caption{Fast sampler for Bayesian prference learning }
-\end{algorithm}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \section{Empirical Results}
 
 
@@ -663,12 +621,12 @@ users in a Bayesian \emph{collaborative filtering}~\cite{collab_filtering}
 framework?
 \end{itemize}
 
-%\section*{Acknowledgements}
-%
-%NICTA is funded by the Australian Government as represented by
-%the Department of Broadband, Communications and the Digital
-%Economy and the Australian Research Council through the ICT
-%Centre of Excellence program.
+\section*{Acknowledgements}
+
+NICTA is funded by the Australian Government as represented by
+the Department of Broadband, Communications and the Digital
+Economy and the Australian Research Council through the ICT
+Centre of Excellence program.
 
 \bibliography{unifpref}
 \bibliographystyle{plain}

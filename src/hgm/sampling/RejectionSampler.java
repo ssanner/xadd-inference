@@ -1,5 +1,8 @@
 package hgm.sampling;
 
+import hgm.utils.Utils;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import xadd.XADD;
@@ -7,8 +10,9 @@ import xadd.XADD.XADDNode;
 
 public class RejectionSampler extends Sampler {
 
-	private VarAssignment	_initialSample;
-	private double			_M;
+	private VarAssignment			_initialSample;
+	private double					_M;
+	private HashMap<String, Double>	_lastPoint;
 
 	public RejectionSampler(XADD context, XADDNode root) {
 		super(context, root);
@@ -57,6 +61,8 @@ public class RejectionSampler extends Sampler {
 				super.reusableVarAssignment = _initialSample;
 			}
 
+			_lastPoint = (java.util.HashMap<String, Double>) reusableVarAssignment.getContinuousVarAssign().clone();
+
 			if (reusableVarAssignment.getBooleanVarAssign().size() > 0) {
 				throw new SamplingFailureException("There are boolean variables that are not handled here.");
 			}
@@ -72,7 +78,7 @@ public class RejectionSampler extends Sampler {
 		double min, max, p, u, g;
 		HashMap<String, Double> sample = new HashMap<String, Double>();
 		boolean accepted = false;
-		do {
+		for (int i = 0; i < 1000 && !accepted; i++) { // TODO: rejection is changed to have few tries
 			g = 1;
 			for (String cVar : cVars) {
 				min = context._hmMinVal.get(cVar);
@@ -87,10 +93,22 @@ public class RejectionSampler extends Sampler {
 			if (u < (p / (_M * g))) {
 				accepted = true;
 			}
-		} while (!accepted);
+		}
+
+		if (!accepted)
+			sample = _lastPoint;
+		else
+			_noAccepted++;
 
 		for (String key : sample.keySet()) {
 			super.reusableVarAssignment.getContinuousVarAssign().put(key, sample.get(key));
 		}
+	}
+
+	private int			_noAccepted	= 0;
+	private static int	counter		= 1;
+
+	public void finish() {
+		Utils.writeMat("rejection_accepted" + (counter++) + ".mat", "noAccepted", new double[] { (double) _noAccepted });
 	}
 }
