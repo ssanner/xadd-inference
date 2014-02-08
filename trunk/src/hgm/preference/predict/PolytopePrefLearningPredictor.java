@@ -81,6 +81,9 @@ public abstract class PolytopePrefLearningPredictor implements PreferenceLearnin
             Double[] cAssign = assign.getContinuousVarAssignAsArray("w");
             takenSamples.add(cAssign);
         }
+        
+        sampler.finish();
+        
         long time5samplesTaken = System.currentTimeMillis();
         info.add(new Pair<String, Double>("T:sampling", (double) time5samplesTaken - time2posteriorCalculated));
         return info;

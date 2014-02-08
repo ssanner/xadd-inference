@@ -59,4 +59,8 @@ public abstract class Sampler {
 	protected static boolean randomBoolean() {
 		return random.nextBoolean();
 	}
+
+	public void finish() {
+
+	}
 }

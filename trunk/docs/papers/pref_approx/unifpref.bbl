@@ -1,0 +1,76 @@
+\begin{thebibliography}{10}
+
+\bibitem{bacchus_grove}
+Fahiem Bacchus and Adam Grove.
+\newblock Graphical models for preference and utility.
+\newblock In {\em Uncertainty in Artificial Intelligence. Proceedings of the
+  Eleventh Conference (1995)}, pages 3--10, San Francisco, 1995. Morgan
+  Kaufmann Publishers.
+
+\bibitem{bahar93add}
+R.~Iris Bahar, Erica Frohm, Charles Gaona, Gary Hachtel, Enrico Macii, Abelardo
+  Pardo, and Fabio Somenzi.
+\newblock {A}lgebraic {D}ecision {D}iagrams and their applications.
+\newblock In {\em {IEEE} /{ACM} International Conference on {CAD}}, 1993.
+
+\bibitem{boutilier02239}
+Craig Boutilier.
+\newblock A {POMDP} formulation of preference elicitation problems.
+\newblock In {\em Eighteenth National Conference on Artificial Intelligence},
+  pages 239--246, Menlo Park, CA, USA, 2002. American Association for
+  Artificial Intelligence.
+
+\bibitem{Chajewska00utilitiesas}
+Urszula Chajewska and Daphne Koller.
+\newblock Utilities as random variables: Density estimation and structure
+  discovery.
+\newblock In {\em In UAI}, pages 63--71, 2000.
+
+\bibitem{Chajewska01learningan}
+Urszula Chajewska, Daphne Koller, and Dirk Ormoneit.
+\newblock Learning an agent's utility function by observing behavior.
+\newblock In {\em In Proc. of the 18th Int’l Conf. on Machine Learning}, pages
+  35--42, 2001.
+
+\bibitem{zoubin_gp}
+Wei Chu and Zoubin Ghahramani.
+\newblock Preference learning with gaussian processes.
+\newblock In {\em ICML}, pages 137--144, 2005.
+
+\bibitem{conitzer09161}
+Vincent Conitzer.
+\newblock Eliciting single-peaked preferences using comparison queries.
+\newblock {\em Journal of Artificial Intelligence Research}, 35:161--191, 2009.
+
+\bibitem{sanner:aistats10}
+S.~Guo and S.~Sanner.
+\newblock Real-time multiattribute {Bayesian} preference elicitation with
+  pairwise comparison queries.
+\newblock In {\em Proceedings of the 13th International Conference on
+  Artificial Intelligence and Statistics ({AISTATS}-10)}, volume~9, pages
+  289--296, Sardinia, Italy, May 13-15 2010.
+
+\bibitem{keeney_raiffa76}
+{R.L}. Keeney and H.~Raiffa.
+\newblock {\em Decisions with multiple objectives: Preferences and value
+  tradeoffs}.
+\newblock J. Wiley, New York, 1976.
+
+\bibitem{collab_filtering}
+Paul Resnick and Hal~R. Varian.
+\newblock Recommender systems.
+\newblock {\em Communications of the ACM}, 40:56--58, March 1997.
+
+\bibitem{uai11}
+Scott Sanenr, Karina~Valdivia Delgado, and Leliane~Nunes de~Barros.
+\newblock Symbolic dynamic programming for discrete and continuous state mdps.
+\newblock In {\em {UAI-2011}}, Barcelona, 2011.
+
+\bibitem{viappiani_nips}
+Paolo Viappiani and Craig Boutilier.
+\newblock Optimal bayesian recommendation sets and myopically optimal choice
+  query sets.
+\newblock In {\em Advances in Neural Information Processing Systems 23 (NIPS)}.
+  MIT press, 2010.
+
+\end{thebibliography}

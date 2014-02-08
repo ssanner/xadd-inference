@@ -387,6 +387,7 @@ the other dimensions --- but on closer inspection, there is a
 systematic way to compute these integrals if given the right
 representation.  This is discussed in \cite{sve11}
 
+\section{Symbolic Variable Elimination in Discrete/Continuous Graphical Models}
 
 In this section, we introduce a \emph{case} notation and operations
 for piecewise polynomial functions and demonstrate that all Uniform
@@ -600,31 +601,23 @@ in Figure \ref{fig:polytope}) increase, the posterior becomes more complex and l
 		blocks according to their probability won't change the sampler's result, we start from higher probable ones to achieve better performance.}
 \end{figure}
 
-% %%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{algorithm}[h]
-  \begin{algorithmic}
-    \STATE { each path to leaves specifies a disjoint interval $[$LB, UB$]$]}
-      \STATE{$u \sim U(0,1)$}
-      \FOR{ $i \to k$ }	
-      \STATE{update $Z_i$}
-      \FOR{ $j \to i$ } %\COMMENT{ sample up to jth rectangle }
-      \IF{ $i = j$ }
-      \STATE{$p_j = \frac{M_j}{Z_i}$ }
-      \ELSE
-      \STATE{$p_j = M_j(\frac{1}{Z_i} - \frac{1}{Z_{i-1}})$ }
-      \ENDIF
-      \IF{$u < p_j$}
-      \RETURN {$j$}
-      \ENDIF 
-      \STATE{$u = u-p_j$} 
-      \ENDFOR
-      \ENDFOR
-  \end{algorithmic}
-  \caption{Fast sampler for Bayesian prference learning }
+	\begin{algorithmic}
+	\STATE { each path to leaves specifies a disjoint interval $[$LB, UB$]$]}
+	\FOR{ $i \to j$ }	
+	\STATE{a}
+	\ENDFOR
+	\end{algorithmic}
+\caption{How to write algorithms}
 \end{algorithm}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+- indefinite integral on XADD
+- traverses XADD to leaves
+- each path to leaves specifies a disjoint interval given by constant [LB, UB] 
+  (can eval indef integral at two points and subtract, this is the mass of the mixture of uniforms in that interval)
+- builds a number line with mixture of uniforms (computes normalizer Z)
+- draws u ~ U(0,1) and proceeds to determine sampled value
 
 
 

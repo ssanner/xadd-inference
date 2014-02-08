@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2012)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: unifpref.aux
+The style file: plain.bst
+Database file #1: unifpref.bib
+Warning--I didn't find a database entry for "sve11"
+You've used 12 entries,
+            2118 wiz_defined-function locations,
+            584 strings with 6435 characters,
+and the built_in function-call counts, 4488 in all, are:
+= -- 451
+> -- 179
+< -- 7
++ -- 71
+- -- 58
+* -- 270
+:= -- 698
+add.period$ -- 39
+call.type$ -- 12
+change.case$ -- 64
+chr.to.int$ -- 0
+cite$ -- 12
+duplicate$ -- 206
+empty$ -- 384
+format.name$ -- 58
+if$ -- 997
+int.to.chr$ -- 0
+int.to.str$ -- 12
+missing$ -- 13
+newline$ -- 63
+num.names$ -- 24
+pop$ -- 91
+preamble$ -- 1
+purify$ -- 53
+quote$ -- 0
+skip$ -- 147
+stack$ -- 0
+substring$ -- 264
+swap$ -- 64
+text.length$ -- 7
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 46
+warning$ -- 0
+while$ -- 45
+width$ -- 14
+write$ -- 138
+(There was 1 warning)
