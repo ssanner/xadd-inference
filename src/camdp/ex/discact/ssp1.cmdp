@@ -1,0 +1,50 @@
+cvariables (x1)
+min-values (-150)
+max-values (150)
+bvariables (so)
+nvariables()
+icvariables()
+min-values()
+max-values ()
+ibvariables()
+avariables()
+
+action order ()
+x1' ([x1<50]
+	([x1 + 10])
+	([x1])
+)
+
+so' (so
+	([1.0])
+	([0.0])
+) 
+
+reward (so
+	([0.0])
+	([-8])
+)	
+
+endaction
+
+action sell ()
+x1' ([x1 - 20])
+
+so' ([1.0])
+
+reward (so
+	([0.0])
+	([x1>50]
+		([0.0])
+		([x1>0]
+			([-50 + x1])
+			([-50])
+		)
+	)
+)
+endaction
+
+discount 1.00000000
+initialState (0.0) (false)
+iterations 12
+

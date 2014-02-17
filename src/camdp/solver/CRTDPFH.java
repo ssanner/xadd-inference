@@ -1,5 +1,4 @@
 package camdp.solver;
-
 import graph.Graph;
 
 import java.io.PrintStream;
@@ -15,11 +14,13 @@ import camdp.CAMDP;
 import camdp.State;
 import camdp.CAction;
 
-public class CRTDP extends CAMDPsolver {
+public class CRTDPFH extends CAMDPsolver {
 
 	public Integer _curTrial = null;
 	public Integer _nTrials = null;
-
+	public Integer _horizon = null;
+	Integer[] _valueDDList;
+	
 	/* Static Timing Variables */
 	public static long _lTime; // For timing purposes
 	public static Runtime RUNTIME = Runtime.getRuntime();
@@ -45,29 +46,37 @@ public class CRTDP extends CAMDPsolver {
 	
 	//////////////////Methods /////////////////////////////////
 	
-	public CRTDP(CAMDP camdp){
-		initCRTDP(camdp, DEFAULT_NTRIALS);
+	public CRTDPFH(CAMDP camdp, int iter){
+		initCRTDP(camdp, DEFAULT_NTRIALS, iter);
 	}
 	
-	public CRTDP(CAMDP camdp, int nTrials){
-		initCRTDP(camdp, nTrials);
+	public CRTDPFH(CAMDP camdp, int nTrials, int iter){
+		initCRTDP(camdp, nTrials, iter);
 	}
 	
-	private void initCRTDP(CAMDP camdp, int nTrials){
+	private void initCRTDP(CAMDP camdp, int nTrials, int horizon){
 		_mdp = camdp;
 		_context = camdp._context;
-		_valueDD = _context.NEG_INF;
+		_valueDDList = new Integer[horizon+1];
 		_logStream = camdp._logStream;
 		_nTrials = nTrials;
-		_solveMethod = "CRTDP";
+		_horizon = horizon;
+		_solveMethod = "CRTDPFH";
 		makeResultStream();
 		setupSolution();
 	}
 	
+	private int getValueDD(){
+		return _valueDDList[_horizon];
+	}
+
+	private void setValueDD(int val){
+		_valueDDList[_horizon] = val;
+	}
 	////////Main Solver Class ///////////////
 	public int solve(int max_depth){
 		
-		if (MAIN_DEBUG) System.out.println("Starting CRTDP solution, Trial Max Depth = " + max_depth);
+		if (MAIN_DEBUG) System.out.println("Starting CRTDP-FH solution, Trial Max Depth = " + max_depth);
 		if (_mdp._initialS == null){
 			System.err.println("Impossible to solve Unknown Initial State MDP with RTDP!");
 			return -1;
@@ -80,8 +89,7 @@ public class CRTDP extends CAMDPsolver {
 			max_depth = _mdp._nMaxIter;
 		
 		//Initialize value function to zero assumes ZERO is admissible, need a heuristic evaluation
-		//TODO: Heuristic Function
-		_valueDD = _context.ZERO;
+		for(int i=0; i<=_horizon; i++) _valueDDList[i] = _context.ZERO;
 		_curTrial = 0;
 		
 		// Repeat Trials until convergence
@@ -91,7 +99,7 @@ public class CRTDP extends CAMDPsolver {
 			resetTimer();
 			if (MAIN_DEBUG){
 				System.out.println("Starting Trial# " + _curTrial +" with max depth = " + max_depth);
-				if (PRINT_DD) System.out.println("Initial Value DD = "+_valueDD+" DD:"+_context.getString(_valueDD));
+				if (PRINT_DD) System.out.println("Initial Value DD = "+getValueDD()+" DD:"+_context.getString(getValueDD()));
 				_logStream.println(ASCII_BAR + "\nTRIAL #" + _curTrial + ", " + 
 						_mdp.MemDisplay() + " bytes, " + getElapsedTime() + " ms\n" + ASCII_BAR);
 						_logStream.flush();
@@ -99,46 +107,46 @@ public class CRTDP extends CAMDPsolver {
 			
 
 			// Save Previous diagram
-			prevDD = _valueDD;
+//			prevDD = getValueDD();
 			
 			//Perform Trial
 			makeTrial(_mdp._initialS, max_depth);
 
 			if (MAIN_DEBUG){
 				System.out.println("Trial:" + _curTrial+" Complete");
-				if (PRINT_DD) System.out.println("Value after Trial = "+_valueDD+" DD:" + _context.getString(_valueDD));
-				_logStream.println("Trial complete:" + _curTrial + _context.getString(_valueDD));
+				if (PRINT_DD) System.out.println("Value after Trial = "+getValueDD()+" DD:" + _context.getString(getValueDD()));
+				_logStream.println("Trial complete:" + _curTrial + _context.getString(getValueDD()));
 				//if (PLOT_DD) 
-				_mdp.doDisplay(_valueDD,makeXADDLabel("V",_curTrial, max_depth, APPROX_ERROR));
+				_mdp.doDisplay(getValueDD(),makeXADDLabel("V",_curTrial, _horizon, APPROX_ERROR));
 			}
 			//Optional post-max approximation - Could be used safely if overall error is being monitored 
-			_valueDD = checkLinearAndApprox(_valueDD);
-			checkCanon(_valueDD);
-			approxValueDD();
+//			_valueDD = checkLinearAndApprox(_valueDD);
+//			checkCanon(_valueDD);
+//			approxValueDD();
 			flushCaches();
 			
 			if (MAIN_DEBUG){
-				if (PRINT_DD) System.out.println("Value after CheckLinear, Canon & Prune = "+_valueDD+" DD:" + _context.getString(_valueDD));
+				if (PRINT_DD) System.out.println("Value after CheckLinear, Canon & Prune = "+getValueDD()+" DD:" + _context.getString(getValueDD()));
 			}
 			//////////////////////////////////////////////////////////////////////////
 			// Value iteration statistics
 			if (solutionDDList.size() != _curTrial){
 				System.err.println("Wrong Result Storage");
 			}
-			solutionDDList.add(_valueDD);
+			solutionDDList.add(getValueDD());
 			solutionTimeList.add(getElapsedTime());
-			solutionNodeList.add(_context.getNodeCount(_valueDD));
-			solutionInitialSValueList.add(_context.evaluate(_valueDD, _mdp._initialS._hmBoolVars, _mdp._initialS._hmContVars));
+			solutionNodeList.add(_context.getNodeCount(getValueDD()));
+			solutionInitialSValueList.add(_context.evaluate(getValueDD(), _mdp._initialS._hmBoolVars, _mdp._initialS._hmContVars));
 			
 			if (PRINT_RESULTS) printResults();
 
-			if (_mdp.LINEAR_PROBLEM) solutionMaxValueList.add(_context.linMaxVal(_valueDD));
+			if (_mdp.LINEAR_PROBLEM) solutionMaxValueList.add(_context.linMaxVal(getValueDD()));
 			
-			if (prevDD.equals(_valueDD) ) {
-				if (MAIN_DEBUG) System.out.println("! CRTDP: Converged to solution early, in Trial "+_curTrial);
-				_nTrials = _curTrial;
-				solConverge = true;
-			}		
+//			if (prevDD.equals(getValueDD()) ) {
+//				if (MAIN_DEBUG) System.out.println("! CRTDP: Converged to solution early, in Trial "+_curTrial);
+//				_nTrials = _curTrial;
+//				solConverge = true;
+//			}		
 		}
 		flushCaches();	
 
@@ -158,7 +166,7 @@ public class CRTDP extends CAMDPsolver {
 	}
 
 	public void printResults() {
-		System.out.println("Results for CRTDP: " + (solutionTimeList.size()-1) + " trials:");
+		System.out.println("Results for CRTDP-FH: " + (solutionTimeList.size()-1) + " trials:");
 		System.out.print("Time:"); printList( solutionTimeList, System.out); System.out.println(";");
 		System.out.print("Nodes:"); printList( solutionNodeList, System.out); System.out.println(";");
 		System.out.print("Initial S Value:"); printList( solutionInitialSValueList, System.out); System.out.println(";");
@@ -168,32 +176,33 @@ public class CRTDP extends CAMDPsolver {
 		for(int i=1; i<l.size(); i++) out.print(" "+l.get(i));
 	}
 
-	private void approxValueDD() {
-		if (APPROX_PRUNING) {
-			long appTime = getElapsedTime();
-			_valueDD = _context.linPruneRel(_valueDD, APPROX_ERROR);
-			long pruneTime = getElapsedTime() - appTime;
-			System.out.println("ApproxResult: Trial "+ _curTrial+ " Solve time = "+appTime+ ", Prune time = "+pruneTime);
-		}
-	}
-	private Integer checkLinearAndApprox(Integer maxDD) {
-		if ( _mdp.LINEAR_PROBLEM && APPROX_ALWAYS)
-			maxDD = _context.linPruneRel(maxDD, APPROX_ERROR);
-		return maxDD;
-	}
+//	private void approxValueDD() {
+//		if (APPROX_PRUNING) {
+//			long appTime = getElapsedTime();
+//			_valueDD = _context.linPruneRel(_valueDD, APPROX_ERROR);
+//			long pruneTime = getElapsedTime() - appTime;
+//			System.out.println("ApproxResult: Trial "+ _curTrial+ " Solve time = "+appTime+ ", Prune time = "+pruneTime);
+//		}
+//	}
+	
+//	private Integer checkLinearAndApprox(Integer maxDD) {
+//		if ( _mdp.LINEAR_PROBLEM && APPROX_ALWAYS)
+//			maxDD = _context.linPruneRel(maxDD, APPROX_ERROR);
+//		return maxDD;
+//	}
 
-	private Integer checkCanon(Integer maxDD) {
-		// Error checking and logging
-		int canon_max_dd = _context.makeCanonical(maxDD);
-		if (maxDD != canon_max_dd) {
-			System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical... could be rounding, continuing.");
-			_context.exportXADDToFile(maxDD, "ERRORdiagram1OriginalXADD.xadd");
-			_context.exportXADDToFile(canon_max_dd, "ERRORdiagram2makeCanonical.xadd");
-			_context.getGraph(maxDD).launchViewer("ERROR diagram 1: original maxDD");
-			_context.getGraph(canon_max_dd).launchViewer("ERROR diagram 2: makeCanonical(maxDD)");
-		}
-		return maxDD;
-	}
+//	private Integer checkCanon(Integer maxDD) {
+//		// Error checking and logging
+//		int canon_max_dd = _context.makeCanonical(maxDD);
+//		if (maxDD != canon_max_dd) {
+//			System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical... could be rounding, continuing.");
+//			_context.exportXADDToFile(maxDD, "ERRORdiagram1OriginalXADD.xadd");
+//			_context.exportXADDToFile(canon_max_dd, "ERRORdiagram2makeCanonical.xadd");
+//			_context.getGraph(maxDD).launchViewer("ERROR diagram 1: original maxDD");
+//			_context.getGraph(canon_max_dd).launchViewer("ERROR diagram 2: makeCanonical(maxDD)");
+//		}
+//		return maxDD;
+//	}
 
 	private void makeTrial(State currentS, int depth){
 		while (depth > 0){
@@ -201,10 +210,10 @@ public class CRTDP extends CAMDPsolver {
 			long iniT = getElapsedTime();
 			if (DEBUG_TRIAL){
 				System.out.println("Trial #"+_curTrial+", depth ="+depth+", "+ currentS.toString());	
-				System.out.println("State Value = "+ _context.evaluate(_valueDD, currentS._hmBoolVars, currentS._hmContVars) );
-				if (PRINT_DD) System.out.println("Initial Value = "+_valueDD+" DD:\n"+ _context.getExistNode(_valueDD) +"\n");
+				System.out.println("State Value = "+ _context.evaluate(_valueDDList[depth], currentS._hmBoolVars, currentS._hmContVars) );
+				if (PRINT_DD) System.out.println("Initial Value = "+_valueDDList[depth]+" DD:\n"+ _context.getExistNode(_valueDDList[depth]) +"\n");
 			}
-			ParametrizedAction greedyAction = regionBellmanBackup(currentS);
+			ParametrizedAction greedyAction = regionBellmanBackup(currentS, depth);
 			long backupT = getElapsedTime();
 			if (DEBUG_TRIAL) System.out.println("Trial #"+_curTrial+" backup took = "+(backupT-iniT));	
 			//Using greedy action, sample next state
@@ -214,9 +223,9 @@ public class CRTDP extends CAMDPsolver {
 			if (DEBUG_TRIAL){
 				System.out.println("Trial #"+_curTrial+" sample took = "+(sampleT-backupT));
 				System.out.println("State After Sample = "+nextS);
-				System.out.println("New State Value = "+ _context.evaluate(_valueDD, currentS._hmBoolVars, currentS._hmContVars) +"\n" );
-				if (PRINT_DD) System.out.println("Value After Backup = "+ _valueDD +" DD:\n"+ _context.getExistNode(_valueDD) +"\n");
-				if (PLOT_DD) _mdp.doDisplay(_valueDD,makeXADDLabel("V", _curTrial, depth, APPROX_ERROR));
+				System.out.println("New State Value = "+ _context.evaluate(_valueDDList[depth], currentS._hmBoolVars, currentS._hmContVars) +"\n" );
+				if (PRINT_DD) System.out.println("Value After Backup = "+ _valueDDList[depth] +" DD:\n"+ _context.getExistNode(_valueDDList[depth]) +"\n");
+				if (PLOT_DD) _mdp.doDisplay(_valueDDList[depth],makeXADDLabel("V", _curTrial, depth, APPROX_ERROR));
 			}
 			currentS = nextS;
 			depth = depth - 1;
@@ -267,7 +276,7 @@ public class CRTDP extends CAMDPsolver {
 //	}
 	}
 	
-	public ParametrizedAction  regionBellmanBackup(State currS){
+	public ParametrizedAction  regionBellmanBackup(State currS, int h){
 		//		 Iterate over each action
 		Integer maxDD = null;
 		CAction maxAction = null;
@@ -276,13 +285,13 @@ public class CRTDP extends CAMDPsolver {
 		
 		if (BELLMAN_DEBUG){
 			System.out.println("Bellman Backup Start: "+currS);
-			if (PRINT_DD) System.out.println("Original ValueDD = "+_valueDD+"DD:\n"+ _context.getExistNode(_valueDD));
+			if (PRINT_DD) System.out.println("Original ValueDD = "+getValueDD()+"DD:\n"+ _context.getExistNode(getValueDD()));
 		}
 		
 		for (Map.Entry<String,CAction> me : _mdp._hmName2Action.entrySet()) {
 				// Regress the current value function through each action (finite number of continuous actions)
 				
-				int regr = regressRegion(_valueDD, me.getValue(), currS);
+				int regr = regressRegion(me.getValue(), currS, h);
 				if (regr != _context.reduceRound(regr) ) System.out.println("Still Rouding issues on Regress!"); // Round!
 				regr = _context.reduceLP(regr);
 				
@@ -308,16 +317,16 @@ public class CRTDP extends CAMDPsolver {
 		}
 
 		//Min out Ilegal +Inf values, these will be non update regions
-		_valueDD = _context.apply(maxDD, _valueDD, XADD.MIN);
+		_valueDDList[h] = _context.apply(maxDD, _valueDDList[h], XADD.MIN);
 		if (BELLMAN_DEBUG){
-			if (PRINT_DD) System.out.println("\n New Vfun Before Reduce ="+_valueDD+" DD:\n" + _context.getExistNode(_valueDD));
+			if (PRINT_DD) System.out.println("\n New Vfun Before Reduce ="+_valueDDList[h]+" DD:\n" + _context.getExistNode(_valueDDList[h]));
 		}
-		_valueDD = _context.reduceLP(_valueDD); // Rely on flag XADD.CHECK_REDUNDANCY 
+		_valueDDList[h] = _context.reduceLP(_valueDDList[h]); // Rely on flag XADD.CHECK_REDUNDANCY 
 		
 		ParametrizedAction pA = new ParametrizedAction(maxAction, maxParam);
 		if (BELLMAN_DEBUG){
 			System.out.println("\nBackup End, Greedy Action: " + pA + " Greedy Value:" + currSValue +"\n");
-			if (PRINT_DD) System.out.println("New vfun ="+_valueDD +" DD:\n" + _context.getExistNode(_valueDD));
+			if (PRINT_DD) System.out.println("New vfun ="+_valueDDList[h] +" DD:\n" + _context.getExistNode(_valueDDList[h]));
 		}
 		return pA;
 	}
@@ -327,16 +336,16 @@ public class CRTDP extends CAMDPsolver {
 	 **/
 	private IntTriple _contRegrKey = new IntTriple(-1,-1,-1);
 
-	public int regressRegion(int vfun, CAction a, State currS) {
+	public int regressRegion(CAction a, State currS, int depth) {
 		_logStream.println("\n>>> REGRESSING '" + a._sName);
 		
 		// Prime the value function 
-		int q = _context.substitute(vfun, _mdp._hmPrimeSubs); 
+		int q = _context.substitute(_valueDDList[depth-1], _mdp._hmPrimeSubs); 
 		_logStream.println("- Primed value function:\n" + _context.getString(q));
 		
 		if (REGRESS_DEBUG){
-			System.out.println("Regressing: "+vfun+" at " +currS+" with "+a._sName);
-			if (PLOT_DD) _mdp.doDisplay(vfun, makeXADDLabel("Qstart-"+a._sName, _curTrial, 0, APPROX_ERROR));
+			System.out.println("Regressing: "+_valueDDList[depth-1]+" at " +currS+" with "+a._sName);
+			if (PLOT_DD) _mdp.doDisplay(_valueDDList[depth-1], makeXADDLabel("Qstart-"+a._sName, _curTrial, depth-1, APPROX_ERROR));
 		}
 		
 		// Discount
@@ -381,7 +390,7 @@ public class CRTDP extends CAMDPsolver {
 				
 		// Optional Display With just State, Action and Noise Vars
 		if (REGRESS_DEBUG){
-			System.out.println("Qfunction after removing NS = "+q+"DD:\n"+_context.getString(q));
+			System.out.println("Qfunction after removing NS = "+q+" DD:\n"+_context.getString(q));
 			_logStream.println("- Q^" + "(" + a._sName + ", " + a._actionParams + " )\n" + _context.getString(q));
 			if (PLOT_DD) _mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "^" + _curTrial + "-" + Math.round(1000*APPROX_ERROR));
 		}
@@ -676,9 +685,22 @@ public class CRTDP extends CAMDPsolver {
 		return newS;
 	}
 	
+	public void flushCaches(){
+		flushCaches(new ArrayList<Integer>());
+	}
+	public void flushCaches(List<Integer> specialNodes){
+		ArrayList<Integer> moreSpecialNodes = new ArrayList<Integer>();
+		moreSpecialNodes.addAll(specialNodes);
+		moreSpecialNodes.add(_valueDD);
+		for(int i=1;i<solutionDDList.size();i++) moreSpecialNodes.add(solutionDDList.get(i));
+		for(int i=0;i<=_horizon;i++) moreSpecialNodes.add(_valueDDList[i]);
+		_mdp.flushCaches(moreSpecialNodes);
+	}
+	
     public String makeXADDLabel(String xadd, int trial, int depth, double approx)
 	{
 		return  xadd+" Trial"+trial+" Depth "+depth+(approx > 0? "-approx"+String.format("%03d",Math.round(1000*approx)): "");
 	}
+
 	
 }

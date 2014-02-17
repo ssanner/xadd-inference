@@ -1,0 +1,129 @@
+ cvariables (x1 x2)
+min-values (-150 -150)
+max-values (150 150)
+bvariables (so1 so2)
+nvariables()
+icvariables()
+min-values()
+max-values ()
+ibvariables()
+avariables()
+
+action order1 ()
+x1' ([x1<50]
+	([x1 + 20])
+	([x1])
+)
+
+x2' ([x2])
+
+so1' (so1
+	([1.0])
+	([0.0])
+) 
+
+so2' (so2
+	([1.0])
+	([0.0])
+) 
+
+reward (so1
+	([0.0])
+	([-8])
+)
++
+(so2
+	([0.0])
+	([-4])
+)
+endaction
+
+action order2 ()
+x1' ([x1])
+
+x2' ([x2<50]
+	([x2 + 20])
+	([x2])
+)
+
+so1' (so1
+	([1.0])
+	([0.0])
+) 
+
+so2' (so2
+	([1.0])
+	([0.0])
+) 
+
+reward (so1
+	([0.0])
+	([-8])
+)
++
+(so2
+	([0.0])
+	([-4])
+)
+endaction
+
+
+action sell1 ()
+x1' ([x1 - 40])
+
+x2' ([x2])
+
+so1' ([1.0])
+
+so2' (so2
+	([1.0])
+	([0.0])
+) 
+reward (so1
+	([0.0])
+	([x1>50]
+		([0.0])
+		([x1>0]
+			([-50 + x1])
+			([-50])
+		)
+	)
+)+
+(so2
+	([0.0])
+	([-4])
+)
+endaction
+
+action sell2 ()
+x1' ([x1])
+
+x2' ([x2 - 40])
+
+so1' (so1
+	([1.0])
+	([0.0])
+)
+
+so2' ([1.0])
+ 
+reward (so2
+	([0.0])
+	([x2>50]
+		([0.0])
+		([x2>0]
+			([-50 + x2])
+			([-50])
+		)
+	)
+)+
+(so1
+	([0.0])
+	([-8])
+)
+endaction
+
+discount 1.00000000
+initialState (0.0 0.0) (false false)
+iterations 12
+

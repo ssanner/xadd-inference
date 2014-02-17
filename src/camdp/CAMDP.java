@@ -43,9 +43,9 @@ public class CAMDP {
     private static final boolean SILENT_PLOT = true;
 
     //Prune and Linear Flags
-    public static boolean LINEAR_PROBLEM = true;
-    public static boolean CONTINUOUS_ACTIONS = true;
-    public static boolean APPROX_PRUNING = true;
+    public boolean LINEAR_PROBLEM = true;
+    public boolean CONTINUOUS_ACTIONS = true;
+    public boolean APPROX_PRUNING = true;
     public double APPROX_ERROR = 0.0d;
     public boolean APPROX_ALWAYS = false;
     public boolean COMPARE_OPTIMAL = false;
@@ -55,8 +55,9 @@ public class CAMDP {
     public int GLOBAL_UB = 9;
 
     //Optimal solution maintenance
-    public static ArrayList<Integer> optimalDD = new ArrayList<Integer>();
-    public static double[] optimalMaxValues = new double[MAXIMUM_ITER];
+    public Integer optimalHorizon;
+    public ArrayList<Integer> optimalDDList = new ArrayList<Integer>();
+    public ArrayList<Double> optimalMaxValueList = new ArrayList<Double>();
 
     /* Maintain an explicit policy? */
     public final static boolean MAINTAIN_POLICY = false;
@@ -302,15 +303,15 @@ public class CAMDP {
             double maxRelErr = 0d;
             if (LINEAR_PROBLEM) {
                 maxVal = _context.linMaxVal(_valueDD);
-                optimalMaxValues[_nCurIter - 1] = maxVal;
+                optimalMaxValueList.add(maxVal);
                 if (COMPARE_OPTIMAL) {
                     if (APPROX_ERROR == 0d) { //Exact solution
-                        if (optimalDD.size() != _nCurIter - 1)
-                            System.err.println("Incorrect optimalDD:" + optimalDD + " " + _nCurIter);
-                        optimalDD.add(_valueDD);
+                        if (optimalDDList.size() != _nCurIter - 1)
+                            System.err.println("Incorrect optimalDD:" + optimalDDList + " " + _nCurIter);
+                        optimalDDList.add(_valueDD);
                     }
-                    if (optimalDD.size() > _nCurIter - 1) {
-                        maxRelErr = (_context.linMaxDiff(optimalDD.get(_nCurIter - 1), _valueDD)) / optimalMaxValues[_nCurIter - 1];
+                    if (optimalDDList.size() > _nCurIter - 1) {
+                        maxRelErr = (_context.linMaxDiff(optimalDDList.get(_nCurIter - 1), _valueDD)) / optimalMaxValueList.get(_nCurIter);
                     } else maxRelErr = -1;
                 }
             }
@@ -331,8 +332,8 @@ public class CAMDP {
                 System.out.println("CAMDP: Converged to solution early,  at iteration " + _nCurIter);
                 int it = _nCurIter;
                 while (++it < max_iter) {
-                    optimalMaxValues[it] = optimalMaxValues[_nCurIter];
-                    optimalDD.add(_valueDD);
+                    optimalMaxValueList.add(optimalMaxValueList.get(_nCurIter));
+                    optimalDDList.add(_valueDD);
                     _testLogStream.format("%d %d %d %d %d %d %d %f %f\n", it, num_nodes[_nCurIter], num_leaves[_nCurIter],
                             num_branches[_nCurIter], usedMem(),
                             time[_nCurIter], totalTime,
@@ -421,8 +422,8 @@ public class CAMDP {
         if (_valueDD != null && !forceFlush) {
             _context.addSpecialNode(_valueDD);
         }
-        if (optimalDD != null) //keep even at forceFlush, because we want to measure the error
-            _context._hsSpecialNodes.addAll(optimalDD);
+        if (optimalDDList != null && optimalDDList.size()>1) //keep even at forceFlush, because we want to measure the error
+            _context._hsSpecialNodes.addAll(optimalDDList.subList(1, optimalDDList.size()-1));
         _context.flushCaches();
 
         _logStream.println("After flush: " + _context._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " +
