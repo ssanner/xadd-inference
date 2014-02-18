@@ -31,7 +31,7 @@ public class CRTDP extends CAMDPsolver {
 	/* Debugging Flags */
 	
 	//Local flags:
-	private static final boolean MAIN_DEBUG = false;
+	private static final boolean MAIN_DEBUG = true;
 	private static final boolean DEBUG_TRIAL = false;
 	private static final boolean BELLMAN_DEBUG = false;
 	private static final boolean REGRESS_DEBUG = false;
@@ -39,7 +39,7 @@ public class CRTDP extends CAMDPsolver {
 	private static final boolean PRINT_RESULTS = false;
 	
 	//Debug Format flags
-	private static final boolean PLOT_DD = false;
+	private static final boolean PLOT_DD = true;
 	private static final boolean PRINT_DD = false;
 	private static final boolean PRINT_MESSAGES = false;
 	
