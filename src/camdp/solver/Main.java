@@ -17,7 +17,7 @@ public class Main {
 	//Running Configurations
 	private static int VERBOSE = 1;
     private static int SOLUTION = 3; // 1 -> Value Iteration 2-> RTDP 3-> Vi first, then RTDP 4-> RTDPFH
-    private static int NTRIALS = 10; // For RTDP and RTDPFH solution
+    private static int NTRIALS = 9; // For RTDP and RTDPFH solution
     
     // Results Configurations
     private static final boolean SAVE_RESULTS = true;
