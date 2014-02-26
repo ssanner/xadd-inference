@@ -1,6 +1,6 @@
 package hgm.sampling.gibbs;
 
-import hgm.sampling.Sampler1111;
+import hgm.sampling.SamplerInterface;
 import hgm.sampling.XaddSampler;
 import hgm.sampling.VarAssignment;
 import hgm.utils.vis.XaddVisualizer;
@@ -97,7 +97,7 @@ public class GibbsSamplerTest {
                 a, b, (a + b + c) / 3.0, (a*a + b*b + c*c -a*b -a*c -b*c)/18.0, epsilon);
     }
 
-    public static void testStatistics(String varName, int numSamples, Sampler1111 sampler,
+    public static void testStatistics(String varName, int numSamples, SamplerInterface sampler,
                                 double min, double max, double mean, double variance, double epsilon) {
         //actual...
         double aMin = Double.POSITIVE_INFINITY;
