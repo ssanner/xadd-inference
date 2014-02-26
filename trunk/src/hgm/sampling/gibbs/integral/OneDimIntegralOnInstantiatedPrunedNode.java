@@ -22,7 +22,7 @@ public class OneDimIntegralOnInstantiatedPrunedNode {
         this.context = context;
     }
 
-    public Piecewise1DPolynomial integrate(XADD.XADDNode node) {
+    public Piecewise1DPolynomialUsingArithExpr integrate(XADD.XADDNode node) {
         HashSet<String> vars = node.collectVars();
         if (vars.size() != 1) throw new RuntimeException("For now only one var.... for node: " + node);
         String var = vars.iterator().next();
@@ -83,9 +83,9 @@ public class OneDimIntegralOnInstantiatedPrunedNode {
 
     }
 
-    private Piecewise1DPolynomial integral(List<IntervalPolynomial> piecewisePolynomial, String var) {
+    private Piecewise1DPolynomialUsingArithExpr integral(List<IntervalPolynomial> piecewisePolynomial, String var) {
 //        System.out.println("piecewisePolynomial = " + piecewisePolynomial);
-        Piecewise1DPolynomial result = new Piecewise1DPolynomial(var);
+        Piecewise1DPolynomialUsingArithExpr result = new Piecewise1DPolynomialUsingArithExpr(var);
         HashMap<String, Double> assign = new HashMap<String, Double>(1);
         double runningSum = 0.0d;
         for (IntervalPolynomial intervalPoly : piecewisePolynomial) {

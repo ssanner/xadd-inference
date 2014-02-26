@@ -4,11 +4,9 @@ import hgm.asve.Pair;
 import hgm.preference.Choice;
 import hgm.preference.PreferenceLearning;
 import hgm.preference.db.PreferenceDatabase;
-import hgm.preference.predict.PreferenceLearningPredictor;
-import hgm.sampling.Sampler;
+import hgm.sampling.XaddSampler;
 import hgm.sampling.SamplingFailureException;
 import hgm.sampling.VarAssignment;
-import hgm.sampling.gibbs.GibbsSamplerWithCDFsPerSample;
 import xadd.XADD;
 
 import java.util.ArrayList;
@@ -64,7 +62,7 @@ public abstract class PolytopePrefLearningPredictor implements PreferenceLearnin
 
         //extra reduction phase.... long time3posteriorReduced = System.currentTimeMillis();
 
-        Sampler sampler = makeNewSampler(context, posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
+        XaddSampler sampler = makeNewSampler(context, posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
 
         takenSamples = new ArrayList<Double[]>(numberOfSamples);
 
@@ -82,14 +80,14 @@ public abstract class PolytopePrefLearningPredictor implements PreferenceLearnin
             takenSamples.add(cAssign);
         }
         
-        sampler.finish();
+//        sampler.finish();
         
         long time5samplesTaken = System.currentTimeMillis();
         info.add(new Pair<String, Double>("T:sampling", (double) time5samplesTaken - time2posteriorCalculated));
         return info;
     }
 
-    public abstract Sampler makeNewSampler(XADD context, XADD.XADDNode posterior, VarAssignment assignment);
+    public abstract XaddSampler makeNewSampler(XADD context, XADD.XADDNode posterior, VarAssignment assignment);
 
     @Override
     public Choice predictPreferenceChoice(Double[] a, Double[] b) {

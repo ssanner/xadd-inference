@@ -1,8 +1,8 @@
 package hgm.sampling.gibbs;
 
-import hgm.sampling.Sampler;
+import hgm.sampling.XaddSampler;
 import hgm.sampling.VarAssignment;
-import hgm.sampling.gibbs.integral.Piecewise1DPolynomial;
+import hgm.sampling.gibbs.integral.Piecewise1DPolynomialUsingArithExpr;
 import hgm.utils.vis.XaddVisualizer;
 import junit.framework.Assert;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class GibbsSamplerWithCDFsPerSampleTest {
         XADD.XADDNode uniform = context._hmInt2Node.get(uId);
         fixVarLimits(context, uniform, -50d, 50d);
 
-        Sampler sampler = new GibbsSamplerWithCDFsPerSample(context, uniform);
+        XaddSampler sampler = new GibbsSamplerWithCDFsPerSample(context, uniform);
 
         testStatistics("x", numSamples, sampler,
                 min, max, (min + max) / 2.0, Math.pow(max - min, 2) / 12.0, epsilon);
@@ -63,7 +63,7 @@ public class GibbsSamplerWithCDFsPerSampleTest {
         int triangularId = context.buildCanonicalXADDFromString("([T(x, " + c + ", " + (c-a) + ", " + (b-c) + ")])");
         XADD.XADDNode triangular = context._hmInt2Node.get(triangularId);
         fixVarLimits(context, triangular, -100d, 100d);
-        Sampler sampler = new GibbsSamplerWithCDFsPerSample(context, triangular);
+        XaddSampler sampler = new GibbsSamplerWithCDFsPerSample(context, triangular);
 
         testStatistics("x", numSamples, sampler,
                 a, b, (a + b + c) / 3.0, (a*a + b*b + c*c -a*b -a*c -b*c)/18.0, epsilon);
@@ -96,7 +96,7 @@ public class GibbsSamplerWithCDFsPerSampleTest {
         fixVarLimits(context, func, -40d, 20d);
         XaddVisualizer.visualize(func, "func", context);
 
-        Sampler sampler = new GibbsSamplerWithCDFsPerSample(context, func);
+        XaddSampler sampler = new GibbsSamplerWithCDFsPerSample(context, func);
         // the projection of the distribution on the Y axis is a triangular distribution:
         double c=0;
         testStatistics("y", numSamples, sampler,
@@ -104,7 +104,7 @@ public class GibbsSamplerWithCDFsPerSampleTest {
         System.out.println("context._alOrder.size() = " + context._alOrder.size());
     }
 
-    private void testStatistics(String varName, int numSamples, Sampler sampler,
+    private void testStatistics(String varName, int numSamples, XaddSampler sampler,
                                 double min, double max, double mean, double variance, double epsilon) {
         //actual...
         double aMin = Double.POSITIVE_INFINITY;
@@ -155,7 +155,7 @@ public class GibbsSamplerWithCDFsPerSampleTest {
 
         GibbsSamplerWithCDFsPerSample gs = new GibbsSamplerWithCDFsPerSample(context, root);
 
-        Piecewise1DPolynomial cdf = gs.makeCumulativeDistributionFunction(root, "x", new VarAssignment(new HashMap<String, Boolean>(), new HashMap<String, Double>()));
+        Piecewise1DPolynomialUsingArithExpr cdf = gs.makeCumulativeDistributionFunction(root, "x", new VarAssignment(new HashMap<String, Boolean>(), new HashMap<String, Double>()));
         System.out.println("cdf = " + cdf);
 
         //todo... visualize...
@@ -178,7 +178,7 @@ public class GibbsSamplerWithCDFsPerSampleTest {
 //        context.getGraph(rootId).launchViewer("test");
 //        XaddVisualizer.visualize(root, "test", context);
 
-        Sampler sampler = new GibbsSamplerWithCDFsPerSample(context, root);
+        XaddSampler sampler = new GibbsSamplerWithCDFsPerSample(context, root);
         double t = tTest1D("x", sampler, numSamples, originMean, originVariance);
         System.out.println("t = " + t);
 
@@ -195,7 +195,7 @@ public class GibbsSamplerWithCDFsPerSampleTest {
 //        Assert.assertTrue(Math.abs(average - 10.0) < 0.3);
     }
 
-    private double tTest1D(String varName, Sampler sampler, int numSamples,
+    private double tTest1D(String varName, XaddSampler sampler, int numSamples,
                            double expectedMean, double expectedVariance) {
         double sum = 0.0;
 //        double min = Double.POSITIVE_INFINITY;
@@ -225,7 +225,7 @@ public class GibbsSamplerWithCDFsPerSampleTest {
         context.getGraph(rootId).launchViewer("test");
         XaddVisualizer.visualize(root, "test", context);
 
-        Sampler sampler = new GibbsSamplerWithCDFsPerSample(context, root);
+        XaddSampler sampler = new GibbsSamplerWithCDFsPerSample(context, root);
         for (int i = 0; i < 50; i++) {
             VarAssignment assign = sampler.sample();
             System.out.println("t = " + assign);

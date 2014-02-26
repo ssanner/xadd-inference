@@ -8,7 +8,7 @@ import java.util.HashMap;
 import xadd.XADD;
 import xadd.XADD.XADDNode;
 
-public class RejectionSampler extends Sampler {
+public class RejectionSampler extends XaddSampler {
 
 	private VarAssignment			_initialSample;
 	private double					_M;
@@ -83,13 +83,13 @@ public class RejectionSampler extends Sampler {
 			for (String cVar : cVars) {
 				min = context._hmMinVal.get(cVar);
 				max = context._hmMaxVal.get(cVar);
-				sample.put(cVar, Sampler.randomDoubleUniformBetween(min, max));
+				sample.put(cVar, XaddSampler.randomDoubleUniformBetween(min, max));
 				g = (max - min) * g;
 			}
 
 			g = 1.0 / g; // probability
 			p = super.context.evaluate(super.rootId, null, sample);
-			u = Sampler.randomDoubleUniformBetween(0, 1);
+			u = XaddSampler.randomDoubleUniformBetween(0, 1);
 			if (u < (p / (_M * g))) {
 				accepted = true;
 			}

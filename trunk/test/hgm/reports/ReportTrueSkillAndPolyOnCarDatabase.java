@@ -8,7 +8,7 @@ import hgm.preference.db.PartialPreferenceDatabase;
 import hgm.preference.db.PreferenceDatabase;
 import hgm.preference.db.ShuffledPreferenceDatabase;
 import hgm.preference.db.car.CarPreferenceDatabase;
-import hgm.sampling.Sampler;
+import hgm.sampling.XaddSampler;
 import hgm.sampling.VarAssignment;
 import hgm.sampling.gibbs.GibbsSamplerWithCDFsPerSample;
 import tskill.jskills.trueskill.TwoTeamTrueSkillCalculator;
@@ -150,7 +150,7 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
             long time3posteriorReduced = System.currentTimeMillis();
 
 
-            Sampler sampler = new GibbsSamplerWithCDFsPerSample(context, posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
+            XaddSampler sampler = new GibbsSamplerWithCDFsPerSample(context, posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
 //                long time4samplerInitialized = System.currentTimeMillis();
 
             // now that the first 'numConstraints' preferences are used to make the posterior W we calculate the probability of the next preference....

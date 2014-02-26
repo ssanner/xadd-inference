@@ -1,6 +1,6 @@
 package hgm.sampling.gibbs.report;
 
-import hgm.sampling.Sampler;
+import hgm.sampling.XaddSampler;
 import hgm.sampling.VarAssignment;
 import hgm.sampling.gibbs.GibbsSampler;
 import hgm.utils.vis.XaddVisualizer;
@@ -101,7 +101,7 @@ public class ReportSamplingResults {
         sample2DToMatlabFile("x", "y", numSamples, sampler);
     }
 
-    private void sample2DToMatlabFile(String var1, String var2, int numSamples, Sampler sampler) throws FileNotFoundException {
+    private void sample2DToMatlabFile(String var1, String var2, int numSamples, XaddSampler sampler) throws FileNotFoundException {
         PrintStream ps;
         ps = new PrintStream(new FileOutputStream(SCATTER_2D_FILENAME));
 
