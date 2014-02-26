@@ -1,6 +1,6 @@
 package hgm.preference.predict;
 
-import hgm.sampling.Sampler;
+import hgm.sampling.XaddSampler;
 import hgm.sampling.VarAssignment;
 import hgm.sampling.gibbs.GibbsSamplerWithCDFsPerSample;
 import xadd.XADD;
@@ -21,7 +21,7 @@ public class PolytopePrefLearningPredictorUsingGibbs extends PolytopePrefLearnin
     }
 
     @Override
-    public Sampler makeNewSampler(XADD context, XADD.XADDNode posterior, VarAssignment initAssignment) {
+    public XaddSampler makeNewSampler(XADD context, XADD.XADDNode posterior, VarAssignment initAssignment) {
         return new GibbsSamplerWithCDFsPerSample(context, posterior, initAssignment);
     }
 }

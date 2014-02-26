@@ -1,17 +1,15 @@
 package hgm.sampling.gibbs;
 
-import hgm.sampling.Sampler;
+import hgm.sampling.XaddSampler;
 import hgm.sampling.SamplingFailureException;
 import hgm.sampling.VarAssignment;
 import hgm.sampling.gibbs.integral.OneDimIntegral;
-import hgm.sampling.gibbs.integral.Piecewise1DPolynomial;
-import xadd.ExprLib;
+import hgm.sampling.gibbs.integral.Piecewise1DPolynomialUsingArithExpr;
 import xadd.XADD;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Hadi Afshar.
@@ -22,7 +20,7 @@ import java.util.Map;
 /**
  * This is a an implementation of Gibbs sampler that calculates CDF per sample
  */
-public class GibbsSamplerWithCDFsPerSample extends Sampler {
+public class GibbsSamplerWithCDFsPerSample extends XaddSampler {
     public static final double SAMPLE_ACCURACY = Double.MIN_VALUE;//1E-10;//1E-6;  //todo: on small leaves this causes problems!
     public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 25;
     public static final int MAX_INITIAL_SAMPLING_TRIAL = 10000; //if the function is not positive, (initial) sample cannot be taken
@@ -131,7 +129,7 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
 
 //        XADD.XADDNode varCDF = makeCumulativeDistributionFunction(root, varToBeSampled, reusableVarAssign);
 //        int cdfId = context._hmNode2Int.get(varCDF);
-        Piecewise1DPolynomial varCDF = makeCumulativeDistributionFunction(root, varToBeSampled, reusableVarAssign);
+        Piecewise1DPolynomialUsingArithExpr varCDF = makeCumulativeDistributionFunction(root, varToBeSampled, reusableVarAssign);
 
 
         //todo working with these maps is not recommended... Take min and max in constructor....
@@ -173,14 +171,14 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
         } while ((Math.abs(approxS - s) > SAMPLE_ACCURACY) && counter++ < MAX_ITERATIONS_TO_APPROX_F_INVERSE);
 
         // here the sample is stored....
-        reusableVarAssign.assignContinuousVariable(varToBeSampled, average);
+        reusableVarAssign.assignExistingContinuousVariable(varToBeSampled, average);
     }
 
 
     // todo Extract form Sampler...
     //NOTE: only works with continuous vars...
     // returns int_{w=-infty}^{var} (func[var->w]dw) for instantiated function
-    public Piecewise1DPolynomial makeCumulativeDistributionFunction(XADD.XADDNode func, String var, VarAssignment currentVarAssign) {
+    public Piecewise1DPolynomialUsingArithExpr makeCumulativeDistributionFunction(XADD.XADDNode func, String var, VarAssignment currentVarAssign) {
         //1. Make a uni-dimensional function where except 'var', all variables are instantiated due to the current var. assign.:
 
         /*
@@ -200,7 +198,7 @@ public class GibbsSamplerWithCDFsPerSample extends Sampler {
 
 
 //        OneDimIntegral integrator = new OneDimIntegral(context);
-        Piecewise1DPolynomial cdf = integrator.integrate(func, var, currentVarAssign.getContinuousVarAssign());//context.getExistNode(instantiatedXaddNodId));
+        Piecewise1DPolynomialUsingArithExpr cdf = integrator.integrate(func, var, currentVarAssign.getContinuousVarAssign());//context.getExistNode(instantiatedXaddNodId));
 
         //2. first integrate with an unspecified upper bound 't' and then replace 't' with 'var':
 //        if (allVars.contains("t")) throw new RuntimeException("a temporary variable already exist...");

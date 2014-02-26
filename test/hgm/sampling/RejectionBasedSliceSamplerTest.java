@@ -55,7 +55,7 @@ public class RejectionBasedSliceSamplerTest {
         context.getGraph(rootId).launchViewer("test");
         XaddVisualizer.visualize(root, "test", context);
 
-        Sampler sampler = new RejectionBasedSliceSampler(context, root);
+        XaddSampler sampler = new RejectionBasedSliceSampler(context, root);
         for (int i = 0; i < 10; i++) {
             VarAssignment assign= sampler.sample();
             System.out.println("t = " + assign);

@@ -1,18 +1,13 @@
 package hgm.sampling.gibbs.report;
 
-import hgm.asve.cnsrv.approxator.LeafThresholdXaddApproximator;
 import hgm.preference.Choice;
 import hgm.preference.Preference;
 import hgm.preference.PreferenceLearning;
-import hgm.preference.PreferenceLearningTest;
 import hgm.preference.db.DummyFeasiblePreferenceDatabase;
 import hgm.preference.db.PreferenceDatabase;
-import hgm.sampling.Sampler;
-import hgm.sampling.SamplingFailureException;
+import hgm.sampling.XaddSampler;
 import hgm.sampling.VarAssignment;
-import hgm.sampling.gibbs.GibbsSampler;
 import hgm.sampling.gibbs.GibbsSamplerWithCDFsPerSample;
-import hgm.utils.vis.XaddVisualizer;
 import junit.framework.Assert;
 import org.junit.Test;
 import xadd.XADD;
@@ -93,7 +88,7 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
 
 
         //now I sample from it:
-        Sampler sampler = new GibbsSamplerWithCDFsPerSample(context, utilityWeights);
+        XaddSampler sampler = new GibbsSamplerWithCDFsPerSample(context, utilityWeights);
         long t1 = System.currentTimeMillis();
         for (int i = 1; /*i < 10000*/ ; i++) {
             try {
@@ -147,7 +142,7 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
 
                 long time3posteriorReduced = System.currentTimeMillis();
 
-                Sampler sampler = new GibbsSamplerWithCDFsPerSample(context, posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
+                XaddSampler sampler = new GibbsSamplerWithCDFsPerSample(context, posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
 //                long time4samplerInitialized = System.currentTimeMillis();
 
                 for (int i = 0; i < numberOfSamplesFromEachDatabase; i++) {

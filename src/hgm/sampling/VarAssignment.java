@@ -9,7 +9,7 @@ import java.util.*;
  * Date: 18/12/13
  * Time: 11:48 PM
  */
-public class VarAssignment{
+public class VarAssignment {
     private HashMap<String, Double> continuousVarAssign;
     private HashMap<String, Boolean> booleanVarAssign;
 
@@ -38,8 +38,13 @@ public class VarAssignment{
         return booleanVarAssign.size() + continuousVarAssign.size();
     }
 
-    public void assignContinuousVariable(String var, Double value) {
-        if (!continuousVarAssign.containsKey(var)) throw new RuntimeException("no such continuous variable exists: " + var);
+    public void assignExistingContinuousVariable(String var, Double value) {
+        if (!continuousVarAssign.containsKey(var))
+            throw new RuntimeException("no such continuous variable exists: " + var);
+        continuousVarAssign.put(var, value);
+    }
+
+    public void assignOrCreateContinuousVariable(String var, Double value) {
         continuousVarAssign.put(var, value);
     }
 
@@ -52,7 +57,7 @@ public class VarAssignment{
      */
     public Double[] getContinuousVarAssignAsArray(String varNameBase) {
         Double[] result = new Double[continuousVarAssign.size()];
-        for (int i=0; i<continuousVarAssign.size(); i++) {
+        for (int i = 0; i < continuousVarAssign.size(); i++) {
             Double value = continuousVarAssign.get(varNameBase + "_" + i);
             if (value == null) throw new RuntimeException("cannot take the value of " + varNameBase + "_" + i);
             result[i] = value;

@@ -1,6 +1,7 @@
 package hgm.sampling.gibbs;
 
-import hgm.sampling.Sampler;
+import hgm.sampling.Sampler1111;
+import hgm.sampling.XaddSampler;
 import hgm.sampling.VarAssignment;
 import hgm.utils.vis.XaddVisualizer;
 import junit.framework.Assert;
@@ -96,7 +97,7 @@ public class GibbsSamplerTest {
                 a, b, (a + b + c) / 3.0, (a*a + b*b + c*c -a*b -a*c -b*c)/18.0, epsilon);
     }
 
-    private void testStatistics(String varName, int numSamples, Sampler sampler,
+    public static void testStatistics(String varName, int numSamples, Sampler1111 sampler,
                                 double min, double max, double mean, double variance, double epsilon) {
         //actual...
         double aMin = Double.POSITIVE_INFINITY;
@@ -181,7 +182,7 @@ public class GibbsSamplerTest {
 //        Assert.assertTrue(Math.abs(average - 10.0) < 0.3);
     }
 
-    private double tTest1D(String varName, Sampler sampler, int numSamples,
+    private double tTest1D(String varName, XaddSampler sampler, int numSamples,
                            double expectedMean, double expectedVariance) {
         double sum = 0.0;
 //        double min = Double.POSITIVE_INFINITY;
@@ -211,7 +212,7 @@ public class GibbsSamplerTest {
         context.getGraph(rootId).launchViewer("test");
         XaddVisualizer.visualize(root, "test", context);
 
-        Sampler sampler = new GibbsSampler(context, root);
+        XaddSampler sampler = new GibbsSampler(context, root);
         for (int i = 0; i < 50; i++) {
             VarAssignment assign = sampler.sample();
             System.out.println("t = " + assign);

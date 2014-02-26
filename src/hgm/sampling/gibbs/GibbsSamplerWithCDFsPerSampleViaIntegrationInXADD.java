@@ -1,6 +1,6 @@
 package hgm.sampling.gibbs;
 
-import hgm.sampling.Sampler;
+import hgm.sampling.XaddSampler;
 import hgm.sampling.SamplingFailureException;
 import hgm.sampling.VarAssignment;
 import xadd.ExprLib;
@@ -21,7 +21,7 @@ import java.util.Map;
  * This is a an implementation of Gibbs sampler that calculates CDF per sample
  */
 @Deprecated //replaced by GibbsSamplerWithCDFsPerSample. Now may only be used for (performance) test...
-public class GibbsSamplerWithCDFsPerSampleViaIntegrationInXADD extends Sampler {
+public class GibbsSamplerWithCDFsPerSampleViaIntegrationInXADD extends XaddSampler {
     public static final double SAMPLE_ACCURACY = 1E-6;
     public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 20;
     public static final int MAX_INITIAL_SAMPLING_TRIAL = 10000; //if the function is not positive, (initial) sample cannot be taken
@@ -129,7 +129,7 @@ public class GibbsSamplerWithCDFsPerSampleViaIntegrationInXADD extends Sampler {
         Double minVarValue = context._hmMinVal.get(varToBeSampled);
 
         //to calculate F(infinity):
-        reusableVarAssign.assignContinuousVariable(varToBeSampled, maxVarValue + 0.1 /*just to be exclusive*/); //since it is reusable
+        reusableVarAssign.assignExistingContinuousVariable(varToBeSampled, maxVarValue + 0.1 /*just to be exclusive*/); //since it is reusable
 
         // inverse of cdfInfinity is the normalization factor:
         Double cdfInfinity = context.evaluate(cdfId,
@@ -148,7 +148,7 @@ public class GibbsSamplerWithCDFsPerSampleViaIntegrationInXADD extends Sampler {
         int counter = 0;
         do {
             average = (high + low) / 2.0;
-            reusableVarAssign.assignContinuousVariable(varToBeSampled, average);  //here the sample is stored
+            reusableVarAssign.assignExistingContinuousVariable(varToBeSampled, average);  //here the sample is stored
             approxS = context.evaluate(cdfId,
                     reusableVarAssign.getBooleanVarAssign(), reusableVarAssign.getContinuousVarAssign());
             if (approxS < s) {

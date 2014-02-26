@@ -9,7 +9,7 @@ import java.util.*;
  * Date: 18/12/13
  * Time: 6:37 PM
  */
-public class RejectionBasedSliceSampler extends Sampler {
+public class RejectionBasedSliceSampler extends XaddSampler {
     protected Double latestTargetValue = null;
 
 

@@ -13,7 +13,7 @@ import xadd.ExprLib.*;
  * Date: 21/01/14
  * Time: 2:56 AM
  */
-public class Piecewise1DPolynomial {
+public class Piecewise1DPolynomialUsingArithExpr {
     protected String var;
 
     /**
@@ -30,7 +30,7 @@ public class Piecewise1DPolynomial {
     protected TreeSet<Double> startPoints;
 
 
-    public Piecewise1DPolynomial(String var) {
+    public Piecewise1DPolynomialUsingArithExpr(String var) {
         this.var = var;
         assign = new HashMap<String, Double>(1);
 

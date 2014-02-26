@@ -7,7 +7,7 @@ import hgm.preference.PreferenceLearningTest;
 import hgm.preference.Preference;
 import hgm.preference.db.DummyFeasiblePreferenceDatabase;
 import hgm.preference.db.PreferenceDatabase;
-import hgm.sampling.Sampler;
+import hgm.sampling.XaddSampler;
 import hgm.sampling.SamplingFailureException;
 import hgm.sampling.VarAssignment;
 import hgm.sampling.gibbs.GibbsSampler;
@@ -94,7 +94,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
 
 
         //now I sample from it:
-        Sampler sampler = new GibbsSampler(context, utilityWeights);
+        XaddSampler sampler = new GibbsSampler(context, utilityWeights);
         for (int i = 0; i < 50; i++) {
             VarAssignment assign = sampler.sample();
             System.out.println("t = " + assign);

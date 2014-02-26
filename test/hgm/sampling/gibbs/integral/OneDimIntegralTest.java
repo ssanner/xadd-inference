@@ -3,10 +3,7 @@ package hgm.sampling.gibbs.integral;
 import hgm.utils.vis.XaddVisualizer;
 import junit.framework.Assert;
 import org.junit.Test;
-import xadd.ExprLib;
 import xadd.XADD;
-
-import java.util.Map;
 
 /**
  * Created by Hadi Afshar.
@@ -82,14 +79,14 @@ public class OneDimIntegralTest {
         //test total infeasibility:
         XADD context = new XADD();
         OneDimIntegral integral = new OneDimIntegral(context);
-        Piecewise1DPolynomial zeroFunc = integral.integrate(context.getExistNode(context.buildCanonicalXADDFromString("([0])")), "x");
+        Piecewise1DPolynomialUsingArithExpr zeroFunc = integral.integrate(context.getExistNode(context.buildCanonicalXADDFromString("([0])")), "x");
         Assert.assertEquals(zeroFunc.value(0d), 0d);
         Assert.assertEquals(zeroFunc.value(100d), 0d);
         Assert.assertEquals(zeroFunc.value(-100d), 0d);
 
         //test 0 region:
         //test infeasibility:
-        Piecewise1DPolynomial infeasible = integral.integrate(context.getExistNode(context.buildCanonicalXADDFromString(
+        Piecewise1DPolynomialUsingArithExpr infeasible = integral.integrate(context.getExistNode(context.buildCanonicalXADDFromString(
                 "([x<2] " +
                 "   ([0]) " +
                 "   ([x>2] " +
@@ -111,13 +108,13 @@ public class OneDimIntegralTest {
 //        XaddVisualizer.visualize(root, -20, 200, 0.1, "root", context);
 
         OneDimIntegral integral = new OneDimIntegral(context);
-        Piecewise1DPolynomial integrate = integral.integrate(root, "x");
+        Piecewise1DPolynomialUsingArithExpr integrate = integral.integrate(root, "x");
 //        System.out.println("integrate = " + integrate);
 
         XADD testerContext = new XADD();
         XADD.XADDNode testerRoot = testerContext.getExistNode(testerContext.reduceLP(testerContext.buildCanonicalXADDFromString(xaddStr)));
         OneDimIntegralOnInstantiatedPrunedNode testerIntegral = new OneDimIntegralOnInstantiatedPrunedNode(testerContext);
-        Piecewise1DPolynomial testerIntegrate = testerIntegral.integrate(testerRoot);
+        Piecewise1DPolynomialUsingArithExpr testerIntegrate = testerIntegral.integrate(testerRoot);
         Assert.assertEquals(testerIntegrate.toString(), integrate.toString());
     }
 

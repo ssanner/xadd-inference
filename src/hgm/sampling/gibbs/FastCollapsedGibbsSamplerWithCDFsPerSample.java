@@ -1,16 +1,7 @@
 package hgm.sampling.gibbs;
 
 import hgm.sampling.VarAssignment;
-import hgm.sampling.gibbs.integral.Interval;
-import hgm.sampling.gibbs.integral.OneDimIntegral;
-import hgm.sampling.gibbs.integral.Piecewise1DPolynomial;
-import hgm.sampling.gibbs.integral.PolynomialInAnInterval;
-import xadd.ExprLib;
 import xadd.XADD;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Hadi Afshar.

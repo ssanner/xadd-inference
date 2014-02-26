@@ -20,7 +20,7 @@ public class OneDimIntegral {
         this.context = context;
     }
 
-    public Piecewise1DPolynomial integrate(XADD.XADDNode node, String integrationVar) {
+    public Piecewise1DPolynomialUsingArithExpr integrate(XADD.XADDNode node, String integrationVar) {
         return integrate(node, integrationVar, new HashMap<String, Double>());
     }
 
@@ -30,7 +30,7 @@ public class OneDimIntegral {
      * @param continuousVarAssign a variable assignment according to which all variables expect the integration var are instantiated
      * @return The integration of a uni-dimensional function where except the 'integration var', all variables are instantiated due to the given value in the assignment:
      */
-    public Piecewise1DPolynomial integrate(XADD.XADDNode node, String integrationVar, HashMap<String, Double> continuousVarAssign) {
+    public Piecewise1DPolynomialUsingArithExpr integrate(XADD.XADDNode node, String integrationVar, HashMap<String, Double> continuousVarAssign) {
         //Exclude the integration var from the assignment and replace doubles with expressions
         HashMap<String, ExprLib.ArithExpr> substitution = new HashMap<String, ExprLib.ArithExpr>(Math.max(0, continuousVarAssign.size() - 1)); //since the int. var. is not added to it
         for (Map.Entry<String, Double> cVarValue : continuousVarAssign.entrySet()) {
@@ -41,7 +41,8 @@ public class OneDimIntegral {
             }
         }
 
-        List<PolynomialInAnInterval> polynomials = substituteAndConvertToPiecewisePolynomial(node, substitution, new Interval(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+        List<PolynomialInAnInterval> polynomials = substituteAndConvertToPiecewisePolynomial(node, substitution,
+                new Interval(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
 
 //        System.out.println("polynomials = " + polynomials);
 
@@ -125,9 +126,9 @@ public class OneDimIntegral {
 
 
 
-    public Piecewise1DPolynomial integrate(List<PolynomialInAnInterval> piecewisePolynomial, String var) {
+    public Piecewise1DPolynomialUsingArithExpr integrate(List<PolynomialInAnInterval> piecewisePolynomial, String var) {
         //todo only works for functions with no boolean variable...
-        Piecewise1DPolynomial result = new Piecewise1DPolynomial(var);
+        Piecewise1DPolynomialUsingArithExpr result = new Piecewise1DPolynomialUsingArithExpr(var);
         HashMap<String, Double> assign = new HashMap<String, Double>(1);
         double runningSum = 0.0d;
         for (PolynomialInAnInterval intervalPoly : piecewisePolynomial) {

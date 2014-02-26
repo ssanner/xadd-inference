@@ -8,7 +8,7 @@ import java.util.Random;
 import xadd.XADD;
 import xadd.XADD.XADDNode;
 
-public class MetropolisHastingsSampler extends Sampler {
+public class MetropolisHastingsSampler extends XaddSampler {
 
 	private static Random			_randomGenerator	= new Random();
 	private HashMap<String, Double>	_lastPoint;
@@ -64,7 +64,7 @@ public class MetropolisHastingsSampler extends Sampler {
 		HashMap<String, Double> contAssign = new HashMap<String, Double>(cVars.size());
 
 		for (String bVar : bVars) {
-			boolAssign.put(bVar, Sampler.randomBoolean());
+			boolAssign.put(bVar, XaddSampler.randomBoolean());
 		}
 
 		do { // generate a sample that does not have zero probability
@@ -76,7 +76,7 @@ public class MetropolisHastingsSampler extends Sampler {
 				if (minVarValue == null)
 					throw new RuntimeException("The min of scope of var " + cVar + " is unknown");
 
-				contAssign.put(cVar, Sampler.randomDoubleUniformBetween(minVarValue, maxVarValue));
+				contAssign.put(cVar, XaddSampler.randomDoubleUniformBetween(minVarValue, maxVarValue));
 			}
 		} while (context.evaluate(rootId, null, contAssign) == null || context.evaluate(rootId, null, contAssign) == 0);
 
