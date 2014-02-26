@@ -7,7 +7,7 @@ import java.util.*;
 /**
  * Created by Hadi Afshar. Date: 3/01/14 Time: 11:02 PM
  */
-public abstract class XaddSampler implements Sampler1111 {
+public abstract class XaddSampler implements SamplerInterface {
 
     private static Random random = new Random();
     protected XADD context;
