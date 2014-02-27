@@ -1,0 +1,47 @@
+This is BibTeX, Version 0.99d (TeX Live 2010)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: ExactSDP-JAIR10.aux
+The style file: theapa.bst
+Database file #1: exactsdp.bib
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+You've used 25 entries,
+            2804 wiz_defined-function locations,
+            768 strings with 8969 characters,
+and the built_in function-call counts, 12170 in all, are:
+= -- 1089
+> -- 632
+< -- 21
++ -- 209
+- -- 204
+* -- 1150
+:= -- 1927
+add.period$ -- 53
+call.type$ -- 25
+change.case$ -- 165
+chr.to.int$ -- 25
+cite$ -- 25
+duplicate$ -- 487
+empty$ -- 888
+format.name$ -- 241
+if$ -- 2482
+int.to.chr$ -- 0
+int.to.str$ -- 0
+missing$ -- 26
+newline$ -- 128
+num.names$ -- 100
+pop$ -- 196
+preamble$ -- 1
+purify$ -- 193
+quote$ -- 0
+skip$ -- 361
+stack$ -- 0
+substring$ -- 726
+swap$ -- 177
+text.length$ -- 9
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 192
+warning$ -- 0
+while$ -- 111
+width$ -- 0
+write$ -- 327
