@@ -1,22 +1,30 @@
 package camdp.solver;
 
+import graph.Graph;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import camdp.CAMDP;
+import camdp.CAction;
 import xadd.XADD;
+import xadd.XADD.XADDLeafMinOrMax;
 
 public abstract class CAMDPsolver {
 	
-	public CAMDP _mdp;
-	public XADD _context;
-	public Integer _valueDD;
-	public String _solveMethod = null;
+	public CAMDP mdp;
+	public XADD context;
+	public Integer valueDD;
+	public int nIter;
+	public Integer curIter;
+	public String solveMethod = null;
 		
 	/* Approximation Parameters */
 	public double APPROX_ERROR = 0.0d;
@@ -33,23 +41,16 @@ public abstract class CAMDPsolver {
 	
 	/* Time & Memory Management */
 	public long _lTime = 0;
+	public Runtime RUNTIME = Runtime.getRuntime();
 	
 	/*Solution maintenance */
-	public ArrayList<Integer> solutionDDList = new ArrayList<Integer>();
-	public ArrayList<Long> solutionTimeList = new ArrayList<Long>();
-	public ArrayList<Integer> solutionNodeList = new ArrayList<Integer>();
-	public ArrayList<Double> solutionInitialSValueList = new ArrayList<Double>();
-	public ArrayList<Double> solutionMaxValueList = new ArrayList<Double>();
+	public int[] solutionDDList = null;
+	public long[] solutionTimeList = null;
+	public int[] solutionNodeList = null;
+	public double[] solutionInitialSValueList = null;
+	public double[] solutionMaxValueList = null;
 	
 	/* *********************** Methods *********************** */
-	public void setupSolution(){
-		solutionDDList.add(null);
-		solutionTimeList.add(null);
-		solutionNodeList.add(null);
-		solutionInitialSValueList.add(null);
-		solutionMaxValueList.add(null);
-	}
-
 	public void setApproxTest(double eps, PrintStream log, boolean always) {
 		APPROX_ERROR = eps;
 		_resultStream = log;
@@ -57,57 +58,191 @@ public abstract class CAMDPsolver {
 		COMPARE_OPTIMAL = true;
 	}
 	
-	public int solve(int max_iter){
-		System.out.println("Abstract CAMDP solver.");
-		return 0;
+	
+
+	//	Common Solution methods
+	public abstract int solve();
+
+	//Regression functions 
+	public Graph buildDBNDependencyDAG(CAction a, HashSet<String> vars) {
+		// Works backward from this root factor
+		Graph g = new Graph(true, false, true, false);
+		HashSet<String> already_seen = new HashSet<String>();
+		
+		// We don't want to generate parents for the following "base" variables
+		already_seen.addAll( mdp._hsContSVars );
+		already_seen.addAll( mdp._hsBoolSVars );
+		already_seen.addAll( mdp._hsContAVars ); 
+		already_seen.addAll( mdp._hsNoiseVars ); 
+		
+		for (String var : vars)
+			buildDBNDependencyDAGInt(a, var, g, already_seen);
+		
+		return g;
 	}
-	    
+	public void buildDBNDependencyDAGInt(CAction a, String parent_var, Graph g, HashSet<String> already_seen) {
+		// Consider that vars belong to a parent factor, recursively call
+		// for every child factor and link child to parent
+		// 
+		// have R(x1i,b1i,x2'), DAG has (b1i -> x1i -> R), (b1i -> R), (x2' -> R)... {x1i, b1i, x2'}
+		// recursively add in parents for each of x2', xli, bli
+
+		if (already_seen.contains(parent_var))
+			return;
+		already_seen.add(parent_var);
+		Integer dd_cpf = a._hmVar2DD.get(parent_var);
+		if (dd_cpf == null) {
+			System.err.println("Could not find CPF definition for variable '" + parent_var + 
+					"' while regressing action '" + a._sName + "'");
+			System.exit(1);
+		}
+		HashSet<String> children = context.collectVars(dd_cpf);
+		for (String child_var : children) {
+			// In the case of boolean variables, the dual action diagram contains the parent,
+			// because this is not a substitution, it is a distribution over the parent.
+			// Hence we need to explicitly prevent boolean variable self-loops -- this is not
+			// an error.
+			if (!child_var.equals(parent_var) || mdp._hsContIVars.contains(parent_var) || mdp._hsContNSVars.contains(parent_var)) {
+				g.addUniLink(child_var, parent_var);
+				//System.out.println("Adding link " + child_var + " --> " + parent_var);
+			} else if(child_var.equals(parent_var)){ 
+				// SUSPICIOUS CODE :p (avoid removing variables that dont have dependencies
+				g.addNode(parent_var);
+			}
+			buildDBNDependencyDAGInt(a, child_var, g, already_seen);
+		}
+	}
+	protected void displayCyclesAndExit(Graph g, CAction a) {
+		// Error display -- find the cycles and display them
+		System.err.println("ERROR: in action '" + a._sName + "' the DBN dependency graph contains one or more cycles as follows:");
+		HashSet<HashSet<Object>> sccs = g.getStronglyConnectedComponents();
+		for (HashSet<Object> connected_component : sccs)
+			if (connected_component.size() > 1)
+				System.err.println("- Cycle: " + connected_component);
+		HashSet<Object> self_cycles = g.getSelfCycles();
+		for (Object v : self_cycles)
+			System.err.println("- Self-cycle: [" + v + "]");
+		g.launchViewer("DBN Dependency Graph for '" + a._sName + "'");
+		try { System.in.read(); } catch (Exception e) {}
+		System.exit(1);
+	}
+	
+	protected int regressNoise(int q, CAction a) {
+		//If no Noise vars do nothing
+		if (a._noiseVars.size() == 0) {
+			return q;
+		}
+		
+		// Max in noise constraints and min out each noise parameter in turn
+		// NOTE: we can do this because noise parameters can only reference state variables 
+		//       (not currently allowing them to condition on intermediate or other noise vars)
+		//       hence legal values of noise var determined solely by the factor for that var
+		HashSet<String> q_vars = context.collectVars(q);
+		for (String nvar : a._noiseVars) {
+			if (!q_vars.contains(nvar)) {
+				_logStream.println("- Skipping noise var '" + nvar + "', which does not occur in q: " + context.collectVars(q));
+				continue;
+			}
+				
+			_logStream.println("- Minimizing over noise param '" + nvar + "'");
+			int noise_factor = a._hmNoise2DD.get(nvar);
+			q = context.apply(noise_factor, q, XADD.MAX); // Max in the noise so illegal states get replace by +inf, otherwise q replaces -inf
+			q = minOutVar(q, nvar, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+			_logStream.println("-->: " + context.getString(q));
+				
+			// Can be computational expensive (max-out) so flush caches if needed
+			flushCaches(Arrays.asList(q) /* additional node to save */);
+		}
+		_logStream.println("- Done noise parameter minimization");
+		_logStream.println("- Q^" + curIter + "(" + a._sName + " )" + context.collectVars(q) + "\n" + context.getString(q));
+		return q;
+	}
+	protected int regressAction(int q, CAction a) {
+		if (a._actionParams.size() == 0) {// No action params to maximize over			
+			return q;
+		}
+		// Max out each action param in turn
+		HashSet<String> q_vars = context.collectVars(q);
+		for (int i=0; i < a._actionParams.size(); i++) 
+		{
+			String avar = a._actionParams.get(i);
+			double lb   = a._hmAVar2LB.get(avar);
+			double ub   = a._hmAVar2UB.get(avar);
+
+			if (!q_vars.contains(avar)) {
+				_logStream.println("- Skipping var '" + avar + "': [" + lb + "," + ub + "], which does not occur in q: " + context.collectVars(q));
+				continue;
+			}
+
+			_logStream.println("- Maxing out action param '" + avar + "': [" + lb + "," + ub + "]");
+			q = maxOutVar(q, avar, lb, ub);
+			_logStream.println("-->: " + context.getString(q));
+			// Can be computational expensive (max-out) so flush caches if needed
+			flushCaches(Arrays.asList(q) /* additional node to save */);
+		}
+		return q;
+	}
+	public HashSet<String> filterIandNSVars(HashSet<String> vars, boolean allow_cont, boolean allow_bool) {
+		HashSet<String> filter_vars = new HashSet<String>();
+		for (String var : vars)
+			if (allow_cont && 
+				(mdp._hsContIVars.contains(var) ||
+				 mdp._hsContNSVars.contains(var)))
+				filter_vars.add(var);
+			else if (allow_bool &&
+				(mdp._hsBoolIVars.contains(var) ||
+				 mdp._hsBoolNSVars.contains(var)))
+				filter_vars.add(var);
+		return filter_vars;
+	}
+	public int maxOutVar(int ixadd, String var, double lb, double ub) {
+		XADD.XADDLeafMinOrMax max = context.new XADDLeafMinOrMax(var, lb, ub, true /* is_max */, _logStream);
+		ixadd  = context.reduceProcessXADDLeaf(ixadd, max, false);
+		return max._runningResult;
+	}
+	public int minOutVar(int ixadd, String var, double lb, double ub) {
+		XADD.XADDLeafMinOrMax min = context.new XADDLeafMinOrMax(var, lb, ub, false /* is_max */, _logStream);
+		ixadd  = context.reduceProcessXADDLeaf(ixadd, min, false);
+		return min._runningResult;
+	}
+
+	protected Integer checkLinearAndApprox(Integer maxDD) {
+		if ( mdp.LINEAR_PROBLEM && APPROX_ALWAYS)
+			maxDD = context.linPruneRel(maxDD, APPROX_ERROR);
+		return maxDD;
+	}
+	
+	// Results
     public void makeResultStream(){
-		int filenamestart = _mdp._problemFile.lastIndexOf('/');
-		String filename = _mdp._problemFile.substring(filenamestart,_mdp._problemFile.length()-5);
-		String problemType = _mdp.CONTINUOUS_ACTIONS? "/contact":"/discact"; 
+		int filenamestart = mdp._problemFile.lastIndexOf('/');
+		String filename = mdp._problemFile.substring(filenamestart,mdp._problemFile.length()-5);
+		String problemType = mdp.CONTINUOUS_ACTIONS? "/contact":"/discact"; 
 		String dir = RESULTS_DIR + problemType + filename;
 		
 		//System.out.println("testing filename:" + dir + "/" + _solveMethod + ".rslt");
     	try{
     		new File(dir).mkdirs();
-    		_resultStream = new PrintStream(new FileOutputStream(dir + "/" + _solveMethod + ".rslt"));
+    		_resultStream = new PrintStream(new FileOutputStream(dir + "/" + solveMethod + ".rslt"));
     	}
     	catch (FileNotFoundException e){
-    		System.err.println("Couldn't create result Stream for: "+dir + "/" + _solveMethod + ".rslt\nException:"+e);
+    		System.err.println("Couldn't create result Stream for: "+dir + "/" + solveMethod + ".rslt\nException:"+e);
     	}
     }
-    
-    public void printResults(){
-    }
-    
-    public void saveResults(){
-    	//Results: N (trial or Iter), Time, Nodes, InitialS Value.
-    	for(int i=1; i< solutionDDList.size(); i++){
-    		_resultStream.format("%d %d %d %f\n", i, solutionTimeList.get(i), solutionNodeList.get(i), (_mdp._initialS != null) ? solutionInitialSValueList.get(i): "0");
-    	}
-    }
+    public abstract void setupResults();
+    public abstract void printResults();
+    public abstract void saveResults();
     
     /////// Time Management utilities ////////////////////// 
-
-	// Reset elapsed time
 	public void resetTimer() {
 		_lTime = System.currentTimeMillis(); 
 	}
-
-	// Get the elapsed time since resetting the timer
 	public long getElapsedTime() {
 		return System.currentTimeMillis() - _lTime;
 	}
 
+	////////// Space Management ///////////////////////////
 	public void flushCaches(){
 		flushCaches(new ArrayList<Integer>());
 	}
-	public void flushCaches(List<Integer> specialNodes){
-		ArrayList<Integer> moreSpecialNodes = new ArrayList<Integer>();
-		moreSpecialNodes.addAll(specialNodes);
-		moreSpecialNodes.add(_valueDD);
-		for(int i=1;i<solutionDDList.size();i++) moreSpecialNodes.add(solutionDDList.get(i));
-		_mdp.flushCaches(moreSpecialNodes);
-	}
+	public abstract void flushCaches(List<Integer> specialNodes);
 }

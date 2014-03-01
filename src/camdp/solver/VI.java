@@ -20,186 +20,126 @@ import camdp.CAction;
 
 public class VI extends CAMDPsolver {
 
-
-
-	public Integer _CurIter;   // Current iteration for Value Iteration	
+	public Integer curIter;   // Current iteration for Value Iteration
+	public Integer finalIter;   // Last Iteration in case of early Convergence
 	public Integer _maxDD;
-	
-	/* Static variables */
-	public static long _lTime; // For timing purposes
-	public static Runtime RUNTIME = Runtime.getRuntime();
-	
+		
 	/* DEBUG Variables */
 	private static final boolean MAIN_DEBUG = true;
 	private static final boolean REGRESS_DEBUG = false;
 	
 	//Display Flags
-	public final static boolean DISPLAY_PREMAX_Q = false;
-	public final static boolean DISPLAY_POSTMAX_Q = false;
-
-	private static final boolean DISPLAY_DD = true;
-
-	private static final boolean PRINT_DD = false;
+	public static final boolean PLOT_DD = false;
+	public static final boolean PRINT_DD = false;
 	
 	//////////////////Methods /////////////////////////////////
 	
-	public VI(CAMDP camdp){
-		_mdp = camdp;
-		_context = camdp._context;
-		_valueDD = _context.NEG_INF;
+	public VI(CAMDP camdp, int iter){
+		mdp = camdp;
+		context = camdp._context;
+		valueDD = context.NEG_INF;
 		_logStream = camdp._logStream;
-		_solveMethod = "VI";
+		solveMethod = "VI";
 		makeResultStream();
-		setupSolution();
-	}
-	
-	public void setupSolution(){
-		solutionDDList.add(null);
-		solutionTimeList.add(null);
-		solutionNodeList.add(null);
-		solutionInitialSValueList.add(null);
-		solutionMaxValueList.add(null);
-		
-		_mdp.optimalDDList.add(null);
-		_mdp.optimalMaxValueList.add(null);
+		nIter = iter;
+		setupResults();
 	}
 	
     ////////Main Solver Class ///////////////
-	public int solve(int max_iter){		
-		if (MAIN_DEBUG) System.out.println("Starting VI solution, Max #Iterations = " + max_iter);
+	public int solve(){		
+		if (MAIN_DEBUG) System.out.println("Starting VI solution, Max #Iterations = " + nIter+"\n");
 		Integer _prevDD = null;
 		//Iteration counter
-		_CurIter = 0;
-		if (max_iter < 0) max_iter = _mdp._nMaxIter;
-		
+		curIter = 0;		
+
 		//Initialize value function to zero
-		_valueDD = _context.ZERO;
+		valueDD = context.ZERO;
 
 		// Perform value iteration for specified number of iterations, or until convergence detected
-		while (_CurIter < max_iter) 
+		while (curIter < nIter) 
 		{
-			++_CurIter;
+			++curIter;
 			resetTimer();
 			
-			_logStream.println(ASCII_BAR + "\nITERATION #" + _CurIter + ", " + 
-			CAMDP.MemDisplay() + " bytes, " + getElapsedTime() + " ms\n" + ASCII_BAR);
-			_logStream.flush();
-
 			// Prime diagram
-			_prevDD = _valueDD;
+			_prevDD = valueDD;
 
 			long iniT = getElapsedTime();
 			bellmanBackup();
 			long endT = getElapsedTime();
 			if (MAIN_DEBUG) System.out.println("VI Backup Took:"+(endT - iniT) );
 			
-			if (_mdp.LINEAR_PROBLEM && APPROX_PRUNING) {
-				long appTime = getElapsedTime();
-				_valueDD = _context.linPruneRel(_valueDD, APPROX_ERROR);
-				long endTime = getElapsedTime() - appTime;
-				System.out.println("Approx Finish"+ _CurIter+ " Iter took: "+appTime+ " pruning: "+endTime);
-				//displayGraph(_valueDD, "valPruned-" + _nCurIter+" e"+APPROX_ERROR);
-			}
+			checkLinearAndApprox(valueDD);
 
 			if (MAIN_DEBUG){
-				System.out.println("Iter:" + _CurIter+" Complete");
-				_logStream.println("Iter complete:" + _CurIter + _context.getString(_valueDD));
-				if (DISPLAY_DD) _mdp.doDisplay(_valueDD,makeXADDLabel("V",_CurIter, APPROX_ERROR));
+				System.out.println("Iter:" + curIter+" Complete");
+				if (PRINT_DD) System.out.println("ValueDD = "+context.getExistNode(valueDD).toString());
+				if (PLOT_DD) mdp.doDisplay(valueDD,makeXADDLabel("V",curIter, APPROX_ERROR));
 			}
 			
-			if (solutionDDList.size() != _CurIter){
-				System.err.println("Wrong Result Storage");
-			}
-			solutionDDList.add(_valueDD);
-			_mdp.optimalDDList.add(_valueDD);
-			solutionTimeList.add(getElapsedTime());
-			solutionNodeList.add(_context.getNodeCount(_valueDD));
-			if (_mdp.LINEAR_PROBLEM) {
-				solutionMaxValueList.add(_context.linMaxVal(_valueDD));
-				_mdp.optimalMaxValueList.add(_context.linMaxVal(_valueDD));
-			}
-			if( _mdp._initialS != null){
-				solutionInitialSValueList.add(_context.evaluate(_valueDD, _mdp._initialS._hmBoolVars, _mdp._initialS._hmContVars));
-			}
+			solutionDDList[curIter] = valueDD;
+			solutionTimeList[curIter] = getElapsedTime();
+			solutionNodeList[curIter] = context.getNodeCount(valueDD);
+			if (mdp.LINEAR_PROBLEM) solutionMaxValueList[curIter] = context.linMaxVal(valueDD);
+			if( mdp._initialS != null) solutionInitialSValueList[curIter] = context.evaluate(valueDD, mdp._initialS._hmBoolVars, mdp._initialS._hmContVars);			
 
-			
-			if (_prevDD.equals(_valueDD) ) {
-				if (MAIN_DEBUG) System.out.println("VI: Converged to solution early,  at iteration "+_CurIter);
-				int it = _CurIter;
-				_mdp.optimalHorizon = _CurIter;
-				while (++it <= max_iter){					
-					_mdp.optimalDDList.add(_valueDD);
-					if (_mdp.LINEAR_PROBLEM) {
-						_mdp.optimalMaxValueList.add(_mdp.optimalMaxValueList.get(_CurIter));
-					}
-				}
+			if (_prevDD.equals(valueDD) ) {
+				if (MAIN_DEBUG) System.out.println("\nVI: Converged to solution early,  at iteration "+curIter);
 				break;
 			}
 
 		}
-
 		flushCaches();	
+		finalIter = curIter;
+		if (MAIN_DEBUG) System.out.println("\nVI: complete at iteration "+finalIter+"\n");
+		return finalIter;
+	}
 
-		//////////////////////////////////////////////////////////////////////////
-		// Performance Logging
-		_logStream.println("\nValue iteration complete!");
-		_logStream.println(max_iter + " iterations took " + getElapsedTime() + " ms");
-		_logStream.println("Canonical / non-canonical: " + OperExpr.ALREADY_CANONICAL + " / " + OperExpr.NON_CANONICAL);
-		_logStream.println("\nIteration Results summary");
-		for (int i = 1; i <= max_iter && (_mdp.optimalHorizon == null || i <=_mdp.optimalHorizon); i++) _logStream.println("Iter " + i + ": nodes = " + solutionNodeList.get(i) + "\ttime = " + solutionTimeList.get(i) + " ms");
-
-		return _CurIter;
+	private void checkLinearApprox() {
+		if (mdp.LINEAR_PROBLEM && APPROX_PRUNING) {
+			long appTime = getElapsedTime();
+			valueDD = context.linPruneRel(valueDD, APPROX_ERROR);
+			long endTime = getElapsedTime() - appTime;
+			System.out.println("Approx Finish"+ curIter+ " Iter took: "+appTime+ " pruning: "+endTime);
+			//displayGraph(_valueDD, "valPruned-" + _nCurIter+" e"+APPROX_ERROR);
+		}
 	}
 
 	private void bellmanBackup() {
 		// Iterate over each action
 		_maxDD = null;
-		for (Map.Entry<String,CAction> me : _mdp._hmName2Action.entrySet()) {
+		for (Map.Entry<String,CAction> me : mdp._hmName2Action.entrySet()) {
 
 			// Regress the current value function through each action (finite number of continuous actions)
-			int regr = regress(_valueDD, me.getValue());
-			regr  = _context.reduceRound(regr); // Round!
-			if (DISPLAY_POSTMAX_Q)
-				_mdp.doDisplay(regr, makeXADDLabel("Q-"+me.getKey(), _CurIter, APPROX_ERROR));
-
+			int regr = regress(valueDD, me.getValue());
+			regr  = context.reduceRound(regr); // Round!
 			// Maintain running max over different actions
-			_maxDD = (_maxDD == null) ? regr : _context.apply(_maxDD, regr, XADD.MAX);
-			_maxDD = _context.reduceRound(_maxDD); // Round!
-			_maxDD = _context.reduceLP(_maxDD); // Rely on flag XADD.CHECK_REDUNDANCY
+			_maxDD = (_maxDD == null) ? regr : context.apply(_maxDD, regr, XADD.MAX);
+			_maxDD = context.reduceRound(_maxDD); // Round!
+			_maxDD = context.reduceLP(_maxDD); // Rely on flag XADD.CHECK_REDUNDANCY
 
 			//Optional post-max approximation 
 			// Could be used safely if overall error is being monitored 
-			if (_mdp.LINEAR_PROBLEM && APPROX_ALWAYS)
-				_maxDD = _context.linPruneRel(_maxDD, APPROX_ERROR);
+			if (mdp.LINEAR_PROBLEM && APPROX_ALWAYS)
+				_maxDD = context.linPruneRel(_maxDD, APPROX_ERROR);
 
 			// Error checking and logging
-			int canon_max_dd = _context.makeCanonical(_maxDD);
+			int canon_max_dd = context.makeCanonical(_maxDD);
 			if (_maxDD != canon_max_dd) {
 				System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical... could be rounding, continuing.");
-				_maxDD = _context.makeCanonical(_maxDD);
+				_maxDD = context.makeCanonical(_maxDD);
 			}
 			
 			flushCaches(Arrays.asList(_maxDD));
 			if (REGRESS_DEBUG){
-				System.out.println("Iter "+_CurIter+" Action "+me.getValue()._sName+" Maximization Complete.");
+				System.out.println("Iter "+curIter+" Action "+me.getValue()._sName+" Maximization Complete.");
 				if (PRINT_DD){ 
-					System.out.println("MaxDD = "+ _context.getExistNode(_maxDD));
+					System.out.println("MaxDD = "+ context.getExistNode(_maxDD));
 				}
 			}
 		}
 
-		_valueDD = _context.reduceLP(_maxDD);
-	}
-
-	public void printResults() {
-		System.out.println("Results for Value Iteration: " + (solutionTimeList.size()-1) + " iterations:");
-		System.out.print("Time:"); printList( solutionTimeList, System.out); System.out.println(";");
-		System.out.print("Nodes:"); printList( solutionNodeList, System.out); System.out.println(";");
-		System.out.print("Initial S Value:"); printList( solutionInitialSValueList, System.out); System.out.println(";");
-	}
-	
-	private void printList(List l, PrintStream out){
-		for(int i=1; i<l.size(); i++) out.print(" "+l.get(i));
+		valueDD = context.reduceLP(_maxDD);
 	}
 	
 	private IntTriple _contRegrKey = new IntTriple(-1,-1,-1);
@@ -209,31 +149,31 @@ public class VI extends CAMDPsolver {
 	 **/
 	public int regress(int vfun, CAction a) {
 		if (REGRESS_DEBUG){
-			System.out.println("REGRESSING ACTION " + a._sName + " Iter "+ _CurIter );
+			System.out.println("REGRESSING ACTION " + a._sName + " Iter "+ curIter );
 		}
 		_logStream.println("\n>>> REGRESSING '" + a._sName + "'\n");
 		
 		// Prime the value function 
-		int q = _context.substitute(vfun, _mdp._hmPrimeSubs); 
-		_logStream.println("- Primed value function:\n" + _context.getString(q));
+		int q = context.substitute(vfun, mdp._hmPrimeSubs); 
+		_logStream.println("- Primed value function:\n" + context.getString(q));
 		
 		// Discount
-		q = _context.scalarOp(q, _mdp._bdDiscount.doubleValue(), XADD.PROD);
+		q = context.scalarOp(q, mdp._bdDiscount.doubleValue(), XADD.PROD);
 		
 		if (REGRESS_DEBUG){
-			System.out.println("Q After dicount Prod:");
-			if (PRINT_DD) System.out.println(_context.getExistNode(q).toString());
-			if (DISPLAY_DD) _context.showGraph(q, "Q after disc Prod");
+			System.out.println("Q After discount Prod:");
+			if (PRINT_DD) System.out.println(context.getExistNode(q).toString());
+			if (PLOT_DD) context.showGraph(q, "Q after discount Prod");
 		}
 		// Add reward *if* it contains primed vars that need to be regressed
-		HashSet<String> i_and_ns_vars_in_reward = filterIandNSVars(_context.collectVars(a._reward), true, true);
+		HashSet<String> i_and_ns_vars_in_reward = filterIandNSVars(context.collectVars(a._reward), true, true);
 		if (!i_and_ns_vars_in_reward.isEmpty()) {
-			q = _context.apply(a._reward, q, XADD.SUM); // Add reward to already discounted primed value function
+			q = context.apply(a._reward, q, XADD.SUM); // Add reward to already discounted primed value function
 			_logStream.println("- Added in reward pre-marginalization with interm/next state vars: " + i_and_ns_vars_in_reward);
 		}
 			
 		// Derive a variable elimination order for the DBN w.r.t. the reward that puts children before parents
-		HashSet<String> vars_to_regress = filterIandNSVars(_context.collectVars(q), true, true);
+		HashSet<String> vars_to_regress = filterIandNSVars(context.collectVars(q), true, true);
 		Graph g = buildDBNDependencyDAG(a, vars_to_regress);
 		if (g.hasCycle()) 
 			displayCyclesAndExit(g, a);
@@ -245,9 +185,9 @@ public class VI extends CAMDPsolver {
 		// Regress each variable in the topological order
 		for (Object o : var_order) {
 			String var_to_elim = (String)o;
-			if (_mdp._hsBoolIVars.contains(var_to_elim) || _mdp._hsBoolNSVars.contains(var_to_elim)) {
+			if (mdp._hsBoolIVars.contains(var_to_elim) || mdp._hsBoolNSVars.contains(var_to_elim)) {
 				q = regressBVars(q, a, var_to_elim);
-			} else if (_mdp._hsContIVars.contains(var_to_elim) || _mdp._hsContNSVars.contains(var_to_elim)) {
+			} else if (mdp._hsContIVars.contains(var_to_elim) || mdp._hsContNSVars.contains(var_to_elim)) {
 				q = regressCVars(q, a, var_to_elim);
 			} else {
 				// The topological sort will also add in next state and action variables since they were parents in the network
@@ -260,65 +200,64 @@ public class VI extends CAMDPsolver {
 		// - if action variables then need to maintain action name along with
 		//   the substitutions made at the leaves (which can occur recursively for
 		//   multivariable problems)
-		// if (_mdp.MAINTAIN_POLICY) { 
+		// if (mdp.MAINTAIN_POLICY) { 
 		//      ... 
 		// }
 			
 		// NOTE: if reward was not added in prior to regression, it must be 
 		// added in now...
 		if (i_and_ns_vars_in_reward.isEmpty()) {
-			q = _context.apply(a._reward, q, XADD.SUM);
+			q = context.apply(a._reward, q, XADD.SUM);
 			_logStream.println("- Added in reward post-marginalization with no interm/next state vars.");
 		}
 		
 		// Optional Display
-		_logStream.println("- Q^" + _CurIter + "(" + a._sName + ", " + a._actionParams + " )\n" + _context.getString(q));
 		if (REGRESS_DEBUG){
 			System.out.println("Q before Max:");
-			if (DISPLAY_PREMAX_Q){
-				_mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "^" + _CurIter + "-" + Math.round(1000*APPROX_ERROR));
+			if (PLOT_DD){
+				mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "^" + curIter + "-" + Math.round(1000*APPROX_ERROR));
 			}
 		}
 
 		// Noise handling
 		if (a._noiseVars.size() == 0) {
 			// No action params to maximize over
-			_logStream.println("- Q^" + _CurIter + "(" + a._sName + " ):\n" + " No noise parameters to max over, skipping this step.");
+			_logStream.println("- Q^" + curIter + "(" + a._sName + " ):\n" + " No noise parameters to max over, skipping this step.");
 		} else {
 			// Max in noise constraints and min out each noise parameter in turn
 			// NOTE: we can do this because noise parameters can only reference state variables 
 			//       (not currently allowing them to condition on intermediate or other noise vars)
 			//       hence legal values of noise var determined solely by the factor for that var
-			HashSet<String> q_vars = _context.collectVars(q);
+			HashSet<String> q_vars = context.collectVars(q);
 			for (String nvar : a._noiseVars) {
 	
 				if (!q_vars.contains(nvar)) {
-					_logStream.println("- Skipping noise var '" + nvar + "', which does not occur in q: " + _context.collectVars(q));
+					_logStream.println("- Skipping noise var '" + nvar + "', which does not occur in q: " + context.collectVars(q));
 					continue;
 				}
 				
 				_logStream.println("- Minimizing over noise param '" + nvar + "'");
 				int noise_factor = a._hmNoise2DD.get(nvar);
-				q = _context.apply(noise_factor, q, XADD.MAX); // Max in the noise so illegal states get replace by +inf, otherwise q replaces -inf
+				q = context.apply(noise_factor, q, XADD.MAX); // Max in the noise so illegal states get replace by +inf, otherwise q replaces -inf
 				q = minOutVar(q, nvar, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-				_logStream.println("-->: " + _context.getString(q));
+				_logStream.println("-->: " + context.getString(q));
 				
 				// Can be computational expensive (max-out) so flush caches if needed
 				flushCaches(_maxDD == null? Arrays.asList(q): Arrays.asList(q, _maxDD));
 			}
 			_logStream.println("- Done noise parameter minimization");
-			_logStream.println("- Q^" + _CurIter + "(" + a._sName + " )" + _context.collectVars(q) + "\n" + _context.getString(q));
+			_logStream.println("- Q^" + curIter + "(" + a._sName + " )" + context.collectVars(q) + "\n" + context.getString(q));
 		}		
 		
 		// Continuous action parameter maximization
 		if (a._actionParams.size() == 0) {
 			// No action params to maximize over
-			_logStream.println("- Q^" + _CurIter + "(" + a._sName + " ):\n" + " No action parameters to max over, skipping this step.");
+			_logStream.println("- Q^" + curIter + "(" + a._sName + " ):\n" + " No action parameters to max over, skipping this step.");
 		} else 
 		{
 		
 				// Max out each action param in turn
-			HashSet<String> q_vars = _context.collectVars(q);
+			HashSet<String> q_vars = context.collectVars(q);
 			for (int i=0; i < a._actionParams.size(); i++) 
 			{
 				String avar = a._actionParams.get(i);
@@ -326,25 +265,25 @@ public class VI extends CAMDPsolver {
 				double ub   = a._hmAVar2UB.get(avar);
 	
 				if (!q_vars.contains(avar)) {
-					_logStream.println("- Skipping var '" + avar + "': [" + lb + "," + ub + "], which does not occur in q: " + _context.collectVars(q));
+					_logStream.println("- Skipping var '" + avar + "': [" + lb + "," + ub + "], which does not occur in q: " + context.collectVars(q));
 					continue;
 				}
 				 
 				_logStream.println("- Maxing out action param '" + avar + "': [" + lb + "," + ub + "]");
 				q = maxOutVar(q, avar, lb, ub);
-				_logStream.println("-->: " + _context.getString(q));
+				_logStream.println("-->: " + context.getString(q));
 				
 				// Can be computational expensive (max-out) so flush caches if needed
 				flushCaches( (_maxDD == null? Arrays.asList(q): Arrays.asList(q, _maxDD)) /* additional node to save */);
 				if (REGRESS_DEBUG){
-					if (DISPLAY_PREMAX_Q){
-					_mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "-End^" + _CurIter + "-" + Math.round(1000*APPROX_ERROR));
+					if (PLOT_DD){
+					mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "-End^" + curIter + "-" + Math.round(1000*APPROX_ERROR));
 					}
 				}
 			  }
 		
 			_logStream.println("- Done action parameter maximization");
-			_logStream.println("- Q^" + _CurIter + "(" + a._sName + " )\n" + _context.getString(q));
+			_logStream.println("- Q^" + curIter + "(" + a._sName + " )\n" + context.getString(q));
 		}
 
 		if (REGRESS_DEBUG) System.out.println("Regress End");
@@ -354,24 +293,24 @@ public class VI extends CAMDPsolver {
 	public int regressCVars(int q, CAction a, String var) {
 		
 		// Get cpf for continuous var'
-		int var_id = _context._cvar2ID.get(var);
+		int var_id = context._cvar2ID.get(var);
 		Integer dd_conditional_sub = a._hmVar2DD.get(var);
 
-		_logStream.println("- Integrating out: " + var + "/" + var_id /* + " in\n" + _context.getString(dd_conditional_sub)*/);
+		_logStream.println("- Integrating out: " + var + "/" + var_id /* + " in\n" + context.getString(dd_conditional_sub)*/);
 
 		// Check cache
 		_contRegrKey.set(var_id, dd_conditional_sub, q);
 		Integer result = null;
-		if ((result = _mdp._hmContRegrCache.get(_contRegrKey)) != null)
+		if ((result = mdp._hmContRegrCache.get(_contRegrKey)) != null)
 			return result;
 		
 		// Perform regression via delta function substitution
-		q = _context.reduceProcessXADDLeaf(dd_conditional_sub, 
-				_context.new DeltaFunctionSubstitution(var, q), true);
+		q = context.reduceProcessXADDLeaf(dd_conditional_sub, 
+				context.new DeltaFunctionSubstitution(var, q), true);
 		
 		// Cache result
-		_logStream.println("-->: " + _context.getString(q));
-		_mdp._hmContRegrCache.put(new IntTriple(_contRegrKey), q);
+		_logStream.println("-->: " + context.getString(q));
+		mdp._hmContRegrCache.put(new IntTriple(_contRegrKey), q);
 		
 		return q;		
 	}
@@ -379,117 +318,61 @@ public class VI extends CAMDPsolver {
 	public int regressBVars(int q, CAction a, String var) {
 		
 		// Get cpf for boolean var'
-		int var_id = _context.getVarIndex( _context.new BoolDec(var), false);
+		int var_id = context.getVarIndex( context.new BoolDec(var), false);
 		Integer dd_cpf = a._hmVar2DD.get(var);
 		
-		_logStream.println("- Summing out: " + var + "/" + var_id /*+ " in\n" + _context.getString(dd_cpf)*/);
-		q = _context.apply(q, dd_cpf, XADD.PROD);
+		_logStream.println("- Summing out: " + var + "/" + var_id /*+ " in\n" + context.getString(dd_cpf)*/);
+		q = context.apply(q, dd_cpf, XADD.PROD);
 		
 		// Following is a safer way to marginalize (instead of using opOut
 		// based on apply) in the event that two branches of a boolean variable 
 		// had equal probability and were collapsed.
-		int restrict_high = _context.opOut(q, var_id, XADD.RESTRICT_HIGH);
-		int restrict_low  = _context.opOut(q, var_id, XADD.RESTRICT_LOW);
-		q = _context.apply(restrict_high, restrict_low, XADD.SUM);
+		int restrict_high = context.opOut(q, var_id, XADD.RESTRICT_HIGH);
+		int restrict_low  = context.opOut(q, var_id, XADD.RESTRICT_LOW);
+		q = context.apply(restrict_high, restrict_low, XADD.SUM);
 
-		_logStream.println("-->: " + _context.getString(q));
+		_logStream.println("-->: " + context.getString(q));
 
 		return q;
 	}
 
-	// Works backward from this root factor 
-	public Graph buildDBNDependencyDAG(CAction a, HashSet<String> vars) {
-		Graph g = new Graph(true, false, true, false);
-		HashSet<String> already_seen = new HashSet<String>();
-		
-		// We don't want to generate parents for the following "base" variables
-		already_seen.addAll( _mdp._hsContSVars );
-		already_seen.addAll( _mdp._hsBoolSVars );
-		already_seen.addAll( _mdp._hsContAVars ); 
-		already_seen.addAll( _mdp._hsNoiseVars ); 
-		
-		for (String var : vars)
-			buildDBNDependencyDAGInt(a, var, g, already_seen);
-		
-		return g;
+	//Memory Management
+	public void flushCaches(List<Integer> specialNodes){
+		ArrayList<Integer> moreSpecialNodes = new ArrayList<Integer>();
+		moreSpecialNodes.addAll(specialNodes);
+		moreSpecialNodes.add(valueDD);
+		for(int i=1;i<curIter;i++) moreSpecialNodes.add(solutionDDList[i]);
+		mdp.flushCaches(moreSpecialNodes);
 	}
 
-	// Consider that vars belong to a parent factor, recursively call
-	// for every child factor and link child to parent
-	// 
-	// have R(x1i,b1i,x2'), DAG has (b1i -> x1i -> R), (b1i -> R), (x2' -> R)... {x1i, b1i, x2'}
-	// recursively add in parents for each of x2', xli, bli
-	public void buildDBNDependencyDAGInt(CAction a, String parent_var, Graph g, HashSet<String> already_seen) {
-		if (already_seen.contains(parent_var))
-			return;
-		already_seen.add(parent_var);
-		Integer dd_cpf = a._hmVar2DD.get(parent_var);
-		if (dd_cpf == null) {
-			System.err.println("Could not find CPF definition for variable '" + parent_var + 
-					"' while regressing action '" + a._sName + "'");
-			System.exit(1);
-		}
-		HashSet<String> children = _context.collectVars(dd_cpf);
-		for (String child_var : children) {
-			// In the case of boolean variables, the dual action diagram contains the parent,
-			// because this is not a substitution, it is a distribution over the parent.
-			// Hence we need to explicitly prevent boolean variable self-loops -- this is not
-			// an error.
-			if (!child_var.equals(parent_var) || _mdp._hsContIVars.contains(parent_var) || _mdp._hsContNSVars.contains(parent_var)) {
-				g.addUniLink(child_var, parent_var);
-				//System.out.println("Adding link " + child_var + " --> " + parent_var);
-			} else if(child_var.equals(parent_var)){ 
-				// SUSPICIOUS CODE :p (avoid removing variables that dont have dependencies
-				g.addNode(parent_var);
-			}
-			buildDBNDependencyDAGInt(a, child_var, g, already_seen);
-		}
-	}
-
-	public HashSet<String> filterIandNSVars(HashSet<String> vars, boolean allow_cont, boolean allow_bool) {
-		HashSet<String> filter_vars = new HashSet<String>();
-		for (String var : vars)
-			if (allow_cont && 
-				(_mdp._hsContIVars.contains(var) ||
-				 _mdp._hsContNSVars.contains(var)))
-				filter_vars.add(var);
-			else if (allow_bool &&
-				(_mdp._hsBoolIVars.contains(var) ||
-				 _mdp._hsBoolNSVars.contains(var)))
-				filter_vars.add(var);
-		return filter_vars;
-	}
-		
-	public int maxOutVar(int ixadd, String var, double lb, double ub) {
-		XADDLeafMinOrMax max = _context.new XADDLeafMinOrMax(var, lb, ub, true /* is_max */, _logStream);
-		ixadd  = _context.reduceProcessXADDLeaf(ixadd, max, false);
-		return max._runningResult;
-	}
-	
-	public int minOutVar(int ixadd, String var, double lb, double ub) {
-		XADDLeafMinOrMax min = _context.new XADDLeafMinOrMax(var, lb, ub, false /* is_max */, _logStream);
-		ixadd  = _context.reduceProcessXADDLeaf(ixadd, min, false);
-		return min._runningResult;
-	}
-
-	private void displayCyclesAndExit(Graph g, CAction a) {
-		// Error display -- find the cycles and display them
-		System.err.println("ERROR: in action '" + a._sName + "' the DBN dependency graph contains one or more cycles as follows:");
-		HashSet<HashSet<Object>> sccs = g.getStronglyConnectedComponents();
-		for (HashSet<Object> connected_component : sccs)
-			if (connected_component.size() > 1)
-				System.err.println("- Cycle: " + connected_component);
-		HashSet<Object> self_cycles = g.getSelfCycles();
-		for (Object v : self_cycles)
-			System.err.println("- Self-cycle: [" + v + "]");
-		g.launchViewer("DBN Dependency Graph for '" + a._sName + "'");
-		try { System.in.read(); } catch (Exception e) {}
-		System.exit(1);
-	}
-
+	//Plot
 	public String makeXADDLabel(String xadd, int iter, double approx)
 	{
 		return  xadd + " Iter"+iter+ (approx > 0? "-approx"+String.format("%03d",Math.round(1000*approx)): "");
+	}
+
+	//Results
+	public void setupResults(){
+		solutionDDList = new int[nIter+1];
+		solutionTimeList = new long[nIter+1];
+		solutionNodeList = new int[nIter+1];
+		solutionInitialSValueList = new double[nIter+1];
+		solutionMaxValueList = new double[nIter+1];
+	}
+
+	public void saveResults(){
+		//Results: NIter, Time, Nodes, InitialS Value.
+		for(int i=1; i<=nIter; i++){
+		_resultStream.format("%d %d %d %f\n", i, solutionTimeList[i], solutionNodeList[i], (mdp._initialS != null) ? solutionInitialSValueList[i]: "0");
+	}
+}
+
+	public void printResults() {
+		System.out.println("Results for Value Iteration: " + finalIter + " iterations:");
+		System.out.print("Time:"); for(int i=1; i<=finalIter; i++) System.out.print(solutionTimeList[i]+" ");System.out.println(";");
+		System.out.print("Nodes:"); for(int i=1; i<=finalIter; i++) System.out.print(solutionNodeList[i]+" ");System.out.println(";");
+		System.out.print("Initial S Value:"); for(int i=1; i<=finalIter; i++) System.out.print(solutionInitialSValueList[i]+" ");System.out.println(";");
+		System.out.print("Total Time: "); long t=0; for(int i=1; i<=finalIter; i++) t += solutionTimeList[i]; System.out.println(t+";");
 	}
 }
 

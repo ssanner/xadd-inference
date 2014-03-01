@@ -521,7 +521,7 @@ public class XADD {
     }
     
     // XADD substitution -> replace terminal node from an assignment with a XADD
-    public Integer substituteXADD(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign, int newXADD_id){
+    public Integer substituteXADDforPath(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign, int newXADD_id){
         // Get root
         XADDNode n = getExistNode(node_id);
 
@@ -538,7 +538,7 @@ public class XADD {
 	    
 	        // Substitute down on next node
 	        int child = branch_high ? inode._high : inode._low;
-	        int newchild = substituteXADD(child, bool_assign, cont_assign, newXADD_id);
+	        int newchild = substituteXADDforPath(child, bool_assign, cont_assign, newXADD_id);
 	        
 	        if (branch_high) return getINodeCanon(inode._var, newchild, inode._low);
 	        /* else */ return getINodeCanon(inode._var, inode._high, newchild);
