@@ -16,11 +16,11 @@ public class Main {
     
 	//Running Configurations
 	private static int VERBOSE = 1;
-    private static int SOLUTION = 3; // 1 -> Value Iteration 2-> RTDP 3-> Vi first, then RTDP 4-> RTDPFH
-    private static int NTRIALS = 9; // For RTDP and RTDPFH solution
+    private static int SOLUTION = 3; // 1 -> Value Iteration 2-> RTDP 3-> RTDPFH
+    private static int NTRIALS = 4; // For RTDP and RTDPFH solution
     
     // Results Configurations
-    private static final boolean SAVE_RESULTS = true;
+    private static final boolean SAVE_RESULTS = false;
 	private static final boolean PRINT_RESULTS = true;
 	private static final boolean COMPARE_RESULTS = false;
 	
@@ -64,53 +64,50 @@ public class Main {
         
         switch (SOLUTION){
         case 1:
-            CAMDPsolver solver = new VI(mdp);
-            int used = solver.solve(iter);
+            CAMDPsolver solver = new VI(mdp, iter);
+            int used = solver.solve();
             if (SAVE_RESULTS) solver.saveResults();
             if (PRINT_RESULTS) solver.printResults();
-
-            if (VERBOSE > 0) System.out.println("Value Iteration Solution complete, required " + used + " / " + iter + " iterations.");
+            if (VERBOSE > 0) System.out.println("\nValue Iteration Solution complete, required " + used + " / " + iter + " iterations.");
             break;
              
         case 2:
             checkInitialS(mdp);
-            solver = new CRTDP(mdp,NTRIALS);
-            used = solver.solve(iter);
+            solver = new CRTDP(mdp, NTRIALS, iter);
+            used = solver.solve();
             if (SAVE_RESULTS) solver.saveResults();
             if (PRINT_RESULTS) solver.printResults();
 
 
-            if (VERBOSE > 0) System.out.println("Continuous RTDP Solution complete, " + used + " trials of depth " + iter + ".");
+            if (VERBOSE > 0) System.out.println("\nContinuous RTDP Solution complete, " + used + " trials of depth " + iter + ".");
             break;
+//        case 3:
+//            checkInitialS(mdp);
+//            CAMDPsolver solver1 = new VI(mdp,iter);
+//            int used1 = solver1.solve();
+//            CAMDPsolver solver2 = new CRTDP(mdp, NTRIALS, iter);
+//            int used2 = solver2.solve();
+//            if (SAVE_RESULTS){
+//            	solver1.saveResults();
+//            	solver2.saveResults();
+//            }
+//            if (PRINT_RESULTS){
+//            	solver1.printResults();
+//            	solver2.printResults();
+//            }
+//            if (COMPARE_RESULTS){}
+//            if (VERBOSE > 0) {
+//            	System.out.println("Compare Solution complete, VI required " + used1 + " / " + iter + " iterations.");
+//            	System.out.println("Continuous RTDP required " + used2 + " trials of depth " + iter + ".");
+//            }
+//            break;
         case 3:
             checkInitialS(mdp);
-            CAMDPsolver solver1 = new VI(mdp);
-            int used1 = solver1.solve(iter);
-            CAMDPsolver solver2 = new CRTDP(mdp, NTRIALS);
-            int used2 = solver2.solve(iter);
-            if (SAVE_RESULTS){
-            	solver1.saveResults();
-            	solver2.saveResults();
-            }
-            if (PRINT_RESULTS){
-            	solver1.printResults();
-            	solver2.printResults();
-            }
-            if (COMPARE_RESULTS){}
-            if (VERBOSE > 0) {
-            	System.out.println("Compare Solution complete, VI required " + used1 + " / " + iter + " iterations.");
-            	System.out.println("Continuous RTDP required " + used2 + " trials of depth " + iter + ".");
-            }
-            break;
-        case 4:
-            checkInitialS(mdp);
             solver = new CRTDPFH(mdp,NTRIALS, iter);
-            used = solver.solve(iter);
+            used = solver.solve();
             if (SAVE_RESULTS) solver.saveResults();
             if (PRINT_RESULTS) solver.printResults();
-
-
-            if (VERBOSE > 0) System.out.println("Continuous RTDPFH Solution complete, " + used + " trials of depth " + iter + ".");
+            if (VERBOSE > 0) System.out.println("\nContinuous RTDPFH Solution complete, " + used + " trials of depth " + iter + ".");
             break;            
             
     default:
