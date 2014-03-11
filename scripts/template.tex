@@ -1,0 +1,24 @@
+\documentclass[a4paper,10pt,fleqn]{article} 
+\usepackage{tikz}
+
+\newcommand{\filename}{FILENAME}
+\newcommand\draw[1]{
+	\begin{figure}[!ht]
+	\centering
+	\includegraphics[scale = 1]{#1}
+	\end{figure}
+	\newline
+}
+
+\newif\ifdrawvalue
+\begin{document} 
+ 
+\section{Pictures}
+
+Comparison Images:
+\draw{\filename-TotTime.eps}
+\draw{\filename-Nodes.eps}
+\draw{\filename-IniVal.eps}
+\draw{\filename-ValTime.eps}
+  
+\end{document} 

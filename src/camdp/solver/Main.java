@@ -1,5 +1,7 @@
 package camdp.solver;
 
+import java.io.IOException;
+
 import camdp.CAMDP;
 
 /**
@@ -16,53 +18,64 @@ public class Main {
     
 	//Running Configurations
 	private static int VERBOSE = 1;
-    private static int SOLUTION = 3; // 1 -> Value Iteration 2-> RTDP 3-> RTDPFH
-    private static int NTRIALS = 4; // For RTDP and RTDPFH solution
+    private static String[] solvers = {"Invalid","VI","CRTDP","RTDPFH","VI, CRTDP & CRTDPFH"};// 1 -> Value Iteration 2-> RTDP 3-> RTDPFH, Run all and Save All
+    private static int TRIALS_DEFAULT = 15; // For RTDP and RTDPFH solution
     
     // Results Configurations
-    private static final boolean SAVE_RESULTS = false;
+    private static final boolean SAVE_RESULTS = true;
 	private static final boolean PRINT_RESULTS = true;
-	private static final boolean COMPARE_RESULTS = false;
-	
     
     public static void Usage() {
-        System.out.println("\nUsage: MDP-filename #iter display-2D? display-3D? [dApproxPrune]");
+        System.out.println("\nUsage: MDP-filename #solver #iter #Ddisplay(2or3) #trials [dApproxPrune]");
         System.exit(1);
     }
 
     public static void main(String args[]) {
-        if (args.length < 4 || args.length >5) {
+    	int nargs = args.length;
+        if (nargs < 5 || nargs >7) {
             Usage();
         }
         
         // Parse problem filename
         String filename = args[0];
 
-        // Parse iterations
+        // Parse integers
+        int solution = -1;
         int iter = -1;
+        int display = -1;
+        int trials = TRIALS_DEFAULT;
         try {
-            iter = Integer.parseInt(args[1]);
+        	solution = Integer.parseInt(args[1]); 
+        	iter = Integer.parseInt(args[2]);
+            display = Integer.parseInt(args[3]);
+            trials = Integer.parseInt(args[4]);
         } catch (NumberFormatException nfe) {
-            System.err.println("\nIllegal iteration value\n");
+            System.err.println("\nIllegal integer parameters \n");
             Usage();
         }
 
         // Build a CAMDP, display, solve
         CAMDP mdp = new CAMDP(filename);
-        mdp.DISPLAY_2D = Boolean.parseBoolean(args[2]);
-        mdp.DISPLAY_3D = Boolean.parseBoolean(args[3]);
+        
+        mdp.DISPLAY_2D = (display == 2);
+        mdp.DISPLAY_3D = (display == 3);
         
         //optional argument modifies 
-        if (args.length == 5){
-            mdp.APPROX_ERROR = Double.parseDouble(args[4]);
+        if (args.length > 5){
+            mdp.APPROX_ERROR = Double.parseDouble(args[5]);
         }
         
-        if (VERBOSE >0) System.out.println("Main Solution Start:");
+        if (args.length > 6){
+        	VERBOSE=Integer.parseInt(args[6]);
+        	CAMDPsolver.setUp(VERBOSE);
+        }
+        
+        if (VERBOSE >0) System.out.println("Main Solution Start: Solving "+filename+" with solving option "+solvers[solution]+" for "+iter+" iterations and "+trials+" trials.");
         if (VERBOSE > 1){
             System.out.println(mdp.toString(false, false));
         }
         
-        switch (SOLUTION){
+        switch (solution){
         case 1:
             CAMDPsolver solver = new VI(mdp, iter);
             int used = solver.solve();
@@ -73,41 +86,43 @@ public class Main {
              
         case 2:
             checkInitialS(mdp);
-            solver = new CRTDP(mdp, NTRIALS, iter);
+            solver = new CRTDP(mdp, trials, iter);
             used = solver.solve();
             if (SAVE_RESULTS) solver.saveResults();
             if (PRINT_RESULTS) solver.printResults();
-
-
             if (VERBOSE > 0) System.out.println("\nContinuous RTDP Solution complete, " + used + " trials of depth " + iter + ".");
             break;
-//        case 3:
-//            checkInitialS(mdp);
-//            CAMDPsolver solver1 = new VI(mdp,iter);
-//            int used1 = solver1.solve();
-//            CAMDPsolver solver2 = new CRTDP(mdp, NTRIALS, iter);
-//            int used2 = solver2.solve();
-//            if (SAVE_RESULTS){
-//            	solver1.saveResults();
-//            	solver2.saveResults();
-//            }
-//            if (PRINT_RESULTS){
-//            	solver1.printResults();
-//            	solver2.printResults();
-//            }
-//            if (COMPARE_RESULTS){}
-//            if (VERBOSE > 0) {
-//            	System.out.println("Compare Solution complete, VI required " + used1 + " / " + iter + " iterations.");
-//            	System.out.println("Continuous RTDP required " + used2 + " trials of depth " + iter + ".");
-//            }
-//            break;
+
         case 3:
             checkInitialS(mdp);
-            solver = new CRTDPFH(mdp,NTRIALS, iter);
+            solver = new CRTDPFH(mdp, trials, iter);
             used = solver.solve();
             if (SAVE_RESULTS) solver.saveResults();
             if (PRINT_RESULTS) solver.printResults();
             if (VERBOSE > 0) System.out.println("\nContinuous RTDPFH Solution complete, " + used + " trials of depth " + iter + ".");
+            break;            
+
+        case 4:
+            solver = new VI(mdp, iter);
+            int used1 = solver.solve();
+            if (SAVE_RESULTS) solver.saveResults();
+            if (PRINT_RESULTS) solver.printResults();
+            System.out.println();
+            
+            System.out.println("RTDP");
+            checkInitialS(mdp);
+            solver = new CRTDP(mdp, trials, iter);
+            int used2 = solver.solve();
+            if (SAVE_RESULTS) solver.saveResults();
+            if (PRINT_RESULTS) solver.printResults();
+            System.out.println();
+            
+            System.out.println("RTDPFH");
+            solver = new CRTDPFH(mdp, trials, iter);
+            int used3 = solver.solve();
+            if (SAVE_RESULTS) solver.saveResults();
+            if (PRINT_RESULTS) solver.printResults();
+            if (VERBOSE > 0) System.out.println("\nTriple solution complete, VI used "+used1+ ", RTDP used "+used2+" RTDPFH used "+used3);
             break;            
             
     default:
@@ -115,6 +130,11 @@ public class Main {
             System.exit(1);
         }
         
+//        try {
+//			System.in.read();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
         if (VERBOSE >0) System.out.println("MAIN-FINISH");
     }
 

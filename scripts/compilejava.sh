@@ -27,7 +27,7 @@ RUN=$6
 PLOT=$7
 VALPLOT=$8
 
-mkdir results/$EXNAME
+mkdir -p results/$EXNAME
 PARAMS="src/camdp/ex/$EXNAME.cmdp results/$EXNAME $ITER $NCURVE 0.$STEP $VALPLOT"
 
 CLASSPATH=$ORI/src

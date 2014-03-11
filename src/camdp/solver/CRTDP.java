@@ -18,6 +18,7 @@ import camdp.CAction;
 public class CRTDP extends CAMDPsolver {
 
 	//Trial Keeping Variables
+	public Integer curDepth = null;
 	public Integer curTrial = null;
 	public Integer nTrials = null;
 	public Integer finalTrial = null;
@@ -30,15 +31,9 @@ public class CRTDP extends CAMDPsolver {
 	/* Debugging Flags */
 	
 	//Local flags:
-	private static final boolean MAIN_DEBUG = true;
 	private static final boolean DEBUG_TRIAL = false;
 	private static final boolean BELLMAN_DEBUG = false;
 	private static final boolean REGRESS_DEBUG = false;
-	private static final boolean SAMPLING_DEBUG = false;
-	
-	//Debug Format flags
-	private static final boolean PLOT_DD = false;
-	private static final boolean PRINT_DD = false;
 	
 	//////////////////Methods /////////////////////////////////
 	
@@ -62,11 +57,13 @@ public class CRTDP extends CAMDPsolver {
 	
 	////////Main Solver Class ///////////////
 	public int solve(){
-		if (MAIN_DEBUG) System.out.println("Starting CRTDP solution, Ntrials "+ nTrials +" , Horizon = " + nIter);
+		if (MAIN_DEBUG) debugOutput.println("Starting CRTDP solution, Ntrials "+ nTrials +" , Horizon = " + nIter);
 		if (mdp._initialS == null){
 			System.err.println("Impossible to solve Unknown Initial State MDP with RTDP!");
 			return -1;
 		}
+		
+		resetTimer(1); //total solution time
 		
 		// Initialize Solution
 		boolean solConverge = false;
@@ -77,11 +74,14 @@ public class CRTDP extends CAMDPsolver {
 		// Repeat Trials until convergence
 		while (curTrial < nTrials && !solConverge) 
 		{
-			++curTrial;
-			resetTimer();
+			resetTimer(); 
+			++curTrial;			
 			if (MAIN_DEBUG){
-				System.out.println("Starting Trial# " + curTrial +" with max depth = " + nIter);
-				if (PRINT_DD) System.out.println("Initial Value DD = "+valueDD+" DD:"+context.getString(valueDD));
+				debugOutput.println("Starting Trial# " + curTrial +" with max depth = " + nIter);
+				if (VALIDATION_TEST){
+					if ( (!DEBUG_TRIAL) && PRINT_DD)  debugOutput.println("Initial Value DD = "+valueDD+" DD:"+context.getString(valueDD));
+					if ( (!DEBUG_TRIAL) && PLOT_DD)   mdp.doDisplay(valueDD,makeXADDLabel("V Start",curTrial, APPROX_ERROR));
+				}
 			}
 	
 			// Save Previous diagram
@@ -89,36 +89,44 @@ public class CRTDP extends CAMDPsolver {
 			
 			//Perform Trial
 			makeTrial(mdp._initialS);
-
-			if (MAIN_DEBUG){
-				System.out.println("Trial:" + curTrial+" Complete");
-				if (PRINT_DD) System.out.println("Value after Trial = "+valueDD+" DD:" + context.getString(valueDD));
-				if (PLOT_DD) mdp.doDisplay(valueDD,makeXADDLabel("V",curTrial, nIter, APPROX_ERROR));
-			}
 			
 			//Optional post-max approximation - Could be used safely if overall error is being monitored 
-			valueDD = checkLinearAndApprox(valueDD);
-			checkCanon(valueDD);
-			approxValueDD();
+			checkDD(valueDD);
+			//checkLinearAndApprox(valueDD);
+			//approxValueDD();
 			flushCaches();
 
-			// Results 
-			solutionDDList[curTrial] = valueDD;
-			solutionTimeList[curTrial] = getElapsedTime();
-			solutionNodeList[curTrial] = context.getNodeCount(valueDD);
-			solutionInitialSValueList[curTrial] = context.evaluate(valueDD, mdp._initialS._hmBoolVars, mdp._initialS._hmContVars);
-			if (mdp.LINEAR_PROBLEM) solutionMaxValueList[curTrial] = context.linMaxVal(valueDD);
+			storeResults();
+			
+
+			if (MAIN_DEBUG){
+				debugOutput.println("Trial:" + curTrial+" Complete");
+				if (PERFORMANCE_TEST) debugOutput.println("Time = "+getElapsedTime());
+				if ( (!DEBUG_TRIAL) && PRINT_DD)  debugOutput.println("Value after Trial = "+valueDD+" DD:" + context.getString(valueDD));
+				if ( (!DEBUG_TRIAL) && PLOT_DD) mdp.doDisplay(valueDD,makeXADDLabel("V",curTrial, APPROX_ERROR));
+			}
 			
 			// Verify Convergence
-			if (prevDD.equals(valueDD) ) {
-				if (MAIN_DEBUG) System.out.println("! CRTDP: Converged to solution early, in Trial "+curTrial);
-				finalTrial = curTrial;
+			if (ENABLE_EARLY_CONVERGENCE && prevDD.equals(valueDD) ) {
+				if (MAIN_DEBUG) debugOutput.println("! CRTDP: Converged to solution early, in Trial "+curTrial);
 				solConverge = true;
-			}		
+			}
 		}
 		flushCaches();	
 		finalTrial = curTrial;
+		if (PERFORMANCE_TEST){
+			debugOutput.println("Total CRTDP Time = "+getElapsedTime(1));
+		}
 		return finalTrial;
+	}
+
+	private void storeResults() {
+		// Results 
+		solutionDDList[curTrial] = valueDD;
+		solutionTimeList[curTrial] = getElapsedTime() + (curTrial >1? solutionTimeList[curTrial-1]:0);
+		solutionNodeList[curTrial] = context.getNodeCount(valueDD);
+		solutionInitialSValueList[curTrial] = context.evaluate(valueDD, mdp._initialS._hmBoolVars, mdp._initialS._hmContVars);
+		if (mdp.LINEAR_PROBLEM) solutionMaxValueList[curTrial] = context.linMaxVal(valueDD);
 	}
 	
 	private void approxValueDD() {
@@ -126,7 +134,7 @@ public class CRTDP extends CAMDPsolver {
 			long appTime = getElapsedTime();
 			valueDD = context.linPruneRel(valueDD, APPROX_ERROR);
 			long pruneTime = getElapsedTime() - appTime;
-			System.out.println("ApproxResult: Trial "+ curTrial+ " Solve time = "+appTime+ ", Prune time = "+pruneTime);
+			debugOutput.println("ApproxResult: Trial "+ curTrial+ " Solve time = "+appTime+ ", Prune time = "+pruneTime);
 		}
 	}
 
@@ -145,30 +153,48 @@ public class CRTDP extends CAMDPsolver {
 
 
 	private void makeTrial(State currentS){
-		int depth = nIter;
-		while (depth > 0){			
-			long trialStart = getElapsedTime();
+		int remainH = nIter;
+		while (remainH > 0){	
+			resetTimer(3); //One full Backup
+			curDepth = nIter-remainH;
+			int prevDD = valueDD;
+			State prevS = currentS;
+			
 			if (DEBUG_TRIAL){
-				System.out.println("Trial #"+curTrial+", depth ="+depth+", "+ currentS.toString());	
-				System.out.println("State Value = "+ context.evaluate(valueDD, currentS._hmBoolVars, currentS._hmContVars) );
-				if (PRINT_DD) System.out.println("Initial Value = "+valueDD+" DD:\n"+ context.getExistNode(valueDD) +"\n");
+				debugOutput.println("BB Start, Trial "+curTrial+", remH "+remainH);
+				if (VALIDATION_TEST){ 
+					debugOutput.println("Current State = "+currentS.toString());
+					debugOutput.println("State Value = "+ context.evaluate(valueDD, currentS._hmBoolVars, currentS._hmContVars) );
+					if (PRINT_DD) debugOutput.println("Initial Value = "+valueDD+" DD:\n"+ context.getExistNode(valueDD) +"\n");
+					if (PLOT_DD) mdp.doDisplay(valueDD, makeXADDLabel("V StartBB", curTrial, remainH, APPROX_ERROR));
+				}
 			}
 			ParametrizedAction greedyAction = regionBellmanBackup(currentS);
-			long trialMiddle = getElapsedTime();
-							
+			long bbTime = getElapsedTime(3);
+			resetTimer(3);
 			//Using greedy action, sample next state
 			State nextS = sample(currentS, greedyAction);
-			long trialEnd = getElapsedTime();
+			
 			if (DEBUG_TRIAL){
-				System.out.println("Trial #"+curTrial+" Backup took "+(trialMiddle-trialStart)+" Sample took "+(trialEnd-trialMiddle));
-				System.out.println("State After Sample = "+nextS);
-				System.out.println("New State Value = "+ context.evaluate(valueDD, currentS._hmBoolVars, currentS._hmContVars) +"\n" );
-				if (PRINT_DD) System.out.println("Value After Backup = "+ valueDD +" DD:\n"+ context.getExistNode(valueDD) +"\n");
-				if (PLOT_DD) mdp.doDisplay(valueDD,makeXADDLabel("V", curTrial, depth, APPROX_ERROR));
+				debugOutput.println("BB Finish, Trial "+curTrial+", remH "+remainH);
+				if (VALIDATION_TEST){
+					debugOutput.println("State After Sample = "+nextS);
+					debugOutput.println("New State Value = "+ context.evaluate(valueDD, currentS._hmBoolVars, currentS._hmContVars) +"\n" );
+					if (PRINT_DD) debugOutput.println("Value After Backup = "+ valueDD +" DD:\n"+ context.getExistNode(valueDD) +"\n");
+					
+				}
+				if ( (!BELLMAN_DEBUG) && PLOT_DD) mdp.doDisplay(valueDD, makeXADDLabel("V After BB ", curTrial, remainH, APPROX_ERROR));
+				if (PERFORMANCE_TEST) debugOutput.println("Trial "+curTrial+" Step "+(curDepth)+" BBTime = "+bbTime+" Sample = "+getElapsedTime(3));
 			}
+//			if (prevDD == valueDD && prevS.equals(nextS) ){
+//				// TODO: Can we stop trials early if back upis not changing
+//				debugOutput.println("Trial #"+curTrial+" converged early!, finishing it");
+//				break;
+//			}
+			
 			currentS = nextS;
-			depth = depth - 1;
-		}		
+			remainH = remainH - 1;
+		}
 	}
 	
 	
@@ -180,52 +206,62 @@ public class CRTDP extends CAMDPsolver {
 		HashMap<String, Double> maxParam = new HashMap<String, Double>();
 		
 		if (BELLMAN_DEBUG){
-			System.out.println("Bellman Backup Start: "+currS);
-			if (PRINT_DD) System.out.println("Original ValueDD = "+valueDD+"DD:\n"+ context.getExistNode(valueDD));
+			debugOutput.println("Bellman Backup Start: T"+curTrial+" BB"+curDepth);
+			if (VALIDATION_TEST){
+				debugOutput.println("BB State "+currS);
+				if (PRINT_DD) debugOutput.println("Original ValueDD = "+valueDD+"DD:\n"+ context.getExistNode(valueDD));
+				if (PLOT_DD) mdp.doDisplay(valueDD,makeXADDLabel("Original V", curTrial, curDepth, APPROX_ERROR));
+			}
 		}
 		
 		for (Map.Entry<String,CAction> me : mdp._hmName2Action.entrySet()) {
-				long regrIni = getElapsedTime();
+				resetTimer(4);
 				// Regress the current value function through each action (finite number of continuous actions)
 				int regr = regressRegion(valueDD, me.getValue(), currS);
-				if (regr != context.reduceRound(regr) ) System.out.println("Still Rouding issues on Regress!"); // Round!
-				regr = context.reduceLP(regr);
-				
-				long regrMiddle = getElapsedTime();
-				// Maintain running max over different actions
-				maxDD = (maxDD == null) ? regr : context.apply(maxDD, regr, XADD.MAX);
-				maxDD = context.reduceRound(maxDD); // Round!
-				maxDD = context.reduceLP(maxDD); // Rely on flag XADD.CHECK_REDUNDANCY
+				checkDD(regr);
 				double value = context.evaluate(regr, currS._hmBoolVars, currS._hmContVars);
 				
-				long regrEnd = getElapsedTime();
-				if (BELLMAN_DEBUG){
-					System.out.println("Regress Action: " + me.getValue()._sName + " Value:" + value);
-					System.out.println("Regress took "+(regrMiddle-regrIni)+"s Maxim took "+(regrEnd-regrMiddle));
-					if (PRINT_DD) System.out.println("Q Regress = "+regr+" DD:\n" + context.getExistNode(regr));
-				}
+				long regressTime = getElapsedTime(4);
+				resetTimer(4);
+				
+				// Maintain running max over different actions
+				maxDD = (maxDD == null) ? regr : context.apply(maxDD, regr, XADD.MAX);
+				maxDD = context.reduceLP(maxDD); 
+				checkDD(maxDD);				
+
 				if (currSValue == null || value > currSValue){
 					maxAction = me.getValue();
 					currSValue =value; 
 				}
+				
+				if (BELLMAN_DEBUG){
+					debugOutput.println("Regress and Max Action: " + me.getValue()._sName +" complete.");
+					if (VALIDATION_TEST) {
+						debugOutput.println("Action Value:" + value+ "Max Value ="+currSValue+"MaxAction ="+maxAction._sName);
+						if (PRINT_DD) debugOutput.println("Q Regress = "+regr+" DD:\n" + context.getExistNode(regr));
+						if (PLOT_DD) mdp.doDisplay(regr, makeXADDLabel("Regr "+me.getValue()._sName, curTrial, curDepth, APPROX_ERROR));
+						if (PLOT_DD) mdp.doDisplay(maxDD, makeXADDLabel("Current Max "+me.getValue()._sName, curTrial, curDepth, APPROX_ERROR));
+					}
+					if (PERFORMANCE_TEST) debugOutput.println("Regress Time = "+(regressTime)+" Maxim Time = "+getElapsedTime(4)); 
+				}
 		}
 
-		//Min out Illegal +Inf values, these will be non update regions
-		long regrMinS = getElapsedTime();
-		valueDD = context.apply(maxDD, valueDD, XADD.MIN);
-		long regrMinE = getElapsedTime();
-		if (BELLMAN_DEBUG){
-			System.out.println("Final minimization took"+(regrMinE-regrMinS));
-			if (PRINT_DD) System.out.println("MAX of Regr = "+maxDD+" DD:\n" + context.getExistNode(maxDD));
-			if (PRINT_DD) System.out.println("\n New Vfun Before Reduce ="+valueDD+" DD:\n" + context.getExistNode(valueDD));
-		}
+		resetTimer(4); //Final Minimization
 		
-		valueDD = context.reduceLP(valueDD); // Rely on flag XADD.CHECK_REDUNDANCY 
+		//Min out Illegal +Inf values, these will be non update regions
+		valueDD = context.apply(maxDD, valueDD, XADD.MIN);
+		valueDD = context.reduceLP(valueDD); // Rely on flag XADD.CHECK_REDUNDANCY
+		checkDD(valueDD);
 		
 		ParametrizedAction pA = new ParametrizedAction(maxAction, maxParam);
 		if (BELLMAN_DEBUG){
-			System.out.println("\nBackup End, Greedy Action: " + pA + " Greedy Value:" + currSValue +"\n");
-			if (PRINT_DD) System.out.println("New vfun ="+valueDD +" DD:\n" + context.getExistNode(valueDD));
+			if (VALIDATION_TEST){
+				debugOutput.println("\nBackup End, Greedy Action: " + pA + " Greedy Value:" + currSValue +"\n");
+				if (PRINT_DD) debugOutput.println("MAX of Regr = "+maxDD+" DD:\n" + context.getExistNode(maxDD));
+				if (PRINT_DD) debugOutput.println("\n New Vfun = "+valueDD+" DD:\n" + context.getExistNode(valueDD));
+				if (PLOT_DD) mdp.doDisplay(valueDD, makeXADDLabel("Regression End ", curTrial, curDepth, APPROX_ERROR));
+			}
+			if (PERFORMANCE_TEST) debugOutput.println("BB Final Minim Time = "+getElapsedTime(4));
 		}
 		return pA;
 	}
@@ -233,18 +269,21 @@ public class CRTDP extends CAMDPsolver {
 	private IntTriple _contRegrKey = new IntTriple(-1,-1,-1);
 
 	public int regressRegion(int vfun, CAction a, State currS) {
-		// Prime the value function 
-		int q = context.substitute(vfun, mdp._hmPrimeSubs); 
-		
 		if (REGRESS_DEBUG){
-			System.out.println("Regressing: "+vfun+" at " +currS+" with "+a._sName);
-			if (PLOT_DD) mdp.doDisplay(vfun, makeXADDLabel("Qstart-"+a._sName, curTrial, 0, APPROX_ERROR));
+			debugOutput.println("Regressing: "+a._sName+" Trial "+curTrial+" Step "+curDepth);
+			if (VALIDATION_TEST) if (PLOT_DD) mdp.doDisplay(vfun, makeXADDLabel("Qstart-"+a._sName, curTrial, 0, APPROX_ERROR));
 		}
+		// Prime the value function 
+		resetTimer(5); //substitute
+		int q = context.substitute(vfun, mdp._hmPrimeSubs); 
+		long primeTime = getElapsedTime(5);
+		resetTimer(5);
 		
 		// Discount
 		q = context.scalarOp(q, mdp._bdDiscount.doubleValue(), XADD.PROD);
-		
 		int maskReward = context.createPosInfMask(a._reward,currS._hmBoolVars, currS._hmContVars);
+		long maskRewTime = getElapsedTime(5);
+		resetTimer(5);
 
 		// Add reward *if* it contains primed vars that need to be regressed
 		HashSet<String> i_and_ns_vars_in_reward = filterIandNSVars(context.collectVars(a._reward), true, true);
@@ -252,7 +291,10 @@ public class CRTDP extends CAMDPsolver {
 			q = context.apply(maskReward, q, XADD.SUM); // Add reward to already discounted primed value function
 			_logStream.println("- Added in reward pre-marginalization with interm/next state vars: " + i_and_ns_vars_in_reward);
 		}
-			
+		
+		long addRewTime = getElapsedTime(5);
+		resetTimer(5);
+		
 		// Derive a variable elimination order for the DBN w.r.t. the reward that puts children before parents
 		HashSet<String> vars_to_regress = filterIandNSVars(context.collectVars(q), true, true);
 		Graph g = buildDBNDependencyDAG(a, vars_to_regress);
@@ -277,29 +319,42 @@ public class CRTDP extends CAMDPsolver {
 		if (i_and_ns_vars_in_reward.isEmpty()) {
 			q = context.apply(maskReward, q, XADD.SUM);
 		}
-				
+		
+
+		long regStateTime = getElapsedTime(5);
+		resetTimer(5);
+		
 		// Optional Display With just State, Action and Noise Vars
 		if (REGRESS_DEBUG){
-			System.out.println("Qfunction after removing NS = "+q+"DD:\n"+context.getString(q));
-			_logStream.println("- Q^" + "(" + a._sName + ", " + a._actionParams + " )\n" + context.getString(q));
-			if (PLOT_DD) mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "^" + curTrial + "-" + Math.round(1000*APPROX_ERROR));
+			if (VALIDATION_TEST){
+				debugOutput.println("Qfunction after removing NS = "+q+"DD:\n"+context.getString(q));
+				_logStream.println("- Q^" + "(" + a._sName + ", " + a._actionParams + " )\n" + context.getString(q));
+				if (PLOT_DD) mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "^" + curTrial + "-" + Math.round(1000*APPROX_ERROR));
+			}
 		}
 		
 		//Remove Noise Vars
 		q = regressNoise(q, a);		
+		long regNoiseTime = getElapsedTime(5);
+		resetTimer(5);
 		
 		//Remove Action Vars
 		q = regressAction(q, a);
+		long regActionTime = getElapsedTime(5);
+		resetTimer(5);
 
-		//Constraints Verification
 		if (REGRESS_DEBUG){
-			System.out.println("Finished Regressing: "+a._sName);
-			if (PLOT_DD) mdp.doDisplay(q, makeXADDLabel("Qend-"+a._sName, curTrial, 0, APPROX_ERROR));
+			debugOutput.println("Finished Regressing: "+a._sName);
+			if (VALIDATION_TEST) {
+				if (PLOT_DD) mdp.doDisplay(q, makeXADDLabel("Qend-"+a._sName, curTrial, 0, APPROX_ERROR));
+			}
+			if (PERFORMANCE_TEST) {
+				debugOutput.print("regressActVar times: Prime = "+primeTime+", MaskTime = "+maskRewTime+", addRewTime = "+addRewTime);
+				debugOutput.println("regressState = "+regStateTime+", regressNoiseTime = "+regNoiseTime+", regressAction = "+regActionTime);
+			}
 		}
-		return q;
+		return context.reduceLP(q);
 	}
-
-
 	
 	public int regressCVarsMask(int q, CAction a, String var, State currS) {
 		
@@ -351,7 +406,6 @@ public class CRTDP extends CAMDPsolver {
 
 	
 	// Sampling
-	
 	public State sample(State currentS, ParametrizedAction parA){
 		HashSet<String> AllNSVars = new HashSet<String>();
 		AllNSVars.addAll(mdp._hsBoolNSVars);
@@ -376,7 +430,7 @@ public class CRTDP extends CAMDPsolver {
 				nextS._hmContVars.put(var, val);
 			} else {
 				// The topological sort will also add in next state and action variables since they were parents in the network
-				//System.out.println("- Ignoring Non-NextState variable " + var + " during sampling");
+				//debugOutput.println("- Ignoring Non-NextState variable " + var + " during sampling");
 				//_logStream.println("- Ignoring Non-NextState variable " + var + " during sampling");
 			}
 		}
@@ -413,12 +467,12 @@ public class CRTDP extends CAMDPsolver {
 		State newS = new State();
 		for(Entry<String, Boolean> e: nextS._hmBoolVars.entrySet()){
 			String var = e.getKey();
-			if (!var.endsWith("'")) System.out.println("Invalid (unprimed) Next State Var: "+ var);
+			if (!var.endsWith("'")) debugOutput.println("Invalid (unprimed) Next State Var: "+ var);
 			newS._hmBoolVars.put(var.substring(0, var.length()-1), e.getValue());
 		}
 		for(Entry<String, Double> e: nextS._hmContVars.entrySet()){
 			String var = e.getKey();
-			if (!var.endsWith("'")) System.out.println("Invalid (unprimed) Next State Var: "+ var);
+			if (!var.endsWith("'")) debugOutput.println("Invalid (unprimed) Next State Var: "+ var);
 			newS._hmContVars.put(var.substring(0, var.length()-1), e.getValue());
 		}
 		return newS;
@@ -435,9 +489,11 @@ public class CRTDP extends CAMDPsolver {
 	}
 	
 	//Plot
-	public String makeXADDLabel(String xadd, int trial, int depth, double approx)
-	{
-		return  xadd+" Trial"+trial+" Depth "+depth+(approx > 0? "-approx"+String.format("%03d",Math.round(1000*approx)): "");
+	public String makeXADDLabel(String xadd, int trial, double approx){
+		return  xadd+" Trial"+trial+(approx > 0?"-approx"+String.format("%03d",Math.round(1000*approx)): "");
+	}
+	public String makeXADDLabel(String xadd, int trial, int remH, double approx){
+		return  xadd+" Trial"+trial+" RemH "+remH+(approx > 0? "-approx"+String.format("%03d",Math.round(1000*approx)): "");
 	}
 
     ///////////// Results //////////////////////////////////
@@ -457,11 +513,10 @@ public class CRTDP extends CAMDPsolver {
 }
     
     public void printResults() {
-		System.out.println("Results for CRTDP: " + (finalTrial) + " trials:");
-		System.out.print("Time:"); for(int i=1; i<=finalTrial; i++) System.out.print(solutionTimeList[i]+" ");System.out.println(";");
-		System.out.print("Nodes:"); for(int i=1; i<=finalTrial; i++) System.out.print(solutionNodeList[i]+" ");System.out.println(";");
-		System.out.print("Initial S Value:"); for(int i=1; i<=finalTrial; i++) System.out.print(solutionInitialSValueList[i]+" ");System.out.println(";");
-		System.out.print("Total Time: "); long t=0; for(int i=1; i<=finalTrial; i++) t += solutionTimeList[i]; System.out.println(t+";");
+		debugOutput.println("Results for CRTDP: " + (finalTrial) + " trials:");
+		debugOutput.print("Time:"); for(int i=1; i<=finalTrial; i++) debugOutput.print(solutionTimeList[i]+" ");debugOutput.println(";");
+		debugOutput.print("Nodes:"); for(int i=1; i<=finalTrial; i++) debugOutput.print(solutionNodeList[i]+" ");debugOutput.println(";");
+		debugOutput.print("Initial S Value:"); for(int i=1; i<=finalTrial; i++) debugOutput.print(solutionInitialSValueList[i]+" ");debugOutput.println(";");
 	}
     
 }
