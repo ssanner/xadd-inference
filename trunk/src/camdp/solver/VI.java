@@ -24,13 +24,9 @@ public class VI extends CAMDPsolver {
 	public Integer finalIter;   // Last Iteration in case of early Convergence
 	public Integer _maxDD;
 		
-	/* DEBUG Variables */
-	private static final boolean MAIN_DEBUG = true;
+	/* Inner DEBUG Variables */
 	private static final boolean REGRESS_DEBUG = false;
-	
-	//Display Flags
-	public static final boolean PLOT_DD = false;
-	public static final boolean PRINT_DD = false;
+
 	
 	//////////////////Methods /////////////////////////////////
 	
@@ -47,7 +43,7 @@ public class VI extends CAMDPsolver {
 	
     ////////Main Solver Class ///////////////
 	public int solve(){		
-		if (MAIN_DEBUG) System.out.println("Starting VI solution, Max #Iterations = " + nIter+"\n");
+		if (MAIN_DEBUG) debugOutput.println("Starting VI solution, Max #Iterations = " + nIter+"\n");
 		Integer _prevDD = null;
 		//Iteration counter
 		curIter = 0;		
@@ -67,31 +63,31 @@ public class VI extends CAMDPsolver {
 			long iniT = getElapsedTime();
 			bellmanBackup();
 			long endT = getElapsedTime();
-			if (MAIN_DEBUG) System.out.println("VI Backup Took:"+(endT - iniT) );
+			if (MAIN_DEBUG) debugOutput.println("VI Backup Took:"+(endT - iniT) );
 			
 			checkLinearAndApprox(valueDD);
 
 			if (MAIN_DEBUG){
-				System.out.println("Iter:" + curIter+" Complete");
-				if (PRINT_DD) System.out.println("ValueDD = "+context.getExistNode(valueDD).toString());
+				debugOutput.println("Iter:" + curIter+" Complete");
+				if (PRINT_DD) debugOutput.println("ValueDD = "+context.getExistNode(valueDD).toString());
 				if (PLOT_DD) mdp.doDisplay(valueDD,makeXADDLabel("V",curIter, APPROX_ERROR));
 			}
 			
 			solutionDDList[curIter] = valueDD;
-			solutionTimeList[curIter] = getElapsedTime();
+			solutionTimeList[curIter] = getElapsedTime() + (curIter >1? solutionTimeList[curIter-1]:0);
 			solutionNodeList[curIter] = context.getNodeCount(valueDD);
 			if (mdp.LINEAR_PROBLEM) solutionMaxValueList[curIter] = context.linMaxVal(valueDD);
 			if( mdp._initialS != null) solutionInitialSValueList[curIter] = context.evaluate(valueDD, mdp._initialS._hmBoolVars, mdp._initialS._hmContVars);			
 
-			if (_prevDD.equals(valueDD) ) {
-				if (MAIN_DEBUG) System.out.println("\nVI: Converged to solution early,  at iteration "+curIter);
+			if (ENABLE_EARLY_CONVERGENCE && _prevDD.equals(valueDD) ) {
+				if (MAIN_DEBUG) debugOutput.println("\nVI: Converged to solution early,  at iteration "+curIter);
 				break;
 			}
 
 		}
 		flushCaches();	
 		finalIter = curIter;
-		if (MAIN_DEBUG) System.out.println("\nVI: complete at iteration "+finalIter+"\n");
+		if (MAIN_DEBUG) debugOutput.println("\nVI: complete at iteration "+finalIter+"\n");
 		return finalIter;
 	}
 
@@ -100,7 +96,7 @@ public class VI extends CAMDPsolver {
 			long appTime = getElapsedTime();
 			valueDD = context.linPruneRel(valueDD, APPROX_ERROR);
 			long endTime = getElapsedTime() - appTime;
-			System.out.println("Approx Finish"+ curIter+ " Iter took: "+appTime+ " pruning: "+endTime);
+			debugOutput.println("Approx Finish"+ curIter+ " Iter took: "+appTime+ " pruning: "+endTime);
 			//displayGraph(_valueDD, "valPruned-" + _nCurIter+" e"+APPROX_ERROR);
 		}
 	}
@@ -132,9 +128,9 @@ public class VI extends CAMDPsolver {
 			
 			flushCaches(Arrays.asList(_maxDD));
 			if (REGRESS_DEBUG){
-				System.out.println("Iter "+curIter+" Action "+me.getValue()._sName+" Maximization Complete.");
+				debugOutput.println("Iter "+curIter+" Action "+me.getValue()._sName+" Maximization Complete.");
 				if (PRINT_DD){ 
-					System.out.println("MaxDD = "+ context.getExistNode(_maxDD));
+					debugOutput.println("MaxDD = "+ context.getExistNode(_maxDD));
 				}
 			}
 		}
@@ -149,7 +145,7 @@ public class VI extends CAMDPsolver {
 	 **/
 	public int regress(int vfun, CAction a) {
 		if (REGRESS_DEBUG){
-			System.out.println("REGRESSING ACTION " + a._sName + " Iter "+ curIter );
+			debugOutput.println("REGRESSING ACTION " + a._sName + " Iter "+ curIter );
 		}
 		_logStream.println("\n>>> REGRESSING '" + a._sName + "'\n");
 		
@@ -161,8 +157,8 @@ public class VI extends CAMDPsolver {
 		q = context.scalarOp(q, mdp._bdDiscount.doubleValue(), XADD.PROD);
 		
 		if (REGRESS_DEBUG){
-			System.out.println("Q After discount Prod:");
-			if (PRINT_DD) System.out.println(context.getExistNode(q).toString());
+			debugOutput.println("Q After discount Prod:");
+			if (PRINT_DD) debugOutput.println(context.getExistNode(q).toString());
 			if (PLOT_DD) context.showGraph(q, "Q after discount Prod");
 		}
 		// Add reward *if* it contains primed vars that need to be regressed
@@ -213,7 +209,7 @@ public class VI extends CAMDPsolver {
 		
 		// Optional Display
 		if (REGRESS_DEBUG){
-			System.out.println("Q before Max:");
+			debugOutput.println("Q before Max:");
 			if (PLOT_DD){
 				mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "^" + curIter + "-" + Math.round(1000*APPROX_ERROR));
 			}
@@ -286,7 +282,7 @@ public class VI extends CAMDPsolver {
 			_logStream.println("- Q^" + curIter + "(" + a._sName + " )\n" + context.getString(q));
 		}
 
-		if (REGRESS_DEBUG) System.out.println("Regress End");
+		if (REGRESS_DEBUG) debugOutput.println("Regress End");
 		return q;
 	}
 	
@@ -368,11 +364,10 @@ public class VI extends CAMDPsolver {
 }
 
 	public void printResults() {
-		System.out.println("Results for Value Iteration: " + finalIter + " iterations:");
-		System.out.print("Time:"); for(int i=1; i<=finalIter; i++) System.out.print(solutionTimeList[i]+" ");System.out.println(";");
-		System.out.print("Nodes:"); for(int i=1; i<=finalIter; i++) System.out.print(solutionNodeList[i]+" ");System.out.println(";");
-		System.out.print("Initial S Value:"); for(int i=1; i<=finalIter; i++) System.out.print(solutionInitialSValueList[i]+" ");System.out.println(";");
-		System.out.print("Total Time: "); long t=0; for(int i=1; i<=finalIter; i++) t += solutionTimeList[i]; System.out.println(t+";");
+		debugOutput.println("Results for Value Iteration: " + finalIter + " iterations:");
+		debugOutput.print("Time:"); for(int i=1; i<=finalIter; i++) debugOutput.print(solutionTimeList[i]+" ");debugOutput.println(";");
+		debugOutput.print("Nodes:"); for(int i=1; i<=finalIter; i++) debugOutput.print(solutionNodeList[i]+" ");debugOutput.println(";");
+		debugOutput.print("Initial S Value:"); for(int i=1; i<=finalIter; i++) debugOutput.print(solutionInitialSValueList[i]+" ");debugOutput.println(";");
 	}
 }
 

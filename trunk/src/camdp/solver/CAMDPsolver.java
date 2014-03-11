@@ -25,12 +25,25 @@ public abstract class CAMDPsolver {
 	public int nIter;
 	public Integer curIter;
 	public String solveMethod = null;
-		
+	
+	/*General Solution Parameter*/
+	public final boolean ENABLE_EARLY_CONVERGENCE = false;
+	
 	/* Approximation Parameters */
 	public double APPROX_ERROR = 0.0d;
 	public boolean APPROX_ALWAYS = false;
 	public boolean APPROX_PRUNING = false;
 	public boolean COMPARE_OPTIMAL = false;
+	
+	/* DEBUG PARAMETER */
+	protected static boolean MAIN_DEBUG = true;
+	protected static PrintStream debugOutput = System.out;
+	
+	//Debug Format flags
+	protected static boolean VALIDATION_TEST = false;
+	protected static boolean PERFORMANCE_TEST = false;
+	protected static boolean PLOT_DD = false;
+	protected static boolean PRINT_DD = false;
 	
 	/* For printing */
 	public final static String RESULTS_DIR = "./results"; // Diagnostic output destination
@@ -40,7 +53,8 @@ public abstract class CAMDPsolver {
 	public final static String ASCII_BAR = "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"; // Display shortcut
 	
 	/* Time & Memory Management */
-	public long _lTime = 0;
+	public final static int nTimers = 8;
+	public long[] _lTime = new long[nTimers];
 	public Runtime RUNTIME = Runtime.getRuntime();
 	
 	/*Solution maintenance */
@@ -58,8 +72,6 @@ public abstract class CAMDPsolver {
 		COMPARE_OPTIMAL = true;
 	}
 	
-	
-
 	//	Common Solution methods
 	public abstract int solve();
 
@@ -206,10 +218,27 @@ public abstract class CAMDPsolver {
 		return min._runningResult;
 	}
 
-	protected Integer checkLinearAndApprox(Integer maxDD) {
+	protected Integer checkLinearAndApprox(Integer dd) {
 		if ( mdp.LINEAR_PROBLEM && APPROX_ALWAYS)
-			maxDD = context.linPruneRel(maxDD, APPROX_ERROR);
-		return maxDD;
+			dd = context.linPruneRel(dd, APPROX_ERROR);
+		return dd;
+	}
+	
+	// Debugging Management
+	public static void setUp(int verb){
+		if (verb ==0){
+			try {
+				debugOutput = new PrintStream("/dev/null");
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+			PRINT_DD = false;
+			PLOT_DD = false;
+			MAIN_DEBUG = false;
+			PERFORMANCE_TEST = false;
+			VALIDATION_TEST = false;
+		}
+		
 	}
 	
 	// Results
@@ -222,10 +251,10 @@ public abstract class CAMDPsolver {
 		//System.out.println("testing filename:" + dir + "/" + _solveMethod + ".rslt");
     	try{
     		new File(dir).mkdirs();
-    		_resultStream = new PrintStream(new FileOutputStream(dir + "/" + solveMethod + ".rslt"));
+    		_resultStream = new PrintStream(new FileOutputStream(dir+"/"+solveMethod+".log"));
     	}
     	catch (FileNotFoundException e){
-    		System.err.println("Couldn't create result Stream for: "+dir + "/" + solveMethod + ".rslt\nException:"+e);
+    		System.err.println("Couldn't create result Stream for: "+dir+"/"+solveMethod+"\nException:"+e);
     	}
     }
     public abstract void setupResults();
@@ -234,15 +263,56 @@ public abstract class CAMDPsolver {
     
     /////// Time Management utilities ////////////////////// 
 	public void resetTimer() {
-		_lTime = System.currentTimeMillis(); 
+		resetTimer(0);
+	}
+	public void resetTimer(int n) {
+		_lTime[n] = System.currentTimeMillis();
 	}
 	public long getElapsedTime() {
-		return System.currentTimeMillis() - _lTime;
+		return getElapsedTime(0);
 	}
-
+	public long getElapsedTime(int n) {
+		return System.currentTimeMillis() - _lTime[n];
+	}
+	
 	////////// Space Management ///////////////////////////
 	public void flushCaches(){
 		flushCaches(new ArrayList<Integer>());
 	}
 	public abstract void flushCaches(List<Integer> specialNodes);
+	
+	////////// DD Property Tests /////////////////////////
+//	DD Property checking	
+	public void checkDD(int dd){
+		checkRound(dd);
+		checkCanon(dd);
+		checkReduceLP(dd);
+	}
+	protected void checkRound(int dd) {
+		int roundDD = context.reduceRound(dd);
+		if (roundDD != dd){
+			System.err.println("Check Round fail");
+			context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
+			context.getGraph(roundDD).launchViewer("ERROR diagram 2: reduceRound(DD)");
+		}
+	}
+	protected void checkCanon(int dd) {
+		//Error checking and logging
+		int canonDD = context.makeCanonical(dd);
+		if (dd != canonDD) {
+			System.err.println("Check Canon fail");
+			context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
+			context.getGraph(canonDD).launchViewer("ERROR diagram 2: makeCanonical(DD)");
+		}
+	}
+	protected void checkReduceLP(int dd) {
+		//Error checking and logging
+		int reduLPDD = context.reduceLP(dd);
+		if (dd != reduLPDD) {
+			System.err.println("Check ReduceLP fail");
+			context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
+			context.getGraph(reduLPDD).launchViewer("ERROR diagram 2: reduceLP(DD)");
+		}
+	}
+
 }
