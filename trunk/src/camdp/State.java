@@ -36,4 +36,24 @@ public class State{
 			str = str + bv + " = " + _hmBoolVars.get(bv) + ", ";
 		return str;
 	}
+
+	@Override public boolean equals(Object other) {
+        boolean result = false;
+        if (other instanceof State) {
+            State that = (State) other;
+            result = (that.canEqual(this) && (that._hmBoolVars.equals(_hmBoolVars)) && that._hmContVars.equals(_hmContVars));
+        }
+        return result;
+    }
+
+    @Override public int hashCode() {
+        return mixHash(_hmBoolVars.hashCode(), _hmContVars.hashCode());
+    }
+
+    public int mixHash(int a, int b){
+    	return ((a + b)*(a+b+1))/2 + a;
+    }
+    public boolean canEqual(Object other) {
+        return (other instanceof State);
+    }
 }
