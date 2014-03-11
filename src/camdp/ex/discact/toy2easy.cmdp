@@ -109,6 +109,6 @@ reward ([x > -10]
 endaction
 
 discount 1.00000000
-initialState (0.0 0.0) ()
+initialState (0.0 10.0) ()
 iterations 12
 
