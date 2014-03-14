@@ -1,0 +1,115 @@
+cvariables (x y)
+min-values (-100 -100)
+max-values (100 100)
+bvariables ()
+nvariables()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables()
+
+action up()
+x' ([x > 9]
+		([10])
+		([x+1])
+	)
+
+y' ([y])
+
+reward ([x > -10]
+			([x < 10]
+				([x - 10])
+				([0])
+			)
+			([-20])	
+		)
++
+([y > -10]
+			([y < 10]
+				([y - 10])
+				([0])
+			)
+			([-20])	
+)
+endaction
+
+action down()
+x' ([x < -9]
+		([-10])
+		([x - 1])
+)
+
+y' ([y])
+
+reward ([x > -10]
+			([x < 10]
+				([x - 10])
+				([0])
+			)
+			([-20])	
+		)
++
+([y > -10]
+			([y < 10]
+				([y - 10])
+				([0])
+			)
+			([-20])	
+)endaction
+
+action left()
+x' ([x])
+
+y' ([y < -9]
+		([-10])
+		([y - 1])
+)
+
+reward ([x > -10]
+			([x < 10]
+				([x - 10])
+				([0])
+			)
+			([-20])	
+		)
++
+([y > -10]
+			([y < 10]
+				([y - 10])
+				([0])
+			)
+			([-20])	
+)
+endaction
+
+action right()
+x' ([x])
+
+y' ([y > 9]
+		([10])
+		([y + 1])
+)
+
+reward ([x > -10]
+			([x < 10]
+				([x - 10])
+				([0])
+			)
+			([-20])	
+		)
++
+([y > -10]
+			([y < 10]
+				([y - 10])
+				([0])
+			)
+			([-20])	
+)
+endaction
+
+discount 1.00000000
+initialState (0.0 0.0) ()
+iterations 12
+
+	

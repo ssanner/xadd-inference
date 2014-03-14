@@ -6,8 +6,9 @@ set ytic auto                          # set ytics automatically
 SOLVERS="VI CRTDPFH"
 std_width = 2
 std_type = 1
+pointtypes ="0 1 2 4 6 8 10 12" 
 
-set for [i=1:9] linetype i lt std_type lc i lw std_width pt i
+set for [i=1:7] linetype i lt std_type lc i lw std_width pt word(pointtypes,i) ps 2
 
 set term postscript eps font "Times-Roman,24" color
 set palette model RGB

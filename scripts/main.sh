@@ -11,9 +11,10 @@ PROBLEMTYPE=$4
 PROBLEM=$5
 NITER=$6
 NTRIAL=$7
-if [ $# -lt 5 ]
+VERBOSE=$8 
+if [ $# -lt 8 ]
 then
-	echo "missing parameters, usage: compile? run? plotResults? problemType problem nIter nTrial"
+	echo "missing parameters, usage: compile? run? plotResults? problemType problem nIter nTrial Verbose"
 	exit
 fi
 
@@ -37,7 +38,7 @@ then
 	DISPLAY=0
 	for i in $SOLVERS
 		do
-		$SCRIPTDIR/run.sh $MAINCLASS "$INSTANCE $i $NITER $DISPLAY $NTRIAL 0 0"
+		$SCRIPTDIR/run.sh $MAINCLASS "$INSTANCE $i $NITER $DISPLAY $NTRIAL 0 $VERBOSE"
 		done
 echo "Run Ok"
 fi
