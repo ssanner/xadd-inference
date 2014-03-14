@@ -226,19 +226,26 @@ public abstract class CAMDPsolver {
 	
 	// Debugging Management
 	public static void setUp(int verb){
+		PRINT_DD = false;
+		PLOT_DD = false;
+		MAIN_DEBUG = false;
+		PERFORMANCE_TEST = false;
+		VALIDATION_TEST = false;
 		if (verb ==0){
 			try {
 				debugOutput = new PrintStream("/dev/null");
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
-			PRINT_DD = false;
-			PLOT_DD = false;
-			MAIN_DEBUG = false;
-			PERFORMANCE_TEST = false;
-			VALIDATION_TEST = false;
 		}
-		
+		if (verb >=1){
+			debugOutput = System.out;
+			MAIN_DEBUG = true;
+			PERFORMANCE_TEST = true;
+		}
+		if (verb >=2) PLOT_DD = true;
+		if (verb >=3) VALIDATION_TEST = true;
+		if (verb >=4) PRINT_DD = true;
 	}
 	
 	// Results

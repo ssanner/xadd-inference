@@ -30,11 +30,11 @@ public class CRTDPFH extends CAMDPsolver {
 	/* Solution Parameters */
 	/////////////////////////
 	public final int DEFAULT_NTRIALS = 100;
-	public final boolean REVERSE_TRIAL = true;
+	public final boolean REVERSE_TRIAL = false;
 	/* Debugging Flags */
 	
 	//Local flags	
-	private static final boolean DEBUG_TRIAL = false;
+	private static final boolean DEBUG_TRIAL = true;
 	private static final boolean BELLMAN_DEBUG = false;
 	private static final boolean REGRESS_DEBUG = false;	
 		
@@ -112,7 +112,7 @@ public class CRTDPFH extends CAMDPsolver {
 			solutionDDList[curTrial] = getValueDD();
 			solutionTimeList[curTrial] = getElapsedTime() + (curTrial >1? solutionTimeList[curTrial-1]:0);
 			solutionNodeList[curTrial] = getAllNodes();
-			solutionInitialSValueList[curTrial] = context.evaluate(getValueDD(), mdp._initialS._hmBoolVars, mdp._initialS._hmContVars);			
+			solutionInitialSValueList[curTrial] = getStateVal(mdp._initialS, nIter);			
 			if (mdp.LINEAR_PROBLEM) solutionMaxValueList[curTrial] = context.linMaxVal(getValueDD());
 		}
 		finalTrial = curTrial;
@@ -162,8 +162,8 @@ public class CRTDPFH extends CAMDPsolver {
 			long iniT = getElapsedTime();
 			if (DEBUG_TRIAL){
 				debugOutput.println("Trial #"+curTrial+", depth ="+remainHorizon+", "+ currentS.toString());	
-				debugOutput.println("State Value = "+ context.evaluate(valueDDList[remainHorizon], currentS._hmBoolVars, currentS._hmContVars) );
-				if (PRINT_DD) debugOutput.println("Initial Value = "+valueDDList[remainHorizon]+" DD:\n"+ context.getExistNode(valueDDList[remainHorizon]) +"\n");
+				debugOutput.println("State Value = "+ getStateVal(currentS, remainHorizon) );
+				//if (PRINT_DD) debugOutput.println("Initial Value = "+valueDDList[remainHorizon]+" DD:\n"+ context.getExistNode(valueDDList[remainHorizon]) +"\n");
 				//if (PLOT_DD) mdp.doDisplay(valueDDList[remainHorizon], makeXADDLabel("VBeforeBB",curTrial, remainHorizon));
 			}
 			ParametrizedAction greedyAction = regionBellmanBackup(currentS, remainHorizon);
@@ -172,14 +172,14 @@ public class CRTDPFH extends CAMDPsolver {
 			long backupT = getElapsedTime();
 			if (DEBUG_TRIAL) {
 				debugOutput.println("Trial #"+curTrial+" backup "+remainHorizon+" took = "+(backupT-iniT));
-				debugOutput.println("State Value After Update= "+ context.evaluate(valueDDList[remainHorizon], currentS._hmBoolVars, currentS._hmContVars) );
+				debugOutput.println("State Value After Update= "+ getStateVal(currentS, remainHorizon) );
 				if (PRINT_DD) debugOutput.println("Value Trial After Backup = "+ valueDDList[remainHorizon] +" DD:\n"+ context.getExistNode(valueDDList[remainHorizon]) +"\n");
 				if (PLOT_DD) mdp.doDisplay(valueDDList[remainHorizon], makeXADDLabel("VAfterBB",curTrial, remainHorizon));
 			}
 			
 			updateTimes[curTrial][remainHorizon] = (backupT-iniT);
 			updateNodes[curTrial][remainHorizon] = context.getNodeCount(valueDDList[remainHorizon]);
-			updateIniVals[curTrial][remainHorizon] = context.evaluate(valueDDList[remainHorizon], currentS._hmBoolVars, currentS._hmContVars);
+			updateIniVals[curTrial][remainHorizon] = getStateVal(currentS, remainHorizon);
 			
 			//Using greedy action, sample next state
 			State nextS = sample(currentS, greedyAction);
@@ -188,7 +188,7 @@ public class CRTDPFH extends CAMDPsolver {
 				if (VALIDATION_TEST){
 					debugOutput.println("Trial #"+curTrial+" sample took = "+(sampleT-backupT));
 					debugOutput.println("State After Sample = "+nextS);
-					debugOutput.println("New State Value = "+ context.evaluate(valueDDList[remainHorizon-1], currentS._hmBoolVars, currentS._hmContVars) +"\n" );
+					debugOutput.println("New State Value = "+ getStateVal(currentS,remainHorizon-1) +"\n" );
 				}
 			}
 			currentS = nextS;
@@ -200,57 +200,18 @@ public class CRTDPFH extends CAMDPsolver {
 				currentS = stateList[remainHorizon];
 				if (DEBUG_TRIAL){
 					debugOutput.println("Reverse Trial #"+curTrial+", depth ="+remainHorizon+", "+ currentS.toString());	
-					debugOutput.println("State Value = "+ context.evaluate(valueDDList[remainHorizon], currentS._hmBoolVars, currentS._hmContVars) );
-					if (PRINT_DD) debugOutput.println("Initial Value = "+valueDDList[remainHorizon]+" DD:\n"+ context.getExistNode(valueDDList[remainHorizon]) +"\n");
 				}
 				ParametrizedAction greedyAction = regionBellmanBackup(currentS, remainHorizon);
 				checkDD(valueDDList[remainHorizon]);
+				if (DEBUG_TRIAL){
+					debugOutput.println("New State Value = "+ getStateVal(currentS, remainHorizon) );
+				}
 			}
 		}
 	}
 
-	{ //Commenter makeTrialRec
-//	private int makeTrial(Integer valueDD, State currentS, int depth){
-//		
-//		if (depth <= 0){
-//			return valueDD;
-//		}
-//		
-//		if (DEBUG_TRIAL){
-//			debugOutput.println("Trial #"+_curTrial+", depth ="+depth+", "+ currentS.toString());	
-//			debugOutput.println("State Value = "+ _context.evaluate(valueDD, currentS._hmBoolVars, currentS._hmContVars) );
-//			debugOutput.println("Initial Value = "+ _context.getExistNode(valueDD) +"\n");
-//		}
-//		Pair<Integer, ParametrizedAction> bellmanResult = regionBellmanBackup(valueDD, currentS);
-//		valueDD = bellmanResult._o1;
-//		ParametrizedAction greedyAction = bellmanResult._o2;
-//		//Using greedy action, sample next state
-//		State nextS = sample(currentS, greedyAction);
-//		
-//		if (DEBUG_TRIAL){
-//			debugOutput.println("State After Sample = "+nextS);
-//			debugOutput.println("New State Value = "+ _context.evaluate(valueDD, currentS._hmBoolVars, currentS._hmContVars) );
-//			debugOutput.println("Value After Backup = "+ _context.getExistNode(valueDD) +"\n");
-//			if (PLOT_DD) _mdp.doDisplay(valueDD,makeXADDLabel("V", _curTrial, depth, APPROX_ERROR));
-//		}
-//		
-//		return makeTrial(valueDD, nextS, depth -1);
-//
-//		
-////		for (Map.Entry<String,CAction> me : _mdp._hmName2Action.entrySet()) {
-////			CAction a = me.getValue();
-////			HashMap<String, Double> aParams = new HashMap<String,Double>();
-////			for(String aVar : a._actionParams){
-////				double lb = a._hmAVar2LB.get(aVar);
-////				double ub = a._hmAVar2UB.get(aVar);
-////				aParams.put(aVar, (lb + ub)/2.0);
-////			}
-////			ParametrizedAction pA = new ParametrizedAction(a, aParams);
-////			nextS = sample(currentS, pA);
-////			debugOutput.println(" Sampling action: "+ a._sName + ", with params: "+ aParams.toString() +
-////					" from " + currentS.toString() + " led to " + nextS.toString());
-////		}	
-//	}
+	private Double getStateVal(State currentS, int remainHorizon) {
+		return context.evaluate(valueDDList[remainHorizon], currentS._hmBoolVars, currentS._hmContVars);
 	}
 	
 	public ParametrizedAction  regionBellmanBackup(State currS, int h){
@@ -261,8 +222,8 @@ public class CRTDPFH extends CAMDPsolver {
 		HashMap<String, Double> maxParam = new HashMap<String, Double>();
 		
 		if (BELLMAN_DEBUG){
-			debugOutput.println("Bellman Backup Start: "+currS);
-			if (PRINT_DD) debugOutput.println("Next State DD = "+ valueDDList[h-1]+"DD:\n"+ context.getExistNode(valueDDList[h-1]));
+			debugOutput.println("\nBellman Backup Start Trial "+curTrial+"depth "+h+" State: "+currS);
+			debugOutput.println("State Value ="+ getStateVal(currS,h));
 		}
 		
 		for (Map.Entry<String,CAction> me : mdp._hmName2Action.entrySet()) {
@@ -297,24 +258,18 @@ public class CRTDPFH extends CAMDPsolver {
 		}
 
 		//Min out Ilegal +Inf values, these will be non update regions
-		valueDDList[h] = context.apply(maxDD, valueDDList[h], XADD.MIN);
-		if (BELLMAN_DEBUG){
-			if (PRINT_DD) debugOutput.println("\n New Vfun Before Reduce ="+valueDDList[h]+" DD:\n" + context.getExistNode(valueDDList[h]));
-		}
-		
+		valueDDList[h] = context.apply(maxDD, valueDDList[h], XADD.MIN);		
 		valueDDList[h] = context.reduceLP(valueDDList[h]); // Rely on flag XADD.CHECK_REDUNDANCY 
 		checkDD(valueDDList[h]);
 		
 		ParametrizedAction pA = new ParametrizedAction(maxAction, maxParam);
 		if (BELLMAN_DEBUG){
-			debugOutput.println("\nBackup End, Greedy Action: " + pA + " Greedy Value:" + currSValue +"\n");
+			debugOutput.println("Backup End, Greedy Action: " + pA + " Greedy Value:" + currSValue +"\n");
 			if (PRINT_DD) debugOutput.println("New vfun ="+valueDDList[h] +" DD:\n" + context.getExistNode(valueDDList[h]));
 		}
 		return pA;
 	}
 
-
-	
 	/**
 	 * Regress a DD through an action
 	 **/
