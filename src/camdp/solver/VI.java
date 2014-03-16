@@ -360,7 +360,13 @@ public class VI extends CAMDPsolver {
 		//Results: NIter, Time, Nodes, InitialS Value.
 		for(int i=1; i<=nIter; i++){
 		_resultStream.format("%d %d %d %f\n", i, solutionTimeList[i], solutionNodeList[i], (mdp._initialS != null) ? solutionInitialSValueList[i]: "0");
-	}
+		}
+		if (mdp.DISPLAY_3D){
+			for(int i=1; i<=nIter; i++){
+				save3D(solutionDDList[i], String.format("VI-Value%d", i) );
+				saveGraph(solutionDDList[i], String.format("VI-Value%d", i) );
+			}
+		}
 }
 
 	public void printResults() {

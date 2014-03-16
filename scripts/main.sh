@@ -11,10 +11,11 @@ PROBLEMTYPE=$4
 PROBLEM=$5
 NITER=$6
 NTRIAL=$7
-VERBOSE=$8 
-if [ $# -lt 8 ]
+DISPLAY=$8
+VERBOSE=$9 
+if [ $# -lt 9 ]
 then
-	echo "missing parameters, usage: compile? run? plotResults? problemType problem nIter nTrial Verbose"
+	echo "missing parameters, usage: compile? run? plotResults? problemType problem nIter nTrial Display Verbose"
 	exit
 fi
 
@@ -35,7 +36,6 @@ then
 	echo "run start"
 	INSTANCE="src/camdp/ex/$PROBLEMTYPE/$PROBLEM.cmdp"
 	SOLVERS="1 3" 
-	DISPLAY=0
 	for i in $SOLVERS
 		do
 		$SCRIPTDIR/run.sh $MAINCLASS "$INSTANCE $i $NITER $DISPLAY $NTRIAL 0 $VERBOSE"
@@ -47,7 +47,7 @@ fi
 if [ $PLOT == 1 ]
 then
 echo "plot start"
-$SCRIPTDIR/plot.sh $PROBLEMTYPE $PROBLEM
+$SCRIPTDIR/plot.sh $PROBLEMTYPE $PROBLEM $DISPLAY $NITER
 echo "plot finish"
 fi
 

@@ -9,12 +9,16 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 import camdp.CAMDP;
 import camdp.CAction;
+import camdp.CAMDP.FileOptions;
+import util.DevNullPrintStream;
 import xadd.XADD;
+import xadd.XADDUtils;
 import xadd.XADD.XADDLeafMinOrMax;
 
 public abstract class CAMDPsolver {
@@ -47,6 +51,7 @@ public abstract class CAMDPsolver {
 	
 	/* For printing */
 	public final static String RESULTS_DIR = "./results"; // Diagnostic output destination
+	public String OUTPUT_DIR = null; // complete output destination
 	public static DecimalFormat _df = new DecimalFormat("#.########");
 	public PrintStream _logStream = null;
 	public PrintStream _resultStream = null;	
@@ -253,15 +258,15 @@ public abstract class CAMDPsolver {
 		int filenamestart = mdp._problemFile.lastIndexOf('/');
 		String filename = mdp._problemFile.substring(filenamestart,mdp._problemFile.length()-5);
 		String problemType = mdp.CONTINUOUS_ACTIONS? "/contact":"/discact"; 
-		String dir = RESULTS_DIR + problemType + filename;
+		OUTPUT_DIR = RESULTS_DIR + problemType + filename;
 		
-		//System.out.println("testing filename:" + dir + "/" + _solveMethod + ".rslt");
+		//System.out.println("testing filename:" + OUTPUT_DIR + "/" + _solveMethod + ".rslt");
     	try{
-    		new File(dir).mkdirs();
-    		_resultStream = new PrintStream(new FileOutputStream(dir+"/"+solveMethod+".log"));
+    		new File(OUTPUT_DIR).mkdirs();
+    		_resultStream = new PrintStream(new FileOutputStream(OUTPUT_DIR+"/"+solveMethod+".log"));
     	}
     	catch (FileNotFoundException e){
-    		System.err.println("Couldn't create result Stream for: "+dir+"/"+solveMethod+"\nException:"+e);
+    		System.err.println("Couldn't create result Stream for: "+OUTPUT_DIR+"/"+solveMethod+"\nException:"+e);
     	}
     }
     public abstract void setupResults();
@@ -321,5 +326,84 @@ public abstract class CAMDPsolver {
 			context.getGraph(reduLPDD).launchViewer("ERROR diagram 2: reduceLP(DD)");
 		}
 	}
+	
+	public void save3D(int xadd_id, String label) {
+        // If DISPLAY_3D is enabled, it is expected that necessary parameters
+        // have been placed in a _problemFile + ".3d"
+        FileOptions opt = new FileOptions(mdp._problemFile + ".3d");
+        if ( opt == null){
+        	System.err.println("ERROR in display 3D:Couldn't open"+mdp._problemFile + ".3d");
+            return;
+        }
+        double low_x = opt._varLB.get(0);
+        double inc_x = opt._varInc.get(0);
+        double high_x = opt._varUB.get(0);
+        double low_y = opt._varLB.get(1);
+        double inc_y = opt._varInc.get(1);
+        double high_y = opt._varUB.get(1);
+        int nSamples = (int) Math.ceil( (high_x - low_x)/inc_x);
+        
+        HashMap<String,Boolean> static_bvars = opt._bassign;
+        HashMap<String, Double> static_dvars = opt._dassign;
+        
+        String xVar = opt._var.get(0);
+        String yVar = opt._var.get(1);
+        
+        ArrayList<Float> alX = new ArrayList<Float>(nSamples);
+        float temp_x = (float) low_x;
+        for (int i = 0; i < nSamples; i++) {
+            temp_x += inc_x;
+            alX.add(temp_x);
+        }
+        ArrayList<Float> alY = new ArrayList<Float>(nSamples);
+        float temp_y = (float) low_y;
+        for (int i = 0; i < nSamples; i++) {
+            temp_y += inc_y;
+            alY.add(temp_y);
+        }
+        if (alX.size() != alY.size()) {
+            System.err.println("ERROR: Surface plotting requires the same number of samples along the x and y axes");
+            return;
+        }
 
+        PrintStream ps = null;
+        String filename = OUTPUT_DIR+"/"+ label +".txt";
+        try {
+            ps = new PrintStream(new FileOutputStream(filename));
+        } catch (Exception e) {
+            System.err.println("Could not open " + filename + " for data export.");
+            ps = new DevNullPrintStream();
+        }
+
+        static_dvars = new HashMap<String, Double>(static_dvars);
+        for (int i = 0; i < alX.size(); i++) {
+        	for (int j = 0; j < alY.size(); j++) {
+
+                float x = alX.get(i);
+                float y = alY.get(j);
+                static_dvars.put(xVar, (double) x);
+                static_dvars.put(yVar, (double) y);
+                float z = context.evaluate(xadd_id, static_bvars, static_dvars).floatValue();
+                if (Float.isInfinite(z)) z = Float.NaN;
+                static_dvars.remove(xVar);
+                static_dvars.remove(yVar);
+
+                //if (z > 0.1d)
+                //	System.out.println("f(" + x + "," + y + ") = " + z);
+                ps.println(x + "\t" + y + "\t" + z);
+            }
+            ps.println();
+        }
+        ps.close();
+    }
+	public void saveGraph(int xadd_id, String label) {
+        Graph g = context.getGraph(xadd_id);
+        g.addNode("_temp_");
+        g.addNodeLabel("_temp_", label);
+        g.addNodeShape("_temp_", "square");
+        g.addNodeStyle("_temp_", "filled");
+        g.addNodeColor("_temp_", "gold1");       
+        String filename = OUTPUT_DIR+"/"+ label +".dot";
+        g.genDotFile(filename);
+    }
 }

@@ -2,23 +2,41 @@
 \usepackage{tikz}
 
 \newcommand{\filename}{FILENAME}
-\newcommand\draw[1]{
-	\begin{figure}[!ht]
-	\centering
-	\includegraphics[scale = 1]{#1}
-	\end{figure}
-	\newline
+\newcommand\draw[2]{
+	\includegraphics[width=#2, height=#2, keepaspectratio]{#1}
 }
 
-\newif\ifdrawvalue
+\newif\ifdrawd
+\newif\ifdrawtwod
+\newif\ifdrawthreed
+
 \begin{document} 
  
-\section{Pictures}
+\section{Performance plots:}
+\draw{\filename-TotTime.eps}{\textwidth}
+\draw{\filename-Nodes.eps}{\textwidth}
+\draw{\filename-IniVal.eps}{\textwidth}
+\draw{\filename-ValTime.eps}{\textwidth}
+\draw{\filename-ValNodes.eps}{\textwidth}
 
-Comparison Images:
-\draw{\filename-TotTime.eps}
-\draw{\filename-Nodes.eps}
-\draw{\filename-IniVal.eps}
-\draw{\filename-ValTime.eps}
-  
+\drawPLOTDIMdtrue
+
+\ifdrawthreed
+\newpage
+\section{Value Function Plots:}
+\foreach \solver in {VI,CRTDPFH}
+{
+	\subsection{\solver \hspace{0.2cm} Value Function Plots and Diagrams:}
+	\foreach \iter in {1,2,..., NVALUE}
+	{
+		\draw{\filename-\solver-Value\iter.eps}{0.6\textwidth}
+		\draw{\filename-\solver-Value\iter-DD.pdf}{0.6\textwidth}\\
+	}
+}
+\else
+{
+No 3DValue plot.
+}
+\fi
+
 \end{document} 
