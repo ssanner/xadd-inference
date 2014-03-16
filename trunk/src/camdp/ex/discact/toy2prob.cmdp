@@ -1,7 +1,7 @@
 cvariables (x y)
 min-values (-100 -100)
 max-values (100 100)
-bvariables ()
+bvariables (t)
 nvariables()
 icvariables()
 min-values ()
@@ -10,11 +10,16 @@ ibvariables()
 avariables()
 
 action up()
+t' ([0.8])
+
 x' ([ x +1 > 10.5]
 		([10])
 		([ x +1 < -10.5]
 			([-10])
-			([ x +1 ])	
+			(t' 
+				([ x +1 ])
+				([x])
+			)	
 		)
 	)
 
@@ -44,11 +49,16 @@ reward ([x > -10.5]
 endaction
 
 action down()
+t' ([0.8])
+
 x' ([ x -1 > 10.5]
 		([10])
 		([ x -1 < -10.5]
 			([-10])
-			([ x -1 ])	
+			(t' 
+				([ x -1 ])
+				([x])
+			)
 		)
 	)
 
@@ -77,6 +87,8 @@ reward ([x > -10.5]
 )endaction
 
 action left()
+t' ( [0.8])
+
 x' ([ x > 10.5]
 		([10])
 		([ x < -10.5]
@@ -89,7 +101,10 @@ y' ([ y -1 >10.5]
 		([10])
 		([ y -1 < -10.5]
 			([-10])
-			([ y -1 ])	
+			(t' 
+				([ y -1 ])
+				([y])
+			)
 		)
 	)
 
@@ -111,6 +126,8 @@ reward ([x > -10.5]
 endaction
 
 action right()
+t' ([0.8])
+
 x' ([ x > 10.5]
 		([10])
 		([ x < -10.5]
@@ -123,7 +140,10 @@ y' ([ y +1 >10.5]
 		([10])
 		([ y +1 < -10.5]
 			([-10])
-			([ y +1 ])	
+			(t' 
+				([ y +1 ])
+				([y])
+			)
 		)
 	)
 
@@ -145,6 +165,6 @@ reward ([x > -10.5]
 endaction
 
 discount 1.00000000
-initialState (0.0 0.0) ()
+initialState (0.0 0.0) (false)
 iterations 12
 
