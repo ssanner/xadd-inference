@@ -65,4 +65,23 @@ public class TrueSkillPrefLearningPredictor implements PreferenceLearningPredict
         if (util2 - util1 > epsilon) return Choice.SECOND;
         return Choice.EQUAL;
     }
+
+    @Override
+    public double probabilityOfFirstItemBeingPreferredOverSecond(Double[] item1, Double[] item2) {
+        //each item is a team and each attribute is a player
+        Integer dim = item1.length;
+        double util1 = 0d;
+        double util2 = 0d;
+        for (int attribId = 0; attribId < dim; attribId++) {
+            util1 += item1[attribId] * model.getRating(attribId).getMean(); //todo it is OK?
+            util2 += item2[attribId] * model.getRating(attribId).getMean(); //todo it is OK?
+        }
+
+        if (util1 == 0 && util2 == 0) {
+            System.err.println("both utils 0! in true.skill");
+            return  0.5;
+        }
+
+        return util1/(util1 + util2);
+    }
 }

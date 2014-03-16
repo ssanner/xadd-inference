@@ -10,7 +10,7 @@ import java.util.List;
  * Date: 21/02/14
  * Time: 2:26 PM
  */
-public class ConstrainedPolynomial {
+public class ConstrainedPolynomial implements Function {
     private Polynomial polynomial;
     /**
      * By assumption, all constraints should be > 0
@@ -35,6 +35,7 @@ public class ConstrainedPolynomial {
     }
 
 
+    @Override
     @Deprecated
     public double evaluate(VarAssignment fullVarAssign) {
         Double[] varValues = polynomial.getFactory().getReusableVarValues(fullVarAssign.getContinuousVarAssign());
@@ -47,7 +48,7 @@ public class ConstrainedPolynomial {
 
     public double evaluate(Double[] fullVarAssign) {
         for (Polynomial constraint : constraints) {
-            if (constraint.evaluate(fullVarAssign) < 0.0) return 0; //what about equality?
+            if (constraint.evaluate(fullVarAssign) <= 0.0) return 0; //what about equality?
         }
 
         return polynomial.evaluate(fullVarAssign);
@@ -68,6 +69,7 @@ public class ConstrainedPolynomial {
 
 
     //todo: but active vars should be returned not all vars....
+    @Override
     public String[] collectContinuousVars() {
         return polynomial.getFactory().getAllVars();
     }

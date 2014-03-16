@@ -174,7 +174,7 @@ public class Polynomial implements Cloneable{
 
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone, CloneDoesntDeclareCloneNotSupportedException")
-    protected Polynomial clone() {
+    public Polynomial clone() {
         Map<List<Double> /*powers*/, Double /*coefficient*/> newMap = new HashMap<List<Double>, Double>(powers2coefMap.size());
 
         for (Map.Entry<List<Double>, Double> powersAndCoef : powers2coefMap.entrySet()) {
@@ -200,7 +200,7 @@ public class Polynomial implements Cloneable{
             double c = 1.0;
             for (int i = 0; i < fullVarValues.length; i++) {
                 if (pow.get(i) != 0d) {
-                    if (fullVarValues[i] == null) throw new PolynomialException("full assignment expected: " + fullVarValues);
+                    if (fullVarValues[i] == null) throw new PolynomialException("full assignment expected: " + Arrays.toString(fullVarValues));
                     c *= Math.pow(fullVarValues[i], pow.get(i));
                 }
             }

@@ -13,5 +13,5 @@ public interface Function {
 
     public String[] collectContinuousVars();
 
-    public String[] collectBinaryVars();
+//    public String[] collectBinaryVars();
 }

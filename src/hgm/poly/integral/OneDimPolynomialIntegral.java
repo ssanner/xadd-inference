@@ -1,6 +1,7 @@
 package hgm.poly.integral;
 
 import hgm.poly.*;
+import hgm.poly.vis.FunctionVisualizer;
 import hgm.sampling.gibbs.integral.Interval;
 import xadd.ExprLib;
 import xadd.ExprLib.*;
@@ -16,6 +17,7 @@ import java.util.*;
  */
 //todo test the class...
 public class OneDimPolynomialIntegral {
+    boolean DEBUG = false;
 
      /*
      public Piecewise1DPolynomial integrate(List<PolynomialInAnInterval> piecewisePolynomial, String var) {
@@ -46,6 +48,9 @@ public class OneDimPolynomialIntegral {
      * @return The integration of a uni-dimensional function where except the 'integration var', all variables are instantiated due to the given value in the assignment:
      */
     public OneDimFunction integrate(ConstrainedPolynomial cp, String integrationVar, Double[] usableContinuousVarAssign) {
+//        if (DEBUG) {
+//            System.out.println("cp.evaluate(" + Arrays.toString(usableContinuousVarAssign) + "=" + cp.evaluate(usableContinuousVarAssign));  [by be incomplete]
+//        }
 
         //1. instantiate all variables except one that should be integrated on:
         //Exclude the integration var from the assignment by making it NULL
@@ -53,10 +58,20 @@ public class OneDimPolynomialIntegral {
         //excluding the integration var:
         usableContinuousVarAssign[integrationVarIndex] = null;
         ConstrainedPolynomial substitutedCP = cp.substitute(usableContinuousVarAssign);
+        if (DEBUG) {
+            FunctionVisualizer.visualize(substitutedCP, -50, 50, 0.1, "substitutedCP");
+        }
 
         //2. one dimensional integral on the produced CP:
         List<Interval> positiveIntervals = fetchIntervalsInWhichConstraintsAreSatisfied(substitutedCP); //Note: intervals should be sorted in the fetch method
-//        if (polytopeIntervals.isEmpty()) throw new RuntimeException("empty polytope interval! \t" + polytopeIntervals + " for CP: " + substitutedCP);
+        if (positiveIntervals.isEmpty()) {
+            if (DEBUG) {
+                System.err.println("empty polytope interval! \t" + positiveIntervals + " for CP: " + substitutedCP);
+                FunctionVisualizer.visualize(substitutedCP, -50, 50, 0.1, "non positive curve:");
+            }
+            return OneDimFunction.ZERO_1D_FUNCTION;
+        }
+
         //calc. indefinite integral:
         Polynomial indefIntegral = substitutedCP.getPolynomial();
         indefIntegral.replaceThisWithIndefiniteIntegral(integrationVar);
@@ -71,6 +86,10 @@ public class OneDimPolynomialIntegral {
             double intervalVol = h - l;
             result.addIntervalAndOffset(posInterval, runningSum - l);
             runningSum += intervalVol;
+        }
+
+        if (DEBUG) {
+            FunctionVisualizer.visualize(result, -50, 50, 0.1, "integration result");
         }
 
         return result;
@@ -94,8 +113,11 @@ public class OneDimPolynomialIntegral {
             double[] coeffs = sortCoefficientsOfUnivariatePolynomial(constraint, constraintDegree);
             switch (constraintDegree) {
                 case 0: //e.g. if a constraint is 'y (>0)' and we are integrating over 'x'
-                    if (coeffs[0] < 0)
-                        throw new RuntimeException("unexpected constraint: " + constraint); //not that all constraints are positive '>0'
+                    if (coeffs[0] < 0) {
+                        if (DEBUG)
+                            System.err.println("unexpected constraint: " + constraint + "(unsatisfiable)"); //not that all constraints are positive '>0'
+                        return Collections.<Interval>emptyList();  //since infeasible
+                    }
                     break;
                 case 1: // a*x + b (>0)
 
@@ -130,6 +152,7 @@ public class OneDimPolynomialIntegral {
                             updateConstraintsWithConstraints(intervals, xx2, xx1);
                         }
                     }
+                    //todo: what if delta is negative????
                     break;
                 default:
                     throw new PolynomialException("degree: " + constraint.degree() + " is not supported for positive constraint " + constraint);
@@ -308,6 +331,7 @@ public class OneDimPolynomialIntegral {
 
 }
 
+/*
 class OneDimIntegralFunc implements OneDimFunction {
 
     Polynomial integral;
@@ -344,4 +368,4 @@ class OneDimIntegralFunc implements OneDimFunction {
     public double getNormalizationFactor() {
         return maxValue;
     }
-};
+};*/

@@ -12,7 +12,7 @@ import java.util.*;
  * Date: 21/02/14
  * Time: 2:31 PM
  */
-public class PolyGibbsSampler {
+public class PolyGibbsSampler implements SamplerInterface {
     private static Random random = new Random();
     public static final double SAMPLE_ACCURACY = 1E-6;
     public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 20;
@@ -58,6 +58,7 @@ public class PolyGibbsSampler {
         }
     }
 
+    @Override
     public Double[] sample() throws SamplingFailureException {
         if (reusableSample == null) { // (no sample is taken yet)
             reusableSample = takeInitialSample();// initialization phase:

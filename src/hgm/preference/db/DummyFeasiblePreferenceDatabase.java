@@ -55,6 +55,10 @@ public class DummyFeasiblePreferenceDatabase implements PreferenceDatabase {
         }
     }
 
+    public List<Double[]> getItems() {
+        return items;
+    }
+
     //return summation w_i*x_i
     private double utility(Double[] itemVector, double[] weightVector) {
         assert itemVector.length == weightVector.length;

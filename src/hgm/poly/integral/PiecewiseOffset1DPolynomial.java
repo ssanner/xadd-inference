@@ -46,6 +46,7 @@ public class PiecewiseOffset1DPolynomial implements OneDimFunction{
 //        if (varValue > interval.getHighBound()) return maxValue;
 //        varAssign[varIndex] = varValue;
 //        return integral.evaluate(varAssign);
+        if (intervals.isEmpty()) return 0;
 
         for (int i = 0; i < intervals.size(); i++) {
             Interval interval = intervals.get(i);

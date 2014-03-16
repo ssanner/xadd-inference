@@ -2,7 +2,7 @@ package hgm.poly.sampling;
 
 import hgm.poly.ConstrainedPolynomial;
 import hgm.poly.PolynomialFactory;
-import hgm.poly.vis.PolynomialVisualizer;
+import hgm.poly.vis.FunctionVisualizer;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -17,7 +17,7 @@ import java.util.Arrays;
  * Time: 2:34 PM
  */
 public class PolyGibbsSamplerTest {
-    public static String SAMPLES_FILE_NAME = "D:\\JAVA\\IdeaProjects\\proj2\\test\\hgm\\poly\\sampling\\scatter2D.txt";
+    public static String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/sampling/";
 
     public static void main(String[] args) throws Exception {
         PolyGibbsSamplerTest instance = new PolyGibbsSamplerTest();
@@ -62,11 +62,11 @@ public class PolyGibbsSamplerTest {
         double minVarLim = -30d;
         double maxVarLim = 30d;
 
-        PolynomialVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
+        FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
         PolyGibbsSampler sampler = PolyGibbsSampler.makeGibbsSampler(cp, minVarLim, maxVarLim, null);
 
-        save2DSamples(sampler, numSamples);
+        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH+"scatter2D");
 
         // the projection of the distribution on the Y axis is a triangular distribution:
         double c = 0;
@@ -96,11 +96,11 @@ public class PolyGibbsSamplerTest {
         double minVarLim = -30d;
         double maxVarLim = 30d;
 
-        PolynomialVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
+        FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
         PolyGibbsSampler sampler = PolyGibbsSampler.makeGibbsSampler(cp, minVarLim, maxVarLim, null);
 
-        save2DSamples(sampler, numSamples);
+        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
 
     }
 
@@ -125,11 +125,11 @@ public class PolyGibbsSamplerTest {
         double minVarLim = -30d;
         double maxVarLim = 30d;
 
-        PolynomialVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
+        FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
         PolyGibbsSampler sampler = PolyGibbsSampler.makeGibbsSampler(cp, minVarLim, maxVarLim, null);
 
-        save2DSamples(sampler, numSamples);
+        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
 
     }
 
@@ -145,11 +145,11 @@ public class PolyGibbsSamplerTest {
         double minVarLim = -30d;
         double maxVarLim = 30d;
 
-        PolynomialVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
+        FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
         PolyGibbsSampler sampler = PolyGibbsSampler.makeGibbsSampler(cp, minVarLim, maxVarLim, null);
 
-        save2DSamples(sampler, numSamples);
+        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH+"scatter2D");
 
     }
 
@@ -173,11 +173,11 @@ public class PolyGibbsSamplerTest {
         double minVarLim = -30d;
         double maxVarLim = 30d;
 
-        PolynomialVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
+        FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
         PolyGibbsSampler sampler = PolyGibbsSampler.makeGibbsSampler(cp, minVarLim, maxVarLim, null);
 
-        save2DSamples(sampler, numSamples);
+        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
 
     }
 
@@ -193,28 +193,15 @@ public class PolyGibbsSamplerTest {
         double minVarLim = -30d;
         double maxVarLim = 30d;
 
-        PolynomialVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
+        FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
         PolyGibbsSampler sampler = PolyGibbsSampler.makeGibbsSampler(cp, minVarLim, maxVarLim, null);
 
-        save2DSamples(sampler, numSamples);
+        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
 
     }
 
-    public static void save2DSamples(PolyGibbsSampler sampler, int numSamples) throws FileNotFoundException {
-        PrintStream ps;
 
-        ps = new PrintStream(new FileOutputStream(SAMPLES_FILE_NAME));
-
-        for (int i = 0; i < numSamples; i++) {
-            Double[] sample = sampler.sample();
-            System.out.println("sample = " + Arrays.toString(sample));
-            ps.println(sample[0] + "\t" + sample[1]);
-
-        }
-
-        ps.close();
-    }
 
     public static void testStatistics(String varName, int numSamples, PolyGibbsSampler sampler,
                                       double min, double max, double mean, double variance, double epsilon) {

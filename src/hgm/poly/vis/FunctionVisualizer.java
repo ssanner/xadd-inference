@@ -1,7 +1,9 @@
 package hgm.poly.vis;
 
 import hgm.poly.ConstrainedPolynomial;
+import hgm.poly.Function;
 import hgm.poly.PolynomialException;
+import hgm.poly.integral.OneDimFunction;
 import hgm.sampling.VarAssignment;
 import jahuwaldt.plot.*;
 import net.ericaro.surfaceplotter.JSurfacePanel;
@@ -18,45 +20,40 @@ import java.util.HashMap;
  * Date: 23/02/14
  * Time: 9:40 PM
  */
-public class PolynomialVisualizer {
-    public static void visualize(ConstrainedPolynomial constrainedPolynomial, double min, double max, double step, String title) {
-        int numVars = constrainedPolynomial.collectContinuousVars().length;
+public class FunctionVisualizer {
+    public static void visualize(final OneDimFunction function, double min, double max, double step, String title) {
+             visualize1DimXadd(new Function() {
+                 String[] vars = new String[]{"x"};
+                 @Override
+                 public double evaluate(VarAssignment fullVarAssign) {
+                     return function.eval(fullVarAssign.getContinuousVar("x"));
+                 }
+
+                 @Override
+                 public String[] collectContinuousVars() {
+                     return vars;
+                 }
+             }, min, max, step, title);
+    }
+
+    public static void visualize(Function function, double min, double max, double step, String title) {
+        int numVars = function.collectContinuousVars().length;
         switch (numVars) {
             case 0:
                 throw new PolynomialException("0 vars... in a polynomial factory");
             case 1:
-                visualize1DimXadd(constrainedPolynomial, min, max, step, title);
+                visualize1DimXadd(function, min, max, step, title);
                 break;
             case 2:
-                visualize2DimXadd(constrainedPolynomial, min, max, step, title);
+                visualize2DimXadd(function, min, max, step, title);
                 break;
             default:
                 System.err.println("a node with numVars = " + numVars + " cannot be visualized");
         }
     }
 
-//    public static void visualize(ode node, String title, XADD context) {
-//        int numVars = node.collectVars().size();
-//        if (numVars == 1) visualize1DimXadd(node, title, context);
-//        else if (numVars == 2) visualize2DimXadd(node, title, context);
-//        else System.err.println("a node with numVars = " + numVars + " cannot be visualized");
-//    }
 
-    /*public static void visualize2DimXadd(ConstrainedPolynomial cp, String title) {
-        String[] vars = cp.collectVars();
-        String varX = iterator.next();
-        String varY = iterator.next();
-        double min_val_x = context._hmMinVal.get(varX);
-        double max_val_x = context._hmMaxVal.get(varX);
-        double min_val_y = context._hmMinVal.get(varY);
-        double max_val_y = context._hmMaxVal.get(varY);
-        XADDUtils.Plot3DSurfXADD(context, context._hmNode2Int.get(node),
-                min_val_x, 0.5d, max_val_x,
-                min_val_y, 0.5d, max_val_y,
-                varX, varY, title);
-    }*/
-
-    public static void visualize2DimXadd(ConstrainedPolynomial cp,  double min, double max, double step, String title) {
+    private static void visualize2DimXadd(Function cp,  double min, double max, double step, String title) {
 
         String[] vars = cp.collectContinuousVars();
         Plot3DSurfXADD(cp,
@@ -65,7 +62,7 @@ public class PolynomialVisualizer {
                 vars[0], vars[1], title);
     }
 
-    public static void Plot3DSurfXADD(ConstrainedPolynomial cp,
+    private static void Plot3DSurfXADD(Function cp,
                                       double low_x, double inc_x, double high_x,
                                       double low_y, double inc_y, double high_y,
 //                                      HashMap<String, Boolean> static_bvars, HashMap<String, Double> static_dvars,
@@ -80,7 +77,7 @@ public class PolynomialVisualizer {
                 xVar, yVar, title);
     }
 
-    public static void Plot3DSurfXADD(ConstrainedPolynomial cp,
+    private static void Plot3DSurfXADD(Function cp,
                                       double low_x, double high_x,
                                       double low_y, double high_y,
                                       int nSamples,
@@ -194,7 +191,7 @@ public class PolynomialVisualizer {
 
     //***************************************************************************************************************
 
-    public static void visualize1DimXadd(ConstrainedPolynomial cp,  double min, double max, double step, String title) {
+    private static void visualize1DimXadd(Function cp,  double min, double max, double step, String title) {
 //        if (node.collectVars().size() != 1) throw new RuntimeException("only one variable expected!");
 
         String var = cp.collectContinuousVars()[0];
@@ -203,7 +200,7 @@ public class PolynomialVisualizer {
     }
 
     @SuppressWarnings("unchecked")
-    public static void plotXADD(ConstrainedPolynomial cp,
+    private static void plotXADD(Function cp,
                                 double low, double inc,
                                 double high, String xVar, String title) {
 

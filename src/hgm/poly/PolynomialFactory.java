@@ -144,4 +144,8 @@ public class PolynomialFactory {
     public String[] getAllVars() {
         return vars;
     }
+
+    public int numberOfVars() {
+        return vars.length;
+    }
 }
