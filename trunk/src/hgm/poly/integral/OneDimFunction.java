@@ -9,4 +9,11 @@ import hgm.poly.Function;
  */
 public interface OneDimFunction {
     double eval(double var);
+
+    public static final OneDimFunction ZERO_1D_FUNCTION = new OneDimFunction() {
+        @Override
+        public double eval(double var) {
+            return 0;
+        }
+    };
 }

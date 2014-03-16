@@ -1,6 +1,8 @@
-package hgm.reports;
+package hgm.poly.pref.reports;
 
 import hgm.asve.Pair;
+import hgm.poly.pref.PolyPreferenceLearningPredictor;
+import hgm.poly.pref.PolyPreferenceLearningPredictorUsingGibbsSampler;
 import hgm.poly.pref.reports.db.SyntheticDistributionUtils;
 import hgm.preference.Choice;
 import hgm.preference.Preference;
@@ -12,38 +14,41 @@ import hgm.preference.predict.XaddPolytopePrefLearningPredictor;
 import hgm.preference.predict.XaddPolytopePrefLearningPredictorUsingGibbsWithCDFsPerSample;
 import hgm.preference.predict.PreferenceLearningPredictor;
 import hgm.preference.predict.TrueSkillPrefLearningPredictor;
-import hgm.sampling.*;
+import hgm.sampling.MetropolisHastingsSampler;
+import hgm.sampling.RejectionSampler;
+import hgm.sampling.VarAssignment;
+import hgm.sampling.XaddSampler;
 import hgm.utils.Utils;
-
 import org.junit.Test;
-
 import xadd.XADD;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
- * Created by Hadi Afshar. Date: 30/01/14 Time: 12:58 AM
+ * Written before UAI 2014
  */
-public class ReportTrueSkillAndPolyOnSynthesizedDB {
+//todo complete this file..............
+public class ReportPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
     @Test
     public void test1() {
 
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning instance = new ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning();
         // instance.basicTest();
         // instance.dummyFeasibleTest();
 
         // System.out.println(System.getProperty("java.library.path"));
 
-        ReportTrueSkillAndPolyOnSynthesizedDB instance = new ReportTrueSkillAndPolyOnSynthesizedDB();
-        instance.predictionTestOnDummyFeasibleModelUsingMetropolisAndProjection();
+        ReportPolyGibbsTrueSkillMHRejectionOnSynthesizedDB instance = new ReportPolyGibbsTrueSkillMHRejectionOnSynthesizedDB();
+        instance.predictionTestOnDummyFeasibleModelUsingPolyXadPolyMetropolisAndProjection();
     }
 
     @Test
-    public void predictionTestOnDummyFeasibleModel() {
+    public void predictionTestOnDummyFeasibleModel() throws IOException {
         double indicatorNoise = 0.0;
         boolean reduceLP = true;
         double relativeLeafValueBelowWhichRegionsAreTrimmed = -0.01;
@@ -64,12 +69,13 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
     }
 
     @Test
-    public void predictionTestOnDummyFeasibleModelUsingMetropolisAndProjection() {
-        double indicatorNoise = 0.0;
+    public void predictionTestOnDummyFeasibleModelUsingPolyXadPolyMetropolisAndProjection() throws IOException {
+        double indicatorNoise = 0.1;
         boolean reduceLP = true;
         double relativeLeafValueBelowWhichRegionsAreTrimmed = -0.01;
         int burnedSamples = 100;
-        int[] numberOfSamplesArray = new int[]{100 + burnedSamples, 500 + burnedSamples, 1000 + burnedSamples}; // 100 for burn in
+        Integer maxGateConstraintViolation = Integer.MAX_VALUE;
+        int[] numberOfSamplesArray = new int[]{100 + burnedSamples, 500 + burnedSamples, 10000 + burnedSamples}; // 100 for burn in
 
         for (int numberOfSamples : numberOfSamplesArray) {
 
@@ -77,27 +83,18 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                     + relativeLeafValueBelowWhichRegionsAreTrimmed + "\t indicator noise:" + indicatorNoise);
 
             List<Pair<String, PreferenceLearningPredictor>> predictors = new ArrayList<Pair<String, PreferenceLearningPredictor>>(
-                    Arrays.asList(new Pair<String, PreferenceLearningPredictor>("poly",
-                            new XaddPolytopePrefLearningPredictorUsingGibbsWithCDFsPerSample(indicatorNoise,
-                                    reduceLP, numberOfSamples,
-                                    relativeLeafValueBelowWhichRegionsAreTrimmed, 0,
-                                    burnedSamples)),
-                            new Pair<String, PreferenceLearningPredictor>("true.skill",
-                                    new TrueSkillPrefLearningPredictor(0)),
-                            new Pair<String, PreferenceLearningPredictor>("metro",
-                                    new XaddPolytopePrefLearningPredictor(indicatorNoise, reduceLP,
-                                            numberOfSamples,
+                    Arrays.asList(
+                            new Pair<String, PreferenceLearningPredictor>("new.poly",
+                                    new PolyPreferenceLearningPredictorUsingGibbsSampler(indicatorNoise,
+                                            numberOfSamples, burnedSamples, maxGateConstraintViolation, -PreferenceLearning.C, PreferenceLearning.C))
+                            ,new Pair<String, PreferenceLearningPredictor>("xadd.poly",
+                                    new XaddPolytopePrefLearningPredictorUsingGibbsWithCDFsPerSample(indicatorNoise,
+                                            reduceLP, numberOfSamples,
                                             relativeLeafValueBelowWhichRegionsAreTrimmed, 0,
-                                            burnedSamples) {
-
-                                        @Override
-                                        public XaddSampler makeNewSampler(XADD context,
-                                                                      XADD.XADDNode posterior,
-                                                                      VarAssignment initAssignment) {
-                                            return new MetropolisHastingsSampler(context, posterior,
-                                                    initAssignment);
-                                        }
-                                    }), new Pair<String, PreferenceLearningPredictor>("rej",
+                                            burnedSamples))
+                            , new Pair<String, PreferenceLearningPredictor>("true.skill",
+                            new TrueSkillPrefLearningPredictor(0))
+                            , new Pair<String, PreferenceLearningPredictor>("metro",
                             new XaddPolytopePrefLearningPredictor(indicatorNoise, reduceLP,
                                     numberOfSamples,
                                     relativeLeafValueBelowWhichRegionsAreTrimmed, 0,
@@ -105,12 +102,26 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
 
                                 @Override
                                 public XaddSampler makeNewSampler(XADD context,
-                                                              XADD.XADDNode posterior,
-                                                              VarAssignment initAssignment) {
-                                    return new RejectionSampler(context, posterior,
-                                            initAssignment, 1);
+                                                                  XADD.XADDNode posterior,
+                                                                  VarAssignment initAssignment) {
+                                    return new MetropolisHastingsSampler(context, posterior,
+                                            null/*initAssignment*/);
                                 }
-                            })));
+                            }), new Pair<String, PreferenceLearningPredictor>("rej",
+                            new XaddPolytopePrefLearningPredictor(indicatorNoise, reduceLP,
+                                    numberOfSamples,
+                                    relativeLeafValueBelowWhichRegionsAreTrimmed, 0,
+                                    burnedSamples) {
+
+                                @Override
+                                public XaddSampler makeNewSampler(XADD context,
+                                                                  XADD.XADDNode posterior,
+                                                                  VarAssignment initAssignment) {
+                                    return new RejectionSampler(context, posterior,
+                                            null/*initAssignment*/, 1);
+                                }
+                            })
+                    ));
 
             preferencePredictionOnDummyFeasibleModel(predictors, numberOfSamples - burnedSamples);
         }
@@ -144,22 +155,19 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
      * *******************************
      */
     public static void preferencePredictionOnDummyFeasibleModel(
-            List<Pair<String /* name */, PreferenceLearningPredictor>> predictors, int numberOfSamplesJustForInfo) {
+            List<Pair<String /* name */, PreferenceLearningPredictor>> predictors, int numberOfSamplesJustForInfo) throws IOException {
         System.out.println(" #constraints and/or #dims vs. Loss");
         int numberOfItems = 500; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
-        // int minDim = 10;
-        // int maxDim = 10;
-        int[] numDimsArray = new int[]{5, 10, 20};
-        // int minNumConstraints = 1;
-        // int maxNumConstraints = 60;
-        int[] numConstraintsArray = new int[]{20};
-        int numberOfTestComparisonsPerDatabase = 60000;
+        int[] numDimsArray = new int[]{2, 3, 9};//{5, 10, 20};
+        int[] numConstraintsArray = new int[]{3, 10, 20};
+        int numberOfTestPrefs = 600;  //this used to be the number of tests per data base (?)
         int numRepeatingEachExperiment = 10;
+        Integer numSamplesToEstimateRealDistribution = 1000;
         HashMap<String, ArrayList<Double>> result_maps = new HashMap<String, ArrayList<Double>>();
 
         for (int numDims : numDimsArray) {
 
-            for (int numConstraints : numConstraintsArray) {
+            for (int numTrainingConstraints : numConstraintsArray) {
 
                 Map<String, Double> predictor2averageLossMap = new HashMap<String, Double>();
                 Map<String, Double> predictor2expectedSquareLoss = new HashMap<String, Double>();
@@ -167,20 +175,26 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                     predictor2averageLossMap.put(predictor.getFirstEntry(), 0d);
                     predictor2expectedSquareLoss.put(predictor.getFirstEntry(), 0d);
                 }
+
                 for (int experimentRepetitionCounter = 0; experimentRepetitionCounter < numRepeatingEachExperiment; experimentRepetitionCounter++) {
 
-                    PreferenceDatabase completeDatabase = new DummyFeasiblePreferenceDatabase(
+
+                    PreferenceDatabase completeDatabase = SyntheticDistributionUtils.fetchOrGenerateTrainTestPreferenceDbDistribution("1" /*prior*/,
+                            -PreferenceLearning.C, PreferenceLearning.C,
+                            0d, 5d,
+                            numDims, numberOfItems, numTrainingConstraints, numberOfTestPrefs, numSamplesToEstimateRealDistribution, 0.1, 6, false);
+                    /*PreferenceDatabase completeDatabase = new DummyFeasiblePreferenceDatabase(
                             -PreferenceLearning.C,
                             PreferenceLearning.C,
                             0d,
                             5d,
-                            numConstraints + numberOfTestComparisonsPerDatabase /* more preferences used for testing */,
-                            numDims, numberOfItems /* number of items */);
+                            numConstraints + numberOfTestComparisonsPerDatabase *//* more preferences used for testing *//*,
+                            numDims, numberOfItems *//* number of items *//*);*/
 
-                    PreferenceDatabase trainingDb = new PartialPreferenceDatabase(completeDatabase, numConstraints);
+                    //NOTE: the first 'numTrainingConstraints' entries are for training and the rest are for test
+                    PreferenceDatabase trainingDb = new PartialPreferenceDatabase(completeDatabase, numTrainingConstraints);
 
-                    for (Pair<String, PreferenceLearningPredictor> strPredictor : predictors) { // for different predictors same date is used for fair
-                        // ness
+                    for (Pair<String, PreferenceLearningPredictor> strPredictor : predictors) { // for different predictors same date is used for fairness
                         String predName = strPredictor.getFirstEntry();
                         PreferenceLearningPredictor predictor = strPredictor.getSecondEntry();
 
@@ -193,27 +207,38 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                         long trainTime = time5testingStart - timeStampStartTrain;
 
                         int numLosses = 0;
-                        for (int testCounter = 0; testCounter < numberOfTestComparisonsPerDatabase; testCounter++) {
+                        double probabilityOfTheCorrectAnswer = 0d;
+
+                        for (int testCounter = 0; testCounter < numberOfTestPrefs; testCounter++) {
 
                             Preference testPref = completeDatabase.getPreferenceResponses()
-                                    .get(numConstraints + testCounter);
+                                    .get(numTrainingConstraints + testCounter);
                             Integer aId = testPref.getItemId1();
                             Integer bId = testPref.getItemId2();
                             Double[] a = completeDatabase.getItemAttributeValues(aId);
                             Double[] b = completeDatabase.getItemAttributeValues(bId);
 
                             Choice predictedChoice = predictor.predictPreferenceChoice(a, b);
+                            double probabilityOfTheChosenItem = predictedChoice.equals(Choice.FIRST) ?
+                                    predictor.probabilityOfFirstItemBeingPreferredOverSecond(a, b)
+                                    :
+                                    predictor.probabilityOfFirstItemBeingPreferredOverSecond(b, a);
 
-                            if (!predictedChoice.equals(testPref.getPreferenceChoice())) {
+                            Choice correctChoice = testPref.getPreferenceChoice();
+                            if (!predictedChoice.equals(correctChoice)) {
                                 numLosses++;
-
+                                probabilityOfTheCorrectAnswer += (1 - probabilityOfTheChosenItem);
+                            } else {
+                                probabilityOfTheCorrectAnswer += probabilityOfTheChosenItem;
                             }
 
                         }// end test for
 
-                        double averageLoss = numLosses / (double) numberOfTestComparisonsPerDatabase;
-                        System.out.print("[" + predName + ":] averageLoss(" + numDims + ":" + numConstraints + ":"
-                                + numberOfSamplesJustForInfo + "|T:" + trainTime + ") = " + averageLoss + "\t\t\t");
+                        probabilityOfTheCorrectAnswer /= (double) numberOfTestPrefs;
+
+                        double averageLoss = numLosses / (double) numberOfTestPrefs;
+                        System.out.println("[" + fixedLengthStr(predName, 12) + ":] averageLoss(Dim. " + numDims + " : TrainConstr. " + numTrainingConstraints + " #samples. "
+                                + numberOfSamplesJustForInfo + "|Train Time:" + trainTime + ") = " + averageLoss + "\t prob.correct.answer: " + probabilityOfTheCorrectAnswer);
 
                         predictor2averageLossMap.put(predName, predictor2averageLossMap.get(predName)
                                 + (averageLoss / (double) numRepeatingEachExperiment));
@@ -224,11 +249,12 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                         addToHashMap(result_maps, "experimentRepetitionCounter_" + predName,
                                 experimentRepetitionCounter);
                         addToHashMap(result_maps, "numDims_" + predName, numDims);
-                        addToHashMap(result_maps, "numConstraints_" + predName, numConstraints);
+                        addToHashMap(result_maps, "numConstraints_" + predName, numTrainingConstraints);
                         addToHashMap(result_maps, "takenSamples_" + predName, numberOfSamplesJustForInfo);
                         addToHashMap(result_maps, "numberOfTestComparisonsPerDatabase_" + predName,
-                                numberOfTestComparisonsPerDatabase);
+                                numberOfTestPrefs);
                         addToHashMap(result_maps, "averageLoss_" + predName, averageLoss);
+                        addToHashMap(result_maps, "probCorrectAnswer_" + predName, probabilityOfTheCorrectAnswer);
                         addToHashMap(result_maps, "trainTime_" + predName, time5testingStart - timeStampStartTrain);
 
                         Utils.writeMatMap("results.mat", result_maps);
@@ -247,7 +273,7 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                     System.out.print("\n");
 
                     SyntheticDistributionUtils.savePrefDb(completeDatabase, "completeDatabase_" + experimentRepetitionCounter + "_"
-                            + numConstraints + "_" + numDims + ".mat");
+                            + numTrainingConstraints + "_" + numDims + ".mat");
 
                 }// end repetition loop
                 Map<String, Double> pred2Sigma = new HashMap<String, Double>();// root E(X^2) - E(X)^2
@@ -256,8 +282,8 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                             Math.sqrt(predictor2expectedSquareLoss.get(predName)
                                     - Math.pow(predictor2averageLossMap.get(predName), 2d)));
                 }
-                System.out.println("(#DIM:" + numDims + "/CNST:" + numConstraints
-                        + ") >>>>>>>>> predictor2AverageLossMap = " + predictor2averageLossMap
+                System.out.println("\n(#DIM:" + numDims + "/CNST:" + numTrainingConstraints
+                        + ") \n>>> predictor2AverageLossMap = " + predictor2averageLossMap
                         + "\t\t predicator2sigma = " + pred2Sigma);
 
             } // end numConstraints for
@@ -344,8 +370,8 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
 
     // TODO
     // TODO
-	/* private void sample2DToMatlabFile(String var1, String var2, int numSamples, Sampler sampler) throws FileNotFoundException { PrintStream ps; ps
-	 * = new PrintStream(new FileOutputStream(SCATTER_2D_FILENAME));
+    /* private void sample2DToMatlabFile(String var1, String var2, int numSamples, Sampler sampler) throws FileNotFoundException { PrintStream ps; ps
+     * = new PrintStream(new FileOutputStream(SCATTER_2D_FILENAME));
 	 * 
 	 * for (int i = 0; i < numSamples; i++) { VarAssignment assign = sampler.sample(); double x1 = assign.getContinuousVar(var1); double x2 =
 	 * assign.getContinuousVar(var2); ps.println(x1 + "\t" + x2); }
@@ -354,4 +380,8 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
 	 * 
 	 * } */
 
+
+    public static String fixedLengthStr(String string, int length) {
+        return String.format("%1$"+length+ "s", string);
+    }
 }

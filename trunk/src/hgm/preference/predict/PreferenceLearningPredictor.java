@@ -22,4 +22,6 @@ public interface PreferenceLearningPredictor {
 
     //Items are often not included in the training database
     public Choice predictPreferenceChoice(Double[] item1, Double[] item2);
+
+    public double probabilityOfFirstItemBeingPreferredOverSecond(Double[] item1, Double[] item2);
 }
