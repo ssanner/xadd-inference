@@ -1,5 +1,8 @@
-/**
+/*
+ *  XADDHelper.hava 
  * 
+ * NOTES:
+ *          1. This Class contains modified functions from xadd.XADD.java
  */
 package mamdp.utils;
 
@@ -12,6 +15,7 @@ import xadd.XADD;
 import xadd.XADDUtils;
 
 /**
+ * Contains XADD methods from XADD.java
  * @author Shamin Kinathil
  *
  */
@@ -40,6 +44,11 @@ public class XADDHelper {
      * XADD related functions 
      *-----------------------------------------------------------------------*/
     
+    /**
+     * 
+     * @param fileLocation
+     * @return
+     */
     public static int BuildXADD(String fileLocation) {
 
         File specFile = new File(fileLocation);
@@ -50,12 +59,32 @@ public class XADDHelper {
         return XADDHelper.getXADD().buildCanonicalXADDFromFile(specFile.toString());
     }
 
+    /**
+     * 
+     * @param xaddID
+     * @param plotTitle
+     */
     public static void PlotXADD(int xaddID, String plotTitle) {
-        Graph gc = XADDHelper.getXADD().getGraph(xaddID);
-        gc.launchViewer(plotTitle);
+        
+        try {
+            Graph gc = XADDHelper.getXADD().getGraph(xaddID);
+            gc.launchViewer(plotTitle);
+        
+        } catch (IllegalArgumentException e) {
+            System.err.println("XADDHelper.PlotXADD Caught Exception: " + plotTitle 
+                    + "\n"+ e.getMessage());
+        }
     }
 
-    public static void ExportXADD(int xadd_id, String label, String problemFile, String logFileRoot) {
+    /**
+     * 
+     * @param xadd_id
+     * @param label
+     * @param problemFile
+     * @param logFileRoot
+     */
+    public static void ExportXADD(int xadd_id, String label, String problemFile,
+                                                            String logFileRoot) {
 
         label = label.replace(".csamdp", "").replace(".camdp", "")
                 .replace(".cmdp", "").replace('^', '_').replace("(", "")
@@ -78,7 +107,15 @@ public class XADDHelper {
         }
     }
 
-    public static void Display2D(int xadd_id, String label, String problemFile, String logFileRoot) {
+    /**
+     * 
+     * @param xadd_id
+     * @param label
+     * @param problemFile
+     * @param logFileRoot
+     */
+    public static void Display2D(int xadd_id, String label, String problemFile, 
+                                                            String logFileRoot) {
 
         XADDHelper.ExportXADD(xadd_id, label, problemFile, logFileRoot);
 
@@ -91,7 +128,15 @@ public class XADDHelper {
                 opt._dassign, opt._var.get(0), logFileRoot + "." + label);
     }
 
-    public static void Display3D(int xadd_id, String label, String problemFile, String logFileRoot) {
+    /**
+     * 
+     * @param xadd_id
+     * @param label
+     * @param problemFile
+     * @param logFileRoot
+     */
+    public static void Display3D(int xadd_id, String label, String problemFile, 
+                                                            String logFileRoot) {
 
         // If DISPLAY_3D is enabled, it is expected that necessary parameters 
         // have been placed in a _problemFile + ".3d"

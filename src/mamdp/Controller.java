@@ -1,7 +1,3 @@
-/**
- * 
- */
-
 package mamdp;
 
 import java.io.File;
@@ -63,10 +59,25 @@ public class Controller {
 
         if (context == null) {
             context = new XADD();
+            
+            // NOTES: This is a HACK. It is used with the "simple_binary_option"
+            //          domain.
+            //context.getVarIndex(context.new BoolDec("b"), true);
+            //context.getVarIndex(context.new BoolDec("m"), true);
+            //context.getVarIndex(context.new BoolDec("s"), true);
         }
 
         return context;
     }
+    
+    private static void clearXADD() {
+
+        if (context != null) {
+            System.out.println("Clearing XADD");
+            context = null;
+        }
+    }
+    
 
     /**
      * @param args
@@ -76,244 +87,248 @@ public class Controller {
         /*----------------------------------------------------------------------
          * Instantiate an XADD
          ---------------------------------------------------------------------*/
+
+        Controller.clearXADD();
         
-        XADD xadd = Controller.getXADD();
+        XADD xadd = Controller.getXADD();        
         XADDHelper.setXADDInstance(xadd);
         VIHelper.setXADDInstance(xadd);
 
         /*----------------------------------------------------------------------
          * Run a Stochastic Game
          ---------------------------------------------------------------------*/
-                
-        /*
-         * One Shot Games
-         */        
-        //Controller.OneShotGame("chicken");
-        //Controller.OneShotGame("matching_pennies");
-        //Controller.OneShotBinaryOptionGame("binary_option", 1);
-        
+
         /*
          * Sequential Games
          */
-        Controller.FiniteHorizonGame("binary_option", 10);
+
+//        Controller.MatchingPennies("sequential_matching_pennies", 5);        
+//        Controller.BinaryOptionDomain("simple_binary_option", 20);
+//        Controller.EnergyDomain("energy_production", 5);
+        
+        xadd.flushCaches();
     }
     
-    private static void OneShotGame(String domainName) {
-        
+    private static void EnergyDomain(String domainName, Integer horizon) {
         String domainDir = Controller.DomainDirectory(domainName);
         String rewardFile = domainDir + File.separator + "reward.xadd";
-        String constraintsFile = domainDir + File.separator + "constraints.xadd";
-        String plot2DFile = domainDir + File.separator + "plot";
+        
+        String productionTransitionsFile = domainDir + File.separator + "production_transition.xadd";
+        String demandTransitionFile = domainDir + File.separator + "demand_transition.xadd";
+        String profitTransitionFile = domainDir + File.separator + "profit_transition.xadd";
+        
         String logFile = domainDir + File.separator + domainName + ".log";
-
-        Integer vFuncID = null;
-        Integer qFuncID = null;
-        PrintStream logStream = null;
-
-        try {
-            logStream = new PrintStream(new FileOutputStream(logFile));
-        }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        /*
-         * 0. Set up
-         */
-
-        // Build the XADDs
-        int constraintsID = XADDHelper.BuildXADD(constraintsFile);
-        int rewardID = XADDHelper.BuildXADD(rewardFile);
-
-        XADDHelper.PlotXADD(constraintsID, "Constraints");
-        XADDHelper.PlotXADD(rewardID, "Reward");
-
-        int aVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("a"), false);
-        int bVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("b"), false);
-
-        int pTID = Controller.getXADD().getTermNode(new VarExpr("p"));
-        int pFID = Controller.getXADD().scalarOp(Controller.getXADD().scalarOp(pTID, -1, XADD.PROD), 1, XADD.SUM);
-
-        // Set the Q-function to be the reward function
-        // NOTE:    This is because it is a one-shot problem
-        qFuncID = rewardID;
-
-        /*
-         * 1. Sum over (marginalise) the actions for Player A ('a')
-         */
-
-        int highID = Controller.getXADD().opOut(rewardID, aVarID,
-                                                            XADD.RESTRICT_HIGH);
-        int lowID = Controller.getXADD().opOut(rewardID, aVarID,
-                                                            XADD.RESTRICT_LOW);
-
-        qFuncID = Controller.getXADD().apply(
-                    Controller.getXADD().apply(highID, pTID, XADD.PROD),
-                    Controller.getXADD().apply(lowID, pFID, XADD.PROD), XADD.SUM);
-
-        XADDHelper.PlotXADD(qFuncID, "After 1");
-
-        /*
-         * 2. Minimise over the actions for Player B ('b')
-         */
-
-        highID = Controller.getXADD().opOut(qFuncID, bVarID, XADD.RESTRICT_HIGH);
-        lowID = Controller.getXADD().opOut(qFuncID, bVarID, XADD.RESTRICT_LOW);
-
-        qFuncID = Controller.getXADD().apply(highID, lowID, XADD.MIN);
-
-        XADDHelper.PlotXADD(qFuncID, "After 2");
-
-        /*
-         * 3. Maximise over the 
-         */
-
-        vFuncID = VIHelper.maxOutVar(qFuncID, "p", 0, 1, logStream);
-        XADDHelper.PlotXADD(vFuncID, "After 3");
-
-        /*
-         * Plot the value function
-         */
-        String plotTitle = "Value Function - " + domainName;
-        XADDHelper.Display2D(vFuncID, plotTitle, plot2DFile, domainDir);        
         
-    }
-    
-    private static void OneShotBinaryOptionGame(String domainName, Integer horizon) {
-        
-        String domainDir = Controller.DomainDirectory(domainName);
-        String rewardFile = domainDir + File.separator + "reward.xadd";
-        String transitionsFile = domainDir + File.separator + "transitions.xadd";
-        String inventoryFile = domainDir + File.separator + "inventory_transition.xadd";
-        String logFile = domainDir + File.separator + domainName + ".log";
-        String plot2DFile = domainDir + File.separator + "plot";
-        
-        Integer qFuncID = null;
-        Integer vFuncID = null;
-        PrintStream logStream = null;
-
-        try {
-            logStream = new PrintStream(new FileOutputStream(logFile));
-        }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        /*
-         * 0. Set up
-         */
-
-        // Build the XADDs
-        int rewardID = XADDHelper.BuildXADD(rewardFile);
-        int valueTransitionID = XADDHelper.BuildXADD(transitionsFile);
-        int inventoryTransitionID = XADDHelper.BuildXADD(inventoryFile);
-
-        int executeTransitionID = XADDHelper.BuildXADD(domainDir + File.separator + "execute_value_transition.xadd");
-        int buyTransitionID = XADDHelper.BuildXADD(domainDir + File.separator + "buy_transition.xadd");
-        int sellTransitionID = XADDHelper.BuildXADD(domainDir + File.separator + "sell_transition.xadd");
-                
-        XADDHelper.PlotXADD(rewardID, "Reward - " + domainName);
-        XADDHelper.PlotXADD(valueTransitionID, "Value Transition - " + domainName);
-        XADDHelper.PlotXADD(inventoryTransitionID, "Inventory Transition - " + domainName);
-        XADDHelper.PlotXADD(executeTransitionID, "Execute - " + domainName);
-        XADDHelper.PlotXADD(buyTransitionID, "Buy - " + domainName);
-        XADDHelper.PlotXADD(sellTransitionID, "Sell - " + domainName);
-        
-        /*
-         * 
-         */
-        
-        // Set the Q-function to be the reward function
-        // NOTE:    This is because it is a one-shot problem
-        qFuncID = rewardID;
-        
-        /*
-         * 1. Sum over (marginalise) the actions for Player A ('a')
-         */
-
-        int eVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("e"), false);
-        int bVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("b"), false);
-        
-        int peTID = Controller.getXADD().getTermNode(new VarExpr("pe"));
-        int peFID = Controller.getXADD().scalarOp(Controller.getXADD().scalarOp(peTID, -1, XADD.PROD),
-                                                                    1, XADD.SUM);
-        int pbTID = Controller.getXADD().getTermNode(new VarExpr("pb"));
-        int pbFID = Controller.getXADD().scalarOp(Controller.getXADD().scalarOp(peTID, -1, XADD.PROD),
-                                                                    1, XADD.SUM);
-        
-        int ehighID = Controller.getXADD().opOut(rewardID, eVarID, XADD.RESTRICT_HIGH);
-        int elowID = Controller.getXADD().opOut(rewardID, eVarID, XADD.RESTRICT_LOW);
-
-        int bhighID = Controller.getXADD().opOut(ehighID, bVarID, XADD.RESTRICT_HIGH);
-        int blowID = Controller.getXADD().opOut(elowID, bVarID, XADD.RESTRICT_LOW);
-        
-        XADDHelper.PlotXADD(ehighID, "E");
-        XADDHelper.PlotXADD(elowID, "~E");
-
-        XADDHelper.PlotXADD(bhighID, "B");
-        XADDHelper.PlotXADD(blowID, "~B");
-        
-        // Execute action
-        int eXADDId = Controller.getXADD().apply(
-                Controller.getXADD().apply(ehighID, peTID, XADD.PROD),
-                Controller.getXADD().apply(elowID, peFID, XADD.PROD), 
-                                                        XADD.SUM);
-                
-        // Buy action        
-        int bXADDId = Controller.getXADD().apply(
-                           Controller.getXADD().apply(bhighID, pbTID, XADD.PROD),
-                           Controller.getXADD().apply(blowID, pbFID, XADD.PROD), 
-                                                                   XADD.SUM);
-        
-        qFuncID = Controller.getXADD().apply(eXADDId, bXADDId, XADD.SUM);
-        
-        XADDHelper.PlotXADD(qFuncID, "After 1");        
-        
-        /*
-         * 2. Minimise over the actions for Player B ('b')
-         */
-
-        int sVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("s"), false);
-        
-        int shighID = Controller.getXADD().opOut(qFuncID, sVarID, XADD.RESTRICT_HIGH);
-        int slowID = Controller.getXADD().opOut(qFuncID, sVarID, XADD.RESTRICT_LOW);
-
-        qFuncID = Controller.getXADD().apply(shighID, slowID, XADD.MIN);
-
-        XADDHelper.PlotXADD(qFuncID, "After 2");        
-
-        /*
-         * 3. Maximise over the 
-         */
-
-        vFuncID = VIHelper.maxOutVar(qFuncID, "pe", 0, 1, logStream);
-        vFuncID = VIHelper.maxOutVar(vFuncID, "pb", 0, 1, logStream);
-        
-        XADDHelper.PlotXADD(vFuncID, "After 3");        
-        
-        /*
-         * Plot the value function
-         */
-        String plotTitle = "Value Function - " + domainName;
-        //Controller.Display2D(vFuncID, plotTitle, plot2DFile, domainDir);
-        XADDHelper.Display3D(vFuncID, plotTitle, plot2DFile, domainDir);
-    }
-    
-    private static void FiniteHorizonGame(String domainName, Integer horizon) {
-    
-        String domainDir = Controller.DomainDirectory(domainName);
-        String rewardFile = domainDir + File.separator + "reward.xadd";
-        String transitionsFile = domainDir + File.separator + "transitions.xadd";
-        String inventoryFile = domainDir + File.separator + "inventory_transition.xadd";
-        String logFile = domainDir + File.separator + domainName + ".log";
-        String plot3DFile = domainDir + File.separator + "plot";
-        
-        Integer maxID = null;
         Integer prevID = null;
         Integer vFuncID = Controller.getXADD().ZERO;
         Integer qFuncID = null;
 
-        double discountValue = 0.8;
+        HashMap<String, ArithExpr> hmPrimeSubs = new HashMap<String, ArithExpr>();
+        
+        double discountValue = 0.9;
+
+        PrintStream logStream = null;
+
+        int currIterationNum = 0;
+
+        /*
+         * Set up
+         */
+
+        try {
+            logStream = new PrintStream(new FileOutputStream(logFile));
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }          
+        
+        // Build the XADDs
+        int rewardID = XADDHelper.BuildXADD(rewardFile);
+        int prodTransitionID = XADDHelper.BuildXADD(productionTransitionsFile);
+        int demTransitionID = XADDHelper.BuildXADD(demandTransitionFile);
+        int profTransitionID = XADDHelper.BuildXADD(profitTransitionFile);
+
+        //int epsID = XADDHelper.BuildXADD(domainDir + File.separator + "epsilon.xadd");
+
+        XADDHelper.PlotXADD(rewardID, "Reward - " + domainName);
+        XADDHelper.PlotXADD(prodTransitionID, "Production Transition - " + domainName);
+        XADDHelper.PlotXADD(demTransitionID, "Demand Transition - " + domainName);
+        XADDHelper.PlotXADD(profTransitionID, "Profit Transition - " + domainName);
+                
+        // Nature's action variables (increase, hold, decrease)
+        int xVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("x"), false);
+        int yVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("y"), false);
+        int zVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("z"), false);
+        
+        // Producer's action variables (increase, hold, decrease)
+        int uVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("u"), false);
+        int hVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("h"), false);
+        int rVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("r"), false);
+        
+        // The probabilities over each of the Producer's pure strategies
+        int puTID = Controller.getXADD().getTermNode(new VarExpr("pu"));
+        int phTID = Controller.getXADD().getTermNode(new VarExpr("ph"));        
+        int prTID = Controller.getXADD().getTermNode(new VarExpr("pr"));
+        
+        hmPrimeSubs.put("p", new VarExpr("p'"));
+        hmPrimeSubs.put("d", new VarExpr("d'"));        
+        hmPrimeSubs.put("w", new VarExpr("w'"));
+        
+        /*
+         * Solve the MAMDP
+         */
+
+        // Prime the reward function        
+        int primedRewardID = Controller.getXADD().substitute(rewardID, hmPrimeSubs);
+        
+        while (currIterationNum < horizon) {
+            currIterationNum++;
+
+            System.out.println("Iteration number: " + currIterationNum);
+
+            // Prime the vFuncID
+            prevID = vFuncID;
+
+            // Prime the value function
+//            XADDHelper.PlotXADD(prevID, "Q - unprimed");
+            qFuncID = Controller.getXADD().substitute(prevID, hmPrimeSubs);
+//            XADDHelper.PlotXADD(qFuncID, "Q - primed");
+
+            // Prime the reward function
+//            XADDHelper.PlotXADD(rewardID, "R - unprimed");            
+//            rewardID = Controller.getXADD().substitute(rewardID, hmPrimeSubs);
+//            XADDHelper.PlotXADD(rewardID, "R - primed");            
+
+            // Discount
+            qFuncID = Controller.getXADD().scalarOp(qFuncID, discountValue, XADD.PROD);            
+            
+            // Add reward
+            qFuncID = Controller.getXADD().apply(primedRewardID, qFuncID, XADD.SUM);
+//            XADDHelper.PlotXADD(qFuncID, "Q - After reward - " + currIterationNum);
+            
+            // Regression step
+            System.out.println(currIterationNum + ": ----Regression Step");
+            
+            qFuncID = VIHelper.regressContinuousVariable(qFuncID, profTransitionID, "w'");
+//            XADDHelper.PlotXADD(qFuncID, "Q - after regression (w')");
+            
+            qFuncID = VIHelper.regressContinuousVariable(qFuncID, prodTransitionID, "p'");
+//            XADDHelper.PlotXADD(qFuncID, "Q - after regression (p')");
+            
+            qFuncID = VIHelper.regressContinuousVariable(qFuncID, demTransitionID, "d'");
+//            XADDHelper.PlotXADD(qFuncID, "Q - after regression (d')");
+            
+            // Add reward
+//            qFuncID = Controller.getXADD().apply(rewardID, qFuncID, XADD.SUM);
+//            XADDHelper.PlotXADD(qFuncID, "Q - After reward - " + currIterationNum);
+            
+            /*
+             * 1. Sum over (marginalise) the actions for Producer
+             */
+            
+            int uXADDId = Controller.getXADD().ZERO;
+            int rXADDId = Controller.getXADD().ZERO;
+            int hXADDId = Controller.getXADD().ZERO;
+            
+            System.out.println(currIterationNum + ": ----Sum over (marginalise) the actions for Producer");
+
+            // Increase
+            int uhighID = Controller.getXADD().opOut(qFuncID, uVarID, XADD.RESTRICT_HIGH);
+            uhighID = Controller.getXADD().opOut(uhighID, rVarID, XADD.RESTRICT_LOW);
+//            XADDHelper.PlotXADD(uhighID, "uhighID");
+            
+            int ulowID = Controller.getXADD().opOut(qFuncID, uVarID, XADD.RESTRICT_LOW);
+//            XADDHelper.PlotXADD(ulowID, "ulowID");
+            
+            uXADDId = Controller.getXADD().apply(uhighID, puTID, XADD.PROD); 
+//            XADDHelper.PlotXADD(uXADDId, "uXADDId");
+            
+            // Decrease
+            int rhighID = Controller.getXADD().opOut(ulowID, rVarID, XADD.RESTRICT_HIGH);
+//            XADDHelper.PlotXADD(rhighID, "rhighID");
+            
+            rXADDId = Controller.getXADD().apply(rhighID, prTID, XADD.PROD);
+//            XADDHelper.PlotXADD(rXADDId, "rXADDId");
+            
+            int rlowID = Controller.getXADD().opOut(ulowID, rVarID, XADD.RESTRICT_LOW);
+//            XADDHelper.PlotXADD(rlowID, "rlowID");
+            
+            // Hold
+            int hhighID = Controller.getXADD().opOut(rlowID, hVarID, XADD.RESTRICT_HIGH);
+//            XADDHelper.PlotXADD(hhighID, "hhighID");
+            
+            hXADDId = Controller.getXADD().apply(hhighID, phTID, XADD.PROD);
+//            XADDHelper.PlotXADD(hXADDId, "hXADDId");
+            
+            qFuncID = Controller.getXADD().apply(Controller.getXADD().apply(rXADDId, uXADDId, XADD.SUM), hXADDId, XADD.SUM);
+            XADDHelper.PlotXADD(qFuncID, "After 1 - " + currIterationNum);
+            
+            /*
+             * 2. Minimise over the actions for Nature
+             */
+            System.out.println(currIterationNum + ": ----Minimise over the actions for Nature");
+            
+            // Increase
+            int xhighID = Controller.getXADD().opOut(qFuncID, xVarID, XADD.RESTRICT_HIGH);
+//            XADDHelper.PlotXADD(xhighID, "xhighID");
+            
+            int xlowID = Controller.getXADD().opOut(qFuncID, xVarID, XADD.RESTRICT_LOW);
+//            XADDHelper.PlotXADD(xlowID, "xlowID");
+            
+            // Decrease
+            int yhighID = Controller.getXADD().opOut(xlowID, yVarID, XADD.RESTRICT_HIGH);
+//            XADDHelper.PlotXADD(yhighID, "yhighID");
+            
+            int ylowID = Controller.getXADD().opOut(yhighID, yVarID, XADD.RESTRICT_LOW);
+//            XADDHelper.PlotXADD(ylowID, "ylowID");
+            
+            // Hold
+            int zhighID = Controller.getXADD().opOut(ylowID, zVarID, XADD.RESTRICT_HIGH);
+//            XADDHelper.PlotXADD(zhighID, "zhighID");
+           
+            qFuncID = Controller.getXADD().apply(Controller.getXADD().apply(xhighID, yhighID, XADD.MIN), zhighID, XADD.MIN);
+            XADDHelper.PlotXADD(qFuncID, "After 2 - " + currIterationNum);
+            
+            /*
+             * 3. Maximise over the mixed strategy probabilities
+             */
+            
+            System.out.println(currIterationNum + ": ----Maxout Producer's pure strategy probabilities------");
+            vFuncID = VIHelper.maxOutVar(qFuncID, "pu", 0, 1, logStream);
+            XADDHelper.PlotXADD(vFuncID, "After maxOutVar pu - " + currIterationNum);
+            vFuncID = VIHelper.maxOutVar(vFuncID, "pr", 0, 1, logStream);
+            XADDHelper.PlotXADD(vFuncID, "After maxOutVar pr - " + currIterationNum);
+            vFuncID = VIHelper.maxOutVar(vFuncID, "ph", 0, 1, logStream);
+            XADDHelper.PlotXADD(vFuncID, "After maxOutVar ph - " + currIterationNum);
+            
+            XADDHelper.PlotXADD(vFuncID, "After 3 - " + currIterationNum);
+            
+            /*
+             * Plot the value function
+             */
+//            String plotTitle = "Value Function - " + domainName + " " + currIterationNum;
+//            XADDHelper.Display3D(vFuncID, plotTitle, plot3DFile, domainDir);            
+        }
+        
+    }
+    
+    private static void MatchingPennies(String domainName, Integer horizon) {
+    
+        String domainDir = Controller.DomainDirectory(domainName);
+//        String rewardFile = domainDir + File.separator + "reward.xadd";
+        String rewardFile = domainDir + File.separator + "reward_asymmetric.xadd";
+        
+        String transitionsFile = domainDir + File.separator + "transitions.xadd";
+        
+        String logFile = domainDir + File.separator + domainName + ".log";
+        String plot2DFile = domainDir + File.separator + "plot";
+
+        Integer vFuncID = Controller.getXADD().ZERO;
+        Integer qFuncID = null;
+
+        Integer prevID = null;
+        
+        double discountValue = 0.9;
 
         HashMap<String, ArithExpr> hmPrimeSubs = new HashMap<String, ArithExpr>();
         HashSet<String> hsVariables = new HashSet<String>();
@@ -337,50 +352,22 @@ public class Controller {
         
         // Build the XADDs
         int rewardID = XADDHelper.BuildXADD(rewardFile);
-        int valueTransitionID = XADDHelper.BuildXADD(transitionsFile);
-        int inventoryTransitionID = XADDHelper.BuildXADD(inventoryFile);
-
-        int executeTransitionID = XADDHelper.BuildXADD(domainDir + File.separator + "execute_value_transition.xadd");
-        int buyTransitionID = XADDHelper.BuildXADD(domainDir + File.separator + "buy_value_transition.xadd");
-        int buyInvTransitionID = XADDHelper.BuildXADD(domainDir + File.separator + "buy_inventory_transition.xadd");
-        int sellTransitionID = XADDHelper.BuildXADD(domainDir + File.separator + "sell_value_transition.xadd");
+        
+        int transitionID = XADDHelper.BuildXADD(transitionsFile);
                 
         XADDHelper.PlotXADD(rewardID, "Reward - " + domainName);
-        XADDHelper.PlotXADD(valueTransitionID, "Value Transition - " + domainName);
-        XADDHelper.PlotXADD(inventoryTransitionID, "Inventory Transition - " + domainName);
-                
-        XADDHelper.PlotXADD(executeTransitionID, "Execute - " + domainName);
-        XADDHelper.PlotXADD(buyTransitionID, "Buy - " + domainName);
-        XADDHelper.PlotXADD(buyInvTransitionID, "Buy Inventory - " + domainName);
-        XADDHelper.PlotXADD(sellTransitionID, "Sell - " + domainName);           
-        
-        hmPrimeSubs.put("x1", new VarExpr("x1'"));
-        hmPrimeSubs.put("x2", new VarExpr("x2'"));
-        hmPrimeSubs.put("e", new VarExpr("e'"));
-        hmPrimeSubs.put("b", new VarExpr("b'"));
-        hmPrimeSubs.put("s", new VarExpr("s'"));
-
-        hsBooleanVariables.add("e");
-        hsBooleanVariables.add("b");
-        hsBooleanVariables.add("s");
-        
-        hsContinuousVariables.add("x1");
-        hsContinuousVariables.add("x2");
-        hsContinuousVariables.add("x1'");
-        hsContinuousVariables.add("x2'");
+        XADDHelper.PlotXADD(transitionID, "transitionID - " + domainName);
         
         hsVariables.addAll(hsBooleanVariables);
         hsVariables.addAll(hsContinuousVariables);        
-                
-        int eVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("e"), false);
+
+        int aVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("a"), false);
         int bVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("b"), false);
-        int sVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("s"), false);
         
-        int peTID = Controller.getXADD().getTermNode(new VarExpr("pe"));
-        int peFID = Controller.getXADD().scalarOp(Controller.getXADD().scalarOp(peTID, -1, XADD.PROD),
-                                                                    1, XADD.SUM);
-        int pbTID = Controller.getXADD().getTermNode(new VarExpr("pb"));
-        int pbFID = Controller.getXADD().scalarOp(Controller.getXADD().scalarOp(peTID, -1, XADD.PROD), 1, XADD.SUM);
+        int paTID = Controller.getXADD().getTermNode(new VarExpr("p"));
+        int paFID = Controller.getXADD().scalarOp(Controller.getXADD().scalarOp(paTID, -1, XADD.PROD), 1, XADD.SUM);
+        
+        hmPrimeSubs.put("x", new VarExpr("x'"));
         
         /*
          * 1. 
@@ -394,25 +381,168 @@ public class Controller {
             // Prime the vFuncID
             prevID = vFuncID;
 
-            // Iterate over each action
-            maxID = null;
-
             // Prime the value function
+//            XADDHelper.PlotXADD(vFuncID, "Q - before prime - " + currIterationNum);
             qFuncID = Controller.getXADD().substitute(vFuncID, hmPrimeSubs);
-
+//            XADDHelper.PlotXADD(qFuncID, "Q - after prime - " + currIterationNum);
+            
             // Discount
             qFuncID = Controller.getXADD().scalarOp(qFuncID, discountValue, XADD.PROD);
             
             // Regression step
+            System.out.println(currIterationNum + ": ----Perform regression------");
             
-            qFuncID = VIHelper.regress(qFuncID, executeTransitionID, hsBooleanVariables, hsContinuousVariables);
-//            XADDHelper.PlotXADD(qFuncID, "Q - after regression (e)");
-            qFuncID = VIHelper.regress(qFuncID, buyTransitionID, hsBooleanVariables, hsContinuousVariables);
-//            XADDHelper.PlotXADD(qFuncID, "Q - after regression (b)");
-            qFuncID = VIHelper.regress(qFuncID, sellTransitionID, hsBooleanVariables, hsContinuousVariables);
-//            XADDHelper.PlotXADD(qFuncID, "Q - after regression (s)");
-            qFuncID = VIHelper.regress(qFuncID, buyInvTransitionID, hsBooleanVariables, hsContinuousVariables);
-//            XADDHelper.PlotXADD(qFuncID, "Q - after regression (bInv)");
+            // TODO:Testing this out
+            qFuncID = VIHelper.regressContinuousVariable(qFuncID, transitionID, "x'");
+//            XADDHelper.PlotXADD(qFuncID, "Q - after regression");
+            
+            // Add reward
+            qFuncID = Controller.getXADD().apply(rewardID, qFuncID, XADD.SUM);
+//            XADDHelper.PlotXADD(qFuncID, "Q - after reward");
+            
+            /*
+             * 1. Sum over (marginalise) the actions for Player A ('a')
+             */
+            System.out.println(currIterationNum + ": ----Sum over (marginalise) the actions for Player A ('a')------");
+            
+            int ahighID = Controller.getXADD().opOut(qFuncID, aVarID, XADD.RESTRICT_HIGH);
+            int alowID = Controller.getXADD().opOut(qFuncID, aVarID, XADD.RESTRICT_LOW);
+            
+//            XADDHelper.PlotXADD(ahighID, "ahighID - " + currIterationNum);
+//            XADDHelper.PlotXADD(alowID, "alowID - " + currIterationNum);            
+                        
+            // Execute action
+            qFuncID = Controller.getXADD().apply(
+                    Controller.getXADD().apply(ahighID, paTID, XADD.PROD),
+                    Controller.getXADD().apply(alowID, paFID, XADD.PROD), 
+                                                                    XADD.SUM);
+//            XADDHelper.PlotXADD(qFuncID, "After 1 - " + currIterationNum);             
+            
+            /*
+             * 2. Minimise over the actions for Player B ('b')
+             */
+            System.out.println(currIterationNum + ": ----Minimise over the actions for Player B ('b')------");
+            
+            int bhighID = Controller.getXADD().opOut(qFuncID, bVarID, XADD.RESTRICT_HIGH);
+//            XADDHelper.PlotXADD(bhighID, "bhighID - " + currIterationNum);
+
+            int blowID = Controller.getXADD().opOut(qFuncID, bVarID, XADD.RESTRICT_LOW);
+//            XADDHelper.PlotXADD(blowID, "blowID - " + currIterationNum);        
+
+            qFuncID = Controller.getXADD().apply(bhighID, blowID, XADD.MIN);
+//            XADDHelper.PlotXADD(qFuncID, "After 2 - " + currIterationNum);       
+            
+            /*
+             * 3. Maximise over the 
+             */
+            System.out.println(currIterationNum + ": ----Maxout Player A's pure strategy probabilities------");
+            vFuncID = VIHelper.maxOutVar(qFuncID, "p", 0, 1, logStream);
+            
+            XADDHelper.PlotXADD(vFuncID, "After 3 - " + currIterationNum);
+            
+            /*
+             * Plot the value function
+             */
+            String plotTitle = "Value Function - " + domainName + " - " + currIterationNum;
+            XADDHelper.Display2D(vFuncID, plotTitle, plot2DFile, domainDir);
+        }
+    }
+
+    private static void BinaryOptionDomain(String domainName, Integer horizon) {
+        
+        String domainDir = Controller.DomainDirectory(domainName);
+        String rewardFile = domainDir + File.separator + "reward.xadd";
+        
+        String valueTransitionsFile = domainDir + File.separator + "value_transition.xadd";
+        String inventoryTransitionFile = domainDir + File.separator + "inventory_transition.xadd";
+        
+        String logFile = domainDir + File.separator + domainName + ".log";
+        String plot3DFile = domainDir + File.separator + "plot";
+        
+        Integer prevID = null;
+        Integer vFuncID = Controller.getXADD().ZERO;
+        Integer qFuncID = null;
+
+        HashMap<String, ArithExpr> hmPrimeSubs = new HashMap<String, ArithExpr>();
+        
+        double discountValue = 0.9;
+
+        PrintStream logStream = null;
+
+        int currIterationNum = 0;
+
+        /*
+         * 0. Set up
+         */
+
+        try {
+            logStream = new PrintStream(new FileOutputStream(logFile));
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }        
+        
+        // Build the XADDs
+        int rewardID = XADDHelper.BuildXADD(rewardFile);
+        int valTransitionID = XADDHelper.BuildXADD(valueTransitionsFile);
+        int invTransitionID = XADDHelper.BuildXADD(inventoryTransitionFile);
+
+        int epsID = XADDHelper.BuildXADD(domainDir + File.separator + "epsilon.xadd");
+
+//        XADDHelper.PlotXADD(rewardID, "Reward - " + domainName);
+//        XADDHelper.PlotXADD(valTransitionID, "Value Transition - " + domainName);
+//        XADDHelper.PlotXADD(invTransitionID, "Inventory Transition - " + domainName);
+                
+        // The Market's action variables (sell)
+        int mVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("m"), false);
+        
+        // The Trader's action variables (buy, sell and hold)
+        int bVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("b"), false);
+        int sVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("s"), false);
+        int hVarID = Controller.getXADD().getVarIndex(Controller.getXADD().new BoolDec("h"), false);
+        
+        // The probabilities over each of the Trader's pure strategies
+        int psTID = Controller.getXADD().getTermNode(new VarExpr("ps"));
+        int psFID = Controller.getXADD().scalarOp(Controller.getXADD().scalarOp(psTID, -1, XADD.PROD),1, XADD.SUM);
+        
+        int pbTID = Controller.getXADD().getTermNode(new VarExpr("pb"));
+        int pbFID = Controller.getXADD().scalarOp(Controller.getXADD().scalarOp(pbTID, -1, XADD.PROD), 1, XADD.SUM);
+        
+        int phTID = Controller.getXADD().getTermNode(new VarExpr("ph"));
+        int phFID = Controller.getXADD().scalarOp(Controller.getXADD().scalarOp(phTID, -1, XADD.PROD), 1, XADD.SUM);
+        
+        hmPrimeSubs.put("v", new VarExpr("v'"));
+        hmPrimeSubs.put("i", new VarExpr("i'"));
+        /*
+         * 1. 
+         */
+        
+        while (currIterationNum < horizon) {
+            currIterationNum++;
+
+            System.out.println("Iteration number: " + currIterationNum);
+
+            // Prime the vFuncID
+            prevID = vFuncID;
+
+            // Prime the value function
+//            XADDHelper.PlotXADD(prevID, "Q - unprimed");
+            qFuncID = Controller.getXADD().substitute(prevID, hmPrimeSubs);
+//            XADDHelper.PlotXADD(qFuncID, "Q - primed");
+            
+            // Discount
+            qFuncID = Controller.getXADD().scalarOp(qFuncID, discountValue, XADD.PROD);
+            
+            // Regression step
+            System.out.println(currIterationNum + ": ----Regression Step");
+            
+            qFuncID = VIHelper.regressContinuousVariable(qFuncID, valTransitionID, "v'");
+//            XADDHelper.PlotXADD(qFuncID, "Q - after regression (v')");
+            
+            qFuncID = VIHelper.regressContinuousVariable(qFuncID, invTransitionID, "i'");
+//            XADDHelper.PlotXADD(qFuncID, "Q - after regression (i')");
+            
+//            qFuncID = VIHelper.regress(qFuncID, epsID, hsBooleanVariables, hsContinuousVariables);
             
             // Add reward
             qFuncID = Controller.getXADD().apply(rewardID, qFuncID, XADD.SUM);
@@ -422,47 +552,87 @@ public class Controller {
              * 1. Sum over (marginalise) the actions for Player A ('a')
              */
             
-            int ehighID = Controller.getXADD().opOut(qFuncID, eVarID, XADD.RESTRICT_HIGH);
-            int elowID = Controller.getXADD().opOut(qFuncID, eVarID, XADD.RESTRICT_LOW);
+            int bXADDId = Controller.getXADD().ZERO;
+            int sXADDId = Controller.getXADD().ZERO;
+            int hXADDId = Controller.getXADD().ZERO;
+            
+            System.out.println(currIterationNum + ": ----Sum over (marginalise) the actions for Player A ('a')");
 
-            int bhighID = Controller.getXADD().opOut(ehighID, bVarID, XADD.RESTRICT_HIGH);
-            int blowID = Controller.getXADD().opOut(elowID, bVarID, XADD.RESTRICT_LOW);
+            // Sell action
+            int shighID = Controller.getXADD().opOut(qFuncID, sVarID, XADD.RESTRICT_HIGH);
+            shighID = Controller.getXADD().opOut(shighID, bVarID, XADD.RESTRICT_LOW);            
+//            XADDHelper.PlotXADD(shighID, "shighID");
             
-            // Execute action
-            int eXADDId = Controller.getXADD().apply(
-                    Controller.getXADD().apply(ehighID, peTID, XADD.PROD),
-                    Controller.getXADD().apply(elowID, peFID, XADD.PROD), 
-                                                                    XADD.SUM);
-                    
-            // Buy action        
-            int bXADDId = Controller.getXADD().apply(
-                           Controller.getXADD().apply(bhighID, pbTID, XADD.PROD),
-                           Controller.getXADD().apply(blowID, pbFID, XADD.PROD), 
-                                                                   XADD.SUM);
+            int slowID = Controller.getXADD().opOut(qFuncID, sVarID, XADD.RESTRICT_LOW);
+//            XADDHelper.PlotXADD(slowID, "slowID");
             
-            qFuncID = Controller.getXADD().apply(eXADDId, bXADDId, XADD.SUM);
+            sXADDId = Controller.getXADD().apply(shighID, psTID, XADD.PROD); 
+//            XADDHelper.PlotXADD(sXADDId, "sXADDId");
+//            
+//            sXADDId = Controller.getXADD().apply(
+//                    Controller.getXADD().apply(shighID, psTID, XADD.PROD),
+//                    Controller.getXADD().apply(slowID, psFID, XADD.PROD), 
+//                                                                    XADD.SUM);
+//            XADDHelper.PlotXADD(sXADDId, "sXADDId");
             
-//            XADDHelper.PlotXADD(qFuncID, "After 1 " + + currIterationNum);             
+            // Buy action
+            int bhighID = Controller.getXADD().opOut(slowID, bVarID, XADD.RESTRICT_HIGH);
+//            XADDHelper.PlotXADD(bhighID, "bhighID");
+            
+            bXADDId = Controller.getXADD().apply(bhighID, pbTID, XADD.PROD);
+//            XADDHelper.PlotXADD(bXADDId, "bXADDId");
+            
+            int blowID = Controller.getXADD().opOut(slowID, bVarID, XADD.RESTRICT_LOW);
+//            XADDHelper.PlotXADD(blowID, "blowID");            
+//            
+//            bXADDId = Controller.getXADD().apply(
+//                           Controller.getXADD().apply(bhighID, pbTID, XADD.PROD),
+//                           Controller.getXADD().apply(blowID, pbFID, XADD.PROD), 
+//                                                                   XADD.SUM);
+//            XADDHelper.PlotXADD(bXADDId, "bXADDId");
+            
+            // Hold action        
+            int hhighID = Controller.getXADD().opOut(blowID, hVarID, XADD.RESTRICT_HIGH);
+//            XADDHelper.PlotXADD(hhighID, "hhighID");
+            
+            hXADDId = Controller.getXADD().apply(hhighID, phTID, XADD.PROD);
+//            XADDHelper.PlotXADD(hXADDId, "hXADDId");
+            
+//            int hlowID = Controller.getXADD().opOut(blowID, hVarID, XADD.RESTRICT_LOW);
+//            XADDHelper.PlotXADD(hlowID, "hlowID");
+            
+//            int hXADDId = Controller.getXADD().apply(
+//                           Controller.getXADD().apply(hhighID, phTID, XADD.PROD),
+//                           Controller.getXADD().apply(hlowID, phFID, XADD.PROD), 
+//                                                                   XADD.SUM);            
+//            XADDHelper.PlotXADD(hXADDId, "hXADDId");
+            
+            qFuncID = Controller.getXADD().apply(Controller.getXADD().apply(bXADDId, sXADDId, XADD.SUM), hXADDId, XADD.SUM);            
+//            XADDHelper.PlotXADD(qFuncID, "After 1 - " + currIterationNum);             
             
             /*
              * 2. Minimise over the actions for Player B ('b')
              */
+            System.out.println(currIterationNum + ": ----Minimise over the actions for Player B ('b')");
             
-            int shighID = Controller.getXADD().opOut(qFuncID, sVarID, XADD.RESTRICT_HIGH);
-            int slowID = Controller.getXADD().opOut(qFuncID, sVarID, XADD.RESTRICT_LOW);
+            int mhighID = Controller.getXADD().opOut(qFuncID, mVarID, XADD.RESTRICT_HIGH);
+//            XADDHelper.PlotXADD(mhighID, "mhighID");
+            int mlowID = Controller.getXADD().opOut(qFuncID, mVarID, XADD.RESTRICT_LOW);
+//            XADDHelper.PlotXADD(mlowID, "mlowID");
 
-            qFuncID = Controller.getXADD().apply(shighID, slowID, XADD.MIN);
-
-//            XADDHelper.PlotXADD(qFuncID, "After 2 " + currIterationNum);       
+            qFuncID = Controller.getXADD().apply(mhighID, mlowID, XADD.MIN);
+//            XADDHelper.PlotXADD(qFuncID, "After 2 - " + currIterationNum);       
             
             /*
              * 3. Maximise over the 
              */
-
-            vFuncID = VIHelper.maxOutVar(qFuncID, "pe", 0, 1, logStream);
-            vFuncID = VIHelper.maxOutVar(vFuncID, "pb", 0, 1, logStream);
             
-            XADDHelper.PlotXADD(vFuncID, "After 3 " + currIterationNum);
+            System.out.println(currIterationNum + ": ----Maxout Player A's pure strategy probabilities------");
+            vFuncID = VIHelper.maxOutVar(qFuncID, "ps", 0, 1, logStream);
+            vFuncID = VIHelper.maxOutVar(vFuncID, "pb", 0, 1, logStream);
+            vFuncID = VIHelper.maxOutVar(vFuncID, "ph", 0, 1, logStream);
+            
+//            XADDHelper.PlotXADD(vFuncID, "After 3 - " + currIterationNum);
             
             /*
              * Plot the value function
@@ -470,5 +640,7 @@ public class Controller {
             String plotTitle = "Value Function - " + domainName + " " + currIterationNum;
             XADDHelper.Display3D(vFuncID, plotTitle, plot3DFile, domainDir);
         }
+        System.out.println("----COMPLETE------");
     }
+
 }
