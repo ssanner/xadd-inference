@@ -24,9 +24,6 @@ public class VI extends CAMDPsolver {
 	public Integer finalIter;   // Last Iteration in case of early Convergence
 	public Integer _maxDD;
 		
-	/* Inner DEBUG Variables */
-	private static final boolean REGRESS_DEBUG = false;
-
 	
 	//////////////////Methods /////////////////////////////////
 	
@@ -108,26 +105,17 @@ public class VI extends CAMDPsolver {
 
 			// Regress the current value function through each action (finite number of continuous actions)
 			int regr = regress(valueDD, me.getValue());
-			regr  = context.reduceRound(regr); // Round!
+			
 			// Maintain running max over different actions
 			_maxDD = (_maxDD == null) ? regr : context.apply(_maxDD, regr, XADD.MAX);
-			_maxDD = context.reduceRound(_maxDD); // Round!
-			_maxDD = context.reduceLP(_maxDD); // Rely on flag XADD.CHECK_REDUNDANCY
+			_maxDD = standardizeDD(_maxDD); // Round!
 
-			//Optional post-max approximation 
-			// Could be used safely if overall error is being monitored 
-			if (mdp.LINEAR_PROBLEM && APPROX_ALWAYS)
-				_maxDD = context.linPruneRel(_maxDD, APPROX_ERROR);
-
-			// Error checking and logging
-			int canon_max_dd = context.makeCanonical(_maxDD);
-			if (_maxDD != canon_max_dd) {
-				System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical... could be rounding, continuing.");
-				_maxDD = context.makeCanonical(_maxDD);
-			}
+			//Optional post-max approximation, can be used if overall error is being monitored 
+			if (APPROX_ALWAYS)
+				_maxDD = approximateDD(_maxDD);
 			
 			flushCaches(Arrays.asList(_maxDD));
-			if (REGRESS_DEBUG){
+			if (DEEP_DEBUG){
 				debugOutput.println("Iter "+curIter+" Action "+me.getValue()._sName+" Maximization Complete.");
 				if (PRINT_DD){ 
 					debugOutput.println("MaxDD = "+ context.getExistNode(_maxDD));
@@ -135,7 +123,7 @@ public class VI extends CAMDPsolver {
 			}
 		}
 
-		valueDD = context.reduceLP(_maxDD);
+		valueDD = _maxDD;
 	}
 	
 	private IntTriple _contRegrKey = new IntTriple(-1,-1,-1);
@@ -144,7 +132,7 @@ public class VI extends CAMDPsolver {
 	 * Regress a DD through an action
 	 **/
 	public int regress(int vfun, CAction a) {
-		if (REGRESS_DEBUG){
+		if (DEEP_DEBUG){
 			debugOutput.println("REGRESSING ACTION " + a._sName + " Iter "+ curIter );
 		}
 		_logStream.println("\n>>> REGRESSING '" + a._sName + "'\n");
@@ -156,7 +144,7 @@ public class VI extends CAMDPsolver {
 		// Discount
 		q = context.scalarOp(q, mdp._bdDiscount.doubleValue(), XADD.PROD);
 		
-		if (REGRESS_DEBUG){
+		if (DEEP_DEBUG){
 			debugOutput.println("Q After discount Prod:");
 			if (PRINT_DD) debugOutput.println(context.getExistNode(q).toString());
 			if (PLOT_DD) context.showGraph(q, "Q after discount Prod");
@@ -208,7 +196,7 @@ public class VI extends CAMDPsolver {
 		}
 		
 		// Optional Display
-		if (REGRESS_DEBUG){
+		if (DEEP_DEBUG){
 			debugOutput.println("Q before Max:");
 			if (PLOT_DD){
 				mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "^" + curIter + "-" + Math.round(1000*APPROX_ERROR));
@@ -271,7 +259,7 @@ public class VI extends CAMDPsolver {
 				
 				// Can be computational expensive (max-out) so flush caches if needed
 				flushCaches( (_maxDD == null? Arrays.asList(q): Arrays.asList(q, _maxDD)) /* additional node to save */);
-				if (REGRESS_DEBUG){
+				if (DEEP_DEBUG){
 					if (PLOT_DD){
 					mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "-End^" + curIter + "-" + Math.round(1000*APPROX_ERROR));
 					}
@@ -282,8 +270,8 @@ public class VI extends CAMDPsolver {
 			_logStream.println("- Q^" + curIter + "(" + a._sName + " )\n" + context.getString(q));
 		}
 
-		if (REGRESS_DEBUG) debugOutput.println("Regress End");
-		return q;
+		if (DEEP_DEBUG) debugOutput.println("Regress End");
+		return standardizeDD(q);
 	}
 	
 	public int regressCVars(int q, CAction a, String var) {

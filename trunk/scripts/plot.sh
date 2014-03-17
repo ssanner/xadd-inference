@@ -19,17 +19,19 @@ plot="$ORI/scripts/plot3.p"
 cd $ORI/results/$PROBLEMTYPE/$PROBLEM
 gnuplot -e "filename='$PROBLEM'; plotdim='$PLOTDIM';nvalue='$NVALUE'" $plot
 
-#Change .dot to .pdf
-SOLVERS="VI CRTDPFH" 
-for i in $(seq 1 $NVALUE);
-do	
-	for solve in $SOLVERS
-	do
-#		echo "Solver $solve at iter $i."
-		dot -Tpdf "$solve-Value$i.dot" -o "$PROBLEM-$solve-Value$i-DD.pdf"
+if [ $PLOTDIM -gt 1 ]
+then
+	#Change .dot to .pdf
+	SOLVERS="VI CRTDPFH" 
+	for i in $(seq 1 $NVALUE);
+	do	
+		for solve in $SOLVERS
+		do
+	#		echo "Solver $solve at iter $i."
+			dot -Tpdf "$solve-Value$i.dot" -o "$PROBLEM-$solve-Value$i-DD.pdf"
+		done
 	done
-done
-
+fi
 
 cd $ORI
 

@@ -38,7 +38,7 @@ then
 	SOLVERS="1 3" 
 	for i in $SOLVERS
 		do
-		$SCRIPTDIR/run.sh $MAINCLASS "$INSTANCE $i $NITER $DISPLAY $NTRIAL 0 $VERBOSE"
+		$SCRIPTDIR/run.sh $MAINCLASS "$INSTANCE $i $NITER $DISPLAY $NTRIAL $VERBOSE"
 		done
 echo "Run Ok"
 fi

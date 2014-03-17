@@ -26,13 +26,13 @@ public class Main {
 	private static final boolean PRINT_RESULTS = true;
     
     public static void Usage() {
-        System.out.println("\nUsage: MDP-filename #solver #iter #Ddisplay(2or3) #trials [dApproxPrune]");
+        System.out.println("\nUsage: MDP-filename #solver #iter #Ddisplay(2or3) #trials [VERBOSE]");
         System.exit(1);
     }
 
     public static void main(String args[]) {
     	int nargs = args.length;
-        if (nargs < 5 || nargs >7) {
+        if (nargs < 5 || nargs >6) {
             Usage();
         }
         
@@ -61,12 +61,12 @@ public class Main {
         mdp.DISPLAY_3D = (display == 3);
         
         //optional argument modifies 
-        if (args.length > 5){
-            mdp.APPROX_ERROR = Double.parseDouble(args[5]);
-        }
+        //if (args.length > 5){
+        //    mdp.APPROX_ERROR = Double.parseDouble(args[5]);
+        //}
         
-        if (args.length > 6){
-        	VERBOSE=Integer.parseInt(args[6]);
+        if (args.length > 5){
+        	VERBOSE=Integer.parseInt(args[5]);
         	CAMDPsolver.setUp(VERBOSE);
         }
         

@@ -43,6 +43,7 @@ public class CAMDP {
     private static final boolean SILENT_PLOT = true;
 
     //Prune and Linear Flags
+    public double maxImediateReward;
     public boolean LINEAR_PROBLEM = true;
     public boolean CONTINUOUS_ACTIONS = true;
     public boolean APPROX_PRUNING = true;
@@ -179,6 +180,9 @@ public class CAMDP {
         }
 
         CONTINUOUS_ACTIONS = _hsContAVars.isEmpty()? false: true;
+        LINEAR_PROBLEM = parser.LINEARITY;
+        maxImediateReward = parser.MAXREWARD;
+        
         // This helper class performs the regression
         _qfunHelper = new ComputeQFunction(_context, this);
         if ( !parser.get_initBVal().isEmpty() || !parser.get_initCVal().isEmpty() )_initialS = new State(parser.get_initCVal(), parser.get_initBVal());
