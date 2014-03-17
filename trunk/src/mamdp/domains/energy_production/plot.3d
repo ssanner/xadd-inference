@@ -1,0 +1,5 @@
+var p  0 5 100
+var d  0 5 100
+var w  0 5 100
+cassign cp 5.0
+cassign sp 10.0
