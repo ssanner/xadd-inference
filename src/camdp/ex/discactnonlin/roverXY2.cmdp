@@ -1,0 +1,77 @@
+cvariables (x y)
+min-values (-10 -10)
+max-values (10 10)
+bvariables (takenp1 takenp2)
+nvariables()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables()
+
+action move
+y' ([0.3333333 * y])
+x' ([0.3333333 * x])
+
+takenp1' ( takenp1
+   ([1.0])
+   ([0.0])
+)
+takenp2' ( takenp2
+   ([1.0])
+   ([0.0])
+)
+reward ([-1.0])
+endaction
+
+action takepicturep1
+x' ([x])
+y' ([y])
+takenp1'([x*x + y*y < 4]
+        ([1.0])
+        (takenp1
+            ([1.0])
+            ([0.0])
+        )
+)
+takenp2'(takenp2
+            ([1.0])
+            ([0.0])
+        )
+reward ([x*x + y*y < 4]
+        (takenp1
+            ([0.0])
+            ([(4 - x*x - y*y)])
+        )
+        ([0.0])
+)
+endaction
+
+action takepicturep2
+x' ([x])
+y' ([y])
+takenp1'(takenp1
+            ([1.0])
+            ([0.0])
+        )
+takenp2'([x*x + y*y < 2]
+        ([1.0])
+        (takenp2
+            ([1.0])
+            ([0.0])
+        )
+)
+reward ([x*x + y*y < 2]
+        (takenp2
+            ([0.0])
+            ([(2 - x*x - y*y)])
+        )
+        ([0.0])
+)
+endaction
+
+discount 1.0000000
+initialState (1.2 1.2) (false false)
+iterations 10
+NONLINEAR
+MAXREWARD 6.0

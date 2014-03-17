@@ -29,7 +29,9 @@ public class ParseCAMDP {
     //	ArrayList<Integer> constraints = new ArrayList<Integer>();
     BigDecimal discount;
     Integer iterations;
-
+    boolean LINEARITY;
+    double MAXREWARD;
+    
     HashMap<String, Double> _initCVal = new HashMap<String, Double>();
     HashMap<String, Boolean> _initBVal = new HashMap<String, Boolean>();
 
@@ -321,8 +323,7 @@ public class ParseCAMDP {
                 else if (val.trim().equalsIgnoreCase("false")) _initBVal.put(var, false);
                 else exit("\nIllegal initial-bvalue: " + var + " = " + val + " @ index " + index);
             }
-        }
-        
+        }        
         o = push_back == null ? i.next() : push_back; // Could have a saved object if init values declaration was missing
         if (!(o instanceof String)
                 || !((String) o).equalsIgnoreCase("iterations")) {
@@ -330,7 +331,37 @@ public class ParseCAMDP {
             System.exit(1);
         }
         iterations = (new Integer((String) i.next()));
-
+        if (i.hasNext()){
+        	o=i.next(); 
+        	if (!(o instanceof String)
+                || !( ((String) o).equalsIgnoreCase("LINEAR") || ((String) o).equalsIgnoreCase("NONLINEAR")) ) {
+            System.err.println("Missing linearity declaration: " + o);
+            LINEARITY = true;    
+        	}
+        	else{
+        		LINEARITY = ((String)o).equalsIgnoreCase("LINEAR");
+        	}
+        }
+        else{
+            System.out.println("Missing linearity declaration, assumes linear.");
+            LINEARITY = true;    
+        }
+        if (i.hasNext()){
+        	o=i.next(); 
+        	if (!(o instanceof String)
+                || !((String) o).equalsIgnoreCase("MAXREWARD") || !i.hasNext()) {
+        		 System.out.println("Missing Max Imediate Reward declaration, assumes 0.");
+        		 MAXREWARD = 0.0;    
+        	}
+        	else{
+        		o=i.next();
+        		MAXREWARD = Double.parseDouble(o.toString());
+        	}
+        }
+        else{
+            System.out.println("Missing Max Imediate Reward declaration, assumes 0.");
+            MAXREWARD = 0.0;    
+        }
     }
 
     public HashMap<String, Double> get_minCVal() {

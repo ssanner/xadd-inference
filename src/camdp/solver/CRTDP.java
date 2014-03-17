@@ -31,7 +31,6 @@ public class CRTDP extends CAMDPsolver {
 	/* Debugging Flags */
 	
 	//Local flags:
-	private static final boolean DEBUG_TRIAL = false;
 	private static final boolean BELLMAN_DEBUG = false;
 	private static final boolean REGRESS_DEBUG = false;
 	
@@ -79,8 +78,8 @@ public class CRTDP extends CAMDPsolver {
 			if (MAIN_DEBUG){
 				debugOutput.println("Starting Trial# " + curTrial +" with max depth = " + nIter);
 				if (VALIDATION_TEST){
-					if ( (!DEBUG_TRIAL) && PRINT_DD)  debugOutput.println("Initial Value DD = "+valueDD+" DD:"+context.getString(valueDD));
-					if ( (!DEBUG_TRIAL) && PLOT_DD)   mdp.doDisplay(valueDD,makeXADDLabel("V Start",curTrial, APPROX_ERROR));
+					if ( (!DEEP_DEBUG) && PRINT_DD)  debugOutput.println("Initial Value DD = "+valueDD+" DD:"+context.getString(valueDD));
+					if ( (!DEEP_DEBUG) && PLOT_DD)   mdp.doDisplay(valueDD,makeXADDLabel("V Start",curTrial, APPROX_ERROR));
 				}
 			}
 	
@@ -91,8 +90,7 @@ public class CRTDP extends CAMDPsolver {
 			makeTrial(mdp._initialS);
 			
 			//Optional post-max approximation - Could be used safely if overall error is being monitored 
-			checkDD(valueDD);
-			//checkLinearAndApprox(valueDD);
+			valueDD = approximateDD(valueDD);
 			//approxValueDD();
 			flushCaches();
 
@@ -102,8 +100,8 @@ public class CRTDP extends CAMDPsolver {
 			if (MAIN_DEBUG){
 				debugOutput.println("Trial:" + curTrial+" Complete");
 				if (PERFORMANCE_TEST) debugOutput.println("Time = "+getElapsedTime());
-				if ( (!DEBUG_TRIAL) && PRINT_DD)  debugOutput.println("Value after Trial = "+valueDD+" DD:" + context.getString(valueDD));
-				if ( (!DEBUG_TRIAL) && PLOT_DD) mdp.doDisplay(valueDD,makeXADDLabel("V",curTrial, APPROX_ERROR));
+				if ( (!DEEP_DEBUG) && PRINT_DD)  debugOutput.println("Value after Trial = "+valueDD+" DD:" + context.getString(valueDD));
+				if ( (!DEEP_DEBUG) && PLOT_DD) mdp.doDisplay(valueDD,makeXADDLabel("V",curTrial, APPROX_ERROR));
 			}
 			
 			// Verify Convergence
@@ -160,7 +158,7 @@ public class CRTDP extends CAMDPsolver {
 			int prevDD = valueDD;
 			State prevS = currentS;
 			
-			if (DEBUG_TRIAL){
+			if (DEEP_DEBUG){
 				debugOutput.println("BB Start, Trial "+curTrial+", remH "+remainH);
 				if (VALIDATION_TEST){ 
 					debugOutput.println("Current State = "+currentS.toString());
@@ -175,7 +173,7 @@ public class CRTDP extends CAMDPsolver {
 			//Using greedy action, sample next state
 			State nextS = sample(currentS, greedyAction);
 			
-			if (DEBUG_TRIAL){
+			if (DEEP_DEBUG){
 				debugOutput.println("BB Finish, Trial "+curTrial+", remH "+remainH);
 				if (VALIDATION_TEST){
 					debugOutput.println("State After Sample = "+nextS);
@@ -218,7 +216,6 @@ public class CRTDP extends CAMDPsolver {
 				resetTimer(4);
 				// Regress the current value function through each action (finite number of continuous actions)
 				int regr = regressRegion(valueDD, me.getValue(), currS);
-				checkDD(regr);
 				double value = context.evaluate(regr, currS._hmBoolVars, currS._hmContVars);
 				
 				long regressTime = getElapsedTime(4);
@@ -226,8 +223,7 @@ public class CRTDP extends CAMDPsolver {
 				
 				// Maintain running max over different actions
 				maxDD = (maxDD == null) ? regr : context.apply(maxDD, regr, XADD.MAX);
-				maxDD = context.reduceLP(maxDD); 
-				checkDD(maxDD);				
+				maxDD = standardizeDD(maxDD); 
 
 				if (currSValue == null || value > currSValue){
 					maxAction = me.getValue();
@@ -250,8 +246,7 @@ public class CRTDP extends CAMDPsolver {
 		
 		//Min out Illegal +Inf values, these will be non update regions
 		valueDD = context.apply(maxDD, valueDD, XADD.MIN);
-		valueDD = context.reduceLP(valueDD); // Rely on flag XADD.CHECK_REDUNDANCY
-		checkDD(valueDD);
+		valueDD = standardizeDD(valueDD);		
 		
 		ParametrizedAction pA = new ParametrizedAction(maxAction, maxParam);
 		if (BELLMAN_DEBUG){
@@ -353,7 +348,7 @@ public class CRTDP extends CAMDPsolver {
 				debugOutput.println("regressState = "+regStateTime+", regressNoiseTime = "+regNoiseTime+", regressAction = "+regActionTime);
 			}
 		}
-		return context.reduceLP(q);
+		return standardizeDD(q);
 	}
 	
 	public int regressCVarsMask(int q, CAction a, String var, State currS) {

@@ -34,6 +34,7 @@ public abstract class CAMDPsolver {
 	public final boolean ENABLE_EARLY_CONVERGENCE = false;
 	
 	/* Approximation Parameters */
+	public boolean APPROXIMATION = false;
 	public double APPROX_ERROR = 0.0d;
 	public boolean APPROX_ALWAYS = false;
 	public boolean APPROX_PRUNING = false;
@@ -41,6 +42,7 @@ public abstract class CAMDPsolver {
 	
 	/* DEBUG PARAMETER */
 	protected static boolean MAIN_DEBUG = true;
+	protected static boolean DEEP_DEBUG = true;
 	protected static PrintStream debugOutput = System.out;
 	
 	//Debug Format flags
@@ -235,7 +237,7 @@ public abstract class CAMDPsolver {
 		PLOT_DD = false;
 		MAIN_DEBUG = false;
 		PERFORMANCE_TEST = false;
-		VALIDATION_TEST = false;
+		DEEP_DEBUG = false;
 		if (verb ==0){
 			try {
 				debugOutput = new PrintStream("/dev/null");
@@ -249,15 +251,17 @@ public abstract class CAMDPsolver {
 			PERFORMANCE_TEST = true;
 		}
 		if (verb >=2) PLOT_DD = true;
-		if (verb >=3) VALIDATION_TEST = true;
-		if (verb >=4) PRINT_DD = true;
+		if (verb >=3) DEEP_DEBUG = true;
+		if (verb >=4) VALIDATION_TEST = true;
+		if (verb >=5) PRINT_DD = true;
+		
 	}
 	
 	// Results
     public void makeResultStream(){
 		int filenamestart = mdp._problemFile.lastIndexOf('/');
 		String filename = mdp._problemFile.substring(filenamestart,mdp._problemFile.length()-5);
-		String problemType = mdp.CONTINUOUS_ACTIONS? "/contact":"/discact"; 
+		String problemType = mdp.LINEAR_PROBLEM? mdp.CONTINUOUS_ACTIONS? "/contact": "/discact": "/discactnonlin"; 
 		OUTPUT_DIR = RESULTS_DIR + problemType + filename;
 		
 		//System.out.println("testing filename:" + OUTPUT_DIR + "/" + _solveMethod + ".rslt");
@@ -294,11 +298,12 @@ public abstract class CAMDPsolver {
 	public abstract void flushCaches(List<Integer> specialNodes);
 	
 	////////// DD Property Tests /////////////////////////
-//	DD Property checking	
-	public void checkDD(int dd){
-		checkRound(dd);
-		checkCanon(dd);
-		checkReduceLP(dd);
+	//	DD Property checking	
+	public int standardizeDD(int dd){
+		// ROUNDING IS DISABLED dd = context.reduceRound(dd); checkRound(dd);
+		dd = context.makeCanonical(dd); checkCanon(dd);
+		if (mdp.LINEAR_PROBLEM) {dd = context.reduceLP(dd); checkReduceLP(dd);}
+		return dd;
 	}
 	protected void checkRound(int dd) {
 		int roundDD = context.reduceRound(dd);
@@ -325,6 +330,11 @@ public abstract class CAMDPsolver {
 			context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
 			context.getGraph(reduLPDD).launchViewer("ERROR diagram 2: reduceLP(DD)");
 		}
+	}
+	protected int approximateDD(int dd){
+		if (mdp.LINEAR_PROBLEM && APPROXIMATION)
+			dd = context.linPruneRel(dd, APPROX_ERROR);
+		return dd;
 	}
 	
 	public void save3D(int xadd_id, String label) {
