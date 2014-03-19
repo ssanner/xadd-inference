@@ -7,7 +7,9 @@ In CSGs states are represented by vectors of continuous variables, $\vec{x} = \l
 where $x_i \in \mathbb{R}$. The other components of the tuple are as 
 previously defined for discrete stochastic games in the preceding section.
 
-The optimal solution to zero-sum CSGs can be calculated via the 
+Zero-sum CSGs impose the same restrictions on the number of agents
+and the reward structure as their discrete state counterparts. The 
+optimal solution to zero-sum CSGs can be calculated via the 
 following recursive functions:
 {\small 
 \begin{eqnarray}
@@ -35,7 +37,7 @@ state counterparts, $\vec{x}$, $\vec{x}'$ and $\int$, respectively.
 \subsection{Solution Techniques}
 
 Zero-sum CSGs can be solved using a technique analogous to that 
-presented in preceding section. Namely, the value function in Equation
+presented in Section \ref{subsec:dsgsolution}. Namely, the value function in Equation
 \eqref{eq:csgvfunccompact} can be reformulated as the following continuous 
 optimisation problem:
 
@@ -89,4 +91,4 @@ to piecewise constant functions; and (2) restricting the transition function,
 
 In the next section we show that zero-sum CSGs, with the aforementioned
 restrictions, can be solved optimally for arbitrary horizons using 
-symbolic dynamic programming \cite{Zamani_AAAI_2012}.
+symbolic dynamic programming.

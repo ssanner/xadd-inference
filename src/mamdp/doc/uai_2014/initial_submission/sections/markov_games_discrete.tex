@@ -17,17 +17,25 @@ DSG may be stochastic, that is, it may define a mixed strategy for each state.
 %The goal of each agent in a stochastic game is to maximise its expected 
 %discounted future rewards.
 
-Two agent zero-sum DSGs impose a condition on the reward structure 
-of the game whereby the goals of an agent and its opponent are diametrically
-opposed to one another. Under this restriction the reward structure can 
-be represented by a single reward function. The opponent's
-reward function is simply the opposite of the agent's. Within this game 
-each agent attempts to maximise its expected discounted future rewards 
-in the minimax sense. Since the reward structure is zero-sum it is sufficient to view the 
-opponent as acting to minimise the agent's return. Two player zero-sum 
-stochastic games can be solved using a technique analogous to value 
-iteration for MDPs \cite{Littman_ICML_1994}. The value function, $V^{h}(s)$,
-in this setting can be defined as follows:
+%Two agent zero-sum DSGs impose a condition on the reward structure 
+%of the game whereby the goals of an agent and its opponent are diametrically
+%opposed to one another. Under this restriction the reward structure can 
+%be represented by a single reward function. The opponent's
+%reward function is simply the opposite of the agent's. 
+%Within this game 
+%each agent attempts to maximise its expected discounted future rewards 
+%in the minimax sense. Since the reward structure is zero-sum it is sufficient to view the 
+%opponent as acting to minimise the agent's return.
+
+Zero-sum DSGs are a type of DSG involving two agents with diametrically
+opposing goals. Under these conditions the reward structure for the 
+game can be represented by a single reward function since an agents
+reward function is simply the opposite of their opponent's. The objective
+of each agent is to maximise its expected discounted future rewards 
+in the minimax sense. That is, each agent views its opponent as
+acting to minimise the agent's reward. Zero-sum DSGs can be solved 
+using a technique analogous to value iteration for MDPs \cite{Littman_ICML_1994}. 
+The value function, $V^{h}(s)$, in this setting can be defined as:
 
 {\footnotesize 
 \begin{equation}
@@ -50,7 +58,7 @@ is given by:
 
 %It is well known that Equation \eqref{eq:dsgvfunc} can be further simplified to:
 Equation \eqref{eq:dsgvfunc} can be further simplified by noting that
-since the $min$ operation is ``inside'' the $max$, the minimum is achieved
+since the $\text{min}$ operation is ``inside'' the $\text{max}$, the minimum is achieved
 for a deterministic action choice. This observation leads to the following
 form:
 {\small 
@@ -87,7 +95,7 @@ program through the following steps:
 }%
 
   \item Replace the equality (=) in constraint \eqref{eq:dsglpconstraint1} with
-  $\leq$, by observing that the maximisation of $V^{h}(s)$
+  $\leq$ by observing that the maximisation of $V^{h}(s)$
   effectively pushes the $\leq$ condition to the = case. This gives: 
 {\small 
 \begin{subequations}
