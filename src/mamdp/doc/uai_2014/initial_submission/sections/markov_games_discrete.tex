@@ -70,7 +70,7 @@ form:
 \belowdisplayshortskip =0pt
 \begin{equation}
 \label{eq:dsgvfunccompact}
-  V^{h}(s) = \max_{m_{a_{1}} \in \sigma(A_1)} \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_1}.
+  V^{h}(s) = \max_{m_{a_{1}} \in \sigma_1(A_1)} \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_1}.
 \end{equation}
 }%
 
@@ -135,3 +135,8 @@ program through the following steps:
 
 We can now use existing linear programming solvers to compute the optimal
 solution to this linear program for each $s \in S$ at a given horizon $h$.
+
+The linear program used to solve zero-sum DSGs cannot be used once
+the state is continuous since there are infinitely many states. The key 
+innovation of this paper is in showing that continuous state zero-sum
+games can still be solved through the use of symbolic dynamic programming.

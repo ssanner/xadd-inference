@@ -46,8 +46,8 @@ The joint actions of the players affect the state $x$ as follows:
 }%
 
 The constant $k \in (0, 1)$ is a step size which perturbs the state $x$. 
-If Player 1 wins, the state moves to the left, otherwise it moves to the
-right. The Dirac function $\delta[\cdot]$ ensures that the transitions are valid 
+If Player 1 wins, the state moves to the left by $k$, otherwise it moves to the
+right by $k$. The Dirac function $\delta[\cdot]$ ensures that the transitions are valid 
 conditional probability functions that integrate to 1. We define the 
 rewards obtained by Player 1 in region $r$ as:
 
@@ -75,7 +75,7 @@ symmetric reward structure as having $\alpha^{r}_1 = \alpha^{r}_4$ and
 $\alpha^{r}_2 = \alpha^{r}_3$. Under a symmetric reward structure
 the expected reward in each region is the same for both players. An 
 asymmetric reward structure allows the $\alpha^{r}_i$ to differ in both
-sign and magnitude. The expected rewards for a player may differ across
+sign and magnitude. Under this setting the expected rewards for a player may differ across
 regions. Tables \ref{tab:smpsymreward} and \ref{tab:smpasymreward}
 show examples of symmetric and asymmetric rewards for the 
 continuous stochastic matching pennies domain.
