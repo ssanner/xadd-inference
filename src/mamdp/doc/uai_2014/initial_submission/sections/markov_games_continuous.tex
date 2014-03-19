@@ -1,4 +1,4 @@
-\section{Continuous Stochastic Games}
+\section{Zero-sum Continuous Stochastic Games}
 \label{sec:csg}
 
 Continuous state stochastic games (CSGs) are formally defined by the tuple
@@ -13,7 +13,7 @@ following recursive functions:
 \begin{eqnarray}
 \label{eq:csgdiscqfunc}
   Q^{h}(\vec{x}, a_1, a_2) &=& R(\vec{x}, a_1, a_2) \quad + \nonumber \\
-  && \gamma \cdot \int T(\vec{x}, a_1, a_2, \vec{x}') \cdot V^{h-1}(\vec{x}') d\vec{x}' .
+  && \gamma \cdot \int T(\vec{x}, a_1, a_2, \vec{x}') \cdot V^{h-1}(\vec{x}') d\vec{x}' 
 \end{eqnarray}
 }%
 
@@ -24,9 +24,13 @@ following recursive functions:
 \end{equation}
 }%
 
-Here we note that Equation \eqref{eq:csgdiscqfunc} can be derived from Equation \eqref{eq:dsgdiscqfunc}
-by simply replacing $s$ and the $\Sigma$ operator in the former, with $\vec{x}$
-and the $\int$ operator in the latter.
+We can derive Equation \eqref{eq:csgdiscqfunc} from Equation \eqref{eq:dsgdiscqfunc}
+by replacing the $s$, $s'$ and the $\sum$ operator with their continuous
+state counterparts, $\vec{x}$, $\vec{x}'$ and $\int$, respectively.
+%
+%Here we note that Equation \eqref{eq:csgdiscqfunc} can be derived from Equation \eqref{eq:dsgdiscqfunc}
+%by simply replacing $s$ and the $\Sigma$ operator in the former, with $\vec{x}$
+%and the $\int$ operator in the latter.
 
 \subsection{Solution Techniques}
 
@@ -60,7 +64,7 @@ Q^{h}(\vec{x}, a_1, a_2) = \sum_{j} c_j \cdot x_j \label{eq:linqfunc}
 \end{equation}
 }%
 
-Substituting Equation \ref{eq:linqfunc} into constraint \ref{eq:bilinearconstraint}
+Substituting Equation \eqref{eq:linqfunc} into constraint \eqref{eq:bilinearconstraint}
 yields:
 
 {\small 
@@ -69,24 +73,20 @@ V^{h}(\vec{x}) \leq \sum_{a_1 \in A_1} m_{a_{1}} \sum_{j} c_j \cdot x_j \qquad \
 \end{equation}
 }%
 
-It is clear from Equation \ref{eq:linqfuncresult} that a linear representation
+It is clear from Equation \eqref{eq:linqfuncresult} that a linear representation
 of $Q^{h}(\vec{x}, a_1, a_2)$ leads to a nonlinear constraint
 where $m_{a_{1}}$ must be optimal with respect to the free variable
 $\vec{x}$ since we need to solve for all states $\vec{x}$. This results in 
 a parameterised nonlinear program, whose optimal solutions are known to be
 NP-hard \cite{Bennett_COA_1993,Petrik_JoMLR_2011}.
 
-At this point we present the key insight of this paper, namely that we
+At this point we present the first key insight of this paper: we
 can transform constraint \eqref{eq:bilinearconstraint} from a parameterised 
 nonlinear constraint to a piecewise linear constraint by imposing the 
 following restrictions: (1) restricting the reward function, {\small $R(\vec{x}, a_1, a_2)$}, 
 to piecewise constant functions; and (2) restricting the transition function, 
 {\small $T(\vec{x}, a_1, a_2, \vec{x}')$}, to piecewise linear functions.
-We show that zero-sum CSGs, with the aforementioned
-restrictions, can be solved optimally for arbitrary horizons using 
-symbolic dynamic programming techniques \cite{Zamani_AAAI_2012}.
 
-In the next section we present an overview of symbolic dynamic 
-programming and its implementation. We also prove that SDP can be
-used to calculate exact solutions to this subclass of zero-sum CSGs for
-arbitrary horizons.
+In the next section we show that zero-sum CSGs, with the aforementioned
+restrictions, can be solved optimally for arbitrary horizons using 
+symbolic dynamic programming \cite{Zamani_AAAI_2012}.

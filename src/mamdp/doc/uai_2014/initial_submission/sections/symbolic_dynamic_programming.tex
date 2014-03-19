@@ -10,7 +10,7 @@ expositions of SDP and its operations.
 
 \subsection{Case Representation}
 
-Symbolic dynamic programming assumes that all continuous symbolic 
+Symbolic dynamic programming assumes that all symbolic 
 functions can be represented in case statement form \cite{Boutilier_IJCAI_2001} as follows:
 
 {\small 
@@ -24,12 +24,13 @@ functions can be represented in case statement form \cite{Boutilier_IJCAI_2001} 
 \end{equation*}
 }%
 
-Here $\phi_i$ are logical formulae defined over the state $\vec{x}$ 
+Here the $\phi_i$ are logical formulae defined over the state $\vec{x}$ 
 and can include arbitrary logical combinations of boolean variables and 
-linear inequalities over continuous variables. Each $\phi_i$ will be 
+linear inequalities over continuous variables. Each $\phi_i$ is
 disjoint from the other $\phi_j$ ($j \neq i$) and may not 
 exhaustively cover the state space. Hence, \emph{f} may only be a 
-partial function. In this paper we restrict $f_i$ to be either linear or constant.
+partial function. In this paper we restrict the $f_i$ to be either linear or constant 
+functions of the state variable $\vec{x}$. We require $f$ to be continuous.
 
 \subsection{Case Operations}
 
@@ -239,9 +240,8 @@ we apply the previously defined SDP operations in the following steps:
   \item Incorporate Constraints. In line \ref{alg:constraint} we incorporate constraints on $m_{a_{1}}$ 
             via the constraint indicator function $\mathbb{I}$. At this stage
             all case partitions which involve illegal values of $m_{a_{1}}$ are
-            mapped to $-infty$.
-  \item Maximisation. The maximisation stage proceeds in two steps.
-            In line \ref{alg:max} we maximise over the $m_{a_{1}} \in \sigma_1(A_1)$ 
+            mapped to $-\infty$.
+  \item Maximisation. In line \ref{alg:max} we maximise over the $m_{a_{1}} \in \sigma_1(A_1)$ 
             by sequentially applying the maximisation operator as defined 
             previously. At this point we have calculated $V^{h}(\vec{x})$ as shown in 
           Equation \eqref{eq:csgvfunccompact}.
