@@ -85,6 +85,7 @@ Some partitions resulting from case operators may be inconsistent and
 are thus removed. 
 
 Minimisation over cases, known as $\casemin$, is defined as:
+\vspace{-6.5mm}
 {\small 
 \abovedisplayskip=0pt
 \belowdisplayskip=0pt
@@ -128,6 +129,7 @@ inequalities by completing the square.
 
 The $\casemax$ operator, which calculates symbolic case maximisation,
 is defined as:
+\vspace{-6.5mm}
 {\small 
 \abovedisplayskip=0pt
 \belowdisplayskip=0pt
@@ -173,6 +175,7 @@ We can apply the substitution $\theta$ to both non-case functions $f_i$
 and case partitions $\phi_i$ as $f_i\theta$ and $\phi_i\theta$, respectively.
 Substitution into case statements can therefore be written as:
 
+\vspace{-1.5mm}
 {\small 
 \abovedisplayshortskip=0pt
 \belowdisplayshortskip=0pt
@@ -208,7 +211,7 @@ solutions to this class of stochastic games.
 We calculate the optimal solution to zero-sum CSGs by first
 expressing $R(\vec{x}, a_1, a_2)$, $T(\vec{x}, a_1, a_2, \vec{x}')$, 
 $V^0(\vec{x})$ as case statements. We also express $m_{a_{1}}$
-as a trivial case statement representing an uninstantiated symbolic variable as follows:
+as a trivial case statement representing an uninstantiated symbolic variable:
 
 {\small 
 \abovedisplayshortskip=-5pt
@@ -247,7 +250,7 @@ We can then compute the optimal solution via the following SDP equations:
 \belowdisplayskip=0pt
 \begin{multline}
 \label{eq:sdpvfunccompact}
-  V^{h}(\vec{x}) = \max_{ \{ m_{a_1} | a_1 \in A_1 \} } \\ \left[ \left\{ \casemin \left( \tilde{Q}^{h}(\vec{x}, a_1, a_2),  \hat{Q}^{h}(\vec{x}, a_1, a_2) \right)  \forall a_2 \in A_2 \right\} \otimes \mathbb{I} \right]
+  V^{h}(\vec{x}) = \max_{m_{a_1}} \\ \left[ \left\{ \casemin \left( \tilde{Q}^{h}(\vec{x}, a_1, a_2),  \hat{Q}^{h}(\vec{x}, a_1, a_2) \right)  \forall a_2 \in A_2 \right\} \otimes \mathbb{I} \right]
 \end{multline}
 }%
 
@@ -267,6 +270,7 @@ $\sum_{a_{1} \in A_1} m_{a_{1}} = 1$. The function $\mathbb{I}$
 returns 1 when the conjunction of all constraints on each $m_{a_1}$ are satisfied
 and $-\infty$, otherwise. That is:
 
+\vspace{-2.5mm}
 {\small 
 \abovedisplayskip=0pt
 \belowdisplayskip=0pt
