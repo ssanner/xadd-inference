@@ -40,10 +40,11 @@ The value function, $V^{h}(s)$, in this setting can be defined as:
 {\small
 \abovedisplayskip=0pt
 \belowdisplayskip=0pt
-\begin{equation}
+\begin{multline}
 \label{eq:dsgvfunc}
-  V^{h}(s) = \max_{m_{a_{1}} \in \sigma_1(A_1)}\min_{m_{a_{2}} \in \sigma_2(A_2)} \sum_{a_1 \in A_1} \sum_{a_2 \in A_2} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \cdot m_{a_{2}}
-\end{equation}
+  V^{h}(s) = \\
+  \max_{m_{a_{1}} \in \sigma_1(A_1)} \hspace{2pt} \min_{m_{a_{2}} \in \sigma_2(A_2)} \sum_{a_1 \in A_1} \sum_{a_2 \in A_2} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \cdot m_{a_{2}}
+\end{multline}
 }%
 
 where $m_{a_i}$ is a mixed strategy from $\sigma_i(A_i)$. 
@@ -53,11 +54,11 @@ is given by:
 {\small 
 \abovedisplayskip=0pt
 \belowdisplayskip=0pt
-\begin{eqnarray}
+\begin{multline}
 \label{eq:dsgdiscqfunc}
-  Q^{h}(s, a_1, a_2) &=& R(s, a_1, a_2) + \nonumber \\
-  && \gamma \cdot \sum_{s' \in S} T(s, a_1, a_2, s') \cdot V^{h-1}(s').
-\end{eqnarray}
+  Q^{h}(s, a_1, a_2) = R(s, a_1, a_2) + \\
+  \gamma \cdot \sum_{s' \in S} T(s, a_1, a_2, s') \cdot V^{h-1}(s').
+\end{multline}
 }%
 
 %It is well known that Equation \eqref{eq:dsgvfunc} can be further simplified to:

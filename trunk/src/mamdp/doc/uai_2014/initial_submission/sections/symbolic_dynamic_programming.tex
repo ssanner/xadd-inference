@@ -215,7 +215,7 @@ compute the optimal solution via the following SDP equations:
 \begin{multline}
 \label{eq:sdpdiscqfunc}
   Q^{h}(\vec{x}, a_1, a_2) = R(\vec{x}, a_1, a_2) \quad \oplus \\
-  \gamma \otimes \int T(\vec{x}, a_1, a_2, \vec{x}') \otimes V^{h-1}(\vec{x}') d\vec{x}' 
+  \gamma \otimes \int T(\vec{x}, a_1, a_2, \vec{x}') \otimes V^{h-1}(\vec{x}')\ d\vec{x}' 
 \end{multline}
 }%
 
@@ -241,13 +241,15 @@ and $-\infty$, otherwise. That is:
 {\small 
 \abovedisplayskip=0pt
 \belowdisplayskip=0pt
-\begin{equation*}
-  \mathbb{I} = 
+\begin{multline*}
+  \mathbb{I} = \\
+  {\footnotesize
     \begin{cases}
-      \forall a_{1} \in A_1 \left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \wedge (\sum m_{a_{1}} = 1) \right]: & 1 \\ 
-      \forall a_{1} \in A_1 \neg \left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \wedge (\sum m_{a_{1}} = 1) \right]: & -\infty \\ 
+      \forall a_{1} \in A_1 \hspace{6pt}\left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \wedge (\sum m_{a_{1}} = 1) \right]: 1 \\ 
+      \forall a_{1} \in A_1 \neg \left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \wedge (\sum m_{a_{1}} = 1) \right]: -\infty \\ 
     \end{cases} \nonumber
-\end{equation*}
+   }
+\end{multline*}
 }%
 
 The summation constraint is included to ensure that the subsequent

@@ -32,7 +32,7 @@ two functions satisfy the following recursive relationship:
 \end{align}
 }%
 
-The algorithm is executed by first initialising $V^{0}$  to zero or the terminal reward. 
+The algorithm is executed by first initialising $V^{0}(s)$  to zero or the terminal reward. 
 Then for each $h$, $V^{h}(s)$ is calculated from $V^{h-1}(s)$ via
 Equations \eqref{eq:qfunc} and \eqref{eq:vfunc}, until the intended 
 $h$-stage-to-go value function is computed. Value iteration converges 
