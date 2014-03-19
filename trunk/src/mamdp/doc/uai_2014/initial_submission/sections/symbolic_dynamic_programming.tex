@@ -14,6 +14,8 @@ Symbolic dynamic programming assumes that all symbolic
 functions can be represented in case statement form \cite{Boutilier_IJCAI_2001} as follows:
 
 {\small 
+\abovedisplayshortskip=-5pt
+\belowdisplayshortskip=0pt
 \begin{equation*}
   f = 
     \begin{cases}
@@ -45,6 +47,8 @@ is applied to the resulting paired partitions. The ``cross-sum'' $\oplus$
 operation can be performed on two cases in the following manner:
 
 {\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{center}
   \begin{tabular}{r c c c l}
   &
@@ -82,6 +86,8 @@ are thus removed.
 
 Minimisation over cases, known as $\casemin$, is defined as:
 {\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{center}
   \begin{tabular}{r c c c l}
   &
@@ -123,6 +129,8 @@ inequalities by completing the square.
 The $\casemax$ operator, which calculates symbolic case maximisation,
 is defined as:
 {\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{center}
   \begin{tabular}{r c c c l}
   &
@@ -164,6 +172,8 @@ and case partitions $\phi_i$ as $f_i\theta$ and $\phi_i\theta$, respectively.
 Substitution into case statements can therefore be written as:
 
 {\small 
+\abovedisplayshortskip=0pt
+\belowdisplayshortskip=0pt
 \begin{equation*}
   f\theta = 
     \begin{cases}
@@ -186,35 +196,88 @@ compact forms of $Q^{h}(\vec{x}, a_1, a_2)$ and $V^{h}(\vec{x})$.
 XADDs also permit the use of linear constraint feasibility checkers to 
 prune unreachable paths in the XADD.
 
-\subsection{SDP for Continuous Stochastic Games}
+\subsection{SDP for Zero-sum Continuous Stochastic Games}
 
 In this section we show that SDP can be used to calculate optimal closed-form
 solutions to zero-sum continuous stochastic games with piecewise
 constant rewards and a piecewise linear transition functions. 
 
-In Algorithm 1 we present a methodology to calculate the optimal 
-$h$-stage-to-go value function, $V^h(\vec{x})$, via Equations
-\eqref{eq:csgdiscqfunc} and \eqref{eq:csgvfunccompact}, using symbolic
-dynamic programming. We begin by expressing the reward and transition
-functions, $R(\vec{x}, a_1, a_2)$ and $T(\vec{x}, a_1, a_2, \vec{x}')$, respectively, as case statements. We also encode the summation constraint $\sum_{a_{1} \in A_1} m_{a_{1}} = 1$
-as an ``indicator'' function $\mathbb{I}$  which returns 1 when the 
-conjunction of all constraints on each $m_{a_1}$ are satisfied
-and $-\infty$, otherwise. That is, 
+We calculate the optimal solution to zero-sum CSGs by first
+expressing $R(\vec{x}, a_1, a_2)$, $T(\vec{x}, a_1, a_2, \vec{x}')$, 
+$V^0(\vec{x})$ and the $m_{a_{1}}$ as case statements. We can then
+compute the optimal solution via the following SDP equations:
+
+{\footnotesize 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{multline}
+\label{eq:sdpdiscqfunc}
+  Q^{h}(\vec{x}, a_1, a_2) = R(\vec{x}, a_1, a_2) \quad \oplus \\
+  \gamma \otimes \int T(\vec{x}, a_1, a_2, \vec{x}') \otimes V^{h-1}(\vec{x}') d\vec{x}' 
+\end{multline}
+}%
+
+{\footnotesize 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{multline}
+\label{eq:sdpvfunccompact}
+  V^{h}(\vec{x}) = \max_{m_{a_{1}} \in \sigma(A_1)} \\ \left[ \left\{ \casemin_{a_2 \in A_2} \left( \sum_{a_1 \in A_1} Q^{h}(\vec{x}, a_1, a_2) \otimes m_{a_{1}} \right)  \right\} \otimes \mathbb{I} \right]
+\end{multline}
+}%
+
+Equations \eqref{eq:sdpdiscqfunc} and \eqref{eq:sdpvfunccompact} can
+be derived from Equations \eqref{eq:csgdiscqfunc} and \eqref{eq:csgvfunccompact}
+by replacing all functions by their case statement equivalents and replacing
+operations such as $+$, $\times$ and min, by their symbolic equivalents,
+$\oplus$, $\otimes$ and $\casemin$, respectively. Equation \eqref{eq:sdpvfunccompact} also includes an ``indicator''
+function, $\mathbb{I}$, which serves as a summation constraint 
+$\sum_{a_{1} \in A_1} m_{a_{1}} = 1$. The function $\mathbb{I}$
+returns 1 when the conjunction of all constraints on each $m_{a_1}$ are satisfied
+and $-\infty$, otherwise. That is:
 
 {\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{equation*}
   \mathbb{I} = 
     \begin{cases}
-      \forall a_{1} \in A_1 \left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \right]: & 1 \\ 
-      \forall a_{1} \in A_1 \neg \left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \right]: & -\infty \\ 
+      \forall a_{1} \in A_1 \left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \wedge (\sum m_{a_{1}} = 1) \right]: & 1 \\ 
+      \forall a_{1} \in A_1 \neg \left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \wedge (\sum m_{a_{1}} = 1) \right]: & -\infty \\ 
     \end{cases} \nonumber
 \end{equation*}
 }%
 
-By using the constraint indicator function $\mathbb{I}$
-we ensure that any illegal values of $m_{a_{1}}$ in the resulting
-value function effectively vanish, owing to the identity $\contmax(l, -\infty) = l$.
+The summation constraint is included to ensure that the subsequent
+max operation returns legal values for $m_{a_1}$, since
+$\contmax(l, -\infty) = l$.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%We also encode the summation constraint $\sum_{a_{1} \in A_1} m_{a_{1}} = 1$
+%as an ``indicator'' function $\mathbb{I}$  which returns 1 when the 
+%conjunction of all constraints on each $m_{a_1}$ are satisfied
+%and $-\infty$, otherwise. That is, 
+%
+%{\small 
+%\abovedisplayskip=0pt
+%\belowdisplayskip=0pt
+%\begin{equation*}
+  %\mathbb{I} = 
+    %\begin{cases}
+      %\forall a_{1} \in A_1 \left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \wedge (\sum m_{a_{1}} = 1) \right]: & 1 \\ 
+      %\forall a_{1} \in A_1 \neg \left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \wedge (\sum m_{a_{1}} = 1) \right]: & -\infty \\ 
+    %\end{cases} \nonumber
+%\end{equation*}
+%}%
+%
+%By using the constraint indicator function $\mathbb{I}$
+%we ensure that any illegal values of $m_{a_{1}}$ in the resulting
+%value function effectively vanish, owing to the identity $\contmax(l, -\infty) = l$.
+
+In Algorithm 1 we present a methodology to calculate the optimal 
+$h$-stage-to-go value function, $V^h(\vec{x})$, Equations \eqref{eq:sdpdiscqfunc} and \eqref{eq:sdpvfunccompact}.
 For the base case of $h = 0$, we set $V^0(\vec{x})$, expressed in 
 case statement form, to zero or to the terminal reward. For all $h > 0$
 we apply the previously defined SDP operations in the following steps:
@@ -222,8 +285,8 @@ we apply the previously defined SDP operations in the following steps:
   \item Prime the Value Function. In line \ref{alg:prime} we set up a 
             substitution $\theta = \left\{ x_1/x'_1, \ldots, x_m/x'_m \right\}$, 
             and obtain $V'^{h} = V^{h}\theta$, the ``next state''.
-  \item Discount and add Rewards. If the reward function contains primed state variables
-          then it is incorporated in line \ref{alg:dr1}, otherwise it is incorporated in line \ref{alg:dr2}.            
+  \item Discount and add Rewards. We assumed that the reward function
+  contains primed variables incorporate it in line \ref{alg:dr1}.
   \item Continuous Marginal Integration. For the continuous state variables in $\vec{x}$
             lines \ref{alg:cmi1} - \ref{alg:cmi2} follow the rules of integration w.r.t. a $\delta$ function 
             \cite{Sanner_UAI_2011} which yields the following symbolic
@@ -232,19 +295,22 @@ we apply the previously defined SDP operations in the following steps:
             where $g(\vec{z})$ is a case statement and $\vec{z}$ does not contain $x'_j$.
             The latter operation indicates that any occurrence of $x'_j$ in $f(x'_j)$ is symbolically substituted
             with the case statement $g(\vec{z})$.
-  \item Discrete Marginalisation. At this point we have calculated $Q^h(\vec{x}, a_1, a_2)$, as shown in
-            Equation \eqref{eq:csgdiscqfunc}. In lines \ref{alg:dm1} - \ref{alg:dm2} we proceed to marginalise over the actions $a_1 \in A_1$.
-            Here we note that $m_{a_{1}} \in \sigma_1(A_1)$.
-  \item Case Minimisation. In line \ref{alg:cm} we minimise {\small $Q^h(\vec{x}, a_1, a_2)$ } over all $a_2 \in A_2$ using
+  \item Incorporate Agent 1's unknown stochastic strategy. At this point 
+            we have calculated $Q^h(\vec{x}, a_1, a_2)$, as shown in
+            Equation \eqref{eq:sdpdiscqfunc}. In lines \ref{alg:dm1} - \ref{alg:dm2} 
+            we proceed to incorporate each $m_{a_{1}} \in \sigma_1(A_1)$.
+            We note that each $m_{a_{1}}$ is a case statement representing
+            a free variable.            
+  \item Case Minimisation. In lines \ref{alg:cm1} - \ref{alg:cm2} we minimise {\small $Q^h(\vec{x}, a_1, a_2)$ } over all $a_2 \in A_2$ using
             a sequence of $\casemin$ operations.
   \item Incorporate Constraints. In line \ref{alg:constraint} we incorporate constraints on $m_{a_{1}}$ 
-            via the constraint indicator function $\mathbb{I}$. At this stage
-            all case partitions which involve illegal values of $m_{a_{1}}$ are
+            via the constraint indicator function $\mathbb{I}$. The 
+            $\casemax$ operator ensures that all case partitions which involve illegal values of $m_{a_{1}}$ are
             mapped to $-\infty$.
-  \item Maximisation. In line \ref{alg:max} we maximise over the $m_{a_{1}} \in \sigma_1(A_1)$ 
+  \item Maximisation. In lines \ref{alg:max1} - \ref{alg:max2} we maximise over the $m_{a_{1}} \in \sigma_1(A_1)$ 
             by sequentially applying the maximisation operator as defined 
             previously. At this point we have calculated $V^{h}(\vec{x})$ as shown in 
-          Equation \eqref{eq:csgvfunccompact}.
+          Equation \eqref{eq:sdpvfunccompact}.
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -260,7 +326,7 @@ we apply the previously defined SDP operations in the following steps:
   \Begin{
   
     $V^0:=0, h:=0$\;
-    \;
+    %\;
     \While{$h < H$}{
       $h := h + 1$\;
       \emph{// Prime the value function}\;
@@ -275,22 +341,30 @@ we apply the previously defined SDP operations in the following steps:
         $Q^h := \int Q^h \otimes T(x_j'|a_1, a_2, \vec{x}) d_{x'_j}$\; \label{alg:cmi2}
       }
       \;
-      \If{R does not contain primed variables} {
-      $Q^h := R(\vec{x}, a_1, a_2) \oplus (\gamma \otimes Q^h)$ \; \label{alg:dr2}     
-      }
-      \;
-      \emph{// Discrete marginalisation}\;
+%      \If{R does not contain primed variables} {
+ %     $Q^h := R(\vec{x}, a_1, a_2) \oplus (\gamma \otimes Q^h)$ \; \label{alg:dr2}     
+  %    }
+  %    \;
+      \emph{// Incorporate Agent 1's unknown stochastic strategy }\;
       \For {all $a_1$ in $A_1$}{ \label{alg:dm1}
         $Q^h := Q^h \oplus \left( Q^h \otimes m_{a_{1}} \right)$ \; \label{alg:dm2}
       }
       \;
       \emph{// Case Minimisation}\;
-      $Q^h := \casemin_{a_2} Q^{h} $\; \label{alg:cm}
+%      $Q^h := \casemin_{a_2} Q^{h} $\; \label{alg:cm}
+      \For {all $a_2$ in $A_2$}{ \label{alg:cm1}
+        $Q^h := \casemin(Q^h, a_2) $ \; \label{alg:cm2}
+      }
       \;
       \emph{// Incorporate constraints }\;
-      $Q^h := Q^{h} \otimes \mathbb{I} $\; \label{alg:constraint}
+      $Q^h := \casemin(Q^{h}, \mathbb{I}) $\; \label{alg:constraint}
+      \;
       \emph{// Maximisation}\;
-      $V^h := \max_{m_{a_{1}}} Q^h $ \; \label{alg:max}
+      $V^h = Q^h$\;
+%      $V^h := \max_{m_{a_{1}}} Q^h $ \; \label{alg:max}
+      \For {all $a_1$ in $A_1$}{ \label{alg:max1}
+        $V^h := \max\left(V^h, m_{a_{1}} \right)$ \; \label{alg:max2}
+      }
       \;
        \emph{// Terminate if early convergence}\;
       \If{$V^h = V^{h-1}$} {

@@ -22,7 +22,10 @@ quality of taking $a$ in state $s$, then following the optimal policy. The
 key idea of the algorithm is to successively approximate $V^{*}(s)$ and $Q^{*}(s, a)$
 by $V^{h}(s)$ and $Q^{h}(s, a)$, respectively, at each horizon $h$. These 
 two functions satisfy the following recursive relationship:
+
 {\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{align}
   Q^{h}(s, a) &= R(s, a) + \gamma \cdot \sum_{s' \in S} T(s, a, s') \cdot V^{h-1}(s') \label{eq:qfunc}\\
   V^{h}(s) &= \max_{a \in A} \left\{ Q^{h}(s, a) \right\} \label{eq:vfunc}
