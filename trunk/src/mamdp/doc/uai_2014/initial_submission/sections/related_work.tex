@@ -30,13 +30,19 @@ Several techniques have been put forward to tackle continuous state
 spaces in MDPs. Li and Littman \cite{Li_AAAI_2005} describe a method
 to approximate intermediate piecewise linear value functions by piecewise
 constant functions, which results in approximate solutions to continuous
-state MDPs. In this paper we use symbolic dynamic programming to
-calculate exact solutions to game theoretic domains with continuous state. 
+state MDPs. Furthermore, Li and Littman only allow for rectilinearly aligned 
+constraints in their reward and transition functions, not arbitrary linear constraints,
+and cannot handle general linear transition models without approximating.  
+Our SDP method provides exact solutions without these restrictions, which
+makes SDP strictly more general. Finally, Li and Littman did not consider 
+game-theoretic extensions of their work or the parameterised optimisation 
+problem that these extensions entail.
 
 Symbolic dynamic programming techniques have been previously used to calculate
 exact solutions to single agent MDPs with both continuous state and actions
 in a variety of non-game theoretic domains \cite{Sanner_UAI_2011,Zamani_AAAI_2012}.
-In this paper we present the first application of SDP to game-theoretic domains.
+In this paper we present the first application of SDP to stochastic games
+with concurrently acting agents.
 
 %----------------------------------------------------------------------------
 %The use of reinforcement learning methods to solve stochastic games
