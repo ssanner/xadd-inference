@@ -30,11 +30,13 @@ At each horizon $(h \leq H)$ each player executes an action $a_p \in \left\{ hea
 Player 1 ``wins'' if both players choose the same action. Otherwise, Player 2 wins. 
 The joint actions of the players affect the state $x$ as follows:
 
-{\scriptsize 
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{align*}
-P(x' | x, a_{1}, a_{2}) &= \\
-&
-\delta \left[ x' - \begin{cases}
+&P(x' | x, a_{1}, a_{2}) = \\
+\\
+& \hspace{10pt} \delta \left[ x' - \begin{cases}
       (heads_{1}) \wedge (heads_{2}) \wedge (x \geq k) : & x - k \\
       (heads_{1}) \wedge (tails_{2}) \wedge (x \leq 1) : & x + k \\
       (tails_{1}) \wedge (heads_{2}) \wedge (x \geq k): & x + k \\
@@ -50,6 +52,8 @@ conditional probability functions that integrate to 1. We define the
 rewards obtained by Player 1 in region $r$ as:
 
 {\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{align}
 \label{eq:cmpreward}
   R^r_{1} &= 
@@ -190,6 +194,8 @@ $u \in \mathbb{R}$ for an increase and $d \in \mathbb{R}$ for a decrease.
 The trader's option inventory dynamics are given by:
 
 {\small 
+\abovedisplayshortskip=0pt
+\belowdisplayshortskip=0pt
 \begin{equation*}
 P(i' | v, i, a_{\text{trd}}, a_{\text{mkt}}) = \delta \left[ i' - \begin{cases}
       (buy_{trd}) \wedge (sell_{mkt}) : & i + 1 \\ 
@@ -204,6 +210,8 @@ buy an option from the trader when the trader selects $sell_{trd}$.
 The market value changes according to:
 
 {\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{align*}
 P(v' | v, i, a_{\text{trd}}, a_{\text{mkt}}) &= \\
 &
@@ -290,11 +298,13 @@ $\left\{dec_i, inc_i\right\} \in \mathbb{Z}$.
 The joint actions of the energy provider and nature, $a_{prd}$ and
 $a_{mkt}$, respectively, affect the production level as follows:
 
-{\tiny 
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{align*}
-P(p' | d, p, a_{\text{prd}}, a_{\text{nat}}) &= \\
-&
-\delta \left[ p' - \begin{cases}
+&P(p' | d, p, a_{\text{prd}}, a_{\text{nat}}) = \\
+\\
+& \hspace{40pt} \delta \left[ p' - \begin{cases}
       (inc_{prd})  : & p + inc_{prd} \\
        (dec_{prd}) \wedge (p > dec_{prd}): & p - dec_{prd} \\
       otherwise: & p
@@ -303,12 +313,13 @@ P(p' | d, p, a_{\text{prd}}, a_{\text{nat}}) &= \\
 }%
 
 The energy demand changes according to:
-
-{\tiny 
+{\small 
+\abovedisplayskip=15pt
+\belowdisplayskip=0pt
 \begin{align*}
-P(d' | d, p, a_{\text{prd}}, a_{\text{nat}}) &= \\
-&
-\delta \left[ d' - \begin{cases}
+&P(d' | d, p, a_{\text{prd}}, a_{\text{nat}}) = \\
+\\
+& \hspace{40pt}\delta \left[ d' - \begin{cases}
       (inc_{nat})  : & d + inc_{nat} \\
        (dec_{nat}) \wedge (d > dec_{nat}) : & d - dec_{nat} \\
       otherwise: & d
@@ -319,6 +330,8 @@ P(d' | d, p, a_{\text{prd}}, a_{\text{nat}}) &= \\
 The reward obtained by the energy provider are specified as:
 
 {\small 
+\abovedisplayshortskip=0pt
+\belowdisplayshortskip=0pt
 \begin{equation}
   R_{prd} = 
     \begin{cases}

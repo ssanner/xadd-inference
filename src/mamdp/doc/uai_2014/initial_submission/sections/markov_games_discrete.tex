@@ -37,7 +37,9 @@ acting to minimise the agent's reward. Zero-sum DSGs can be solved
 using a technique analogous to value iteration for MDPs \cite{Littman_ICML_1994}. 
 The value function, $V^{h}(s)$, in this setting can be defined as:
 
-{\footnotesize 
+{\small
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{equation}
 \label{eq:dsgvfunc}
   V^{h}(s) = \max_{m_{a_{1}} \in \sigma_1(A_1)}\min_{m_{a_{2}} \in \sigma_2(A_2)} \sum_{a_1 \in A_1} \sum_{a_2 \in A_2} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \cdot m_{a_{2}}
@@ -49,6 +51,8 @@ $Q^{h}(s, a_1, a_2)$, the quality of taking action $a_1$ against action $a_2$ in
 is given by:
 
 {\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{eqnarray}
 \label{eq:dsgdiscqfunc}
   Q^{h}(s, a_1, a_2) &=& R(s, a_1, a_2) + \nonumber \\
@@ -62,6 +66,8 @@ since the $\text{min}$ operation is ``inside'' the $\text{max}$, the minimum is 
 for a deterministic action choice. This observation leads to the following
 form:
 {\small 
+\abovedisplayshortskip =100pt
+\belowdisplayshortskip =0pt
 \begin{equation}
 \label{eq:dsgvfunccompact}
   V^{h}(s) = \max_{m_{a_{1}} \in \sigma(A_1)} \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_1}.
@@ -83,13 +89,15 @@ program through the following steps:
 \begin{enumerate}
   \item Define $V^h(s)$ to be the value of the inner minimisation term in
             Equation \eqref{eq:dsgvfunccompact}. This leads to the following linear program for a known state $s$:
-{\small 
+{\small
+\abovedisplayskip=10pt
+\belowdisplayskip=0pt 
 \begin{subequations}
 \begin{align}
-\text{maximise}   &\  V^{h}(s) \nonumber \\
-\text{subject to}   &\  V^{h}(s) = \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \label{eq:dsglpconstraint1} \\
-                          &\  m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber\\
-                          &\  \sum_{a_{1} \in A_1} m_{a_{1}} = 1 \nonumber
+&\text{maximise}   \  V^{h}(s) \nonumber \\
+&\text{subject to}   \nonumber \\
+&\  V^{h}(s) = \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \label{eq:dsglpconstraint1} \\
+                          &\  \sum_{a_{1} \in A_1} m_{a_{1}} = 1 ; \  m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber
 \end{align}
 \end{subequations}
 }%
@@ -98,12 +106,14 @@ program through the following steps:
   $\leq$ by observing that the maximisation of $V^{h}(s)$
   effectively pushes the $\leq$ condition to the = case. This gives: 
 {\small 
+\abovedisplayskip=8pt
+\belowdisplayskip=0pt
 \begin{subequations}
 \begin{align}
-\text{maximise}   &\  V^{h}(s)\nonumber  \\
-\text{subject to}   &\  V^{h}(s) \leq \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \label{eq:dsglpconstraint2} \\
-                          &\  m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber\\
-                          &\  \sum_{a_{1} \in A_1} m_{a_{1}} = 1 \nonumber
+&\text{maximise}   \  V^{h}(s) \nonumber \\
+&\text{subject to}   \nonumber \\
+&\  V^{h}(s) \leq \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \label{eq:dsglpconstraint2} \\
+                          &\  \sum_{a_{1} \in A_1} m_{a_{1}} = 1 ; \  m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber
 \end{align}
 \end{subequations}
 }%
@@ -112,14 +122,15 @@ program through the following steps:
             by noting that the minimum of a set is less than or equal to the minimum of all elements in the set.
             This leads to the final form of the discrete linear optimisation problem:
 {\small 
+\abovedisplayskip=8pt
+\belowdisplayskip=0pt
 \begin{align*}
-\text{maximise}   &\  V^{h}(s) \\
-\text{subject to}  &\  V^{h}(s) \leq \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \ \forall a_2 \in A_2\\
-                          &\  m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber\\
-                          &\  \sum_{a_{1} \in A_1} m_{a_{1}} = 1 \nonumber
+&\text{maximise}   \  V^{h}(s) \nonumber \\
+&\text{subject to}   \nonumber \\
+&\  V^{h}(s) \leq \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \ \forall a_2 \in A_2\\
+                          &\  \sum_{a_{1} \in A_1} m_{a_{1}} = 1 ; \  m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber
 \end{align*}
 }%
-
 \end{enumerate}
 
 We can now use existing linear programming solvers to compute the optimal

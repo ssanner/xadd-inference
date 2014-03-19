@@ -11,7 +11,9 @@ Zero-sum CSGs impose the same restrictions on the number of agents
 and the reward structure as their discrete state counterparts. The 
 optimal solution to zero-sum CSGs can be calculated via the 
 following recursive functions:
-{\small 
+{\footnotesize 
+\abovedisplayskip=10pt
+\belowdisplayskip=0pt
 \begin{eqnarray}
 \label{eq:csgdiscqfunc}
   Q^{h}(\vec{x}, a_1, a_2) &=& R(\vec{x}, a_1, a_2) \quad + \nonumber \\
@@ -19,7 +21,9 @@ following recursive functions:
 \end{eqnarray}
 }%
 
-{\small 
+{\footnotesize 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{equation}
 \label{eq:csgvfunccompact}
   V^{h}(\vec{x}) = \max_{m_{a_{1}} \in \sigma(A_1)} \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(\vec{x}, a_1, a_2) \cdot m_{a_{1}}
@@ -42,12 +46,14 @@ presented in Section \ref{subsec:dsgsolution}. Namely, the value function in Equ
 optimisation problem:
 
 {\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{subequations}
 \begin{align}
-\text{maximise} &\   V^{h}(\vec{x}) \nonumber \\
-\text{subject to} &\   V^{h}(\vec{x}) \leq \sum_{a_1 \in A_1} Q^{h}(\vec{x}, a_1, a_2) \cdot m_{a_{1}} \   \forall a_2 \in A_2 \label{eq:bilinearconstraint} \\
-                          &\   m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber\\
-                          &\   \sum_{a_{1} \in A_1} m_{a_{1}} = 1 \nonumber        
+&\text{maximise}   \  V^{h}(\vec{x}) \nonumber \\
+&\text{subject to}   \nonumber \\
+&\   V^{h}(\vec{x}) \leq \sum_{a_1 \in A_1} Q^{h}(\vec{x}, a_1, a_2) \cdot m_{a_{1}} \   \forall a_2 \in A_2 \label{eq:bilinearconstraint} \\
+                          &\  \sum_{a_{1} \in A_1} m_{a_{1}} = 1 ; \  m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber
 \end{align}
 \end{subequations}
 }%
@@ -61,6 +67,8 @@ $Q^{h}(\vec{x}, a_1, a_2)$ in the form of a linear function in $x$ for some
 $a_1$ and $a_2$:
 
 {\small 
+\abovedisplayskip=0pt
+\belowdisplayshortskip=0pt
 \begin{equation}
 Q^{h}(\vec{x}, a_1, a_2) = \sum_{j} c_j \cdot x_j \label{eq:linqfunc}
 \end{equation}
@@ -70,6 +78,8 @@ Substituting Equation \eqref{eq:linqfunc} into constraint \eqref{eq:bilinearcons
 yields:
 
 {\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
 \begin{equation}
 V^{h}(\vec{x}) \leq \sum_{a_1 \in A_1} m_{a_{1}} \sum_{j} c_j \cdot x_j \qquad \forall a_2 \in A_2. \label{eq:linqfuncresult}
 \end{equation}
