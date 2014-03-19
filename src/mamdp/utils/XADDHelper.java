@@ -9,7 +9,10 @@ package mamdp.utils;
 import graph.Graph;
 
 import java.io.File;
+import java.text.DecimalFormat;
+import java.util.List;
 
+import camdp.CAction;
 import camdp.CAMDP.FileOptions;
 import xadd.XADD;
 import xadd.XADDUtils;
@@ -21,8 +24,16 @@ import xadd.XADDUtils;
  */
 public class XADDHelper {
 
+    private static Runtime RUNTIME = Runtime.getRuntime();
     private static XADD context = null;
 
+    /* Cache maintenance */
+    public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
+    public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
+   
+    /* For printing */
+    public static DecimalFormat _df = new DecimalFormat("#.########");
+    
     public static void setXADDInstance(XADD xaddInstance) {
 
         if (context == null) {
@@ -147,6 +158,36 @@ public class XADDHelper {
                 opt._varLB.get(1), opt._varInc.get(1), opt._varUB.get(1), 
                 opt._bassign, opt._dassign, opt._var.get(0), opt._var.get(1), 
                 logFileRoot + "." + label);
+    }    
+    
+    /**
+     * 
+     * @param special_nodes
+     * @param forceFlush
+     */
+    public static void FlushCaches(List<Integer> special_nodes, boolean forceFlush) {
+
+        if (((double) RUNTIME.freeMemory() /
+                (double) RUNTIME.totalMemory()) > FLUSH_PERCENT_MINIMUM && !forceFlush) {
+            System.out.println("No need to flush caches.");
+            return; // Still enough free mem to exceed minimum requirements
+        }
+
+        // Commence cache flushing
+        System.out.println("Before flush: " + XADDHelper.getXADD()._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " +
+                _df.format(RUNTIME.freeMemory() / 10e6d) + " MB = " +
+                _df.format(100d * RUNTIME.freeMemory() / (double) RUNTIME.totalMemory()) + "% available memory");
+
+        XADDHelper.getXADD().clearSpecialNodes();
+        
+        for (Integer node : special_nodes)
+            XADDHelper.getXADD().addSpecialNode(node);
+
+        XADDHelper.getXADD().flushCaches();
+
+        System.out.println("After flush: " + XADDHelper.getXADD()._hmInt2Node.size() + " XADD nodes in use, " + "freeMemory: " +
+                _df.format(RUNTIME.freeMemory() / 10e6d) + " MB = " +
+                _df.format(100d * RUNTIME.freeMemory() / (double) RUNTIME.totalMemory()) + "% available memory");
     }    
     
 }
