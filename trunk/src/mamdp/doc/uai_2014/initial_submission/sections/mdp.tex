@@ -14,10 +14,14 @@ to find a policy, $\pi : S \rightarrow A$, which maximises the expected
 sum of discounted rewards over horizon $h$.
 
 Value iteration (VI) \cite{Bellman_1957} is a general dynamic programming 
-algorithm used to solve MDPs. At each horizon $h$, two functions form 
-the basis of the algorithm: (1) $V^{h}(s)$, the value of state $s$; and 
-(2) $Q^{h}(s, a)$, the quality of taking action $a$ in state $s$. 
-These two functions satisfy the following recursive relationship:
+algorithm used to solve MDPs. VI is based on the set of Bellman equations,
+which mathematically express the optimal solution of an MDP. They 
+provide a recursive expansion to compute: (1) $V^{*}(s)$, the expected value of following
+the optimal policy in state $s$; and (2) $Q^{*}(s, a)$, which is the expected
+quality of taking $a$ in state $s$, then following the optimal policy. The
+key idea of the algorithm is to successively approximate $V^{*}(s)$ and $Q^{*}(s, a)$
+by $V^{h}(s)$ and $Q^{h}(s, a)$, respectively, at each horizon $h$. These 
+two functions satisfy the following recursive relationship:
 {\small 
 \begin{align}
   Q^{h}(s, a) &= R(s, a) + \gamma \cdot \sum_{s' \in S} T(s, a, s') \cdot V^{h-1}(s') \label{eq:qfunc}\\
@@ -29,7 +33,8 @@ The algorithm is executed by first initialising $V^{0}$  to zero or the terminal
 Then for each $h$, $V^{h}(s)$ is calculated from $V^{h-1}(s)$ via
 Equations \eqref{eq:qfunc} and \eqref{eq:vfunc}, until the intended 
 $h$-stage-to-go value function is computed. Value iteration converges 
-linearly in the number of iterations to the true values of $Q(s, a)$ and $V(s)$ \cite{Bertsekas_1987}.
+linearly in the number of iterations to the true values of $Q^{*}(s, a)$ and $V^{*}(s)$ 
+\cite{Bertsekas_1987}.
 
 MDPs can be used to model multiagent systems under the assumption 
 that other agents are part of the environment and have fixed behaviour. 
