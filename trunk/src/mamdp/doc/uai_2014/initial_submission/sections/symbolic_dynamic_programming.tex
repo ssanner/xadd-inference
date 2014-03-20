@@ -203,10 +203,11 @@ prune unreachable paths in the XADD.
 
 \subsection{SDP for Zero-sum Continuous Stochastic Games}
 
-{\bf A class of zero-sum continuous stochastic games with a closed-form solution:} is specified
-by piecewise constant rewards and a piecewise linear transition functions. In this 
-section we show that SDP can be used to calculate optimal closed-form
-solutions to this class of stochastic games.
+In this section, we will show that a 
+{\it a class of zero-sum continuous stochastic games with a
+  closed-form solution is given by stochastic games with
+(a) piecewise constant rewards and (b) piecewise linear transition
+functions}, where SDP can be used to calculate such solutions.
 
 We calculate the optimal solution to zero-sum CSGs by first
 expressing $R(\vec{x}, a_1, a_2)$, $T(\vec{x}, a_1, a_2, \vec{x}')$, 
@@ -250,7 +251,14 @@ We can then compute the optimal solution via the following SDP equations:
 \belowdisplayskip=0pt
 \begin{multline}
 \label{eq:sdpvfunccompact}
-  V^{h}(\vec{x}) = \max_{m_{a_1}} \\ \left[ \left\{ \casemin \left( \tilde{Q}^{h}(\vec{x}, a_1, a_2),  \hat{Q}^{h}(\vec{x}, a_1, a_2) \right)  \forall a_2 \in A_2 \right\} \otimes \mathbb{I} \right]
+  V^{h}(\vec{x}) = \max_{m} 
+%\left\{ 
+\casemin \left( \casemin_{a_2 \in A_2} \left( 
+\tilde{Q}^{h}(\vec{x}, a_1, a_2)
+%,  \hat{Q}^{h}(\vec{x}, a_1, a_2) 
+\right)  
+%\forall a_2 \in A_2 \right\} 
+, \mathbb{I} \right)
 \end{multline}
 }%
 
