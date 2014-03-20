@@ -8,9 +8,11 @@ The algorithm repeatedly calculates a value function $V(s)$ over discrete states
 which converges to an optimal value function $V^{*}(s)$, which represents
 the expected discounted future reward if both players in the game followed
 the game's Nash equilibrium. Shapley's algorithm is in essence an 
-extension of the value iteration algorithm to stochastic games. A reinforcement 
+extension of the value iteration algorithm to stochastic games. 
+
+A reinforcement 
 learning based solution to stochastic games was first introduced by 
-Littman \cite{Littman_ICML_1994}. Littman's algorithm, Minimax-Q,
+\cite{Littman_ICML_1994}. Littman's algorithm, Minimax-Q,
 extends the traditional Q-learning algorithm for MDPs to 
 zero-sum discrete stochastic games. The algorithm converges to the 
 stochastic game's equilibrium solution. Hu and Wellman \cite{Hu_ICML_1998}
@@ -28,20 +30,20 @@ stochastic games defined by a piecewise constant reward and piecewise linear tra
 
 Several techniques have been put forward to tackle continuous state
 spaces in MDPs. Li and Littman \cite{Li_AAAI_2005} describe a method
-to approximate intermediate piecewise linear value functions by piecewise
-constant functions, which results in approximate solutions to continuous
-state MDPs. Furthermore, Li and Littman only allow for rectilinearly aligned 
-constraints in their reward and transition functions, not arbitrary linear constraints,
-and cannot handle general linear transition models without approximating.  
+for approximate solutions to continuous
+state MDPs.  In their work, Li and Littman only allow for rectilinearly aligned 
+constraints in their reward and transition functions (not arbitrary linear constraints)
+and cannot handle general linear transition models without approximation.  
 Our SDP method provides exact solutions without these restrictions, which
-makes SDP strictly more general. Finally, Li and Littman did not consider 
+makes SDP strictly more general.  Also, Li and Littman did not consider 
 game-theoretic extensions of their work or the parameterised optimisation 
 problem that these extensions entail.
 
-Symbolic dynamic programming techniques have been previously used to calculate
-exact solutions to single agent MDPs with both continuous state and actions
-in a variety of non-game theoretic domains \cite{Sanner_UAI_2011,Zamani_AAAI_2012}.
-In this paper we present the first application of SDP to stochastic games
+Symbolic dynamic programming techniques have been previously used to
+calculate exact solutions to single agent MDPs with both continuous
+state and actions in a variety of non-game theoretic domains
+\cite{Sanner_UAI_2011,Zamani_AAAI_2012}.  In this paper we build on
+this work and present the first application of SDP to stochastic games
 with concurrently acting agents.
 
 %----------------------------------------------------------------------------
