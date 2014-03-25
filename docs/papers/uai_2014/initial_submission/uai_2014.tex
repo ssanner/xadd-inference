@@ -1,0 +1,95 @@
+\documentclass[]{article}
+
+\usepackage{proceed2e}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[vlined,algoruled,titlenumbered,noend,oldcommands]{algorithm2e}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{authordate1-4}
+%\usepackage{natbib}
+
+\setlength{\pdfpagewidth}{8.5in} 
+\setlength{\pdfpageheight}{11in}
+
+% if you are using PDF LaTex and you cannot find a way for producing
+% letter, the following explicit settings may help
+\newcommand{\contmax}{\mathrm{max}}
+\newcommand{\casemax}{\mathrm{casemax}}
+\newcommand{\casemin}{\mathrm{casemin}}
+
+%\everymath{\displaystyle}
+
+\begin{document}
+
+\input{./title}
+
+%-----------------------------------------------------------------------------
+% Abstract
+%-----------------------------------------------------------------------------
+
+\input{./sections/abstract}
+
+%-----------------------------------------------------------------------------
+% Introduction
+%-----------------------------------------------------------------------------
+
+\input{./sections/introduction}
+
+%-----------------------------------------------------------------------------
+% MDPs 
+%-----------------------------------------------------------------------------
+
+\input{./sections/mdp}
+
+%-----------------------------------------------------------------------------
+% Markov Games with Discrete State
+%-----------------------------------------------------------------------------
+
+\input{./sections/markov_games_discrete}
+
+%-----------------------------------------------------------------------------
+% Markov Games with Continuous State
+%-----------------------------------------------------------------------------
+
+\input{./sections/markov_games_continuous}
+
+%-----------------------------------------------------------------------------
+% Symbolic Dynamic Programming
+%-----------------------------------------------------------------------------
+
+\input{./sections/symbolic_dynamic_programming}
+
+%-----------------------------------------------------------------------------
+% Empirical Results
+%-----------------------------------------------------------------------------
+
+\input{./sections/results}
+
+%-----------------------------------------------------------------------------
+% Related Work 
+%-----------------------------------------------------------------------------
+
+\input{./sections/related_work}
+
+%-----------------------------------------------------------------------------
+% Conclusions and Future Work
+%-----------------------------------------------------------------------------
+
+\input{./sections/conclusion}
+
+%-----------------------------------------------------------------------------
+% Bibliography
+%-----------------------------------------------------------------------------
+
+%\bibliographystyle{plain}
+\bibliographystyle{authordate1}
+\bibliography{uai2014}
+
+\end{document}

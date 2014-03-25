@@ -1,0 +1,43 @@
+\section{Conclusions}
+\label{sec:conclusion}
+
+% Contributions
+% Place work in wider context
+% Future research directions
+
+We have characterised a subclass of zero-sum continuous stochastic
+games that can be solved exactly via parameterised linear optimisation.
+We have also presented a novel symbolic dynamic programming 
+algorithm that can be used to calculated exact solutions to this subclass
+of stochastic games for arbitrary horizons. The algorithm
+was used to calculate the first known exact solutions to a variety of 
+experimental continuous domains.
+
+%-----------------------------------------------------------------------------
+%In this paper, we have introduced a novel symbolic dynamic programming
+%technique to calculate exact solutions to a subclass of continuous state
+%zero-sum stochastic games. Our key contributions are two-fold: we characterise
+%a subclass of continuous stochastic games that can be solved 
+%optimally in closed-form and we also prove that this solution remains
+%closed-form for arbitrary horizons. This paper also represents the first
+%extension of symbolic dynamic programming into game-theoretic domains.
+%
+%We believe that this work is the first to provide optimal closed-form
+%solutions to continuous stochastic games with continuous state, 
+%piecewise linear dynamics and piecewise constant reward. Furthermore,
+%we assert that our experimental results are the first to provide
+%exact solutions to their domains.
+
+There are a number of avenues for future research. Firstly, it is important
+to examine more general representations of the reward and transition functions while
+still guaranteeing exact solutions. Another direction of research lies within
+improving the scalability of the algorithm by using techniques such as 
+bounded error compression for XADDs \cite{Vianna_UAI_2013} or lazy 
+approximation of value functions as piecewise linear XADDs \cite{Li_AAAI_2005}. 
+Search based approaches such as RTDP \cite{Barto_AI_1995} and HAO* \cite{Meuleau_JoAIR_2009}
+are also readily adaptable to SDP. These extensions may then be used to 
+model more complex financial and economic domains. Finally, SDP can be
+used to calculate exact solutions to general sum stochastic games. The advances
+made by this work open up a number of potential novel research paths
+that we believe may help make progress in solving game theoretic domains
+with continuous state.

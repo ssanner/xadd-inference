@@ -1,0 +1,57 @@
+\section{Introduction}
+%-----------------------------------------------------------------------------
+%  What is the problem
+%  Why is it interesting
+%  What are your contributions
+%  What is the outline
+%-----------------------------------------------------------------------------
+
+Modelling competitive sequential interactions between agents has
+important applications within economics and decision-making.
+Stochastic games \cite{Shapley_PotNAoS_1953} provide a convenient
+framework to model sequential interactions between non-cooperative
+agents. In zero-sum stochastic games, participating agents have
+diametrically opposing goals. A reinforcement learning solution to
+zero-sum stochastic games with discrete states was presented in
+\cite{Littman_ICML_1994}.  Closed-form solutions for the continuous
+state case remain unknown, despite the general importance of this
+formalism --- zero-sum continuous state stochastic games provide a
+convenient framework with which to model robust sequential
+optimisation in adversarial settings including many important
+financial and economic domains such as option valuation on derivative
+markets.
+
+The difficulty of solving zero-sum continuous state stochastic games
+arises from the need to calculate a Nash equilibrium for every state,
+of which there are infinitely many. In this paper we characterise a
+subclass of continuous state stochastic games for which we can
+calculate exact solutions for arbitrary horizons 
+via closed-form symbolic dynamic programming
+(SDP)~\cite{Boutilier_IJCAI_2001} in 
+continuous domains~\cite{Sanner_UAI_2011,Zamani_AAAI_2012}.
+
+We begin by presenting Markov Decision Processes (MDPs) \cite{Howard_1960} 
+and value iteration \cite{Bellman_1957}, a commonly used dynamic programming
+solution for MDPs. We then describe both discrete and continuous state 
+zero-sum stochastic games as game-theoretic generalisations of the MDP framework. 
+Following this we show how symbolic dynamic programming
+can be used to calculate the first known exact solution to a particular subclass of 
+zero-sum continuous stochastic games. We conclude by calculating
+exact solutions to continuous state matching pennies and a binary
+option valuation game.
+
+In this paper we make the following key contributions:
+\begin{itemize}
+  \item We characterise a subclass of zero-sum continuous stochastic
+    games with restricted reward and transition functions that can be
+    solved exactly via parameterised linear optimisation.
+  \item We provide an algorithm that solves this subclass of
+    stochastic games exactly and optimally using symbolic dynamic
+    programming for arbitrary horizons.
+\end{itemize}
+
+%The key insight of this paper lies within the characterisation of a subclass
+%of zero-sum continuous state stochastic games with restricted reward
+%functions that can be solved via parameterised linear optimisation. We 
+%show that this particular subset of games can be solved both symbolically and optimally
+%for arbitrary horizons.
