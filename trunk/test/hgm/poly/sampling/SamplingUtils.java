@@ -1,11 +1,8 @@
 package hgm.poly.sampling;
 
-import hgm.poly.pref.GatedPolytopesSampler;
-
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.util.Arrays;
 
 /**
  * Created by Hadi Afshar.
