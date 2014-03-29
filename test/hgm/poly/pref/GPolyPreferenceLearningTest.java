@@ -17,10 +17,10 @@ import java.util.List;
  * Date: 12/03/14
  * Time: 5:53 AM
  */
-public class PolyPreferenceLearningTest {
+public class GPolyPreferenceLearningTest {
     public static String SAMPLES_FILE_PATH = "./test/hgm/poly/sampling/";//scatter2D.txt";
     public static void main(String[] args) throws FileNotFoundException {
-        PolyPreferenceLearningTest instance = new PolyPreferenceLearningTest();
+        GPolyPreferenceLearningTest instance = new GPolyPreferenceLearningTest();
         instance.basicTest();
     }
 
@@ -71,25 +71,52 @@ public class PolyPreferenceLearningTest {
     @Test
     public void basicTest() throws FileNotFoundException {
 
-        PolyPreferenceLearning learning = new PolyPreferenceLearning(testDB1, 0.1, "w");
+        GPolyPreferenceLearning learning = new GPolyPreferenceLearning(testDB1, 0.1, "w");
 
         // Pr(W | R^{n+1})
-        GatedPolytopesHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
+        PolytopesHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
 //        fixVarLimits(context, utilityWeights, -30d, 60d);
 
         FunctionVisualizer.visualize(posterior, -30d, 60d, 0.5, "Poly");
 
 
         //now I sample from it:
-        GatedPolytopesSampler sampler = GatedPolytopesSampler.makeGibbsSampler(posterior, -PolyPreferenceLearning.C-10, PolyPreferenceLearning.C+10, new Double[]{-5.771840329479172, 7.1312683349054});
-        GatedPolytopesSampler.DEBUG = false;
+        GatedGibbsPolytopesSampler sampler = GatedGibbsPolytopesSampler.makeGibbsSampler(posterior, -GPolyPreferenceLearning.C - 10, GPolyPreferenceLearning.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
+        GatedGibbsPolytopesSampler.DEBUG = false;
         for (int i = 0; i < 2; i++) {
             Double[] assign = sampler.sample();
             System.out.println("t = " + Arrays.toString(assign));
         }
 
         long t1 = System.currentTimeMillis();
-        GatedPolytopesSampler.DEBUG = false;
+        GatedGibbsPolytopesSampler.DEBUG = false;
+        SamplingUtils.save2DSamples(sampler, 10000, SAMPLES_FILE_PATH + "scatterGibbs");
+        long t2 = System.currentTimeMillis();
+        System.out.println("Time: "+ (t2-t1) + " \t That was all the folk!");
+    }
+
+    @Test
+    public void basicTestClever() throws FileNotFoundException {
+
+        GPolyPreferenceLearning learning = new GPolyPreferenceLearning(testDB1, 0.1, "w");
+
+        // Pr(W | R^{n+1})
+        PolytopesHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
+//        fixVarLimits(context, utilityWeights, -30d, 60d);
+
+        FunctionVisualizer.visualize(posterior, -30d, 60d, 0.5, "Poly");
+
+
+        //now I sample from it:
+        CleverGatedGibbsPolytopesSampler sampler = CleverGatedGibbsPolytopesSampler.makeCleverGibbsSampler(posterior, -GPolyPreferenceLearning.C - 10, GPolyPreferenceLearning.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
+        CleverGatedGibbsPolytopesSampler.DEBUG = false;
+        for (int i = 0; i < 2; i++) {
+            Double[] assign = sampler.sample();
+            System.out.println("t = " + Arrays.toString(assign));
+        }
+
+        long t1 = System.currentTimeMillis();
+        GatedGibbsPolytopesSampler.DEBUG = false;
         SamplingUtils.save2DSamples(sampler, 10000, SAMPLES_FILE_PATH + "scatterGibbs");
         long t2 = System.currentTimeMillis();
         System.out.println("Time: "+ (t2-t1) + " \t That was all the folk!");
