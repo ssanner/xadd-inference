@@ -6,11 +6,6 @@ import hgm.poly.vis.FunctionVisualizer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
-
 /**
  * Created by Hadi Afshar.
  * Date: 21/02/14
