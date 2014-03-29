@@ -1,9 +1,9 @@
 package hgm.poly.pref.reports.db;
 
+import hgm.poly.pref.GPolyPreferenceLearning;
+import hgm.poly.pref.GatedGibbsPolytopesSampler;
+import hgm.poly.pref.PolytopesHandler;
 import hgm.poly.vis.FunctionVisualizer;
-import hgm.poly.pref.GatedPolytopesHandler;
-import hgm.poly.pref.GatedPolytopesSampler;
-import hgm.poly.pref.PolyPreferenceLearning;
 import hgm.poly.sampling.SamplingUtils;
 import hgm.preference.Choice;
 import hgm.preference.Preference;
@@ -73,15 +73,15 @@ public class SyntheticDistributionUtils {
                                                                   double maxForAllVars) throws FileNotFoundException {
 
         //todo what about prior?
-        PolyPreferenceLearning learning = new PolyPreferenceLearning(trainingDb, indicatorNoise, "w");
+        GPolyPreferenceLearning learning = new GPolyPreferenceLearning(trainingDb, indicatorNoise, "w");
 
         // Pr(W | R^{n+1})
-        GatedPolytopesHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
+        PolytopesHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
 
         if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
 
         //now I sample from it:
-        GatedPolytopesSampler sampler = GatedPolytopesSampler.makeGibbsSampler(posterior, //todo rejection based sampling should be used instead...
+        GatedGibbsPolytopesSampler sampler = GatedGibbsPolytopesSampler.makeGibbsSampler(posterior, //todo rejection based sampling should be used instead...
                 minForAllVars/*-PolyPreferenceLearning.C*/,
                 maxForAllVars/*PolyPreferenceLearning.C*/, null);
 

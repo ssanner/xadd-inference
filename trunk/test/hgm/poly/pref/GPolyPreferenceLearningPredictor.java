@@ -3,17 +3,13 @@ package hgm.poly.pref;
 import hgm.asve.Pair;
 import hgm.poly.vis.FunctionVisualizer;
 import hgm.preference.Choice;
-import hgm.preference.PreferenceLearning;
 import hgm.preference.db.PreferenceDatabase;
 import hgm.preference.predict.Info;
 import hgm.preference.predict.PreferenceLearningPredictor;
 import hgm.sampling.SamplingFailureException;
 import hgm.sampling.VarAssignment;
-import hgm.sampling.XaddSampler;
-import xadd.XADD;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -21,7 +17,7 @@ import java.util.List;
  * Date: 16/03/14
  * Time: 3:04 AM
  */
-public abstract class PolyPreferenceLearningPredictor implements PreferenceLearningPredictor {
+public abstract class GPolyPreferenceLearningPredictor implements PreferenceLearningPredictor {
     boolean DEBUG_MODE = false;
     private double indicatorNoise;
     private int numberOfSamples;
@@ -30,10 +26,10 @@ public abstract class PolyPreferenceLearningPredictor implements PreferenceLearn
     private int burnedSamples;
     private int maxGateConstraintViolation;
 
-    public PolyPreferenceLearningPredictor(double indicatorNoise,
-                                             int numberOfSamples,
-                                             int burnedSamples,
-                                             int maxGateConstraintViolation) {
+    public GPolyPreferenceLearningPredictor(double indicatorNoise,
+                                            int numberOfSamples,
+                                            int burnedSamples,
+                                            int maxGateConstraintViolation) {
         this.indicatorNoise = indicatorNoise;
         this.numberOfSamples = numberOfSamples;
         this.burnedSamples =burnedSamples;
@@ -44,11 +40,11 @@ public abstract class PolyPreferenceLearningPredictor implements PreferenceLearn
     public Info learnToPredict(PreferenceDatabase trainingDatabase) {
         Info info = new Info();
 
-        PolyPreferenceLearning learning = new PolyPreferenceLearning(trainingDatabase, indicatorNoise, "w");
+        GPolyPreferenceLearning learning = new GPolyPreferenceLearning(trainingDatabase, indicatorNoise, "w");
 
         long time1start = System.currentTimeMillis();
         // Pr(W | R^{n+1})
-        GatedPolytopesHandler posterior = learning.computePosteriorWeightVector(maxGateConstraintViolation);
+        PolytopesHandler posterior = learning.computePosteriorWeightVector(maxGateConstraintViolation);
 
         if (DEBUG_MODE) {
             FunctionVisualizer.visualize(posterior, -50, 50, 0.1, "posterior");
@@ -59,7 +55,7 @@ public abstract class PolyPreferenceLearningPredictor implements PreferenceLearn
 
         //extra reduction phase.... long time3posteriorReduced = System.currentTimeMillis();
 
-        GatedPolytopesSampler sampler = makeNewSampler(posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
+        GatedGibbsPolytopesSampler sampler = makeNewSampler(posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
 
         takenSamples = new ArrayList<Double[]>(numberOfSamples);
 
@@ -91,7 +87,7 @@ public abstract class PolyPreferenceLearningPredictor implements PreferenceLearn
         return u;
     }
 
-    public abstract GatedPolytopesSampler makeNewSampler(GatedPolytopesHandler posterior, VarAssignment assignment);
+    public abstract GatedGibbsPolytopesSampler makeNewSampler(PolytopesHandler posterior, VarAssignment assignment);
     /*
     i.e. GatedPolytopesSampler sampler = GatedPolytopesSampler.makeGibbsSampler(
                 minForAllVars,
@@ -156,7 +152,6 @@ public abstract class PolyPreferenceLearningPredictor implements PreferenceLearn
             } else {
                 sumProb += (utilA/(utilA + utilB));
             }
-
         }
 
         return sumProb/n;
