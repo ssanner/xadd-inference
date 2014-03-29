@@ -92,6 +92,8 @@ To verify it is installed correctly, run
 and ensure that there are no errors (LPSolve provides verbose
 output about it's solution, but these are not errors).
 
+[Hadi: Windows users simply need to copy 3 files "lp_solve.exe", "lpsolve55.dll" and "lpsolve55j.dll" to C:\Windows]
+
 
 GraphViz Visualization
 ======================
