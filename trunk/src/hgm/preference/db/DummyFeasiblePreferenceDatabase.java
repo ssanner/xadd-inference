@@ -77,7 +77,7 @@ public class DummyFeasiblePreferenceDatabase implements PreferenceDatabase {
         return v;
     }
 
-    private Double[] makeNewItem() {
+    public Double[] makeNewItem() {
         Double[] item = new Double[attributeCount];
         for (int i = 0; i < attributeCount; i++) {
             item[i] = random.nextDouble() * (maxAttribBound - minAttribBound) + minAttribBound;

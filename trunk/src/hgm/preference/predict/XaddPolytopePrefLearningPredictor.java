@@ -97,7 +97,7 @@ public abstract class XaddPolytopePrefLearningPredictor implements PreferenceLea
         return u;
     }
 
-    private void fixVarLimits(XADD context, XADD.XADDNode root, double varMin, double varMax) {
+    public static void fixVarLimits(XADD context, XADD.XADDNode root, double varMin, double varMax) {
         HashSet<String> vars = root.collectVars();
         for (String var : vars) {
             context._hmMinVal.put(var, varMin);
