@@ -276,7 +276,7 @@ public class CRTDP extends CAMDPsolver {
 		
 		// Discount
 		q = context.scalarOp(q, mdp._bdDiscount.doubleValue(), XADD.PROD);
-		int maskReward = context.createPosInfMask(a._reward,currS._hmBoolVars, currS._hmContVars);
+		int maskReward = context.createMaskSlack(a._reward,currS._hmBoolVars, currS._hmContVars, context.POS_INF, STATE_PRECISION);
 		long maskRewTime = getElapsedTime(5);
 		resetTimer(5);
 
@@ -358,7 +358,7 @@ public class CRTDP extends CAMDPsolver {
 		Integer dd_conditional_sub = a._hmVar2DD.get(var);
 
 		//MaskTransitions not from current state
-		dd_conditional_sub = context.createPosInfMask(dd_conditional_sub, currS._hmBoolVars, currS._hmContVars);		
+		dd_conditional_sub = context.createMaskSlack(dd_conditional_sub, currS._hmBoolVars, currS._hmContVars, context.POS_INF, STATE_PRECISION);		
 		
 		// Check cache
 		_contRegrKey.set(var_id, dd_conditional_sub, q);
@@ -383,7 +383,7 @@ public class CRTDP extends CAMDPsolver {
 		Integer dd_cpf = a._hmVar2DD.get(var);
 		
 		//MaskTransitions not from current state
-		dd_cpf = context.createPosInfMask(dd_cpf, currS._hmBoolVars, currS._hmContVars);
+		dd_cpf = context.createMaskSlack(dd_cpf, currS._hmBoolVars, currS._hmContVars, context.ZERO, STATE_PRECISION);
 		_logStream.println("- Summing out: " + var + "/" + var_id /*+ " in\n" + _context.getString(dd_cpf)*/);
 		q = context.apply(q, dd_cpf, XADD.PROD);
 		
@@ -393,7 +393,7 @@ public class CRTDP extends CAMDPsolver {
 		int restrict_high = context.opOut(q, var_id, XADD.RESTRICT_HIGH);
 		int restrict_low  = context.opOut(q, var_id, XADD.RESTRICT_LOW);
 		q = context.apply(restrict_high, restrict_low, XADD.SUM);
-
+		q = context.createMaskSlack(q, currS._hmBoolVars, currS._hmContVars, context.POS_INF, STATE_PRECISION);
 		_logStream.println("-->: " + context.getString(q));
 
 		return q;

@@ -351,6 +351,7 @@ public class VI extends CAMDPsolver {
 		}
 		if (mdp.DISPLAY_3D){
 			for(int i=1; i<=nIter; i++){
+				//System.out.println(" Tree "+solutionDDList[i]);
 				save3D(solutionDDList[i], String.format("VI-Value%d", i) );
 				saveGraph(solutionDDList[i], String.format("VI-Value%d", i) );
 			}

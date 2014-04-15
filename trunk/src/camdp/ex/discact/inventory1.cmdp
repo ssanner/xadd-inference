@@ -47,4 +47,5 @@ endaction
 discount 1.00000000
 initialState (0.0) (false)
 iterations 12
-
+LINEAR
+MAXREWARD 0.0

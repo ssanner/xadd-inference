@@ -34,14 +34,15 @@ import xadd.XADD.XADDINode;
 public class ReduceLPContext {
     //ReduceLP Flags
     private final static boolean DEFAULT_CHECK_REDUNDANCY = false;//true; // Test only consistency or also redundancy
-    private final static boolean USE_REDUCE_LPv1 = true;//false; //maplist, full redundancy older version
-    private final static boolean USE_REDUCE_LPv2 = false;//true; //hashSet, result implied redundancy new version
+    private final static boolean USE_REDUCE_LPv1 = false;//false; //maplist, full redundancy older version
+    private final static boolean USE_REDUCE_LPv2 = true;//true; //hashSet, result implied redundancy new version
     private final static boolean SKIP_TEST2 = false; //Skip Minimal region removal
     public static final boolean SINGLE_PATH_IMPLIED_RESULT = false; //Stop search if need to check more than one path
 
     private static final boolean ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP = false; //Add bounds as explicit constraints (should not be necessary)
     //Debug Flags
     public final static boolean DEBUG_CONSTRAINTS = false;
+    public final static boolean QUIET = true;
 
     //ReduceLP Constants
     private static final double IMPLIED_PRECISION = 1e-4; //Precision for removing unreliably feasible constraints
@@ -560,7 +561,7 @@ public class ReduceLPContext {
 
         //Redundancy simplification 2 - search for node check if one node is the impliedResult on the other branch.
         // The complete test (v3?) would be to test if one subtree can replace the other (considering the decision to be removed) - requires
-        // am XADD equavalence underconstraints test.
+        // am XADD equivalence under constraints test.
         //Call to check if given the test_dec decisions subtree always reaches "goal", which means that
         // if the node above the subtree is chosing between subtree or goal, we can leave subtree in its place (it will reach still
         // reach goal whenever the first decision would take it to goal.
@@ -711,8 +712,10 @@ public class ReduceLPContext {
             double maxSlack = lp2._dObjValue;
 
             if (lp2._status == LpSolve.INFEASIBLE) {
-                System.err.println("Infeasible at test 2? should have failed the first test!");
-                showDecListEval(test_dec, soln);
+                if (!QUIET){
+                	System.err.println("Infeasible at test 2? should have failed the first test!");
+                	showDecListEval(test_dec, soln);
+                }
                 infeasible = true;
             } else if (maxSlack < IMPLIED_PRECISION) {
                 if (DEBUG_CONSTRAINTS) {

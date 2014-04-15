@@ -31,6 +31,7 @@ public class Main {
     }
 
     public static void main(String args[]) {
+    	System.out.println("Main Solution Start:");
     	int nargs = args.length;
         if (nargs < 5 || nargs >6) {
             Usage();
