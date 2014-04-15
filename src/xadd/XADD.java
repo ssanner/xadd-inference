@@ -150,6 +150,10 @@ public class XADD {
         RLPContext = new ReduceLPContext(this);
     }
 
+    public int createDoubleNode(double d){
+    	return getTermNode(new ExprLib.DoubleExpr(d));
+    }
+    
     public void createStandardNodes() {
         ZERO = getTermNode(ExprLib.ZERO);
         ONE = getTermNode(ExprLib.ONE);
@@ -879,6 +883,19 @@ public class XADD {
         }
         return null;
     }
+
+    public Boolean evaluateDecisionSlack(Decision d, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign, double slack) {
+        if (d instanceof TautDec)
+            return ((TautDec) d)._bTautology;
+        else if (d instanceof BoolDec)
+            return bool_assign.get(((BoolDec) d)._sVarName);
+        else if (d instanceof ExprDec) {
+        	if (SHOW_DECISION_EVAL) { System.out.println(" - " + ((ExprDec) d)._expr + ": " + ((ExprDec) d)._expr.evaluate(cont_assign));}
+        	return  ((ExprDec) d)._expr.evaluate(cont_assign, slack);            
+        }
+        return null;
+    }
+
     
     public Double evaluate(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign) {
         // Get root
@@ -1574,9 +1591,9 @@ public class XADD {
     // 			Mask Functions			 //
     ///////////////////////////////////////    
 	
-    public Integer createPosInfMask(Integer id,
+    public Integer createMask(Integer id,
 			HashMap<String, Boolean> bool_assign,
-			HashMap<String, Double> cont_assign) {
+			HashMap<String, Double> cont_assign, Integer mask_id) {
 
     		XADDNode n = getExistNode(id);
 
@@ -1587,17 +1604,74 @@ public class XADD {
                 
                 //Not all required variables were assigned
                 if (branch_high == null){
-                	return getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), createPosInfMask(inode._high, bool_assign, cont_assign));
+                	return getINode(inode._var, createMask(inode._low, bool_assign, cont_assign, mask_id), 
+                			createMask(inode._high, bool_assign, cont_assign,mask_id));
                 }
                 
                 // Advance down to next node
-                return branch_high ? getINode(inode._var, POS_INF, createPosInfMask(inode._high, bool_assign, cont_assign)):
-                					 getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), POS_INF);
+                return branch_high ? getINode(inode._var, mask_id, createMask(inode._high, bool_assign, cont_assign,mask_id)):
+                					 getINode(inode._var, createMask(inode._low, bool_assign, cont_assign,mask_id), mask_id);
             }
     		
             // else id is a TNode, trivial mask
             return id;
     }
+
+    public Integer createMaskSlack(Integer id,
+			HashMap<String, Boolean> bool_assign,
+			HashMap<String, Double> cont_assign, Integer mask_id, double slack) {
+
+    		XADDNode n = getExistNode(id);
+
+            // Traverse decision diagram until terminal found
+    		if (n instanceof XADDINode) {
+                XADDINode inode = (XADDINode) n;
+                Boolean branch_high = evaluateDecisionSlack(_alOrder.get(inode._var), bool_assign, cont_assign, slack);
+                
+                //Not all required variables were assigned
+                if (branch_high == null){
+                	return getINode(inode._var, createMaskSlack(inode._low, bool_assign, cont_assign, mask_id, slack), 
+                			createMaskSlack(inode._high, bool_assign, cont_assign,mask_id, slack));
+                }
+                
+                // Advance down to next node
+                return branch_high ? getINode(inode._var, mask_id, createMaskSlack(inode._high, bool_assign, cont_assign,mask_id,slack)):
+                					 getINode(inode._var, createMaskSlack(inode._low, bool_assign, cont_assign,mask_id,slack), mask_id);
+            }
+    		
+            // else id is a TNode, trivial mask
+            return id;
+    }    
+//    public Integer createPosInfMask(Integer id,HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign){
+//    	return createMask(id, bool_assign, cont_assign, POS_INF);
+//    }
+    
+//    public Integer createPosInfMask(Integer id,
+//			HashMap<String, Boolean> bool_assign,
+//			HashMap<String, Double> cont_assign) {
+//
+//    		XADDNode n = getExistNode(id);
+//
+//            // Traverse decision diagram until terminal found
+//    		if (n instanceof XADDINode) {
+//                XADDINode inode = (XADDINode) n;
+//                Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
+//                
+//                //Not all required variables were assigned
+//                if (branch_high == null){
+//                	return getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), createPosInfMask(inode._high, bool_assign, cont_assign));
+//                }
+//                
+//                // Advance down to next node
+//                return branch_high ? getINode(inode._var, POS_INF, createPosInfMask(inode._high, bool_assign, cont_assign)):
+//                					 getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), POS_INF);
+//            }
+//    		
+//            // else id is a TNode, trivial mask
+//            return id;
+//    }
+
+    
     
     ///////////////////////////////////////
     // 			Helper Classes 			 //

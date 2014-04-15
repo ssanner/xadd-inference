@@ -550,26 +550,32 @@ public abstract class ExprLib {
         }
 
         public Boolean evaluate(HashMap<String, Double> cont_assign) {
+        	return evaluate(cont_assign, 0.0);
+        }
 
+        public Boolean evaluate(HashMap<String, Double> cont_assign, double slack) {
             Double dval_lhs = _lhs.evaluate(cont_assign);
             Double dval_rhs = _rhs.evaluate(cont_assign);
-
+            
             if (dval_lhs == null || dval_rhs == null)
                 return null;
 
+            Double dif = dval_lhs - dval_rhs;
             switch (_type) {
                 case EQ:
-                    return (dval_lhs == dval_rhs);
+                    return (dif == 0.0);
                 case NEQ:
-                    return (dval_lhs != dval_rhs);
+                	return (dif != 0.0);
                 case GT:
-                    return (dval_lhs > dval_rhs);
+                	if (Math.abs(dif) < slack) return null;
+                    return (dif > 0);
                 case GT_EQ:
-                    return (dval_lhs >= dval_rhs);
+                    return (dif > -slack);
                 case LT:
-                    return (dval_lhs < dval_rhs);
+                	if (Math.abs(dif) < slack) return null;
+                	return (dif < 0);
                 case LT_EQ:
-                    return (dval_lhs <= dval_rhs);
+                    return (dif < slack);
                 default:
                     return null;
             }
@@ -1644,7 +1650,7 @@ public abstract class ExprLib {
                     Double dif = this._dConstVal - d._dConstVal;
                     if ((Double.isInfinite(dif) ||
                             Double.isNaN(dif))) return false;
-                    return Math.abs(this._dConstVal - d._dConstVal) < XADD.PRECISION;
+                    return Math.abs(dif) < XADD.PRECISION;
                 }
             } else
                 return false;

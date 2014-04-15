@@ -32,6 +32,7 @@ public abstract class CAMDPsolver {
 	
 	/*General Solution Parameter*/
 	public final boolean ENABLE_EARLY_CONVERGENCE = false;
+	public final double STATE_PRECISION = 1e-12;
 	
 	/* Approximation Parameters */
 	public boolean APPROXIMATION = false;
@@ -58,6 +59,7 @@ public abstract class CAMDPsolver {
 	public PrintStream _logStream = null;
 	public PrintStream _resultStream = null;	
 	public final static String ASCII_BAR = "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"; // Display shortcut
+	private static final int MAX_GRAPH_NODES = 700;
 	
 	/* Time & Memory Management */
 	public final static int nTimers = 8;
@@ -250,10 +252,9 @@ public abstract class CAMDPsolver {
 			MAIN_DEBUG = true;
 			PERFORMANCE_TEST = true;
 		}
-		if (verb >=2) PLOT_DD = true;
-		if (verb >=3) DEEP_DEBUG = true;
-		if (verb >=4) VALIDATION_TEST = true;
-		if (verb >=5) PRINT_DD = true;
+		if (verb >=2) DEEP_DEBUG = true;
+		if (verb >=3) VALIDATION_TEST = true;
+		if (verb >=4) PLOT_DD = true;
 		
 	}
 	
@@ -261,7 +262,14 @@ public abstract class CAMDPsolver {
     public void makeResultStream(){
 		int filenamestart = mdp._problemFile.lastIndexOf('/');
 		String filename = mdp._problemFile.substring(filenamestart,mdp._problemFile.length()-5);
-		String problemType = mdp.LINEAR_PROBLEM? mdp.CONTINUOUS_ACTIONS? "/contact": "/discact": "/discactnonlin"; 
+		String problemType = 
+				(mdp._initialS == null)? 
+					mdp.LINEAR_PROBLEM?
+						mdp.CONTINUOUS_ACTIONS?
+							"/contact":
+						"/discact":
+					"/discactnonlin":
+				"/initialstate";
 		OUTPUT_DIR = RESULTS_DIR + problemType + filename;
 		
 		//System.out.println("testing filename:" + OUTPUT_DIR + "/" + _solveMethod + ".rslt");
@@ -393,6 +401,8 @@ public abstract class CAMDPsolver {
                 float y = alY.get(j);
                 static_dvars.put(xVar, (double) x);
                 static_dvars.put(yVar, (double) y);
+                //System.out.println("DD: "+xadd_id+ " Vars"+static_bvars+"d"+static_dvars);
+                context.evaluate(xadd_id, static_bvars, static_dvars);
                 float z = context.evaluate(xadd_id, static_bvars, static_dvars).floatValue();
                 if (Float.isInfinite(z)) z = Float.NaN;
                 static_dvars.remove(xVar);
@@ -407,7 +417,17 @@ public abstract class CAMDPsolver {
         ps.close();
     }
 	public void saveGraph(int xadd_id, String label) {
-        Graph g = context.getGraph(xadd_id);
+		Graph g;
+		if (context.getNodeCount(xadd_id)< MAX_GRAPH_NODES)
+			g = context.getGraph(xadd_id);
+		else {
+			g = new Graph();
+			g.addNode("_warn_");
+	        g.addNodeLabel("_warn_", "Too many Nodes to plot Graph");
+	        g.addNodeShape("_warn_", "box");
+	        g.addNodeStyle("_warn_", "filled");
+	        g.addNodeColor("_warn_", "red1");
+		}
         g.addNode("_temp_");
         g.addNodeLabel("_temp_", label);
         g.addNodeShape("_temp_", "square");
