@@ -3,8 +3,6 @@ package hgm.poly.pref;
 import hgm.poly.ConstrainedPolynomial;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.integral.PiecewiseOffset1DPolynomial;
-import hgm.poly.vis.FunctionVisualizer;
-import hgm.sampling.SamplingFailureException;
 import hgm.sampling.gibbs.integral.Interval;
 
 import java.util.Arrays;
@@ -17,19 +15,19 @@ import java.util.List;
  * <p/>
  * This version chooses gating variables
  */
-public class CleverGatedGibbsPolytopesSampler extends AbstractPolytopesSampler {
+public class TargetedGatedGibbsPolytopesSampler extends AbstractPolytopesSampler {
     static final double minuscule = GPolyPreferenceLearning.C / (double) 1000000;
 
-    public static CleverGatedGibbsPolytopesSampler makeCleverGibbsSampler(PolytopesHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
+    public static TargetedGatedGibbsPolytopesSampler makeCleverGibbsSampler(PosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
         int varNum = gph.getPolynomialFactory().getAllVars().length;
         double[] cVarMins = new double[varNum];
         double[] cVarMaxes = new double[varNum];
         Arrays.fill(cVarMins, minForAllVars);
         Arrays.fill(cVarMaxes, maxForAllVars);
-        return new CleverGatedGibbsPolytopesSampler(gph, cVarMins, cVarMaxes, reusableInitialSample);
+        return new TargetedGatedGibbsPolytopesSampler(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 
-    public CleverGatedGibbsPolytopesSampler(PolytopesHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
+    public TargetedGatedGibbsPolytopesSampler(PosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
         super(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 

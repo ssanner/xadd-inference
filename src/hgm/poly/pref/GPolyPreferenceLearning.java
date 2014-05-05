@@ -1,12 +1,15 @@
 package hgm.poly.pref;
 
 import hgm.poly.ConstrainedPolynomial;
+import hgm.poly.PiecewisePolynomial;
 import hgm.poly.Polynomial;
 import hgm.poly.PolynomialFactory;
+import hgm.poly.bayesian.BayesianPosteriorHandler;
 import hgm.preference.Preference;
 import hgm.preference.db.PreferenceDatabase;
 import hgm.sampling.VarAssignment;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -32,7 +35,7 @@ public class GPolyPreferenceLearning {
 
     private String weightVectorName;
 
-//    private double epsilon;
+    //    private double epsilon;
     private PolynomialFactory factory;
 
     public GPolyPreferenceLearning(PreferenceDatabase db, double indicatorNoise, String weightVectorName) {
@@ -40,7 +43,8 @@ public class GPolyPreferenceLearning {
         this.db = db;
         this.weightVectorName = weightVectorName;
 
-        if (indicatorNoise>0.5 || indicatorNoise<0.0) System.err.println("indicator noise should be in [0, 0.5] to make sense.");
+        if (indicatorNoise > 0.5 || indicatorNoise < 0.0)
+            System.err.println("indicator noise should be in [0, 0.5] to make sense.");
 //        if (indicatorNoise >= 1 || indicatorNoise < 0.0) System.err.println("indicator noise should be in [0, 1) to make sense.");
         this.indicatorNoise = indicatorNoise;
 
@@ -60,119 +64,16 @@ public class GPolyPreferenceLearning {
         return factory;
     }
 
-    /* public int computeItemWithMaxExpectedUtilityVersion1(XADD.XADDNode utilityWeights*//*, String weightVectorName*//*) {
-        // in this version, the expression "int_w Pr(w|R^n)[\sum_d=1^D (w_d x_d)] dw"  is calculated for each X=[x_0, ...x_{D-1}] separately
-        int chosenItemId = -1;
-        double maxUtil = Double.NEGATIVE_INFINITY;
-        for (int itemId = 0; itemId < db.getNumberOfItems(); itemId++) {
-            Double[] item = db.getItemAttributeValues(itemId);
-            double itemUtil = expectedItemUtility(item, utilityWeights, *//*weightVectorName,*//* false);
-            System.out.println("itemUtil of item #" + itemId + ": " + itemUtil);
-            if (itemUtil > maxUtil) {
-                maxUtil = itemUtil;
-                chosenItemId = itemId;
-            }
-        }
-        return chosenItemId;
-    }*/
-
-   /* *//**
-     *//*
-    public int computeItemWithMaxExpectedUtilityVersion2(XADD.XADDNode utilityWeights *//*posterior*//*,
-                                                        *//* String weightVectorName,*//* String itemAttributesVectorName) {
-        // in this version, the expression "int_w Pr(w|R^n)[\sum_d=1^D (w_d x_d)] dw"  is calculated parametrically
-        // so both W=[w_0, ..., w_{D-1}] and X=[x_0, ..., x_{D-1}] are parameters...
-        XADD.XADDNode parametricExpectedUtil = parametricExpectedItemUtility(utilityWeights, *//*weightVectorName,*//*
-                itemAttributesVectorName, db.getNumberOfAttributes(), false);
-        int paramExpectedUtilNodeId = context._hmNode2Int.get(parametricExpectedUtil);
-
-        int chosenItemId = -1;
-        double maxUtil = Double.NEGATIVE_INFINITY;
-        HashMap<String, Double> assignment = new HashMap<String, Double>(db.getNumberOfAttributes());
-        for (int itemId = 0; itemId < db.getNumberOfItems(); itemId++) {
-
-            //make a an assignment out of item attributes:
-            Double[] item = db.getItemAttributeValues(itemId);
-            for (int i = 0; i < item.length; i++) {
-                assignment.put(itemAttributesVectorName + "_" + i, item[i]);    //x_i <-> item[i]
-            }
-
-
-            //todo: IMPORTANT: Only works for the case where nothing is boolean.....
-            double itemExpectedUtil = context.evaluate(paramExpectedUtilNodeId, null, assignment);
-//            System.out.println("Expected itemUtil of item #" + itemId + ": " + itemExpectedUtil);
-            if (itemExpectedUtil > maxUtil) {
-                maxUtil = itemExpectedUtil;
-                chosenItemId = itemId;
-            }
-        }
-        return chosenItemId;
-    }*/
-
-/*
-    public XADD.XADDNode parametricExpectedItemUtility(XADD.XADDNode utilityWeights */
-/*posterior*//*
-,
-                                                       */
-/*String weightVectorName,*//*
- String itemAttributesVectorName,
-                                                       int vectorDimension, boolean plotGraph) {
-        String itemUtilStr = "([" + parametricItemUtility(weightVectorName, itemAttributesVectorName, vectorDimension) + "])";
-        XADD.XADDNode itemUtil = context.getExistNode(context.buildCanonicalXADDFromString(itemUtilStr));
-        XADD.XADDNode expectedItemUtilForGivenW = multiply(utilityWeights, itemUtil); //P(W|R^n)[sum(w_d . x_d)] (W not marginalized yet)
-
-        if (plotGraph) context.getGraph(context._hmNode2Int.get(expectedItemUtilForGivenW)).launchViewer();
-
-        //marginalize all w_i:
-        int expectedItemUtilNodeId = context._hmNode2Int.get(expectedItemUtilForGivenW);
-        for (int i = 0; i < vectorDimension; i++) {
-            String w_i = weightVectorName + "_" + i;
-            expectedItemUtilNodeId = context.computeDefiniteIntegral(expectedItemUtilNodeId, w_i);
-        }
-        return context._hmInt2Node.get(expectedItemUtilNodeId);
-    }
-*/
-
-  /*  public double expectedItemUtility(Double[] item, XADD.XADDNode utilityWeights*//*, String weightVectorName*//*, boolean plotGraph) {
-        String itemUtilStr = "([" + itemUtilityStr(weightVectorName, item) + "])";
-//        System.out.println("itemUtilStr = " + itemUtilStr);
-        XADD.XADDNode itemUtil = context.getExistNode(context.buildCanonicalXADDFromString(itemUtilStr));
-        XADD.XADDNode expectedItemUtilForGivenW = multiply(utilityWeights, itemUtil); //P(W|R^n)[sum(w_d . x_d)] (W not marginalized yet)
-
-        if (plotGraph) context.getGraph(context._hmNode2Int.get(expectedItemUtilForGivenW)).launchViewer();
-
-        //marginalize all w_i:
-        int expectedItemUtilNodeId = context._hmNode2Int.get(expectedItemUtilForGivenW);
-        for (int i = 0; i < item.length; i++) {
-            String w_i = weightVectorName + "_" + i;
-            expectedItemUtilNodeId = context.computeDefiniteIntegral(expectedItemUtilNodeId, w_i);
-        }
-        return context.evaluate(expectedItemUtilNodeId, new HashMap<String, Boolean>() *//*EMPTY_BOOL*//*, new HashMap<String, Double>()*//*EMPTY_DOUBLE*//*);
-    }*/
-
-
-    public PolytopesHandler computePosteriorWeightVector(int maxGatingConditionViolation){
-    return computePrefPosteriorWeightVector(db.getPreferenceResponses(), maxGatingConditionViolation);
+    public PosteriorHandler computePosteriorWeightVector(int maxGatingConditionViolation) {
+        return computePrefPosteriorWeightVector(db.getPreferenceResponses(), maxGatingConditionViolation);
     }
 
     //Pr(W | R^n)
-    private PolytopesHandler computePrefPosteriorWeightVector(List<Preference> preferenceResponses,
-                                                           int maxGatingConditionViolation) {
+    private PosteriorHandler computePrefPosteriorWeightVector(List<Preference> preferenceResponses,
+                                                              int maxGatingConditionViolation) {
 
-
-        int numAttribs = factory.numberOfVars(); //db.getNumberOfAttributes();
-//        XADD.XADDNode[] pWeights = new XADD.XADDNode[numAttribs];
-
-        //1. prior: pr(W)
-        String[] constraints = new String[numAttribs*2];
-        for (int i = 0; i < factory.numberOfVars(); i++) {
-            String w_i = weightVectorName + "_" + i;
-            constraints[2*i] = w_i + "^(1) + " + C + ">0";
-            constraints[2*i + 1] = "-1*" + w_i + "^(1) + " + C + ">0";
-        }
-
-        ConstrainedPolynomial prior = factory.makeConstrainedPolynomial("1", constraints);
-        PolytopesHandler gatedPolytopes = new PolytopesHandler(factory, prior, indicatorNoise, maxGatingConditionViolation);
+        ConstrainedPolynomial prior = computePrior();
+        PosteriorHandler gatedPolytopes = new PosteriorHandler(factory, prior, indicatorNoise, maxGatingConditionViolation);
 
         for (Preference prefResponse : preferenceResponses) {
             // Pr(q_{ab} | W):
@@ -183,6 +84,46 @@ public class GPolyPreferenceLearning {
         return gatedPolytopes;
     }
 
+    //NEW: this method is to testing the more general Bayesian posterior handler:
+    //Pr(W | R^n)
+    public BayesianPosteriorHandler computeBayesianPrefPosterior() {
+
+        ConstrainedPolynomial prior = computePrior();
+
+//        PosteriorHandler gatedPolytopes = new PosteriorHandler(factory, prior, indicatorNoise, maxGatingConditionViolation);
+        BayesianPosteriorHandler gatedPolytopes = new BayesianPosteriorHandler(factory, prior);
+
+        for (Preference prefResponse : db.getPreferenceResponses()) {
+            // Pr(q_{ab} | W):
+            Polynomial likelihoodPositiveConstraint = computePreferenceLikelihoodPositiveConstraintGivenUtilityWeights(prefResponse);
+            Polynomial posPoly = factory.makePolynomial(Double.toString(1 - indicatorNoise));
+            Polynomial negPoly = factory.makePolynomial(Double.toString(indicatorNoise));
+            ConstrainedPolynomial posCase = new ConstrainedPolynomial(posPoly, Arrays.asList(likelihoodPositiveConstraint));
+
+            Polynomial likelihoodNegativeConstraint = likelihoodPositiveConstraint.clone();
+            likelihoodNegativeConstraint.multiplyScalarInThis(-1);
+            ConstrainedPolynomial negCase = new ConstrainedPolynomial(negPoly, Arrays.asList(likelihoodNegativeConstraint));
+
+            PiecewisePolynomial likelihood = new PiecewisePolynomial(Arrays.asList(posCase, negCase));
+            gatedPolytopes.addLikelihood(likelihood);
+        }
+
+        return gatedPolytopes;
+    }
+    //--------------------------------------------------------------------------
+
+    private ConstrainedPolynomial computePrior() {
+        int numAttribs = factory.numberOfVars();
+        //1. prior: pr(W)
+        String[] constraints = new String[numAttribs * 2];
+        for (int i = 0; i < factory.numberOfVars(); i++) {
+            String w_i = weightVectorName + "_" + i;
+            constraints[2 * i] = w_i + "^(1) + " + C + ">0";
+            constraints[2 * i + 1] = "-1*" + w_i + "^(1) + " + C + ">0";
+        }
+
+        return factory.makeConstrainedPolynomial("1", constraints);
+    }
 
 
 
@@ -221,8 +162,6 @@ public class GPolyPreferenceLearning {
         u2.multiplyScalarInThis(-1);
         u1.addToThis(u2);
         return u1;
-
-
     }
 
     //sum(x_i . w_i) where i = 0 to numAttribs - 1
@@ -235,7 +174,6 @@ public class GPolyPreferenceLearning {
         sumW_iXx_i.deleteCharAt(sumW_iXx_i.length() - 1); //delete last '+'
         return sumW_iXx_i.toString();
     }
-
 
 
     //sum(x_i . w_i) where i = 0 to (dimension - 1)

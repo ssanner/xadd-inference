@@ -1,5 +1,6 @@
 package hgm.poly.pref;
 
+import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.sampling.SamplingUtils;
 import hgm.poly.vis.FunctionVisualizer;
 import hgm.preference.Choice;
@@ -71,25 +72,30 @@ public class GPolyPreferenceLearningTest {
     @Test
     public void basicTest() throws FileNotFoundException {
 
-        GPolyPreferenceLearning learning = new GPolyPreferenceLearning(testDB1, 0.1, "w");
+        GPolyPreferenceLearning learning = new GPolyPreferenceLearning(testDB1, 0.3, "w");
 
         // Pr(W | R^{n+1})
-        PolytopesHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
+        PosteriorHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
 //        fixVarLimits(context, utilityWeights, -30d, 60d);
 
-        FunctionVisualizer.visualize(posterior, -30d, 60d, 0.5, "Poly");
+        FunctionVisualizer.visualize(posterior, -15d, 15d, 0.5, "Poly");
+        FunctionVisualizer.save3DSurf(posterior, -20, 20, -20, 20, 0.5, SAMPLES_FILE_PATH + "synthetic");
 
 
         //now I sample from it:
-        GatedGibbsPolytopesSampler sampler = GatedGibbsPolytopesSampler.makeGibbsSampler(posterior, -GPolyPreferenceLearning.C - 10, GPolyPreferenceLearning.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
-        GatedGibbsPolytopesSampler.DEBUG = false;
+        SamplerInterface sampler =
+//                GatedGibbsPolytopesSampler.makeGibbsSampler(posterior, -GPolyPreferenceLearning.C - 10, GPolyPreferenceLearning.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
+                SymbolicGibbsPolytopesSampler.makeSampler(posterior, -GPolyPreferenceLearning.C - 10, GPolyPreferenceLearning.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
+
+
+//        GatedGibbsPolytopesSampler.DEBUG = false;
         for (int i = 0; i < 2; i++) {
             Double[] assign = sampler.sample();
             System.out.println("t = " + Arrays.toString(assign));
         }
 
         long t1 = System.currentTimeMillis();
-        GatedGibbsPolytopesSampler.DEBUG = false;
+//        GatedGibbsPolytopesSampler.DEBUG = false;
         SamplingUtils.save2DSamples(sampler, 10000, SAMPLES_FILE_PATH + "scatterGibbs");
         long t2 = System.currentTimeMillis();
         System.out.println("Time: "+ (t2-t1) + " \t That was all the folk!");
@@ -101,15 +107,15 @@ public class GPolyPreferenceLearningTest {
         GPolyPreferenceLearning learning = new GPolyPreferenceLearning(testDB1, 0.1, "w");
 
         // Pr(W | R^{n+1})
-        PolytopesHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
+        PosteriorHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
 //        fixVarLimits(context, utilityWeights, -30d, 60d);
 
         FunctionVisualizer.visualize(posterior, -30d, 60d, 0.5, "Poly");
 
 
         //now I sample from it:
-        CleverGatedGibbsPolytopesSampler sampler = CleverGatedGibbsPolytopesSampler.makeCleverGibbsSampler(posterior, -GPolyPreferenceLearning.C - 10, GPolyPreferenceLearning.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
-        CleverGatedGibbsPolytopesSampler.DEBUG = false;
+        TargetedGatedGibbsPolytopesSampler sampler = TargetedGatedGibbsPolytopesSampler.makeCleverGibbsSampler(posterior, -GPolyPreferenceLearning.C - 10, GPolyPreferenceLearning.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
+        TargetedGatedGibbsPolytopesSampler.DEBUG = false;
         for (int i = 0; i < 2; i++) {
             Double[] assign = sampler.sample();
             System.out.println("t = " + Arrays.toString(assign));

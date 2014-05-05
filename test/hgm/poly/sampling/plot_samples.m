@@ -3,7 +3,7 @@
 current_path = [current_path, '\'];
 
 % parsing info file:
-data = load([current_path, 'scatterGibbs.txt']); %'scatter2D.txt']);
+data = load([current_path, 'scatter2D.txt']);%'scatterGibbs.txt']); %'scatter2D.txt']);
 
 vis = 'on';
 figure('visible', vis);

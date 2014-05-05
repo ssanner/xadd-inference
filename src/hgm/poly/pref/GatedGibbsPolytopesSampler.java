@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class GatedGibbsPolytopesSampler extends AbstractPolytopesSampler {
 
-    public static GatedGibbsPolytopesSampler makeGibbsSampler(PolytopesHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
+    public static GatedGibbsPolytopesSampler makeSampler(PosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
         int varNum = gph.getPolynomialFactory().getAllVars().length;
         double[] cVarMins = new double[varNum];
         double[] cVarMaxes = new double[varNum];
@@ -23,7 +23,7 @@ public class GatedGibbsPolytopesSampler extends AbstractPolytopesSampler {
         return new GatedGibbsPolytopesSampler(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 
-    public GatedGibbsPolytopesSampler(PolytopesHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
+    public GatedGibbsPolytopesSampler(PosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
         super(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 
@@ -33,6 +33,7 @@ public class GatedGibbsPolytopesSampler extends AbstractPolytopesSampler {
         //todo: important: it is wrong to sample from all variables in the factory.... One should only sample from the variables in the cp
 
         List<Boolean> gateMask = gph.adjustedReusableGateActivationMask(reusableVarAssign);
+
 
         //I choose 2 (or later on at least 2) constraint polytopes by choosing a single gate variable
         int chosenGateVarIndex = random.nextInt(gateMask.size()/*exclusive*/);

@@ -1,10 +1,14 @@
 package hgm.poly.pref.reports;
 
+import hgm.ModelDatabase;
 import hgm.asve.Pair;
+import hgm.poly.bayesian.*;
 import hgm.poly.integral.OneDimFunction;
+import hgm.poly.market.BayesianMarketMakingModel;
+import hgm.poly.market.DummyMarketMakingDatabase;
+import hgm.poly.market.MarketMakingDatabase;
 import hgm.poly.pref.*;
 import hgm.poly.pref.reports.db.SyntheticDistributionUtils;
-import hgm.poly.sampling.PolyGibbsSampler;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.vis.FunctionVisualizer;
 import hgm.preference.Choice;
@@ -33,13 +37,15 @@ import java.util.*;
  */
 //todo complete this file..............
 public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
-    public static final String REPORT_PATH = "./test/hgm/poly/pref/reports/";
+    public static final String REPORT_PATH =
+            //"./test/hgm/poly/pref/reports/";
+    "E:/REPORT_PATH/";
 
     public static boolean DEBUG = false;
 
     public static void main(String[] args) throws IOException {
         ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB instance = new ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB();
-        instance.bigNewTest();
+        instance.nipsTest();
     }
 
     @Test
@@ -68,7 +74,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
         double indicatorNoise = 0.1;
         boolean reduceLP = true;
         double relativeLeafValueBelowWhichRegionsAreTrimmed = -0.01;
-        int burnedSamples = 100;
+        int burnedSamples = 10;
         Integer maxGateConstraintViolation = Integer.MAX_VALUE;
         int[] numberOfSamplesArray = new int[]{100 + burnedSamples, 500 + burnedSamples, 10000 + burnedSamples}; // 100 for burn in
 
@@ -99,7 +105,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
                                 public XaddSampler makeNewSampler(XADD context,
                                                                   XADD.XADDNode posterior,
                                                                   VarAssignment initAssignment) {
-                                    return new MetropolisHastingsSampler(context, posterior,
+                                    return new XaddBasedMetropolisHastingsSampler(context, posterior,
                                             null/*initAssignment*/);
                                 }
                             }), new Pair<String, PreferenceLearningPredictor>("rej",
@@ -112,7 +118,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
                                 public XaddSampler makeNewSampler(XADD context,
                                                                   XADD.XADDNode posterior,
                                                                   VarAssignment initAssignment) {
-                                    return new RejectionSampler(context, posterior,
+                                    return new XaddBasedRejectionSampler(context, posterior,
                                             null/*initAssignment*/, 1);
                                 }
                             })
@@ -293,18 +299,71 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
         maps.get(name).add(val);
     }
 
+    //MM:
+    final static double mm_epsilon = PreferenceLearning.C / 10.0; //todo: deal with this
+
     ///////////////     T E S T S     A F T E R    U A I   D E A D L I N E
     ///////////////////////////////////////////////////// /\  /////////////////////////////////////////////////////
     ///////////////////////////////////////////////////// ||  /////////////////////////////////////////////////////
     //////////////////////////////////////////////////// /  \ /////////////////////////////////////////////////////
     interface Db2Sampler {
-        SamplerInterface createSampler(PreferenceDatabase db);
-
         String getName();
+
+        SamplerInterface createSampler(ModelDatabase db);
     }
 
+    abstract class Db2SamplerBPPL implements Db2Sampler {
+        @Override
+        public SamplerInterface createSampler(ModelDatabase db) {
+            if (!(db instanceof PreferenceDatabase)) throw new RuntimeException("Pre. Db. required...");
+            return createSamplerBPPL((PreferenceDatabase) db);
+        }
+
+        abstract SamplerInterface createSamplerBPPL(PreferenceDatabase db);
+    }
+
+    abstract class Db2SamplerBayesianBPPL extends Db2SamplerBPPL {
+        double indicatorNoise;
+
+        protected Db2SamplerBayesianBPPL(double indicatorNoise) {
+            this.indicatorNoise = indicatorNoise;
+        }
+
+        @Override
+        SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
+            GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
+
+            // Pr(W | R^{n+1})
+            BayesianPosteriorHandler posterior = learning.computeBayesianPrefPosterior();
+//                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
+
+            return createSamplerBPPL(posterior);
+        }
+
+        abstract SamplerInterface createSamplerBPPL(BayesianPosteriorHandler posterior);
+    }
+
+    abstract class Db2SamplerMMM implements Db2Sampler {
+        @Override
+        public SamplerInterface createSampler(ModelDatabase db) {
+            if (!(db instanceof MarketMakingDatabase)) throw new RuntimeException("MM. Db. required...");
+
+            BayesianMarketMakingModel model =
+                    new BayesianMarketMakingModel(BayesianMarketMakingModel.uniformInHypercube(GPolyPreferenceLearning.C),
+                            (MarketMakingDatabase) db, mm_epsilon, "v");   //todo change prior....
+
+            // Pr(V | R^{n+1})
+            BayesianPosteriorHandler posterior = model.computeBayesianPosterior();
+            return createSamplerMMM(posterior);
+        }
+
+        abstract SamplerInterface createSamplerMMM(BayesianPosteriorHandler posterior);
+    }
+
+
     @Test
-    public void bigNewTest() throws FileNotFoundException {
+    public void nipsTest() throws FileNotFoundException {
+        //BPPL:
         final double indicatorNoise = 0.4;
         final int maxGatingConditionViolation = Integer.MAX_VALUE;
 
@@ -328,17 +387,10 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
             }
         };*/
         //----------------------------------------------------------------------------------------------
-        Db2Sampler gPolyDb2Sampler = new Db2Sampler() {
+        Db2SamplerBPPL gatedBayesianDb2SamplerBPPL = new Db2SamplerBayesianBPPL(indicatorNoise) {
             @Override
-            public SamplerInterface createSampler(PreferenceDatabase db) {
-                GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
-
-                // Pr(W | R^{n+1})
-                PolytopesHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
-//                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
-
-                //now I sample from it:
-                SamplerInterface sampler = GatedGibbsPolytopesSampler.makeGibbsSampler(posterior, //todo rejection based sampling should be used instead...
+            SamplerInterface createSamplerBPPL(BayesianPosteriorHandler posterior) {
+                SamplerInterface sampler = GatedGibbsBayesianSampler.makeSampler(posterior,
                         -GPolyPreferenceLearning.C,
                         GPolyPreferenceLearning.C, null);
 
@@ -347,21 +399,42 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
             @Override
             public String getName() {
-                return "gated";
+                return "gated.bayes.bppl";
             }
         };
         //----------------------------------------------------------------------------------------------
-        Db2Sampler gCleverPolyDb2Sampler = new Db2Sampler() {
+        Db2SamplerBPPL rejectionBayesianDb2SamplerBPPL = new Db2SamplerBayesianBPPL(indicatorNoise) {
             @Override
-            public SamplerInterface createSampler(PreferenceDatabase db) {
-                GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
+            SamplerInterface createSamplerBPPL(BayesianPosteriorHandler posterior) {
+                return RejectionBayesianSampler.makeSampler(posterior,
+                        -GPolyPreferenceLearning.C,
+                        GPolyPreferenceLearning.C, 20);
+            }
 
-                // Pr(W | R^{n+1})
-                PolytopesHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
-//                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
+            @Override
+            public String getName() {
+                return "rej.bayes.bppl";
+            }
+        };
+        //----------------------------------------------------------------------------------------------
+        Db2SamplerBPPL metropolisHastingBayesianDb2SamplerBPPL = new Db2SamplerBayesianBPPL(indicatorNoise) {
+            @Override
+            SamplerInterface createSamplerBPPL(BayesianPosteriorHandler posterior) {
+                return MetropolisHastingBayesianSampler.makeSampler(posterior,
+                        -GPolyPreferenceLearning.C,
+                        GPolyPreferenceLearning.C, 0.1);
+            }
 
-                //now I sample from it:
-                SamplerInterface sampler = CleverGatedGibbsPolytopesSampler.makeCleverGibbsSampler(posterior, //todo rejection based sampling should be used instead...
+            @Override
+            public String getName() {
+                return "mh.bayes.bppl";
+            }
+        };
+        //----------------------------------------------------------------------------------------------
+        Db2Sampler gatedGibbsBayesianDb2SamplerMMM = new Db2SamplerMMM() {
+            @Override
+            public SamplerInterface createSamplerMMM(BayesianPosteriorHandler posterior) {
+                SamplerInterface sampler = GatedGibbsBayesianSampler.makeSampler(posterior,
                         -GPolyPreferenceLearning.C,
                         GPolyPreferenceLearning.C, null);
 
@@ -370,17 +443,127 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
             @Override
             public String getName() {
-                return "clever";
+                return "gated.bayes.mmm";
             }
         };
         //----------------------------------------------------------------------------------------------
-        Db2Sampler fullGibbsPolyDb2Sampler = new Db2Sampler() {
+        Db2Sampler fullGibbsBayesianDb2SamplerMMM = new Db2SamplerMMM() {
             @Override
-            public SamplerInterface createSampler(PreferenceDatabase db) {
+            public SamplerInterface createSamplerMMM(BayesianPosteriorHandler posterior) {
+                SamplerInterface sampler = FullGibbsBayesianSampler.makeSampler(posterior,
+                        -GPolyPreferenceLearning.C,
+                        GPolyPreferenceLearning.C, null);
+
+                return sampler;
+            }
+
+            @Override
+            public String getName() {
+                return "full.gibbs.bayes.mmm";
+            }
+        };
+        //----------------------------------------------------------------------------------------------
+        Db2Sampler fullGibbsBayesianDb2SamplerBPPL = new Db2SamplerBayesianBPPL(indicatorNoise) {
+            @Override
+            SamplerInterface createSamplerBPPL(BayesianPosteriorHandler posterior) {
+                SamplerInterface sampler = FullGibbsBayesianSampler.makeSampler(posterior,
+                        -GPolyPreferenceLearning.C,
+                        GPolyPreferenceLearning.C, null);
+
+                return sampler;
+            }
+
+            @Override
+            public String getName() {
+                return "full.gibbs.bayes.bppl";
+            }
+        };
+        //----------------------------------------------------------------------------------------------
+        Db2Sampler rejectionBayesianDb2SamplerMMM = new Db2SamplerMMM() {
+            @Override
+            public SamplerInterface createSamplerMMM(BayesianPosteriorHandler posterior) {
+                SamplerInterface sampler = RejectionBayesianSampler.makeSampler(posterior,
+                        -GPolyPreferenceLearning.C,
+                        GPolyPreferenceLearning.C, 20);
+
+                return sampler;
+            }
+
+            @Override
+            public String getName() {
+                return "rej.bayes.mmm";
+            }
+        };
+        //----------------------------------------------------------------------------------------------
+        Db2Sampler metropolisHastingHBayesianDb2SamplerMMM = new Db2SamplerMMM() {
+            @Override
+            public SamplerInterface createSamplerMMM(BayesianPosteriorHandler posterior) {
+                SamplerInterface sampler = MetropolisHastingBayesianSampler.makeSampler(posterior,
+                        -GPolyPreferenceLearning.C,
+                        GPolyPreferenceLearning.C, 0.1);
+
+                return sampler;
+            }
+
+            @Override
+            public String getName() {
+                return "mh.bayes.mmm";
+            }
+        };
+        //----------------------------------------------------------------------------------------------
+        Db2SamplerBPPL gPolyDb2SamplerBPPL = new Db2SamplerBPPL() {
+            @Override
+            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
                 GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
 
                 // Pr(W | R^{n+1})
-                PolytopesHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
+                PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
+//                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
+
+                //now I sample from it:
+                SamplerInterface sampler = GatedGibbsPolytopesSampler.makeSampler(posterior, //todo rejection based sampling should be used instead...
+                        -GPolyPreferenceLearning.C,
+                        GPolyPreferenceLearning.C, null);
+
+                return sampler;
+            }
+
+            @Override
+            public String getName() {
+                return "gated.const.bppl";
+            }
+        };
+        //----------------------------------------------------------------------------------------------
+        Db2SamplerBPPL gTargetedPolyDb2SamplerBPPL = new Db2SamplerBPPL() {
+            @Override
+            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
+                GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
+
+                // Pr(W | R^{n+1})
+                PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
+//                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
+
+                //now I sample from it:
+                SamplerInterface sampler = TargetedGatedGibbsPolytopesSampler.makeCleverGibbsSampler(posterior, //todo rejection based sampling should be used instead...
+                        -GPolyPreferenceLearning.C,
+                        GPolyPreferenceLearning.C, null);
+
+                return sampler;
+            }
+
+            @Override
+            public String getName() {
+                return "targeted";
+            }
+        };
+        //----------------------------------------------------------------------------------------------
+        Db2SamplerBPPL fullGibbsPolyDb2SamplerBPPL = new Db2SamplerBPPL() {
+            @Override
+            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
+                GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
+
+                // Pr(W | R^{n+1})
+                PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
 //                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
 
                 //now I sample from it:
@@ -397,11 +580,35 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
             }
         };
         //----------------------------------------------------------------------------------------------
-        Db2Sampler xaddRejSampler = new Db2Sampler() {
+        Db2SamplerBPPL symbolicGibbsPolyDb2SamplerBPPL = new Db2SamplerBPPL() {
+            @Override
+            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
+                GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
+
+                // Pr(W | R^{n+1})
+                PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
+//                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
+
+                //now I sample from it:
+                SamplerInterface sampler = SymbolicGibbsPolytopesSampler.makeSampler(posterior, //todo rejection based sampling should be used instead...
+                        -GPolyPreferenceLearning.C,
+                        GPolyPreferenceLearning.C, null);
+
+                return sampler;
+            }
+
+            @Override
+            public String getName() {
+                return "symbolic";
+            }
+        };
+        //----------------------------------------------------------------------------------------------
+        @Deprecated
+        Db2SamplerBPPL xaddRejSampler = new Db2SamplerBPPL() {
             boolean reduceLP = true;
 
             @Override
-            public SamplerInterface createSampler(PreferenceDatabase db) {
+            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
                 XADD context = new XADD();
                 PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0/*epsilon*/);
                 //                        long time1start = System.currentTimeMillis();
@@ -421,7 +628,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
             public XaddSampler makeNewSampler(XADD context,
                                               XADD.XADDNode posterior,
                                               VarAssignment initAssignment) {
-                return new RejectionSampler(context, posterior,
+                return new XaddBasedRejectionSampler(context, posterior,
                         null/*initAssignment*/, 1);
             }
 
@@ -431,11 +638,11 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
             }
         };
         //----------------------------------------------------------------------------------------------
-        Db2Sampler xaddMHSampler = new Db2Sampler() {
+        Db2SamplerBPPL xaddMHSampler = new Db2SamplerBPPL() {
             boolean reduceLP = true;
 
             @Override
-            public SamplerInterface createSampler(PreferenceDatabase db) {
+            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
                 XADD context = new XADD();
                 PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0/*epsilon*/);
                 //                        long time1start = System.currentTimeMillis();
@@ -455,7 +662,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
             public XaddSampler makeNewSampler(XADD context,
                                               XADD.XADDNode posterior,
                                               VarAssignment initAssignment) {
-                return new MetropolisHastingsSampler(context, posterior,
+                return new XaddBasedMetropolisHastingsSampler(context, posterior,
                         null/*initAssignment*/, 1);
             }
 
@@ -466,15 +673,35 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
         };
         //----------------------------------------------------------------------------------------------
 
-        List<Db2Sampler> samplerMakers = Arrays.asList(
-                xaddRejSampler,
-                xaddMHSampler,
-//                fullGibbsPolyDb2Sampler,
-                gPolyDb2Sampler
-//                ,gCleverPolyDb2Sampler
-        );
+        ProblemKind problem =
+                ProblemKind.MMM;
+//                ProblemKind.BPPL;
 
-        testEffectOfNumSamplesWrtDimsAndConstraints(samplerMakers);
+        Db2Sampler[] samplerMakers = null;
+        switch (problem) {
+            case MMM:
+                samplerMakers = new Db2Sampler[]{
+                        rejectionBayesianDb2SamplerMMM,
+                        gatedGibbsBayesianDb2SamplerMMM,
+                        metropolisHastingHBayesianDb2SamplerMMM,
+                        fullGibbsBayesianDb2SamplerMMM
+                };
+                break;
+            case BPPL:
+                samplerMakers = new Db2Sampler[]{
+                        rejectionBayesianDb2SamplerBPPL, //xaddRejSampler,
+                        metropolisHastingBayesianDb2SamplerBPPL, //xaddMHSampler,
+//                fullGibbsPolyDb2Sampler,
+//                symbolicGibbsPolyDb2Sampler   //todo: this sampler needs more tests...
+//                gTargetedPolyDb2Sampler,
+                        gPolyDb2SamplerBPPL,
+                        gatedBayesianDb2SamplerBPPL,
+                        fullGibbsBayesianDb2SamplerBPPL
+                };
+                break;
+        }
+
+        testEffectOfNumSamplesWrtDimsAndConstraints(samplerMakers, problem);
 //        testTimeVsNumConstraints(samplerMakers, 7/*dim fixed*/);
 
         //*****************************************************************************************
@@ -483,14 +710,18 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
     }
 
-    private void testEffectOfNumSamplesWrtDimsAndConstraints(List<Db2Sampler> samplerMakers) throws FileNotFoundException {
+    enum ProblemKind {MMM, BPPL}
+
+    enum AnalysisType {ERROR_VS_TIME, TIME_VS_NUM_CONSTRAINTS}
+
+    private void testEffectOfNumSamplesWrtDimsAndConstraints(Db2Sampler[] samplerMakers, ProblemKind dbKind) throws FileNotFoundException {
         int numberOfItems = 500; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
         int[] numDimsArray = new int[]{6};
-        int[] numConstraintsArray = new int[]{2, 3, 5, 6, 7, 8, 9, 10, 15, 18, 22, 25};
+        int[] numConstraintsArray = new int[]{3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 18, 22, 25}; //num. observed data
         int numSamples = 10000;
         double minAttribBound = 0d;
         double maxAttribBound = 5d;
-        int numQueries = 1;
+        int numQueries = 20;
         int burnedSamples = 10;
 
         Map<String/*dim-alg*/, List<Pair<Integer /*numConstraints*/, Long /*calc. time*/>>> dimAlg2TimesMap =
@@ -506,18 +737,28 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
                 System.out.println("numDims = " + numDims);
                 System.out.println("numConstraints = " + numConstraints);
 
-                DummyFeasiblePreferenceDatabase db = new DummyFeasiblePreferenceDatabase(
-                        -PreferenceLearning.C,
-                        PreferenceLearning.C,
-                        minAttribBound, //TODO:IMPORTANT check the effect of negative x_i bound...
-                        maxAttribBound,
-                        numConstraints, // + numberOfTestComparisonsPerDatabase /* more preferences used for testing */,
-                        numDims, numberOfItems /* number of items */);
+                ModelDatabase db = null;
 
+                switch (dbKind) {
+                    case MMM:
+                        db = new DummyMarketMakingDatabase(numDims, numConstraints, PreferenceLearning.C, mm_epsilon);
+                        break;
+                    case BPPL:
+                        db = new DummyFeasiblePreferenceDatabase(
+                                -PreferenceLearning.C,
+                                PreferenceLearning.C,
+                                minAttribBound, //TODO:IMPORTANT check the effect of negative x_i bound...
+                                maxAttribBound,
+                                numConstraints, // + numberOfTestComparisonsPerDatabase /* more preferences used for testing */,
+                                numDims, numberOfItems /* number of items */);
+
+                        break;
+                }
                 //todo: check SyntheticDistributionUtils sample generator...
 
-                List<double[]> as = createRandomItems(numQueries, db);
-                List<double[]> bs = createRandomItems(numQueries, db);
+                List<double[]> as = createRandomItems(numQueries, numDims, minAttribBound, maxAttribBound);
+                List<double[]> bs = createRandomItems(numQueries, numDims, minAttribBound, maxAttribBound);
+
 //                double[] onesObj = new double[numDims];
 //                double[] zerosObj = new double[numDims];
 //                Arrays.fill(onesObj, 1.0);
@@ -529,17 +770,24 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
                 List<Double> groundTruthMeans = null;
 
+                AnalysisType analysisType =
+//                        AnalysisType.ERROR_VS_TIME;
+                AnalysisType.TIME_VS_NUM_CONSTRAINTS;
 
                 for (Db2Sampler samplerMaker : samplerMakers) {
-                    StatInfo statInfo = meansAndStdErrors(as, bs, groundTruthMeans, db, samplerMaker, burnedSamples, numSamples);//gPolyDb2Sampler, 100, numSamples);
+                    Integer maxSamplingTimeIfItIsFixed = 30 * 1000;
+                    StatInfo statInfo = analysisType.equals(AnalysisType.TIME_VS_NUM_CONSTRAINTS) ?
+                            meansAndStdErrors(as, bs, groundTruthMeans, db, samplerMaker, burnedSamples, numSamples)
+                            :
+                            timesAndMeansAndStdErrors(as, bs, groundTruthMeans, db, samplerMaker, burnedSamples, numSamples, maxSamplingTimeIfItIsFixed, 1000/*todo this should be parameter*/);//gPolyDb2Sampler, 100, numSamples);
                     groundTruthMeans = statInfo.groundTruthMeans; //So, it is calculated only for the first sampler...
-                    statInfo.persistMeanStdErr(REPORT_PATH, numDims, numConstraints, as.size(), samplerMaker.getName());
+                    statInfo.persistMeanStdErr(REPORT_PATH, numDims, numConstraints, as.size(), samplerMaker.getName(), analysisType, maxSamplingTimeIfItIsFixed);
 
                     String key = timeContainerKey(numDims, samplerMaker);
                     List<Pair<Integer, Long>> constraintsAndTimes = dimAlg2TimesMap.get(key);
-                    constraintsAndTimes.add(new Pair<Integer, Long>(numConstraints, statInfo.processTime));
+                    constraintsAndTimes.add(new Pair<Integer, Long>(numConstraints, statInfo.totalProcessTime));
                     persistConstraintsTimes(REPORT_PATH + key + "-q" + numQueries, constraintsAndTimes);
-                    System.out.println(samplerMaker.getName() + ".time = " + statInfo.processTime);
+                    System.out.println(samplerMaker.getName() + ".time = " + statInfo.totalProcessTime);
                 }
 //                FunctionVisualizer.visualize(stdErr, 0, numSamples, 1, statType + " #dim:" + numDims + " #cnstrnt:" + numConstraints);
             }
@@ -559,19 +807,29 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
         return "dims" + numDims + "-" + samplerMaker.getName();
     }
 
-    private List<double[]> createRandomItems(int numQueries, DummyFeasiblePreferenceDatabase db) {
+    private List<double[]> createRandomItems(int numQueries, int attributeCount, double minAttribBound, double maxAttribBound) {
         List<double[]> items = new ArrayList<double[]>(numQueries);
         for (int q = 0; q < numQueries; q++) {
-            Double[] item = db.makeNewItem();
+            double[] item = makeNewItem(attributeCount, minAttribBound, maxAttribBound);
 
             //this is not good:
-            double[] item2 = new double[item.length];
-            for (int i = 0; i < item.length; i++) {
-                item2[i] = item[i];
-            }
-            items.add(item2);
+//            double[] item2 = new double[item.length];
+//            for (int i = 0; i < item.length; i++) {
+//                item2[i] = item[i];
+//            }
+            items.add(item);
         }
         return items;
+    }
+
+    Random random = new Random();
+
+    public double[] makeNewItem(int attributeCount, double minAttribBound, double maxAttribBound) {
+        double[] item = new double[attributeCount];
+        for (int i = 0; i < attributeCount; i++) {
+            item[i] = random.nextDouble() * (maxAttribBound - minAttribBound) + minAttribBound;
+        }
+        return item;
     }
 
 
@@ -580,7 +838,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
             List<double[]> bList,
             List<Double> groundTruthMeans,
             //
-            PreferenceDatabase db,
+            ModelDatabase db,
             Db2Sampler samplerMaker,//SamplerInterface sampler,
             //
             int burnedSamples, final int numSamples) {
@@ -590,11 +848,14 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
         if (groundTruthMeans != null && groundTruthMeans.size() != bList.size())
             throw new RuntimeException("size mismatch");
 
+        double[] times = new double[numSamples];
+
         double[][] values = new double[numQueries][numSamples];
 //        double[] _EX = new double[numSamples]; //_EX[i] = mean of f(A, B, W) after i samples (over all queries A, B)
 //        double[] stdErr = new double[numSamples];
 
         long t1 = System.currentTimeMillis();
+
         SamplerInterface sampler = samplerMaker.createSampler(db);
         for (int i = 0; i < burnedSamples; i++) {
             sampler.sample(); //discard samples...
@@ -602,7 +863,11 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
 
         for (int i = 0; i < numSamples; i++) {
+            long samplingStarts = System.currentTimeMillis();
             Double[] sample = sampler.sample();
+            long samplingEnds = System.currentTimeMillis();
+            double singleSampleTakingTime = samplingEnds - samplingStarts;
+            times[i] = (i == 0 ? 0 : times[i - 1]) + singleSampleTakingTime;
 
             //f(a, b, W) = sum_k (a_k - b_k)*W_k = u(a|W) - u(b|W)
             for (int qId = 0; qId < numQueries; qId++) {
@@ -662,30 +927,194 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
             stdErrs[i] = (ex2 - means[i] * means[i]) / rootNumQ;
         }
 
-        return new StatInfo(groundTruthMeans, means, stdErrs, (int) (t2 - t1));
+        return new StatInfo(groundTruthMeans, means, stdErrs, times, (t2 - t1));
+    }
+
+    /* * * * *
+     *  samples recorded at fixed time steps...
+     * * * * */
+    public StatInfo timesAndMeansAndStdErrors(
+            List<double[]> aList,
+            List<double[]> bList,
+            List<Double> groundTruthMeans,
+            //
+            ModelDatabase db,
+            Db2Sampler samplerMaker,//SamplerInterface sampler,
+            //
+            int burnedSamples,
+            final int minNumBenchMarkSamples, /*num samples taken from the first algorithm*/
+            long totalSamplingTime, /*after this time sampling ends*/
+            int numberOfSamplesThatShouldBeSaved) {
+
+//        System.out.println("totalSamplingTime = " + totalSamplingTime);
+//        System.out.println("numberOfSamplesThatShouldBeSaved = " + numberOfSamplesThatShouldBeSaved);
+        int savingTimeStep = (int)(totalSamplingTime / (double) numberOfSamplesThatShouldBeSaved);
+//        System.out.println("savingTimeStep = " + savingTimeStep);
+
+        int numQueries = aList.size();
+        if (numQueries != bList.size()) throw new RuntimeException("size mismatch");
+        if (groundTruthMeans != null && groundTruthMeans.size() != bList.size())
+            throw new RuntimeException("size mismatch");
+
+        boolean thisAlgorithmIsBenchmark = groundTruthMeans == null;
+
+        List<Integer> savedTimePoints = new ArrayList<Integer>(numberOfSamplesThatShouldBeSaved); //roughly...
+
+        Map<Integer/*qId*/, List<Double> /*f of each sample*/> qId2RunningMeanInfo = new HashMap<Integer, List<Double>>(numQueries);//ArrayList[numQueries];
+        double[] runningInfoPerQ = new double[numQueries];
+        for (int q = 0; q < numQueries; q++) {
+            qId2RunningMeanInfo.put(q, new ArrayList<Double>(minNumBenchMarkSamples));
+            runningInfoPerQ[q] = 0d;
+        }
+//        double[][] values = new double[numQueries][numBenchMarkSamples];
+
+        long t1 = System.currentTimeMillis();
+
+        SamplerInterface sampler = samplerMaker.createSampler(db);
+        for (int i = 0; i < burnedSamples; i++) {
+            sampler.sample(); //discard samples...
+        }
+
+
+        int numTakenSamples = 0;
+        long nextExpectedSavingTime = System.currentTimeMillis() + savingTimeStep;
+        for (int i = 0; /*i < numBenchMarkSamples*/ ; i++) {  //NOTE: this is the MAXIMUM time only
+            if (System.currentTimeMillis() - t1 > totalSamplingTime) { //necessary time is passed
+                if (thisAlgorithmIsBenchmark) {
+                    if (i > minNumBenchMarkSamples) break; //necessary time is passed and necessary samples are taken
+                } else {
+                    break; //for non-benchmark algorithms, 'time' is the only constraint.
+                }
+            }
+
+//            long samplingStarts = System.currentTimeMillis();
+            Double[] sample = sampler.sample();
+            numTakenSamples++;
+//            long samplingEnds = System.currentTimeMillis();
+
+//            double singleSampleTakingTime = samplingEnds - samplingStarts;
+//            double prevTime = times.isEmpty() ? 0 : times.get(times.size() - 1);
+//            times.add(prevTime + singleSampleTakingTime);
+
+            //f(a, b, W) = sum_k (a_k - b_k)*W_k = u(a|W) - u(b|W)
+            for (int qId = 0; qId < numQueries; qId++) {
+                double[] a = aList.get(qId);
+                double[] b = bList.get(qId);
+                if (a.length != b.length || a.length != sample.length)
+                    throw new RuntimeException("size mismatch"); //debug
+                double qId2samplingValue = 0;
+                for (int k = 0; k < sample.length; k++) {
+                    qId2samplingValue += Math.abs((a[k] - b[k]) * sample[k]);    //f(a, b, W) // values[qId].[i] += Math.abs((a[k] - b[k]) * sample[k]);    //f(a, b, W)
+                }
+                runningInfoPerQ[qId] = runningInfoPerQ[qId] + qId2samplingValue; //sum f(a, b, w_i)
+//                qId2SamplingInfo.get(qId).add(qId2samplingValue);
+            }
+
+            //Save if necessary:
+            long currentTime = System.currentTimeMillis();
+            if (currentTime >= nextExpectedSavingTime) {
+                savedTimePoints.add((int) (currentTime - t1));
+                nextExpectedSavingTime = currentTime + savingTimeStep;
+                //save running info:
+                for (int qId = 0; qId < numQueries; qId++) {
+                    List<Double> currentSampleInfoForQ = qId2RunningMeanInfo.get(qId);
+                    currentSampleInfoForQ.add((runningInfoPerQ[qId] / (double) numTakenSamples));    //average is stored
+                }
+            }
+        }  //end of sampling
+
+        /*if (DEBUG) {
+            //hack!
+            if (sampler instanceof AbstractPolytopesSampler) {
+                System.out.println("debugNumUnsuccessfulSamplings = " + ((AbstractPolytopesSampler) sampler).debugNumUnsuccessfulSamplings);
+            }
+        }*/
+
+        long t2 = System.currentTimeMillis();
+
+        //I reuse the values and put the running sums in them.
+//        for (int qId = 0; qId < numQueries; qId++) {
+//            List<Double> infoOfSamples = qId2SamplingInfo.get(qId);
+//            if (infoOfSamples.size() != numTakenSamples) throw new RuntimeException("mismatch!");
+//            for (int i = 1; i < numTakenSamples; i++) {
+//                infoOfSamples.set(i, infoOfSamples.get(i) + infoOfSamples.get(i - 1)); //add the prev info to it (accumulate)
+//            }
+//        }
+
+        //make ground truth means if do not exist...
+        if (thisAlgorithmIsBenchmark) { //(groundTruthMeans == null)
+            groundTruthMeans = new ArrayList<Double>(numQueries);
+            for (int qId = 0; qId < numQueries; qId++) {
+                List<Double> samplingMeanForThisQ = qId2RunningMeanInfo.get(qId);
+//                groundTruthMeans.add(samplingInfoOfThisQ.get(samplingInfoOfThisQ.size() - 1) / (double) samplingInfoOfThisQ.size());
+                groundTruthMeans.add(samplingMeanForThisQ.get(samplingMeanForThisQ.size() - 1)); //they are already average
+            }
+        }
+
+        //Now I put |means(till this sample) - groundTruthMeans| in tha values
+        for (int qId = 0; qId < numQueries; qId++) {
+            List<Double> values = qId2RunningMeanInfo.get(qId);
+            Double meanForQ = groundTruthMeans.get(qId);
+            for (int i = 0; i < values.size(); i++) {
+//                values.set(i, Math.abs((values.get(i) / (double) (i + 1)) - (groundTruthMeans.get(qId))));
+                values.set(i, Math.abs(values.get(i) - meanForQ));
+            }
+        }
+
+        int n = Math.min(qId2RunningMeanInfo.get(0).size() /*since all are equal size does not matter which Q*/, numberOfSamplesThatShouldBeSaved);
+
+        //Now the means of values w.r.t. different <a,b>s:
+        double[] means = new double[n];  //E[X]
+        double[] stdErrs = new double[n];
+        double rootNumQ = Math.sqrt(numQueries);
+        for (int i = 0; i < n; i++) {
+            double ex2 = 0;  //E[X^2]
+            for (int qId = 0; qId < numQueries; qId++) {
+                double x = qId2RunningMeanInfo.get(qId).get(i);
+                means[i] += (x / (double) numQueries);
+                ex2 += (x * x / (double) numQueries);
+            }
+
+            stdErrs[i] = (ex2 - means[i] * means[i]) / rootNumQ;
+        }
+
+        double[] timesArray = new double[n];//[savedTimePoints.size()];
+        for (int i = 0; i < timesArray.length; i++) {
+            timesArray[i] = savedTimePoints.get(i);
+        }
+
+        return new StatInfo(groundTruthMeans, means, stdErrs, timesArray, (t2 - t1));
     }
 
     class StatInfo {
         List<Double> groundTruthMeans;
         double[] means;
         double[] stdErrs;
-        long processTime;
+        double[] partialProcessTimes;
+        long totalProcessTime;
 
-        StatInfo(List<Double> groundTruthMeans, double[] means, double[] stdErrs, long processTime) {
+        StatInfo(List<Double> groundTruthMeans, double[] means, double[] stdErrs, double[] partialProcessTimes, long totalProcessTime) {
             this.groundTruthMeans = groundTruthMeans;
             this.means = means;
             this.stdErrs = stdErrs;
-            this.processTime = processTime;
+            this.partialProcessTimes = partialProcessTimes;
+            this.totalProcessTime = totalProcessTime;
         }
 
-        public void persistMeanStdErr(String path, int numDims, int numConstraints, int numQueries, String algorithm) throws FileNotFoundException {
+        public void persistMeanStdErr(String path, int numDims, int numConstraints, int numQueries, String algorithm,
+                                      AnalysisType analysisType, int maxSamplingTimeIfItIsFixed) throws FileNotFoundException {
             PrintStream ps;
-            String outputFileName = path + "dims" + numDims + "-cnstrs" + numConstraints + "-samples" + means.length + "-q" + numQueries + "-" + algorithm;
+            String outputFileName;
+            if (analysisType.equals(AnalysisType.TIME_VS_NUM_CONSTRAINTS)) {
+                outputFileName = path + "dims" + numDims + "-cnstrs" + numConstraints + "-samples" + means.length + "-q" + numQueries + "-" + algorithm;
+            } else {
+                outputFileName = path + "dims" + numDims + "-cnstrs" + numConstraints + "-time" + maxSamplingTimeIfItIsFixed + "-q" + numQueries + "-" + algorithm;
+            }
 
             ps = new PrintStream(new FileOutputStream(outputFileName));
 
             for (int i = 0; i < means.length; i++) {
-                ps.println((i + 1) + "\t" + means[i] + "\t" + stdErrs[i]);
+                ps.println((i + 1) + "\t" + means[i] + "\t" + stdErrs[i] + "\t" + partialProcessTimes[i]);
             }
 
             ps.close();
@@ -727,12 +1156,12 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
                 GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
 
                 // Pr(W | R^{n+1})
-                PolytopesHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
+                PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
 
 //                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
 
                 //now I sample from it:
-                GatedGibbsPolytopesSampler sampler = GatedGibbsPolytopesSampler.makeGibbsSampler(posterior, //todo rejection based sampling should be used instead...
+                GatedGibbsPolytopesSampler sampler = GatedGibbsPolytopesSampler.makeSampler(posterior, //todo rejection based sampling should be used instead...
                         -GPolyPreferenceLearning.C,
                         GPolyPreferenceLearning.C, null);
 

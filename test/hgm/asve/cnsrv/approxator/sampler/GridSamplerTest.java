@@ -43,4 +43,18 @@ public class GridSamplerTest {
             System.out.println("next = " + Arrays.toString(next));
         }
     }
+
+    @Test
+    public void testForFullGibbs() throws Exception {
+        GridSampler gs = new GridSampler(
+                new double[]{0d, 0d, 0d},
+                new double[]{2, 1, 2},
+                new double[]{1, 1, 1});
+
+        Iterator<double[]> sampleIterator = gs.getSampleIterator();
+        while (sampleIterator.hasNext()) {
+            double[] next = sampleIterator.next();
+            System.out.println("next = " + Arrays.toString(next));
+        }
+    }
 }

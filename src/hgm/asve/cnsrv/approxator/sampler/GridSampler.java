@@ -8,7 +8,7 @@ import java.util.Iterator;
  * Time: 7:38 AM
  */
 public class GridSampler {
-    String[] cVars;  //todo what should I do with boolean vars?
+    String[] cVars=null;  //todo what should I do with boolean vars?
     double[] cVarMinValues;
     double[] cVarMaxValues;
     double[] cVarGridIncValues;
@@ -17,15 +17,20 @@ public class GridSampler {
     double[] firstOutput;
 
     public GridSampler(String[] cVars, double[] cVarMinValues, double[] cVarMaxValues, double[] cVarGridIncValues) {
+        this(cVarMinValues, cVarMaxValues, cVarGridIncValues);
         this.cVars = cVars;
+    }
+
+    public GridSampler(double[] cVarMinValues, double[] cVarMaxValues, double[] cVarGridIncValues) {
+
         this.cVarMinValues = cVarMinValues;
         this.cVarMaxValues = cVarMaxValues;
         this.cVarGridIncValues = cVarGridIncValues;
 
-        n = cVars.length;
-        assert cVarMaxValues.length == n;
+        n = cVarMaxValues.length;
         assert cVarMinValues.length == n;
         assert cVarGridIncValues.length == n;
+        if (cVars != null) assert cVars.length == n;
 
         firstOutput = new double[n];
         System.arraycopy(cVarMinValues, 0, firstOutput, 0, n);

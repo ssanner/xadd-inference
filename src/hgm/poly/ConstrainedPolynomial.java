@@ -85,8 +85,8 @@ public class ConstrainedPolynomial implements Function {
     @Override
     public String toString() {
         return "ConstrainedPolynomial{" +
-                "polynomial=" + polynomial +
-                ", constraints=" + constraints +
+                polynomial +
+                "\t\t\t IF: " + constraints + "  all > 0" +
                 '}';
     }
 }

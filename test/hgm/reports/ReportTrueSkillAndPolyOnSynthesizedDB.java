@@ -94,7 +94,7 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                                         public XaddSampler makeNewSampler(XADD context,
                                                                       XADD.XADDNode posterior,
                                                                       VarAssignment initAssignment) {
-                                            return new MetropolisHastingsSampler(context, posterior,
+                                            return new XaddBasedMetropolisHastingsSampler(context, posterior,
                                                     initAssignment);
                                         }
                                     }), new Pair<String, PreferenceLearningPredictor>("rej",
@@ -107,7 +107,7 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                                 public XaddSampler makeNewSampler(XADD context,
                                                               XADD.XADDNode posterior,
                                                               VarAssignment initAssignment) {
-                                    return new RejectionSampler(context, posterior,
+                                    return new XaddBasedRejectionSampler(context, posterior,
                                             initAssignment, 1);
                                 }
                             })));
