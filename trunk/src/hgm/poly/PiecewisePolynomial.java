@@ -8,11 +8,91 @@ import java.util.*;
  * Time: 8:07 PM
  */
 public class PiecewisePolynomial {
-
     /**
-     * A single entry map to set the value of the var for the purpose of expression evaluation
+     * It is assumed that (the constraints of) different cases are mutually exclusive and jointly exhaustive:
      */
-    protected Map<List<Polynomial> /*constraints*/, Polynomial> constraints2valuesMap = new HashMap<List<Polynomial>, Polynomial>();
+    private List<ConstrainedPolynomial> cases;
+
+    public PiecewisePolynomial(List<ConstrainedPolynomial> cases) {
+        this.cases = cases;
+    }
+
+    public Integer numCases() {
+        return cases.size();
+    }
+
+    public List<ConstrainedPolynomial> getCases() {
+        return cases;
+    }
+
+    public double evaluate(Double[] assign) {
+        ConstrainedPolynomial activeCase;
+        try{
+            activeCase = cases.get(getActivatedCaseId(assign));
+        }catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+        return activeCase.getPolynomial().evaluate(assign);
+
+        /*
+        for (ConstrainedPolynomial aCase : cases){
+            List<Polynomial> constraints = aCase.getConstraints();
+            boolean allConstraintsOfThisCaseHold = true;
+            for (Polynomial constraint : constraints) {
+                if (constraint.evaluate(assign) <=0) {
+                    allConstraintsOfThisCaseHold = false;
+                    break; //another case should be tested...
+                }
+            }
+            if (allConstraintsOfThisCaseHold) {
+                return aCase.getPolynomial().evaluate(assign);
+            }
+        }
+
+        throw new RuntimeException("no case holds!");*/
+    }
+
+    public Integer getActivatedCaseId(Double[] assignment) {
+        for (int caseId = 0; caseId < cases.size(); caseId++) {
+            ConstrainedPolynomial aCase = cases.get(caseId);
+            List<Polynomial> constraints = aCase.getConstraints();
+            boolean allConstraintsOfThisCaseHold = true;
+            for (Polynomial constraint : constraints) {
+                if (constraint.evaluate(assignment) <= 0) {
+                    allConstraintsOfThisCaseHold = false;
+                    break; //another case should be tested...
+                }
+            }
+            if (allConstraintsOfThisCaseHold) {
+                return caseId;
+            }
+        }
+
+        throw new RuntimeException("For assignment: " + Arrays.toString(assignment) + " no case holds!\n" + this.toString());
+
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (ConstrainedPolynomial aCase : cases) {
+            sb.append("\t").append(aCase).append("\n");
+        }
+        return sb.toString();
+    }
+}
+
+/*
+
+    */
+/**
+     * A single entry map to set the value of the var for the purpose of expression evaluation
+     *//*
+
+    protected Map<List<Polynomial> */
+/*constraints*//*
+, Polynomial> constraints2valuesMap = new HashMap<List<Polynomial>, Polynomial>();
 
     // the lists should be mutually exclusive otherwise things might not work well...
     public void put(List<Polynomial> constrains, Polynomial value) {
@@ -47,41 +127,6 @@ public class PiecewisePolynomial {
 
         return 0d; //if no case sentence is satisfied then 0 is returned by default
     }
-    /*
-        Polynomial integral;
-    Double[] vars;
-    Interval interval;
-    double maxValue;
-    int varIndex;
 
-
-    OneDimIntegralFunc(Polynomial integral, Interval interval, String integrationVar) {
-
-        this.integral = integral;
-        this.interval = interval;
-
-        PolynomialFactory factory = integral.getFactory();
-        vars = new Double[factory.getAllVars().length];
-//        Arrays.fill(vars, null);
-
-        varIndex = factory.getVarIndex(integrationVar);
-        vars[varIndex] = interval.getHighBound();
-
-        maxValue = integral.evaluate(vars);
-    }
-
-
-    @Override
-    public double eval(double varValue) {
-        if (varValue < interval.getLowBound()) return 0d;
-        if (varValue > interval.getHighBound()) return maxValue;
-        vars[varIndex] = varValue;
-        return integral.evaluate(vars);
-    }
-
-    public double getNormalizationFactor() {
-        return maxValue;
-    }
-
-     */
 }
+*/

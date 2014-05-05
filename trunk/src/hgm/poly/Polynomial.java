@@ -228,5 +228,14 @@ public class Polynomial implements Cloneable{
         }
         return maxTermDegree;
     }
+    
+    //degree w.r.t. a particular var
+    public int degree(int varIndex) {
+        int maxDegree = 0;
+        for (List<Double> pow : powers2coefMap.keySet()) {
+            maxDegree = Math.max(maxDegree,  pow.get(varIndex).intValue());
+        }
+        return maxDegree;
+    }
 }
 

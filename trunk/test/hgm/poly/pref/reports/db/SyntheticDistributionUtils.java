@@ -2,7 +2,7 @@ package hgm.poly.pref.reports.db;
 
 import hgm.poly.pref.GPolyPreferenceLearning;
 import hgm.poly.pref.GatedGibbsPolytopesSampler;
-import hgm.poly.pref.PolytopesHandler;
+import hgm.poly.pref.PosteriorHandler;
 import hgm.poly.vis.FunctionVisualizer;
 import hgm.poly.sampling.SamplingUtils;
 import hgm.preference.Choice;
@@ -76,12 +76,12 @@ public class SyntheticDistributionUtils {
         GPolyPreferenceLearning learning = new GPolyPreferenceLearning(trainingDb, indicatorNoise, "w");
 
         // Pr(W | R^{n+1})
-        PolytopesHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
+        PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
 
         if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
 
         //now I sample from it:
-        GatedGibbsPolytopesSampler sampler = GatedGibbsPolytopesSampler.makeGibbsSampler(posterior, //todo rejection based sampling should be used instead...
+        GatedGibbsPolytopesSampler sampler = GatedGibbsPolytopesSampler.makeSampler(posterior, //todo rejection based sampling should be used instead...
                 minForAllVars/*-PolyPreferenceLearning.C*/,
                 maxForAllVars/*PolyPreferenceLearning.C*/, null);
 

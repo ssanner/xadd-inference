@@ -3,7 +3,6 @@ package hgm.poly.pref;
 import hgm.poly.ConstrainedPolynomial;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.vis.FunctionVisualizer;
-import hgm.sampling.SamplingFailureException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +15,7 @@ import java.util.List;
  */
 public class FullGibbsPolytopesSampler extends AbstractPolytopesSampler {
 
-    public static FullGibbsPolytopesSampler makeFullGibbsSampler(PolytopesHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
+    public static FullGibbsPolytopesSampler makeFullGibbsSampler(PosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
         int varNum = gph.getPolynomialFactory().getAllVars().length;
         double[] cVarMins = new double[varNum];
         double[] cVarMaxes = new double[varNum];
@@ -25,7 +24,7 @@ public class FullGibbsPolytopesSampler extends AbstractPolytopesSampler {
         return new FullGibbsPolytopesSampler(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 
-    public FullGibbsPolytopesSampler(PolytopesHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
+    public FullGibbsPolytopesSampler(PosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
         super(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 

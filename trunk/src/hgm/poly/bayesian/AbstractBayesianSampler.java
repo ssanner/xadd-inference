@@ -1,9 +1,11 @@
-package hgm.poly.pref;
+package hgm.poly.bayesian;
 
 import hgm.poly.ConstrainedPolynomial;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.integral.OneDimPolynomialIntegral;
+import hgm.poly.pref.FatalSamplingException;
+import hgm.poly.pref.PosteriorHandler;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.sampling.SamplingFailureException;
 
@@ -15,7 +17,7 @@ import java.util.Random;
  * Date: 11/03/14
  * Time: 9:05 PM
  */
-public abstract class AbstractPolytopesSampler implements SamplerInterface {
+public abstract class AbstractBayesianSampler implements SamplerInterface {
     protected static final Random random = new Random();
     public static final double SAMPLE_ACCURACY = 1E-6;
     public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 20;
@@ -30,12 +32,12 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
     double[] cVarMins;
     double[] cVarMaxes;
     int numVars;
-    PosteriorHandler gph;
+    BayesianPosteriorHandler gph;
 
     Double[] absoluteBestSample;
     double absoluteBestTarget = -1;
 
-    public AbstractPolytopesSampler(PosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
+    public AbstractBayesianSampler(BayesianPosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
 
         this.gph = gph;
 
@@ -66,6 +68,7 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
         return gph.getPolynomialFactory();
     }
 
+    @Override
     public Double[] sample() throws SamplingFailureException {
         if (reusableSample == null) { // (no sample is taken yet)
             reusableSample = takeInitialSample();// initialization phase:
@@ -81,13 +84,15 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
         reusableSample = professionalSample(reusableSample);
 
         //just for debug.... //todo comment when testing time...
-        if (gph.evaluate(reusableSample) <=0) throw new SamplingFailureException("evaluation of " + Arrays.toString(reusableSample) + " is " + gph.evaluate(reusableSample));
+        if (gph.evaluate(reusableSample) <= 0)
+            throw new SamplingFailureException("evaluation of " + Arrays.toString(reusableSample) + " is " + gph.evaluate(reusableSample));
 
 
         return reusableSample;
     }
 
     public int debugNumUnsuccessfulSamplings = 0;
+
     //override if not Gibbs variations...
     protected Double[] professionalSample(Double[] reusableSample) {
         int prevSampleHashCode = Arrays.hashCode(reusableSample);
@@ -119,7 +124,9 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
         if (DEBUG) System.out.println("* reusableSample = " + Arrays.toString(reusableSample));
 
         if (filledWithZeros(reusableSample)) {
-            if (DEBUG) {System.err.println("sample= " + Arrays.toString(reusableSample) + "!");}
+            if (DEBUG) {
+                System.err.println("sample= " + Arrays.toString(reusableSample) + "!");
+            }
 
             reusableSample = takeInitialSample();
 
@@ -221,6 +228,11 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
         return random.nextDouble() * (max - min) + min;
     }
 
+    public static Double randomGaussianDouble(Double mean, double variance) {
+        return mean + random.nextGaussian() * variance;
+    }
+
+
 //    protected static boolean randomBoolean() {
 //        return random.nextBoolean();
 //    }
@@ -274,6 +286,7 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
             if (absoluteBestTarget > 0) return absoluteBestSample;
         }
     }
+
 }
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////

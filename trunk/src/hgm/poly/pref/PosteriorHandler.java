@@ -14,7 +14,7 @@ import java.util.List;
  * Date: 10/03/14
  * Time: 5:05 PM
  */
-public class PolytopesHandler implements Function {
+public class PosteriorHandler implements Function {
     PolynomialFactory factory;
     int maxAllowedGatingViolations;
     double indicatorNoise;
@@ -25,7 +25,7 @@ public class PolytopesHandler implements Function {
     List<Polynomial> negGatingConstraints = new ArrayList<Polynomial>();
     List<Boolean> reusableGatingMask = new ArrayList<Boolean>();
 
-    public PolytopesHandler(PolynomialFactory factory, ConstrainedPolynomial prior, double indicatorNoise, int maxAllowedGatingViolations) {
+    public PosteriorHandler(PolynomialFactory factory, ConstrainedPolynomial prior, double indicatorNoise, int maxAllowedGatingViolations) {
         this.factory = factory;
         this.prior = prior;
 

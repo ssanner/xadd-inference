@@ -23,9 +23,9 @@ public class GPolyPreferenceLearningPredictorUsingGibbsSampler extends GPolyPref
     }
 
     @Override
-    public GatedGibbsPolytopesSampler makeNewSampler(PolytopesHandler posterior, VarAssignment initAssign) {
+    public GatedGibbsPolytopesSampler makeNewSampler(PosteriorHandler posterior, VarAssignment initAssign) {
         if (initAssign!=null) System.err.println("NOTE: init assign will not be used...");
-        return GatedGibbsPolytopesSampler.makeGibbsSampler(posterior,
+        return GatedGibbsPolytopesSampler.makeSampler(posterior,
                 minForAllVars,
                 maxForAllVars, null);
     }

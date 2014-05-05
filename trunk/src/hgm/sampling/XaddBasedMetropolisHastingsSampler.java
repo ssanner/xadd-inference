@@ -8,7 +8,7 @@ import java.util.Random;
 import xadd.XADD;
 import xadd.XADD.XADDNode;
 
-public class MetropolisHastingsSampler extends XaddSampler {
+public class XaddBasedMetropolisHastingsSampler extends XaddSampler {
 
 	private static Random			_randomGenerator	= new Random();
 	private HashMap<String, Double>	_lastPoint;
@@ -16,7 +16,7 @@ public class MetropolisHastingsSampler extends XaddSampler {
 	private VarAssignment			_initialSample;
 	private int						_leapSize			= 10;
 
-	public MetropolisHastingsSampler(XADD context, XADDNode root) {
+	public XaddBasedMetropolisHastingsSampler(XADD context, XADDNode root) {
 		super(context, root);
 
 		init(null, 1);
@@ -27,13 +27,13 @@ public class MetropolisHastingsSampler extends XaddSampler {
 		_leapSize = leapsize;
 	}
 
-	public MetropolisHastingsSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample) {
+	public XaddBasedMetropolisHastingsSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample) {
 		super(context, root);
 
 		init(initialSample, 1);
 	}
 
-	public MetropolisHastingsSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample, int leapSize) {
+	public XaddBasedMetropolisHastingsSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample, int leapSize) {
 		super(context, root);
 
 		init(initialSample, leapSize);

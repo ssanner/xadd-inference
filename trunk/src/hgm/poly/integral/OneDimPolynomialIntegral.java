@@ -3,9 +3,6 @@ package hgm.poly.integral;
 import hgm.poly.*;
 import hgm.poly.vis.FunctionVisualizer;
 import hgm.sampling.gibbs.integral.Interval;
-import xadd.ExprLib;
-import xadd.ExprLib.*;
-
 import java.util.*;
 
 /**
@@ -115,7 +112,7 @@ public class OneDimPolynomialIntegral {
                 case 0: //e.g. if a constraint is 'y (>0)' and we are integrating over 'x'
                     if (coeffs[0] < 0) {
                         if (DEBUG)
-                            System.err.println("unexpected constraint: " + constraint + "(unsatisfiable)"); //not that all constraints are positive '>0'
+                            System.err.println("unexpected constraint: " + constraint + "(unsatisfiable)"); //note that all constraints are positive '>0'
                         return Collections.<Interval>emptyList();  //since infeasible
                     }
                     break;
@@ -259,7 +256,7 @@ public class OneDimPolynomialIntegral {
     }*/
 
 
-    private Interval fetchComparableExprBounds(CompExpr comparableExpression) {
+   /* private Interval fetchComparableExprBounds(CompExpr comparableExpression) {
         Interval interval = new Interval(null, null);
 
 
@@ -326,7 +323,7 @@ public class OneDimPolynomialIntegral {
         else interval.setHighBound(bound);
 
         return interval;
-    }
+    }*/
 
 
 }

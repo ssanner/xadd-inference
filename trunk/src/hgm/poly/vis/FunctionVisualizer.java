@@ -8,11 +8,16 @@ import jahuwaldt.plot.*;
 import net.ericaro.surfaceplotter.JSurfacePanel;
 import net.ericaro.surfaceplotter.surface.ArraySurfaceModel;
 import plot.PlotExample;
+import util.DevNullPrintStream;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Created by Hadi Afshar.
@@ -23,6 +28,7 @@ public class FunctionVisualizer {
     public static void visualize(final OneDimFunction function, double min, double max, double step, String title) {
         visualize1DimXadd(new Function() {
             String[] vars = new String[]{"x"};
+
             @Override
             public double evaluate(VarAssignment fullVarAssign) {
                 return function.eval(fullVarAssign.getContinuousVar("x"));
@@ -52,7 +58,7 @@ public class FunctionVisualizer {
     }
 
 
-    private static void visualize2DimXadd(Function cp,  double min, double max, double step, String title) {
+    private static void visualize2DimXadd(Function cp, double min, double max, double step, String title) {
 
         String[] vars = cp.collectContinuousVars();
         Plot3DSurfXADD(cp,
@@ -71,12 +77,12 @@ public class FunctionVisualizer {
         if (sampleX != sampleY) {
             System.out.println("samples X and Y must be equal for Surface Plot, using X samples");
         }
-        Plot3DSurfXADD(cp, low_x, high_x, low_y, high_y, (int) Math.ceil((high_x - low_x) / inc_x),
+        plot3DSurfXADD(cp, low_x, high_x, low_y, high_y, (int) Math.ceil((high_x - low_x) / inc_x),
 //                static_bvars, static_dvars,
                 xVar, yVar, title);
     }
 
-    private static void Plot3DSurfXADD(Function cp,
+    private static void plot3DSurfXADD(Function cp,
                                        double low_x, double high_x,
                                        double low_y, double high_y,
                                        int nSamples,
@@ -190,7 +196,7 @@ public class FunctionVisualizer {
 
     //***************************************************************************************************************
 
-    private static void visualize1DimXadd(Function cp,  double min, double max, double step, String title) {
+    private static void visualize1DimXadd(Function cp, double min, double max, double step, String title) {
 //        if (node.collectVars().size() != 1) throw new RuntimeException("only one variable expected!");
 
         String var = cp.collectContinuousVars()[0];
@@ -266,7 +272,7 @@ public class FunctionVisualizer {
             }
         }
 
-        Plot2D aPlot = new SimplePlotXY(xArr, yArr, title, xVar , null,
+        Plot2D aPlot = new SimplePlotXY(xArr, yArr, title, xVar, null,
                 null, null/* new jahuwaldt.plot.CircleSymbol() *//* new XSymbol() */);
 
         // Plot non-infinity as red without markers
@@ -292,6 +298,77 @@ public class FunctionVisualizer {
 
         // Export png (not publication quality, but more quickly viewed)
 //        ExportPanelToPNG(panel, filename.replace(".txt", ".png"));
+    }
+
+
+    public static void save3DSurf(Function cp,
+                                       double low_x, double high_x,
+                                       double low_y, double high_y,
+                                       double step,
+//                                       String xVar, String yVar,
+                                       String filenameWithoutExtension) throws FileNotFoundException {
+        String[] vars = cp.collectContinuousVars();
+        if (vars.length !=2) throw new RuntimeException();
+        String xVar = vars[0];
+        String yVar = vars[1];
+
+        VarAssignment varAssign = new VarAssignment(new HashMap<String, Boolean>(), new HashMap<String, Double>());//static_bvars, static_dvars);
+
+        PrintStream ps_x;
+        PrintStream ps_y;
+        PrintStream ps_z;
+
+        ps_x = new PrintStream(new FileOutputStream(filenameWithoutExtension + ".x.txt"));
+        ps_y = new PrintStream(new FileOutputStream(filenameWithoutExtension + ".y.txt"));
+        ps_z = new PrintStream(new FileOutputStream(filenameWithoutExtension + ".z.txt"));
+
+        HashMap<String, Boolean> static_bvars = new HashMap<String, Boolean>();
+        HashMap<String, Double> static_dvars = new HashMap<String, Double>();
+
+        // Create a Simple 2D XY plot window.
+        ArrayList<Double> alX = new ArrayList<Double>();
+        for (double x = low_x; x <= high_x; x += step)
+            alX.add(x);
+        ArrayList<Double> alY = new ArrayList<Double>();
+        for (double y = low_y; y <= high_y; y += step)
+            alY.add(y);
+
+//        double[][] xArr = new double[alY.size()][alX.size()];
+//        double[][] yArr = new double[alY.size()][alX.size()];
+//        double[][] zArr = new double[alY.size()][alX.size()];
+        for (int i = 0; i < alY.size(); i++) {
+            for (int j = 0; j < alX.size(); j++) {
+
+                double x = alX.get(j);
+                double y = alY.get(i);
+
+                varAssign.assignOrCreateContinuousVariable(xVar, (double) x);
+                varAssign.assignOrCreateContinuousVariable(yVar, (double) y);
+                float z = (float) cp.evaluate(varAssign);
+
+//                static_dvars.put(xVar, x);
+//                static_dvars.put(yVar, y);
+//                double z = cp.evaluate()factor.getContext().evaluate(factor.getXaddId(), static_bvars, static_dvars);
+
+//                static_dvars.remove(varX);
+//                static_dvars.remove(varY);
+
+//                xArr[i][j] = x;
+//                yArr[i][j] = y;
+//                zArr[i][j] = z; // x + y; //z;
+
+                ps_x.print((j == 0 ? "" : "\t") + x);
+                ps_y.print((j == 0 ? "" : "\t") + y);
+                ps_z.print((j == 0 ? "" : "\t") + z);
+            }
+            ps_x.println();
+            ps_y.println();
+            ps_z.println();
+        }
+
+        ps_x.close();
+        ps_y.close();
+        ps_z.close();
     }
 
 }

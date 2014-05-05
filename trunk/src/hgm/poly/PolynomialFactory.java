@@ -34,11 +34,14 @@ public class PolynomialFactory {
     }
 
     public Polynomial makePolynomial(String str) {
+//        System.out.println("str = " + str);
+        str = str.replaceAll("\\s","");
+//        System.out.println("str = " + str);
         Polynomial poly = new Polynomial(this);
 
         String[] expressions = str.split("\\+");
         for (String expr : expressions) {
-            expr = expr.trim();
+//            expr = expr.trim(); removed since now all white spaces are deleted
 
             String[] subExpressions = expr.split("\\*");
             Double coef = 1d;
@@ -74,8 +77,8 @@ public class PolynomialFactory {
                         throw new PolynomialException("cannot parse: " + subExpr);
                     subExpr = subExpr.substring(includedVar.length() + "^".length());
 
-                    if (!subExpr.startsWith("(")) throw new PolynomialException("'(' expected: " + subExpr);
-                    if (!subExpr.endsWith(")")) throw new PolynomialException("')' expected: " + subExpr);
+                    if (!subExpr.startsWith("(")) throw new PolynomialException("'(' expected in the beginning: " + subExpr);
+                    if (!subExpr.endsWith(")")) throw new PolynomialException("')' expected in the end: " + subExpr);
                     subExpr = subExpr.substring(1, subExpr.length() - 1); //p
                     powers.set(includedVarIndex, Double.valueOf(subExpr));
                 }

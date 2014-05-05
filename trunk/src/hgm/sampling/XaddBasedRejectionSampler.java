@@ -2,31 +2,32 @@ package hgm.sampling;
 
 import hgm.utils.Utils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import xadd.XADD;
 import xadd.XADD.XADDNode;
 
-public class RejectionSampler extends XaddSampler {
+//this class is wrong...
+@Deprecated
+public class XaddBasedRejectionSampler extends XaddSampler {
 
 	private VarAssignment			_initialSample;
 	private double					_M;
 	private HashMap<String, Double>	_lastPoint;
 
-	public RejectionSampler(XADD context, XADDNode root) {
+	public XaddBasedRejectionSampler(XADD context, XADDNode root) {
 		super(context, root);
 
 		init(null);
 	}
 
-	public RejectionSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample) {
+	public XaddBasedRejectionSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample) {
 		super(context, root);
 
 		init(initialSample);
 	}
 
-	public RejectionSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample, double M) {
+	public XaddBasedRejectionSampler(XADD context, XADD.XADDNode root, VarAssignment initialSample, double M) {
 		super(context, root);
 
 		init(initialSample, M);
@@ -54,9 +55,9 @@ public class RejectionSampler extends XaddSampler {
 				for (String cVar : cVars) {
 
 				}
-				super.reusableVarAssignment = MetropolisHastingsSampler.takeInitialSample(	super.context,
-																							super.rootId,
-																							super.cVars, super.bVars);// initialization phase:
+				super.reusableVarAssignment = XaddBasedMetropolisHastingsSampler.takeInitialSample(super.context,
+                        super.rootId,
+                        super.cVars, super.bVars);// initialization phase:
 			} else {
 				super.reusableVarAssignment = _initialSample;
 			}

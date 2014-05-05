@@ -2,6 +2,7 @@ package hgm.poly.sampling;
 
 import hgm.poly.ConstrainedPolynomial;
 import hgm.poly.PolynomialFactory;
+import hgm.poly.pref.*;
 import hgm.poly.vis.FunctionVisualizer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,15 +12,18 @@ import org.junit.Test;
  * Date: 21/02/14
  * Time: 2:34 PM
  */
-public class PolyGibbsSamplerTest {
+
+//TODO NOTE: this is a fast (and incomplete) hack of the other class to test Symbolic and other multi-polytope samplers...
+public class AbstractPolytopesSamplerTest {
     public static String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/sampling/";
 
     public static void main(String[] args) throws Exception {
-        PolyGibbsSamplerTest instance = new PolyGibbsSamplerTest();
+        AbstractPolytopesSamplerTest instance = new AbstractPolytopesSamplerTest();
 //        instance.testUniformInTriangle();
-//        instance.testLinearInTriangle();
+        instance.testLinearInTriangle();
 //        instance.testUniformInRing();
-        instance.testUniformInChewedRing();
+//        instance.testUniformInChewedRing();
+//        instance.testQuadraticInTriangle();
     }
 
     @Test
@@ -59,7 +63,8 @@ public class PolyGibbsSamplerTest {
 
         FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
-        PolyGibbsSampler sampler = PolyGibbsSampler.makeGibbsSampler(cp, minVarLim, maxVarLim, null);
+        AbstractPolytopesSampler sampler = SymbolicGibbsPolytopesSampler.makeSampler(
+                new PosteriorHandler(cp.getPolynomialFactory(), cp, 0, 100), minVarLim, maxVarLim, null);
 
         SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatterGibbs");//"scatter2D");
 
@@ -87,8 +92,8 @@ public class PolyGibbsSamplerTest {
         String cond2 = "x^(1)+y^(1)+-B<0".replaceAll("B", "" + b).replaceAll("W", "" + w);
         String cond3 = "x^(1)+-W*y^(1)+-B<0".replaceAll("B", "" + b).replaceAll("W", "" + w);
         ConstrainedPolynomial cp = factory.makeConstrainedPolynomial(
-                //                "x^(2)+-10*x^(1)+y^(2)"
-                "x^(2)+y^(2)"
+//                "x^(2)+-10*x^(1)+y^(2)"
+                "x^(2)+-10*x^(1)+25+y^(2)"
                 , cond1, cond2, cond3);
 
         double minVarLim = -30d;
@@ -96,7 +101,9 @@ public class PolyGibbsSamplerTest {
 
         FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
-        PolyGibbsSampler sampler = PolyGibbsSampler.makeGibbsSampler(cp, minVarLim, maxVarLim, null);
+        AbstractPolytopesSampler sampler =
+                SymbolicGibbsPolytopesSampler.makeSampler(new PosteriorHandler(cp.getPolynomialFactory(), cp, 0, 100), minVarLim, maxVarLim, null);
+//        GatedGibbsPolytopesSampler.makeSampler(new PolytopesHandler(cp.getPolynomialFactory(), cp, 0, 100), minVarLim, maxVarLim, null);
 
         SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
 
@@ -125,7 +132,7 @@ public class PolyGibbsSamplerTest {
 
         FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
-        PolyGibbsSampler sampler = PolyGibbsSampler.makeGibbsSampler(cp, minVarLim, maxVarLim, null);
+        AbstractPolytopesSampler sampler = SymbolicGibbsPolytopesSampler.makeSampler(new PosteriorHandler(cp.getPolynomialFactory(), cp, 0, 100), minVarLim, maxVarLim, null);
 
         SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
 
@@ -200,9 +207,9 @@ public class PolyGibbsSamplerTest {
     }
 
 
-    public static void testStatistics(String varName, int numSamples, PolyGibbsSampler sampler,
+    public static void testStatistics(String varName, int numSamples, AbstractPolytopesSampler sampler,
                                       double min, double max, double mean, double variance, double epsilon) {
-        Integer varIndex = sampler.cp.getPolynomialFactory().getVarIndex(varName);
+        Integer varIndex = sampler.getFactory().getVarIndex(varName);
         //actual...
         double aMin = Double.POSITIVE_INFINITY;
         double aMax = Double.NEGATIVE_INFINITY;

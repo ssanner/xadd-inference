@@ -44,7 +44,7 @@ public abstract class GPolyPreferenceLearningPredictor implements PreferenceLear
 
         long time1start = System.currentTimeMillis();
         // Pr(W | R^{n+1})
-        PolytopesHandler posterior = learning.computePosteriorWeightVector(maxGateConstraintViolation);
+        PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGateConstraintViolation);
 
         if (DEBUG_MODE) {
             FunctionVisualizer.visualize(posterior, -50, 50, 0.1, "posterior");
@@ -87,7 +87,7 @@ public abstract class GPolyPreferenceLearningPredictor implements PreferenceLear
         return u;
     }
 
-    public abstract GatedGibbsPolytopesSampler makeNewSampler(PolytopesHandler posterior, VarAssignment assignment);
+    public abstract GatedGibbsPolytopesSampler makeNewSampler(PosteriorHandler posterior, VarAssignment assignment);
     /*
     i.e. GatedPolytopesSampler sampler = GatedPolytopesSampler.makeGibbsSampler(
                 minForAllVars,
