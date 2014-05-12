@@ -61,7 +61,7 @@ public class CRTDPFH extends CAMDPsolver {
 		nIter = ni; 
 		valueDDList = new Integer[nIter+1];
 		_logStream = camdp._logStream;
-		solveMethod = "CRTDPFH";
+		solveMethod = "CRTDP";
 		makeResultStream();
 		setupResults();
 	}
@@ -72,7 +72,7 @@ public class CRTDPFH extends CAMDPsolver {
 
 	////////Main Solver Class ///////////////
 	public int solve(){
-		if (MAIN_DEBUG) debugOutput.println("Starting CRTDP-FH solution, Horizon = "+nIter+", nTrial = " + nTrials);
+		if (MAIN_DEBUG) debugOutput.println("Starting "+solveMethod+" solution, Horizon = "+nIter+", nTrial = " + nTrials);
 		if (mdp._initialS == null){
 			System.err.println("Impossible to solve Unknown Initial State MDP with RTDP!");
 			return -1;
@@ -548,8 +548,8 @@ public class CRTDPFH extends CAMDPsolver {
 	}
 	public void saveResults(){
 		//Results per Trial: NIter, Time, Nodes, InitialS Value.
-		for(int i=0; i<=finalTrial; i++){
-			_resultStream.format("%d %d %d %f\n", i, solutionTimeList[i], solutionNodeList[i], (mdp._initialS != null) ? solutionInitialSValueList[i]: "0");
+		for(int i=1; i<=finalTrial; i++){
+			_resultStream.format("%d %f %d %f\n", i, solutionTimeList[i]/1000.0, solutionNodeList[i], (mdp._initialS != null) ? solutionInitialSValueList[i]: "0");
 		}
 		//Results per Update
 		for(int i=0; i<= finalTrial; i++){
@@ -558,27 +558,27 @@ public class CRTDPFH extends CAMDPsolver {
 		}
 		if (mdp.DISPLAY_3D){
 			for(int i=0; i<=nIter; i++){
-				save3D(valueDDList[i], String.format("CRTDPFH-Value%d", i) );
-				saveGraph(valueDDList[i], String.format("CRTDPFH-Value%d", i) );
+				save3D(valueDDList[i], String.format(solveMethod+"-Value%d", i) );
+				saveGraph(valueDDList[i], String.format(solveMethod+"-Value%d", i) );
 			}
 		}
 	}
 	public void printResults() {
 		debugOutput.println("Results for CRTDP-FH: " + finalTrial + " trials of Depth "+nIter);
 		debugOutput.print("Time:"); long sumTime = 0;
-		for(int i=0;i<=finalTrial;i++){ 
+		for(int i=1;i<=finalTrial;i++){ 
 			debugOutput.println();
 			for(int j=nIter; j>0; j--) {
 				debugOutput.print(updateTimes[i][j]+" ");
 			}
 		} 	debugOutput.println(";");
 		debugOutput.print("Nodes:");
-		for(int i=0;i<=finalTrial;i++){ 
+		for(int i=1;i<=finalTrial;i++){ 
 			debugOutput.println();
 			for(int j=nIter; j>0; j--) debugOutput.print(updateNodes[i][j]+" ");
 		} 	debugOutput.println(";");
 		debugOutput.print("Current State Value:");
-		for(int i=0;i<=finalTrial;i++){ 
+		for(int i=1;i<=finalTrial;i++){ 
 			debugOutput.println();
 			for(int j=nIter; j>0; j--) debugOutput.print(updateIniVals[i][j]+" ");
 		} 	debugOutput.println(";");
