@@ -522,6 +522,7 @@ reward ([energy>3 ]
  ([0.0])
 )
 endaction
+
 discount 1.0000000
 InitialState (48000 15) (true false false false false false) 
 iterations 10

@@ -1,6 +1,6 @@
 cvariables (time energy )
 min-values (0 0)
-max-values (57600 20)
+max-values (100 20)
 bvariables (p1 p2 p3 p4 takenp1 takenp2 takenp3 takenp4)
 nvariables()
 icvariables()
@@ -54,7 +54,7 @@ takenp4' (takenp4
     ([1.0])
     ([0.0])
 )
-time' ([time + 1000])
+time' ([time + 10])
 energy' ([energy > 1]
     ([energy - 1])
     ([energy])
@@ -107,7 +107,7 @@ takenp4' (takenp4
     ([1.0])
     ([0.0])
 )
-time' ([time + 1000])
+time' ([time + 10])
 energy' ([energy>1]
     ([energy - 1])
     ([energy])
@@ -160,7 +160,7 @@ takenp4' (takenp4
     ([1.0])
     ([0.0])
 )
-time' ([time + 1000])
+time' ([time + 10])
 energy' ([energy>1]
     ([energy - 1])
     ([energy])
@@ -213,7 +213,7 @@ takenp4' (takenp4
     ([1.0])
     ([0.0])
 )
-time' ([time + 1000])
+time' ([time + 10])
 energy' ([energy>1]
     ([energy - 1])
     ([energy])
@@ -243,8 +243,8 @@ takenp1' (takenp1
     ([1.0])
     ([energy>3 ]
         (p1
-            ([time > 36000]
-                ([time < 44000]
+            ([time > 35 - energy]
+                ([time < 55 + energy]
                     ([1.0])
                     ([0.0]))
                 ([0.0]))
@@ -256,8 +256,8 @@ takenp2' (takenp2
     ([1.0])
     ([energy>3 ]
         (p2
-            ([time > 40000]
-                ([time < 48000]
+            ([time > 45 - energy]
+                ([time < 65 + energy]
                     ([1.0])
                     ([0.0]))
                 ([0.0]))
@@ -269,8 +269,8 @@ takenp3' (takenp3
     ([1.0])
     ([energy>3 ]
         (p3
-            ([time > 44000]
-                ([time < 52000]
+            ([time > 55 - energy]
+                ([time < 75 + energy]
                     ([1.0])
                     ([0.0]))
                 ([0.0]))
@@ -282,8 +282,8 @@ takenp4' (takenp4
     ([1.0])
     ([energy>3 ]
         (p4
-            ([time > 48000]
-                ([time < 56000]
+            ([time > 65 - energy]
+                ([time < 85 + energy]
                     ([1.0])
                     ([0.0]))
                 ([0.0]))
@@ -291,7 +291,7 @@ takenp4' (takenp4
         ([0.0]))
 )  
   
-time' ([time + 2000])
+time' ([time + 10])
 
 energy' ([energy>3 ]
     ([energy - 3])
@@ -300,32 +300,32 @@ energy' ([energy>3 ]
 
 reward ([energy>3 ]
     (p1
-        ([time > 36000]
-            ([time < 44000]
+        ([time > 35 - energy]
+            ([time < 55 + energy]
                 (takenp1
                     ([0.0])
                     ([100.0]))
                 ([0.0]))
             ([0.0]))
         (p2
-            ([time > 40000]
-                ([time < 48000]
+            ([time > 45 - energy]
+                ([time < 65 + energy]
                     (takenp2
                         ([0.0])
                         ([110.0]))
                     ([0.0]))
                 ([0.0]))
             (p3
-                ([time > 44000]
-                    ([time < 52000]
+                ([time > 55 - energy]
+                    ([time < 75 + energy]
                         (takenp3
                             ([0.0])
                             ([120.0]))
                         ([0.0]))
                     ([0.0]))
                 (p4
-                    ([time > 48000]
-                        ([time < 56000]
+                    ([time > 65 - energy]
+                        ([time < 85 + energy]
                             (takenp4
                                 ([0.0])
                                 ([130.0]))
@@ -340,7 +340,7 @@ reward ([energy>3 ]
 endaction
 
 discount 1.0000000
-InitialState (46000 8.5) (true false false false false false false false) 
+InitialState (41 8.5) (true false false false false false false false) 
 iterations 10
 LINEAR
-MAXREWARD 200
+MAXREWARD 150

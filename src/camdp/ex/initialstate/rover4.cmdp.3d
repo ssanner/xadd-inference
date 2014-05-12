@@ -1,4 +1,4 @@
-var	time	-5000	200	60000
+var	time    -10 0.4   100
 var	energy	-5	0.2	60
 bassign	p1	true
 bassign	p2	false

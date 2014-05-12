@@ -32,7 +32,7 @@ public class VI extends CAMDPsolver {
 		context = camdp._context;
 		valueDD = context.NEG_INF;
 		_logStream = camdp._logStream;
-		solveMethod = "VI";
+		solveMethod = "SDP";
 		makeResultStream();
 		nIter = iter;
 		setupResults();
@@ -73,7 +73,7 @@ public class VI extends CAMDPsolver {
 			solutionDDList[curIter] = valueDD;
 			solutionTimeList[curIter] = getElapsedTime() + (curIter >1? solutionTimeList[curIter-1]:0);
 			solutionNodeList[curIter] = context.getNodeCount(valueDD);
-			if (mdp.LINEAR_PROBLEM) solutionMaxValueList[curIter] = context.linMaxVal(valueDD);
+			//if (mdp.LINEAR_PROBLEM) solutionMaxValueList[curIter] = context.linMaxVal(valueDD);
 			if( mdp._initialS != null) solutionInitialSValueList[curIter] = context.evaluate(valueDD, mdp._initialS._hmBoolVars, mdp._initialS._hmContVars);			
 
 			if (ENABLE_EARLY_CONVERGENCE && _prevDD.equals(valueDD) ) {
@@ -341,19 +341,19 @@ public class VI extends CAMDPsolver {
 		solutionTimeList = new long[nIter+1];
 		solutionNodeList = new int[nIter+1];
 		solutionInitialSValueList = new double[nIter+1];
-		solutionMaxValueList = new double[nIter+1];
+//		solutionMaxValueList = new double[nIter+1];
 	}
 
 	public void saveResults(){
 		//Results: NIter, Time, Nodes, InitialS Value.
 		for(int i=1; i<=nIter; i++){
-		_resultStream.format("%d %d %d %f\n", i, solutionTimeList[i], solutionNodeList[i], (mdp._initialS != null) ? solutionInitialSValueList[i]: "0");
+		_resultStream.format("%d %f %d %f\n", i, solutionTimeList[i]/1000.0, solutionNodeList[i], (mdp._initialS != null) ? solutionInitialSValueList[i]: "0");
 		}
 		if (mdp.DISPLAY_3D){
 			for(int i=1; i<=nIter; i++){
 				//System.out.println(" Tree "+solutionDDList[i]);
-				save3D(solutionDDList[i], String.format("VI-Value%d", i) );
-				saveGraph(solutionDDList[i], String.format("VI-Value%d", i) );
+				save3D(solutionDDList[i], String.format(solveMethod+"-Value%d", i) );
+				saveGraph(solutionDDList[i], String.format(solveMethod+"-Value%d", i) );
 			}
 		}
 }
