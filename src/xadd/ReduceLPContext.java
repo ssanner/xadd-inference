@@ -32,6 +32,7 @@ import xadd.XADD.XADDINode;
 
 
 public class ReduceLPContext {
+	
     //ReduceLP Flags
     private final static boolean DEFAULT_CHECK_REDUNDANCY = false;//true; // Test only consistency or also redundancy
     private final static boolean USE_REDUCE_LPv1 = false;//false; //maplist, full redundancy older version
