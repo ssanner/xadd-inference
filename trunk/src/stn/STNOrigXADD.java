@@ -27,7 +27,7 @@ public class STNOrigXADD {
     //
     // Add in VE
     // Add in maintenance of maximizing assignment
-    // Fix infinity detection in computeTermNode (-Inf as well)
+    // Add in and test more complex examples
     public STNOrigXADD() throws Exception {
     	
         _context = new XADD();

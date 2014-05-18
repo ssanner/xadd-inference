@@ -28,7 +28,7 @@ public class STN {
     //
     // Add in VE
     // Add in maintenance of maximizing assignment
-    // Fix infinity detection in computeTermNode (-Inf as well)
+    // Add in and test more complex examples
     public STN() throws Exception {
     	
         _context = new XADD();
