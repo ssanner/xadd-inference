@@ -53,12 +53,12 @@ public class STN {
     
     public void postBoundCons(String j1, int lb, int ub) {
     	int cons = ParseXADDString(_context, "([" + j1 + " >= " + lb + "] ([" + j1 + " <= " + ub + "] ([0]) ([Infinity])) ([Infinity]))");
-    	_context.getGraph(cons).launchViewer("Bound Constraint Pre-reduce");
+    	_context.getGraph(cons).launchViewer("Bound Constraint Pre-ReduceLP");
     	cons = _context.reduceLP(cons);
     	_hmFactor2Name.put(cons, "bound cons:\n" + j1 + " in [ " + lb + ", " +  ub + " ]");
     	_alConsFactors.add(cons);
     	_alAllFactors.add(cons);
-        _context.getGraph(cons).launchViewer("Bound Constraint");
+        _context.getGraph(cons).launchViewer("Bound Constraint Post-ReduceLP");
     }
     
     public void postStartAfterGapCons(String j1, String j2, int gap) {
