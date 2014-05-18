@@ -2,6 +2,10 @@
  * 
  * @author Scott Sanner (ssanner@gmail.com)
  * @author Ehsan Abbasnejad
+ * 
+ * NOTE: This uses package xaddorig since the most recent xadd gives
+ * egregiously incorrect results for inference.  Should more closely
+ * check linear results.
  */
 package sve;
 
@@ -17,11 +21,9 @@ import java.util.Iterator;
 import sve.GraphicalModel.Factor;
 
 import camdp.HierarchicalParser;
-import xadd.XADD;
-import xadd.ExprLib.DoubleExpr;
-import xadd.ExprLib.ArithExpr;
-import xadd.ExprLib.VarExpr;
-import xadd.XADDUtils;
+import xaddorig.XADD;
+import xaddorig.XADDUtils;
+import xaddorig.XADD.*;
 
 public class SVE {
 
@@ -51,6 +53,8 @@ public class SVE {
 
         System.out.println(q._alQueryVars + " | " + q._hmCVarAssign + ", " + q._hmBVarAssign);
 
+        // TODO: should be able to visualize instantiated graphical model
+        
         // TODO: If known to be a Bayes net, can eliminate all descendants of query/evidence
 
         // TODO: Handle unassigned evidence (simply don't instantiate) -- note that this
@@ -127,6 +131,7 @@ public class SVE {
             Factor xadd_with_var = multiplyFactors(factors_with_var);
             System.out.println("Marginalizing out: " + _context.getString(xadd_with_var._xadd));
             Factor xadd_marginal = marginalizeOut(xadd_with_var, var);
+            //_context.getGraph(xadd_marginal._xadd).launchViewer("Marginal after " + _context.getString(xadd_with_var._xadd));
             factors.clear();
             factors.addAll(factors_without_var);
             factors.add(xadd_marginal);
@@ -180,7 +185,7 @@ public class SVE {
     }
 
     private Factor multiplyFactors(ArrayList<Factor> factors) {
-        int mult_xadd = _context.ONE;
+        int mult_xadd = _context.getTermNode(new DoubleExpr(1d));
         for (Factor f : factors)
             mult_xadd = _context.applyInt(mult_xadd, f._xadd, XADD.PROD);
         return _gm.new Factor(mult_xadd);
@@ -371,9 +376,9 @@ public class SVE {
         // Query q = new Query("./src/sve/test.query");
         // Factor result = sve.infer(q);
 
-        // TestLocalization();
+//        TestLocalization();
 		TestRadar();
-//        testTracking();
+//      TestTracking();
     }
 
     public static void TestLocalization() {
@@ -403,7 +408,7 @@ public class SVE {
         // Query q = new Query("./src/sve/radar.query.1");
         // gm.instantiateGMTemplate(q._hmVar2Expansion);
         // System.out.println(gm);
-
+        
         Query q1 = new Query("./src/sve/radar.query.5");
         Factor result1 = sve.infer(q1, CreateRadarVariableOrder(q1));
 
@@ -434,7 +439,7 @@ public class SVE {
         return var_order;
     }
 
-    public static void testTracking() {
+    public static void TestTracking() {
 
         GraphicalModel gm = new GraphicalModel("./src/sve/tracking.gm");
         SVE sve = new SVE(gm);

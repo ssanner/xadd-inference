@@ -108,6 +108,7 @@ public abstract class ExprLib {
     public final static ArithExpr NEG_ONE = new DoubleExpr(-1d);
     public final static ArithExpr POS_INF = new DoubleExpr(Double.POSITIVE_INFINITY);
     public final static ArithExpr NEG_INF = new DoubleExpr(Double.NEGATIVE_INFINITY);
+    public final static ArithExpr NAN = new DoubleExpr(Double.NaN);
 
     public final static DecimalFormat _df = new DecimalFormat("#.########");
     public final static DecimalFormat _df_unformatted = new DecimalFormat("#.########");

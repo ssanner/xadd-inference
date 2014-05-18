@@ -34,6 +34,8 @@ public class XADDParseUtils {
                 return context.NEG_INF;
             } else if (s.equalsIgnoreCase("illegal") || s.equalsIgnoreCase("pos-inf") || s.equalsIgnoreCase("Infinity")) {
                 return context.POS_INF;
+            } else if (s.equalsIgnoreCase("nan") || s.equalsIgnoreCase("NotANumber") || s.equalsIgnoreCase("not-a-number")) {
+                return context.NAN;
             } else {
                 int n = ParseIntoXADD(context, s);
                 if (n < 0) {
@@ -67,8 +69,13 @@ public class XADDParseUtils {
                 int var = context.getVarIndex(d, true);
                 int high = BuildCanonicalXADD(context, (ArrayList) l.get(1));
                 int low = BuildCanonicalXADD(context, (ArrayList) l.get(2));
-
-                return context.getINodeCanon(var, low, high);
+                int inode = context.getINodeCanon(var, low, high);
+                
+//                context.getGraph(high).launchViewer("[" + inode + "] Input High");
+//                context.getGraph(low).launchViewer("[" + inode + "] Input Low");
+//                context.getGraph(inode).launchViewer("[" + inode + "] Output INode");
+                
+                return inode;
             }
         } else {
             // Unknown

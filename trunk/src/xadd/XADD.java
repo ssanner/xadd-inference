@@ -87,7 +87,7 @@ public class XADD {
     public static double PRECISION = 0.0;//1e-10;//0.0;//1e-10;   //'final' removed by Hadi. Hadi makes it 0.0 (see equality() of class DoubleExpr for the reason behind it)
     public final static double DEFAULT_UPPER_BOUND = Double.MAX_VALUE;//1e+10d; //change by Hadi
     public final static double DEFAULT_LOWER_BOUND = -DEFAULT_UPPER_BOUND;
-    public static final Integer ROUND_PRECISION = null;//1000000;//changed by Hadi. Null represents no rounding (solves lots of problems)
+    public static final Integer ROUND_PRECISION = null;//1000000;//null changed by Hadi. Null represents no rounding (solves lots of problems)
 
     //XADD Variable Maintenance
     public HashSet<String> _hsBooleanVars = new HashSet<String>();
@@ -130,7 +130,7 @@ public class XADD {
     public int ONE = -1;
     public int POS_INF = -1;
     public int NEG_INF = -1;
-
+    public int NAN = -1;
 
     /////////////////////////////////////////////////////////
     //                   XADD Methods                      //
@@ -159,6 +159,7 @@ public class XADD {
         ONE = getTermNode(ExprLib.ONE);
         POS_INF = getTermNode(ExprLib.POS_INF);
         NEG_INF = getTermNode(ExprLib.NEG_INF);
+        NAN = getTermNode(ExprLib.NAN);
     }
 
     //Adding XADD Variables
@@ -266,15 +267,21 @@ public class XADD {
             _alOrder.add(d);
             index = _alOrder.size() - 1;
 
-            if (d instanceof ExprDec) {
+            if (d instanceof BoolDec) {
+                if (_hsBooleanVars.add(((BoolDec)d)._sVarName)) // false if already in set
+                    _alBooleanVars.add(((BoolDec)d)._sVarName);
+            } else if (d instanceof ExprDec) {
                 HashSet<String> all_vars = new HashSet<String>();
                 ((ExprDec) d)._expr.collectVars(all_vars);
-                for (String s : all_vars)
-                    // Boolean variables would have been added immediately in BoolDec
-                    // so are already in _hsBooleanVars
-                    if (!_hsBooleanVars.contains(s) && !_hsContinuousVars.contains(s)) {
-                        addContinuousVar(s);
+                for (String s : all_vars) {
+                    // Expressions should only contain continuous variables
+                    if (_hsBooleanVars.contains(s)) {
+                    	System.err.println("getVarIndex: " + s + " cannot be both a boolean and continuous variable, i.e., in " + d);
+                    	System.exit(1);
                     }
+                    if (!_hsContinuousVars.contains(s))
+                        addContinuousVar(s);
+                }
             }
             return index;
         }
@@ -372,6 +379,11 @@ public class XADD {
         // this enforces canonicity so can use applyInt rather than apply
         int false_half = applyInt(ind_false, low, PROD);
         int result = applyInt(true_half, false_half, SUM);
+        
+//        getGraph(true_half).launchViewer("[" + result + "] INode Input True Half");
+//        getGraph(false_half).launchViewer("[" + result + "] Input Input False Half");
+//        getGraph(result).launchViewer("[" + result + "] Output INode");
+        
         return result;
     }
 
@@ -770,14 +782,19 @@ public class XADD {
     // Computes a terminal node value if possible
     public Integer computeTermNode(int a1, XADDNode n1, int a2, XADDNode n2, int op) {
 
+    	//System.out.println("computeTermNode: " + n1 + ", " + n2);       
+
+    	// Zero identities first -- critical for getINodeCanon to work
+    	if (op == PROD && 
+    			(n1 instanceof XADDTNode && ((XADDTNode)n1)._expr.equals(ExprLib.ZERO) ||
+    		    (n2 instanceof XADDTNode && ((XADDTNode)n2)._expr.equals(ExprLib.ZERO)))) {
+    		return ZERO;
+        }
+            
         // Check for identities if first operand is terminal
         if (n1 instanceof XADDTNode) {
 
             XADDTNode xa1 = (XADDTNode) n1;
-
-            // 0 * anything (even infinity) = 0
-            if (op == PROD && xa1._expr.equals(ExprLib.ZERO))
-                return ZERO;
 
             // Check for identity operation value for n1
             if ((op == SUM && xa1._expr.equals(ExprLib.ZERO))
@@ -785,16 +802,22 @@ public class XADD {
                 return a2;
             }
 
+            // NaN identity for terminal computations (any tnode op NaN = NaN)
+            if (n2 instanceof XADDTNode &&
+            	xa1._expr instanceof DoubleExpr && Double.isNaN(((DoubleExpr)xa1._expr)._dConstVal)) {
+                return NAN;
+            }
+
             // Infinity identities
             // NOTE: * and / can only be evaluated on leaf since 0*inf = 0, but for x!=0 x*inf = inf
-            if (xa1._expr.equals(ExprLib.POS_INF)) {
-                // +inf op a2
+            if (xa1._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa1._expr)._dConstVal) && ((DoubleExpr)xa1._expr)._dConstVal > 0) {
+               // +inf op a2
                 if (op == SUM || op == MINUS || op == MAX
                         || ((op == PROD || op == DIV) && (n2 instanceof XADDTNode) && !((XADDTNode) n2).equals(ExprLib.ZERO)))
                     return POS_INF;
                 else if (op == MIN)
                     return a2;
-            } else if (xa1._expr.equals(ExprLib.NEG_INF)) {
+            } else if (xa1._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa1._expr)._dConstVal) && ((DoubleExpr)xa1._expr)._dConstVal < 0) {
                 // -inf op a2
                 if (op == SUM || op == MINUS || op == MIN
                         || ((op == PROD || op == DIV) && (n2 instanceof XADDTNode) && !((XADDTNode) n2).equals(ExprLib.ZERO)))
@@ -803,15 +826,11 @@ public class XADD {
                     return a2;
             }
         }
-
+        
         // Check for identities if second operand is terminal
         if (n2 instanceof XADDTNode) {
 
             XADDTNode xa2 = (XADDTNode) n2;
-
-            // anything (even infinity) * 0 = 0
-            if (op == PROD && xa2._expr.equals(ExprLib.ZERO))
-                return ZERO;
 
             // Check for identity operation value for n2
             if ((op == SUM && xa2._expr.equals(ExprLib.ZERO))
@@ -821,15 +840,21 @@ public class XADD {
                 return a1;
             }
 
+            // NaN identity for terminal computations (any tnode op NaN = NaN)
+            if (n1 instanceof XADDTNode &&
+                xa2._expr instanceof DoubleExpr && Double.isNaN(((DoubleExpr)xa2._expr)._dConstVal)) {
+	            return NAN;
+	        }
+
             // Infinity identities
-            if (xa2._expr.equals(POS_INF)) {
+            if (xa2._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa2._expr)._dConstVal) && ((DoubleExpr)xa2._expr)._dConstVal > 0) { // (xa2._expr.equals(POS_INF)) {
                 // a1 op +inf
                 if (op == SUM || op == MAX || (op == PROD && (n1 instanceof XADDTNode) && !((XADDTNode) n1).equals(ZERO)))
                     return POS_INF;
                     // Not sure how to handle minus and div, ignoring for now
                 else if (op == MIN)
                     return a1;
-            } else if (xa2._expr.equals(NEG_INF)) {
+            } else if (xa2._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa2._expr)._dConstVal) && ((DoubleExpr)xa2._expr)._dConstVal < 0) {
                 // a1 op -inf
                 if (op == SUM || op == MIN || (op == PROD && (n1 instanceof XADDTNode) && !((XADDTNode) n1).equals(ZERO)))
                     return NEG_INF;
@@ -838,7 +863,7 @@ public class XADD {
                     return a1;
             }
         }
-
+        
         // Handle result if both operands are terminals and one of the special
         // identities above did not hold
         if ((n1 instanceof XADDTNode) && (n2 instanceof XADDTNode)) {
@@ -1337,7 +1362,7 @@ public class XADD {
     }
 
     public void flushCaches() {
-        //System.out.print("[FLUSHING CACHES... ");
+        System.out.print("[FLUSHING CACHES... " + (_hmNode2Int.size() + _hmInt2Node.size()) + " nodes -> ");
 
         // Can always clear these
         _hmReduceCache.clear();
@@ -1365,6 +1390,8 @@ public class XADD {
         //_hmNode2Int.clear();
         //_hmInt2Node.clear();
 
+        System.out.println((_hmNode2Int.size() + _hmInt2Node.size()) + " nodes]");
+        
         Runtime.getRuntime().gc();
 
     }
@@ -2741,8 +2768,6 @@ public class XADD {
 
         public BoolDec(String var_name) {
             _sVarName = var_name.intern();
-            if (_hsBooleanVars.add(_sVarName)) // false if already in set
-                _alBooleanVars.add(_sVarName);
         }
 
         public int hashCode() {
