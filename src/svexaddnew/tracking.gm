@@ -1,0 +1,8 @@
+cvariables (d x_i)
+min-values (-10 -10)
+max-values (20 20)
+bvariables ( )
+
+d ([U(d,0,0,10)])
+
+x_i ([0.05*U(x_i,0,0,10) + 0.85*N(x_i,d,2,2.5) + 0.1*T(x_i,10,1,0)])

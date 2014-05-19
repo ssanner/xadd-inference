@@ -1,0 +1,18 @@
+cvariables (x_i o_i)
+min-values (-10 -10)
+max-values (20 20)
+bvariables (b_i)
+
+b_i' (b_i 
+        ([1.0])
+        ([0.2]))
+
+b_1 ([0.2])
+
+x_i' ([N(x_i',x_i,2,3)])
+
+x_1 ([U(x_1,0,0,10)])
+
+o_i (b_i
+        ([T(o_i,x_i,5,1)])
+        ([T(o_i,x_i,5,5)]))
