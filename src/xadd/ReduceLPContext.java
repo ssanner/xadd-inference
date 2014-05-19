@@ -37,7 +37,7 @@ public class ReduceLPContext {
     private final static boolean DEFAULT_CHECK_REDUNDANCY = false;//true; // Test only consistency or also redundancy
     private final static boolean USE_REDUCE_LPv1 = false;//false; //maplist, full redundancy older version
     private final static boolean USE_REDUCE_LPv2 = true;//true; //hashSet, result implied redundancy new version
-    private final static boolean SKIP_TEST2 = false; //Skip Minimal region removal
+    private final static boolean SKIP_TEST2 = true; //Skip Minimal region removal
     public static final boolean SINGLE_PATH_IMPLIED_RESULT = false; //Stop search if need to check more than one path
 
     private static final boolean ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP = false; //Add bounds as explicit constraints (should not be necessary)
@@ -697,9 +697,11 @@ public class ReduceLPContext {
 
                 Decision d = context._alOrder.get(Math.abs(decision));
                 if (!(d instanceof ExprDec)) continue;
+                CompExpr compar = (CompExpr) ((ExprDec) d)._expr;
+                boolean greaterComp = compar.isGreater();  
                 ArithExpr exp = ((CompExpr) ((ExprDec) d)._expr)._lhs;
                 constC = setCoefficientsLocal(exp, constrCoef2);
-                if (decision > 0) {
+                if ( (greaterComp && decision > 0) || (!greaterComp && decision < 0) ) {
                     constrCoef2[nvars] = -1; // c + f*x > 0 => f*x - S > -c
                     lp2.addGeqConstraint(constrCoef2, -constC);
                 } else {
@@ -712,7 +714,8 @@ public class ReduceLPContext {
             soln2 = silentSolvelp(lp2);
             double maxSlack = lp2._dObjValue;
 
-            if (lp2._status == LpSolve.INFEASIBLE) {
+            if (lp2._status == LpSolve.UNBOUNDED) {
+            } else if (lp2._status == LpSolve.INFEASIBLE) {
                 if (!QUIET){
                 	System.err.println("Infeasible at test 2? should have failed the first test!");
                 	showDecListEval(test_dec, soln);
