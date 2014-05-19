@@ -177,6 +177,9 @@ public abstract class ExprLib {
             _rhs = rhs;
         }
 
+        public boolean isGreater(){
+        	return (_type == CompOperation.GT || _type == CompOperation.GT_EQ);
+        }
         public String toString(boolean format) {
             return _lhs.toString(format) + " " + _type + " "
                     + _rhs.toString(format);
