@@ -2,12 +2,16 @@ package stn;
 
 import graph.Graph;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
-import camdp.CAction;
 import camdp.HierarchicalParser;
 
 import util.DevNullPrintStream;
+import util.Timer;
 
 import xadd.*;
 import xadd.XADD.*;
@@ -15,10 +19,11 @@ import xadd.ExprLib.*;
 
 public class STN {
 
+	public final static boolean DISPLAY = true;
+	
 	public XADD _context = null;
 	public HashMap<Integer,String> _hmFactor2Name = null;
 	
-	public Integer _obj = null;
     ArrayList<Integer> _alObjFactors  = null;
     ArrayList<Integer> _alConsFactors = null;
     ArrayList<Integer> _alAllFactors  = null;
@@ -39,26 +44,140 @@ public class STN {
         _alAllFactors  = new ArrayList<Integer>();
     }
     
-    public void initObjective() {
+    public double solveMonolithic() {
 
-    	_obj = null;
+    	Timer timer = new Timer();
+    	Integer obj = null;
     	
         for (Integer f : _alObjFactors)
-        	_obj = (_obj == null ? f : addInObjective(_obj, f));
+        	obj = (obj == null ? f : addInFactor(obj, f));
         
         for (Integer f : _alConsFactors)
-        	_obj = addInObjective(_obj, f);
+        	obj = addInFactor(obj, f);
 
+        //if (DISPLAY) _context.getGraph(obj).launchViewer("Monolithic Objective");
+        System.out.println("Monolithic XADD objective: " + _context.getNodeCount(obj) + " nodes");
+        
+        timer.ResetTimer();
+        HashSet<String> vars = _context.collectVars(obj);
+        for (String v : vars) {
+        	
+        	if (_context._alBooleanVars.contains(v)) {
+        		// Boolean variable
+        		obj = minOutBVar(obj, v);
+        		
+        	} else {
+        		// Continuous variable
+        		if (!_context._cvar2ID.containsKey(v)) {
+        			System.err.println(v + " not recognized as a continuous var");
+        			System.exit(1);
+        		}
+        		obj = minOutCVar(obj, v, -Double.MAX_VALUE, Double.MAX_VALUE);
+        	}
+        	
+        	obj = _context.reduceLP(obj);
+        }
+        
+        //_context.getGraph(obj).launchViewer("Result");
+	    double result_val = ((DoubleExpr)((XADDTNode)_context.getNode(obj))._expr)._dConstVal;
+	    System.out.println("solveMonolithic Done (" + timer.GetCurElapsedTime() + " ms): result " + result_val + /*" [size: " + _context.getNodeCount(obj) + ", vars: " + _context.collectVars(obj) + "]"*/ "\n");
+        
+        return result_val;
     }
+        
+    public double solveBucketElim() {
+    	
+    	Timer timer = new Timer();
+    	ArrayList<String> var_order = getTWMinVarOrder();
+    		
+	    // Do bucket/variable elimination
+    	ArrayList<Integer> factors = (ArrayList<Integer>)_alAllFactors.clone();
+	    ArrayList<Integer> factors_with_var = new ArrayList<Integer>();
+	    ArrayList<Integer> factors_without_var = new ArrayList<Integer>();
+	    
+	    timer.ResetTimer();
+	    for (String var : var_order) {
+	        System.out.println("Eliminating: " + var + ", " + factors.size() + " factors (max: " + largestFactorSize(factors) + " nodes)");
+	
+	        // Split factors into sets that contain and do not contain the variable
+	        splitFactors(var, factors, factors_with_var, factors_without_var);
+	        System.out.println(" - with var: " + factors_with_var.size() + ", without var: "
+	                + factors_without_var.size());
+	
+	        // Multiply factors that contain variable and marginalize out variable,
+	        // adding this new factor and all without the variable to the factors list
+	        int factor_with_var = addFactors(factors_with_var);
+	        int projected_factor = minOutVar(factor_with_var, var);
+	        projected_factor = _context.reduceLP(projected_factor);
+	        System.out.println(" - pre-projection factor size: " + _context.getNodeCount(factor_with_var) + ", vars: " + _context.collectVars(factor_with_var).size() + " " + _context.collectVars(factor_with_var));
+	        //_context.getGraph(projected_factor).launchViewer("Projected factor " + projected_factor);
+	        System.out.println(" - post-projection factor size: " + _context.getNodeCount(projected_factor) + ", vars: " + _context.collectVars(projected_factor).size() + " " + _context.collectVars(projected_factor));
+	        factors.clear();
+	        factors.addAll(factors_without_var);
+	        factors.add(projected_factor);
+	        System.out.println(" - remaining factors: " + factors.size());
+	
+	        // Flush caches
+	        _context.clearSpecialNodes();
+	        for (Integer xadd : _alAllFactors)
+	            _context.addSpecialNode(xadd);
+	        for (Integer f : factors)
+	            _context.addSpecialNode(f);
+	        _context.flushCaches();
+	    }
+	
+	    // Done variable elimination, have a set of factors just over query vars,
+	    // need to compute normalizer
+	    Integer result = addFactors(factors);
+	    double result_val = ((DoubleExpr)((XADDTNode)_context.getNode(result))._expr)._dConstVal;
+	    System.out.println("solveBucketElim Done (" + timer.GetCurElapsedTime() + " ms): result value " + result_val + /*" [size: " + _context.getNodeCount(result) + ", vars: " + _context.collectVars(result) + "]"*/ "\n");
+	    //_context.getGraph(result).launchViewer("Final result " + result);
+	
+	    return result_val;
+	}
+	
+	private ArrayList<String> getTWMinVarOrder() {
+
+		Graph g = getVariableConnectivityGraph(_alAllFactors);
+		if (DISPLAY) g.launchViewer("Variable connectivity");
+		ArrayList<String> var_order = (ArrayList<String>) g.computeBestOrder();
+		return var_order;
+	}
+	
+    public int largestFactorSize(ArrayList<Integer> factors) {
+    	int max_nodes = -1;
+    	for (Integer f : factors)
+    		max_nodes = Math.max(max_nodes, _context.getNodeCount(f));
+    	return max_nodes;
+    }
+
+	private void splitFactors(String split_var, ArrayList<Integer> factor_source, ArrayList<Integer> factors_with_var,
+	                          ArrayList<Integer> factors_without_var) {
+	
+	    factors_with_var.clear();
+	    factors_without_var.clear();
+	    for (Integer f : factor_source)
+	        if (_context.collectVars(f).contains(split_var))
+	            factors_with_var.add(f);
+	        else
+	            factors_without_var.add(f);
+	}
+	
+	private Integer addFactors(ArrayList<Integer> factors) {
+	    int add_xadd = _context.getTermNode(new DoubleExpr(0d));
+	    for (Integer f : factors)
+	        add_xadd = _context.applyInt(add_xadd, f, XADD.SUM);
+	    return add_xadd;
+	}
     
     public void postBoundCons(String j1, int lb, int ub) {
     	int cons = ParseXADDString(_context, "([" + j1 + " >= " + lb + "] ([" + j1 + " <= " + ub + "] ([0]) ([Infinity])) ([Infinity]))");
-    	_context.getGraph(cons).launchViewer("Bound Constraint Pre-ReduceLP");
+    	//_context.getGraph(cons).launchViewer("Bound Constraint Pre-ReduceLP");
     	cons = _context.reduceLP(cons);
     	_hmFactor2Name.put(cons, "bound cons:\n" + j1 + " in [ " + lb + ", " +  ub + " ]");
     	_alConsFactors.add(cons);
     	_alAllFactors.add(cons);
-        _context.getGraph(cons).launchViewer("Bound Constraint Post-ReduceLP");
+        //_context.getGraph(cons).launchViewer("Bound Constraint Post-ReduceLP");
     }
     
     public void postStartAfterGapCons(String j1, String j2, int gap) {
@@ -80,7 +199,7 @@ public class STN {
     	_hmFactor2Name.put(dcons, "disj cons:\n" + j1 + " in [ " + lb1 + ", " +  ub1 + " ] OR [" + j1 + " in [ " + lb2 + ", " +  ub2 + " ]");
     	_alConsFactors.add(dcons);
     	_alAllFactors.add(dcons);
-       _context.getGraph(dcons).launchViewer("Disjunctive Constraint");
+        //_context.getGraph(dcons).launchViewer("Disjunctive Constraint");
     }
     
     public void postPrefCons(String j1, int time, double before, double after) {
@@ -92,7 +211,7 @@ public class STN {
         //_context.getGraph(cons).launchViewer("Bound Constraint");
     }
     
-    public void postObjective(List<String> jobs) {
+    public void postAdditiveObjective(List<String> jobs) {
     	//int obj = _context.ZERO;
     	//StringBuilder sobj = new StringBuilder();
     	for (String j : jobs) {
@@ -112,7 +231,28 @@ public class STN {
         //_context.getGraph(obj).launchViewer("Objective");
     }
     
-    public int addInObjective(int obj, int cons) {
+    public void postMakespanObjective(List<String> jobs) {
+    	
+    	Integer max = null;
+    	Integer min = null;
+    	for (String j : jobs) {
+    		int job_time = ParseXADDString(_context, "([" + j + "])");
+    		max = (max == null ? job_time : _context.apply(max, job_time, XADD.MAX));
+    		min = (min == null ? job_time : _context.apply(min, job_time, XADD.MIN));
+        	max = _context.reduceLP(max);
+        	min = _context.reduceLP(min);
+    	}
+
+    	int makespan_obj = _context.applyInt(max, min, XADD.MINUS);
+    	
+    	_hmFactor2Name.put(makespan_obj, "obj: makespan" + jobs);
+    	_alObjFactors.add(makespan_obj);
+      	_alAllFactors.add(makespan_obj);       		
+
+        //_context.getGraph(obj).launchViewer("Makespan Objective");
+    }
+    
+    public int addInFactor(int obj, int cons) {
     	obj = _context.apply(obj, cons, XADD.SUM);
     	obj = _context.reduceLP(obj);
     	return obj;
@@ -142,6 +282,22 @@ public class STN {
         return result;
     }
     
+    public int minOutVar(int obj, String var) {
+    	if (_context._alBooleanVars.contains(var)) {
+    		// Boolean variable
+    		return minOutBVar(obj, var);
+    		
+    	} else {
+    		// Continuous variable
+    		if (!_context._cvar2ID.containsKey(var)) {
+    			System.err.println(var + " not recognized as a continuous var");
+    			try { System.in.read(); } catch (Exception e) { }
+    			System.exit(1);
+    		}
+    		return minOutCVar(obj, var, -Double.MAX_VALUE, Double.MAX_VALUE);
+    	}
+    }
+    
     public Graph getConstraintGraph(ArrayList<Integer> factors) {
     	
         Graph g = new Graph(/*directed*/false, false, true, false);
@@ -167,6 +323,23 @@ public class STN {
     	return g;
     }
     
+    public Graph getVariableConnectivityGraph(ArrayList<Integer> factors) {
+    	
+        Graph g = new Graph(/*directed*/false, false, true, false);
+
+        for (Integer f : factors) {
+        	HashSet<String> vars = _context.collectVars(f);
+        	g.addAllBiLinks(vars, vars);
+        	for (String v : vars) {
+        		g.addNodeColor(v, "lightblue");
+            	g.addNodeStyle(v, "filled");
+            	g.addNodeShape(v, "ellipse");
+        	}
+        }
+ 
+    	return g;
+    }
+  
     public static int ParseXADDString(XADD xadd_context, String s) {
     	ArrayList l = HierarchicalParser.ParseString(s);
         // System.out.println("Parsed: " + l);
@@ -176,49 +349,66 @@ public class STN {
     // ===============================================================================
     
     public static void main(String[] args) throws Exception {
-   		Test1();
+    	
+    	//STN stn = BuildSimpleSTN(false /* true = additive obj, false = makespan obj */);
+    	STN stn = BuildLinearSTN(true /* true = additive obj, false = makespan obj */, 10 /* size */);
+    	
+    	if (DISPLAY) stn.getConstraintGraph(stn._alAllFactors).launchViewer("Constraint factor graph");
+
+        stn.solveBucketElim();
+        stn.solveMonolithic();
     }
 
-    public static void Test1() throws Exception {
+    public static STN BuildSimpleSTN(boolean additive_obj) throws Exception {
     	
     	STN stn = new STN();
     	        
         List<String> jobs = Arrays.asList(new String[] {"t1", "t2", "t3"});
               
-        stn.postObjective(jobs);
+        if (additive_obj)
+        	stn.postAdditiveObjective(jobs);
+        else
+        	stn.postMakespanObjective(jobs);
         
-        stn.postBoundCons("t1", 10, 20);
-//        stn.postBoundCons("t2", 20, 40);
-//        stn.postBoundCons("t3", 0, 70);
-//
-//        stn.postDisjCons("t1", 10, 20, 50, 60);
-//
-//        stn.postStartAfterGapCons("t1", "t2", 10);
-//        stn.postStartAfterGapCons("t2", "t3", 20);
-//        stn.postStartAfterGapCons("t1", "t3", 30);
-//        
-//        stn.postPrefCons("t1", 20, -20.0, 0.0);
-//        
-//        stn.getConstraintGraph(stn._alAllFactors).launchViewer("Constraint factor graph");
-//
-//        stn.initObjective();
-//                
-//        stn._context.getGraph(stn._obj).launchViewer("Constrained objective");
-//        
-//        System.out.println("Vars: " + stn._context._alBooleanVars + ", " + stn._context._cvar2ID.keySet() + " == " + stn._context.collectVars(stn._obj));
-//        
-//		// Maximize objective
-//		stn._obj = stn.minOutCVar(stn._obj, "t1", 0d, 60d);
-//		stn._context.getGraph(stn._obj).launchViewer("Constrained objective after min-out t1");
-//		
-//		stn._obj = stn.minOutCVar(stn._obj, "t2", 0d, 60d);
-//		stn._context.getGraph(stn._obj).launchViewer("Constrained objective after min-out t1, t2");
-//		
-//		stn._obj = stn.minOutCVar(stn._obj, "t3", 0d, 60d);
-//		stn._context.getGraph(stn._obj).launchViewer("Constrained objective after min-out t1, t2, t3");
-//
-//		stn._obj = stn.minOutBVar(stn._obj, "bt1");
-//		stn._context.getGraph(stn._obj).launchViewer("Constrained objective after min-out t1, t2, t3, bt1");
+        //stn.postBoundCons("t1", 10, 20);
+        stn.postBoundCons("t2", 20, 40);
+        stn.postBoundCons("t3", 0, 70);
+
+        stn.postDisjCons("t1", 10, 20, 50, 60);
+
+        stn.postStartAfterGapCons("t1", "t2", 10);
+        stn.postStartAfterGapCons("t2", "t3", 20);
+        stn.postStartAfterGapCons("t1", "t3", 30);
+        
+        stn.postPrefCons("t1", 20, -20.0, 0.0);
+        
+        return stn;
+    }
+
+    public static STN BuildLinearSTN(boolean additive_obj, int size) throws Exception {
+    	
+		STN stn = new STN();
+		
+		List<String> jobs = new ArrayList<String>();
+		for (int j = 1; j <= size; j++)
+			jobs.add("t" + j);
+    			        
+		if (additive_obj)
+			stn.postAdditiveObjective(jobs);
+		else
+			stn.postMakespanObjective(jobs);
+		    
+		for (int j = 1; j <= size; j++) {
+			stn.postDisjCons("t" + j, j*10, (j+1)*10, (j+2)*10, (j+3)*10);
+			stn.postPrefCons("t" + j, (j+1)*10, 1.0, 0.0);
+		}
+
+		// Loop until 1 before end
+		for (int j = 1; j < size; j++) {
+	        stn.postStartAfterGapCons("t" + j, "t" + (j+1), 10);
+		}
+		
+		return stn;
     }
 
 }
