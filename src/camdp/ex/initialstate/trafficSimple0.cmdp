@@ -1,0 +1,86 @@
+cvariables (kn kw kc vc)
+min-values (0 0 0 0)
+max-values (1 1 1 1)
+bvariables()
+nvariables()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables()
+
+action N80
+kn' ([kn * (1 - 0.8*vc) + 0.2 >= 1]
+            ([1])
+            ([kn * (1 - 0.8*vc) + 0.2 <= 0]
+                ([0])
+                ([kn * (1 - 0.8*vc) + 0.2])
+            )
+        )
+kw' ([kw * (1 - 0.2*vc) + 0.1 >= 1]
+            ([1])
+            ([kw * (1 - 0.2*vc) + 0.1 <= 0]
+                ([0])
+                ([kw * (1 - 0.2*vc) + 0.1])
+            )
+        )
+kc' ([kc + 0.8*kn*vc + 0.2*kw*vc - 0.3 >= 1]
+            ([1])
+            ([kc + 0.8*kn*vc + 0.2*kw*vc - 0.3 <= 0]
+                ([0])
+                ([kc + 0.8*kn*vc + 0.2*kw*vc - 0.3])
+            )
+        )
+vc' ([kc < 0.25]
+            ([0.5])
+            ([kc < 0.5]
+                ([0.75 - kc])
+                ([0.25*(1*kc*kc - 3*kc + 2)])
+            )
+        )
+reward ([kc > 0.3]
+            ([0.3])
+            (kc)
+       )
+endaction
+
+action N20
+kn' ([kn * (1 - 0.2*vc) + 0.2 >= 1]
+            ([1])
+            ([kn * (1 - 0.2*vc) + 0.2 <= 0]
+                ([0])
+                ([kn * (1 - 0.2*vc) + 0.2])
+            )
+        )
+kw' ([kw * (1 - 0.8*vc) + 0.1 >= 1]
+            ([1])
+            ([kw * (1 - 0.8*vc) + 0.1 <= 0]
+                ([0])
+                ([kw * (1 - 0.8*vc) + 0.1])
+            )
+        )
+kc' ([kc + 0.2*kn*vc + 0.8*kw*vc - 0.3 >= 1]
+            ([1])
+            ([kc + 0.2*kn*vc + 0.8*kw*vc - 0.3 <= 0]
+                ([0])
+                ([kc + 0.2*kn*vc + 0.8*kw*vc - 0.3])
+            )
+        )
+vc' ([kc < 0.25]
+            ([0.5])
+            ([kc < 0.5]
+                ([0.75 - kc])
+                ([0.25*(1*kc*kc - 3*kc + 2)])
+            )
+        )
+reward ([kc > 0.3]
+            ([0.3])
+            (kc)
+       )
+endaction
+
+discount 1.0000000
+InitialState (0.5 0.5 0.25 0.5) () 
+iterations 12
+NONLINEAR
+MAXREWARD 0.4
