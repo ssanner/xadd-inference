@@ -17,7 +17,7 @@ import xadd.*;
 import xadd.XADD.*;
 import xadd.ExprLib.*;
 
-public class STN {
+public class STPPD {
 
 	public final static boolean DISPLAY = true;
 	
@@ -34,7 +34,7 @@ public class STN {
     // Add in VE
     // Add in maintenance of maximizing assignment
     // Add in and test more complex examples
-    public STN() throws Exception {
+    public STPPD() throws Exception {
     	
         _context = new XADD();
         _hmFactor2Name = new HashMap<Integer,String>();
@@ -350,8 +350,8 @@ public class STN {
     
     public static void main(String[] args) throws Exception {
     	
-    	//STN stn = BuildSimpleSTN(false /* true = additive obj, false = makespan obj */);
-    	STN stn = BuildLinearSTN(true /* true = additive obj, false = makespan obj */, 10 /* size */);
+    	//STPPD stn = BuildSimpleSTPPD(false /* true = additive obj, false = makespan obj */);
+    	STPPD stn = BuildLinearSTPPD(true /* true = additive obj, false = makespan obj */, 10 /* size */);
     	
     	if (DISPLAY) stn.getConstraintGraph(stn._alAllFactors).launchViewer("Constraint factor graph");
 
@@ -359,9 +359,9 @@ public class STN {
         stn.solveMonolithic();
     }
 
-    public static STN BuildSimpleSTN(boolean additive_obj) throws Exception {
+    public static STPPD BuildSimpleSTPPD(boolean additive_obj) throws Exception {
     	
-    	STN stn = new STN();
+    	STPPD stn = new STPPD();
     	        
         List<String> jobs = Arrays.asList(new String[] {"t1", "t2", "t3"});
               
@@ -385,9 +385,9 @@ public class STN {
         return stn;
     }
 
-    public static STN BuildLinearSTN(boolean additive_obj, int size) throws Exception {
+    public static STPPD BuildLinearSTPPD(boolean additive_obj, int size) throws Exception {
     	
-		STN stn = new STN();
+		STPPD stn = new STPPD();
 		
 		List<String> jobs = new ArrayList<String>();
 		for (int j = 1; j <= size; j++)
