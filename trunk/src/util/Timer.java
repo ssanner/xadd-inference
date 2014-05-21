@@ -25,4 +25,8 @@ public class Timer {
     public long GetElapsedTime() {
         return _lElapsedTime;
     }
+
+	public long GetCurElapsedTime() {
+		return System.currentTimeMillis() - _lTime;
+	}
 }

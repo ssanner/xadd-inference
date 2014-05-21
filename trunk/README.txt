@@ -49,30 +49,24 @@ For running this code from a terminal, we provide two scripts
 You can pass up to 10 arguments to these scripts as required.
 
 
-Instructions for using Decision Diagrams and Prob. Inference
+Using the XADD-based Continuous MDP Solver
 ============================================================
 
 **LPSolve and GraphViz should be installed on your system.  See 
 below for instructions on installing each.
 
-To start with, try to understand XADD.main() by running (using
-the launch scripts ./run or run.bat)
-
-  xadd.XADD
-
-and tracing the code.
-
-The main thing is to understand the high level structure.
-
-If you think you've got that down, then go onto CMDP.main() by 
-running
-
-  cmdp.CMDP src/cmdp/ex/knapsackM.cmdp 2
+For an example to start with, try running
   
-This is only currently setup for deterministic problems... note 
-the code structure and modified file format in
+  ./run camdp.CAMDP src/camdp/ex/discact/knapsackM.cmdp 2 false false
+  
+which runs value iteration on the problem
 
-  src/cmdp/ex/knapsackM.cmdp
+  src/camdp/ex/discact/knapsackM.cmdp
+
+for two iterations.  Numerous other CMDP examples including those  
+with continuous actions can be found in 
+
+  src/camdp/ex/
 
 
 Installing LPSolve
@@ -92,7 +86,8 @@ To verify it is installed correctly, run
 and ensure that there are no errors (LPSolve provides verbose
 output about it's solution, but these are not errors).
 
-[Hadi: Windows users simply need to copy 3 files "lp_solve.exe", "lpsolve55.dll" and "lpsolve55j.dll" to C:\Windows]
+NOTE: Windows users simply need to copy 3 files "lp_solve.exe", 
+      "lpsolve55.dll" and "lpsolve55j.dll" to C:\Windows
 
 
 GraphViz Visualization
@@ -100,9 +95,13 @@ GraphViz Visualization
 
 To enable Java Graphviz visualization:
 
-- Download and install GraphViz on your system:
+- Download and install GraphViz v2.28 on your system:
  
-  http://www.graphviz.org/
+    http://www.graphviz.org/
+  
+  Historical versions (2.28) are located here:
+  
+    http://www.graphviz.org/pub/graphviz/stable/
 
 - Make sure "dot" and "neato" (including ".exe" if running on Windows)
   are in your PATH, i.e., you can execute them from any home directory
