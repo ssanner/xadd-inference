@@ -276,7 +276,7 @@ public class CRTDP extends CAMDPsolver {
 		
 		// Discount
 		q = context.scalarOp(q, mdp._bdDiscount.doubleValue(), XADD.PROD);
-		int maskReward = context.createMaskSlack(a._reward,currS._hmBoolVars, currS._hmContVars, context.POS_INF, STATE_PRECISION);
+		int maskReward = context.createMask(a._reward,currS._hmBoolVars, currS._hmContVars, context.NAN);
 		long maskRewTime = getElapsedTime(5);
 		resetTimer(5);
 

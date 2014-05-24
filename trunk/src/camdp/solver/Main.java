@@ -68,7 +68,7 @@ public class Main {
         
         if (args.length > 5){
         	VERBOSE=Integer.parseInt(args[5]);
-        	CAMDPsolver.setUp(VERBOSE);
+        	CAMDPsolver.debugSetUp(VERBOSE);
         }
         
         if (VERBOSE >0) System.out.println("Main Solution Start: Solving "+filename+" with solving option "+solvers[solution]+" for "+iter+" iterations and "+trials+" trials.");
