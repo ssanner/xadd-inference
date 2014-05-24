@@ -64,18 +64,20 @@ public class VI extends CAMDPsolver {
 			
 			checkLinearAndApprox(valueDD);
 
-			if (MAIN_DEBUG){
-				debugOutput.println("Iter:" + curIter+" Complete");
-				if (PRINT_DD) debugOutput.println("ValueDD = "+context.getExistNode(valueDD).toString());
-				if (PLOT_DD) mdp.doDisplay(valueDD,makeXADDLabel("V",curIter, APPROX_ERROR));
-			}
-			
 			solutionDDList[curIter] = valueDD;
 			solutionTimeList[curIter] = getElapsedTime() + (curIter >1? solutionTimeList[curIter-1]:0);
 			solutionNodeList[curIter] = context.getNodeCount(valueDD);
 			//if (mdp.LINEAR_PROBLEM) solutionMaxValueList[curIter] = context.linMaxVal(valueDD);
 			if( mdp._initialS != null) solutionInitialSValueList[curIter] = context.evaluate(valueDD, mdp._initialS._hmBoolVars, mdp._initialS._hmContVars);			
 
+			if (MAIN_DEBUG){
+				debugOutput.println("Iter:" + curIter+" Complete");
+				debugOutput.println("Value DD:"+valueDD+" Nodes= "+solutionNodeList[curIter]+" Time ="+solutionTimeList[curIter]);
+				if( mdp._initialS != null) debugOutput.println("Initial State Value = "+solutionInitialSValueList[curIter]);
+				if (PRINT_DD) debugOutput.println("ValueDD = "+context.getExistNode(valueDD).toString());
+				if (PLOT_DD) mdp.doDisplay(valueDD,makeXADDLabel("V",curIter, APPROX_ERROR));
+			}
+			
 			if (ENABLE_EARLY_CONVERGENCE && _prevDD.equals(valueDD) ) {
 				if (MAIN_DEBUG) debugOutput.println("\nVI: Converged to solution early,  at iteration "+curIter);
 				break;

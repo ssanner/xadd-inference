@@ -554,10 +554,6 @@ public abstract class ExprLib {
         }
 
         public Boolean evaluate(HashMap<String, Double> cont_assign) {
-        	return evaluate(cont_assign, 0.0);
-        }
-
-        public Boolean evaluate(HashMap<String, Double> cont_assign, double slack) {
             Double dval_lhs = _lhs.evaluate(cont_assign);
             Double dval_rhs = _rhs.evaluate(cont_assign);
             
@@ -571,15 +567,13 @@ public abstract class ExprLib {
                 case NEQ:
                 	return (dif != 0.0);
                 case GT:
-                	if (Math.abs(dif) < slack) return null;
-                    return (dif > 0);
+                    return (dif > 0.0);
                 case GT_EQ:
-                    return (dif > -slack);
+                    return (dif >= 0.0);
                 case LT:
-                	if (Math.abs(dif) < slack) return null;
                 	return (dif < 0);
                 case LT_EQ:
-                    return (dif < slack);
+                    return (dif <= 0.0);
                 default:
                     return null;
             }
@@ -1649,13 +1643,10 @@ public abstract class ExprLib {
             if (o instanceof DoubleExpr) {
                 DoubleExpr d = (DoubleExpr) o;
                 if (this._dConstVal == d._dConstVal) return true;
-                else {
-
-                    Double dif = this._dConstVal - d._dConstVal;
-                    if ((Double.isInfinite(dif) ||
-                            Double.isNaN(dif))) return false;
-                    return Math.abs(dif) < XADD.PRECISION;
-                }
+                if (Double.isNaN(this._dConstVal) && Double.isNaN(this._dConstVal)) return true;
+                Double dif = this._dConstVal - d._dConstVal;
+                if ((Double.isInfinite(dif) || Double.isNaN(dif))) return false;
+                return Math.abs(dif) < XADD.PRECISION;
             } else
                 return false;
         }

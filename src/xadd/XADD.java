@@ -160,6 +160,14 @@ public class XADD {
         POS_INF = getTermNode(ExprLib.POS_INF);
         NEG_INF = getTermNode(ExprLib.NEG_INF);
         NAN = getTermNode(ExprLib.NAN);
+        
+        //NaN Node requires special creation
+//        int id = _nodeCounter;
+//        XADDTNode node = new XADDTNode(ExprLib.NAN, null);
+//        _hmNode2Int.put(node, id);
+//        _hmInt2Node.put(id, node);
+//        _nodeCounter++;
+//        NAN = id;
     }
 
     //Adding XADD Variables
@@ -299,8 +307,7 @@ public class XADD {
         return getTermNode(n._expr, n._annotate);
     }
 
-    public int getTermNode(ArithExpr e, Object annotation) {
-
+    public int getTermNode(ArithExpr e, Object annotation) {    	
         if (USE_CANONICAL_NODES)
             e = (ArithExpr) e.makeCanonical();
 
@@ -424,11 +431,11 @@ public class XADD {
         //       saves us from keep another cache around, which saves space.
 
         // CANONIZATION APPROACH 1
-        return reduceSub(node_id, new HashMap<String, ArithExpr>(), new HashMap<Integer, Integer>());
+        //return reduceSub(node_id, new HashMap<String, ArithExpr>(), new HashMap<Integer, Integer>());
 
         // CANONIZATION APPROACH 2
-        //_hmReduceCanonCache.clear();
-        //return makeCanonicalInt(node_id);
+        _hmReduceCanonCache.clear();
+        return makeCanonicalInt(node_id);
     }
 
     public int makeCanonicalInt(int node_id) {
@@ -536,32 +543,43 @@ public class XADD {
         return ret;
     }
     
-    // XADD substitution -> replace terminal node from an assignment with a XADD
-    public Integer substituteXADDforPath(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign, int newXADD_id){
-        // Get root
-        XADDNode n = getExistNode(node_id);
+    public Integer substituteNode(int main_id, int target_id, int replace_id){
+    	HashMap<Integer,Integer> subNodeCache =  new HashMap<Integer, Integer>();
+    	subNodeCache.put(target_id, replace_id);
+    	return reduceSubstituteNode(main_id, subNodeCache);
+    }
+    // XADD substitution -> replace terminal node with another XADD Node
+    public Integer reduceSubstituteNode(int main_id, HashMap<Integer, Integer> subNodeCache){
 
-        if (n instanceof XADDTNode){
-        	return newXADD_id;
+    	Integer ret = null;
+    	if ( (ret = subNodeCache.get(main_id)) != null){
+    		return ret;
+    	}
+
+        XADDNode n = getExistNode(main_id);
+
+        //If terminal means no more nodes to substitute
+        if (n instanceof XADDTNode) {
+            return main_id;
         }
-        
-        //(else) Traverse decision diagram until terminal found
-        if (n instanceof XADDINode) {
-	        XADDINode inode = (XADDINode) n;
-	        Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
-	        // Not all required variables were assigned
-	        if (branch_high == null)	return null;
-	    
-	        // Substitute down on next node
-	        int child = branch_high ? inode._high : inode._low;
-	        int newchild = substituteXADDforPath(child, bool_assign, cont_assign, newXADD_id);
-	        
-	        if (branch_high) return getINodeCanon(inode._var, newchild, inode._low);
-	        /* else */ return getINodeCanon(inode._var, inode._high, newchild);
-        } 
-        else System.out.println("Error in substituteXADD, invalid XADDNode (not T or I node) " + n);
-        return null;
-	}
+
+        XADDINode inode = (XADDINode) n;
+
+        int low = reduceSubstituteNode(inode._low, subNodeCache);
+        int high = reduceSubstituteNode(inode._high, subNodeCache);
+
+        int var = inode._var;
+
+        // substitution could have affected a variable reordering, making canon INode is via apply.
+        ret = getINodeCanon(var, low, high);
+
+        if (CHECK_LOCAL_ORDERING)
+            checkLocalOrderingAndExitOnError(ret);
+
+        // Put return value in cache and return
+        subNodeCache.put(main_id, ret);
+        return ret;
+    }
     
     public void checkLocalOrderingAndExitOnError(int node) {
         XADDNode new_node = getExistNode(node);
@@ -782,14 +800,26 @@ public class XADD {
     // Computes a terminal node value if possible
     public Integer computeTermNode(int a1, XADDNode n1, int a2, XADDNode n2, int op) {
 
-    	//System.out.println("computeTermNode: " + n1 + ", " + n2);       
-
-    	// Zero identities first -- critical for getINodeCanon to work
+	    //Zero identities first -- critical for getINodeCanon to work
     	if (op == PROD && 
     			(n1 instanceof XADDTNode && ((XADDTNode)n1)._expr.equals(ExprLib.ZERO) ||
     		    (n2 instanceof XADDTNode && ((XADDTNode)n2)._expr.equals(ExprLib.ZERO)))) {
     		return ZERO;
         }
+    	
+    	//NaN 
+    	if (a1 == NAN || (n1 instanceof XADDTNode && (((XADDTNode)n1)._expr instanceof DoubleExpr) &&
+    			( Double.isNaN( ((DoubleExpr)((XADDTNode)n1)._expr)._dConstVal) ) ) ){
+    		if (a1 != NAN)
+    			System.err.println("Invalid new NaN node:"+a1+"not standard NaN"+NAN);
+    		return NAN;
+    	}
+    	if (a2 == NAN || (n2 instanceof XADDTNode && (((XADDTNode)n2)._expr instanceof DoubleExpr) &&
+    			( Double.isNaN( ((DoubleExpr)((XADDTNode)n2)._expr)._dConstVal) ) ) ){    		
+    		if (a2 != NAN)
+    			System.err.println("Invalid new NaN node:"+a1+"not standard NaN"+NAN);
+    		return NAN;
+    	}    	
             
         // Check for identities if first operand is terminal
         if (n1 instanceof XADDTNode) {
@@ -908,19 +938,6 @@ public class XADD {
         }
         return null;
     }
-
-    public Boolean evaluateDecisionSlack(Decision d, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign, double slack) {
-        if (d instanceof TautDec)
-            return ((TautDec) d)._bTautology;
-        else if (d instanceof BoolDec)
-            return bool_assign.get(((BoolDec) d)._sVarName);
-        else if (d instanceof ExprDec) {
-        	if (SHOW_DECISION_EVAL) { System.out.println(" - " + ((ExprDec) d)._expr + ": " + ((ExprDec) d)._expr.evaluate(cont_assign));}
-        	return  ((ExprDec) d)._expr.evaluate(cont_assign, slack);            
-        }
-        return null;
-    }
-
     
     public Double evaluate(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign) {
         // Get root
@@ -1619,56 +1636,47 @@ public class XADD {
     ///////////////////////////////////////    
 	
     public Integer createMask(Integer id,
+	HashMap<String, Boolean> bool_assign,
+	HashMap<String, Double> cont_assign, Integer mask_id) {
+    	return reduceMask(id, bool_assign, cont_assign, mask_id, new HashMap<Integer,Integer>());
+    }
+    
+    private Integer reduceMask(Integer id,
 			HashMap<String, Boolean> bool_assign,
-			HashMap<String, Double> cont_assign, Integer mask_id) {
+			HashMap<String, Double> cont_assign, Integer mask_id, HashMap<Integer,Integer> maskCache) {
 
+    		Integer ret = null;
+    		if ( (ret = maskCache.get(id))!= null){
+    			return ret;
+    		}
+    			
     		XADDNode n = getExistNode(id);
 
-            // Traverse decision diagram until terminal found
-    		if (n instanceof XADDINode) {
-                XADDINode inode = (XADDINode) n;
+    		if (n instanceof XADDTNode) {
+    			ret = id;
+    		}
+    		else{
+    			if (!(n instanceof XADDINode)) { System.err.println("Invalid node, neither TNode nor INode:\n"+n.toString()); } 
+                // Traverse decision diagram until terminal found
+    			XADDINode inode = (XADDINode) n;
                 Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
                 
-                //Not all required variables were assigned
+                
                 if (branch_high == null){
-                	return getINode(inode._var, createMask(inode._low, bool_assign, cont_assign, mask_id), 
-                			createMask(inode._high, bool_assign, cont_assign,mask_id));
+                	//Not all required variables were assigned, mask both paths
+                	ret = getINode(inode._var, reduceMask(inode._low, bool_assign, cont_assign, mask_id, maskCache), 
+                			reduceMask(inode._high, bool_assign, cont_assign,mask_id, maskCache));
+                }
+                else{                
+                	ret = branch_high ? getINode(inode._var, mask_id, reduceMask(inode._high, bool_assign, cont_assign,mask_id, maskCache)):
+                						getINode(inode._var, reduceMask(inode._low, bool_assign, cont_assign,mask_id, maskCache), mask_id);
                 }
                 
-                // Advance down to next node
-                return branch_high ? getINode(inode._var, mask_id, createMask(inode._high, bool_assign, cont_assign,mask_id)):
-                					 getINode(inode._var, createMask(inode._low, bool_assign, cont_assign,mask_id), mask_id);
             }
-    		
-            // else id is a TNode, trivial mask
-            return id;
+    		maskCache.put(id, ret);
+            return ret;
     }
 
-    public Integer createMaskSlack(Integer id,
-			HashMap<String, Boolean> bool_assign,
-			HashMap<String, Double> cont_assign, Integer mask_id, double slack) {
-
-    		XADDNode n = getExistNode(id);
-
-            // Traverse decision diagram until terminal found
-    		if (n instanceof XADDINode) {
-                XADDINode inode = (XADDINode) n;
-                Boolean branch_high = evaluateDecisionSlack(_alOrder.get(inode._var), bool_assign, cont_assign, slack);
-                
-                //Not all required variables were assigned
-                if (branch_high == null){
-                	return getINode(inode._var, createMaskSlack(inode._low, bool_assign, cont_assign, mask_id, slack), 
-                			createMaskSlack(inode._high, bool_assign, cont_assign,mask_id, slack));
-                }
-                
-                // Advance down to next node
-                return branch_high ? getINode(inode._var, mask_id, createMaskSlack(inode._high, bool_assign, cont_assign,mask_id,slack)):
-                					 getINode(inode._var, createMaskSlack(inode._low, bool_assign, cont_assign,mask_id,slack), mask_id);
-            }
-    		
-            // else id is a TNode, trivial mask
-            return id;
-    }    
 //    public Integer createPosInfMask(Integer id,HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign){
 //    	return createMask(id, bool_assign, cont_assign, POS_INF);
 //    }

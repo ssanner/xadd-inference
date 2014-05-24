@@ -44,6 +44,7 @@ public abstract class CAMDPsolver {
 	/* DEBUG PARAMETER */
 	protected static boolean MAIN_DEBUG = true;
 	protected static boolean DEEP_DEBUG = true;
+	protected static final boolean SILENCE_ERRORS = false;
 	protected static PrintStream debugOutput = System.out;
 	
 	//Debug Format flags
@@ -111,6 +112,7 @@ public abstract class CAMDPsolver {
 		if (already_seen.contains(parent_var))
 			return;
 		already_seen.add(parent_var);
+		g.addNode(parent_var);
 		Integer dd_cpf = a._hmVar2DD.get(parent_var);
 		if (dd_cpf == null) {
 			System.err.println("Could not find CPF definition for variable '" + parent_var + 
@@ -126,10 +128,7 @@ public abstract class CAMDPsolver {
 			if (!child_var.equals(parent_var) || mdp._hsContIVars.contains(parent_var) || mdp._hsContNSVars.contains(parent_var)) {
 				g.addUniLink(child_var, parent_var);
 				//System.out.println("Adding link " + child_var + " --> " + parent_var);
-			} else if(child_var.equals(parent_var)){ 
-				// SUSPICIOUS CODE :p (avoid removing variables that dont have dependencies
-				g.addNode(parent_var);
-			}
+			} 
 			buildDBNDependencyDAGInt(a, child_var, g, already_seen);
 		}
 	}
@@ -234,7 +233,7 @@ public abstract class CAMDPsolver {
 	}
 	
 	// Debugging Management
-	public static void setUp(int verb){
+	public static void debugSetUp(int verb){
 		PRINT_DD = false;
 		PLOT_DD = false;
 		MAIN_DEBUG = false;
@@ -252,9 +251,11 @@ public abstract class CAMDPsolver {
 			MAIN_DEBUG = true;
 			PERFORMANCE_TEST = true;
 		}
-		if (verb >=2) DEEP_DEBUG = true;
-		if (verb >=3) VALIDATION_TEST = true;
-		if (verb >=4) PLOT_DD = true;
+		if (verb >=2) PLOT_DD = true;
+		if (verb >=3) DEEP_DEBUG = true;
+		if (verb >=4) PRINT_DD = true;
+		if (verb >=5) VALIDATION_TEST = true;		
+		
 		
 	}
 	
@@ -325,9 +326,9 @@ public abstract class CAMDPsolver {
 		//Error checking and logging
 		int canonDD = context.makeCanonical(dd);
 		if (dd != canonDD) {
-			System.err.println("Check Canon fail");
-			context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
-			context.getGraph(canonDD).launchViewer("ERROR diagram 2: makeCanonical(DD)");
+			System.err.println("Check Canon fail: OriDD: "+dd+" size = "+context.getNodeCount(dd)+", Canon DD Size="+context.getNodeCount(canonDD));
+			if (!SILENCE_ERRORS) context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
+			if (!SILENCE_ERRORS) context.getGraph(canonDD).launchViewer("ERROR diagram 2: makeCanonical(DD)");
 		}
 	}
 	protected void checkReduceLP(int dd) {
