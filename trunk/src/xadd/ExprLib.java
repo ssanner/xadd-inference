@@ -554,31 +554,31 @@ public abstract class ExprLib {
         }
 
         public Boolean evaluate(HashMap<String, Double> cont_assign) {
+
             Double dval_lhs = _lhs.evaluate(cont_assign);
             Double dval_rhs = _rhs.evaluate(cont_assign);
-            
+
             if (dval_lhs == null || dval_rhs == null)
                 return null;
 
-            Double dif = dval_lhs - dval_rhs;
             switch (_type) {
                 case EQ:
-                    return (dif == 0.0);
+                    return (dval_lhs == dval_rhs);
                 case NEQ:
-                	return (dif != 0.0);
+                    return (dval_lhs != dval_rhs);
                 case GT:
-                    return (dif > 0.0);
+                    return (dval_lhs > dval_rhs);
                 case GT_EQ:
-                    return (dif >= 0.0);
+                    return (dval_lhs >= dval_rhs);
                 case LT:
-                	return (dif < 0);
+                    return (dval_lhs < dval_rhs);
                 case LT_EQ:
-                    return (dif <= 0.0);
+                    return (dval_lhs <= dval_rhs);
                 default:
                     return null;
             }
         }
-
+        
         public void collectVars(HashSet<String> vars) {
             _lhs.collectVars(vars);
             _rhs.collectVars(vars);
