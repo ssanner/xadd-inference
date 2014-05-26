@@ -1,11 +1,9 @@
 package tskill.jskills;
 
-import lombok.Data;
-
 /**
  * Parameters about the game for calculating the TrueSkill.
  */
-@Data public class GameInfo {
+ public class GameInfo {
     public static double getDefaultInitialMean() {
         return defaultInitialMean;
     }
