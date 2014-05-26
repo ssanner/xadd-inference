@@ -1,7 +1,6 @@
 package hgm.poly.integral;
 
 import hgm.poly.*;
-import hgm.poly.vis.FunctionVisualizer;
 import hgm.sampling.gibbs.integral.Interval;
 import java.util.*;
 
@@ -49,6 +48,15 @@ public class OneDimPolynomialIntegral {
 //            System.out.println("cp.evaluate(" + Arrays.toString(usableContinuousVarAssign) + "=" + cp.evaluate(usableContinuousVarAssign));  [by be incomplete]
 //        }
 
+        if (DEBUG) {
+//            FunctionVisualizer.visualize(cp, -50, 50, 0.1, "cp (in integrate...)");
+
+            if (usableContinuousVarAssign[cp.getPolynomialFactory().getVarIndex(integrationVar)] != null) {
+                System.out.println("cp.evaluate(usableContinuousVarAssign) = " + cp.evaluate(usableContinuousVarAssign));
+            }
+        }
+
+
         //1. instantiate all variables except one that should be integrated on:
         //Exclude the integration var from the assignment by making it NULL
         int integrationVarIndex = cp.getPolynomialFactory().getVarIndex(integrationVar);
@@ -56,7 +64,8 @@ public class OneDimPolynomialIntegral {
         usableContinuousVarAssign[integrationVarIndex] = null;
         ConstrainedPolynomial substitutedCP = cp.substitute(usableContinuousVarAssign);
         if (DEBUG) {
-            FunctionVisualizer.visualize(substitutedCP, -50, 50, 0.1, "substitutedCP");
+            System.out.println("substitutedCP = " + substitutedCP);
+//            FunctionVisualizer.visualize(substitutedCP, -50, 50, 0.1, "substitutedCP");
         }
 
         //2. one dimensional integral on the produced CP:
@@ -64,7 +73,7 @@ public class OneDimPolynomialIntegral {
         if (positiveIntervals.isEmpty()) {
             if (DEBUG) {
                 System.err.println("empty polytope interval! \t" + positiveIntervals + " for CP: " + substitutedCP);
-                FunctionVisualizer.visualize(substitutedCP, -50, 50, 0.1, "non positive curve:");
+//                FunctionVisualizer.visualize(substitutedCP, -50, 50, 0.1, "non positive curve:");
             }
             return OneDimFunction.ZERO_1D_FUNCTION;
         }
@@ -76,18 +85,18 @@ public class OneDimPolynomialIntegral {
 
         double runningSum = 0.0;
         for (Interval posInterval : positiveIntervals) {
-            usableContinuousVarAssign[integrationVarIndex] = posInterval.getLowBound();
+            usableContinuousVarAssign[integrationVarIndex] = posInterval.getLowerBound();
             double l = indefIntegral.evaluate(usableContinuousVarAssign);
-            usableContinuousVarAssign[integrationVarIndex] = posInterval.getHighBound();
+            usableContinuousVarAssign[integrationVarIndex] = posInterval.getUpperBound();
             double h = indefIntegral.evaluate(usableContinuousVarAssign);
             double intervalVol = h - l;
             result.addIntervalAndOffset(posInterval, runningSum - l);
             runningSum += intervalVol;
         }
 
-        if (DEBUG) {
-            FunctionVisualizer.visualize(result, -50, 50, 0.1, "integration result");
-        }
+//        if (DEBUG) {
+//            FunctionVisualizer.visualize(result, -50, 50, 0.1, "integration result");
+//        }
 
         return result;
 

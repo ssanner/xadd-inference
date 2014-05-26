@@ -1,6 +1,7 @@
 package hgm.poly.bayesian;
 
 import hgm.poly.*;
+import hgm.poly.pref.FatalSamplingException;
 import hgm.sampling.VarAssignment;
 
 import java.util.ArrayList;
@@ -10,14 +11,15 @@ import java.util.List;
  * Created by Hadi Afshar.
  * Date: 10/03/14
  * Time: 5:05 PM
- *
+ * <p/>
  * Generalization of BPPL PosteriorHandler
  */
-public class BayesianPosteriorHandler implements Function {
+public class GeneralBayesianPosteriorHandler implements Function {
     public static final boolean DEBUG = true;
     PolynomialFactory factory;
 
-    ConstrainedPolynomial prior;
+//    PiecewisePolynomial prior;
+    PriorHandler priorHandler;
 
     List<PiecewisePolynomial> likelihoods = new ArrayList<PiecewisePolynomial>();
     private List<Integer> likelihoodsNumCases = new ArrayList<Integer>(); //size of the case statements of each likelihood
@@ -25,19 +27,22 @@ public class BayesianPosteriorHandler implements Function {
     //todo rename
     List<Integer> reusableLikelihoodGatingMask = new ArrayList<Integer>(); //active case-statement of each likelihood
 
-    public BayesianPosteriorHandler(PolynomialFactory factory, ConstrainedPolynomial prior) {
-        this.factory = factory;
+/*
+    public GeneralBayesianPosteriorHandler(PiecewisePolynomial prior) {
+        this.factory = prior.getFactory();
         this.prior = prior;
+    }
+*/
+
+    public GeneralBayesianPosteriorHandler(PriorHandler priorHandler) {
+        this.factory = priorHandler.getFactory();
+        this.priorHandler = priorHandler;
     }
 
     public void addLikelihood(PiecewisePolynomial likelihood) {
         likelihoods.add(likelihood);
         likelihoodsNumCases.add(likelihood.numCases());
         reusableLikelihoodGatingMask.add(null); //since no sentence is chosen yet...
-//        posGatingConstraints.add(positiveConstraint);
-//        Polynomial cloned = positiveConstraint.clone();
-//        cloned.multiplyScalarInThis(-1); //negative constraint
-//        negGatingConstraints.add(cloned);
     }
 
     public PolynomialFactory getPolynomialFactory() {
@@ -58,14 +63,14 @@ public class BayesianPosteriorHandler implements Function {
 
     //evaluate and save the activated gating variables
     public double evaluate(Double[] reusableSample) {
-        double priorEval = prior.evaluate(reusableSample);
+        double priorEval = priorHandler.getPrior().evaluate(reusableSample);
         if (priorEval < 0) throw new RuntimeException("negative prior!");
         if (priorEval == 0) return 0;
 
-        double c =1d; //product of likelihoods
+        double c = 1d; //product of likelihoods
         for (PiecewisePolynomial likelihood : likelihoods) {
             double likelihoodEval = likelihood.evaluate(reusableSample);
-            c*= likelihoodEval;
+            c *= likelihoodEval;
 
         }
 
@@ -78,7 +83,7 @@ public class BayesianPosteriorHandler implements Function {
 
     //todo: this should return 'void' and 'reusable gating mask' should be accessed independently, to alleviate any possible bug...
     //length of assignment = dimension of the space; length of mask = number of observations...
-    public List<Integer> adjustedReusableGateActivationMask(Double[] assignment) {
+    public List<Integer> adjustedReusableGateActivationMask(Double[] assignment) throws FatalSamplingException {
         for (int i = 0; i < likelihoods.size(); i++) {
             PiecewisePolynomial likelihood = likelihoods.get(i);
             reusableLikelihoodGatingMask.set(i, likelihood.getActivatedCaseId(assignment));
@@ -87,31 +92,41 @@ public class BayesianPosteriorHandler implements Function {
         return reusableLikelihoodGatingMask;
     }
 
-    //todo by reusing objects this may be faster...
-    public ConstrainedPolynomial makePolytope(List<Integer> gateMask) {
-        List<Polynomial> constraints = new ArrayList<Polynomial>(gateMask.size() + prior.getConstraints().size());
-        constraints.addAll(prior.getConstraints());
-        Polynomial poly = prior.getPolynomial().clone(); //todo cloning is not needed?
+    public PiecewisePolynomial makeActivatedSubFunction(List<Integer> gateMask) {
+        int numLikelihoods = gateMask.size();
+        List<Polynomial> productOfActiveLikelihoodSegments = new ArrayList<Polynomial>(numLikelihoods);
+        Polynomial productOfActiveLikelihoodsPoly = factory.one();
 
-        double c =1d;
-        for (int i = 0; i < gateMask.size(); i++) {
+        for (int i = 0; i < numLikelihoods; i++) {
             PiecewisePolynomial likelihood = likelihoods.get(i);
             int caseId = gateMask.get(i);
             ConstrainedPolynomial activeCase = likelihood.getCases().get(caseId);
-            constraints.addAll(activeCase.getConstraints());
-            poly = poly.multiply(activeCase.getPolynomial());
+            productOfActiveLikelihoodSegments.addAll(activeCase.getConstraints());
+            productOfActiveLikelihoodsPoly = productOfActiveLikelihoodsPoly.multiply(activeCase.getPolynomial());
         }
-        return new ConstrainedPolynomial(poly, constraints);
-    }
 
-    //todo rename to number of likelihoods...
-//    @Deprecated
-//    public int numberOfConstraints(){
-//        return likelihoods.size();
-//    }
+        return priorHandler.getPrior().multiply(productOfActiveLikelihoodSegments, productOfActiveLikelihoodsPoly);
+
+        //
+//        List<Polynomial> constraints = new ArrayList<Polynomial>(gateMask.size() + prior.getConstraints().size());
+//        constraints.addAll(prior.getConstraints());
+//        Polynomial poly = prior.getPolynomial().clone(); //cloning is not needed?
+//        for (int i = 0; i < gateMask.size(); i++) {
+//            PiecewisePolynomial likelihood = likelihoods.get(i);
+//            int caseId = gateMask.get(i);
+//            ConstrainedPolynomial activeCase = likelihood.getCases().get(caseId);
+//            constraints.addAll(activeCase.getConstraints());
+//            poly = poly.multiply(activeCase.getPolynomial());
+//        }
+//        return new ConstrainedPolynomial(poly, constraints);
+    }
 
     public int numberOfLikelihoods() {
         return likelihoods.size();
+    }
+
+    public PriorHandler getPriorHandler() {
+        return priorHandler;
     }
 
     public int getNumCasesInLikelihood(int likelihoodIndex) {
@@ -120,5 +135,9 @@ public class BayesianPosteriorHandler implements Function {
 
     public List<Integer> getNumCasesInAllLikelihoods() {
         return likelihoodsNumCases;
+    }
+
+    public List<PiecewisePolynomial> getLikelihoods() {
+        return likelihoods;
     }
 }

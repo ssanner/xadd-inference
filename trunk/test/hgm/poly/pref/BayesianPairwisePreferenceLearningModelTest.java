@@ -1,5 +1,6 @@
 package hgm.poly.pref;
 
+import hgm.poly.bayesian.PriorHandler;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.sampling.SamplingUtils;
 import hgm.poly.vis.FunctionVisualizer;
@@ -18,15 +19,15 @@ import java.util.List;
  * Date: 12/03/14
  * Time: 5:53 AM
  */
-public class GPolyPreferenceLearningTest {
+public class BayesianPairwisePreferenceLearningModelTest {
     public static String SAMPLES_FILE_PATH = "./test/hgm/poly/sampling/";//scatter2D.txt";
     public static void main(String[] args) throws FileNotFoundException {
-        GPolyPreferenceLearningTest instance = new GPolyPreferenceLearningTest();
+        BayesianPairwisePreferenceLearningModelTest instance = new BayesianPairwisePreferenceLearningModelTest();
         instance.basicTest();
     }
 
 
-    PreferenceDatabase testDB1 = new PreferenceDatabase() {
+    PreferenceDatabase testDB1 = new PreferenceDatabase(PriorHandler.uniformInHypercube("w", 2, BayesianPairwisePreferenceLearningModel.C)) {
         Preference[] prefs = new Preference[]{
                 new Preference(1, 2, Choice.FIRST),
                 new Preference(1, 3, Choice.FIRST),
@@ -44,7 +45,7 @@ public class GPolyPreferenceLearningTest {
         }
 
         @Override
-        public int getNumberOfAttributes() {
+        public int getNumberOfParameters() {
             return items.get(0).length;
         }
 
@@ -54,7 +55,7 @@ public class GPolyPreferenceLearningTest {
         }
 
         @Override
-        public List<Preference> getPreferenceResponses() {
+        public List<Preference> getObservedDataPoints() {
             return Arrays.asList(prefs);
         }
 
@@ -72,10 +73,10 @@ public class GPolyPreferenceLearningTest {
     @Test
     public void basicTest() throws FileNotFoundException {
 
-        GPolyPreferenceLearning learning = new GPolyPreferenceLearning(testDB1, 0.3, "w");
+        BayesianPairwisePreferenceLearningModel learning = new BayesianPairwisePreferenceLearningModel(testDB1, 0.3);
 
         // Pr(W | R^{n+1})
-        PosteriorHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
+        ConstantBayesianPosteriorHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
 //        fixVarLimits(context, utilityWeights, -30d, 60d);
 
         FunctionVisualizer.visualize(posterior, -15d, 15d, 0.5, "Poly");
@@ -85,7 +86,7 @@ public class GPolyPreferenceLearningTest {
         //now I sample from it:
         SamplerInterface sampler =
 //                GatedGibbsPolytopesSampler.makeGibbsSampler(posterior, -GPolyPreferenceLearning.C - 10, GPolyPreferenceLearning.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
-                SymbolicGibbsPolytopesSampler.makeSampler(posterior, -GPolyPreferenceLearning.C - 10, GPolyPreferenceLearning.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
+                SymbolicGibbsPolytopesSampler.makeSampler(posterior, -BayesianPairwisePreferenceLearningModel.C - 10, BayesianPairwisePreferenceLearningModel.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
 
 
 //        GatedGibbsPolytopesSampler.DEBUG = false;
@@ -104,17 +105,17 @@ public class GPolyPreferenceLearningTest {
     @Test
     public void basicTestClever() throws FileNotFoundException {
 
-        GPolyPreferenceLearning learning = new GPolyPreferenceLearning(testDB1, 0.1, "w");
+        BayesianPairwisePreferenceLearningModel learning = new BayesianPairwisePreferenceLearningModel(testDB1, 0.1);
 
         // Pr(W | R^{n+1})
-        PosteriorHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
+        ConstantBayesianPosteriorHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
 //        fixVarLimits(context, utilityWeights, -30d, 60d);
 
         FunctionVisualizer.visualize(posterior, -30d, 60d, 0.5, "Poly");
 
 
         //now I sample from it:
-        TargetedGatedGibbsPolytopesSampler sampler = TargetedGatedGibbsPolytopesSampler.makeCleverGibbsSampler(posterior, -GPolyPreferenceLearning.C - 10, GPolyPreferenceLearning.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
+        TargetedGatedGibbsPolytopesSampler sampler = TargetedGatedGibbsPolytopesSampler.makeCleverGibbsSampler(posterior, -BayesianPairwisePreferenceLearningModel.C - 10, BayesianPairwisePreferenceLearningModel.C + 10, new Double[]{-5.771840329479172, 7.1312683349054});
         TargetedGatedGibbsPolytopesSampler.DEBUG = false;
         for (int i = 0; i < 2; i++) {
             Double[] assign = sampler.sample();

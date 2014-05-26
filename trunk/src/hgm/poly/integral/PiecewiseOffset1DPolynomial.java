@@ -50,8 +50,8 @@ public class PiecewiseOffset1DPolynomial implements OneDimFunction{
 
         for (int i = 0; i < intervals.size(); i++) {
             Interval interval = intervals.get(i);
-            if (interval.getHighBound() >= varValue) {
-                if (interval.getLowBound() <= varValue) {
+            if (interval.getUpperBound() >= varValue) {
+                if (interval.getLowerBound() <= varValue) {
                     //in the interval:
                     varAssign[varIndex] = varValue;
                     return integral.evaluate(varAssign) + offsets.get(i);
@@ -62,7 +62,7 @@ public class PiecewiseOffset1DPolynomial implements OneDimFunction{
                         return 0d;
                     } else {
                         //return last value of the prev. interval
-                        varAssign[varIndex] = intervals.get(i-1).getHighBound();
+                        varAssign[varIndex] = intervals.get(i-1).getUpperBound();
                         return integral.evaluate(varAssign) + offsets.get(i-1);
                     }
                 }
@@ -70,13 +70,13 @@ public class PiecewiseOffset1DPolynomial implements OneDimFunction{
         }
 
         //todo: max value may be cached
-        varAssign[varIndex] = intervals.get(intervals.size()-1).getHighBound();
+        varAssign[varIndex] = intervals.get(intervals.size()-1).getUpperBound();
         return integral.evaluate(varAssign) + offsets.get(intervals.size()-1);
     }
 
 
     public void addIntervalAndOffset(Interval interval, double offset) {
-        if (!intervals.isEmpty() && intervals.get(intervals.size()-1).getHighBound() > interval.getLowBound()) throw new PolynomialException("interval order violated"); //debug
+        if (!intervals.isEmpty() && intervals.get(intervals.size()-1).getUpperBound() > interval.getLowerBound()) throw new PolynomialException("interval order violated"); //debug
 
         intervals.add(interval);
         offsets.add(offset);

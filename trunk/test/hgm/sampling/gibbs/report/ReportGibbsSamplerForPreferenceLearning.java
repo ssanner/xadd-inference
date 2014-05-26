@@ -1,9 +1,10 @@
 package hgm.sampling.gibbs.report;
 
 import hgm.asve.cnsrv.approxator.LeafThresholdXaddApproximator;
+import hgm.poly.bayesian.PriorHandler;
 import hgm.preference.Choice;
-import hgm.preference.PreferenceLearning;
-import hgm.preference.PreferenceLearningTest;
+import hgm.preference.XaddBasedPreferenceLearning;
+import hgm.preference.XaddBasedPreferenceLearningTest;
 import hgm.preference.Preference;
 import hgm.preference.db.DummyFeasiblePreferenceDatabase;
 import hgm.preference.db.PreferenceDatabase;
@@ -36,7 +37,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
 
     }
 
-    PreferenceDatabase testDB1 = new PreferenceDatabase() {
+    PreferenceDatabase testDB1 = new PreferenceDatabase(null) {
         Preference[] prefs = new Preference[]{
                 new Preference(1, 2, Choice.FIRST),
                 new Preference(1, 3, Choice.FIRST),
@@ -54,7 +55,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
         }
 
         @Override
-        public int getNumberOfAttributes() {
+        public int getNumberOfParameters() {
             return items.get(0).length;
         }
 
@@ -64,7 +65,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
         }
 
         @Override
-        public List<Preference> getPreferenceResponses() {
+        public List<Preference> getObservedDataPoints() {
             return Arrays.asList(prefs);
         }
 
@@ -82,7 +83,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
     @Test
     public void basicTest() {
         XADD context = new XADD();
-        PreferenceLearning learning = new PreferenceLearning(context, testDB1, 0.2, "w", 0d);
+        XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, testDB1, 0.2, "w", 0d);
 //        PreferenceLearning learning = new PreferenceLearning(context, new DummyPreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, 5, 2, 120), 0.2, false);
 
         // Pr(W | R^{n+1})
@@ -120,11 +121,11 @@ public class ReportGibbsSamplerForPreferenceLearning {
 
                 do {
 
-                    PreferenceDatabase db = PreferenceLearningTest.generateDummyPreferenceDatabase(0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
+                    PreferenceDatabase db = XaddBasedPreferenceLearningTest.generateDummyPreferenceDatabase(0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
                     shouldGenerateAnotherDatabase = false; //since there is no reason the current DB is not good enough
 
                     XADD context = new XADD();
-                    PreferenceLearning learning = new PreferenceLearning(context, db, 0.1, "w", 0);
+                    XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, db, 0.1, "w", 0);
 
                     long time1 = System.currentTimeMillis();
                     // Pr(W | R^{n+1})
@@ -181,9 +182,9 @@ public class ReportGibbsSamplerForPreferenceLearning {
     public void dummyFeasibleTest() {
         int numberOfItems = 200; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
         int minDim = 1;
-        int maxDim= 12;
+        int maxDim = 12;
         int minNumConstraints = 0;
-       int maxNumConstraints = 10;
+        int maxNumConstraints = 10;
         double indicatorNoise = 0.1;
         boolean reduceLP = true;
         int numberOfSamplesFromEachDatabase = 10000;
@@ -193,10 +194,12 @@ public class ReportGibbsSamplerForPreferenceLearning {
             for (int numConstraints = minNumConstraints; numConstraints <= maxNumConstraints; numConstraints++) {
 
                 PreferenceDatabase db =
-                        new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
+                        new DummyFeasiblePreferenceDatabase(
+//                                -PreferenceLearning.C, PreferenceLearning.C, 0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
+                                0, 5, numConstraints, PriorHandler.uniformInHypercube("w", numDims, XaddBasedPreferenceLearning.C), numberOfItems /*number of items*/);
 
                 XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0);
+                XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, db, indicatorNoise, "w", 0);
 
                 long time1start = System.currentTimeMillis();
                 // Pr(W | R^{n+1})
@@ -224,7 +227,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
                 for (int i = 0; i < numberOfSamplesFromEachDatabase; i++) {
                     VarAssignment assign = sampler.sample();
                     Double eval = context.evaluate(context._hmNode2Int.get(posterior), assign.getBooleanVarAssign(), assign.getContinuousVarAssign());
-                    if (eval == null || eval<=0.0) System.out.println("eval = " + eval);
+                    if (eval == null || eval <= 0.0) System.out.println("eval = " + eval);
                     Assert.assertTrue(eval > 0.0);
                 }
                 long time5samplesTaken = System.currentTimeMillis();
@@ -252,7 +255,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
     public void effectOfLPReduce() {
         int numberOfItems = 200; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
         int minDim = 1;
-        int maxDim= 12;
+        int maxDim = 12;
         int minNumConstraints = 0;
         int maxNumConstraints = 40;
         double indicatorNoise = 0.1;
@@ -264,10 +267,12 @@ public class ReportGibbsSamplerForPreferenceLearning {
             for (int numConstraints = minNumConstraints; numConstraints <= maxNumConstraints; numConstraints++) {
 
                 PreferenceDatabase db =
-                        new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
+                        new DummyFeasiblePreferenceDatabase(
+//                                -PreferenceLearning.C, PreferenceLearning.C, 0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
+                                0, 5, numConstraints, PriorHandler.uniformInHypercube("w", numDims, XaddBasedPreferenceLearning.C), numberOfItems /*number of items*/);
 
                 XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0);
+                XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, db, indicatorNoise, "w", 0);
 
                 long time1start = System.currentTimeMillis();
 
@@ -291,7 +296,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
 
                 }
 
-                 System.out.println(numDims + " \t\t " + numConstraints + "\t\t\t\t" +
+                System.out.println(numDims + " \t\t " + numConstraints + "\t\t\t\t" +
                         (time2posteriorCalculated - time1start) + "\t\t\t\t " +
                         (time3posteriorReduced - time2posteriorCalculated) + "\t\t ||\t\t (" +
                         nonReducedPosteriorNodeCount + ")\t\t (" + reducedPosteriorNodeCount + ")");
@@ -305,7 +310,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
     public void effectOfLeafApproximation() {
         int numberOfItems = 200; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
         int minDim = 1;
-        int maxDim= 12;
+        int maxDim = 12;
         int minNumConstraints = 0;
         int maxNumConstraints = 20;
         double indicatorNoise = 0.1;
@@ -317,7 +322,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
             public double value(VarAssignment valuation) {
                 double summation = 0.0;
                 for (Double d : valuation.getContinuousVarAssign().values()) {
-                    summation+=d;
+                    summation += d;
                 }
                 return summation;
             }
@@ -328,11 +333,12 @@ public class ReportGibbsSamplerForPreferenceLearning {
             for (int numConstraints = minNumConstraints; numConstraints <= maxNumConstraints; numConstraints++) {
 
                 PreferenceDatabase db =
-                        new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C,
-                                0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
+                        new DummyFeasiblePreferenceDatabase(
+//                                -PreferenceLearning.C, PreferenceLearning.C, 0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
+                                0, 5, numConstraints, PriorHandler.uniformInHypercube("w", numDims, XaddBasedPreferenceLearning.C), numberOfItems /*number of items*/);
 
                 XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0);
+                XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, db, indicatorNoise, "w", 0);
 
                 long time1start = System.currentTimeMillis();
 
@@ -362,7 +368,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
 
                     //make sure the taken sample is positive:
                     Double eval = context.evaluate(reducedPosteriorId, assign.getBooleanVarAssign(), assign.getContinuousVarAssign());
-                    if (eval == null || eval<=0.0) System.out.println("eval = " + eval);
+                    if (eval == null || eval <= 0.0) System.out.println("eval = " + eval);
                     Assert.assertTrue(eval > 0.0);
                 }
                 System.out.println("reduced.sum.getMean() = " + u.getMean() + " +- " + u.getStandardErrorOfTheMean());
@@ -393,7 +399,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
 
                     //make sure the taken sample is positive:
                     Double eval = context.evaluate(approxReducedPosteriorId, assign.getBooleanVarAssign(), assign.getContinuousVarAssign());
-                    if (eval == null || eval<=0.0) System.out.println("eval = " + eval);
+                    if (eval == null || eval <= 0.0) System.out.println("eval = " + eval);
                     Assert.assertTrue(eval > 0.0);
 
                 }
@@ -402,19 +408,18 @@ public class ReportGibbsSamplerForPreferenceLearning {
                 long time8samplingFromApproxFinished = System.currentTimeMillis();
 
 
-
-                System.out.println("dim:" +numDims + " \t" +
-                        "#constraints: " +numConstraints + "\t" +
-                        "posterior.calc.time: "+ (time2posteriorCalculated - time1start) + "\t" +
-                        "reduce.time: "+ (time3posteriorReduced - time2posteriorCalculated) + "\t" +
-                        "sampler.init.time:"+ (time4samplerInitialized -time3posteriorReduced) + "\t" +
-                        "sampling.time:"+ (time5samplesTaken - time4samplerInitialized) + "\t" +
-                        "approx.time:"+ (time6posteriorApproximated - time5samplesTaken) + "\t" +
-                        "approx.sampler.init.time:"+ (time7samplerOfApproxInitialized - time6posteriorApproximated) + "\t" +
-                        "approx.sampling.time:"+ (time8samplingFromApproxFinished - time7samplerOfApproxInitialized) + "\t\t ||\t\t (" +
-                        "origin #nodes:"+ nonReducedPosteriorNodeCount + ")\t" +
-                        "reduced#nodes:"+ "(" + reducedPosteriorNodeCount + ")\t" +
-                        "approx #nodes:"+ "(" + approxReducedPosteriorNodeCount + ")");
+                System.out.println("dim:" + numDims + " \t" +
+                        "#constraints: " + numConstraints + "\t" +
+                        "posterior.calc.time: " + (time2posteriorCalculated - time1start) + "\t" +
+                        "reduce.time: " + (time3posteriorReduced - time2posteriorCalculated) + "\t" +
+                        "sampler.init.time:" + (time4samplerInitialized - time3posteriorReduced) + "\t" +
+                        "sampling.time:" + (time5samplesTaken - time4samplerInitialized) + "\t" +
+                        "approx.time:" + (time6posteriorApproximated - time5samplesTaken) + "\t" +
+                        "approx.sampler.init.time:" + (time7samplerOfApproxInitialized - time6posteriorApproximated) + "\t" +
+                        "approx.sampling.time:" + (time8samplingFromApproxFinished - time7samplerOfApproxInitialized) + "\t\t ||\t\t (" +
+                        "origin #nodes:" + nonReducedPosteriorNodeCount + ")\t" +
+                        "reduced#nodes:" + "(" + reducedPosteriorNodeCount + ")\t" +
+                        "approx #nodes:" + "(" + approxReducedPosteriorNodeCount + ")");
 
             } // end numConstraints for
         } // end numDim for
@@ -425,7 +430,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
     public void leafApproximationPerformance() {
         int numberOfItems = 200; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
         int minDim = 2;
-        int maxDim= 30;
+        int maxDim = 30;
         int minNumConstraints = 0;
         int maxNumConstraints = 30;
         double indicatorNoise = 0.1;
@@ -438,11 +443,12 @@ public class ReportGibbsSamplerForPreferenceLearning {
             for (int numConstraints = minNumConstraints; numConstraints <= maxNumConstraints; numConstraints++) {
 
                 PreferenceDatabase db =
-                        new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C,
-                                0, 5, numConstraints, numDims, numberOfItems);
+                        new DummyFeasiblePreferenceDatabase(
+//                                -PreferenceLearning.C, PreferenceLearning.C, 0, 5, numConstraints, numDims, numberOfItems);
+                        0, 5, numConstraints, PriorHandler.uniformInHypercube("w", numDims, XaddBasedPreferenceLearning.C), numberOfItems /*number of items*/);
 
                 XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0);
+                XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, db, indicatorNoise, "w", 0);
 
                 long time1start = System.currentTimeMillis();
 
@@ -511,7 +517,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
 
                     //make sure the taken sample is positive:
                     Double eval = context.evaluate(approxReducedPosteriorId, assign.getBooleanVarAssign(), assign.getContinuousVarAssign());
-                    if (eval == null || eval<=0.0) System.out.println("eval = " + eval);
+                    if (eval == null || eval <= 0.0) System.out.println("eval = " + eval);
                     Assert.assertTrue(eval > 0.0);
 
                 }
@@ -520,19 +526,18 @@ public class ReportGibbsSamplerForPreferenceLearning {
                 long time8samplingFromApproxFinished = System.currentTimeMillis();
 
 
-
-                System.out.println("dim:" +numDims + " \t" +
-                        "#constraints: " +numConstraints + "\t" +
-                        "posterior.calc.time: "+ (time2posteriorCalculated - time1start) + "\t" +
+                System.out.println("dim:" + numDims + " \t" +
+                        "#constraints: " + numConstraints + "\t" +
+                        "posterior.calc.time: " + (time2posteriorCalculated - time1start) + "\t" +
 //                        "reduce.time: "+ (time3posteriorReduced - time2posteriorCalculated) + "\t" +
 //                        "sampler.init.time:"+ (time4samplerInitialized -time3posteriorReduced) + "\t" +
 //                        "sampling.time:"+ (time5samplesTaken - time4samplerInitialized) + "\t" +
-                        "approx.time:"+ (time6posteriorApproximated - time5samplesTaken) + "\t" +
-                        "approx.sampler.init.time:"+ (time7samplerOfApproxInitialized - time6posteriorApproximated) + "\t" +
-                        "approx.sampling.time:"+ (time8samplingFromApproxFinished - time7samplerOfApproxInitialized) + "\t\t ||\t\t (" +
+                        "approx.time:" + (time6posteriorApproximated - time5samplesTaken) + "\t" +
+                        "approx.sampler.init.time:" + (time7samplerOfApproxInitialized - time6posteriorApproximated) + "\t" +
+                        "approx.sampling.time:" + (time8samplingFromApproxFinished - time7samplerOfApproxInitialized) + "\t\t ||\t\t (" +
 //                        "origin #nodes:"+ nonReducedPosteriorNodeCount + ")\t" +
-                        "reduced#nodes:"+ "(" + reducedPosteriorNodeCount + ")\t" +
-                        "approx #nodes:"+ "(" + approxReducedPosteriorNodeCount + ")");
+                        "reduced#nodes:" + "(" + reducedPosteriorNodeCount + ")\t" +
+                        "approx #nodes:" + "(" + approxReducedPosteriorNodeCount + ")");
 
             } // end numConstraints for
         } // end numDim for
@@ -557,11 +562,11 @@ public class ReportGibbsSamplerForPreferenceLearning {
             reset();
         }
 
-        public void addSample (VarAssignment assignment) {
+        public void addSample(VarAssignment assignment) {
             sampleCounter++;
             double v = value(assignment);
-            valueSum+= v;
-            sqValueSum += v*v;
+            valueSum += v;
+            sqValueSum += v * v;
         }
 
         abstract double value(VarAssignment valuation);
@@ -575,7 +580,7 @@ public class ReportGibbsSamplerForPreferenceLearning {
         }
 
         public double getStandardErrorOfTheMean() {
-             return Math.sqrt(getVariance()) / Math.sqrt(sampleCounter);
+            return Math.sqrt(getVariance()) / Math.sqrt(sampleCounter);
         }
 
         public void reset() {
@@ -584,8 +589,6 @@ public class ReportGibbsSamplerForPreferenceLearning {
             sqValueSum = 0d;
         }
     }
-
-
 
 
 }

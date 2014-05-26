@@ -1,5 +1,6 @@
 package hgm.poly.market;
 
+import hgm.poly.bayesian.PriorHandler;
 import org.junit.Test;
 
 import java.util.List;
@@ -17,8 +18,8 @@ public class DummyMarketMakingDatabaseTest {
 
     @Test
     public void test1() {
-       MarketMakingDatabase db = new DummyMarketMakingDatabase(5, 20, 10, 1);
-        List<TradingResponse> tradingResponses = db.getTradingResponses();
+       MarketMakingDatabase db = new DummyMarketMakingDatabase(5, PriorHandler.uniformInHypercube("v", 5, 1), 2);//(5, 20, 10, 1);
+        List<TradingResponse> tradingResponses = db.getObservedDataPoints();
         for (int i = 0; i < tradingResponses.size(); i++) {
             TradingResponse tradingResponse = tradingResponses.get(i);
             System.out.println("[" + i + "]\t\t" +

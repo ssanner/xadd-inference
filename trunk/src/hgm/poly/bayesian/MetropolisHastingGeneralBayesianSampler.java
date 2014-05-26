@@ -10,8 +10,8 @@ import java.util.Arrays;
  * Date: 11/03/14
  * Time: 9:05 PM
  */
-public class MetropolisHastingBayesianSampler implements SamplerInterface {
-    BayesianPosteriorHandler gph;
+public class MetropolisHastingGeneralBayesianSampler implements SamplerInterface {
+    GeneralBayesianPosteriorHandler gph;
     double[] cVarMins;
     double[] cVarMaxes;
     int numVars;
@@ -19,19 +19,10 @@ public class MetropolisHastingBayesianSampler implements SamplerInterface {
     double proposalVariance;
     Double[] lastSample;
 
-    public static MetropolisHastingBayesianSampler makeSampler(BayesianPosteriorHandler gph, double minForAllVars, double maxForAllVars, double proposalVariance) {
-        int varNum = gph.getPolynomialFactory().getAllVars().length;
-        double[] cVarMins = new double[varNum];
-        double[] cVarMaxes = new double[varNum];
-        Arrays.fill(cVarMins, minForAllVars);
-        Arrays.fill(cVarMaxes, maxForAllVars);
-        return new MetropolisHastingBayesianSampler(gph, cVarMins, cVarMaxes, proposalVariance);
-    }
-
-    public MetropolisHastingBayesianSampler(BayesianPosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, double proposalVariance) {
+    public MetropolisHastingGeneralBayesianSampler(GeneralBayesianPosteriorHandler gph/*, double[] cVarMins, double[] cVarMaxes,*/, double proposalVariance) {
         this.gph = gph;
-        this.cVarMins = cVarMins;
-        this.cVarMaxes = cVarMaxes;
+        this.cVarMins = gph.getPriorHandler().getLowerBoundsPerDim();//cVarMins;
+        this.cVarMaxes = gph.getPriorHandler().getUpperBoundsPerDim();//cVarMaxes;
         numVars = cVarMins.length;
         if (cVarMaxes.length != numVars) throw new RuntimeException("length mismatch between mins and maxes");
 
@@ -47,7 +38,7 @@ public class MetropolisHastingBayesianSampler implements SamplerInterface {
 
         for (; ; ) {
             for (int i = 0; i < numVars; i++) {
-                sample[i] = AbstractBayesianSampler.randomDoubleUniformBetween(cVarMins[i], cVarMaxes[i]);
+                sample[i] = AbstractGeneralBayesianGibbsSampler.randomDoubleUniformBetween(cVarMins[i], cVarMaxes[i]);
             }
             if (gph.evaluate(sample) > 0) return sample;
         }
@@ -66,7 +57,7 @@ public class MetropolisHastingBayesianSampler implements SamplerInterface {
             return proposalState;
         }
 
-        if (acceptanceRatio > AbstractBayesianSampler.randomDoubleUniformBetween(0, 1)) {
+        if (acceptanceRatio > AbstractGeneralBayesianGibbsSampler.randomDoubleUniformBetween(0, 1)) {
             System.arraycopy(proposalState, 0, lastSample, 0, proposalState.length);
             return proposalState;
         } else {
@@ -79,7 +70,7 @@ public class MetropolisHastingBayesianSampler implements SamplerInterface {
     private Double[] jump(Double[] mean, double variance) {
         Double[] newState = new Double[mean.length];
         for (int i = 0; i < mean.length; i++) {
-            newState[i] = AbstractBayesianSampler.randomGaussianDouble(mean[i], variance);
+            newState[i] = AbstractGeneralBayesianGibbsSampler.randomGaussianDouble(mean[i], variance);
         }
         return newState;
     }

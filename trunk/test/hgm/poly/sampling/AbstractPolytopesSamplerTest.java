@@ -64,7 +64,7 @@ public class AbstractPolytopesSamplerTest {
         FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
         AbstractPolytopesSampler sampler = SymbolicGibbsPolytopesSampler.makeSampler(
-                new PosteriorHandler(cp.getPolynomialFactory(), cp, 0, 100), minVarLim, maxVarLim, null);
+                new ConstantBayesianPosteriorHandler(cp.getPolynomialFactory(), cp, 0, 100), minVarLim, maxVarLim, null);
 
         SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatterGibbs");//"scatter2D");
 
@@ -102,7 +102,7 @@ public class AbstractPolytopesSamplerTest {
         FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
         AbstractPolytopesSampler sampler =
-                SymbolicGibbsPolytopesSampler.makeSampler(new PosteriorHandler(cp.getPolynomialFactory(), cp, 0, 100), minVarLim, maxVarLim, null);
+                SymbolicGibbsPolytopesSampler.makeSampler(new ConstantBayesianPosteriorHandler(cp.getPolynomialFactory(), cp, 0, 100), minVarLim, maxVarLim, null);
 //        GatedGibbsPolytopesSampler.makeSampler(new PolytopesHandler(cp.getPolynomialFactory(), cp, 0, 100), minVarLim, maxVarLim, null);
 
         SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
@@ -132,7 +132,7 @@ public class AbstractPolytopesSamplerTest {
 
         FunctionVisualizer.visualize(cp, minVarLim, maxVarLim, 0.5, "func");
 
-        AbstractPolytopesSampler sampler = SymbolicGibbsPolytopesSampler.makeSampler(new PosteriorHandler(cp.getPolynomialFactory(), cp, 0, 100), minVarLim, maxVarLim, null);
+        AbstractPolytopesSampler sampler = SymbolicGibbsPolytopesSampler.makeSampler(new ConstantBayesianPosteriorHandler(cp.getPolynomialFactory(), cp, 0, 100), minVarLim, maxVarLim, null);
 
         SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
 

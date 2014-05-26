@@ -40,11 +40,11 @@ public abstract class GPolyPreferenceLearningPredictor implements PreferenceLear
     public Info learnToPredict(PreferenceDatabase trainingDatabase) {
         Info info = new Info();
 
-        GPolyPreferenceLearning learning = new GPolyPreferenceLearning(trainingDatabase, indicatorNoise, "w");
+        BayesianPairwisePreferenceLearningModel learning = new BayesianPairwisePreferenceLearningModel(trainingDatabase, indicatorNoise/*, "w"*/);
 
         long time1start = System.currentTimeMillis();
         // Pr(W | R^{n+1})
-        PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGateConstraintViolation);
+        ConstantBayesianPosteriorHandler posterior = learning.computePosteriorWeightVector(maxGateConstraintViolation);
 
         if (DEBUG_MODE) {
             FunctionVisualizer.visualize(posterior, -50, 50, 0.1, "posterior");
@@ -55,7 +55,7 @@ public abstract class GPolyPreferenceLearningPredictor implements PreferenceLear
 
         //extra reduction phase.... long time3posteriorReduced = System.currentTimeMillis();
 
-        GatedGibbsPolytopesSampler sampler = makeNewSampler(posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
+        GatedGibbsPolytopesSampler sampler = makeNewSampler(posterior, null);//learning.generateAWeightVectorHighlyProbablePosteriorly());
 
         takenSamples = new ArrayList<Double[]>(numberOfSamples);
 
@@ -87,7 +87,7 @@ public abstract class GPolyPreferenceLearningPredictor implements PreferenceLear
         return u;
     }
 
-    public abstract GatedGibbsPolytopesSampler makeNewSampler(PosteriorHandler posterior, VarAssignment assignment);
+    public abstract GatedGibbsPolytopesSampler makeNewSampler(ConstantBayesianPosteriorHandler posterior, VarAssignment assignment);
     /*
     i.e. GatedPolytopesSampler sampler = GatedPolytopesSampler.makeGibbsSampler(
                 minForAllVars,

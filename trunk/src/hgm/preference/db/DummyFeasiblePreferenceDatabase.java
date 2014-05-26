@@ -1,10 +1,10 @@
 package hgm.preference.db;
 
+import hgm.poly.bayesian.PriorHandler;
 import hgm.preference.Choice;
 import hgm.preference.Preference;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -13,21 +13,31 @@ import java.util.Random;
  * Date: 13/01/14
  * Time: 4:02 PM
  */
-public class DummyFeasiblePreferenceDatabase implements PreferenceDatabase {
+public class DummyFeasiblePreferenceDatabase extends PreferenceDatabase {
     private double minAttribBound;
     private double maxAttribBound;
-    private int attributeCount;
+    //    private int attributeCount;  is dim = num. parameters
     private Random random;
     private List<Preference> preferences;
     private List<Double[]> items;
     double[] auxiliaryWeightVector;
 
-    public DummyFeasiblePreferenceDatabase(double minWeightBound, double maxWeightBound,
-                                           double minAttribBound, double maxAttribBound, int preferenceCount, int attributeCount, int itemCount) {
+    public DummyFeasiblePreferenceDatabase(double minAttribBound, double maxAttribBound,
+                                           int preferenceCount, //num. observed data
+                                           PriorHandler priorOnAttribWeights,
+                                           int itemCount) {
+        this(minAttribBound, maxAttribBound, preferenceCount, priorOnAttribWeights, itemCount, 0.0);
+    }
+
+    public DummyFeasiblePreferenceDatabase(double minAttribBound, double maxAttribBound,
+                                           int preferenceCount, //num. observed data
+                                           PriorHandler priorOnAttribWeights,
+                                           int itemCount, double noise) {
+        super(priorOnAttribWeights);
 
         this.minAttribBound = minAttribBound;
         this.maxAttribBound = maxAttribBound;
-        this.attributeCount = attributeCount;
+//        this.attributeCount = attributeCount;
         items = new ArrayList<Double[]>(itemCount);
         preferences = new ArrayList<Preference>(preferenceCount);
         random = new Random();
@@ -37,7 +47,7 @@ public class DummyFeasiblePreferenceDatabase implements PreferenceDatabase {
             items.add(makeNewItem());
         }
 
-        auxiliaryWeightVector = makeAuxiliaryWeightVector(minWeightBound, maxWeightBound, attributeCount);
+        auxiliaryWeightVector = makeAuxiliaryWeightVector();
 
         //making preferences;
         for (int i = 0; i < preferenceCount; i++) {
@@ -49,9 +59,18 @@ public class DummyFeasiblePreferenceDatabase implements PreferenceDatabase {
             double xW1 = utility(items.get(itemIndex1), auxiliaryWeightVector);
             double xW2 = utility(items.get(itemIndex2), auxiliaryWeightVector);
 
-            if (xW1 > xW2) preferences.add(new Preference(itemIndex1, itemIndex2, Choice.FIRST));
-            else if (xW1 < xW2) preferences.add(new Preference(itemIndex1, itemIndex2, Choice.SECOND));
-            else preferences.add(new Preference(itemIndex1, itemIndex2, Choice.EQUAL));
+            Preference preference;
+            if (xW1 > xW2) preference = new Preference(itemIndex1, itemIndex2, Choice.FIRST);
+            else if (xW1 < xW2) preference = new Preference(itemIndex1, itemIndex2, Choice.SECOND);
+            else preference = new Preference(itemIndex1, itemIndex2, Choice.EQUAL);
+
+            //flip with probability = noise.
+            if (random.nextDouble()< noise) {
+                preference.flipChoice();
+            }
+
+
+            preferences.add(preference);
         }
     }
 
@@ -69,25 +88,30 @@ public class DummyFeasiblePreferenceDatabase implements PreferenceDatabase {
         return result;
     }
 
-    private double[] makeAuxiliaryWeightVector(double minWeightBound, double maxWeightBound, int attributeCount) {
-        double[] v = new double[attributeCount];
+    private double[] makeAuxiliaryWeightVector() {
+        double[] lowerBoundsPerDim = prior.getLowerBoundsPerDim();
+        double[] upperBoundsPerDim = prior.getUpperBoundsPerDim();
+
+        double[] v = new double[this.getNumberOfParameters()];
         for (int i = 0; i < v.length; i++) {
+            double minWeightBound = lowerBoundsPerDim[i];
+            double maxWeightBound = upperBoundsPerDim[i];
             v[i] = random.nextDouble() * (maxWeightBound - minWeightBound) + minWeightBound;
         }
         return v;
     }
 
     public Double[] makeNewItem() {
-        Double[] item = new Double[attributeCount];
-        for (int i = 0; i < attributeCount; i++) {
+        Double[] item = new Double[this.getNumberOfParameters()];
+        for (int i = 0; i < item.length; i++) {
             item[i] = random.nextDouble() * (maxAttribBound - minAttribBound) + minAttribBound;
         }
         return item;
     }
 
     @Override
-    public int getNumberOfAttributes() {
-        return items.get(0).length;
+    public int getNumberOfParameters() {
+        return this.prior.getFactory().numberOfVars();//items.get(0).length;
     }
 
     @Override
@@ -96,7 +120,7 @@ public class DummyFeasiblePreferenceDatabase implements PreferenceDatabase {
     }
 
     @Override
-    public List<Preference> getPreferenceResponses() {
+    public List<Preference> getObservedDataPoints() {
         return preferences;
     }
 

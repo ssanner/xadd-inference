@@ -30,12 +30,12 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
     double[] cVarMins;
     double[] cVarMaxes;
     int numVars;
-    PosteriorHandler gph;
+    ConstantBayesianPosteriorHandler gph;
 
     Double[] absoluteBestSample;
     double absoluteBestTarget = -1;
 
-    public AbstractPolytopesSampler(PosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
+    public AbstractPolytopesSampler(ConstantBayesianPosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
 
         this.gph = gph;
 

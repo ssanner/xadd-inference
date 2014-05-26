@@ -2,7 +2,7 @@ package hgm.reports;
 
 import hgm.preference.Choice;
 import hgm.preference.Preference;
-import hgm.preference.PreferenceLearning;
+import hgm.preference.XaddBasedPreferenceLearning;
 import hgm.preference.db.DiscretePreferenceDatabase;
 import hgm.preference.db.PartialPreferenceDatabase;
 import hgm.preference.db.PreferenceDatabase;
@@ -43,10 +43,10 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
         }
 
         DiscretePreferenceDatabase carDB = new ShuffledPreferenceDatabase(CarPreferenceDatabase.fetchCarPreferenceDataBase1stExperiment(adviserIds));
-        Integer attribCount = carDB.getNumberOfAttributes();
+        Integer attribCount = carDB.getNumberOfParameters();
         System.out.println("carDB.getNumberOfAttributes() = " + attribCount);
 
-        List<Preference> preferenceResponses = carDB.getPreferenceResponses();
+        List<Preference> preferenceResponses = carDB.getObservedDataPoints();
         System.out.println("preferenceResponses = " + preferenceResponses);
         System.out.println("preferenceResponses.size() = " + preferenceResponses.size());
 
@@ -119,8 +119,8 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
         adviserIds.add(0); //only the first guy....
         DiscretePreferenceDatabase completeDatabase = //new BinarizedPreferenceDatabase(
                 new ShuffledPreferenceDatabase(CarPreferenceDatabase.fetchCarPreferenceDataBase1stExperiment(adviserIds));
-        int numDims = completeDatabase.getNumberOfAttributes();
-        List<Preference> preferenceResponses = completeDatabase.getPreferenceResponses();
+        int numDims = completeDatabase.getNumberOfParameters();
+        List<Preference> preferenceResponses = completeDatabase.getObservedDataPoints();
         int maxNumConstraints = preferenceResponses.size();
 
 
@@ -135,7 +135,7 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
             PreferenceDatabase partialDB = new PartialPreferenceDatabase(completeDatabase, numConstraints);
 
             XADD context = new XADD();
-            PreferenceLearning learning = new PreferenceLearning(context, partialDB, indicatorNoise, "w", 0d);
+            XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, partialDB, indicatorNoise, "w", 0d);
 
             long time1start = System.currentTimeMillis();
             // Pr(W | R^{n+1})
@@ -154,7 +154,7 @@ public class ReportTrueSkillAndPolyOnCarDatabase {
 //                long time4samplerInitialized = System.currentTimeMillis();
 
             // now that the first 'numConstraints' preferences are used to make the posterior W we calculate the probability of the next preference....
-            Preference nextPref = completeDatabase.getPreferenceResponses().get(numConstraints + 1);
+            Preference nextPref = completeDatabase.getObservedDataPoints().get(numConstraints + 1);
             Integer aId = nextPref.getItemId1();
             Integer bId = nextPref.getItemId2();
             Double[] a = completeDatabase.getItemAttributeValues(aId);

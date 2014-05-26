@@ -1,19 +1,19 @@
 package hgm.poly.pref.reports;
 
-import hgm.ModelDatabase;
+import hgm.BayesianDataGenerator;
 import hgm.asve.Pair;
 import hgm.poly.bayesian.*;
 import hgm.poly.integral.OneDimFunction;
-import hgm.poly.market.BayesianMarketMakingModel;
 import hgm.poly.market.DummyMarketMakingDatabase;
-import hgm.poly.market.MarketMakingDatabase;
 import hgm.poly.pref.*;
 import hgm.poly.pref.reports.db.SyntheticDistributionUtils;
+import hgm.poly.reports.Db2Sampler;
+import hgm.poly.reports.ModelType;
+import hgm.poly.reports.SamplingAlgorithmBank;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.vis.FunctionVisualizer;
 import hgm.preference.Choice;
 import hgm.preference.Preference;
-import hgm.preference.PreferenceLearning;
 import hgm.preference.db.DummyFeasiblePreferenceDatabase;
 import hgm.preference.db.PartialPreferenceDatabase;
 import hgm.preference.db.PreferenceDatabase;
@@ -35,11 +35,13 @@ import java.util.*;
 /**
  * Written before UAI 2014
  */
+//todo shift this file from package pref to a new package since MM is also handled...
 //todo complete this file..............
+//TODO IMPORTANT: 'make sampler's should not be used. bounds should be given to them indirectly and via prior.... otherwise at least the serial dependency one, will not work.
 public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
     public static final String REPORT_PATH =
             //"./test/hgm/poly/pref/reports/";
-    "E:/REPORT_PATH/";
+            "E:/REPORT_PATH/";
 
     public static boolean DEBUG = false;
 
@@ -87,7 +89,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
                     Arrays.asList(
                             new Pair<String, PreferenceLearningPredictor>("new.poly",
                                     new GPolyPreferenceLearningPredictorUsingGibbsSampler(indicatorNoise,
-                                            numberOfSamples, burnedSamples, maxGateConstraintViolation, -PreferenceLearning.C, PreferenceLearning.C))
+                                            numberOfSamples, burnedSamples, maxGateConstraintViolation, -BayesianPairwisePreferenceLearningModel.C, BayesianPairwisePreferenceLearningModel.C))
                             , new Pair<String, PreferenceLearningPredictor>("xadd.poly",
                             new XaddPolytopePrefLearningPredictorUsingGibbsWithCDFsPerSample(indicatorNoise,
                                     reduceLP, numberOfSamples,
@@ -180,12 +182,13 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
                 for (int experimentRepetitionCounter = 0; experimentRepetitionCounter < numRepeatingEachExperiment; experimentRepetitionCounter++) {
 
                     PreferenceDatabase completeDatabase = SyntheticDistributionUtils.fetchOrGenerateTrainTestPreferenceDbDistribution("1" /*prior*/,
-                            -PreferenceLearning.C, PreferenceLearning.C,
+//                            -GPolyPreferenceLearningModel.C,
+                            BayesianPairwisePreferenceLearningModel.C,
                             0d, 5d,
                             numDims, numberOfItems, numTrainingConstraints, numberOfTestPrefs, numSamplesToEstimateRealDistribution, 0.1, 6, false);
                     /*PreferenceDatabase completeDatabase = new DummyFeasiblePreferenceDatabase(
-                            -PreferenceLearning.C,
-                            PreferenceLearning.C,
+                            -GPolyPreferenceLearningModel.C,
+                            GPolyPreferenceLearningModel.C,
                             0d,
                             5d,
                             numConstraints + numberOfTestComparisonsPerDatabase *//* more preferences used for testing *//*,
@@ -211,7 +214,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
                         for (int testCounter = 0; testCounter < numberOfTestPrefs; testCounter++) {
 
-                            Preference testPref = completeDatabase.getPreferenceResponses()
+                            Preference testPref = completeDatabase.getObservedDataPoints()
                                     .get(numTrainingConstraints + testCounter);
                             Integer aId = testPref.getItemId1();
                             Integer bId = testPref.getItemId2();
@@ -299,66 +302,11 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
         maps.get(name).add(val);
     }
 
-    //MM:
-    final static double mm_epsilon = PreferenceLearning.C / 10.0; //todo: deal with this
 
     ///////////////     T E S T S     A F T E R    U A I   D E A D L I N E
     ///////////////////////////////////////////////////// /\  /////////////////////////////////////////////////////
     ///////////////////////////////////////////////////// ||  /////////////////////////////////////////////////////
     //////////////////////////////////////////////////// /  \ /////////////////////////////////////////////////////
-    interface Db2Sampler {
-        String getName();
-
-        SamplerInterface createSampler(ModelDatabase db);
-    }
-
-    abstract class Db2SamplerBPPL implements Db2Sampler {
-        @Override
-        public SamplerInterface createSampler(ModelDatabase db) {
-            if (!(db instanceof PreferenceDatabase)) throw new RuntimeException("Pre. Db. required...");
-            return createSamplerBPPL((PreferenceDatabase) db);
-        }
-
-        abstract SamplerInterface createSamplerBPPL(PreferenceDatabase db);
-    }
-
-    abstract class Db2SamplerBayesianBPPL extends Db2SamplerBPPL {
-        double indicatorNoise;
-
-        protected Db2SamplerBayesianBPPL(double indicatorNoise) {
-            this.indicatorNoise = indicatorNoise;
-        }
-
-        @Override
-        SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
-            GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
-
-            // Pr(W | R^{n+1})
-            BayesianPosteriorHandler posterior = learning.computeBayesianPrefPosterior();
-//                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
-
-            return createSamplerBPPL(posterior);
-        }
-
-        abstract SamplerInterface createSamplerBPPL(BayesianPosteriorHandler posterior);
-    }
-
-    abstract class Db2SamplerMMM implements Db2Sampler {
-        @Override
-        public SamplerInterface createSampler(ModelDatabase db) {
-            if (!(db instanceof MarketMakingDatabase)) throw new RuntimeException("MM. Db. required...");
-
-            BayesianMarketMakingModel model =
-                    new BayesianMarketMakingModel(BayesianMarketMakingModel.uniformInHypercube(GPolyPreferenceLearning.C),
-                            (MarketMakingDatabase) db, mm_epsilon, "v");   //todo change prior....
-
-            // Pr(V | R^{n+1})
-            BayesianPosteriorHandler posterior = model.computeBayesianPosterior();
-            return createSamplerMMM(posterior);
-        }
-
-        abstract SamplerInterface createSamplerMMM(BayesianPosteriorHandler posterior);
-    }
 
 
     @Test
@@ -366,166 +314,132 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
         //BPPL:
         final double indicatorNoise = 0.4;
         final int maxGatingConditionViolation = Integer.MAX_VALUE;
+/*
 
-        /*//----------------------------------------------------------------------------------------------
-        Db2Sampler baselinePolyDb2Sampler = new Db2Sampler() {
-            @Override
-            public SamplerInterface createSampler(PreferenceDatabase db) {
-                GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
-                // Pr(W | R^{n+1})
-                PolytopesHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
-                //now I sample from it:
-                SamplerInterface sampler = PolyGibbsSampler.makeGibbsSampler(posterior, //todo rejection based sampling should be used instead...
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, null);
-
-                return sampler;
-            }
-            @Override
-            public String getName() {
-                return "gated";
-            }
-        };*/
         //----------------------------------------------------------------------------------------------
-        Db2SamplerBPPL gatedBayesianDb2SamplerBPPL = new Db2SamplerBayesianBPPL(indicatorNoise) {
+        Db2SamplerBPPL gatedBayesianDb2SamplerBPPL = new Db2SamplerBPPLWithGeneralBayesianPosterior(indicatorNoise) {
             @Override
-            SamplerInterface createSamplerBPPL(BayesianPosteriorHandler posterior) {
-                SamplerInterface sampler = GatedGibbsBayesianSampler.makeSampler(posterior,
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, null);
-
-                return sampler;
+            SamplerInterface createSamplerBPPL(GeneralBayesianPosteriorHandler posterior) {
+                return GatedGibbsGeneralBayesianSampler.makeSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, null);
             }
 
             @Override
             public String getName() {
-                return "gated.bayes.bppl";
+                return "gated.general.bppl";
             }
         };
         //----------------------------------------------------------------------------------------------
-        Db2SamplerBPPL rejectionBayesianDb2SamplerBPPL = new Db2SamplerBayesianBPPL(indicatorNoise) {
+        Db2SamplerBPPL rejectionBayesianDb2SamplerBPPL = new Db2SamplerBPPLWithGeneralBayesianPosterior(indicatorNoise) {
             @Override
-            SamplerInterface createSamplerBPPL(BayesianPosteriorHandler posterior) {
-                return RejectionBayesianSampler.makeSampler(posterior,
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, 20);
+            SamplerInterface createSamplerBPPL(GeneralBayesianPosteriorHandler posterior) {
+                return RejectionBasedGeneralBayesianSampler.makeSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, 20);
             }
 
             @Override
             public String getName() {
-                return "rej.bayes.bppl";
+                return "rej.general.bppl";
             }
         };
         //----------------------------------------------------------------------------------------------
-        Db2SamplerBPPL metropolisHastingBayesianDb2SamplerBPPL = new Db2SamplerBayesianBPPL(indicatorNoise) {
+        Db2SamplerBPPL metropolisHastingBayesianDb2SamplerBPPL = new Db2SamplerBPPLWithGeneralBayesianPosterior(indicatorNoise) {
             @Override
-            SamplerInterface createSamplerBPPL(BayesianPosteriorHandler posterior) {
-                return MetropolisHastingBayesianSampler.makeSampler(posterior,
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, 0.1);
+            SamplerInterface createSamplerBPPL(GeneralBayesianPosteriorHandler posterior) {
+                return MetropolisHastingGeneralBayesianSampler.makeSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, 0.1);
             }
 
             @Override
             public String getName() {
-                return "mh.bayes.bppl";
+                return "mh.general.bppl";
+            }
+        };
+        //----------------------------------------------------------------------------------------------
+        Db2Sampler fullGibbsBayesianDb2SamplerBPPL = new Db2SamplerBPPLWithGeneralBayesianPosterior(indicatorNoise) {
+            @Override
+            SamplerInterface createSamplerBPPL(GeneralBayesianPosteriorHandler posterior) {
+
+                return FullGibbsGeneralBayesianSampler.makeSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, null);
+            }
+
+            @Override
+            public String getName() {
+                return "full.gibbs.general.bppl";
             }
         };
         //----------------------------------------------------------------------------------------------
         Db2Sampler gatedGibbsBayesianDb2SamplerMMM = new Db2SamplerMMM() {
             @Override
-            public SamplerInterface createSamplerMMM(BayesianPosteriorHandler posterior) {
-                SamplerInterface sampler = GatedGibbsBayesianSampler.makeSampler(posterior,
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, null);
-
-                return sampler;
+            public SamplerInterface createSamplerMMM(GeneralBayesianPosteriorHandler posterior) {
+                return GatedGibbsGeneralBayesianSampler.makeSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, null);
             }
 
             @Override
             public String getName() {
-                return "gated.bayes.mmm";
+                return "gated.general.mmm";
             }
         };
         //----------------------------------------------------------------------------------------------
         Db2Sampler fullGibbsBayesianDb2SamplerMMM = new Db2SamplerMMM() {
             @Override
-            public SamplerInterface createSamplerMMM(BayesianPosteriorHandler posterior) {
-                SamplerInterface sampler = FullGibbsBayesianSampler.makeSampler(posterior,
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, null);
+            public SamplerInterface createSamplerMMM(GeneralBayesianPosteriorHandler posterior) {
 
-                return sampler;
+                return FullGibbsGeneralBayesianSampler.makeSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, null);
             }
 
             @Override
             public String getName() {
-                return "full.gibbs.bayes.mmm";
-            }
-        };
-        //----------------------------------------------------------------------------------------------
-        Db2Sampler fullGibbsBayesianDb2SamplerBPPL = new Db2SamplerBayesianBPPL(indicatorNoise) {
-            @Override
-            SamplerInterface createSamplerBPPL(BayesianPosteriorHandler posterior) {
-                SamplerInterface sampler = FullGibbsBayesianSampler.makeSampler(posterior,
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, null);
-
-                return sampler;
-            }
-
-            @Override
-            public String getName() {
-                return "full.gibbs.bayes.bppl";
+                return "full.gibbs.general.mmm";
             }
         };
         //----------------------------------------------------------------------------------------------
         Db2Sampler rejectionBayesianDb2SamplerMMM = new Db2SamplerMMM() {
             @Override
-            public SamplerInterface createSamplerMMM(BayesianPosteriorHandler posterior) {
-                SamplerInterface sampler = RejectionBayesianSampler.makeSampler(posterior,
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, 20);
+            public SamplerInterface createSamplerMMM(GeneralBayesianPosteriorHandler posterior) {
 
-                return sampler;
+                return RejectionBasedGeneralBayesianSampler.makeSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, 20);
             }
 
             @Override
             public String getName() {
-                return "rej.bayes.mmm";
+                return "rej.general.mmm";
             }
         };
         //----------------------------------------------------------------------------------------------
         Db2Sampler metropolisHastingHBayesianDb2SamplerMMM = new Db2SamplerMMM() {
             @Override
-            public SamplerInterface createSamplerMMM(BayesianPosteriorHandler posterior) {
-                SamplerInterface sampler = MetropolisHastingBayesianSampler.makeSampler(posterior,
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, 0.1);
+            public SamplerInterface createSamplerMMM(GeneralBayesianPosteriorHandler posterior) {
 
-                return sampler;
+                return MetropolisHastingGeneralBayesianSampler.makeSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, 0.1);
             }
 
             @Override
             public String getName() {
-                return "mh.bayes.mmm";
+                return "mh.general.mmm";
             }
         };
         //----------------------------------------------------------------------------------------------
-        Db2SamplerBPPL gPolyDb2SamplerBPPL = new Db2SamplerBPPL() {
+        Db2SamplerBPPL gPolyDb2SamplerBPPL = new Db2SamplerBPPLWithConstantBayesianPosterior(indicatorNoise, maxGatingConditionViolation) {
+
             @Override
-            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
-                GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
-
-                // Pr(W | R^{n+1})
-                PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
-//                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
-
-                //now I sample from it:
-                SamplerInterface sampler = GatedGibbsPolytopesSampler.makeSampler(posterior, //todo rejection based sampling should be used instead...
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, null);
-
-                return sampler;
+            SamplerInterface createSamplerBPPL(ConstantBayesianPosteriorHandler posterior) {
+                return GatedGibbsPolytopesSampler.makeSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, null);
             }
 
             @Override
@@ -534,170 +448,75 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
             }
         };
         //----------------------------------------------------------------------------------------------
-        Db2SamplerBPPL gTargetedPolyDb2SamplerBPPL = new Db2SamplerBPPL() {
+        Db2SamplerBPPL gTargetedPolyDb2SamplerBPPL = new Db2SamplerBPPLWithConstantBayesianPosterior(indicatorNoise, maxGatingConditionViolation) {
             @Override
-            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
-                GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
-
-                // Pr(W | R^{n+1})
-                PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
-//                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
-
-                //now I sample from it:
-                SamplerInterface sampler = TargetedGatedGibbsPolytopesSampler.makeCleverGibbsSampler(posterior, //todo rejection based sampling should be used instead...
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, null);
-
-                return sampler;
+            SamplerInterface createSamplerBPPL(ConstantBayesianPosteriorHandler posterior) {
+                return TargetedGatedGibbsPolytopesSampler.makeCleverGibbsSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, null);
             }
 
             @Override
             public String getName() {
-                return "targeted";
+                return "targeted.const.bppl";
             }
         };
         //----------------------------------------------------------------------------------------------
-        Db2SamplerBPPL fullGibbsPolyDb2SamplerBPPL = new Db2SamplerBPPL() {
+        Db2SamplerBPPL fullGibbsPolyDb2SamplerBPPL = new Db2SamplerBPPLWithConstantBayesianPosterior(indicatorNoise, maxGatingConditionViolation) {
             @Override
-            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
-                GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
-
-                // Pr(W | R^{n+1})
-                PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
-//                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
-
-                //now I sample from it:
-                SamplerInterface sampler = FullGibbsPolytopesSampler.makeFullGibbsSampler(posterior, //todo rejection based sampling should be used instead...
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, null);
-
-                return sampler;
+            SamplerInterface createSamplerBPPL(ConstantBayesianPosteriorHandler posterior) {
+                return FullGibbsPolytopesSampler.makeFullGibbsSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, null);
             }
 
             @Override
             public String getName() {
-                return "full";
+                return "full.const.bppl";
             }
         };
         //----------------------------------------------------------------------------------------------
-        Db2SamplerBPPL symbolicGibbsPolyDb2SamplerBPPL = new Db2SamplerBPPL() {
+        Db2SamplerBPPL symbolicGibbsPolyDb2SamplerBPPL = new Db2SamplerBPPLWithConstantBayesianPosterior(indicatorNoise, maxGatingConditionViolation) {
             @Override
-            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
-                GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
-
-                // Pr(W | R^{n+1})
-                PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
-//                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
-
-                //now I sample from it:
-                SamplerInterface sampler = SymbolicGibbsPolytopesSampler.makeSampler(posterior, //todo rejection based sampling should be used instead...
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, null);
-
-                return sampler;
+            SamplerInterface createSamplerBPPL(ConstantBayesianPosteriorHandler posterior) {
+                return SymbolicGibbsPolytopesSampler.makeSampler(posterior,
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, null);
             }
 
             @Override
             public String getName() {
-                return "symbolic";
+                return "symbolic.const.bppl";
             }
         };
-        //----------------------------------------------------------------------------------------------
-        @Deprecated
-        Db2SamplerBPPL xaddRejSampler = new Db2SamplerBPPL() {
-            boolean reduceLP = true;
+*/
 
-            @Override
-            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
-                XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0/*epsilon*/);
-                //                        long time1start = System.currentTimeMillis();
-                // Pr(W | R^{n+1})
-                XADD.XADDNode posterior = learning.computePosteriorWeightVector(reduceLP, -1/*relativeLeafValueBelowWhichRegionsAreTrimmed*/);
-                XaddPolytopePrefLearningPredictor.fixVarLimits(context, posterior, -PreferenceLearning.C, PreferenceLearning.C); //todo: do something better...
-//                        long time2posteriorCalculated = System.currentTimeMillis();
-                final XaddSampler sampler = makeNewSampler(context, posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
-                return new SamplerInterface() {
-                    @Override
-                    public Double[] sample() throws SamplingFailureException {
-                        return sampler.sample().getContinuousVarAssignAsArray("w");
-                    }
-                };
-            }
-
-            public XaddSampler makeNewSampler(XADD context,
-                                              XADD.XADDNode posterior,
-                                              VarAssignment initAssignment) {
-                return new XaddBasedRejectionSampler(context, posterior,
-                        null/*initAssignment*/, 1);
-            }
-
-            @Override
-            public String getName() {
-                return "rej";
-            }
-        };
-        //----------------------------------------------------------------------------------------------
-        Db2SamplerBPPL xaddMHSampler = new Db2SamplerBPPL() {
-            boolean reduceLP = true;
-
-            @Override
-            public SamplerInterface createSamplerBPPL(PreferenceDatabase db) {
-                XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0/*epsilon*/);
-                //                        long time1start = System.currentTimeMillis();
-                // Pr(W | R^{n+1})
-                XADD.XADDNode posterior = learning.computePosteriorWeightVector(reduceLP, -1/*relativeLeafValueBelowWhichRegionsAreTrimmed*/);
-                XaddPolytopePrefLearningPredictor.fixVarLimits(context, posterior, -PreferenceLearning.C, PreferenceLearning.C); //todo: do something better...
-//                        long time2posteriorCalculated = System.currentTimeMillis();
-                final XaddSampler sampler = makeNewSampler(context, posterior, learning.generateAWeightVectorHighlyProbablePosteriorly());
-                return new SamplerInterface() {
-                    @Override
-                    public Double[] sample() throws SamplingFailureException {
-                        return sampler.sample().getContinuousVarAssignAsArray("w");
-                    }
-                };
-            }
-
-            public XaddSampler makeNewSampler(XADD context,
-                                              XADD.XADDNode posterior,
-                                              VarAssignment initAssignment) {
-                return new XaddBasedMetropolisHastingsSampler(context, posterior,
-                        null/*initAssignment*/, 1);
-            }
-
-            @Override
-            public String getName() {
-                return "metro";
-            }
-        };
-        //----------------------------------------------------------------------------------------------
-
-        ProblemKind problem =
-                ProblemKind.MMM;
+        ModelType problem =
+                ModelType.MMM;
 //                ProblemKind.BPPL;
 
         Db2Sampler[] samplerMakers = null;
         switch (problem) {
             case MMM:
-                samplerMakers = new Db2Sampler[]{
-                        rejectionBayesianDb2SamplerMMM,
-                        gatedGibbsBayesianDb2SamplerMMM,
-                        metropolisHastingHBayesianDb2SamplerMMM,
-                        fullGibbsBayesianDb2SamplerMMM
-                };
+                samplerMakers = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(
+                        SamplingAlgorithmBank.REJ_GENERAL_MMM,
+                        SamplingAlgorithmBank.GATED_GIBBS_GENERAL_MMM,
+                        SamplingAlgorithmBank.MH_GENERAL_MMM,
+                        SamplingAlgorithmBank.FULL_GIBBS_GENERAL_MMM
+                );
                 break;
+
             case BPPL:
-                samplerMakers = new Db2Sampler[]{
-                        rejectionBayesianDb2SamplerBPPL, //xaddRejSampler,
-                        metropolisHastingBayesianDb2SamplerBPPL, //xaddMHSampler,
-//                fullGibbsPolyDb2Sampler,
-//                symbolicGibbsPolyDb2Sampler   //todo: this sampler needs more tests...
-//                gTargetedPolyDb2Sampler,
-                        gPolyDb2SamplerBPPL,
-                        gatedBayesianDb2SamplerBPPL,
-                        fullGibbsBayesianDb2SamplerBPPL
-                };
+                samplerMakers = SamplingAlgorithmBank.makeDb2Samplers4PrefLearningModel(indicatorNoise, maxGatingConditionViolation,
+                        SamplingAlgorithmBank.REJ_GENERAL_BPPL,
+                        SamplingAlgorithmBank.MH_GENERAL_BPPL,
+//                        SamplingAlgorithmBank.FULL_GIBBS_CONST_BPPL,
+//                        SamplingAlgorithmBank.SYMBOLIC_GIBBS_CONST_BPPL,
+//                        SamplingAlgorithmBank.TARGETED_GATED_GIBBS_CONST_BPPL,
+                        SamplingAlgorithmBank.GATED_GIBBS_CONST_BPPL,
+                        SamplingAlgorithmBank.GATED_GIBBS_GENERAL_BPPL,
+                        SamplingAlgorithmBank.FULL_GIBBS_GENERAL_BPPL
+                );
                 break;
         }
 
@@ -710,11 +529,10 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
     }
 
-    enum ProblemKind {MMM, BPPL}
 
     enum AnalysisType {ERROR_VS_TIME, TIME_VS_NUM_CONSTRAINTS}
 
-    private void testEffectOfNumSamplesWrtDimsAndConstraints(Db2Sampler[] samplerMakers, ProblemKind dbKind) throws FileNotFoundException {
+    private void testEffectOfNumSamplesWrtDimsAndConstraints(Db2Sampler[] samplerMakers, ModelType dbKind) throws FileNotFoundException {
         int numberOfItems = 500; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
         int[] numDimsArray = new int[]{6};
         int[] numConstraintsArray = new int[]{3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 18, 22, 25}; //num. observed data
@@ -723,6 +541,10 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
         double maxAttribBound = 5d;
         int numQueries = 20;
         int burnedSamples = 10;
+
+        //MM:
+        final double mm_epsilon_for_star_vars = BayesianPairwisePreferenceLearningModel.C / 10.0; //todo: deal with this
+
 
         Map<String/*dim-alg*/, List<Pair<Integer /*numConstraints*/, Long /*calc. time*/>>> dimAlg2TimesMap =
                 new HashMap<String, List<Pair<Integer, Long>>>();
@@ -733,24 +555,40 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
                 dimAlg2TimesMap.put(timeContainerKey(numDims, samplerMaker), new ArrayList<Pair<Integer, Long>>());
             }
 
-            for (int numConstraints : numConstraintsArray) {
+            for (int numObservedDataPoints : numConstraintsArray) {
                 System.out.println("numDims = " + numDims);
-                System.out.println("numConstraints = " + numConstraints);
+                System.out.println("numConstraints = " + numObservedDataPoints);
 
-                ModelDatabase db = null;
+                BayesianDataGenerator db = null;
 
                 switch (dbKind) {
                     case MMM:
-                        db = new DummyMarketMakingDatabase(numDims, numConstraints, PreferenceLearning.C, mm_epsilon);
+                        PriorHandler priorMM =
+                                //todo: change to serial dependent...
+//                                Prior.serialDependent("v",
+//                                        numDims, GPolyPreferenceLearningModel.C/*first uniform bound*/,
+//                                        GPolyPreferenceLearningModel.C / 5.0/*conditional dependence parameter*/);
+                                PriorHandler.uniformInHypercube("v", numDims, BayesianPairwisePreferenceLearningModel.C);
+
+                        db = new DummyMarketMakingDatabase(
+//                                numDims,
+                                numObservedDataPoints,  //
+                                priorMM,
+                                mm_epsilon_for_star_vars //for v*
+//                                GPolyPreferenceLearningModel.C //for predicting a and b.
+                        );
                         break;
                     case BPPL:
+                        PriorHandler priorBP = PriorHandler.uniformInHypercube("w", numDims, BayesianPairwisePreferenceLearningModel.C);
                         db = new DummyFeasiblePreferenceDatabase(
-                                -PreferenceLearning.C,
-                                PreferenceLearning.C,
+//                                -GPolyPreferenceLearningModel.C,
+//                                GPolyPreferenceLearningModel.C,
                                 minAttribBound, //TODO:IMPORTANT check the effect of negative x_i bound...
                                 maxAttribBound,
-                                numConstraints, // + numberOfTestComparisonsPerDatabase /* more preferences used for testing */,
-                                numDims, numberOfItems /* number of items */);
+                                numObservedDataPoints, // + numberOfTestComparisonsPerDatabase /* more preferences used for testing */,
+//                                numDims,
+                                priorBP,
+                                numberOfItems /* number of items */);
 
                         break;
                 }
@@ -771,8 +609,8 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
                 List<Double> groundTruthMeans = null;
 
                 AnalysisType analysisType =
-//                        AnalysisType.ERROR_VS_TIME;
-                AnalysisType.TIME_VS_NUM_CONSTRAINTS;
+                        AnalysisType.ERROR_VS_TIME;          //time fixed?
+//                        AnalysisType.TIME_VS_NUM_CONSTRAINTS;  //samples fixed?
 
                 for (Db2Sampler samplerMaker : samplerMakers) {
                     Integer maxSamplingTimeIfItIsFixed = 30 * 1000;
@@ -781,11 +619,11 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
                             :
                             timesAndMeansAndStdErrors(as, bs, groundTruthMeans, db, samplerMaker, burnedSamples, numSamples, maxSamplingTimeIfItIsFixed, 1000/*todo this should be parameter*/);//gPolyDb2Sampler, 100, numSamples);
                     groundTruthMeans = statInfo.groundTruthMeans; //So, it is calculated only for the first sampler...
-                    statInfo.persistMeanStdErr(REPORT_PATH, numDims, numConstraints, as.size(), samplerMaker.getName(), analysisType, maxSamplingTimeIfItIsFixed);
+                    statInfo.persistMeanStdErr(REPORT_PATH, numDims, numObservedDataPoints, as.size(), samplerMaker.getName(), analysisType, maxSamplingTimeIfItIsFixed);
 
                     String key = timeContainerKey(numDims, samplerMaker);
                     List<Pair<Integer, Long>> constraintsAndTimes = dimAlg2TimesMap.get(key);
-                    constraintsAndTimes.add(new Pair<Integer, Long>(numConstraints, statInfo.totalProcessTime));
+                    constraintsAndTimes.add(new Pair<Integer, Long>(numObservedDataPoints, statInfo.totalProcessTime));
                     persistConstraintsTimes(REPORT_PATH + key + "-q" + numQueries, constraintsAndTimes);
                     System.out.println(samplerMaker.getName() + ".time = " + statInfo.totalProcessTime);
                 }
@@ -838,7 +676,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
             List<double[]> bList,
             List<Double> groundTruthMeans,
             //
-            ModelDatabase db,
+            BayesianDataGenerator db,
             Db2Sampler samplerMaker,//SamplerInterface sampler,
             //
             int burnedSamples, final int numSamples) {
@@ -938,7 +776,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
             List<double[]> bList,
             List<Double> groundTruthMeans,
             //
-            ModelDatabase db,
+            BayesianDataGenerator db,
             Db2Sampler samplerMaker,//SamplerInterface sampler,
             //
             int burnedSamples,
@@ -948,7 +786,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
 //        System.out.println("totalSamplingTime = " + totalSamplingTime);
 //        System.out.println("numberOfSamplesThatShouldBeSaved = " + numberOfSamplesThatShouldBeSaved);
-        int savingTimeStep = (int)(totalSamplingTime / (double) numberOfSamplesThatShouldBeSaved);
+        int savingTimeStep = (int) (totalSamplingTime / (double) numberOfSamplesThatShouldBeSaved);
 //        System.out.println("savingTimeStep = " + savingTimeStep);
 
         int numQueries = aList.size();
@@ -1143,27 +981,28 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
                 System.out.println("numConstraints = " + numConstraints);
 
                 PreferenceDatabase db = new DummyFeasiblePreferenceDatabase(
-                        -PreferenceLearning.C,
-                        PreferenceLearning.C,
+//                        -GPolyPreferenceLearningModel.C,
+//                        GPolyPreferenceLearningModel.C,
                         0d, //TODO:IMPORTANT check the effect of negative x_i bound...
                         5d,
                         numConstraints, // + numberOfTestComparisonsPerDatabase /* more preferences used for testing */,
-                        numDims, numberOfItems /* number of items */);
+                        PriorHandler.uniformInHypercube("w", numDims, BayesianPairwisePreferenceLearningModel.C),//numDims,
+                        numberOfItems /* number of items */);
 
                 //todo: check SyntheticDistributionUtils sample generator...
 
 
-                GPolyPreferenceLearning learning = new GPolyPreferenceLearning(db, indicatorNoise, "w");
+                BayesianPairwisePreferenceLearningModel learning = new BayesianPairwisePreferenceLearningModel(db, indicatorNoise);
 
                 // Pr(W | R^{n+1})
-                PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
+                ConstantBayesianPosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
 
 //                if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
 
                 //now I sample from it:
                 GatedGibbsPolytopesSampler sampler = GatedGibbsPolytopesSampler.makeSampler(posterior, //todo rejection based sampling should be used instead...
-                        -GPolyPreferenceLearning.C,
-                        GPolyPreferenceLearning.C, null);
+                        -BayesianPairwisePreferenceLearningModel.C,
+                        BayesianPairwisePreferenceLearningModel.C, null);
 
 
                 OneDimFunction stdErr = statistics(statType, sampler, 100, numSamples);

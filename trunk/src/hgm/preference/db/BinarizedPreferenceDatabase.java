@@ -14,7 +14,7 @@ import java.util.List;
  * Date: 29/01/14
  * Time: 4:06 AM
  */
-public class BinarizedPreferenceDatabase implements DiscretePreferenceDatabase {
+public class BinarizedPreferenceDatabase extends DiscretePreferenceDatabase {
     private static final double ZERO = 0d;
     private static final double ONE = 1d;
     private final static Collection<Double> binaryChoices = Arrays.asList(ZERO, ONE);
@@ -25,10 +25,12 @@ public class BinarizedPreferenceDatabase implements DiscretePreferenceDatabase {
     List<Double[]> newItems;
 
     public BinarizedPreferenceDatabase(DiscretePreferenceDatabase innerDb) {
+        super(innerDb.getPrior());
+
         this.innerDb = innerDb;
 
         numNewAttribs = 0;
-        for (int inAttId = 0; inAttId < innerDb.getNumberOfAttributes(); inAttId++) {
+        for (int inAttId = 0; inAttId < innerDb.getNumberOfParameters(); inAttId++) {
             Integer choices = innerDb.getAttribChoices(inAttId).size();
             numNewAttribs += (choices == 2) ? 1 : choices; //for binary vars just one var and for others as much as choices exist...
         }
@@ -45,7 +47,7 @@ public class BinarizedPreferenceDatabase implements DiscretePreferenceDatabase {
 
         //fill attribs of the new items
         int c = 0;
-        for (int innerAttribId = 0; innerAttribId < innerDb.getNumberOfAttributes(); innerAttribId++) {
+        for (int innerAttribId = 0; innerAttribId < innerDb.getNumberOfParameters(); innerAttribId++) {
             List<Double> sortedAttribChoices = new ArrayList<Double>(innerDb.getAttribChoices(innerAttribId));
             Collections.sort(sortedAttribChoices);
 
@@ -77,7 +79,7 @@ public class BinarizedPreferenceDatabase implements DiscretePreferenceDatabase {
     }
 
     @Override
-    public int getNumberOfAttributes() {
+    public int getNumberOfParameters() {
         return numNewAttribs;
     }
 
@@ -87,8 +89,8 @@ public class BinarizedPreferenceDatabase implements DiscretePreferenceDatabase {
     }
 
     @Override
-    public List<Preference> getPreferenceResponses() {
-        return innerDb.getPreferenceResponses();
+    public List<Preference> getObservedDataPoints() {
+        return innerDb.getObservedDataPoints();
     }
 
     @Override

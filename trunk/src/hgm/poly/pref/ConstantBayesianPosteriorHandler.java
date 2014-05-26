@@ -14,7 +14,9 @@ import java.util.List;
  * Date: 10/03/14
  * Time: 5:05 PM
  */
-public class PosteriorHandler implements Function {
+
+@Deprecated //I think it should totally be replaced by Bayesian posterior handler
+public class ConstantBayesianPosteriorHandler implements Function {
     PolynomialFactory factory;
     int maxAllowedGatingViolations;
     double indicatorNoise;
@@ -25,7 +27,7 @@ public class PosteriorHandler implements Function {
     List<Polynomial> negGatingConstraints = new ArrayList<Polynomial>();
     List<Boolean> reusableGatingMask = new ArrayList<Boolean>();
 
-    public PosteriorHandler(PolynomialFactory factory, ConstrainedPolynomial prior, double indicatorNoise, int maxAllowedGatingViolations) {
+    public ConstantBayesianPosteriorHandler(PolynomialFactory factory, ConstrainedPolynomial prior, double indicatorNoise, int maxAllowedGatingViolations) {
         this.factory = factory;
         this.prior = prior;
 

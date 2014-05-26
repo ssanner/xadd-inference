@@ -22,11 +22,11 @@ public class Interval implements Comparable{
         this.highBound = highBound;
     }
 
-    public Double getLowBound() {
+    public Double getLowerBound() {
         return lowBound;
     }
 
-    public Double getHighBound() {
+    public Double getUpperBound() {
         return highBound;
     }
 
