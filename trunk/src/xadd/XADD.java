@@ -807,20 +807,6 @@ public class XADD {
     		return ZERO;
         }
     	
-    	//NaN 
-    	if (a1 == NAN || (n1 instanceof XADDTNode && (((XADDTNode)n1)._expr instanceof DoubleExpr) &&
-    			( Double.isNaN( ((DoubleExpr)((XADDTNode)n1)._expr)._dConstVal) ) ) ){
-    		if (a1 != NAN)
-    			System.err.println("Invalid new NaN node:"+a1+"not standard NaN"+NAN);
-    		return NAN;
-    	}
-    	if (a2 == NAN || (n2 instanceof XADDTNode && (((XADDTNode)n2)._expr instanceof DoubleExpr) &&
-    			( Double.isNaN( ((DoubleExpr)((XADDTNode)n2)._expr)._dConstVal) ) ) ){    		
-    		if (a2 != NAN)
-    			System.err.println("Invalid new NaN node:"+a1+"not standard NaN"+NAN);
-    		return NAN;
-    	}    	
-            
         // Check for identities if first operand is terminal
         if (n1 instanceof XADDTNode) {
 
