@@ -1,7 +1,9 @@
 package hgm.preference.db;
 
 import hgm.asve.cnsrv.approxator.LeafThresholdXaddApproximator;
-import hgm.preference.PreferenceLearning;
+import hgm.poly.bayesian.PriorHandler;
+import hgm.poly.pref.BayesianPairwisePreferenceLearningModel;
+import hgm.preference.XaddBasedPreferenceLearning;
 import hgm.sampling.VarAssignment;
 import hgm.utils.vis.XaddVisualizer;
 import org.junit.Assert;
@@ -26,8 +28,10 @@ public class DummyFeasiblePreferenceDatabaseTest {
     @Test
     public void basicTest() {
         XADD context = new XADD();
-        DummyFeasiblePreferenceDatabase db = new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, 35/*constraints*/, 2, 120);
-        PreferenceLearning learning = new PreferenceLearning(context, db, 0.1/*noise*/, "w", 0);
+        DummyFeasiblePreferenceDatabase db = new DummyFeasiblePreferenceDatabase
+//                (-PreferenceLearning.C, PreferenceLearning.C, 0, 5, 35/*constraints*/, 2, 120);
+                (0, 5, 35/*constraints*/, PriorHandler.uniformInHypercube("w", 2, BayesianPairwisePreferenceLearningModel.C), 120);
+        XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, db, 0.1/*noise*/, "w", 0);
 
         // Pr(W | R^{n+1})
         XADD.XADDNode posteriorUtilityWeights = learning.computePosteriorWeightVector(false, -0.2);
@@ -113,8 +117,10 @@ public class DummyFeasiblePreferenceDatabaseTest {
     @Test
     public void approximationTest() {
         XADD context = new XADD();
-        DummyFeasiblePreferenceDatabase db = new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, 3/*constraints*/, 2, 120);
-        PreferenceLearning learning = new PreferenceLearning(context, db, 0.1/*noise*/, "w", 0);
+        DummyFeasiblePreferenceDatabase db = new DummyFeasiblePreferenceDatabase(
+//                -PreferenceLearning.C, PreferenceLearning.C, 0, 5, 3/*constraints*/, 2, 120);
+                0, 5, 3/*constraints*/, PriorHandler.uniformInHypercube("w", 2, 11), 120);
+        XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, db, 0.1/*noise*/, "w", 0);
 
         // Pr(W | R^{n+1})
         XADD.XADDNode posteriorUtilityWeights = learning.computePosteriorWeightVector(true, 0.001);

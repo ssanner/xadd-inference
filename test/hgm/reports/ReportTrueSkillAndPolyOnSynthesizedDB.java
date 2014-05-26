@@ -1,10 +1,11 @@
 package hgm.reports;
 
 import hgm.asve.Pair;
+import hgm.poly.bayesian.PriorHandler;
 import hgm.poly.pref.reports.db.SyntheticDistributionUtils;
 import hgm.preference.Choice;
 import hgm.preference.Preference;
-import hgm.preference.PreferenceLearning;
+import hgm.preference.XaddBasedPreferenceLearning;
 import hgm.preference.db.DummyFeasiblePreferenceDatabase;
 import hgm.preference.db.PartialPreferenceDatabase;
 import hgm.preference.db.PreferenceDatabase;
@@ -170,12 +171,13 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                 for (int experimentRepetitionCounter = 0; experimentRepetitionCounter < numRepeatingEachExperiment; experimentRepetitionCounter++) {
 
                     PreferenceDatabase completeDatabase = new DummyFeasiblePreferenceDatabase(
-                            -PreferenceLearning.C,
-                            PreferenceLearning.C,
+//                            -PreferenceLearning.C,
+//                            PreferenceLearning.C,
                             0d,
                             5d,
                             numConstraints + numberOfTestComparisonsPerDatabase /* more preferences used for testing */,
-                            numDims, numberOfItems /* number of items */);
+                            PriorHandler.uniformInHypercube("w", numDims, XaddBasedPreferenceLearning.C),
+                            numberOfItems /* number of items */);
 
                     PreferenceDatabase trainingDb = new PartialPreferenceDatabase(completeDatabase, numConstraints);
 
@@ -195,7 +197,7 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                         int numLosses = 0;
                         for (int testCounter = 0; testCounter < numberOfTestComparisonsPerDatabase; testCounter++) {
 
-                            Preference testPref = completeDatabase.getPreferenceResponses()
+                            Preference testPref = completeDatabase.getObservedDataPoints()
                                     .get(numConstraints + testCounter);
                             Integer aId = testPref.getItemId1();
                             Integer bId = testPref.getItemId2();
@@ -295,12 +297,16 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
             for (int numConstraints : numConstraintsArray) {
 
                 PreferenceDatabase completeDatabase = new DummyFeasiblePreferenceDatabase(
-                        -PreferenceLearning.C,
-                        PreferenceLearning.C,
+//                        -PreferenceLearning.C,
+//                        PreferenceLearning.C,
+//                        0d,
+//                        5d,
+//                        numConstraints + numberOfTestComparisonsPerDatabase /* more preferences used for testing */,
+//                        numDims, numberOfItems /* number of items */);
                         0d,
                         5d,
                         numConstraints + numberOfTestComparisonsPerDatabase /* more preferences used for testing */,
-                        numDims, numberOfItems /* number of items */);
+                        PriorHandler.uniformInHypercube("w", numDims, XaddBasedPreferenceLearning.C), numberOfItems /* number of items */);
 
                 PreferenceDatabase trainingDb = new PartialPreferenceDatabase(completeDatabase, numConstraints);
 
@@ -314,7 +320,7 @@ public class ReportTrueSkillAndPolyOnSynthesizedDB {
                     int numLosses = 0;
                     for (int testCounter = 0; testCounter < numberOfTestComparisonsPerDatabase; testCounter++) {
 
-                        Preference testPref = completeDatabase.getPreferenceResponses().get(numConstraints
+                        Preference testPref = completeDatabase.getObservedDataPoints().get(numConstraints
                                 + testCounter);
                         Integer aId = testPref.getItemId1();
                         Integer bId = testPref.getItemId2();

@@ -55,7 +55,7 @@ public class OneDimIntegral {
 
         if (node instanceof XADD.XADDTNode) {
             List<PolynomialInAnInterval> results = new ArrayList<PolynomialInAnInterval>();
-            results.add(new PolynomialInAnInterval(inheritedInterval.getLowBound(), inheritedInterval.getHighBound(), ((XADD.XADDTNode) node)._expr.substitute(subst)));
+            results.add(new PolynomialInAnInterval(inheritedInterval.getLowerBound(), inheritedInterval.getUpperBound(), ((XADD.XADDTNode) node)._expr.substitute(subst)));
             return results;
         }
 
@@ -101,7 +101,7 @@ public class OneDimIntegral {
 //            lowData.imposeMoreRestriction(thisDecisionBounds.getHighBound(), thisDecisionBounds.getLowBound()); //low and high bounds are swapped for the low child...
 //        }
 
-        inheritedInterval.imposeMoreRestriction(thisDecisionBounds.getLowBound(), thisDecisionBounds.highBound); //to be passed to the high child...
+        inheritedInterval.imposeMoreRestriction(thisDecisionBounds.getLowerBound(), thisDecisionBounds.highBound); //to be passed to the high child...
         List<PolynomialInAnInterval> highDataList = null;
         if (inheritedInterval.isFeasible()) {
             highDataList = substituteAndConvertToPiecewisePolynomial(iNode.getHighChild(), subst, inheritedInterval);
@@ -115,7 +115,7 @@ public class OneDimIntegral {
         if (highDataList == null) return lowDataList;
 
         //sorting:
-        if (lowDataList.get(0).getLowBound() < highDataList.get(0).getLowBound()) {
+        if (lowDataList.get(0).getLowerBound() < highDataList.get(0).getLowerBound()) {
             lowDataList.addAll(highDataList);
             return lowDataList;
         } else {
@@ -134,11 +134,11 @@ public class OneDimIntegral {
         for (PolynomialInAnInterval intervalPoly : piecewisePolynomial) {
             ExprLib.ArithExpr indefIntegral = intervalPoly.getPolynomial().integrateExpr(var);
 
-            assign.put(var, intervalPoly.getLowBound());
+            assign.put(var, intervalPoly.getLowerBound());
             Double l = indefIntegral.evaluate(assign);
             if (l.isNaN()) l = 0d; //this happens in the fist interval with lower bound -infty...
 
-            assign.put(var, intervalPoly.getHighBound());
+            assign.put(var, intervalPoly.getUpperBound());
             Double h = indefIntegral.evaluate(assign);
 
 //            System.out.println("h = " + h);
@@ -147,7 +147,7 @@ public class OneDimIntegral {
 //            System.out.println("IntervalVol = " + intervalVol + "; for " + indefIntegral + " with max: " + assign);
 
 
-            result.put(intervalPoly.getLowBound(), ExprLib.ArithExpr.op(indefIntegral, (runningSum - l), ExprLib.ArithOperation.SUM));
+            result.put(intervalPoly.getLowerBound(), ExprLib.ArithExpr.op(indefIntegral, (runningSum - l), ExprLib.ArithOperation.SUM));
 
             runningSum += intervalVol; // mass of this interval will be added to the offset of the next one...
 //            System.out.println("runningSum = " + runningSum);

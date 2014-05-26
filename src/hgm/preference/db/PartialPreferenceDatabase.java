@@ -11,18 +11,19 @@ import java.util.List;
  * <p>
  * Wraps another data base and only returns the first 'numberOfPreferences' preferences of the wrapped database. Note that the number of items is as the wrapped database.
  */
-public class PartialPreferenceDatabase implements PreferenceDatabase {
+public class PartialPreferenceDatabase extends  PreferenceDatabase {
     private PreferenceDatabase wrappedDatabase;
     int numberOfPreferences;
 
     public PartialPreferenceDatabase(PreferenceDatabase wrappedDatabase, int numberOfPreferences) {
+        super(wrappedDatabase.getPrior());
         this.wrappedDatabase = wrappedDatabase;
         this.numberOfPreferences = numberOfPreferences;
     }
 
     @Override
-    public int getNumberOfAttributes() {
-        return wrappedDatabase.getNumberOfAttributes();
+    public int getNumberOfParameters() {
+        return wrappedDatabase.getNumberOfParameters();
     }
 
     @Override
@@ -31,8 +32,8 @@ public class PartialPreferenceDatabase implements PreferenceDatabase {
     }
 
     @Override
-    public List<Preference> getPreferenceResponses() {
-        return wrappedDatabase.getPreferenceResponses().subList(0, numberOfPreferences);
+    public List<Preference> getObservedDataPoints() {
+        return wrappedDatabase.getObservedDataPoints().subList(0, numberOfPreferences);
     }
 
     @Override

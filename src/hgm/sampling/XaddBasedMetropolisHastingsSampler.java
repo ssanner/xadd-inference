@@ -8,6 +8,7 @@ import java.util.Random;
 import xadd.XADD;
 import xadd.XADD.XADDNode;
 
+@Deprecated
 public class XaddBasedMetropolisHastingsSampler extends XaddSampler {
 
 	private static Random			_randomGenerator	= new Random();

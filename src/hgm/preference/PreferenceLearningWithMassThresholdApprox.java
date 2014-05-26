@@ -70,12 +70,12 @@ public class PreferenceLearningWithMassThresholdApprox {
         // in this version, the expression "int_w Pr(w|R^n)[\sum_d=1^D (w_d x_d)] dw"  is calculated parametrically
         // so both W=[w_0, ..., w_{D-1}] and X=[x_0, ..., x_{D-1}] are parameters...
         XADD.XADDNode parametricExpectedUtil = parametricExpectedItemUtility(utilityWeights, /*weightVectorName,*/
-                itemAttributesVectorName, db.getNumberOfAttributes(), false);
+                itemAttributesVectorName, db.getNumberOfParameters(), false);
         int paramExpectedUtilNodeId = context._hmNode2Int.get(parametricExpectedUtil);
 
         int chosenItemId = -1;
         double maxUtil = Double.NEGATIVE_INFINITY;
-        HashMap<String, Double> assignment = new HashMap<String, Double>(db.getNumberOfAttributes());
+        HashMap<String, Double> assignment = new HashMap<String, Double>(db.getNumberOfParameters());
         for (int itemId = 0; itemId<db.getNumberOfItems(); itemId++) {
 
             //make a an assignment out of item attributes:
@@ -145,7 +145,7 @@ public class PreferenceLearningWithMassThresholdApprox {
     }
 
     public XADD.XADDNode computePosteriorWeightVector(boolean reduceXadd, double relativeMassBelowWhichRegionsAreTrimmed ) {
-        XADD.XADDNode posterior = computeProbabilityOfWeightVector(db.getPreferenceResponses(), reduceXadd, relativeMassBelowWhichRegionsAreTrimmed);
+        XADD.XADDNode posterior = computeProbabilityOfWeightVector(db.getObservedDataPoints(), reduceXadd, relativeMassBelowWhichRegionsAreTrimmed);
 
         context.addSpecialNode(context._hmNode2Int.get(posterior));
         context.flushCaches();
@@ -156,7 +156,7 @@ public class PreferenceLearningWithMassThresholdApprox {
     //Pr(W | R^n)
     private XADD.XADDNode computeProbabilityOfWeightVector(List<Preference> preferenceAnswers/*, String weightVectorName*/,
                                                            boolean doReduceLP, double relativeMassBelowWhichRegionsShouldBeTrimmed) {
-        Integer numAttribs = db.getNumberOfAttributes();
+        Integer numAttribs = db.getNumberOfParameters();
         XADD.XADDNode[] pWeights = new XADD.XADDNode[numAttribs];
 
         if (preferenceAnswers.isEmpty()) {

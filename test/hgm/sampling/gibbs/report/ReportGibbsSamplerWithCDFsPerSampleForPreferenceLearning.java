@@ -1,8 +1,9 @@
 package hgm.sampling.gibbs.report;
 
+import hgm.poly.bayesian.PriorHandler;
 import hgm.preference.Choice;
 import hgm.preference.Preference;
-import hgm.preference.PreferenceLearning;
+import hgm.preference.XaddBasedPreferenceLearning;
 import hgm.preference.db.DummyFeasiblePreferenceDatabase;
 import hgm.preference.db.PreferenceDatabase;
 import hgm.sampling.XaddSampler;
@@ -31,7 +32,7 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
 
     }
 
-    PreferenceDatabase testDB1 = new PreferenceDatabase() {
+    PreferenceDatabase testDB1 = new PreferenceDatabase(null) {
         Preference[] prefs = new Preference[]{
                 new Preference(1, 2, Choice.FIRST),
                 new Preference(1, 3, Choice.FIRST),
@@ -49,7 +50,7 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
         }
 
         @Override
-        public int getNumberOfAttributes() {
+        public int getNumberOfParameters() {
             return items.get(0).length;
         }
 
@@ -59,7 +60,7 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
         }
 
         @Override
-        public List<Preference> getPreferenceResponses() {
+        public List<Preference> getObservedDataPoints() {
             return Arrays.asList(prefs);
         }
 
@@ -77,7 +78,7 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
     @Test
     public void basicTest() {
         XADD context = new XADD();
-        PreferenceLearning learning = new PreferenceLearning(context, testDB1, 0.2, "w", 0);
+        XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, testDB1, 0.2, "w", 0);
 
         // Pr(W | R^{n+1})
         XADD.XADDNode utilityWeights = learning.computePosteriorWeightVector(false);
@@ -125,10 +126,12 @@ public class ReportGibbsSamplerWithCDFsPerSampleForPreferenceLearning {
             for (int numConstraints = minNumConstraints; numConstraints <= maxNumConstraints; numConstraints++) {
 
                 PreferenceDatabase db =
-                        new DummyFeasiblePreferenceDatabase(-PreferenceLearning.C, PreferenceLearning.C, 0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
+                        new DummyFeasiblePreferenceDatabase(
+//                                -PreferenceLearning.C, PreferenceLearning.C, 0, 5, numConstraints, numDims, numberOfItems /*number of items*/);
+                                0, 5, numConstraints, PriorHandler.uniformInHypercube("w", numDims, XaddBasedPreferenceLearning.C), numberOfItems /*number of items*/);
 
                 XADD context = new XADD();
-                PreferenceLearning learning = new PreferenceLearning(context, db, indicatorNoise, "w", 0);
+                XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, db, indicatorNoise, "w", 0);
 
                 long time1start = System.currentTimeMillis();
                 // Pr(W | R^{n+1})

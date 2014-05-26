@@ -2,7 +2,7 @@ package hgm.preference.predict;
 
 import hgm.asve.Pair;
 import hgm.preference.Choice;
-import hgm.preference.PreferenceLearning;
+import hgm.preference.XaddBasedPreferenceLearning;
 import hgm.preference.db.PreferenceDatabase;
 import hgm.sampling.XaddSampler;
 import hgm.sampling.SamplingFailureException;
@@ -48,12 +48,12 @@ public abstract class XaddPolytopePrefLearningPredictor implements PreferenceLea
         Info info = new Info();
 
         XADD context = new XADD();
-        PreferenceLearning learning = new PreferenceLearning(context, trainingDatabase, indicatorNoise, "w", epsilon);
+        XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, trainingDatabase, indicatorNoise, "w", epsilon);
 
         long time1start = System.currentTimeMillis();
         // Pr(W | R^{n+1})
         XADD.XADDNode posterior = learning.computePosteriorWeightVector(reduceLP, relativeLeafValueBelowWhichRegionsAreTrimmed);
-        fixVarLimits(context, posterior, -PreferenceLearning.C, PreferenceLearning.C); //todo: do something better...
+        fixVarLimits(context, posterior, -XaddBasedPreferenceLearning.C, XaddBasedPreferenceLearning.C); //todo: do something better...
 
         info.add("#posteriorNodes", (double) posterior.collectNodes().size());
 

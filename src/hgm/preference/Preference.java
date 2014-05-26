@@ -34,4 +34,12 @@ public class Preference {
         return "#" + itemId1 + (preferenceChoice == Choice.FIRST ? ">" : (preferenceChoice == Choice.EQUAL ? "=" : "<")) +
                 "#" + itemId2;
     }
+
+    public void flipChoice() {
+          if (preferenceChoice == Choice.FIRST) {
+              preferenceChoice = Choice.SECOND;
+          } else if (preferenceChoice == Choice.SECOND){
+              preferenceChoice = Choice.FIRST;
+          }
+    }
 }

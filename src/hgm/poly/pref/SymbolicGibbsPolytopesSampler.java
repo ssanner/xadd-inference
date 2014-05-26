@@ -17,7 +17,7 @@ import java.util.*;
  * //todo currently does not work properly....DEBUG.....
  */
 public class SymbolicGibbsPolytopesSampler extends AbstractPolytopesSampler {
-    public static SymbolicGibbsPolytopesSampler makeSampler(PosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
+    public static SymbolicGibbsPolytopesSampler makeSampler(ConstantBayesianPosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
         int varNum = gph.getPolynomialFactory().getAllVars().length;
         double[] cVarMins = new double[varNum];
         double[] cVarMaxes = new double[varNum];
@@ -28,7 +28,7 @@ public class SymbolicGibbsPolytopesSampler extends AbstractPolytopesSampler {
 
     Map<String/*var*/, SymbolicCDFListHandler> varToSymbolicIntegralMap;
 
-    public SymbolicGibbsPolytopesSampler(PosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
+    public SymbolicGibbsPolytopesSampler(ConstantBayesianPosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
         super(gph, cVarMins, cVarMaxes, reusableInitialSample);
 
         //make a map from each feature-var to its symbolic integration (i.e. other vars remain symbolic):
@@ -50,7 +50,7 @@ public class SymbolicGibbsPolytopesSampler extends AbstractPolytopesSampler {
         }
     }
 
-    private ConstrainedPolynomial[] makeExplicitCaseStatements(PosteriorHandler gph) {
+    private ConstrainedPolynomial[] makeExplicitCaseStatements(ConstantBayesianPosteriorHandler gph) {
         int n = gph.numberOfConstraints();
         List<Boolean> gateMask = new ArrayList<Boolean>(n);
         for (int i = 0; i < n; i++) {

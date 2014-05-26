@@ -16,9 +16,9 @@ import java.util.List;
  * This version chooses gating variables
  */
 public class TargetedGatedGibbsPolytopesSampler extends AbstractPolytopesSampler {
-    static final double minuscule = GPolyPreferenceLearning.C / (double) 1000000;
+    static final double minuscule = BayesianPairwisePreferenceLearningModel.C / (double) 1000000;
 
-    public static TargetedGatedGibbsPolytopesSampler makeCleverGibbsSampler(PosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
+    public static TargetedGatedGibbsPolytopesSampler makeCleverGibbsSampler(ConstantBayesianPosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
         int varNum = gph.getPolynomialFactory().getAllVars().length;
         double[] cVarMins = new double[varNum];
         double[] cVarMaxes = new double[varNum];
@@ -27,7 +27,7 @@ public class TargetedGatedGibbsPolytopesSampler extends AbstractPolytopesSampler
         return new TargetedGatedGibbsPolytopesSampler(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 
-    public TargetedGatedGibbsPolytopesSampler(PosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
+    public TargetedGatedGibbsPolytopesSampler(ConstantBayesianPosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
         super(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 
@@ -59,12 +59,12 @@ public class TargetedGatedGibbsPolytopesSampler extends AbstractPolytopesSampler
         double aPointInAdjRegion;
         if (leftRatherThanRight) {
 //            System.out.println("currInterval.getLowBound() = " + currInterval.getLowBound());
-            aPointInAdjRegion = currInterval.getLowBound() - minuscule;
+            aPointInAdjRegion = currInterval.getLowerBound() - minuscule;
 //            System.out.println("aPointInAdjRegion = " + aPointInAdjRegion);
-            if (DEBUG && aPointInAdjRegion == currInterval.getLowBound()) throw new RuntimeException();
+            if (DEBUG && aPointInAdjRegion == currInterval.getLowerBound()) throw new RuntimeException();
         } else {
-            aPointInAdjRegion = currInterval.getHighBound() + minuscule;
-            if (DEBUG && aPointInAdjRegion == currInterval.getHighBound()) throw new RuntimeException();
+            aPointInAdjRegion = currInterval.getUpperBound() + minuscule;
+            if (DEBUG && aPointInAdjRegion == currInterval.getUpperBound()) throw new RuntimeException();
         }
 
         reusableVarAssign[varIndexToBeSampled] = aPointInAdjRegion;

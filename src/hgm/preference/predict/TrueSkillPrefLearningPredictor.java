@@ -1,18 +1,12 @@
 package hgm.preference.predict;
 
-import hgm.asve.Pair;
 import hgm.preference.Choice;
 import hgm.preference.Preference;
 import hgm.preference.db.PreferenceDatabase;
 import tskill.jskills.GameInfo;
 import tskill.jskills.SkillCalculator;
 import tskill.jskills.trueskill.FactorGraphTrueSkillCalculator;
-import tskill.ranking.AttribChoicePlayer;
-import tskill.ranking.IdPlayer;
 import tskill.ranking.TrueSkillModelVersion2;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by Hadi Afshar.
@@ -36,8 +30,8 @@ public class TrueSkillPrefLearningPredictor implements PreferenceLearningPredict
         GameInfo gameInfo = GameInfo.getDefaultGameInfo();  //todo what are good parameters?
 
         long time1 = System.currentTimeMillis();
-        model = new TrueSkillModelVersion2(gameInfo, calculator, trainingDatabase.getNumberOfAttributes());
-        for (Preference preference : trainingDatabase.getPreferenceResponses()) {
+        model = new TrueSkillModelVersion2(gameInfo, calculator, trainingDatabase.getNumberOfParameters());
+        for (Preference preference : trainingDatabase.getObservedDataPoints()) {
             model.updateByMatch(trainingDatabase.getItemAttributeValues(preference.getItemId1()),
                     trainingDatabase.getItemAttributeValues(preference.getItemId2()), preference.getPreferenceChoice());
 

@@ -1,8 +1,9 @@
 package hgm.poly.pref.reports.db;
 
-import hgm.poly.pref.GPolyPreferenceLearning;
+import hgm.poly.bayesian.PriorHandler;
+import hgm.poly.pref.BayesianPairwisePreferenceLearningModel;
+import hgm.poly.pref.ConstantBayesianPosteriorHandler;
 import hgm.poly.pref.GatedGibbsPolytopesSampler;
-import hgm.poly.pref.PosteriorHandler;
 import hgm.poly.vis.FunctionVisualizer;
 import hgm.poly.sampling.SamplingUtils;
 import hgm.preference.Choice;
@@ -31,7 +32,8 @@ public class SyntheticDistributionUtils {
     public static boolean VISUALIZE = false;
 
     public static PreferenceDatabase fetchOrGenerateTrainTestPreferenceDbDistribution(String prior,
-                                                                                      double minWeightBound, double maxWeightBound,
+//                                                                                      double minWeightBound, double maxWeightBound,
+                                                                                      double weightBound,
                                                                                       double minAttribBound, double maxAttribBound,
                                                                                       int attributeCount, int itemCount, int trainingPreferenceCount, int testPreferenceCount,
                                                                                       int numSamplesToEstimateRealDistribution,
@@ -39,27 +41,28 @@ public class SyntheticDistributionUtils {
                                                                                       int maxGatingConditionViolation,
                                                                                       boolean regenerateEvenIfExists) throws IOException {
         SyntheticDistributionUtils instance = new SyntheticDistributionUtils();
-        String signature = instance.createSignature(prior, minWeightBound, maxWeightBound,
+        String signature = instance.createSignature(prior, weightBound, //minWeightBound, maxWeightBound,
                 minAttribBound, maxAttribBound, trainingPreferenceCount, testPreferenceCount, attributeCount, itemCount);
 
         String databasePath = DBS_FOLDER + signature;
         File f = new File(databasePath);
         if (f.exists() && !regenerateEvenIfExists) {
             return instance.loadPrefDb(databasePath, prior,
-                    minWeightBound, maxWeightBound,
+                    weightBound, //minWeightBound, maxWeightBound,
                     minAttribBound, maxAttribBound,
                     trainingPreferenceCount, testPreferenceCount, attributeCount, itemCount);
         } else {
             //generate:
-            DummyFeasiblePreferenceDatabase trainDummyDb = new DummyFeasiblePreferenceDatabase(minWeightBound, maxWeightBound,
-                    minAttribBound, maxAttribBound, trainingPreferenceCount, attributeCount, itemCount);
+            DummyFeasiblePreferenceDatabase trainDummyDb = new DummyFeasiblePreferenceDatabase
+//                    (minWeightBound, maxWeightBound,minAttribBound, maxAttribBound, trainingPreferenceCount, attributeCount, itemCount);
+                    (minAttribBound, maxAttribBound, trainingPreferenceCount, PriorHandler.uniformInHypercube("w", attributeCount, weightBound), itemCount);
 
             String samplesFile = databasePath + "_samples";
             instance.generateAndPersistPiecewiseDistributionSamples(trainDummyDb,
                     numSamplesToEstimateRealDistribution,
                     samplesFile,
                     indicatorNoise,
-                    maxGatingConditionViolation, minWeightBound, maxWeightBound);
+                    maxGatingConditionViolation, weightBound/*minWeightBound, maxWeightBound*/);
             PreferenceDatabase testDb = instance.generateTrainingTestPreferenceDatabaseGivenSamples(testPreferenceCount, samplesFile, trainDummyDb);
             instance.savePrefDb(testDb, databasePath);
             return testDb;
@@ -69,21 +72,23 @@ public class SyntheticDistributionUtils {
                                                                   int numSamples, String outputFileAddress,
                                                                   double indicatorNoise,
                                                                   int maxGatingConditionViolation,
-                                                                  double minForAllVars,
-                                                                  double maxForAllVars) throws FileNotFoundException {
+//                                                                  double minForAllVars,
+//                                                                  double maxForAllVars
+                                                                  double varBound) throws FileNotFoundException {
 
         //todo what about prior?
-        GPolyPreferenceLearning learning = new GPolyPreferenceLearning(trainingDb, indicatorNoise, "w");
+        BayesianPairwisePreferenceLearningModel learning = new BayesianPairwisePreferenceLearningModel(trainingDb, indicatorNoise);
 
         // Pr(W | R^{n+1})
-        PosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
+        ConstantBayesianPosteriorHandler posterior = learning.computePosteriorWeightVector(maxGatingConditionViolation);
 
         if (VISUALIZE) FunctionVisualizer.visualize(posterior, -10, 10, 0.1, "posterior");
 
         //now I sample from it:
         GatedGibbsPolytopesSampler sampler = GatedGibbsPolytopesSampler.makeSampler(posterior, //todo rejection based sampling should be used instead...
-                minForAllVars/*-PolyPreferenceLearning.C*/,
-                maxForAllVars/*PolyPreferenceLearning.C*/, null);
+                -varBound,//minForAllVars/*-PolyPreferenceLearning.C*/,
+                varBound, //maxForAllVars/*PolyPreferenceLearning.C*/,
+                null);
 
         long t1 = System.currentTimeMillis();
         SamplingUtils.saveSamples(sampler, numSamples, outputFileAddress);
@@ -97,7 +102,7 @@ public class SyntheticDistributionUtils {
                                                                                   final DummyFeasiblePreferenceDatabase trainingDB) throws IOException {
 
 
-        return new PreferenceDatabase() {
+        return new PreferenceDatabase(trainingDB.getPrior()) {
             private int attributeCount;
             private Random random;
             private List<Preference> preferences;
@@ -105,8 +110,8 @@ public class SyntheticDistributionUtils {
             {
                 attributeCount = calcAttributeCount();
                 items = trainingDB.getItems();
-                preferences = new ArrayList<Preference>(trainingDB.getPreferenceResponses().size() + testPreferenceCount);
-                preferences.addAll(trainingDB.getPreferenceResponses()); //training + test
+                preferences = new ArrayList<Preference>(trainingDB.getObservedDataPoints().size() + testPreferenceCount);
+                preferences.addAll(trainingDB.getObservedDataPoints()); //training + test
                 random = new Random();
 
                 // making items:
@@ -174,7 +179,7 @@ public class SyntheticDistributionUtils {
 //            }
 
             @Override
-            public int getNumberOfAttributes() {
+            public int getNumberOfParameters() {
                 return items.get(0).length;
             }
 
@@ -184,7 +189,7 @@ public class SyntheticDistributionUtils {
             }
 
             @Override
-            public List<Preference> getPreferenceResponses() {
+            public List<Preference> getObservedDataPoints() {
                 return preferences;
             }
 
@@ -236,7 +241,7 @@ public class SyntheticDistributionUtils {
     public static void savePrefDb(final PreferenceDatabase prData, final String filename) {
         HashMap<String, double[][]> map = new HashMap<String, double[][]>();
 //        map.put(AUXILIARY_WEIGHT_VECTOR, new double[][]{prData.getAuxiliaryWeightVector()});
-        map.put(NUMBER_OF_ATTRIBUTES, new double[][]{{prData.getNumberOfAttributes()}});
+        map.put(NUMBER_OF_ATTRIBUTES, new double[][]{{prData.getNumberOfParameters()}});
         map.put(NUMBER_OF_ITEMS, new double[][]{{prData.getNumberOfItems()}});
 
         double[][] itemAttribsArray = new double[prData.getNumberOfItems()][];
@@ -249,13 +254,13 @@ public class SyntheticDistributionUtils {
 
 //        ArrayList<Integer> visitedItemIds = new ArrayList<Integer>();
 //        ArrayList<double[]> itemAtt = new ArrayList<double[]>();
-        double[][] pref = new double[prData.getPreferenceResponses().size()][3];
+        double[][] pref = new double[prData.getObservedDataPoints().size()][3];
 
-        for (int i = 0; i < prData.getPreferenceResponses().size(); i++) {
-            int itemId1 = prData.getPreferenceResponses().get(i).getItemId1();
-            int itemId2 = prData.getPreferenceResponses().get(i).getItemId2();
+        for (int i = 0; i < prData.getObservedDataPoints().size(); i++) {
+            int itemId1 = prData.getObservedDataPoints().get(i).getItemId1();
+            int itemId2 = prData.getObservedDataPoints().get(i).getItemId2();
 
-            pref[i] = new double[]{itemId1, itemId2, prData.getPreferenceResponses().get(i).getPreferenceChoice().ordinal()};
+            pref[i] = new double[]{itemId1, itemId2, prData.getObservedDataPoints().get(i).getPreferenceChoice().ordinal()};
         }
         map.put(PREFERENCE_RESPONSES, pref);
 
@@ -272,12 +277,12 @@ public class SyntheticDistributionUtils {
 
     public static PreferenceDatabase loadPrefDb(String databasesPath,
                                                 String prior,
-                                                double minWeightBound, double maxWeightBound,
+                                                double weightBound, //double minWeightBound, double maxWeightBound,
                                                 double minAttribBound, double maxAttribBound,
                                                 int numTrainingConstraints,
                                                 int numberOfTestConstraints,
                                                 final int attributeCount, final int itemCount) {
-        String signature = createSignature(prior, minWeightBound, maxWeightBound, minAttribBound, maxAttribBound,
+        String signature = createSignature(prior, weightBound, /* minWeightBound, maxWeightBound,*/ minAttribBound, maxAttribBound,
                 numTrainingConstraints, numberOfTestConstraints, attributeCount, itemCount);
         Map<String, double[][]> map = Utils.readMat(databasesPath);//todo
         if (map == null) {
@@ -310,9 +315,9 @@ public class SyntheticDistributionUtils {
             }
 
 
-            return new PreferenceDatabase() {
+            return new PreferenceDatabase(PriorHandler.uniformInHypercube("w", attributeCount, weightBound)) {
                 @Override
-                public int getNumberOfAttributes() {
+                public int getNumberOfParameters() {
                     return attributeCount;
                 }
 
@@ -322,7 +327,7 @@ public class SyntheticDistributionUtils {
                 }
 
                 @Override
-                public List<Preference> getPreferenceResponses() {
+                public List<Preference> getObservedDataPoints() {
                     return parsedPrefs;
                 }
 
@@ -340,7 +345,8 @@ public class SyntheticDistributionUtils {
     }
 
     private static String createSignature(String prior,
-                                          double minWeightBound, double maxWeightBound,
+                                          //double minWeightBound, double maxWeightBound,
+                                          double weightBound,
                                           double minAttribBound, double maxAttribBound,
                                           int numTrainingConstraints,
                                           int numTestConstraints,
@@ -348,12 +354,12 @@ public class SyntheticDistributionUtils {
         return "db_Train" + numTrainingConstraints + "_Test" +
                 numTestConstraints + "_Dim" +
                 attributeCount + "_" + itemCount + "item_" +
-                (Math.abs(prior.hashCode() + new Double(minWeightBound * 1000 + maxWeightBound * 100 + minAttribBound * 10 + maxAttribBound * 1).hashCode()) % 100000);
+                (Math.abs(prior.hashCode() + new Double(weightBound/*minWeightBound * 1000 + maxWeightBound * 100*/ + minAttribBound * 10 + maxAttribBound * 1).hashCode()) % 100000);
     }
 
     public static void main(String[] args) throws IOException {
         //test:
         SyntheticDistributionUtils.VISUALIZE = true;
-        PreferenceDatabase testDatabase = SyntheticDistributionUtils.fetchOrGenerateTrainTestPreferenceDbDistribution("1", -10, 10, -5, 5, 2, 100, 15, 100, 1000, 0.2, 8, true);
+        PreferenceDatabase testDatabase = SyntheticDistributionUtils.fetchOrGenerateTrainTestPreferenceDbDistribution("1", -/*10,*/ 10, -5, 5, 2, 100, 15, 100, 1000, 0.2, 8, true);
     }
 }

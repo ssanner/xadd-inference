@@ -1,5 +1,6 @@
 package hgm.preference.db;
 
+import hgm.poly.bayesian.PriorHandler;
 import hgm.preference.Choice;
 import hgm.preference.Preference;
 
@@ -12,7 +13,7 @@ import java.util.Random;
  * Date: 13/01/14
  * Time: 4:02 PM
  */
-public class DummyMultiSeedPreferenceDatabase implements PreferenceDatabase {
+public class DummyMultiSeedPreferenceDatabase extends PreferenceDatabase {
     private double minAttribBound;
     private double maxAttribBound;
     private int attributeCount;
@@ -21,12 +22,17 @@ public class DummyMultiSeedPreferenceDatabase implements PreferenceDatabase {
     private List<Double[]> items;
     private List<double[]> auxiliaryWeightVectors; //seeds
 
-    public DummyMultiSeedPreferenceDatabase(double minWeightBound, double maxWeightBound,
-                                            double minAttribBound, double maxAttribBound, int preferenceCount, int attributeCount, int itemCount, int seedCount) {
+    public DummyMultiSeedPreferenceDatabase(
+//            double minWeightBound, double maxWeightBound,
+            PriorHandler priorOnWeights,
+            double minAttribBound, double maxAttribBound, int preferenceCount,
+//            int attributeCount,
+            int itemCount, int seedCount) {
+        super(priorOnWeights);
 
         this.minAttribBound = minAttribBound;
         this.maxAttribBound = maxAttribBound;
-        this.attributeCount = attributeCount;
+        this.attributeCount = this.getNumberOfParameters();//attributeCount;
         items = new ArrayList<Double[]>(itemCount);
         preferences = new ArrayList<Preference>(preferenceCount);
         random = new Random();
@@ -39,8 +45,8 @@ public class DummyMultiSeedPreferenceDatabase implements PreferenceDatabase {
 
         //making seeds:
         auxiliaryWeightVectors = new ArrayList<double[]>(seedCount);
-        for (int i=0; i<seedCount; i++) {
-            auxiliaryWeightVectors.add(makeAuxiliaryWeightVector(minWeightBound, maxWeightBound, attributeCount));
+        for (int i = 0; i < seedCount; i++) {
+            auxiliaryWeightVectors.add(makeAuxiliaryWeightVector());
         }
 
         //making preferences;
@@ -70,9 +76,21 @@ public class DummyMultiSeedPreferenceDatabase implements PreferenceDatabase {
         return result;
     }
 
-    private double[] makeAuxiliaryWeightVector(double minWeightBound, double maxWeightBound, int attributeCount) {
-        double[] v = new double[attributeCount];
+//    private double[] makeAuxiliaryWeightVector(double minWeightBound, double maxWeightBound, int attributeCount) {
+//        double[] v = new double[attributeCount];
+//        for (int i = 0; i < v.length; i++) {
+//            v[i] = random.nextDouble() * (maxWeightBound - minWeightBound) + minWeightBound;
+//        }
+//        return v;
+//    }
+    private double[] makeAuxiliaryWeightVector() {
+        double[] lowerBoundsPerDim = prior.getLowerBoundsPerDim();
+        double[] upperBoundsPerDim = prior.getUpperBoundsPerDim();
+
+        double[] v = new double[this.getNumberOfParameters()];
         for (int i = 0; i < v.length; i++) {
+            double minWeightBound = lowerBoundsPerDim[i];
+            double maxWeightBound = upperBoundsPerDim[i];
             v[i] = random.nextDouble() * (maxWeightBound - minWeightBound) + minWeightBound;
         }
         return v;
@@ -87,7 +105,7 @@ public class DummyMultiSeedPreferenceDatabase implements PreferenceDatabase {
     }
 
     @Override
-    public int getNumberOfAttributes() {
+    public int getNumberOfParameters() {
         return items.get(0).length;
     }
 
@@ -97,7 +115,7 @@ public class DummyMultiSeedPreferenceDatabase implements PreferenceDatabase {
     }
 
     @Override
-    public List<Preference> getPreferenceResponses() {
+    public List<Preference> getObservedDataPoints() {
         return preferences;
     }
 

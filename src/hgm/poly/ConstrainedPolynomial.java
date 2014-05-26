@@ -30,6 +30,15 @@ public class ConstrainedPolynomial implements Function {
         return constraints;
     }
 
+    public void setConstraints(List<Polynomial> augmentedConstraints) {
+        this.constraints = augmentedConstraints;
+    }
+
+    //NOTE: although factory is not checked for speed clearly the new value should be associated to the same factory
+    public void setPolynomial(Polynomial polynomial) {
+        this.polynomial = polynomial;
+    }
+
     public PolynomialFactory getPolynomialFactory() {
         return polynomial.getFactory();
     }
@@ -63,8 +72,6 @@ public class ConstrainedPolynomial implements Function {
         return new ConstrainedPolynomial(polynomial.substitute(continuousVarAssign), instantiatedConstraints);
     }
 
-//    public List<String>[] getActivatedVars(){
-//        return acitveVars;
 //    }
 
 
@@ -75,10 +82,6 @@ public class ConstrainedPolynomial implements Function {
     }
 
 
-    //todo do I need this?
-//    @Override
-//    public String[] collectBinaryVars() {
-//        return new String[0];
 //    }
 
 
@@ -89,4 +92,5 @@ public class ConstrainedPolynomial implements Function {
                 "\t\t\t IF: " + constraints + "  all > 0" +
                 '}';
     }
+
 }

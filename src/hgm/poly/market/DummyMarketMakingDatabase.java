@@ -1,8 +1,11 @@
 package hgm.poly.market;
 
-import hgm.ModelDatabase;
+import hgm.poly.PiecewisePolynomial;
+import hgm.poly.bayesian.AbstractGeneralBayesianGibbsSampler;
+import hgm.poly.bayesian.PriorHandler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -11,48 +14,39 @@ import java.util.Random;
  * Date: 29/04/14
  * Time: 10:54 AM
  */
-public class DummyMarketMakingDatabase implements MarketMakingDatabase {
+public class DummyMarketMakingDatabase extends MarketMakingDatabase {
     private Random random = new Random();
-    int numTypes;
-    
-    @Deprecated
-    double vC; //deprecated since instead, joint prior over the distribution of values v_i should be given and they should ba samples from that.
-
-//    int[] tradedTypes; //type of the object traded at time i in [0, numTrades]
-//    double[] a;     //value by which trader i can buy object of type 'stepType'
-//    double[] b;     //value by which trader i can sell object of type 'stepType'
-//    double[] vStar; //value estimated by trader i of the traded object (of type 'stepType')
-
+//    int numTypes; //number of instrument types
+//    private Prior priorOnTypeValues;
     List<TradingResponse> responses;
 
-    
-    public DummyMarketMakingDatabase(int numInstrumentTypes, int numTrades, double jointPriorOfTypeValues, double epsilon) {
-        this.numTypes = numInstrumentTypes;
-        this.vC = jointPriorOfTypeValues;
+    //instrument types are parameters. Trades are data points:
+    public DummyMarketMakingDatabase(
+            int numTrades,
+            PriorHandler priorOnTypeValues,
+            double vStarEpsilon
+    ) {
+        super(priorOnTypeValues, vStarEpsilon);
 
-        double[] realTypeValues = new double[numInstrumentTypes];
-        for (int i = 0; i < realTypeValues.length; i++) {
-            realTypeValues[i] = uniform(-vC, vC); //todo should sample from their joint distribution.
-        }
+        Double[] actualTypeValues = takeSampleFrom(this.prior);
 
         responses = new ArrayList<TradingResponse>(numTrades);
-//        tradedTypes = new int[numTrades];
-//        a = new double[numTrades];
-//        b = new double[numTrades];
         for (int t = 0; t < numTrades; t++) {
-            int instrumentType = random.nextInt(numTypes);
-            double a;
+            int instrumentType = random.nextInt(getNumberOfParameters());
+            double a;   //ask and bid prices....
             double b;
 
+            double lb = prior.getLowerBoundsPerDim()[instrumentType];
+            double ub = prior.getUpperBoundsPerDim()[instrumentType];
+
             do {
-                a = uniform(-vC, vC);    //should I use the same bounds for estimating a and b???? should they be affected by the type traded in step t?
-                b = uniform(-vC, vC);
+                a = uniform(lb, ub);
+                b = uniform(lb, ub);
             } while (b >= a); //b[i] should always be less than a[i]
 
-            double v = realTypeValues[instrumentType];
+            double v = actualTypeValues[instrumentType];
 
-            double vStar_t = uniform(v-epsilon, v+epsilon);
-//            System.out.println("vStar_t = " + vStar_t);
+            double vStar_t = uniform(v - vStarEpsilon, v + vStarEpsilon);
 
             double probBuy = (vStar_t >= a) ? 0.8 : 0.1;
             double probSell = (vStar_t <= b) ? 0.8 : 0.1;
@@ -60,11 +54,11 @@ public class DummyMarketMakingDatabase implements MarketMakingDatabase {
 
             TradersChoice choice;
             double s = random.nextDouble();
-            if (s<= probBuy) {
+            if (s <= probBuy) {
                 choice = TradersChoice.BUY;
             } else {
                 s = random.nextDouble();
-                if (s<= probSell) {
+                if (s <= probSell) {
                     choice = TradersChoice.SELL;
                 } else {
                     choice = TradersChoice.NO_DEAL;
@@ -82,12 +76,33 @@ public class DummyMarketMakingDatabase implements MarketMakingDatabase {
     }
 
     @Override
-    public int getInstrumentTypeCount() {
-        return numTypes;
+    public List<TradingResponse> getObservedDataPoints() {
+        return responses;
     }
 
-    @Override
-    public List<TradingResponse> getTradingResponses() {
-        return responses;
+
+    private Double[] takeSampleFrom(PriorHandler prior) {
+        // By rejection sampling:
+        double[] cVarMins = prior.getLowerBoundsPerDim();
+        double[] cVarMaxes = prior.getUpperBoundsPerDim();
+        double envelope = prior.getFunctionUpperBound();
+        PiecewisePolynomial priorPiecewisePolynomial = prior.getPrior();
+
+        Double[] sample = new Double[getNumberOfParameters()];
+        for (; ; ) {
+            for (int i = 0; i < sample.length; i++) {
+                sample[i] = AbstractGeneralBayesianGibbsSampler.randomDoubleUniformBetween(cVarMins[i], cVarMaxes[i]);
+            }
+
+            double v = priorPiecewisePolynomial.evaluate(sample);
+            double pr = v / envelope;
+            if (pr > 1)
+                throw new RuntimeException("sampled value: f" + Arrays.toString(sample) + " = " + v + "\t is greater than envelope " + envelope);
+
+            if (pr >= AbstractGeneralBayesianGibbsSampler.randomDoubleUniformBetween(0, 1)) {
+                return sample;
+            }
+        }
+
     }
 }

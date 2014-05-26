@@ -1,28 +1,26 @@
 package hgm.preference.db;
 
-import hgm.ModelDatabase;
+import hgm.BayesianDataGenerator;
+import hgm.poly.bayesian.PriorHandler;
 import hgm.preference.Preference;
-
-import java.util.List;
 
 /**
  * Created by Hadi Afshar. Date: 19/12/13 Time: 8:33 PM
  */
-public interface PreferenceDatabase extends ModelDatabase {
+public abstract class PreferenceDatabase extends BayesianDataGenerator<Preference> {
+    protected PreferenceDatabase(PriorHandler prior) {
+        super(prior);
+    }  //todo should implement ModelDatabase<Preference>
 
-	int getNumberOfAttributes();
+	public abstract int getNumberOfItems();
 
-	int getNumberOfItems();
-
-	List<Preference> getPreferenceResponses();
-
-	Double[] getItemAttributeValues(int itemId);
+	public abstract Double[] getItemAttributeValues(int itemId);
 
 	/**
 	 * 
 	 * @return auxiliary weigh weight vector is a weight vector representing a point which is satisfied by (almost) all constraint therefore can be
 	 *         used as the initial weight sample (for the posterior). If this method is not implemented NULL should be returned.
 	 */
-	double[] getAuxiliaryWeightVector();
+	public abstract double[] getAuxiliaryWeightVector();
 
 }

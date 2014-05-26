@@ -12,7 +12,7 @@ import java.util.*;
  * Date: 20/12/13
  * Time: 11:06 AM
  */
-public class CarPreferenceDatabase implements DiscretePreferenceDatabase {
+public class CarPreferenceDatabase extends DiscretePreferenceDatabase {
     public static final String dbAddress = "./src/hgm/preference/db/car/first/";
 
     private List<Double[]> items;
@@ -25,6 +25,7 @@ public class CarPreferenceDatabase implements DiscretePreferenceDatabase {
     }
 
     private CarPreferenceDatabase(String itemsPath, String usersPath, String prefsPath, Set<Integer> trustedAdviserIds /*only preference of a some user should be taken into account */) {
+        super(null);  //todo this may not work any more.... should be fixed once...
         items = CSVHandler.readcsvDouble(itemsPath);
 //        users = CSVHandler.readcsvDouble(usersPath);
         List<Double[]> rawPrefs = CSVHandler.readcsvDouble(prefsPath);
@@ -42,7 +43,7 @@ public class CarPreferenceDatabase implements DiscretePreferenceDatabase {
     }
 
     private Map<Integer, Set<Double>> makeAttributeDiscretizationMap(List<Double[]> items) {
-        int numAttribs = getNumberOfAttributes();
+        int numAttribs = getNumberOfParameters();
         Map<Integer, Set<Double>> attribChoices = new HashMap<Integer, Set<Double>>(numAttribs);
         for (Integer attribId = 0; attribId<numAttribs; attribId++) {
             Set<Double> attribValues = new HashSet<Double>();
@@ -55,7 +56,7 @@ public class CarPreferenceDatabase implements DiscretePreferenceDatabase {
     }
 
     @Override
-    public int getNumberOfAttributes() {
+    public int getNumberOfParameters() {
         return items.get(0).length;
     }
 
@@ -65,7 +66,7 @@ public class CarPreferenceDatabase implements DiscretePreferenceDatabase {
     }
 
     @Override
-    public List<Preference> getPreferenceResponses() {
+    public List<Preference> getObservedDataPoints() {
         return prefs;
     }
 
@@ -86,9 +87,9 @@ public class CarPreferenceDatabase implements DiscretePreferenceDatabase {
         for (int i=0; i<db.getNumberOfItems(); i++) {
             System.out.println("db.getItemAttributeValues(" + i + ") = " + Arrays.toString(db.getItemAttributeValues(i)));
         }
-        System.out.println("db.getNumberOfAttributes() = " + db.getNumberOfAttributes());
-        System.out.println("db.getPreferenceResponses() = " + db.getPreferenceResponses());
-        System.out.println("db.getPreferenceResponses().size() = " + db.getPreferenceResponses().size());
+        System.out.println("db.getNumberOfAttributes() = " + db.getNumberOfParameters());
+        System.out.println("db.getPreferenceResponses() = " + db.getObservedDataPoints());
+        System.out.println("db.getPreferenceResponses().size() = " + db.getObservedDataPoints().size());
     }
 
     @Override

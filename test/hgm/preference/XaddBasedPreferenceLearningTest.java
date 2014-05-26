@@ -13,16 +13,16 @@ import java.util.*;
  * Date: 20/12/13
  * Time: 1:00 PM
  */
-public class PreferenceLearningTest {
+public class XaddBasedPreferenceLearningTest {
     public static void main(String[] args) {
-        PreferenceLearningTest instance = new PreferenceLearningTest();
+        XaddBasedPreferenceLearningTest instance = new XaddBasedPreferenceLearningTest();
 //        instance.testOnCar1stExperiment();
 //        instance.testParametricVsNonParametricExpectedUtility();
         instance.testTimeVsNumConstraintsAndDimensions();
 
     }
 
-    PreferenceDatabase testDB1 = new PreferenceDatabase() {
+    PreferenceDatabase testDB1 = new PreferenceDatabase(null) {
         Preference[] prefs = new Preference[]{
                 new Preference(1, 2, Choice.FIRST),
                 new Preference(1, 3, Choice.FIRST),
@@ -40,7 +40,7 @@ public class PreferenceLearningTest {
         }
 
         @Override
-        public int getNumberOfAttributes() {
+        public int getNumberOfParameters() {
             return items.get(0).length;
         }
 
@@ -50,7 +50,7 @@ public class PreferenceLearningTest {
         }
 
         @Override
-        public List<Preference> getPreferenceResponses() {
+        public List<Preference> getObservedDataPoints() {
             return Arrays.asList(prefs);
         }
 
@@ -67,7 +67,7 @@ public class PreferenceLearningTest {
 
     @Test
     public void testBasic() {
-        PreferenceLearning learning = new PreferenceLearning(new XADD(), testDB1, 0, "w", 0);
+        XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(new XADD(), testDB1, 0, "w", 0);
 
         // Pr(W | R^{n+1})
         XADD.XADDNode utilityWeights = learning.computePosteriorWeightVector(false);
@@ -78,7 +78,7 @@ public class PreferenceLearningTest {
 
     @Test
     public void testParametricVsNonParametricExpectedUtility() {
-        PreferenceLearning learning = new PreferenceLearning(new XADD(), testDB1, 0, "w", 0);
+        XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(new XADD(), testDB1, 0, "w", 0);
         // Pr(W | R^{n+1})
         XADD.XADDNode utilityWeights = learning.computePosteriorWeightVector(false);
 
@@ -101,10 +101,10 @@ public class PreferenceLearningTest {
         PreferenceDatabase db = CarPreferenceDatabase.fetchCarPreferenceDataBase1stExperiment(advisers);
 
         XADD context = new XADD();
-        PreferenceLearning learning = new PreferenceLearning(context, db, 0, "w", 0);
+        XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(context, db, 0, "w", 0);
 
         // Pr(W | R^{n+1})
-        List<Preference> preferenceResponses = db.getPreferenceResponses();
+        List<Preference> preferenceResponses = db.getObservedDataPoints();
         if (maxPrefs > 0) {
             preferenceResponses = preferenceResponses.subList(0, Math.min(maxPrefs, preferenceResponses.size()));
         }
@@ -135,7 +135,7 @@ public class PreferenceLearningTest {
 
             //
 
-            PreferenceLearning learning = new PreferenceLearning(new XADD(), db, 0, "w", 0);
+            XaddBasedPreferenceLearning learning = new XaddBasedPreferenceLearning(new XADD(), db, 0, "w", 0);
 
             long time1 = System.currentTimeMillis();
             // Pr(W | R^{n+1})
@@ -153,7 +153,7 @@ public class PreferenceLearningTest {
     public static PreferenceDatabase generateDummyPreferenceDatabase(final double minAttribBound, final double maxAttribBound, final int preferenceCount, final int attributeCount, final int itemCount) {
         final Random random = new Random();
         if (maxAttribBound < minAttribBound) throw new RuntimeException("bound mismatch");
-        return new PreferenceDatabase() {
+        return new PreferenceDatabase(null) {
 
             List<Preference> preferences = new ArrayList<Preference>(preferenceCount);
             List<Double[]> items = new ArrayList<Double[]>(itemCount);
@@ -178,7 +178,7 @@ public class PreferenceLearningTest {
             }
 
             @Override
-            public int getNumberOfAttributes() {
+            public int getNumberOfParameters() {
                 return items.get(0).length;
             }
 
@@ -188,7 +188,7 @@ public class PreferenceLearningTest {
             }
 
             @Override
-            public List<Preference> getPreferenceResponses() {
+            public List<Preference> getObservedDataPoints() {
                 return preferences;
             }
 

@@ -1,12 +1,9 @@
 package hgm.poly.bayesian;
 
 import hgm.asve.cnsrv.approxator.sampler.GridSampler;
-import hgm.poly.ConstrainedPolynomial;
+import hgm.poly.PiecewisePolynomial;
 import hgm.poly.integral.OneDimFunction;
-import hgm.poly.pref.AbstractPolytopesSampler;
 import hgm.poly.pref.FatalSamplingException;
-import hgm.poly.pref.PosteriorHandler;
-import hgm.poly.vis.FunctionVisualizer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,19 +15,19 @@ import java.util.List;
  * Date: 11/03/14
  * Time: 9:05 PM
  */
-public class FullGibbsBayesianSampler extends AbstractBayesianSampler {
+public class FullGibbsGeneralBayesianSampler extends AbstractGeneralBayesianGibbsSampler {
 
-    public static FullGibbsBayesianSampler makeSampler(BayesianPosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
+   /* public static FullGibbsGeneralBayesianSampler makeSampler(GeneralBayesianPosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
         int varNum = gph.getPolynomialFactory().getAllVars().length;
         double[] cVarMins = new double[varNum];
         double[] cVarMaxes = new double[varNum];
         Arrays.fill(cVarMins, minForAllVars);
         Arrays.fill(cVarMaxes, maxForAllVars);
-        return new FullGibbsBayesianSampler(gph, cVarMins, cVarMaxes, reusableInitialSample);
-    }
+        return new FullGibbsGeneralBayesianSampler(gph, cVarMins, cVarMaxes, reusableInitialSample);
+    }*/
 
-    public FullGibbsBayesianSampler(BayesianPosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
-        super(gph, cVarMins, cVarMaxes, reusableInitialSample);
+    public FullGibbsGeneralBayesianSampler(GeneralBayesianPosteriorHandler gph/*, double[] cVarMins, double[] cVarMaxes*/, Double[] reusableInitialSample) {
+        super(gph, /*cVarMins, cVarMaxes,*/ reusableInitialSample);
     }
 
     @Override
@@ -65,20 +62,23 @@ public class FullGibbsBayesianSampler extends AbstractBayesianSampler {
             double[] next = sampleIterator.next();
 //            System.out.println("next = " + Arrays.toString(next));
             gateMask = doubleArray2IntList(next);
-            ConstrainedPolynomial polytope = gph.makePolytope(gateMask);
-            polyCDFs.add(makeCumulativeDistributionFunction(polytope, varToBeSampled, reusableVarAssign));
+            PiecewisePolynomial pp = gph.makeActivatedSubFunction(gateMask);
+//            polyCDFs.add(makeCumulativeDistributionFunction(polytope, varToBeSampled, reusableVarAssign));
+           makeAndAddCumulativeDistributionFunctionsToList(pp, varToBeSampled, reusableVarAssign, polyCDFs);
         }
 
 
         //at least one polytope CDF should be non-ZERO otherwise something has gone wrong....
-        boolean aNonZeroPolytopeFuncExists = false;
-        for (OneDimFunction polyCDF : polyCDFs) {
-            if (!polyCDF.equals(OneDimFunction.ZERO_1D_FUNCTION)) {
-                aNonZeroPolytopeFuncExists = true;
-                break;
-            }
-        }
-        if (!aNonZeroPolytopeFuncExists) throw new FatalSamplingException("all regions are zero");
+
+//        boolean aNonZeroPolytopeFuncExists = false;
+//        for (OneDimFunction polyCDF : polyCDFs) {
+//            if (!polyCDF.equals(OneDimFunction.ZERO_1D_FUNCTION)) {
+//                aNonZeroPolytopeFuncExists = true;
+//                break;
+//            }
+//        }
+//        if (!aNonZeroPolytopeFuncExists) throw new FatalSamplingException("all regions are zero");
+        if (polyCDFs.isEmpty()) throw new FatalSamplingException("all regions are zero");
 
 
         OneDimFunction varCDF = new OneDimFunction() {

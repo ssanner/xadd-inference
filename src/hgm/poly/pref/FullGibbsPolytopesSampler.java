@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class FullGibbsPolytopesSampler extends AbstractPolytopesSampler {
 
-    public static FullGibbsPolytopesSampler makeFullGibbsSampler(PosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
+    public static FullGibbsPolytopesSampler makeFullGibbsSampler(ConstantBayesianPosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
         int varNum = gph.getPolynomialFactory().getAllVars().length;
         double[] cVarMins = new double[varNum];
         double[] cVarMaxes = new double[varNum];
@@ -24,7 +24,7 @@ public class FullGibbsPolytopesSampler extends AbstractPolytopesSampler {
         return new FullGibbsPolytopesSampler(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 
-    public FullGibbsPolytopesSampler(PosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
+    public FullGibbsPolytopesSampler(ConstantBayesianPosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
         super(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 

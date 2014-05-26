@@ -17,6 +17,7 @@ public class PolynomialFactory {
      */
     private final List<Double> zeroPowers;
 
+    private final Polynomial one;
 
     public PolynomialFactory(String... vars) { //NOTE: 'E' should not be a variable name since it may  be used in doubles i.e.: 5.0E-4
         this.vars = vars;
@@ -27,6 +28,13 @@ public class PolynomialFactory {
         Double[] zerosPowerArray = new Double[this.vars.length];
         Arrays.fill(zerosPowerArray, 0d);
         zeroPowers = Arrays.asList(zerosPowerArray);
+
+        one = makePolynomial("1");
+
+    }
+
+    public Polynomial one() {
+        return one;   //NOTE: this polynomial should not be modified. To modify, clone it...
     }
 
     public List<Double> getZeroPowers() {
@@ -35,7 +43,7 @@ public class PolynomialFactory {
 
     public Polynomial makePolynomial(String str) {
 //        System.out.println("str = " + str);
-        str = str.replaceAll("\\s","");
+        str = str.replaceAll("\\s", "");
 //        System.out.println("str = " + str);
         Polynomial poly = new Polynomial(this);
 
@@ -52,12 +60,12 @@ public class PolynomialFactory {
                 String includedVar = null;
                 int includedVarIndex = -1;
                 int caretIndex = subExpr.indexOf('^');
-                if (caretIndex>0){
+                if (caretIndex > 0) {
                     includedVar = subExpr.substring(0, caretIndex);
                     //check that this is a valid variable:
                     for (int i = 0; i < vars.length; i++) {
                         String var = vars[i];
-                        if (includedVar.equals(var)){
+                        if (includedVar.equals(var)) {
                             includedVarIndex = i;
                             break;
                         }
@@ -77,7 +85,8 @@ public class PolynomialFactory {
                         throw new PolynomialException("cannot parse: " + subExpr);
                     subExpr = subExpr.substring(includedVar.length() + "^".length());
 
-                    if (!subExpr.startsWith("(")) throw new PolynomialException("'(' expected in the beginning: " + subExpr);
+                    if (!subExpr.startsWith("("))
+                        throw new PolynomialException("'(' expected in the beginning: " + subExpr);
                     if (!subExpr.endsWith(")")) throw new PolynomialException("')' expected in the end: " + subExpr);
                     subExpr = subExpr.substring(1, subExpr.length() - 1); //p
                     powers.set(includedVarIndex, Double.valueOf(subExpr));
@@ -109,7 +118,7 @@ public class PolynomialFactory {
 
             sb.append("+");
         }
-        if (sb.length()>0) sb.deleteCharAt(sb.length() - 1); //last "+"
+        if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1); //last "+"
 
         return sb.toString();
     }
@@ -132,7 +141,8 @@ public class PolynomialFactory {
     //condition polynomial is always > 0
     public Polynomial makePositiveConstraint(String polyStr) {
         polyStr = polyStr.replaceAll(" ", "");
-        if (!polyStr.endsWith(">0") && !polyStr.endsWith("<0")) throw new PolynomialException("cannot parse constraint: " + polyStr);
+        if (!polyStr.endsWith(">0") && !polyStr.endsWith("<0"))
+            throw new PolynomialException("cannot parse constraint: " + polyStr);
 
         Polynomial polynomial = makePolynomial(polyStr.substring(0, polyStr.length() - 2)); //for "<0" or ">0"
 
@@ -160,4 +170,5 @@ public class PolynomialFactory {
     public int numberOfVars() {
         return vars.length;
     }
+
 }

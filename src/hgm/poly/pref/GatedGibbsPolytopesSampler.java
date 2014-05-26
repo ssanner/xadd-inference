@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class GatedGibbsPolytopesSampler extends AbstractPolytopesSampler {
 
-    public static GatedGibbsPolytopesSampler makeSampler(PosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
+    public static GatedGibbsPolytopesSampler makeSampler(ConstantBayesianPosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
         int varNum = gph.getPolynomialFactory().getAllVars().length;
         double[] cVarMins = new double[varNum];
         double[] cVarMaxes = new double[varNum];
@@ -23,7 +23,7 @@ public class GatedGibbsPolytopesSampler extends AbstractPolytopesSampler {
         return new GatedGibbsPolytopesSampler(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 
-    public GatedGibbsPolytopesSampler(PosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
+    public GatedGibbsPolytopesSampler(ConstantBayesianPosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
         super(gph, cVarMins, cVarMaxes, reusableInitialSample);
     }
 

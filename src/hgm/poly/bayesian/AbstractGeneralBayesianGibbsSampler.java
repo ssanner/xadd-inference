@@ -1,15 +1,16 @@
 package hgm.poly.bayesian;
 
 import hgm.poly.ConstrainedPolynomial;
+import hgm.poly.PiecewisePolynomial;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.integral.OneDimPolynomialIntegral;
 import hgm.poly.pref.FatalSamplingException;
-import hgm.poly.pref.PosteriorHandler;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.sampling.SamplingFailureException;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Random;
  * Date: 11/03/14
  * Time: 9:05 PM
  */
-public abstract class AbstractBayesianSampler implements SamplerInterface {
+public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInterface {
     protected static final Random random = new Random();
     public static final double SAMPLE_ACCURACY = 1E-6;
     public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 20;
@@ -32,20 +33,22 @@ public abstract class AbstractBayesianSampler implements SamplerInterface {
     double[] cVarMins;
     double[] cVarMaxes;
     int numVars;
-    BayesianPosteriorHandler gph;
+    GeneralBayesianPosteriorHandler gph;
 
     Double[] absoluteBestSample;
     double absoluteBestTarget = -1;
 
-    public AbstractBayesianSampler(BayesianPosteriorHandler gph, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
+    public AbstractGeneralBayesianGibbsSampler(GeneralBayesianPosteriorHandler gph/*, double[] cVarMins, double[] cVarMaxes*/, Double[] reusableInitialSample) {
 
         this.gph = gph;
+        this.cVarMins = gph.getPriorHandler().getLowerBoundsPerDim();
+        this.cVarMaxes = gph.getPriorHandler().getUpperBoundsPerDim();
 
         integrator = new OneDimPolynomialIntegral();
 
         this.reusableSample = reusableInitialSample;
-        this.cVarMins = cVarMins;
-        this.cVarMaxes = cVarMaxes;
+//        this.cVarMins = cVarMins;
+//        this.cVarMaxes = cVarMaxes;
         numVars = cVarMins.length;
         if (cVarMaxes.length != numVars) throw new RuntimeException("length mismatch between mins and maxes");
 
@@ -81,11 +84,20 @@ public abstract class AbstractBayesianSampler implements SamplerInterface {
 //                sampleSingleVar(bVar, reusableVarAssignment);
 //            }
 
+//        System.out.println("1...this.gph.evaluate(reusableSample) = " + this.gph.evaluate(reusableSample));
+
         reusableSample = professionalSample(reusableSample);
 
-        //just for debug.... //todo comment when testing time...
-        if (gph.evaluate(reusableSample) <= 0)
-            throw new SamplingFailureException("evaluation of " + Arrays.toString(reusableSample) + " is " + gph.evaluate(reusableSample));
+//        System.out.println("Arrays.toString(reusableSample) = " + Arrays.toString(reusableSample));
+
+//        System.out.println("2...this.gph.evaluate(reusableSample) = " + this.gph.evaluate(reusableSample));
+
+        //just for debug....
+        if (gph.evaluate(reusableSample) <= 0) {
+//            throw new SamplingFailureException("evaluation of " + Arrays.toString(reusableSample) + " is " + gph.evaluate(reusableSample));
+            System.err.println("evaluation of " + Arrays.toString(reusableSample) + " is " + gph.evaluate(reusableSample));
+            reusableSample = takeInitialSample();
+        }
 
 
         return reusableSample;
@@ -95,7 +107,7 @@ public abstract class AbstractBayesianSampler implements SamplerInterface {
 
     //override if not Gibbs variations...
     protected Double[] professionalSample(Double[] reusableSample) {
-        int prevSampleHashCode = Arrays.hashCode(reusableSample);
+//        int prevSampleHashCode = Arrays.hashCode(reusableSample);   //todo this is nonsense....
 
         String[] allVars = gph.getPolynomialFactory().getAllVars();
         for (int i = 0; i < numVars; i++) {
@@ -106,7 +118,6 @@ public abstract class AbstractBayesianSampler implements SamplerInterface {
                 if (DEBUG) {
                     e.printStackTrace();
                 }
-
                 reusableSample = takeInitialSample();
                 debugNumUnsuccessfulSamplings++;
 //                System.out.println("replaced with --> reusableSample = " + Arrays.toString(reusableSample));
@@ -134,12 +145,11 @@ public abstract class AbstractBayesianSampler implements SamplerInterface {
             return reusableSample;
         }
 
-        if (prevSampleHashCode == Arrays.hashCode(reusableSample)) {
-            if (DEBUG)
-                System.err.println(Arrays.toString(reusableSample) + " is a repeated sample! Do a random jump...");
-            reusableSample = takeInitialSample();
-//            System.out.println("replaced with --> reusableSample = " + Arrays.toString(reusableSample));
-        }
+//        if (prevSampleHashCode == Arrays.hashCode(reusableSample)) {
+//            if (DEBUG)       //todo this trick is useless... REMOVE(?)
+//                System.err.println(Arrays.toString(reusableSample) + " is a repeated sample! Do a random jump...");
+//            reusableSample = takeInitialSample();
+//        }
 
         return reusableSample;
     }
@@ -155,29 +165,32 @@ public abstract class AbstractBayesianSampler implements SamplerInterface {
      * uniformly sample each variable in the interval between its min and max values and reject the produced sample if its probability is not positive...
      */
     protected Double[] takeInitialSample() throws SamplingFailureException { //todo: maybe rejection based sampling should be used....
+        boolean alternativeMethod = false;
+        if (alternativeMethod)
+            return clvAlternativeInitSample();
+        else {
+            int failureCount = 0;
 
-        return cleverInitSample();
-        /*int failureCount = 0;
+            Double[] initSample = new Double[numVars];
+            Double targetValue;
 
-        Double[] initSample = new Double[numVars];
-        Double targetValue;
+            do {
+                if (failureCount++ > MAX_INITIAL_SAMPLING_TRIAL)
+                    throw new SamplingFailureException("Unable to take initial sample");
+/////            for (String bVar : bVars) {
+/////                boolAssign.put(bVar, super.randomBoolean());
+/////            }
+                for (int i = 0; i < numVars; i++) {
+                    double minVarValue = cVarMins[i];
+                    double maxVarValue = cVarMaxes[i];
+                    initSample[i] = randomDoubleUniformBetween(minVarValue, maxVarValue);
+                }
 
-        do {
-            if (failureCount++ > MAX_INITIAL_SAMPLING_TRIAL)
-                throw new SamplingFailureException("Unable to take initial sample");
-//            for (String bVar : bVars) {
-//                boolAssign.put(bVar, super.randomBoolean());
-//            }
-            for (int i = 0; i < numVars; i++) {
-                double minVarValue = cVarMins[i];
-                double maxVarValue = cVarMaxes[i];
-                initSample[i] = randomDoubleUniformBetween(minVarValue, maxVarValue);
-            }
+                targetValue = gph.evaluate(initSample);
+            } while (targetValue <= 0.0); // a valid sample is found
 
-            targetValue = gph.evaluate(initSample);
-        } while (targetValue <= 0.0); // a valid sample is found
-
-        return initSample;*/
+            return initSample;
+        }
     }
 
     abstract protected void sampleSingleContinuousVar(String varToBeSampled, int varIndexToBeSampled, Double[] reusableVarAssign) throws FatalSamplingException;//todo: only var-index should be enough
@@ -215,14 +228,23 @@ public abstract class AbstractBayesianSampler implements SamplerInterface {
         return average;
     }
 
+    public void makeAndAddCumulativeDistributionFunctionsToList(PiecewisePolynomial pp, String var, Double[] currentVarAssign, List<OneDimFunction> cdfList) {
+        for (ConstrainedPolynomial cp : pp.getCases()) {
+
+            // returns int_{w=-infty}^{var} (func[var->w]dw) for instantiated function:
+            OneDimFunction cdf = integrator.integrate(cp, var, currentVarAssign);
+            if (!cdf.equals(OneDimFunction.ZERO_1D_FUNCTION)) {
+                cdfList.add(cdf);
+            }
+        }
+    }
+
     //NOTE: only works with continuous vars...
     // returns int_{w=-infty}^{var} (func[var->w]dw) for instantiated function
-    public OneDimFunction makeCumulativeDistributionFunction(ConstrainedPolynomial cp, String var, Double[] currentVarAssign) {
-
-        OneDimFunction cdf = integrator.integrate(cp, var, currentVarAssign);
-
-        return cdf;
-    }
+//    public OneDimFunction makeCumulativeDistributionFunction(ConstrainedPolynomial cp, String var, Double[] currentVarAssign) {
+//        OneDimFunction cdf = integrator.integrate(cp, var, currentVarAssign);
+//        return cdf;
+//    }
 
     public static double randomDoubleUniformBetween(double min, double max) {
         return random.nextDouble() * (max - min) + min;
@@ -238,7 +260,7 @@ public abstract class AbstractBayesianSampler implements SamplerInterface {
 //    }
 
 
-    Double[] cleverInitSample() {
+    Double[] clvAlternativeInitSample() {
         Double[] bestTakenSample = new Double[numVars];
         double bestSeenTarget = -1;
 

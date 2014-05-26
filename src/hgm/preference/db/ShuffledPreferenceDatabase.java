@@ -15,16 +15,17 @@ import java.util.Random;
  * <p>
  *     Randomly flips some preferences form e.g. A < B to B > A
  */
-public class ShuffledPreferenceDatabase implements DiscretePreferenceDatabase {
+public class ShuffledPreferenceDatabase extends  DiscretePreferenceDatabase {
     private DiscretePreferenceDatabase wrappedDb;
     private List<Preference> flippedResponses;
 
     public ShuffledPreferenceDatabase(DiscretePreferenceDatabase wrappedDb) {
+        super(wrappedDb.getPrior());
 
         this.wrappedDb = wrappedDb;
 
         Random random = new Random();
-        List<Preference> wrappedResponses = wrappedDb.getPreferenceResponses();
+        List<Preference> wrappedResponses = wrappedDb.getObservedDataPoints();
         flippedResponses = new ArrayList<Preference>(wrappedResponses.size());
 
         for (int i = 0; i < wrappedResponses.size(); i++) {
@@ -61,8 +62,8 @@ public class ShuffledPreferenceDatabase implements DiscretePreferenceDatabase {
     }
 
     @Override
-    public int getNumberOfAttributes() {
-        return wrappedDb.getNumberOfAttributes();
+    public int getNumberOfParameters() {
+        return wrappedDb.getNumberOfParameters();
     }
 
     @Override
@@ -71,7 +72,7 @@ public class ShuffledPreferenceDatabase implements DiscretePreferenceDatabase {
     }
 
     @Override
-    public List<Preference> getPreferenceResponses() {
+    public List<Preference> getObservedDataPoints() {
         return flippedResponses;
     }
 
