@@ -1,7 +1,5 @@
 package tskill.jskills.numerics;
 
-import lombok.Data;
-
 /**
  * A very limited implementation of an immutable range of Integers, including
  * endpoints. There is no such thing as an empty range.
@@ -13,7 +11,7 @@ import lombok.Data;
  * C#, so I'm going to eschew the relative type safety afforded by Moser's
  * scheme and make this class final. A Range is a Range is a Range.
  */
-@Data public final class Range<T> {
+public final class Range<T> {
     public int getMin() {
         return min;
     }
