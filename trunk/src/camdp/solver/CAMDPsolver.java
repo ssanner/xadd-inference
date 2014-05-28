@@ -261,17 +261,25 @@ public abstract class CAMDPsolver {
 	
 	// Results
     public void makeResultStream(){
-		int filenamestart = mdp._problemFile.lastIndexOf('/');
-		String filename = mdp._problemFile.substring(filenamestart,mdp._problemFile.length()-5);
-		String problemType = 
-				(mdp._initialS == null)? 
-					mdp.LINEAR_PROBLEM?
-						mdp.CONTINUOUS_ACTIONS?
-							"/contact":
-						"/discact":
-					"/discactnonlin":
-				"/initialstate";
-		OUTPUT_DIR = RESULTS_DIR + problemType + filename;
+//		int filenamestart = mdp._problemFile.lastIndexOf('/');
+//		String filename = mdp._problemFile.substring(filenamestart,mdp._problemFile.length()-5);
+//		String problemType = 
+//				(mdp._initialS == null)? 
+//					mdp.LINEAR_PROBLEM?
+//						mdp.CONTINUOUS_ACTIONS?
+//							"/contact":
+//						    "/discact":
+//					    "/discactnonlin":
+//					mdp.LINEAR_PROBLEM?
+//							"/initialstate":
+//						"/initialstateNonlinear";
+
+    	String fullFile = mdp._problemFile;
+    	String[] filenameList = fullFile.split("/");
+    	int nwords = filenameList.length;
+    	String problemName = filenameList[nwords-1].substring(0,(filenameList[nwords-1]).length() -5);
+    	String className = filenameList[nwords-2];
+    	OUTPUT_DIR = RESULTS_DIR +"/"+ className +"/"+problemName;
 		
 		//System.out.println("testing filename:" + OUTPUT_DIR + "/" + _solveMethod + ".rslt");
     	try{
