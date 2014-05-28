@@ -1,0 +1,35 @@
+cvariables (energy)
+min-values (0)
+max-values (10)
+bvariables (takenp1)
+nvariables()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables()
+
+action takepicture
+takenp1' (takenp1
+    ([1.0])
+    ([energy>5]
+        ([1.0])
+        ([0.0]))
+)
+
+energy' ([energy < 8]
+    ([energy + 2])
+    ([energy])
+)
+reward 
+(takenp1
+    ([0.0])
+    ([-0.25])
+)
+endaction
+
+discount 1.0000000
+InitialState (5.5) (false) 
+iterations 2
+LINEAR
+MAXREWARD 2

@@ -35,7 +35,7 @@ public class CRTDPFH extends CAMDPsolver {
 	/* Debugging Flags */
 	
 	//Local Debug flags	
-	private static final boolean BELLMAN_DEBUG = true;
+	private static final boolean BELLMAN_DEBUG = false;
 	private static final boolean REGRESS_DEBUG = false;
 	private static final boolean REGRESS_VAR_DEBUG = false;
 	private static final boolean DD_BEFORE_TRIAL = false;
@@ -211,8 +211,8 @@ public class CRTDPFH extends CAMDPsolver {
 			flushCaches();
 		}
 		//reverse Trial
-		if (REVERSE_TRIAL){
-			for(int remainHorizon = 1; remainHorizon <= nIter; remainHorizon++){
+		if (REVERSE_TRIAL){ //no need to repeat update on last state, revert from 2
+			for(int remainHorizon = 2; remainHorizon <= nIter; remainHorizon++){
 				currentS = stateList[remainHorizon];
 				if (DEEP_DEBUG){
 					debugOutput.println("Reverse Trial #"+curTrial+", depth ="+remainHorizon+", "+ currentS.toString());	
@@ -240,6 +240,7 @@ public class CRTDPFH extends CAMDPsolver {
 		if (BELLMAN_DEBUG){
 			debugOutput.println("\nBellman Backup Start Trial "+curTrial+"depth "+h+" State: "+currS);
 			debugOutput.println("State Value ="+ getStateVal(currS,h));
+			if (PLOT_DD) mdp.doDisplay(valueDDList[h], makeXADDLabel("IniVDD-", curTrial, h));
 		}
 		
 		for (Map.Entry<String,CAction> me : mdp._hmName2Action.entrySet()) {
@@ -255,8 +256,8 @@ public class CRTDPFH extends CAMDPsolver {
 				}
 				if (BELLMAN_DEBUG){
 					debugOutput.println("Regress Action: " + me.getValue()._sName + " Value:" + value);
-					if (PRINT_DD) debugOutput.println("Q Regress = "+regr+" DD:\n" + context.getExistNode(regr));
-					if (PLOT_DD) mdp.doDisplay(regr, "Q Regress-"+me.getValue()._sName+"T"+curTrial+"H"+h);
+					if (PRINT_DD) debugOutput.println("Q_a = "+regr+" DD:\n" + context.getExistNode(regr));
+					if (PLOT_DD) mdp.doDisplay(regr, "Final Q"+me.getValue()._sName+"T"+curTrial+"H"+h);
 				}
 				
 				// Maintain running max over different actions
@@ -303,6 +304,7 @@ public class CRTDPFH extends CAMDPsolver {
 		if (BELLMAN_DEBUG){
 			debugOutput.println("Backup End, Greedy Action: " + pA + " Greedy Value:" + currSValue +"\n");			
 			if (PRINT_DD) debugOutput.println("New vfun ="+valueDDList[h] +" DD:\n" + context.getExistNode(valueDDList[h]));
+			if (PLOT_DD) mdp.doDisplay(valueDDList[h], makeXADDLabel("NewVDD-", curTrial, h));
 		}
 		return pA;
 	}
@@ -318,9 +320,9 @@ public class CRTDPFH extends CAMDPsolver {
 		
 		if (REGRESS_DEBUG){
 			debugOutput.println("Regressing: "+valueDDList[depth-1]+" at " +currS+" with "+a._sName);
-			if (PRINT_DD) debugOutput.println("Next State DD = "+q+":\n"+context.getExistNode(q));
-			if (PLOT_DD) mdp.displayGraph(q, makeXADDLabel("Qstart-"+a._sName, curTrial, depth));
-			if (PLOT_DD) mdp.displayGraph(valueDDList[depth-1], makeXADDLabel("Vh-1 "+a._sName, curTrial, depth));
+//			if (PRINT_DD) debugOutput.println("Next State DD = "+q+":\n"+context.getExistNode(q));
+//			if (PLOT_DD) mdp.displayGraph(valueDDList[depth-1], makeXADDLabel("Vh-1 "+a._sName, curTrial, depth));
+			if (PLOT_DD) mdp.displayGraph(q, makeXADDLabel("Qstart-"+a._sName, curTrial, depth));			
 		}
 		
 		// Discount
@@ -375,10 +377,10 @@ public class CRTDPFH extends CAMDPsolver {
 		}
 				
 		// Optional Display With just State, Action and Noise Vars
-		if (REGRESS_DEBUG){
-			if (PRINT_DD) debugOutput.println("Qfunction after summing reward = "+q+" DD:\n"+context.getString(q));
-			if (PLOT_DD) mdp.doDisplay(q, "Q-" + a._sName + "-" + a._actionParams + "T" + curTrial +"Rem"+depth);
-		}
+//		if (REGRESS_DEBUG){
+//			if (PRINT_DD) debugOutput.println("Qfunction after summing reward = "+q+" DD:\n"+context.getString(q));
+//			if (PLOT_DD) mdp.doDisplay(q, "QAfterSumR-" + a._sName + "-" + a._actionParams + "T" + curTrial +"Rem"+depth);
+//		}
 		
 		//Remove Noise Vars
 		q = regressNoise(q, a);		
@@ -392,7 +394,7 @@ public class CRTDPFH extends CAMDPsolver {
 		
 		if (REGRESS_DEBUG){
 			if (PRINT_DD) debugOutput.println("Qfunction after removing NaN = "+q+" DD:\n"+context.getString(q));
-			if (PLOT_DD) mdp.doDisplay(q, "Q-" + a._sName + "-" + a._actionParams + "T" + curTrial +"Rem"+depth);
+			if (PLOT_DD) mdp.doDisplay(q, "QAfterRemoveNaN" + a._sName + "-" + a._actionParams + "T" + curTrial +"Rem"+depth);
 		}
 		//Constraints Verification
 //		if (REGRESS_DEBUG){
@@ -404,7 +406,7 @@ public class CRTDPFH extends CAMDPsolver {
 	
 	public int regressCVarsMask(int q, CAction a, String var, State currS) {
 		
-		if (REGRESS_VAR_DEBUG) debugOutput.println("Regressing Continuous" + var);
+		if (REGRESS_VAR_DEBUG) debugOutput.println("Regressing Continuous " + var);
 		// Get cpf for continuous var'
 		int var_id = context._cvar2ID.get(var);
 		Integer dd_conditional_sub = a._hmVar2DD.get(var);
@@ -441,7 +443,7 @@ public class CRTDPFH extends CAMDPsolver {
 	public int regressBVarsMask(int q, CAction a, String var, State currS) {
 		
 		// Get cpf for boolean var'
-		if (REGRESS_VAR_DEBUG) debugOutput.println("Regressing Boolean" + var);
+		if (REGRESS_VAR_DEBUG) debugOutput.println("Regressing Boolean " + var);
 		int var_id = context.getVarIndex( context.new BoolDec(var), false);
 		Integer dd_cpf = a._hmVar2DD.get(var);
 		if (REGRESS_VAR_DEBUG) debugOutput.println("Initial DD_cpf -->: " + context.getString(dd_cpf));

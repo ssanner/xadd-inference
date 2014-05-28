@@ -134,23 +134,26 @@ public class VI extends CAMDPsolver {
 	 * Regress a DD through an action
 	 **/
 	public int regress(int vfun, CAction a) {
-		if (DEEP_DEBUG){
-			debugOutput.println("REGRESSING ACTION " + a._sName + " Iter "+ curIter );
-		}
-		_logStream.println("\n>>> REGRESSING '" + a._sName + "'\n");
 		
 		// Prime the value function 
 		int q = context.substitute(vfun, mdp._hmPrimeSubs); 
-		_logStream.println("- Primed value function:\n" + context.getString(q));
-		
-		// Discount
-		q = context.scalarOp(q, mdp._bdDiscount.doubleValue(), XADD.PROD);
 		
 		if (DEEP_DEBUG){
-			debugOutput.println("Q After discount Prod:");
+			debugOutput.println("REGRESSING ACTION " + a._sName + " Iter "+ curIter );
+			debugOutput.println("Q Start "+a._sName+"^"+curIter);
 			if (PRINT_DD) debugOutput.println(context.getExistNode(q).toString());
-			if (PLOT_DD) context.showGraph(q, "Q after discount Prod");
+			if (PLOT_DD) context.showGraph(q, "Q Start "+a._sName+"^"+curIter);
+			debugOutput.println("Reward"+a._sName+"^"+curIter);
+			if (PRINT_DD) debugOutput.println(context.getExistNode(q).toString());
+			if (PLOT_DD) context.showGraph(a._reward, "Reward"+a._sName+"^"+curIter);
 		}
+		
+		// Discount
+		if (mdp._bdDiscount.doubleValue() != 1){
+			debugOutput.println("Using discount on Finite Horizon: ");
+			q = context.scalarOp(q, mdp._bdDiscount.doubleValue(), XADD.PROD);
+		}
+		
 		// Add reward *if* it contains primed vars that need to be regressed
 		HashSet<String> i_and_ns_vars_in_reward = filterIandNSVars(context.collectVars(a._reward), true, true);
 		if (!i_and_ns_vars_in_reward.isEmpty()) {
@@ -180,31 +183,18 @@ public class VI extends CAMDPsolver {
 				_logStream.println("- Ignoring current state or action variable " + var_to_elim + " during elimination");
 			}
 		}
+
+		if (DEEP_DEBUG){
+			debugOutput.println("QafterRegr:");
+			if (PRINT_DD) debugOutput.println(context.getExistNode(q).toString());
+			if (PLOT_DD) context.showGraph(q, "QafterRegr"+curIter);
+		}
 		
-		// TODO: Policy maintenance: currently unfinished in this version
-		// - if no action variables, can just annotate each Q-function with action
-		// - if action variables then need to maintain action name along with
-		//   the substitutions made at the leaves (which can occur recursively for
-		//   multivariable problems)
-		// if (mdp.MAINTAIN_POLICY) { 
-		//      ... 
-		// }
-			
-		// NOTE: if reward was not added in prior to regression, it must be 
-		// added in now...
 		if (i_and_ns_vars_in_reward.isEmpty()) {
 			q = context.apply(a._reward, q, XADD.SUM);
 			_logStream.println("- Added in reward post-marginalization with no interm/next state vars.");
 		}
 		
-		// Optional Display
-		if (DEEP_DEBUG){
-			debugOutput.println("Q before Max:");
-			if (PLOT_DD){
-				mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "^" + curIter + "-" + Math.round(1000*APPROX_ERROR));
-			}
-		}
-
 		// Noise handling
 		if (a._noiseVars.size() == 0) {
 			// No action params to maximize over
@@ -272,7 +262,14 @@ public class VI extends CAMDPsolver {
 			_logStream.println("- Q^" + curIter + "(" + a._sName + " )\n" + context.getString(q));
 		}
 
-		if (DEEP_DEBUG) debugOutput.println("Regress End");
+		//Final Display
+		if (DEEP_DEBUG){
+			debugOutput.println("Qfinal:");
+			if (PLOT_DD){
+				mdp.displayGraph(q, "Qfinal"+a._sName+"^"+curIter);
+			}
+		}
+
 		return standardizeDD(q);
 	}
 	

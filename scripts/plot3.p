@@ -1,3 +1,4 @@
+
 #gnuplot plot script
 set autoscale                        # scale axes automatically
 set xtic auto                          # set xtics automatically
@@ -27,9 +28,9 @@ set offsets graph 0.0, 0.0, 0.02, 0.02
 #TotTime
 set title sprintf("TotTime: %s",filename)
 set xlabel "Iteration/Trials" textcolor ls 11
-set xtics auto
+#set xtics auto
 set ylabel "Cumulated Time (s)" textcolor ls 11
-set ytics auto
+#set ytics auto
 
 set output sprintf("%s-TotTime.%s",filename, format)
 plot for [i=1:words(SOLVERS)] sprintf("%s.log",word(SOLVERS,i))\
@@ -39,7 +40,7 @@ plot for [i=1:words(SOLVERS)] sprintf("%s.log",word(SOLVERS,i))\
 set title sprintf("Nodes per Iter/Trial: %s",filename)
 set xlabel "Iterations/Trials" textcolor ls 11
 set ylabel "Memory (# of nodes)" textcolor ls 11
-set ytics 350
+#set ytics 350
 set output sprintf("%s-Nodes.%s",filename, format)
 plot for [i=1:words(SOLVERS)] sprintf("%s.log",word(SOLVERS,i))\
 	u 1:3 title sprintf("%s",word(SOLVERS,i)) ls i+1 w lp
@@ -48,27 +49,27 @@ plot for [i=1:words(SOLVERS)] sprintf("%s.log",word(SOLVERS,i))\
 set title sprintf("Initial State Value: %s",filename)
 set xlabel "Iteration" textcolor ls 11
 set ylabel "Value" textcolor ls 11
-set ytics 100
+#set ytics 100
 set output sprintf("%s-IniVal.%s",filename, format)
 plot for [i=1:words(SOLVERS)] sprintf("%s.log",word(SOLVERS,i))\
 	u 1:4 title sprintf("%s",word(SOLVERS,i)) ls i+1 w lp
 
 #Val per Time
 set title #sprintf("Initial State Value per time: %s",filename)
-set xlabel "Cumulated Time (s)"
-set xtics 4
-set ylabel "Value"
-set ytics 200
+set xlabel "Cumulated Time (s)" textcolor ls 11
+#set xtics 4
+set ylabel "Value" textcolor ls 11
+#set ytics 200
 set output sprintf("%s-ValTime.%s",filename, format)
 plot for [i=1:words(SOLVERS)] sprintf("%s.log",word(SOLVERS,i))\
 	u 2:4 title sprintf("%s",word(SOLVERS,i)) ls i+1 w lp
 
 #Val per Nodes
 set title #sprintf("Initial State Value per Nodes: %s",filename)
-set xlabel "Memory (# of nodes)"
-set xtics 350
-set ylabel "Value"
-set ytics 200
+set xlabel "Memory (# of nodes)" textcolor ls 11
+#set xtics 350
+set ylabel "Value" textcolor ls 11
+#set ytics 200
 set output sprintf("%s-ValNodes.%s",filename, format)
 plot for [i=1:words(SOLVERS)] sprintf("%s.log",word(SOLVERS,i))\
 	u 3:4 title sprintf("%s",word(SOLVERS,i)) ls i+1 w lp
@@ -79,12 +80,12 @@ if (plotdim == 3){
 	do for[h=1:nvalue]{
 		do for [i=1:words(SOLVERS)]{
 		  
-    		set xlabel "time" offset -8
-    		set xtics 30
-    		set ylabel "energy" offset 0
-    		set ytics 30
-    		set zlabel "Value" offset -3
-            set ztics h*50
+    		set xlabel "time" offset -8 textcolor ls 11
+#    		set xtics 30
+    		set ylabel "energy" offset 0 textcolor ls 11
+#    		set ytics 30
+    		set zlabel "Value" offset -3 textcolor ls 11
+#            set ztics h*50
 			set title sprintf("%s-%s-Value%d.",filename,word(SOLVERS,i),h)
 			set output sprintf("%s-%s-Value%d.%s",filename, word(SOLVERS,i),h, format)
 			splot sprintf("%s-Value%d.txt",word(SOLVERS,i),h) notitle w pm3d

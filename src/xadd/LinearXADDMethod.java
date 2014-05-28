@@ -45,6 +45,7 @@ public class LinearXADDMethod {
 
     //Linear Flags
     private static final boolean ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP = false; //Add bounds as explicit constraints (should not be necessary)
+    private static final boolean WARN_INFEASIBLE_REGIONS = false; //Add bounds as explicit constraints (should not be necessary)
 
     public LinearXADDMethod(int localRoot, XADD global) {
         context = global;
@@ -335,13 +336,16 @@ public class LinearXADDMethod {
         double opt_val = lp._dObjValue;
 
         if (lp._status == LpSolve.INFEASIBLE) {
-            System.out.println("Optimization RestriMax Error: Infeasible Region! " + domain);
-            showDecList(domain);
-            System.exit(1);
+        	if (WARN_INFEASIBLE_REGIONS) System.err.println("Warning: Infeasible region found maximizing linear XADD.");
+//          System.err.println("Decisions: "+domain);
+//          showDecList(domain);
+            opt_val = isMax? Double.NEGATIVE_INFINITY: Double.POSITIVE_INFINITY;
         }
         if (lp._status == LpSolve.UNBOUNDED) {
-            System.out.println("Optimization RestriMax Error: Unbounded! " + domain);
-            opt_val = Double.POSITIVE_INFINITY;
+            if (WARN_INFEASIBLE_REGIONS) System.err.println("Warning: Unbounded region found maximizing linear XADD.");
+//          System.err.println("Decisions: "+domain);
+//          showDecList(domain);
+            opt_val = isMax? Double.POSITIVE_INFINITY: Double.NEGATIVE_INFINITY;
         }
         lp.free();
         return new OptimResult(opt_val + c, soln);

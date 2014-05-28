@@ -43,8 +43,10 @@ public class XADD {
     // Flags
     public final static boolean USE_CANONICAL_NODES = true; // Store nodes in canonical format?
     public final static boolean NORMALIZE_DECISIONS = true; //Store decision with normalized coefficients?
-
+	private static final boolean USE_APPLY_GET_INODE_CANON = false;
+    
     private static final boolean WARN_BOUND_UNUSED_VAR = false;
+    private static final boolean WARN_INODE_CANON_NEG_DEC = false;
     public final static int MAX_BRANCH_COUNT = 1000000;
 
     // Debug
@@ -88,6 +90,7 @@ public class XADD {
     public final static double DEFAULT_UPPER_BOUND = Double.MAX_VALUE;//1e+10d; //change by Hadi
     public final static double DEFAULT_LOWER_BOUND = -DEFAULT_UPPER_BOUND;
     public static final Integer ROUND_PRECISION = null;//1000000;//null changed by Hadi. Null represents no rounding (solves lots of problems)
+
 
     //XADD Variable Maintenance
     public HashSet<String> _hsBooleanVars = new HashSet<String>();
@@ -380,18 +383,79 @@ public class XADD {
     }
 
     public int getINodeCanon(int var, int low, int high) {
+    	if (var <= 0){
+    		//Shouldn't all decisions be positive?
+    		if (WARN_INODE_CANON_NEG_DEC) System.out.println("Warning: Canonizing Negative Decision:"+var+" =>"+_alOrder.get(Math.abs(var)));
+    		return getINodeCanon(-var, high, low);
+    	}
+    	int result1 = getINodeCanonApplyTrick(var, low, high);        
+    	int result2 = getINodeCanonInsert(var,low,high);
+    		
+    	if (result1 != result2 && result1 != NAN){
+			System.out.println("Canonical Error (Difference not on NAN):");
+			System.out.println("PROD Result:");
+			System.out.println(getExistNode(result1));
+			System.out.println("New Canon:");
+			System.out.println(getExistNode(result2));
+		
+			getINodeCanonApplyTrick(var, low, high);
+			getINodeCanonInsert(var,low,high);
+    	}
+    	return (USE_APPLY_GET_INODE_CANON)? result1: result2;
+    }
+
+    public int getINodeCanonApplyTrick(int var, int low, int high) {
         int ind_true = getINode(var, /* low */ZERO, /* high */ONE);
         int ind_false = getINode(var, /* low */ONE, /* high */ZERO);
         int true_half = applyInt(ind_true, high, PROD);
         // this enforces canonicity so can use applyInt rather than apply
         int false_half = applyInt(ind_false, low, PROD);
-        int result = applyInt(true_half, false_half, SUM);
-        
-//        getGraph(true_half).launchViewer("[" + result + "] INode Input True Half");
-//        getGraph(false_half).launchViewer("[" + result + "] Input Input False Half");
-//        getGraph(result).launchViewer("[" + result + "] Output INode");
-        
+        int result = applyInt(true_half, false_half, SUM);        
+//            getGraph(true_half).launchViewer("[" + result + "] INode Input True Half");
+//            getGraph(false_half).launchViewer("[" + result + "] Input Input False Half");
+//            getGraph(result).launchViewer("[" + result + "] Output INode");        
         return result;
+    }
+
+    
+    public int getINodeCanonInsert(int var, int low, int high){
+        int false_half = reduceInsertNode(low, var, ZERO, true);
+        int true_half = reduceInsertNode(high, var, ZERO, false);
+        return applyInt(true_half, false_half, SUM);
+    }
+    
+    public int reduceInsertNode(int orig, int decision, int node_to_insert_on_dec_value, boolean dec_value){
+    	return reduceInsertNodeInt(orig, decision, node_to_insert_on_dec_value, dec_value, new HashMap<Integer,Integer>()); //Map only for orig
+    }
+    
+    public int reduceInsertNodeInt(int orig, int decision, int insertNode, boolean dec_value, HashMap<Integer,Integer> _hmInsertNodeCache){
+    	Integer ret = _hmInsertNodeCache.get(orig);
+    	if (ret != null) return ret;
+    	
+    	XADDNode n = getExistNode(orig);
+    	if ( (n instanceof XADDTNode) || (n instanceof XADDINode && ((XADDINode)n)._var > decision) ){
+    		ret = dec_value? getINode(decision, orig, insertNode): getINode(decision, insertNode, orig);
+    	}
+    	else {
+    		XADDINode inode = (XADDINode) n;
+    		if (decision > inode._var){
+    			int low = reduceInsertNodeInt(inode._low, decision, insertNode, dec_value, _hmInsertNodeCache);
+    			int high = reduceInsertNodeInt(inode._high, decision, insertNode, dec_value, _hmInsertNodeCache);
+    			ret = getINode(inode._var, low, high);
+    		}
+    		else{
+    			//Inserting same Decision as in DD
+    			if (dec_value) {
+    				ret = reduceInsertNodeInt(inode._low, decision, insertNode, dec_value, _hmInsertNodeCache);
+    			}
+    			else{
+    				ret = reduceInsertNodeInt(inode._high, decision, insertNode, dec_value, _hmInsertNodeCache);
+    			}
+    			
+    		}
+    	}
+    	_hmInsertNodeCache.put(orig, ret);
+    	return ret;
     }
 
     public int getVarNode(Decision d, double low_val, double high_val) {
@@ -799,86 +863,137 @@ public class XADD {
 
     // Computes a terminal node value if possible
     public Integer computeTermNode(int a1, XADDNode n1, int a2, XADDNode n2, int op) {
-
-	    //Zero identities first -- critical for getINodeCanon to work
-    	if (op == PROD && 
-    			(n1 instanceof XADDTNode && ((XADDTNode)n1)._expr.equals(ExprLib.ZERO) ||
-    		    (n2 instanceof XADDTNode && ((XADDTNode)n2)._expr.equals(ExprLib.ZERO)))) {
-    		return ZERO;
-        }
     	
-        // Check for identities if first operand is terminal
-        if (n1 instanceof XADDTNode) {
+    	//NaN cannot become valid by operations 
+    	if (a1 == NAN || a2 ==NAN){
+            return NAN;
+    	}
+    	
+	    //Zero identities first -- critical for getINodeCanon to work
+    	if (op == PROD && (a1 == ZERO || a2 == ZERO) ){ //Compare XADD Nodes, there shouldn't be more than one ZERO XADDTNode!
+    		return ZERO;
+    	}
 
-            XADDTNode xa1 = (XADDTNode) n1;
+        //Identities
+        if ( (op == SUM && a1==ZERO) || (op == PROD && a1 ==ONE) ) {
+            return a2;
+        }
+        if ( ( (op == SUM || op == MINUS) && a2==ZERO) || ( (op == PROD || op == DIV) && a2 ==ONE) ) {
+            return a1;
+        }
 
-            // Check for identity operation value for n1
-            if ((op == SUM && xa1._expr.equals(ExprLib.ZERO))
-                    || (op == PROD && xa1._expr.equals(ExprLib.ONE))) {
+        // Infinity identities
+        // NOTE: * and / can only be evaluated on leaf since 0*inf = 0, but for x!=0 x*inf = inf
+        // (Luis) Edit! -1* POS_INF = NEG_INF! 0*Inf is treated in 0 case above, /0 is always undefined/error   
+        if (a1 == POS_INF) {
+            if (op == SUM || op == MINUS || op == MAX)
+                return POS_INF;
+            else if (op == MIN)
                 return a2;
-            }
-
-            // NaN identity for terminal computations (any tnode op NaN = NaN)
-            if (n2 instanceof XADDTNode &&
-            	xa1._expr instanceof DoubleExpr && Double.isNaN(((DoubleExpr)xa1._expr)._dConstVal)) {
-                return NAN;
-            }
-
-            // Infinity identities
-            // NOTE: * and / can only be evaluated on leaf since 0*inf = 0, but for x!=0 x*inf = inf
-            if (xa1._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa1._expr)._dConstVal) && ((DoubleExpr)xa1._expr)._dConstVal > 0) {
-               // +inf op a2
-                if (op == SUM || op == MINUS || op == MAX
-                        || ((op == PROD || op == DIV) && (n2 instanceof XADDTNode) && !((XADDTNode) n2).equals(ExprLib.ZERO)))
-                    return POS_INF;
-                else if (op == MIN)
-                    return a2;
-            } else if (xa1._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa1._expr)._dConstVal) && ((DoubleExpr)xa1._expr)._dConstVal < 0) {
+        } else if (a1 == NEG_INF) {
+            // -inf op a2
+            if (op == SUM || op == MINUS || op == MIN)
+                return NEG_INF;
+            else if (op == MAX)
+                return a2;
+        }
+        if (a2 == POS_INF) {
+            if (op == SUM || op == MAX)
+                return POS_INF;
+            else if (op == MINUS)
+            	return NEG_INF;
+            else if (op == MIN)
+                    return a1;
+        } else if (a1 == NEG_INF) {
                 // -inf op a2
-                if (op == SUM || op == MINUS || op == MIN
-                        || ((op == PROD || op == DIV) && (n2 instanceof XADDTNode) && !((XADDTNode) n2).equals(ExprLib.ZERO)))
-                    return getTermNode(ExprLib.NEG_INF);
-                else if (op == MAX)
-                    return a2;
-            }
-        }
-        
-        // Check for identities if second operand is terminal
-        if (n2 instanceof XADDTNode) {
-
-            XADDTNode xa2 = (XADDTNode) n2;
-
-            // Check for identity operation value for n2
-            if ((op == SUM && xa2._expr.equals(ExprLib.ZERO))
-                    || (op == PROD && xa2._expr.equals(ExprLib.ONE))
-                    || (op == MINUS && xa2._expr.equals(ExprLib.ZERO))
-                    || (op == DIV && xa2._expr.equals(ExprLib.ONE))) {
-                return a1;
-            }
-
-            // NaN identity for terminal computations (any tnode op NaN = NaN)
-            if (n1 instanceof XADDTNode &&
-                xa2._expr instanceof DoubleExpr && Double.isNaN(((DoubleExpr)xa2._expr)._dConstVal)) {
-	            return NAN;
-	        }
-
-            // Infinity identities
-            if (xa2._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa2._expr)._dConstVal) && ((DoubleExpr)xa2._expr)._dConstVal > 0) { // (xa2._expr.equals(POS_INF)) {
-                // a1 op +inf
-                if (op == SUM || op == MAX || (op == PROD && (n1 instanceof XADDTNode) && !((XADDTNode) n1).equals(ZERO)))
-                    return POS_INF;
-                    // Not sure how to handle minus and div, ignoring for now
-                else if (op == MIN)
-                    return a1;
-            } else if (xa2._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa2._expr)._dConstVal) && ((DoubleExpr)xa2._expr)._dConstVal < 0) {
-                // a1 op -inf
-                if (op == SUM || op == MIN || (op == PROD && (n1 instanceof XADDTNode) && !((XADDTNode) n1).equals(ZERO)))
+        	if (op == SUM || op == MIN)
                     return NEG_INF;
-                    // Not sure how to handle minus and div, ignoring for now
-                else if (op == MAX)
+        	else if (op == MINUS)
+            	return POS_INF;
+        	else if (op == MAX)
                     return a1;
-            }
         }
+
+        // Old INF, ZERO and NAN GetTermNode code
+//	    //Zero identities first -- critical for getINodeCanon to work
+//    	if (op == PROD && 
+//    			(n1 instanceof XADDTNode && ((XADDTNode)n1)._expr.equals(ExprLib.ZERO) ||
+//    		    (n2 instanceof XADDTNode && ((XADDTNode)n2)._expr.equals(ExprLib.ZERO)))) {
+//    		return ZERO;
+//        }
+//    	
+//        // Check for identities if first operand is terminal
+//        if (n1 instanceof XADDTNode) {
+//
+//            XADDTNode xa1 = (XADDTNode) n1;
+//
+//            // Check for identity operation value for n1
+//            if ((op == SUM && xa1._expr.equals(ExprLib.ZERO))
+//                    || (op == PROD && xa1._expr.equals(ExprLib.ONE))) {
+//                return a2;
+//            }
+//
+//            // NaN identity for terminal computations (any tnode op NaN = NaN)
+//            if (n2 instanceof XADDTNode &&
+//            	xa1._expr instanceof DoubleExpr && Double.isNaN(((DoubleExpr)xa1._expr)._dConstVal)) {
+//                return NAN;
+//            }
+//
+//            // Infinity identities
+//            // NOTE: * and / can only be evaluated on leaf since 0*inf = 0, but for x!=0 x*inf = inf
+//            if (xa1._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa1._expr)._dConstVal) && ((DoubleExpr)xa1._expr)._dConstVal > 0) {
+//               // +inf op a2
+//                if (op == SUM || op == MINUS || op == MAX
+//                        || ((op == PROD || op == DIV) && (n2 instanceof XADDTNode) && !((XADDTNode) n2).equals(ExprLib.ZERO)))
+//                    return POS_INF;
+//                else if (op == MIN)
+//                    return a2;
+//            } else if (xa1._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa1._expr)._dConstVal) && ((DoubleExpr)xa1._expr)._dConstVal < 0) {
+//                // -inf op a2
+//                if (op == SUM || op == MINUS || op == MIN
+//                        || ((op == PROD || op == DIV) && (n2 instanceof XADDTNode) && !((XADDTNode) n2).equals(ExprLib.ZERO)))
+//                    return getTermNode(ExprLib.NEG_INF);
+//                else if (op == MAX)
+//                    return a2;
+//            }
+//        }
+//        
+//        // Check for identities if second operand is terminal
+//        if (n2 instanceof XADDTNode) {
+//
+//            XADDTNode xa2 = (XADDTNode) n2;
+//
+//            // Check for identity operation value for n2
+//            if ((op == SUM && xa2._expr.equals(ExprLib.ZERO))
+//                    || (op == PROD && xa2._expr.equals(ExprLib.ONE))
+//                    || (op == MINUS && xa2._expr.equals(ExprLib.ZERO))
+//                    || (op == DIV && xa2._expr.equals(ExprLib.ONE))) {
+//                return a1;
+//            }
+//
+//            // NaN identity for terminal computations (any tnode op NaN = NaN)
+//            if (n1 instanceof XADDTNode &&
+//                xa2._expr instanceof DoubleExpr && Double.isNaN(((DoubleExpr)xa2._expr)._dConstVal)) {
+//	            return NAN;
+//	        }
+//
+//            // Infinity identities
+//            if (xa2._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa2._expr)._dConstVal) && ((DoubleExpr)xa2._expr)._dConstVal > 0) { // (xa2._expr.equals(POS_INF)) {
+//                // a1 op +inf
+//                if (op == SUM || op == MAX || (op == PROD && (n1 instanceof XADDTNode) && !((XADDTNode) n1).equals(ZERO)))
+//                    return POS_INF;
+//                    // Not sure how to handle minus and div, ignoring for now
+//                else if (op == MIN)
+//                    return a1;
+//            } else if (xa2._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa2._expr)._dConstVal) && ((DoubleExpr)xa2._expr)._dConstVal < 0) {
+//                // a1 op -inf
+//                if (op == SUM || op == MIN || (op == PROD && (n1 instanceof XADDTNode) && !((XADDTNode) n1).equals(ZERO)))
+//                    return NEG_INF;
+//                    // Not sure how to handle minus and div, ignoring for now
+//                else if (op == MAX)
+//                    return a1;
+//            }
+//        }
         
         // Handle result if both operands are terminals and one of the special
         // identities above did not hold
@@ -2357,7 +2472,8 @@ public class XADD {
 
         // Standard Reduce: getInode will handle the case of low == high
         ret = getINode(inode._var, low, high);
-
+//        ret = getINodeCanon(inode._var, low, high); Should this be made Canonical now?
+        
         // Put return value in cache and return
         _hmReduceLeafOpCache.put(new IntPair(id, leaf_op.hashCode()), ret);
         return ret;

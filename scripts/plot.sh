@@ -22,7 +22,7 @@ gnuplot -e "filename='$PROBLEM'; plotdim='$PLOTDIM';nvalue='$NVALUE'" $plot
 if [ $PLOTDIM -gt 1 ]
 then
 	#Change .dot to .pdf
-	SOLVERS="VI CRTDPFH" 
+	SOLVERS="SDP CRTDP" 
 	for i in $(seq 1 $NVALUE);
 	do	
 		for solve in $SOLVERS

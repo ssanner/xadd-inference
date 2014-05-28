@@ -93,7 +93,7 @@ public class LinearApproximationMethod extends LinearXADDMethod {
     }
 
     public int linPruneRel(int id, double relError) {
-        if (relError < XADD.PRECISION) return id;
+        if (relError <= XADD.PRECISION) return id;
         double allowErr = relError * linMaxVal(id);
         return linPrune(id, allowErr);
     }

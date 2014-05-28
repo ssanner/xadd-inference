@@ -31,7 +31,6 @@ public class Main {
     }
 
     public static void main(String args[]) {
-    	System.out.println("Main Solution Start:");
     	int nargs = args.length;
         if (nargs < 5 || nargs >6) {
             Usage();
@@ -71,7 +70,10 @@ public class Main {
         	CAMDPsolver.debugSetUp(VERBOSE);
         }
         
-        if (VERBOSE >0) System.out.println("Main Solution Start: Solving "+filename+" with solving option "+solvers[solution]+" for "+iter+" iterations and "+trials+" trials.");
+        
+        if (VERBOSE >=0) {
+        	System.out.println("Main Solution Start: Solving "+filename+" with solving option "+solvers[solution]+" for "+iter+" iterations and "+trials+" trials.");
+        }
         if (VERBOSE > 1){
             System.out.println(mdp.toString(false, false));
         }
@@ -85,14 +87,14 @@ public class Main {
             if (VERBOSE > 0) System.out.println("\nValue Iteration Solution complete, required " + used + " / " + iter + " iterations.");
             break;
              
-        case 2:
-            checkInitialS(mdp);
-            solver = new CRTDP(mdp, trials, iter);
-            used = solver.solve();
-            if (SAVE_RESULTS) solver.saveResults();
-            if (PRINT_RESULTS) solver.printResults();
-            if (VERBOSE > 0) System.out.println("\nContinuous RTDP Solution complete, " + used + " trials of depth " + iter + ".");
-            break;
+//        case 2:
+//            checkInitialS(mdp);
+//            solver = new CRTDP(mdp, trials, iter);
+//            used = solver.solve();
+//            if (SAVE_RESULTS) solver.saveResults();
+//            if (PRINT_RESULTS) solver.printResults();
+//            if (VERBOSE > 0) System.out.println("\nContinuous RTDP Solution complete, " + used + " trials of depth " + iter + ".");
+//            break;
 
         case 3:
             checkInitialS(mdp);
@@ -136,7 +138,7 @@ public class Main {
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		}
-        if (VERBOSE >0) System.out.println("MAIN-FINISH");
+        if (VERBOSE >= 0) System.out.println("MAIN-FINISH");
     }
 
     private static void checkInitialS(CAMDP mdp) {

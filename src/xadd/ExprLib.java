@@ -1642,11 +1642,19 @@ public abstract class ExprLib {
         public boolean equals(Object o) {
             if (o instanceof DoubleExpr) {
                 DoubleExpr d = (DoubleExpr) o;
-                if (this._dConstVal == d._dConstVal) return true;
-                if (Double.isNaN(this._dConstVal) && Double.isNaN(this._dConstVal)) return true;
-                Double dif = this._dConstVal - d._dConstVal;
-                if ((Double.isInfinite(dif) || Double.isNaN(dif))) return false;
-                return Math.abs(dif) < XADD.PRECISION;
+                if (XADD.PRECISION !=0){
+                	System.err.println("Warning, Ignoring non-zero XADD.PRECISION!");
+                }
+                //Using Double .equals methos handles INF and NaN correctly! (Ignoring Precision)
+                return ((Double) this._dConstVal).equals(d._dConstVal);
+
+//				  if (this._dConstVal == d._dConstVal) return true;
+//                if (Double.isNaN(this._dConstVal) && Double.isNaN(d._dConstVal)) return true;
+//                if (Double.isInfinite(this._dConstVal) && Double.isInfinite(d._dConstVal) && 
+//                		this._dConstVal*d._dConstVal > 0) return true;
+//                Double dif = this._dConstVal - d._dConstVal;
+//                if ((Double.isInfinite(dif) || Double.isNaN(dif))) return false;
+//                return Math.abs(dif) < XADD.PRECISION;
             } else
                 return false;
         }
