@@ -41,12 +41,12 @@ public class CAMDP {
     public final static boolean DISPLAY_V = true;
     public final static boolean DISPLAY_MAX = false;
     private static final boolean SILENT_PLOT = true;
-
+    
     //Prune and Linear Flags
     public double maxImediateReward;
     public boolean LINEAR_PROBLEM = true;
     public boolean CONTINUOUS_ACTIONS = true;
-    public boolean APPROX_PRUNING = true;
+    public boolean APPROX_PRUNING = false;
     public double APPROX_ERROR = 0.0d;
     public boolean APPROX_ALWAYS = false;
     public boolean COMPARE_OPTIMAL = false;
@@ -64,7 +64,7 @@ public class CAMDP {
     public final static boolean MAINTAIN_POLICY = false;
 
     /* Cache maintenance */
-    public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
+    // Unused FLAG? public final static boolean ALWAYS_FLUSH = false; // Always flush DD caches?
     public final static double FLUSH_PERCENT_MINIMUM = 0.3d; // Won't flush until < amt
 
     /* For printing */
@@ -75,6 +75,9 @@ public class CAMDP {
     /* Static variables */
     public static long _lTime; // For timing purposes
     public static Runtime RUNTIME = Runtime.getRuntime();
+    public final static int nTimers = 8;
+	public static long[] _lTimers = new long[nTimers];
+    private static final boolean EFFICIENCY_DEBUG = false;
 
     /* Local vars */
     public boolean DISPLAY_2D = false;
@@ -241,22 +244,36 @@ public class CAMDP {
             for (Map.Entry<String, CAction> me : _hmName2Action.entrySet()) {
 
                 // Regress the current value function through each action (finite number of continuous actions)
-                int regr = _qfunHelper.regress(_valueDD, me.getValue());
-                regr = _context.reduceRound(regr); // Round!
+            	ResetTimer(0);
+            	int regr = _qfunHelper.regress(_valueDD, me.getValue());
+            	if (EFFICIENCY_DEBUG) System.out.println("Regression Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
+            	ResetTimer(0);
+            	regr = _context.reduceRound(regr); // Round!
+                if (EFFICIENCY_DEBUG) System.out.println("Round Regr Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
+                
                 if (DISPLAY_POSTMAX_Q)
                     doDisplay(regr, "Q-" + me.getKey() + "^" + _nCurIter + "-" + String.format("%03d", Math.round(1000 * APPROX_ERROR)));
 
                 // Maintain running max over different actions
+                ResetTimer(0);
                 _maxDD = (_maxDD == null) ? regr : _context.apply(_maxDD, regr, XADD.MAX);
+                if (EFFICIENCY_DEBUG) System.out.println("Max Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
+                ResetTimer(0);
                 _maxDD = _context.reduceRound(_maxDD); // Round!
+                if (EFFICIENCY_DEBUG) System.out.println("Round MaxDD Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
+                ResetTimer(0);
                 _maxDD = _context.reduceLP(_maxDD); // Rely on flag XADD.CHECK_REDUNDANCY
+                if (EFFICIENCY_DEBUG) System.out.println("ReduceLP MaxDD Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
 
                 // Optional post-max approximation
-                if (APPROX_ALWAYS)
+                if (APPROX_ALWAYS && APPROX_PRUNING && APPROX_ERROR>0)
                     _maxDD = _context.linPruneRel(_maxDD, APPROX_ERROR);
 
                 // Error checking and logging
+                ResetTimer(0);
                 int canon_max_dd = _context.makeCanonical(_maxDD);
+                if (EFFICIENCY_DEBUG) System.out.println("Canoning MaxDD Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
+                
                 if (_maxDD != canon_max_dd) {
                     System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical... could be rounding, continuing.");
                     _context.exportXADDToFile(_maxDD, "ERRORdiagram1OriginalXADD.xadd");
@@ -279,21 +296,27 @@ public class CAMDP {
             // SPS: Oddly, this error is thrown and I don't know why since LP pruning
             //      should have been done immediately above... it seems reducing more
             //      than once can reduce more?  For now always reducing.
-            //if (_maxDD != _context.reduceLP(_maxDD))
-            //	ExitOnError("CAMDP VI ERROR: encountered non-reduced value function");
-
-            _valueDD = _context.reduceLP(_maxDD);
-            if (APPROX_PRUNING) {
-                long appTime = GetElapsedTime();
-                _valueDD = _context.linPruneRel(_valueDD, APPROX_ERROR);
-                long endTime = GetElapsedTime() - appTime;
-                System.out.println("Approx Finish" + _nCurIter + " Iter took: " + appTime + " pruning: " + endTime);
-                //displayGraph(_valueDD, "valPruned-" + _nCurIter+" e"+APPROX_ERROR);
+            ResetTimer(0);
+            int reduceMaxDD = _context.reduceLP(_maxDD);
+            if (EFFICIENCY_DEBUG) System.out.println("Final ReduceLP MaxDD, Time in iter "+_nCurIter+" = "+GetElapsedTime(0));
+            
+            
+            if (_maxDD != reduceMaxDD){
+            	System.err.println("CAMDP VI ERROR: encountered non-reduce maxDD.");
+            	_context.exportXADDToFile(_maxDD, "ERRORdiagram1OriginalXADD.xadd");
+            	_context.exportXADDToFile(reduceMaxDD, "ERRORdiagram2reduceLP.xadd");
+            	_context.getGraph(_maxDD).launchViewer("ERROR diagram 1: original maxDD");
+            	_context.getGraph(reduceMaxDD).launchViewer("ERROR diagram 2: reduceLP(maxDD)");
             }
 
-            System.out.println("Iter:" + _nCurIter + " Complete");
-            _logStream.println("Iter complete:" + _nCurIter + _context.getString(_valueDD));
-            doDisplay(_valueDD, "V^" + _nCurIter + "-" + String.format("%03d", Math.round(1000 * APPROX_ERROR)));
+            _valueDD = _maxDD; //_context.reduceLP(_maxDD);
+            if (APPROX_PRUNING && APPROX_ERROR > 0) {
+            	ResetTimer(0);
+                _valueDD = _context.linPruneRel(_valueDD, APPROX_ERROR);
+                long endTime = GetElapsedTime(0);
+                System.out.println("Approx Finish iter " + _nCurIter +"  pruning took: " + endTime);
+                //displayGraph(_valueDD, "valPruned-" + _nCurIter+" e"+APPROX_ERROR);
+            }
 
             //////////////////////////////////////////////////////////////////////////
             // Value iteration statistics
@@ -303,6 +326,11 @@ public class CAMDP {
             num_leaves[_nCurIter] = _context.getLeafCount(_valueDD);
             num_branches[_nCurIter] = _context.getBranchCount(_valueDD);
 
+            System.out.println("Iter:" + _nCurIter + " Complete. Took: "+time[_nCurIter]+"ms, Nodes = "+num_nodes[_nCurIter]+", Memory = "+MemDisplay() +" bytes.");
+            _logStream.println("Iter complete:" + _nCurIter + _context.getString(_valueDD));
+            doDisplay(_valueDD, "V^" + _nCurIter + (APPROX_PRUNING?"":"-" + String.format("%03d", Math.round(1000 * APPROX_ERROR)) ));
+
+            
             double maxVal = 0d;
             double maxRelErr = 0d;
             if (LINEAR_PROBLEM) {
@@ -629,6 +657,17 @@ public class CAMDP {
         return System.currentTimeMillis() - _lTime;
     }
 
+    // Reset elapsed time
+    public static void ResetTimer(int n) {
+        _lTimers[n] = System.currentTimeMillis();
+    }
+
+    // Get the elapsed time since resetting the timer
+    public static long GetElapsedTime(int n) {
+        return System.currentTimeMillis() - _lTimers[n];
+    }
+    
+    
     public static String MemDisplay() {
         long total = RUNTIME.totalMemory();
         long free = RUNTIME.freeMemory();

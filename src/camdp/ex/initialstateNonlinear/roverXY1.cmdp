@@ -40,7 +40,7 @@ reward ([x*x + y*y < 4]
 
 endaction
 discount 1.0000000
-initialState (5.2 1.2) (false)
+initialState (1.2 1.2) (false)
 iterations 10
 NONLINEAR
 MAXREWARD 4.0

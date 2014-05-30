@@ -45,7 +45,7 @@ public class LinearXADDMethod {
 
     //Linear Flags
     private static final boolean ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP = false; //Add bounds as explicit constraints (should not be necessary)
-    private static final boolean WARN_INFEASIBLE_REGIONS = false; //Add bounds as explicit constraints (should not be necessary)
+    private static final boolean WARN_INFEASIBLE_REGIONS = true; //Add bounds as explicit constraints (should not be necessary)
 
     public LinearXADDMethod(int localRoot, XADD global) {
         context = global;
@@ -336,9 +336,11 @@ public class LinearXADDMethod {
         double opt_val = lp._dObjValue;
 
         if (lp._status == LpSolve.INFEASIBLE) {
-        	if (WARN_INFEASIBLE_REGIONS) System.err.println("Warning: Infeasible region found maximizing linear XADD.");
-//          System.err.println("Decisions: "+domain);
-//          showDecList(domain);
+        	if (WARN_INFEASIBLE_REGIONS) {
+        		System.err.println("Warning: Infeasible region found maximizing linear XADD.");
+		        System.err.println("Decisions: "+domain);
+		        showDecList(domain);
+        	}
             opt_val = isMax? Double.NEGATIVE_INFINITY: Double.POSITIVE_INFINITY;
         }
         if (lp._status == LpSolve.UNBOUNDED) {
@@ -369,7 +371,7 @@ public class LinearXADDMethod {
         Decision temp = context._alOrder.get(Math.abs(dec));
         System.out.print("dec = " + dec + " : " + temp);
         if (temp instanceof ExprDec)
-            System.out.println(" evals to :" + localEvaluateExpr(((ExprDec) temp)._expr._lhs, soln));
+            System.out.println(", LHS evals to :" + localEvaluateExpr(((ExprDec) temp)._expr._lhs, soln));
         else System.out.println();
     }
 

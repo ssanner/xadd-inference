@@ -363,4 +363,4 @@ discount 1.0000000
 InitialState (1 12.5) (true false false false false false false false) 
 iterations 10
 LINEAR
-MAXREWARD 45
+MAXREWARD 21
