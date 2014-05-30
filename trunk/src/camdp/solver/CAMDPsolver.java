@@ -65,7 +65,7 @@ public abstract class CAMDPsolver {
 	/* Time & Memory Management */
 	public final static int nTimers = 8;
 	public long[] _lTime = new long[nTimers];
-	public Runtime RUNTIME = Runtime.getRuntime();
+	//public Runtime RUNTIME = Runtime.getRuntime();
 	
 	/*Solution maintenance */
 	public int[] solutionDDList = null;

@@ -34,19 +34,20 @@ import xadd.XADD.XADDINode;
 public class ReduceLPContext {
 	
     //ReduceLP Flags
-    private final static boolean DEFAULT_CHECK_REDUNDANCY = false;//true; // Test only consistency or also redundancy
+    private final static boolean DEFAULT_CHECK_REDUNDANCY = true; // Test only consistency or also redundancy
     private final static boolean USE_REDUCE_LPv1 = false;//false; //maplist, full redundancy older version
     private final static boolean USE_REDUCE_LPv2 = true;//true; //hashSet, result implied redundancy new version
-    private final static boolean SKIP_TEST2 = true; //Skip Minimal region removal
+    private final static boolean SKIP_TEST2 = false; //Skip Minimal region removal. Currenty test2 is very effective in reducing size even at very small slack.
+    private static final double IMPLIED_PRECISION_T2 = 1e-40;// XADD.PRECISION;//1e-4; //Precision for removing unreliably feasible constraints
+    
     public static final boolean SINGLE_PATH_IMPLIED_RESULT = false; //Stop search if need to check more than one path
 
     private static final boolean ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP = false; //Add bounds as explicit constraints (should not be necessary)
     //Debug Flags
     public final static boolean DEBUG_CONSTRAINTS = false;
-    public final static boolean QUIET = true;
+    public final static boolean TEST2_INCONSIST_QUIET = true;
 
-    //ReduceLP Constants
-    private static final double IMPLIED_PRECISION = 1e-4; //Precision for removing unreliably feasible constraints
+    
 
     //Implication Caches
     //ReduceLPv1
@@ -562,7 +563,7 @@ public class ReduceLPContext {
 
         //Redundancy simplification 2 - search for node check if one node is the impliedResult on the other branch.
         // The complete test (v3?) would be to test if one subtree can replace the other (considering the decision to be removed) - requires
-        // am XADD equivalence under constraints test.
+        // an XADD equivalence under constraints test.
         //Call to check if given the test_dec decisions subtree always reaches "goal", which means that
         // if the node above the subtree is chosing between subtree or goal, we can leave subtree in its place (it will reach still
         // reach goal whenever the first decision would take it to goal.
@@ -647,6 +648,7 @@ public class ReduceLPContext {
             int nvars = nLocalCVars;
             double[] obj_coef = new double[nvars];
             //Test 1:
+            // Test 1 is unrealiable, somehow many reportedly feasible do not pass test 2
             //A => B iff A^~B is infeasible) -maximize arbitrary 1 function
 
             // Setup LP
@@ -714,14 +716,14 @@ public class ReduceLPContext {
             soln2 = silentSolvelp(lp2);
             double maxSlack = lp2._dObjValue;
 
-            if (lp2._status == LpSolve.UNBOUNDED) {
-            } else if (lp2._status == LpSolve.INFEASIBLE) {
-                if (!QUIET){
+            
+            if (lp2._status == LpSolve.INFEASIBLE) {
+                if (!TEST2_INCONSIST_QUIET){
                 	System.err.println("Infeasible at test 2? should have failed the first test!");
                 	showDecListEval(test_dec, soln);
                 }
                 infeasible = true;
-            } else if (maxSlack < IMPLIED_PRECISION) {
+            } else if (maxSlack < IMPLIED_PRECISION_T2) {
                 if (DEBUG_CONSTRAINTS) {
                     System.out.println("Implied only by test 2: Slack = " + soln2[nvars]);
                     //remove slack from soln2 to be a local assign sol

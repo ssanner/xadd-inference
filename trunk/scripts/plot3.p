@@ -80,11 +80,11 @@ if (plotdim == 3){
 	do for[h=1:nvalue]{
 		do for [i=1:words(SOLVERS)]{
 		  
-    		set xlabel "time" offset -8 textcolor ls 11
+    		set xlabel "time" offset -8
 #    		set xtics 30
-    		set ylabel "energy" offset 0 textcolor ls 11
+    		set ylabel "energy" offset 0
 #    		set ytics 30
-    		set zlabel "Value" offset -3 textcolor ls 11
+    		set zlabel "Value" offset -3
 #            set ztics h*50
 			set title sprintf("%s-%s-Value%d.",filename,word(SOLVERS,i),h)
 			set output sprintf("%s-%s-Value%d.%s",filename, word(SOLVERS,i),h, format)
