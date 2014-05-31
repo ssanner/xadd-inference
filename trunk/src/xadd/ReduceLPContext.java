@@ -723,7 +723,7 @@ public class ReduceLPContext {
                 	showDecListEval(test_dec, soln);
                 }
                 infeasible = true;
-            } else if (maxSlack < IMPLIED_PRECISION_T2) {
+            } else if (lp2._status != LpSolve.UNBOUNDED && maxSlack < IMPLIED_PRECISION_T2) {
                 if (DEBUG_CONSTRAINTS) {
                     System.out.println("Implied only by test 2: Slack = " + soln2[nvars]);
                     //remove slack from soln2 to be a local assign sol
