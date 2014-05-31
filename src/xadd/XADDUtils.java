@@ -169,10 +169,11 @@ public class XADDUtils {
                                 HashMap<String, Double> static_dvars, String xVar, String title) {
 
         PrintStream ps = null;
-        String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "").replace(".dot", "") + ".txt";
+        String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace("[", "").replace("]", "").replace(":", "_").replace(" ", "").replace(".dot", "") + ".txt";
         title = RemovePathAndExt(title);
         try {
             ps = new PrintStream(new FileOutputStream(filename));
+            System.err.println("Exported to: " + new File(filename).getAbsolutePath());
         } catch (Exception e) {
             System.err.println("Could not open " + filename + " for data export.");
             ps = new DevNullPrintStream();
@@ -196,6 +197,7 @@ public class XADDUtils {
 
             alY.add(y);
             ps.println(x + "\t" + y);
+            System.out.println(x + "\t" + y);
 
             if (Double.isInfinite(y))
                 num_inf_points++;
@@ -276,7 +278,7 @@ public class XADDUtils {
 
         static_dvars = new HashMap<String, Double>(static_dvars);
         PrintStream ps = null;
-        String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "").replace(".dot", "") + ".txt";
+        String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace("[", "").replace("]", "").replace(":", "_").replace(" ", "").replace(".dot", "") + ".txt";
         ;
         title = RemovePathAndExt(title);
         try {
@@ -411,7 +413,7 @@ public class XADDUtils {
         }
 
         PrintStream ps = null;
-        String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "").replace(".dot", "") + ".txt";
+        String filename = title.replace('^', '_').replace("(", "").replace(")", "").replace("[", "").replace("]", "").replace(":", "_").replace(" ", "").replace(".dot", "") + ".txt";
         title = RemovePathAndExt(title);
         try {
             ps = new PrintStream(new FileOutputStream(filename));
