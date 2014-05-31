@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 import camdp.HierarchicalParser;
@@ -19,6 +20,9 @@ import xadd.ExprLib.*;
 
 public class STPPD {
 
+	public final static boolean SHOW_GRAPHS = false;
+	public final static boolean SHOW_PLOTS  = false;
+	
 	public final static boolean DISPLAY = true;
 	
 	public XADD _context = null;
@@ -110,8 +114,22 @@ public class STPPD {
 	        int projected_factor = minOutVar(factor_with_var, var);
 	        projected_factor = _context.reduceLP(projected_factor);
 	        System.out.println(" - pre-projection factor size: " + _context.getNodeCount(factor_with_var) + ", vars: " + _context.collectVars(factor_with_var).size() + " " + _context.collectVars(factor_with_var));
-	        //_context.getGraph(projected_factor).launchViewer("Projected factor " + projected_factor);
+	        if (SHOW_GRAPHS)
+	        	_context.getGraph(factor_with_var).launchViewer("Pre-projected factor " + _context.collectVars(factor_with_var)/* + factor_with_var*/);
 	        System.out.println(" - post-projection factor size: " + _context.getNodeCount(projected_factor) + ", vars: " + _context.collectVars(projected_factor).size() + " " + _context.collectVars(projected_factor));
+	        if (SHOW_GRAPHS)
+	        	_context.getGraph(projected_factor).launchViewer("Post-projected factor " + _context.collectVars(projected_factor)/* + projected_factor*/);
+
+	        // Show plots of functions
+	        if (SHOW_PLOTS && _context.collectVars(factor_with_var).size() == 2 && !_context.collectVars(factor_with_var).removeAll(_context._alBooleanVars)) {
+		        Iterator<String> vars = _context.collectVars(factor_with_var).iterator();
+		        String var1 = vars.next();
+		        String var2 = vars.next();
+		        XADDUtils.Plot3DSurfXADD(_context, factor_with_var, -50, 1, 50, -50, 1, 50, var1, var2, "Pre-projected factor " + _context.collectVars(factor_with_var));
+		        XADDUtils.Plot3DSurfXADD(_context, projected_factor, -50, 1, 50, -50, 1, 50, var1, var2, "Post-projected factor " + _context.collectVars(projected_factor));
+		        XADDUtils.PlotXADD(_context, projected_factor, -50, 1, 50, _context.collectVars(projected_factor).iterator().next(), "Post-projected factor " + _context.collectVars(projected_factor));
+	        }
+	        
 	        factors.clear();
 	        factors.addAll(factors_without_var);
 	        factors.add(projected_factor);
@@ -347,6 +365,18 @@ public class STPPD {
     }
 
     // ===============================================================================
+
+    public void testReduceLP() {
+    	String j1 = "t1";
+    	double lb = 10;
+    	double ub = 20;
+        int cons = ParseXADDString(_context, "([" + j1 + " >= " + lb + "] ([" + j1 + " <= " + ub + "] ([0]) ([Infinity])) ([Infinity]))");
+        _context.getGraph(cons).launchViewer("Test Constraint Pre-reduce");
+        cons = _context.reduceLP(cons);
+        _context.getGraph(cons).launchViewer("Test Constraint Post-reduce");
+    }
+
+    // ===============================================================================
     
     public static void main(String[] args) throws Exception {
     	
@@ -355,8 +385,9 @@ public class STPPD {
     	
     	if (DISPLAY) stn.getConstraintGraph(stn._alAllFactors).launchViewer("Constraint factor graph");
 
-        stn.solveBucketElim();
-        stn.solveMonolithic();
+    	stn.testReduceLP();
+        //stn.solveBucketElim();
+        //stn.solveMonolithic();
     }
 
     public static STPPD BuildSimpleSTPPD(boolean additive_obj) throws Exception {
@@ -410,5 +441,4 @@ public class STPPD {
 		
 		return stn;
     }
-
 }
