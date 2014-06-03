@@ -407,6 +407,7 @@ public abstract class ExprLib {
             new_lhs = (ArithExpr) new_lhs.makeCanonical();
             if (XADD.NORMALIZE_DECISIONS) {
                 if (new_lhs instanceof OperExpr) {
+                	// Normalize uses the first coefficient, to divide all, this may lead to problem if the coefficients are later reordered 
                     new_lhs = ((OperExpr) new_lhs).normalize();
                     new_lhs = new_lhs.round();
                 }
@@ -1010,14 +1011,18 @@ public abstract class ExprLib {
                 return true;
 
             if (_type == ArithOperation.SUM) {
-                // Ensure all subterms are canonical
+
+            	//Error doesn't check for more than one term with the same variables!
+                HashSet<ArithExpr> seenVars = new HashSet<ArithExpr>();
+
+            	// Ensure all subterms are canonical
                 for (int i = 0; i < _terms.size(); i++) {
 
                     // First term can be a constant so long as more than one
                     // term
                     if (i == 0 && (_terms.get(0) instanceof DoubleExpr)) {
                         ((DoubleExpr) _terms.get(0)).round();
-                        if (Math.abs(((DoubleExpr) _terms.get(0))._dConstVal) < XADD.PRECISION)
+                        if (Math.abs(((DoubleExpr) _terms.get(0))._dConstVal) <= XADD.PRECISION)
                             return false;
                         else
                             continue;
@@ -1030,6 +1035,15 @@ public abstract class ExprLib {
                         // _terms.get(i).getClass());
                         return false;
                     }
+                    
+                    //Detect var
+                    OperExpr term = (OperExpr) _terms.get(i);
+                    ArrayList<ArithExpr> termlist = new ArrayList<ArithExpr>(term._terms); //make a copy to avoid changing decisions
+                    if (!(termlist.get(0) instanceof DoubleExpr))
+                    	return false;
+                    termlist.remove(0); //remove Double constant to obtain var name
+                    OperExpr Var = new OperExpr(term._type, termlist);
+                    if (!seenVars.add(Var)) return false; //repeated var
                 }
 
                 return true;
@@ -1052,7 +1066,7 @@ public abstract class ExprLib {
                     return false;
 
                 ((DoubleExpr) _terms.get(0)).round();
-                if (Math.abs(((DoubleExpr) _terms.get(0))._dConstVal) < XADD.PRECISION)
+                if (Math.abs(((DoubleExpr) _terms.get(0))._dConstVal) <= XADD.PRECISION)
                     return false;
 
                 for (int i = 1; i < _terms.size(); i++) {
@@ -1087,7 +1101,7 @@ public abstract class ExprLib {
 
             // A simple non-canonical case is OperExpr - 0, so catch this
             if (_type == ArithOperation.MINUS && _terms.get(1) instanceof DoubleExpr
-                    && Math.abs(((DoubleExpr) _terms.get(1))._dConstVal) < XADD.PRECISION) {
+                    && Math.abs(((DoubleExpr) _terms.get(1))._dConstVal) <= XADD.PRECISION) {
                 return _terms.get(0).makeCanonical();
             }
 
@@ -1336,7 +1350,7 @@ public abstract class ExprLib {
                 } else System.out.println("not even t2 is Double: suspicious:" + normConst);
             }
 
-            if (Math.abs(normConst - 1) < XADD.PRECISION) {
+            if (Math.abs(normConst - 1) <= XADD.PRECISION) {
                 return this;
             }
             newTerms.add(normal);

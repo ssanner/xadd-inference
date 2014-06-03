@@ -1,0 +1,34 @@
+cvariables (x1)
+min-values (-10)
+max-values (10)
+bvariables ()
+nvariables()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables()
+
+action stay
+x1' ([x1])
+reward 
+([- x1 *x1])
+endaction
+
+action down1
+x1' ([x1 - 1])
+reward 
+([- x1 *x1])
+endaction
+
+action up1
+x1' ([x1 + 1])
+reward 
+([- x1 *x1])
+endaction
+
+discount 1.0000000
+InitialState (3.101) () 
+iterations 10
+NONLINEAR
+MAXREWARD 0

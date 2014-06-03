@@ -28,7 +28,7 @@ public class TestXADD {
      */
 
     public static void main(String[] args) throws Exception {
-        main4(args);
+        main3(args);
 //        TestPolyOps();
     }
 
@@ -64,9 +64,11 @@ public class TestXADD {
     public static void main3(String[] args) throws Exception {
         XADD xadd_context = new XADD();
         int expr1 = TestBuild(xadd_context, "./src/xadd/ex/xadd_sq_test.xadd");
+        xadd_context.getGraph(expr1).launchViewer();
+        XADDUtils.PlotXADD(xadd_context, expr1, -10, 0.1, -5, "x", "Original expression");
+        
         int reduced_e1 = xadd_context.reduceLP(expr1);
         xadd_context.getGraph(reduced_e1).launchViewer();
-
         // Reducing with LP constraint checking
         XADDUtils.PlotXADD(xadd_context, reduced_e1, -10, 0.1, -5, "x", "Reduced expression");
 

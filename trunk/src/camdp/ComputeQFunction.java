@@ -86,7 +86,7 @@ public class ComputeQFunction {
         // Optional Display
         _camdp._logStream.println("- Q^" + _camdp._nCurIter + "(" + a._sName + ", " + a._actionParams + " )\n" + _context.getString(q));
         if (CAMDP.DISPLAY_PREMAX_Q) {
-            _camdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "^" + _camdp._nCurIter + "-" + Math.round(1000 * _camdp.APPROX_ERROR));
+            _camdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "^" + _camdp._nCurIter + _camdp.makeApproxLabel() );
         }
         // Noise handling
         if (a._noiseVars.size() == 0) {
@@ -162,6 +162,7 @@ public class ComputeQFunction {
                             _camdp._hmContRegrCache.put(new IntTriple(_contRegrKey), actionReplace);
                         }
 
+//                        System.out.println("Warning using Continuous Action discretezation;");
                         maximizedTree = (maximizedTree == null) ? actionReplace :
                                 _context.apply(maximizedTree, actionReplace, XADD.MAX);
                         maximizedTree = _context.reduceRound(maximizedTree); // Round!
@@ -182,7 +183,7 @@ public class ComputeQFunction {
                 }
 
                 if (CAMDP.DISPLAY_PREMAX_Q) {
-                    _camdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "-End^" + _camdp._nCurIter + "-" + Math.round(1000 * _camdp.APPROX_ERROR));
+                    _camdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "-End^" + _camdp._nCurIter + _camdp.makeApproxLabel());
                 }
             }
 
@@ -199,6 +200,7 @@ public class ComputeQFunction {
         //	q = _context.reduceLP(q);
         //}
 
+        //Returning non-Standard DD (to be standarized in CAMDP)
         return q;
     }
 

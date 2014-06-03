@@ -112,20 +112,20 @@ public class Main {
             if (PRINT_RESULTS) solver.printResults();
             System.out.println();
             
-            System.out.println("RTDP");
-            checkInitialS(mdp);
-            solver = new CRTDP(mdp, trials, iter);
-            int used2 = solver.solve();
-            if (SAVE_RESULTS) solver.saveResults();
-            if (PRINT_RESULTS) solver.printResults();
-            System.out.println();
+//            System.out.println("RTDP");
+//            checkInitialS(mdp);
+//            solver = new CRTDP(mdp, trials, iter);
+//            int used2 = solver.solve();
+//            if (SAVE_RESULTS) solver.saveResults();
+//            if (PRINT_RESULTS) solver.printResults();
+//            System.out.println();
             
             System.out.println("RTDPFH");
             solver = new CRTDPFH(mdp, trials, iter);
             int used3 = solver.solve();
             if (SAVE_RESULTS) solver.saveResults();
             if (PRINT_RESULTS) solver.printResults();
-            if (VERBOSE > 0) System.out.println("\nTriple solution complete, VI used "+used1+ ", RTDP used "+used2+" RTDPFH used "+used3);
+            if (VERBOSE > 0) System.out.println("\nTriple solution complete, VI used "+used1+ ", RTDPFH used "+used3);
             break;            
             
     default:

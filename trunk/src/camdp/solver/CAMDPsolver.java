@@ -290,6 +290,16 @@ public abstract class CAMDPsolver {
     		System.err.println("Couldn't create result Stream for: "+OUTPUT_DIR+"/"+solveMethod+"\nException:"+e);
     	}
     }
+    public String makeResultFile(int iter){
+    	String fullFile = mdp._problemFile;
+    	String[] filenameList = fullFile.split("/");
+    	int nwords = filenameList.length;
+    	String problemName = filenameList[nwords-1].substring(0,(filenameList[nwords-1]).length() -5);
+    	String className = filenameList[nwords-2];
+    	OUTPUT_DIR = RESULTS_DIR +"/"+ className +"/"+problemName;
+		return OUTPUT_DIR+"/"+solveMethod+iter+".xadd";
+    }
+
     public abstract void setupResults();
     public abstract void printResults();
     public abstract void saveResults();
@@ -314,45 +324,7 @@ public abstract class CAMDPsolver {
 	}
 	public abstract void flushCaches(List<Integer> specialNodes);
 	
-	////////// DD Property Tests /////////////////////////
-	//	DD Property checking	
-	public int standardizeDD(int dd){
-		// ROUNDING IS DISABLED dd = context.reduceRound(dd); checkRound(dd);
-		dd = context.makeCanonical(dd); checkCanon(dd);
-		if (mdp.LINEAR_PROBLEM) {dd = context.reduceLP(dd); checkReduceLP(dd);}
-		return dd;
-	}
-	protected void checkRound(int dd) {
-		int roundDD = context.reduceRound(dd);
-		if (roundDD != dd){
-			System.err.println("Check Round fail");
-			context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
-			context.getGraph(roundDD).launchViewer("ERROR diagram 2: reduceRound(DD)");
-		}
-	}
-	protected void checkCanon(int dd) {
-		//Error checking and logging
-		int canonDD = context.makeCanonical(dd);
-		if (dd != canonDD) {
-			System.err.println("Check Canon fail: OriDD: "+dd+" size = "+context.getNodeCount(dd)+", Canon DD Size="+context.getNodeCount(canonDD));
-			if (!SILENCE_ERRORS) context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
-			if (!SILENCE_ERRORS) context.getGraph(canonDD).launchViewer("ERROR diagram 2: makeCanonical(DD)");
-		}
-	}
-	protected void checkReduceLP(int dd) {
-		//Error checking and logging
-		int reduLPDD = context.reduceLP(dd);
-		if (dd != reduLPDD) {
-			System.err.println("Check ReduceLP fail");
-			context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
-			context.getGraph(reduLPDD).launchViewer("ERROR diagram 2: reduceLP(DD)");
-		}
-	}
-	protected int approximateDD(int dd){
-		if (mdp.LINEAR_PROBLEM && APPROXIMATION)
-			dd = context.linPruneRel(dd, APPROX_ERROR);
-		return dd;
-	}
+
 	
 	public void save3D(int xadd_id, String label) {
         // If DISPLAY_3D is enabled, it is expected that necessary parameters

@@ -44,7 +44,9 @@ public class XADD {
     public final static boolean USE_CANONICAL_NODES = true; // Store nodes in canonical format?
     public final static boolean NORMALIZE_DECISIONS = true; //Store decision with normalized coefficients?
 	private static final boolean USE_APPLY_GET_INODE_CANON = false;
-    
+	private static final boolean TEST_CANON_METHODS = false;
+
+	
     private static final boolean WARN_BOUND_UNUSED_VAR = false;
     private static final boolean WARN_INODE_CANON_NEG_DEC = false;
     public final static int MAX_BRANCH_COUNT = 1000000;
@@ -388,20 +390,25 @@ public class XADD {
     		if (WARN_INODE_CANON_NEG_DEC) System.out.println("Warning: Canonizing Negative Decision:"+var+" =>"+_alOrder.get(Math.abs(var)));
     		return getINodeCanon(-var, high, low);
     	}
-    	int result1 = getINodeCanonApplyTrick(var, low, high);        
-    	int result2 = getINodeCanonInsert(var,low,high);
-    		
-    	if (result1 != result2 && result1 != NAN){
-			System.out.println("Canonical Error (Difference not on NAN):");
-			System.out.println("PROD Result:");
-			System.out.println(getExistNode(result1));
-			System.out.println("New Canon:");
-			System.out.println(getExistNode(result2));
-		
-			getINodeCanonApplyTrick(var, low, high);
-			getINodeCanonInsert(var,low,high);
+    	
+    	if (TEST_CANON_METHODS){
+			int result1 = getINodeCanonApplyTrick(var, low, high);        
+			int result2 = getINodeCanonInsert(var,low,high);
+				
+			if (result1 != result2 && result1 != NAN){
+				System.out.println("Canonical Error (Difference not on NAN):");
+				System.out.println("PROD Result:");
+				System.out.println(getExistNode(result1));
+				System.out.println("New Canon:");
+				System.out.println(getExistNode(result2));
+			
+				getINodeCanonApplyTrick(var, low, high);
+				getINodeCanonInsert(var,low,high);
+			}
+			return (USE_APPLY_GET_INODE_CANON)? result1: result2;
     	}
-    	return (USE_APPLY_GET_INODE_CANON)? result1: result2;
+    	else 
+    		return (USE_APPLY_GET_INODE_CANON)? getINodeCanonApplyTrick(var, low, high): getINodeCanonInsert(var,low,high);
     }
 
     public int getINodeCanonApplyTrick(int var, int low, int high) {
@@ -904,7 +911,7 @@ public class XADD {
             	return NEG_INF;
             else if (op == MIN)
                     return a1;
-        } else if (a1 == NEG_INF) {
+        } else if (a2 == NEG_INF) {
                 // -inf op a2
         	if (op == SUM || op == MIN)
                     return NEG_INF;
@@ -1179,9 +1186,8 @@ public class XADD {
     // NOTE: can only linearize decisions that have one quadratic variable,
     //       otherwise have to complete the square symbolically and take
     //       a symbolic square root of an XADD... OK except that no longer
-
-    // Linearize unidimensional quadratics
     //       a polynomial for purposes of current code.
+    // Linearize unidimensional quadratics
     public int reduceLinearize(int node_id) {
         node_id = reduceLinearizeInt(node_id);
         return makeCanonical(node_id); // Redundant for current code, but may add new linearizations
