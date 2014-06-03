@@ -41,6 +41,8 @@ public class CAMDP {
     public final static boolean DISPLAY_V = true;
     public final static boolean DISPLAY_MAX = false;
     private static final boolean SILENT_PLOT = true;
+    private static final boolean DONT_SHOW_HUGE_GRAPHS = true;
+    private static final int MAXIMUM_XADD_DISPLAY_SIZE = 500;
     
     //Prune and Linear Flags
     public double maxImediateReward;
@@ -247,76 +249,37 @@ public class CAMDP {
             	ResetTimer(0);
             	int regr = _qfunHelper.regress(_valueDD, me.getValue());
             	if (EFFICIENCY_DEBUG) System.out.println("Regression Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
-            	ResetTimer(0);
-            	regr = _context.reduceRound(regr); // Round!
-                if (EFFICIENCY_DEBUG) System.out.println("Round Regr Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
-                
-                if (DISPLAY_POSTMAX_Q)
-                    doDisplay(regr, "Q-" + me.getKey() + "^" + _nCurIter + "-" + String.format("%03d", Math.round(1000 * APPROX_ERROR)));
+            	regr = standardizeDD(regr); 
+            	if (DISPLAY_POSTMAX_Q)
+                    doDisplay(regr, "Q-" + me.getKey() + "^" + _nCurIter + makeApproxLabel());
 
                 // Maintain running max over different actions
                 ResetTimer(0);
                 _maxDD = (_maxDD == null) ? regr : _context.apply(_maxDD, regr, XADD.MAX);
-                if (EFFICIENCY_DEBUG) System.out.println("Max Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
-                ResetTimer(0);
-                _maxDD = _context.reduceRound(_maxDD); // Round!
-                if (EFFICIENCY_DEBUG) System.out.println("Round MaxDD Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
-                ResetTimer(0);
-                _maxDD = _context.reduceLP(_maxDD); // Rely on flag XADD.CHECK_REDUNDANCY
-                if (EFFICIENCY_DEBUG) System.out.println("ReduceLP MaxDD Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
+                _maxDD = standardizeDD(_maxDD);
+                if (EFFICIENCY_DEBUG) System.out.println("Standardize MaxDD Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
 
                 // Optional post-max approximation
-                if (APPROX_ALWAYS && APPROX_PRUNING && APPROX_ERROR>0)
-                    _maxDD = _context.linPruneRel(_maxDD, APPROX_ERROR);
-
-                // Error checking and logging
-                ResetTimer(0);
-                int canon_max_dd = _context.makeCanonical(_maxDD);
-                if (EFFICIENCY_DEBUG) System.out.println("Canoning MaxDD Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
-                
-                if (_maxDD != canon_max_dd) {
-                    System.err.println("CAMDP VI ERROR: encountered non-canonical node that should have been canonical... could be rounding, continuing.");
-                    _context.exportXADDToFile(_maxDD, "ERRORdiagram1OriginalXADD.xadd");
-                    _context.exportXADDToFile(canon_max_dd, "ERRORdiagram2makeCanonical.xadd");
-                    _context.getGraph(_maxDD).launchViewer("ERROR diagram 1: original maxDD");
-                    _context.getGraph(canon_max_dd).launchViewer("ERROR diagram 2: makeCanonical(maxDD)");
-                    _context.makeCanonical(_maxDD);
-                    _maxDD = canon_max_dd;
-
-                    //ExitOnError("CAMDP VI ERROR: encountered non-canonical node that should have been canonical:\n" +
-                    //			_context.getString(_maxDD) + "\nvs.\n" + _context.getString(_maxDD));
+                if (APPROX_ALWAYS){
+                	ResetTimer(0);
+                	_maxDD = approximateDD(_maxDD);
+                	_maxDD = standardizeDD(_maxDD);
+                	if (EFFICIENCY_DEBUG) System.out.println("Approx Always & Standardize Time for "+me.getKey()+" in iter "+_nCurIter+" = "+GetElapsedTime(0));
                 }
+                
                 if (DISPLAY_MAX)
-                    doDisplay(_maxDD, "QMax^" + _nCurIter + "-" + String.format("%03d", Math.round(1000 * APPROX_ERROR)));
+                    doDisplay(_maxDD, "QMax^" + _nCurIter + makeApproxLabel() );
                 _logStream.println("Running max in iter " + _nCurIter + ":" + _context.getString(_maxDD));
-
                 flushCaches();
             }
-
-            // SPS: Oddly, this error is thrown and I don't know why since LP pruning
-            //      should have been done immediately above... it seems reducing more
-            //      than once can reduce more?  For now always reducing.
+            checkReduceLP(_maxDD);
+            // _maxDD should already be Canonical/LPpruned, check
+            _valueDD = _maxDD;
+            checkStandardDD(_valueDD);
+            
             ResetTimer(0);
-            int reduceMaxDD = _context.reduceLP(_maxDD);
-            if (EFFICIENCY_DEBUG) System.out.println("Final ReduceLP MaxDD, Time in iter "+_nCurIter+" = "+GetElapsedTime(0));
-            
-            
-            if (_maxDD != reduceMaxDD){
-            	System.err.println("CAMDP VI ERROR: encountered non-reduce maxDD.");
-            	_context.exportXADDToFile(_maxDD, "ERRORdiagram1OriginalXADD.xadd");
-            	_context.exportXADDToFile(reduceMaxDD, "ERRORdiagram2reduceLP.xadd");
-            	_context.getGraph(_maxDD).launchViewer("ERROR diagram 1: original maxDD");
-            	_context.getGraph(reduceMaxDD).launchViewer("ERROR diagram 2: reduceLP(maxDD)");
-            }
-
-            _valueDD = _maxDD; //_context.reduceLP(_maxDD);
-            if (APPROX_PRUNING && APPROX_ERROR > 0) {
-            	ResetTimer(0);
-                _valueDD = _context.linPruneRel(_valueDD, APPROX_ERROR);
-                long endTime = GetElapsedTime(0);
-                System.out.println("Approx Finish iter " + _nCurIter +"  pruning took: " + endTime);
-                //displayGraph(_valueDD, "valPruned-" + _nCurIter+" e"+APPROX_ERROR);
-            }
+            _valueDD = approximateDD(_valueDD);
+            if (EFFICIENCY_DEBUG && APPROX_PRUNING) System.out.println("Approximation Finish on iter " + _nCurIter +"  pruning took: " + GetElapsedTime(0));
 
             //////////////////////////////////////////////////////////////////////////
             // Value iteration statistics
@@ -328,53 +291,51 @@ public class CAMDP {
 
             System.out.println("Iter:" + _nCurIter + " Complete. Took: "+time[_nCurIter]+"ms, Nodes = "+num_nodes[_nCurIter]+", Memory = "+MemDisplay() +" bytes.");
             _logStream.println("Iter complete:" + _nCurIter + _context.getString(_valueDD));
-            doDisplay(_valueDD, "V^" + _nCurIter + (APPROX_PRUNING?"":"-" + String.format("%03d", Math.round(1000 * APPROX_ERROR)) ));
+            doDisplay(_valueDD, "V^" + _nCurIter + makeApproxLabel());
 
-            
-            double maxVal = 0d;
-            double maxRelErr = 0d;
-            if (LINEAR_PROBLEM) {
-                maxVal = _context.linMaxVal(_valueDD);
-                optimalMaxValueList.add(maxVal);
-                if (COMPARE_OPTIMAL) {
-                    if (APPROX_ERROR == 0d) { //Exact solution
-                        if (optimalDDList.size() != _nCurIter - 1)
-                            System.err.println("Incorrect optimalDD:" + optimalDDList + " " + _nCurIter);
-                        optimalDDList.add(_valueDD);
-                    }
-                    if (optimalDDList.size() > _nCurIter - 1) {
-                        maxRelErr = (_context.linMaxDiff(optimalDDList.get(_nCurIter - 1), _valueDD)) / optimalMaxValueList.get(_nCurIter);
+            if (LINEAR_PROBLEM && APPROX_PRUNING){
+            	double maxVal = _context.linMaxVal(_valueDD);;
+            	double maxRelErr = Double.NaN;
+            	if (COMPARE_OPTIMAL) {
+            		if (APPROX_ERROR == 0d) { //Exact solution
+            			optimalMaxValueList.add(maxVal);
+            			if (optimalDDList.size() != _nCurIter - 1)
+            				System.err.println("Incorrect optimalDD:" + optimalDDList + " " + _nCurIter);
+            			optimalDDList.add(_valueDD);
+            		}
+            		if (optimalDDList.size() > _nCurIter - 1) {
+                    	maxRelErr = (_context.linMaxDiff(optimalDDList.get(_nCurIter - 1), _valueDD)) / optimalMaxValueList.get(_nCurIter);
                     } else maxRelErr = -1;
                 }
-            }
-            _logStream.println("Value function size @ end of iteration " + _nCurIter +
-                    ": " + num_nodes[_nCurIter] + " nodes = " +
-                    num_branches[_nCurIter] + " cases" + " in " + time[_nCurIter] + " ms");
-
-            //APPROX_TEST LOG, outputs: iter, #node, #branches, #UsedMem(MB), IterTime, TotTime, MaxVal, RelErr
-
-            if (LINEAR_PROBLEM && APPROX_PRUNING) {
+              //APPROX_TEST LOG, outputs: iter, #node, #branches, #UsedMem(MB), IterTime, TotTime, MaxVal, RelErr
                 _testLogStream.format("%d %d %d %d %d %d %d %f %f\n", _nCurIter, num_nodes[_nCurIter],
                         num_leaves[_nCurIter], num_branches[_nCurIter], usedMem(),
                         time[_nCurIter], totalTime,
                         _context.linMaxVal(_valueDD), maxRelErr);
             }
+            _logStream.println("Value function size @ end of iteration " + _nCurIter +
+                    ": " + num_nodes[_nCurIter] + " nodes = " +
+                    num_branches[_nCurIter] + " cases" + " in " + time[_nCurIter] + " ms");
+            
             //////////////////////////////////////////////////////////////////////////
+            //Verify Early Convergence
             if (_prevDD.equals(_valueDD)) {
                 System.out.println("CAMDP: Converged to solution early,  at iteration " + _nCurIter);
-                int it = _nCurIter;
-                while (++it < max_iter) {
-                    optimalMaxValueList.add(optimalMaxValueList.get(_nCurIter));
-                    optimalDDList.add(_valueDD);
-                    _testLogStream.format("%d %d %d %d %d %d %d %f %f\n", it, num_nodes[_nCurIter], num_leaves[_nCurIter],
+                // Store Optimal solution for all horizons for comparison
+                if (LINEAR_PROBLEM && APPROX_PRUNING && COMPARE_OPTIMAL){
+                	int it = _nCurIter;
+                	while (++it < max_iter) {
+                		optimalMaxValueList.add(optimalMaxValueList.get(_nCurIter));
+                		optimalDDList.add(_valueDD);
+                		//APPROX_TEST LOG, outputs: iter, #node, #branches, #UsedMem(MB), IterTime, TotTime, MaxVal, RelErr
+                		_testLogStream.format("%d %d %d %d %d %d %d %f %f\n", it, num_nodes[_nCurIter], num_leaves[_nCurIter],
                             num_branches[_nCurIter], usedMem(),
                             time[_nCurIter], totalTime,
-                            _context.linMaxVal(_valueDD), maxRelErr);
+                            optimalMaxValueList.get(_nCurIter), 0.0);
+                	}
                 }
                 break;
             }
-
-            //////////////////////////////////////////////////////////////////////////
         }
 
         flushCaches();
@@ -401,6 +362,68 @@ public class CAMDP {
         System.exit(1);
     }
 
+	////////// DD Property Tests /////////////////////////
+    
+	public int standardizeDD(int dd){
+		if (XADD.ROUND_PRECISION!= null) {dd = _context.reduceRound(dd); checkRound(dd);}
+		dd = _context.makeCanonical(dd); checkCanon(dd);//Always use Canonization
+		if (LINEAR_PROBLEM) {dd = _context.reduceLP(dd); while (!checkReduceLP(dd)) dd = _context.reduceLP(dd);}
+		checkStandardDD(dd);
+		return dd;
+	}
+	public boolean checkStandardDD(int dd){
+		boolean standard = true;
+		if (XADD.ROUND_PRECISION!= null && !checkRound(dd)) standard = false;
+		if (!checkCanon(dd)) standard = false;//Always use Canonization
+		if (LINEAR_PROBLEM && !checkReduceLP(dd)) standard = false;
+		return standard;
+	}
+	protected boolean checkRound(int dd) {
+		int roundDD = _context.reduceRound(dd);
+		if (roundDD != dd){
+			System.err.println("Check Round fail");
+			_context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
+			_context.getGraph(roundDD).launchViewer("ERROR diagram 2: reduceRound(DD)");
+			return false;
+		}
+		return true;
+	}
+	protected boolean checkCanon(int dd) {
+		//Error checking and logging
+		int canonDD = _context.makeCanonical(dd);
+		if (dd != canonDD) {
+			System.err.println("Check Canon fail: OriDD: "+dd+" size = "+_context.getNodeCount(dd)+", Canon DD Size="+_context.getNodeCount(canonDD));
+			displayDifError(dd, canonDD);
+			dd = _context.makeCanonical(dd); //repeat command for Debugging
+			canonDD = _context.makeCanonical(dd);
+			return false;
+		}
+		return true;
+	}
+	private void displayDifError(int dd, int newDD) {
+		doDisplay(dd,"ERROR plot 1: original");
+		doDisplay(newDD,"ERROR plot 2:resulting");
+		int dif = _context.apply(dd, newDD, XADD.MINUS);
+		doDisplay(dif,"ERROR plot 3: difference");
+	}
+	protected boolean checkReduceLP(int dd) {
+		//Error checking and logging
+		int reduLPDD = _context.reduceLP(dd);
+		if (dd != reduLPDD) {
+			System.err.println("Check ReduceLP fail: OriDD: "+dd+" size = "+_context.getNodeCount(dd)+", Pruned DD Size="+_context.getNodeCount(reduLPDD));
+			displayDifError(dd, reduLPDD);
+			dd = _context.reduceLP(dd); //repeat command for Debugging
+			reduLPDD = _context.reduceLP(dd);
+			return false;
+		}
+		return true;
+	}
+	public int approximateDD(int dd){
+		if (LINEAR_PROBLEM && APPROX_PRUNING && APPROX_ERROR > 0)
+			dd = _context.linPruneRel(dd, APPROX_ERROR);
+		return dd;
+	}
+    
     ////////////////////////////////////////////////////////////////////////////
     // Miscellaneous
     ////////////////////////////////////////////////////////////////////////////
@@ -498,6 +521,9 @@ public class CAMDP {
         return sb.toString();
     }
 
+    public String makeApproxLabel(){
+    	return APPROX_PRUNING?"":"-" + String.format("%03d", Math.round(1000 * APPROX_ERROR));
+    }
     public void doDisplay(int xadd_id, String label) {
         exportXADD(xadd_id, label); // Exports DAG, can read in later and view using XADDViewer
         if (DISPLAY_V)
@@ -528,10 +554,23 @@ public class CAMDP {
     }
 
     public void displayGraph(int xadd_id, String label) {
-        Graph g = _context.getGraph(xadd_id);
         String[] split = label.split("[\\\\/]");
         label = split[split.length - 1];
         label = label.replace(".csamdp", "").replace(".camdp", "").replace(".cmdp", "");
+    
+    	Graph g;
+    	int count;
+    	if (DONT_SHOW_HUGE_GRAPHS && (count = _context.getNodeCount(xadd_id)) > MAXIMUM_XADD_DISPLAY_SIZE){
+    		g = new Graph();
+    		g.addNode("_count_");
+    		g.addNodeLabel("_count_", "Too Large to Print: "+count+" Nodes");
+    		g.addNodeShape("_count_", "square");
+    		g.addNodeStyle("_count_", "filled");
+    		g.addNodeColor("_count_", "red1");
+    	}
+    	else{
+    		g = _context.getGraph(xadd_id);
+    	}
         g.addNode("_temp_");
         g.addNodeLabel("_temp_", label);
         g.addNodeShape("_temp_", "square");
@@ -539,6 +578,7 @@ public class CAMDP {
         g.addNodeColor("_temp_", "gold1");
         String safe_filename = label.replace('^', '_').replace("(", "").replace(")", "").replace(":", "_").replace(" ", "");
         g.genDotFile(_logFileRoot + "." + safe_filename + ".dot");
+
         g.launchViewer(label);
     }
 

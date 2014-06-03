@@ -39,7 +39,7 @@ public class ReduceLPContext {
     private final static boolean USE_REDUCE_LPv2 = true;//true; //hashSet, result implied redundancy new version
     private final static boolean SKIP_TEST2 = false; //Skip Minimal region removal. Currenty test2 is very effective in reducing size even at very small slack.
     private static final double IMPLIED_PRECISION_T2 = 1e-40;// XADD.PRECISION;//1e-4; //Precision for removing unreliably feasible constraints
-    
+  
     public static final boolean SINGLE_PATH_IMPLIED_RESULT = false; //Stop search if need to check more than one path
 
     private static final boolean ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP = false; //Add bounds as explicit constraints (should not be necessary)

@@ -29,16 +29,20 @@ public class CRTDPFH extends CAMDPsolver {
 	/////////////////////////
 	/* Solution Parameters */
 	/////////////////////////
-	public final int DEFAULT_NTRIALS = 100;
-	public final boolean REVERSE_TRIAL = true;
+	public static final int DEFAULT_NTRIALS = 100;
+	private static final boolean REVERSE_TRIAL = true;
+	private static final boolean SECOND_MASK = true;
+	private static final boolean THIRD_MASK = false;
 	private static final boolean IMMEDIATEREWARD = true;
 	/* Debugging Flags */
 	
 	//Local Debug flags	
 	private static final boolean BELLMAN_DEBUG = false;
-	private static final boolean REGRESS_DEBUG = false;
-	private static final boolean REGRESS_VAR_DEBUG = false;
+	private static boolean REGRESS_DEBUG = false;
+	private static boolean REGRESS_VAR_DEBUG = false;
 	private static final boolean DD_BEFORE_TRIAL = false;
+	private static final boolean USE_CONT_REGR_CACHE = false;
+	
 
 	
 	//Result Keeping
@@ -251,8 +255,12 @@ public class CRTDPFH extends CAMDPsolver {
 				double value = context.evaluate(regr, currS._hmBoolVars, currS._hmContVars);
 				if (value == Double.POSITIVE_INFINITY || value == Double.NEGATIVE_INFINITY || value == Double.NaN){
 					System.err.println("Regression Fail: Initial State value is Pos INF, Neg INF or NaN in Q value function:");
+					System.err.println("State is "+currS);
 					if (!SILENCE_ERRORS) mdp.displayGraph(regr, makeXADDLabel("Inf Q: Regr"+me.getValue()._sName+" DD", curTrial, h));
 					context.evaluate(regr, currS._hmBoolVars, currS._hmContVars);
+					REGRESS_DEBUG = true;
+					REGRESS_VAR_DEBUG = true;
+					regressRegion(me.getValue(), currS, h);
 				}
 				if (BELLMAN_DEBUG){
 					debugOutput.println("Regress Action: " + me.getValue()._sName + " Value:" + value);
@@ -262,7 +270,7 @@ public class CRTDPFH extends CAMDPsolver {
 				
 				// Maintain running max over different actions
 				maxDD = (maxDD == null) ? regr : context.apply(maxDD, regr, XADD.MAX);
-				maxDD = standardizeDD(maxDD); // Round!
+				maxDD = mdp.standardizeDD(maxDD); // Round!
 				
 				if (currSValue == null || value > currSValue){
 					maxAction = me.getValue();
@@ -288,7 +296,7 @@ public class CRTDPFH extends CAMDPsolver {
 		
 		//Min out Ilegal +Inf values, these will be non update regions
 		valueDDList[h] = context.apply(maxDD, valueDDList[h], XADD.MIN);		
-		valueDDList[h] = standardizeDD(valueDDList[h]); 
+		valueDDList[h] = mdp.standardizeDD(valueDDList[h]); 
 		
 		ParametrizedAction pA = new ParametrizedAction(maxAction, maxParam);
 		
@@ -388,7 +396,7 @@ public class CRTDPFH extends CAMDPsolver {
 		//Remove Action Vars
 		q = regressAction(q, a);
 
-		
+		if (THIRD_MASK) q = context.createMask(q, currS._hmBoolVars, currS._hmContVars, context.NAN);
 		// Final NaN to Inf Conversion
 		q = context.substituteNode(q, context.NAN, context.POS_INF);
 		
@@ -401,7 +409,7 @@ public class CRTDPFH extends CAMDPsolver {
 //			debugOutput.println("Finished Regressing: "+a._sName);
 //			debugOutput.print(context.getExistNode(q).toString());
 //		}
-		return standardizeDD(q);
+		return mdp.standardizeDD(q);
 	}
 	
 	public int regressCVarsMask(int q, CAction a, String var, State currS) {
@@ -411,32 +419,56 @@ public class CRTDPFH extends CAMDPsolver {
 		int var_id = context._cvar2ID.get(var);
 		Integer dd_conditional_sub = a._hmVar2DD.get(var);
 
-		if (REGRESS_VAR_DEBUG) debugOutput.println("Initial DD_sub -->: " + context.getString(dd_conditional_sub));
+		if (REGRESS_VAR_DEBUG){
+				if (PRINT_DD) debugOutput.println("Initial DD_sub = "+dd_conditional_sub+" DD:\n"+context.getString(dd_conditional_sub));
+				if (PLOT_DD) mdp.displayGraph(dd_conditional_sub, "Initial DD_sub" + a._sName + "-" + a._actionParams + "T");
+		}
 		//MaskTransitions not from current state
 		dd_conditional_sub = context.createMask(dd_conditional_sub, currS._hmBoolVars, currS._hmContVars, context.NAN);		
 		
-		if (REGRESS_VAR_DEBUG) debugOutput.println("NAN DD_sub -->: " + context.getString(dd_conditional_sub));
+		if (REGRESS_VAR_DEBUG){
+			String name = "NAN DD_sub";
+			int dd =  dd_conditional_sub;
+			if (PRINT_DD) debugOutput.println(name+" "+dd+" DD:\n"+context.getString(dd));
+			if (PLOT_DD) mdp.displayGraph(dd, name+" "+ a._sName + "-" + a._actionParams + "T");
+		}
 		
+		if (REGRESS_VAR_DEBUG) debugOutput.println("Checking Cache: -->: VAR_ID" +var_id+" DD_SUB"+dd_conditional_sub+" Q"+q);
 		// Check cache
+		if (!REGRESS_VAR_DEBUG && USE_CONT_REGR_CACHE){
 		_contRegrKey.set(var_id, dd_conditional_sub, q);
 		Integer result = mdp._hmContRegrCache.get(_contRegrKey);
 		if (result != null)
 			return result;
-		
-		if (REGRESS_VAR_DEBUG) debugOutput.println("q before regress -->: " + context.getString(q));
-		
+		}
+		if (REGRESS_VAR_DEBUG){
+			String name = "q before regress";
+			int dd = q;
+			if (PRINT_DD) debugOutput.println(name+" "+dd+" DD:\n"+context.getString(dd));
+			if (PLOT_DD) mdp.displayGraph(dd, name+" "+ a._sName + "-" + a._actionParams + "T");
+		}
 		// Perform regression via delta function substitution
 		q = context.reduceProcessXADDLeaf(dd_conditional_sub, 
 				context.new DeltaFunctionSubstitution(var, q), true);
 		
-		if (REGRESS_VAR_DEBUG) debugOutput.println("q after regress -->: " + context.getString(q));
+		if (REGRESS_VAR_DEBUG){
+			String name = "q after regress before Mask2";
+			int dd = q;
+			if (PRINT_DD) debugOutput.println(name+" "+dd+" DD:\n"+context.getString(dd));
+			if (PLOT_DD) mdp.displayGraph(dd, name+" "+ a._sName + "-" + a._actionParams + "T");
+		}
 		
-		//q = context.createMask(q, currS._hmBoolVars, currS._hmContVars, context.NAN);
-		//if (REGRESS_VAR_DEBUG) debugOutput.println("NAN q after regress -->: " + context.getString(q));
+		//Mask result not from current state
+		if (SECOND_MASK) q = context.createMask(q, currS._hmBoolVars, currS._hmContVars, context.NAN);
+		if (REGRESS_VAR_DEBUG){
+			String name = "final q after Mask2";
+			int dd = q;
+			if (PRINT_DD) debugOutput.println(name+" "+dd+" DD:\n"+context.getString(dd));
+			if (PLOT_DD) mdp.displayGraph(dd, name+" "+ a._sName + "-" + a._actionParams + "T");
+		}
 
 		// Cache result
 		mdp._hmContRegrCache.put(new IntTriple(_contRegrKey), q);
-		
 		return q;		
 	}
 
@@ -461,9 +493,9 @@ public class CRTDPFH extends CAMDPsolver {
 		int restrict_low  = context.opOut(q, var_id, XADD.RESTRICT_LOW);
 		if (REGRESS_VAR_DEBUG) debugOutput.println(" q Low -->: " + context.getString(restrict_low));
 		q = context.apply(restrict_high, restrict_low, XADD.SUM);
-		if (REGRESS_VAR_DEBUG) debugOutput.println("Regressed Q -->: " + context.getString(q));
-		//q = context.createMask(q, currS._hmBoolVars, currS._hmContVars, context.NAN);
-		//if (REGRESS_VAR_DEBUG) debugOutput.println("Final regressed Q -->: " + context.getString(q));
+		if (REGRESS_VAR_DEBUG) debugOutput.println("q after regress before Mask2 -->: " + context.getString(q));
+		if (SECOND_MASK) q = context.createMask(q, currS._hmBoolVars, currS._hmContVars, context.NAN);
+		if (REGRESS_VAR_DEBUG) debugOutput.println("Final q after mask2 -->: " + context.getString(q));
 		return q;
 	}
 

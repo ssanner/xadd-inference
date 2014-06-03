@@ -110,11 +110,11 @@ public class VI extends CAMDPsolver {
 			
 			// Maintain running max over different actions
 			_maxDD = (_maxDD == null) ? regr : context.apply(_maxDD, regr, XADD.MAX);
-			_maxDD = standardizeDD(_maxDD); // Round!
+			_maxDD = mdp.standardizeDD(_maxDD); // Round!
 
 			//Optional post-max approximation, can be used if overall error is being monitored 
 			if (APPROX_ALWAYS)
-				_maxDD = approximateDD(_maxDD);
+				_maxDD = mdp.approximateDD(_maxDD);
 			
 			flushCaches(Arrays.asList(_maxDD));
 			if (DEEP_DEBUG){
@@ -270,7 +270,7 @@ public class VI extends CAMDPsolver {
 			}
 		}
 
-		return standardizeDD(q);
+		return mdp.standardizeDD(q);
 	}
 	
 	public int regressCVars(int q, CAction a, String var) {
@@ -362,6 +362,10 @@ public class VI extends CAMDPsolver {
 		debugOutput.print("Time:"); for(int i=1; i<=finalIter; i++) debugOutput.print(solutionTimeList[i]+" ");debugOutput.println(";");
 		debugOutput.print("Nodes:"); for(int i=1; i<=finalIter; i++) debugOutput.print(solutionNodeList[i]+" ");debugOutput.println(";");
 		debugOutput.print("Initial S Value:"); for(int i=1; i<=finalIter; i++) debugOutput.print(solutionInitialSValueList[i]+" ");debugOutput.println(";");
+	}
+
+	public void exportSolutionToFile() {
+		for(int i=1; i<=finalIter; i++) context.exportXADDToFile(solutionNodeList[i], makeResultFile(i));
 	}
 }
 

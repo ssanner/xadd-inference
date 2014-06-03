@@ -173,7 +173,7 @@ public class XADDUtils {
         title = RemovePathAndExt(title);
         try {
             ps = new PrintStream(new FileOutputStream(filename));
-            System.err.println("Exported to: " + new File(filename).getAbsolutePath());
+            //System.out.println("Exported to: " + new File(filename).getAbsolutePath());
         } catch (Exception e) {
             System.err.println("Could not open " + filename + " for data export.");
             ps = new DevNullPrintStream();
@@ -197,7 +197,7 @@ public class XADDUtils {
 
             alY.add(y);
             ps.println(x + "\t" + y);
-            System.out.println(x + "\t" + y);
+//            System.out.println(x + "\t" + y);
 
             if (Double.isInfinite(y))
                 num_inf_points++;
@@ -435,7 +435,9 @@ public class XADDUtils {
                 static_dvars.put(xVar, (double) x);
                 static_dvars.put(yVar, (double) y);
                 float z = context.evaluate(xadd, static_bvars, static_dvars).floatValue();
-                if (Float.isInfinite(z)) z = Float.NaN;
+//                if (Float.isInfinite(z)) z = Float.NaN; //z >0? 17: -17; visualize difference between +Inf and -Inf
+                if (Float.isInfinite(z)) z = z >0? 17: -17;
+                if (z == 0.0) z = (float) 0.01;
                 static_dvars.remove(xVar);
                 static_dvars.remove(yVar);
 
