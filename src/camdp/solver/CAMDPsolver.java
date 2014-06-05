@@ -44,7 +44,6 @@ public abstract class CAMDPsolver {
 	/* DEBUG PARAMETER */
 	protected static boolean MAIN_DEBUG = true;
 	protected static boolean DEEP_DEBUG = true;
-	protected static final boolean SILENCE_ERRORS = false;
 	protected static PrintStream debugOutput = System.out;
 	
 	//Debug Format flags

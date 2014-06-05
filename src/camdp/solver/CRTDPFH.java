@@ -256,7 +256,7 @@ public class CRTDPFH extends CAMDPsolver {
 				if (value == Double.POSITIVE_INFINITY || value == Double.NEGATIVE_INFINITY || value == Double.NaN){
 					System.err.println("Regression Fail: Initial State value is Pos INF, Neg INF or NaN in Q value function:");
 					System.err.println("State is "+currS);
-					if (!SILENCE_ERRORS) mdp.displayGraph(regr, makeXADDLabel("Inf Q: Regr"+me.getValue()._sName+" DD", curTrial, h));
+					if (!CAMDP.SILENCE_ERRORS_PLOTS) mdp.displayGraph(regr, makeXADDLabel("Inf Q: Regr"+me.getValue()._sName+" DD", curTrial, h));
 					context.evaluate(regr, currS._hmBoolVars, currS._hmContVars);
 					REGRESS_DEBUG = true;
 					REGRESS_VAR_DEBUG = true;
@@ -278,8 +278,10 @@ public class CRTDPFH extends CAMDPsolver {
 				}
 				if ( Math.abs(currSValue - context.evaluate(maxDD, currS._hmBoolVars, currS._hmContVars)) > STATE_PRECISION){
 					System.err.println("Maxim fail, greedy value "+ currSValue+" different from value "+context.evaluate(maxDD, currS._hmBoolVars, currS._hmContVars)+" for "+currS);
-					if (!SILENCE_ERRORS) mdp.displayGraph(regr, makeXADDLabel("Regr"+me.getValue()._sName+" DD", curTrial, h));
-					if (!SILENCE_ERRORS) mdp.displayGraph(maxDD, makeXADDLabel("BB Max_DD", curTrial, h));
+					if (!CAMDP.SILENCE_ERRORS_PLOTS) {
+						mdp.displayGraph(regr, makeXADDLabel("Regr"+me.getValue()._sName+" DD", curTrial, h));
+						mdp.displayGraph(maxDD, makeXADDLabel("BB Max_DD", curTrial, h));
+					}
 				}
 				if (BELLMAN_DEBUG){
 					debugOutput.println("Current Max after Regress Action: " + me.getValue()._sName + " Value:" + currSValue);
@@ -303,8 +305,11 @@ public class CRTDPFH extends CAMDPsolver {
 		if ( Math.abs(currSValue - context.evaluate(valueDDList[h], currS._hmBoolVars, currS._hmContVars)) > STATE_PRECISION){
 			System.err.println("Backup fail, greedy value "+ currSValue+" different from value "+context.evaluate(valueDDList[h], currS._hmBoolVars, currS._hmContVars)+" for "+currS);
 			System.err.println("Max DD value is " + context.evaluate(maxDD, currS._hmBoolVars, currS._hmContVars));
-			if (!SILENCE_ERRORS) mdp.doDisplay(maxDD, makeXADDLabel("BB Bug! MaxDD", curTrial, h));
-			if (!SILENCE_ERRORS) mdp.doDisplay(valueDDList[h], makeXADDLabel("BB Bug! V_DD", curTrial, h));
+			if (!CAMDP.SILENCE_ERRORS_PLOTS) {
+				mdp.doDisplay(maxDD, makeXADDLabel("BB Bug! MaxDD", curTrial, h));
+				mdp.doDisplay(valueDDList[h], makeXADDLabel("BB Bug! V_DD", curTrial, h));
+			}
+			
 			if (PRINT_DD) debugOutput.println("MAX DD = "+maxDD+" DD:\n" + context.getExistNode(maxDD));
 			if (PRINT_DD) debugOutput.println("Value DD= "+valueDDList[h]+" DD:\n" + context.getExistNode(valueDDList[h]));
 			valueDDList[h] = context.apply(maxDD, valueDDList[h], XADD.MIN);
