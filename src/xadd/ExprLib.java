@@ -577,7 +577,7 @@ public abstract class ExprLib {
                     return (dval_lhs <= dval_rhs);
                 default:
                     return null;
-            }
+            } 
         }
         
         public void collectVars(HashSet<String> vars) {
@@ -1259,7 +1259,7 @@ public abstract class ExprLib {
 
                 // Convert back to an ArrayList
                 new_terms = non_terms;
-                if (const_sum != 0d)
+                if ( Math.abs(const_sum) > XADD.PRECISION) // conts_sum != 0d <- Error prone double comparison
                     new_terms.add(0, new DoubleExpr(const_sum));
 
                 for (Map.Entry<ArrayList<ArithExpr>, Double> t : term2coef

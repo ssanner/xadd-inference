@@ -507,6 +507,9 @@ public class CAMDP {
         //for (Integer cons : _alConstraints) {
         //	sb.append("- " + _context.getString(cons) + "\n");
         //}
+        if (_initialS != null) {
+        	sb.append("Initial State: " + _initialS + "\n");	
+        }
         sb.append("Actions (" + _hmName2Action.size() + "):\n");
         for (CAction a : _hmName2Action.values()) {
             sb.append("\n==> " + a);
