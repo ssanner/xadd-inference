@@ -43,6 +43,7 @@ public class CAMDP {
     private static final boolean SILENT_PLOT = true;
     private static final boolean DONT_SHOW_HUGE_GRAPHS = true;
     private static final int MAXIMUM_XADD_DISPLAY_SIZE = 500;
+	public static final boolean SILENCE_ERRORS_PLOTS = false;
     
     //Prune and Linear Flags
     public double maxImediateReward;
@@ -382,8 +383,10 @@ public class CAMDP {
 		int roundDD = _context.reduceRound(dd);
 		if (roundDD != dd){
 			System.err.println("Check Round fail");
-			_context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
-			_context.getGraph(roundDD).launchViewer("ERROR diagram 2: reduceRound(DD)");
+			if (!SILENCE_ERRORS_PLOTS){
+				_context.getGraph(dd).launchViewer("ERROR diagram 1: original DD");
+				_context.getGraph(roundDD).launchViewer("ERROR diagram 2: reduceRound(DD)");
+			}
 			return false;
 		}
 		return true;
@@ -401,10 +404,12 @@ public class CAMDP {
 		return true;
 	}
 	private void displayDifError(int dd, int newDD) {
-		doDisplay(dd,"ERROR plot 1: original");
-		doDisplay(newDD,"ERROR plot 2:resulting");
-		int dif = _context.apply(dd, newDD, XADD.MINUS);
-		doDisplay(dif,"ERROR plot 3: difference");
+		if (!SILENCE_ERRORS_PLOTS){
+			doDisplay(dd,"ERROR plot 1: original");
+			doDisplay(newDD,"ERROR plot 2:resulting");
+			int dif = _context.apply(dd, newDD, XADD.MINUS);
+			doDisplay(dif,"ERROR plot 3: difference");
+		}
 	}
 	protected boolean checkReduceLP(int dd) {
 		//Error checking and logging
