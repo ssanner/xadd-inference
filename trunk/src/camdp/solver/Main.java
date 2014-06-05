@@ -16,14 +16,14 @@ import camdp.CAMDP;
 
 public class Main {
     
-	//Running Configurations
-	private static int VERBOSE = 1;
+    //Running Configurations
+    private static int VERBOSE = 1;
     private static String[] solvers = {"Invalid","VI","CRTDP","RTDPFH","VI, CRTDP & CRTDPFH"};// 1 -> Value Iteration 2-> RTDP 3-> RTDPFH, Run all and Save All
     private static int TRIALS_DEFAULT = 15; // For RTDP and RTDPFH solution
     
     // Results Configurations
     private static final boolean SAVE_RESULTS = true;
-	private static final boolean PRINT_RESULTS = true;
+    private static final boolean PRINT_RESULTS = true;
     
     public static void Usage() {
         System.out.println("\nUsage: MDP-filename #solver #iter #Ddisplay(2or3) #trials [VERBOSE]");
@@ -31,7 +31,7 @@ public class Main {
     }
 
     public static void main(String args[]) {
-    	int nargs = args.length;
+        int nargs = args.length;
         if (nargs < 5 || nargs >6) {
             Usage();
         }
@@ -45,8 +45,8 @@ public class Main {
         int display = -1;
         int trials = TRIALS_DEFAULT;
         try {
-        	solution = Integer.parseInt(args[1]); 
-        	iter = Integer.parseInt(args[2]);
+            solution = Integer.parseInt(args[1]); 
+            iter = Integer.parseInt(args[2]);
             display = Integer.parseInt(args[3]);
             trials = Integer.parseInt(args[4]);
         } catch (NumberFormatException nfe) {
@@ -66,15 +66,15 @@ public class Main {
         //}
         
         if (args.length > 5){
-        	VERBOSE=Integer.parseInt(args[5]);
-        	CAMDPsolver.debugSetUp(VERBOSE);
+            VERBOSE=Integer.parseInt(args[5]);
+            CAMDPsolver.debugSetUp(VERBOSE);
         }
         
         
         if (VERBOSE >=0) {
-        	System.out.println("Main Solution Start: Solving "+filename+" with solving option "+solvers[solution]+" for "+iter+" iterations and "+trials+" trials.");
+            System.out.println("Main Solution Start: Solving "+filename+" with solving option "+solvers[solution]+" for "+iter+" iterations and "+trials+" trials.");
         }
-        if (VERBOSE > 1){
+        if (VERBOSE > 0){
             System.out.println(mdp.toString(false, false));
         }
         
@@ -134,10 +134,10 @@ public class Main {
         }
         
 //        try {
-//			System.in.read();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
+//            System.in.read();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         if (VERBOSE >= 0) System.out.println("MAIN-FINISH");
     }
 
@@ -147,7 +147,7 @@ public class Main {
             System.exit(1);
         }
         if (mdp._initialS == null){
-        	System.err.println("CAMDP Solver Main Fail: RTDP Solution incompatible with undefined initial state.");
+            System.err.println("CAMDP Solver Main Fail: RTDP Solution incompatible with undefined initial state.");
             System.exit(1);
         }
     }

@@ -95,7 +95,7 @@ public class XADDUtils {
         int xadd2u = TestXADD.TestBuild(xadd_context,
                 "./src/xadd/ex/uniform_mix.xadd");
         //int xadd2u = TestXADD.TestBuild(xadd_context,
-        //		"./src/xadd/triangle_mix.xadd");
+        //        "./src/xadd/triangle_mix.xadd");
 
         // 2D
         PlotXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, bvars, dvars, "y",
@@ -106,10 +106,10 @@ public class XADDUtils {
                 bvars, dvars, "y", "x1",
                 "Uniform Mix Contour");
 
-//		// 3D Surface by specific grids -- for compatibility with Contour plot
-//		Plot3DSurfXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, -20d, 0.25d, 20d, 
-//				bvars, dvars, "y", "x1",
-//				"Uniform Mix Surface");
+//        // 3D Surface by specific grids -- for compatibility with Contour plot
+//        Plot3DSurfXADD(xadd_context, xadd2u, -20d, 0.25d, 20d, -20d, 0.25d, 20d, 
+//                bvars, dvars, "y", "x1",
+//                "Uniform Mix Surface");
 
         // Or by number of samples per dimension (since must match)
         Plot3DSurfXADD(xadd_context, xadd2u, -20d, 20d, -20d, 20d, 40,
@@ -149,7 +149,7 @@ public class XADDUtils {
         int xadd_defint = context.computeDefiniteIntegral(xadd, int_var);
         // System.out.println("Int result: " + context.getString(xadd_int));
         //int xadd_indef = context.reduceProcessXADDLeaf(xadd,
-        //		context.new XADDLeafIndefIntegral(int_var), /*canonical_reorder*/false);
+        //        context.new XADDLeafIndefIntegral(int_var), /*canonical_reorder*/false);
         //context.getGraph(xadd_indef).launchViewer();
         context.getGraph(xadd_defint).launchViewer();
         System.out.println("Evaluating @ " + static_bvars + " " + static_dvars);
@@ -313,7 +313,7 @@ public class XADDUtils {
                 static_dvars.remove(yVar);
 
                 //if (z > 0.1d)
-                //	System.out.println("f(" + x + "," + y + ") = " + z);
+                //    System.out.println("f(" + x + "," + y + ") = " + z);
                 ps.println(x + "\t" + y + "\t" + z);
                 xArr[i][j] = x;
                 yArr[i][j] = y;
@@ -323,12 +323,12 @@ public class XADDUtils {
         }
         ps.close();
 
-//		for (int i=0;i<alY.size();i++)
-//		{
-//			for (int j=0;j<alX.size();j++)
-//				System.out.print(" " + zArr[i][j]);
-//			System.out.println();
-//		}
+//        for (int i=0;i<alY.size();i++)
+//        {
+//            for (int j=0;j<alX.size();j++)
+//                System.out.print(" " + zArr[i][j]);
+//            System.out.println();
+//        }
         //String title = "f(" + xVar + "," + yVar + ") @ " + static_bvars + " " + static_dvars;
         Plot2D aPlot = new ContourPlot(xArr, yArr, zArr, 12, false, title,
                 xVar, yVar, null, null);
@@ -442,7 +442,7 @@ public class XADDUtils {
                 static_dvars.remove(yVar);
 
                 //if (z > 0.1d)
-                //	System.out.println("f(" + x + "," + y + ") = " + z);
+                //    System.out.println("f(" + x + "," + y + ") = " + z);
                 ps.println(x + "\t" + y + "\t" + z);
                 xArr[i][j] = x;
                 yArr[i][j] = y;
@@ -540,11 +540,11 @@ public class XADDUtils {
         label = split[split.length - 1];
         split = label.split("[\\.:]");
         //for (String s : split) System.out.print("'" + s + "' ");
-//		if (split.length == 2)
-//			label = split[0];
-//		else if (split.length > 2)
-//			label = split[0] + ":" + split[2];
-//		return label;
+//        if (split.length == 2)
+//            label = split[0];
+//        else if (split.length > 2)
+//            label = split[0] + ":" + split[2];
+//        return label;
         if (split.length - 1 < 0)
             return split[0];
         else

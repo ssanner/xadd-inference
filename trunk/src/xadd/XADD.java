@@ -43,10 +43,10 @@ public class XADD {
     // Flags
     public final static boolean USE_CANONICAL_NODES = true; // Store nodes in canonical format?
     public final static boolean NORMALIZE_DECISIONS = true; //Store decision with normalized coefficients?
-	private static final boolean USE_APPLY_GET_INODE_CANON = false;
-	private static final boolean TEST_CANON_METHODS = false;
+    private static final boolean USE_APPLY_GET_INODE_CANON = false;
+    private static final boolean TEST_CANON_METHODS = false;
 
-	
+    
     private static final boolean WARN_BOUND_UNUSED_VAR = false;
     private static final boolean WARN_INODE_CANON_NEG_DEC = false;
     public final static int MAX_BRANCH_COUNT = 1000000;
@@ -156,7 +156,7 @@ public class XADD {
     }
 
     public int createDoubleNode(double d){
-    	return getTermNode(new ExprLib.DoubleExpr(d));
+        return getTermNode(new ExprLib.DoubleExpr(d));
     }
     
     public void createStandardNodes() {
@@ -289,8 +289,8 @@ public class XADD {
                 for (String s : all_vars) {
                     // Expressions should only contain continuous variables
                     if (_hsBooleanVars.contains(s)) {
-                    	System.err.println("getVarIndex: " + s + " cannot be both a boolean and continuous variable, i.e., in " + d);
-                    	System.exit(1);
+                        System.err.println("getVarIndex: " + s + " cannot be both a boolean and continuous variable, i.e., in " + d);
+                        System.exit(1);
                     }
                     if (!_hsContinuousVars.contains(s))
                         addContinuousVar(s);
@@ -312,7 +312,7 @@ public class XADD {
         return getTermNode(n._expr, n._annotate);
     }
 
-    public int getTermNode(ArithExpr e, Object annotation) {    	
+    public int getTermNode(ArithExpr e, Object annotation) {        
         if (USE_CANONICAL_NODES)
             e = (ArithExpr) e.makeCanonical();
 
@@ -385,30 +385,30 @@ public class XADD {
     }
 
     public int getINodeCanon(int var, int low, int high) {
-    	if (var <= 0){
-    		//Shouldn't all decisions be positive?
-    		if (WARN_INODE_CANON_NEG_DEC) System.out.println("Warning: Canonizing Negative Decision:"+var+" =>"+_alOrder.get(Math.abs(var)));
-    		return getINodeCanon(-var, high, low);
-    	}
-    	
-    	if (TEST_CANON_METHODS){
-			int result1 = getINodeCanonApplyTrick(var, low, high);        
-			int result2 = getINodeCanonInsert(var,low,high);
-				
-			if (result1 != result2 && result1 != NAN){
-				System.out.println("Canonical Error (Difference not on NAN):");
-				System.out.println("PROD Result:");
-				System.out.println(getExistNode(result1));
-				System.out.println("New Canon:");
-				System.out.println(getExistNode(result2));
-			
-				getINodeCanonApplyTrick(var, low, high);
-				getINodeCanonInsert(var,low,high);
-			}
-			return (USE_APPLY_GET_INODE_CANON)? result1: result2;
-    	}
-    	else 
-    		return (USE_APPLY_GET_INODE_CANON)? getINodeCanonApplyTrick(var, low, high): getINodeCanonInsert(var,low,high);
+        if (var <= 0){
+            //Shouldn't all decisions be positive?
+            if (WARN_INODE_CANON_NEG_DEC) System.out.println("Warning: Canonizing Negative Decision:"+var+" =>"+_alOrder.get(Math.abs(var)));
+            return getINodeCanon(-var, high, low);
+        }
+        
+        if (TEST_CANON_METHODS){
+            int result1 = getINodeCanonApplyTrick(var, low, high);        
+            int result2 = getINodeCanonInsert(var,low,high);
+                
+            if (result1 != result2 && result1 != NAN){
+                System.out.println("Canonical Error (Difference not on NAN):");
+                System.out.println("PROD Result:");
+                System.out.println(getExistNode(result1));
+                System.out.println("New Canon:");
+                System.out.println(getExistNode(result2));
+            
+                getINodeCanonApplyTrick(var, low, high);
+                getINodeCanonInsert(var,low,high);
+            }
+            return (USE_APPLY_GET_INODE_CANON)? result1: result2;
+        }
+        else 
+            return (USE_APPLY_GET_INODE_CANON)? getINodeCanonApplyTrick(var, low, high): getINodeCanonInsert(var,low,high);
     }
 
     public int getINodeCanonApplyTrick(int var, int low, int high) {
@@ -432,37 +432,37 @@ public class XADD {
     }
     
     public int reduceInsertNode(int orig, int decision, int node_to_insert_on_dec_value, boolean dec_value){
-    	return reduceInsertNodeInt(orig, decision, node_to_insert_on_dec_value, dec_value, new HashMap<Integer,Integer>()); //Map only for orig
+        return reduceInsertNodeInt(orig, decision, node_to_insert_on_dec_value, dec_value, new HashMap<Integer,Integer>()); //Map only for orig
     }
     
     public int reduceInsertNodeInt(int orig, int decision, int insertNode, boolean dec_value, HashMap<Integer,Integer> _hmInsertNodeCache){
-    	Integer ret = _hmInsertNodeCache.get(orig);
-    	if (ret != null) return ret;
-    	
-    	XADDNode n = getExistNode(orig);
-    	if ( (n instanceof XADDTNode) || (n instanceof XADDINode && ((XADDINode)n)._var > decision) ){
-    		ret = dec_value? getINode(decision, orig, insertNode): getINode(decision, insertNode, orig);
-    	}
-    	else {
-    		XADDINode inode = (XADDINode) n;
-    		if (decision > inode._var){
-    			int low = reduceInsertNodeInt(inode._low, decision, insertNode, dec_value, _hmInsertNodeCache);
-    			int high = reduceInsertNodeInt(inode._high, decision, insertNode, dec_value, _hmInsertNodeCache);
-    			ret = getINode(inode._var, low, high);
-    		}
-    		else{
-    			//Inserting same Decision as in DD
-    			if (dec_value) {
-    				ret = reduceInsertNodeInt(inode._low, decision, insertNode, dec_value, _hmInsertNodeCache);
-    			}
-    			else{
-    				ret = reduceInsertNodeInt(inode._high, decision, insertNode, dec_value, _hmInsertNodeCache);
-    			}
-    			
-    		}
-    	}
-    	_hmInsertNodeCache.put(orig, ret);
-    	return ret;
+        Integer ret = _hmInsertNodeCache.get(orig);
+        if (ret != null) return ret;
+        
+        XADDNode n = getExistNode(orig);
+        if ( (n instanceof XADDTNode) || (n instanceof XADDINode && ((XADDINode)n)._var > decision) ){
+            ret = dec_value? getINode(decision, orig, insertNode): getINode(decision, insertNode, orig);
+        }
+        else {
+            XADDINode inode = (XADDINode) n;
+            if (decision > inode._var){
+                int low = reduceInsertNodeInt(inode._low, decision, insertNode, dec_value, _hmInsertNodeCache);
+                int high = reduceInsertNodeInt(inode._high, decision, insertNode, dec_value, _hmInsertNodeCache);
+                ret = getINode(inode._var, low, high);
+            }
+            else{
+                //Inserting same Decision as in DD
+                if (dec_value) {
+                    ret = reduceInsertNodeInt(inode._low, decision, insertNode, dec_value, _hmInsertNodeCache);
+                }
+                else{
+                    ret = reduceInsertNodeInt(inode._high, decision, insertNode, dec_value, _hmInsertNodeCache);
+                }
+                
+            }
+        }
+        _hmInsertNodeCache.put(orig, ret);
+        return ret;
     }
 
     public int getVarNode(Decision d, double low_val, double high_val) {
@@ -615,17 +615,17 @@ public class XADD {
     }
     
     public Integer substituteNode(int main_id, int target_id, int replace_id){
-    	HashMap<Integer,Integer> subNodeCache =  new HashMap<Integer, Integer>();
-    	subNodeCache.put(target_id, replace_id);
-    	return reduceSubstituteNode(main_id, subNodeCache);
+        HashMap<Integer,Integer> subNodeCache =  new HashMap<Integer, Integer>();
+        subNodeCache.put(target_id, replace_id);
+        return reduceSubstituteNode(main_id, subNodeCache);
     }
     // XADD substitution -> replace terminal node with another XADD Node
     public Integer reduceSubstituteNode(int main_id, HashMap<Integer, Integer> subNodeCache){
 
-    	Integer ret = null;
-    	if ( (ret = subNodeCache.get(main_id)) != null){
-    		return ret;
-    	}
+        Integer ret = null;
+        if ( (ret = subNodeCache.get(main_id)) != null){
+            return ret;
+        }
 
         XADDNode n = getExistNode(main_id);
 
@@ -860,9 +860,9 @@ public class XADD {
             ret = getINode(var, low, high);
 
         }
-//		else {
-//			System.out.println("ComputeTermNode: " + n1.toString() + " " + _aOpNames[op] + " " + n2.toString() + "\n                 = " + getString(ret));
-//		}
+//        else {
+//            System.out.println("ComputeTermNode: " + n1.toString() + " " + _aOpNames[op] + " " + n2.toString() + "\n                 = " + getString(ret));
+//        }
 
         _hmApplyCache.put(new IntTriple(a1, a2, op), ret);
         return ret;
@@ -870,16 +870,16 @@ public class XADD {
 
     // Computes a terminal node value if possible
     public Integer computeTermNode(int a1, XADDNode n1, int a2, XADDNode n2, int op) {
-    	
-    	//NaN cannot become valid by operations 
-    	if (a1 == NAN || a2 ==NAN){
+        
+        //NaN cannot become valid by operations 
+        if (a1 == NAN || a2 ==NAN){
             return NAN;
-    	}
-    	
-	    //Zero identities first -- critical for getINodeCanon to work
-    	if (op == PROD && (a1 == ZERO || a2 == ZERO) ){ //Compare XADD Nodes, there shouldn't be more than one ZERO XADDTNode!
-    		return ZERO;
-    	}
+        }
+        
+        //Zero identities first -- critical for getINodeCanon to work
+        if (op == PROD && (a1 == ZERO || a2 == ZERO) ){ //Compare XADD Nodes, there shouldn't be more than one ZERO XADDTNode!
+            return ZERO;
+        }
 
         //Identities
         if ( (op == SUM && a1==ZERO) || (op == PROD && a1 ==ONE) ) {
@@ -908,27 +908,27 @@ public class XADD {
             if (op == SUM || op == MAX)
                 return POS_INF;
             else if (op == MINUS)
-            	return NEG_INF;
+                return NEG_INF;
             else if (op == MIN)
                     return a1;
         } else if (a2 == NEG_INF) {
                 // -inf op a2
-        	if (op == SUM || op == MIN)
+            if (op == SUM || op == MIN)
                     return NEG_INF;
-        	else if (op == MINUS)
-            	return POS_INF;
-        	else if (op == MAX)
+            else if (op == MINUS)
+                return POS_INF;
+            else if (op == MAX)
                     return a1;
         }
 
         // Old INF, ZERO and NAN GetTermNode code
-//	    //Zero identities first -- critical for getINodeCanon to work
-//    	if (op == PROD && 
-//    			(n1 instanceof XADDTNode && ((XADDTNode)n1)._expr.equals(ExprLib.ZERO) ||
-//    		    (n2 instanceof XADDTNode && ((XADDTNode)n2)._expr.equals(ExprLib.ZERO)))) {
-//    		return ZERO;
+//        //Zero identities first -- critical for getINodeCanon to work
+//        if (op == PROD && 
+//                (n1 instanceof XADDTNode && ((XADDTNode)n1)._expr.equals(ExprLib.ZERO) ||
+//                (n2 instanceof XADDTNode && ((XADDTNode)n2)._expr.equals(ExprLib.ZERO)))) {
+//            return ZERO;
 //        }
-//    	
+//        
 //        // Check for identities if first operand is terminal
 //        if (n1 instanceof XADDTNode) {
 //
@@ -942,7 +942,7 @@ public class XADD {
 //
 //            // NaN identity for terminal computations (any tnode op NaN = NaN)
 //            if (n2 instanceof XADDTNode &&
-//            	xa1._expr instanceof DoubleExpr && Double.isNaN(((DoubleExpr)xa1._expr)._dConstVal)) {
+//                xa1._expr instanceof DoubleExpr && Double.isNaN(((DoubleExpr)xa1._expr)._dConstVal)) {
 //                return NAN;
 //            }
 //
@@ -981,8 +981,8 @@ public class XADD {
 //            // NaN identity for terminal computations (any tnode op NaN = NaN)
 //            if (n1 instanceof XADDTNode &&
 //                xa2._expr instanceof DoubleExpr && Double.isNaN(((DoubleExpr)xa2._expr)._dConstVal)) {
-//	            return NAN;
-//	        }
+//                return NAN;
+//            }
 //
 //            // Infinity identities
 //            if (xa2._expr instanceof DoubleExpr && Double.isInfinite(((DoubleExpr)xa2._expr)._dConstVal) && ((DoubleExpr)xa2._expr)._dConstVal > 0) { // (xa2._expr.equals(POS_INF)) {
@@ -1041,8 +1041,8 @@ public class XADD {
         else if (d instanceof BoolDec)
             return bool_assign.get(((BoolDec) d)._sVarName);
         else if (d instanceof ExprDec) {
-        	if (SHOW_DECISION_EVAL) { System.out.println(" - " + ((ExprDec) d)._expr + ": " + ((ExprDec) d)._expr.evaluate(cont_assign));}
-        	return  ((ExprDec) d)._expr.evaluate(cont_assign);            
+            if (SHOW_DECISION_EVAL) { System.out.println(" - " + ((ExprDec) d)._expr + ": " + ((ExprDec) d)._expr.evaluate(cont_assign));}
+            return  ((ExprDec) d)._expr.evaluate(cont_assign);            
         }
         return null;
     }
@@ -1080,15 +1080,15 @@ public class XADD {
     //Partial Evaluation, evaluates until a expression is obtained, but does not evaluate the expression
     public Integer getLeaf(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign) {
         // Get root
-    	int id = node_id;
-    	XADDNode n = getExistNode(node_id);
+        int id = node_id;
+        XADDNode n = getExistNode(node_id);
         
         // Traverse decision diagram until terminal found
         while (n instanceof XADDINode) {
-        	XADDINode inode = (XADDINode) n;
-        	Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
+            XADDINode inode = (XADDINode) n;
+            Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
             // Not all required variables were assigned
-            if (branch_high == null)	return null;
+            if (branch_high == null)    return null;
             // Advance down to next node
             id = branch_high ? inode._high : inode._low;
             n = getExistNode(id);
@@ -1358,7 +1358,7 @@ public class XADD {
                     ret_xadd = apply(ONE, apply(expr1_xadd, expr2_xadd, PROD), MINUS);
                 }
                 //System.out.println("LINEARIZE -- started with: " + e + "... returning\n" +
-                //		getString(ret_xadd));
+                //        getString(ret_xadd));
                 //System.exit(1);
                 return ret_xadd;
             }
@@ -1668,20 +1668,20 @@ public class XADD {
             String[] split = line.split("\t");
             file_id = new Integer(split[1]);
             if (split[0].equals("T")) {
-                //T	2	0	null
-                //T	234	(-0.5 + (0.01 * x2))	null
+                //T    2    0    null
+                //T    234    (-0.5 + (0.01 * x2))    null
                 ArithExpr expr = ArithExpr.ParseArithExpr(split[2]);
                 Object annotation = (split[3].equals("null") ? null : split[3]);
                 xadd_id = getTermNode(expr, annotation);
                 old2new_node.put(file_id, xadd_id);
 
             } else if (split[0].equals("B")) {
-                //B	1	tp
+                //B    1    tp
                 xadd_id = getVarIndex(new BoolDec(split[2]), true);
                 old2new_dec.put(file_id, xadd_id);
 
             } else if (split[0].equals("E")) {
-                //E	39	(-1 + (0.000217 * x1) + (0.000435 * x2)) > 0
+                //E    39    (-1 + (0.000217 * x1) + (0.000435 * x2)) > 0
                 CompExpr comp_expr = CompExpr.ParseCompExpr(split[2]);
                 xadd_id = getVarIndex(new ExprDec(comp_expr), true);
                 old2new_dec.put(file_id, xadd_id);
@@ -1691,8 +1691,8 @@ public class XADD {
                 // We assume all children and decisions are exported before parents,
                 // hence we've built the children, we just have to translate IDs
 
-                //	file_id	var	low	high
-                //I	1186	3	709	1185
+                //    file_id    var    low    high
+                //I    1186    3    709    1185
                 int var = old2new_dec.get(new Integer(split[2]));
                 int low = old2new_node.get(new Integer(split[3]));
                 int high = old2new_node.get(new Integer(split[4]));
@@ -1739,76 +1739,76 @@ public class XADD {
     }
 
     ///////////////////////////////////////
-    // 			Mask Functions			 //
+    //             Mask Functions             //
     ///////////////////////////////////////    
-	
+    
     public Integer createMask(Integer id,
-	HashMap<String, Boolean> bool_assign,
-	HashMap<String, Double> cont_assign, Integer mask_id) {
-    	return reduceMask(id, bool_assign, cont_assign, mask_id, new HashMap<Integer,Integer>());
+    HashMap<String, Boolean> bool_assign,
+    HashMap<String, Double> cont_assign, Integer mask_id) {
+        return reduceMask(id, bool_assign, cont_assign, mask_id, new HashMap<Integer,Integer>());
     }
     
     private Integer reduceMask(Integer id,
-			HashMap<String, Boolean> bool_assign,
-			HashMap<String, Double> cont_assign, Integer mask_id, HashMap<Integer,Integer> maskCache) {
+            HashMap<String, Boolean> bool_assign,
+            HashMap<String, Double> cont_assign, Integer mask_id, HashMap<Integer,Integer> maskCache) {
 
-    		Integer ret = null;
-    		if ( (ret = maskCache.get(id))!= null){
-    			return ret;
-    		}
-    			
-    		XADDNode n = getExistNode(id);
+            Integer ret = null;
+            if ( (ret = maskCache.get(id))!= null){
+                return ret;
+            }
+                
+            XADDNode n = getExistNode(id);
 
-    		if (n instanceof XADDTNode) {
-    			ret = id;
-    		}
-    		else{
-    			if (!(n instanceof XADDINode)) { System.err.println("Invalid node, neither TNode nor INode:\n"+n.toString()); } 
+            if (n instanceof XADDTNode) {
+                ret = id;
+            }
+            else{
+                if (!(n instanceof XADDINode)) { System.err.println("Invalid node, neither TNode nor INode:\n"+n.toString()); } 
                 // Traverse decision diagram until terminal found
-    			XADDINode inode = (XADDINode) n;
+                XADDINode inode = (XADDINode) n;
                 Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
                 
                 
                 if (branch_high == null){
-                	//Not all required variables were assigned, mask both paths
-                	ret = getINode(inode._var, reduceMask(inode._low, bool_assign, cont_assign, mask_id, maskCache), 
-                			reduceMask(inode._high, bool_assign, cont_assign,mask_id, maskCache));
+                    //Not all required variables were assigned, mask both paths
+                    ret = getINode(inode._var, reduceMask(inode._low, bool_assign, cont_assign, mask_id, maskCache), 
+                            reduceMask(inode._high, bool_assign, cont_assign,mask_id, maskCache));
                 }
                 else{                
-                	ret = branch_high ? getINode(inode._var, mask_id, reduceMask(inode._high, bool_assign, cont_assign,mask_id, maskCache)):
-                						getINode(inode._var, reduceMask(inode._low, bool_assign, cont_assign,mask_id, maskCache), mask_id);
+                    ret = branch_high ? getINode(inode._var, mask_id, reduceMask(inode._high, bool_assign, cont_assign,mask_id, maskCache)):
+                                        getINode(inode._var, reduceMask(inode._low, bool_assign, cont_assign,mask_id, maskCache), mask_id);
                 }
                 
             }
-    		maskCache.put(id, ret);
+            maskCache.put(id, ret);
             return ret;
     }
 
 //    public Integer createPosInfMask(Integer id,HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign){
-//    	return createMask(id, bool_assign, cont_assign, POS_INF);
+//        return createMask(id, bool_assign, cont_assign, POS_INF);
 //    }
     
 //    public Integer createPosInfMask(Integer id,
-//			HashMap<String, Boolean> bool_assign,
-//			HashMap<String, Double> cont_assign) {
+//            HashMap<String, Boolean> bool_assign,
+//            HashMap<String, Double> cont_assign) {
 //
-//    		XADDNode n = getExistNode(id);
+//            XADDNode n = getExistNode(id);
 //
 //            // Traverse decision diagram until terminal found
-//    		if (n instanceof XADDINode) {
+//            if (n instanceof XADDINode) {
 //                XADDINode inode = (XADDINode) n;
 //                Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
 //                
 //                //Not all required variables were assigned
 //                if (branch_high == null){
-//                	return getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), createPosInfMask(inode._high, bool_assign, cont_assign));
+//                    return getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), createPosInfMask(inode._high, bool_assign, cont_assign));
 //                }
 //                
 //                // Advance down to next node
 //                return branch_high ? getINode(inode._var, POS_INF, createPosInfMask(inode._high, bool_assign, cont_assign)):
-//                					 getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), POS_INF);
+//                                     getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), POS_INF);
 //            }
-//    		
+//            
 //            // else id is a TNode, trivial mask
 //            return id;
 //    }
@@ -1816,7 +1816,7 @@ public class XADD {
     
     
     ///////////////////////////////////////
-    // 			Helper Classes 			 //
+    //             Helper Classes              //
     ///////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////////////////////
@@ -2752,7 +2752,7 @@ public class XADD {
             StringBuffer sb = new StringBuffer();
             sb.append("( "/*
              * "#" + _hmNode2Int.get(this) + " v" + _var + ": "
-			 */ + "[" + _alOrder.get(_var).toString(format) + "]");
+             */ + "[" + _alOrder.get(_var).toString(format) + "]");
 
             // Node level cache
             XADDNode n2 = _hmInt2Node.get(_high);
@@ -2999,118 +2999,118 @@ public class XADD {
 
 
 
-//	// USED PREVIOUSLY WHEN WORKING WITH DIVISORS, UNUSED NOW
+//    // USED PREVIOUSLY WHEN WORKING WITH DIVISORS, UNUSED NOW
 //  // KEEPING IN B/C WE MAY NEED TO WORK WITH POLY FRACTIONS IN FUTURE
-//	public static DoubleExpr findVar(ArithExpr expr, String action,
-//			boolean nonlinear) {
-//		DoubleExpr result = (DoubleExpr) ZERO;
-//		if (expr instanceof OperExpr && ((OperExpr) expr)._type == SUM) {
-//			// sum of products
-//			OperExpr eOp = ((OperExpr) expr);
-//			for (ArithExpr e : eOp._terms) {
-//				if (e instanceof OperExpr) {
-//					result = findVarTerm((OperExpr) e, action, nonlinear);
-//					if (result != (DoubleExpr) ZERO)
-//						return result;
-//				} else if (e instanceof VarExpr) {
-//					OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
-//					result = findVarTerm(temp, action, nonlinear);
-//					if (result != (DoubleExpr) ZERO)
-//						return result;
-//				}
-//			}
-//		} else if (expr instanceof OperExpr && ((OperExpr) expr)._type == PROD) {
-//			result = findVarTerm((OperExpr) expr, action, nonlinear);
-//			if (result != (DoubleExpr) ZERO)
-//				return result;
-//		} else if ((expr instanceof VarExpr) || (expr instanceof DoubleExpr)) {
-//			OperExpr temp = new OperExpr(PROD, Arrays.asList(expr));
-//			result = findVarTerm(temp, action, nonlinear);
-//			if (result != (DoubleExpr) ZERO)
-//				return result;
-//		}
-//		return result;
-//	}
-//	public static DoubleExpr findVarTerm(OperExpr expr, String action1,
-//			boolean nonlinear) {
+//    public static DoubleExpr findVar(ArithExpr expr, String action,
+//            boolean nonlinear) {
+//        DoubleExpr result = (DoubleExpr) ZERO;
+//        if (expr instanceof OperExpr && ((OperExpr) expr)._type == SUM) {
+//            // sum of products
+//            OperExpr eOp = ((OperExpr) expr);
+//            for (ArithExpr e : eOp._terms) {
+//                if (e instanceof OperExpr) {
+//                    result = findVarTerm((OperExpr) e, action, nonlinear);
+//                    if (result != (DoubleExpr) ZERO)
+//                        return result;
+//                } else if (e instanceof VarExpr) {
+//                    OperExpr temp = new OperExpr(PROD, Arrays.asList(e));
+//                    result = findVarTerm(temp, action, nonlinear);
+//                    if (result != (DoubleExpr) ZERO)
+//                        return result;
+//                }
+//            }
+//        } else if (expr instanceof OperExpr && ((OperExpr) expr)._type == PROD) {
+//            result = findVarTerm((OperExpr) expr, action, nonlinear);
+//            if (result != (DoubleExpr) ZERO)
+//                return result;
+//        } else if ((expr instanceof VarExpr) || (expr instanceof DoubleExpr)) {
+//            OperExpr temp = new OperExpr(PROD, Arrays.asList(expr));
+//            result = findVarTerm(temp, action, nonlinear);
+//            if (result != (DoubleExpr) ZERO)
+//                return result;
+//        }
+//        return result;
+//    }
+//    public static DoubleExpr findVarTerm(OperExpr expr, String action1,
+//            boolean nonlinear) {
 //
-//		// Process all terms (optional double followed by vars)
-//		int _var_count = 0;
-//		double coef = 1d;
-//		for (ArithExpr e : expr._terms) {
-//			if (e instanceof DoubleExpr) {
-//				coef *= ((DoubleExpr) e)._dConstVal;
-//			} else if (e instanceof OperExpr) {
-//				// don't divide if it comes here, makes it complicated
-//			} else if (e instanceof VarExpr) {
-//				// Both interned so we can test direct equality
-//				if (((VarExpr) e)._sVarName.equals(action1)) {
-//					_var_count++;
-//				}
-//			} else {
-//				System.out.println("findVarTerm: Unsupported expression '" + e
-//						+ "'");
-//				System.exit(1);
-//			}
-//		}
+//        // Process all terms (optional double followed by vars)
+//        int _var_count = 0;
+//        double coef = 1d;
+//        for (ArithExpr e : expr._terms) {
+//            if (e instanceof DoubleExpr) {
+//                coef *= ((DoubleExpr) e)._dConstVal;
+//            } else if (e instanceof OperExpr) {
+//                // don't divide if it comes here, makes it complicated
+//            } else if (e instanceof VarExpr) {
+//                // Both interned so we can test direct equality
+//                if (((VarExpr) e)._sVarName.equals(action1)) {
+//                    _var_count++;
+//                }
+//            } else {
+//                System.out.println("findVarTerm: Unsupported expression '" + e
+//                        + "'");
+//                System.exit(1);
+//            }
+//        }
 //
-//		if ((nonlinear) && (_var_count > 1))
-//			return new DoubleExpr(coef);
-//		else if ((!nonlinear) && (_var_count > 0))
-//			return new DoubleExpr(coef);
-//		else
-//			return (DoubleExpr) ZERO;
+//        if ((nonlinear) && (_var_count > 1))
+//            return new DoubleExpr(coef);
+//        else if ((!nonlinear) && (_var_count > 0))
+//            return new DoubleExpr(coef);
+//        else
+//            return (DoubleExpr) ZERO;
 //
-//	}
+//    }
 
-//	// SCOTT - Another unused method
-//	// LUIS  - Good to comment out for now, but eventually we may need to track substitutions
-//	//         and that's what this method was intended for -- should be generalized though
-//	//         from "policy" to substitutions.
-//	public Double evaluate_policy(int node_id,
-//			HashMap<String, Boolean> bool_assign,
-//			HashMap<String, Double> cont_assign) {
+//    // SCOTT - Another unused method
+//    // LUIS  - Good to comment out for now, but eventually we may need to track substitutions
+//    //         and that's what this method was intended for -- should be generalized though
+//    //         from "policy" to substitutions.
+//    public Double evaluate_policy(int node_id,
+//            HashMap<String, Boolean> bool_assign,
+//            HashMap<String, Double> cont_assign) {
 //
-//		// Get root
-//		XADDNode n = _hmInt2Node.get(node_id);
+//        // Get root
+//        XADDNode n = _hmInt2Node.get(node_id);
 //
-//		// Traverse decision diagram until terminal found
-//		while (n instanceof XADDINode) {
-//			XADDINode inode = (XADDINode) n;
-//			Decision d = _alOrder.get(inode._var);
-//			Boolean branch_high = null;
-//			if (d instanceof TautDec)
-//				branch_high = ((TautDec) d)._bTautology;
-//			else if (d instanceof BoolDec)
-//				branch_high = bool_assign.get(((BoolDec) d)._sVarName);
-//			else if (d instanceof ExprDec) {
-//				branch_high = ((ExprDec) d)._expr.evaluate(cont_assign);
-//				if (SHOW_DECISION_EVAL) {
-//					// System.out.println(" - " + ((ExprDec) d)._expr + ": " +
-//					// branch_high);
-//				}
-//			}
+//        // Traverse decision diagram until terminal found
+//        while (n instanceof XADDINode) {
+//            XADDINode inode = (XADDINode) n;
+//            Decision d = _alOrder.get(inode._var);
+//            Boolean branch_high = null;
+//            if (d instanceof TautDec)
+//                branch_high = ((TautDec) d)._bTautology;
+//            else if (d instanceof BoolDec)
+//                branch_high = bool_assign.get(((BoolDec) d)._sVarName);
+//            else if (d instanceof ExprDec) {
+//                branch_high = ((ExprDec) d)._expr.evaluate(cont_assign);
+//                if (SHOW_DECISION_EVAL) {
+//                    // System.out.println(" - " + ((ExprDec) d)._expr + ": " +
+//                    // branch_high);
+//                }
+//            }
 //
-//			// Not all required variables were assigned
-//			if (branch_high == null)
-//				return null;
+//            // Not all required variables were assigned
+//            if (branch_high == null)
+//                return null;
 //
-//			// Advance down to next node
-//			n = _hmInt2Node.get(branch_high ? inode._high : inode._low);
-//		}
+//            // Advance down to next node
+//            n = _hmInt2Node.get(branch_high ? inode._high : inode._low);
+//        }
 //
-//		// Now at a terminal node so evaluate expression
-//		//
-//		XADDTNode t = (XADDTNode) n;
-//		if (t._annotate_action == null)
-//			t._annotate_action = "";
-//		if (t._annotate == null)
-//			t._annotate = new DoubleExpr(0);
-//		if (t._annotate_action.contains("no"))
-//			return (-1 * t._annotate.evaluate(cont_assign));
-//		else
-//			return t._annotate.evaluate(cont_assign);
-//	}
+//        // Now at a terminal node so evaluate expression
+//        //
+//        XADDTNode t = (XADDTNode) n;
+//        if (t._annotate_action == null)
+//            t._annotate_action = "";
+//        if (t._annotate == null)
+//            t._annotate = new DoubleExpr(0);
+//        if (t._annotate_action.contains("no"))
+//            return (-1 * t._annotate.evaluate(cont_assign));
+//        else
+//            return t._annotate.evaluate(cont_assign);
+//    }
 
 
 }
