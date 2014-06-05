@@ -1,0 +1,8 @@
+var	knorth	0	0.02	1
+var	kwest	0   0.02	1
+cassign vnorth 0.5
+cassign vwest 0.5
+cassign vcenter 0.5
+cassign kcenter 0.5
+bassign highN false
+bassign highW false

@@ -1,0 +1,76 @@
+cvariables (knorth vnorth kwest vwest kcenter vcenter)
+min-values (0 0 0 0 0 0)
+max-values (1 1 1 1 1 1)
+bvariables (highN highW)
+nvariables()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables()
+
+action greenN
+highN' ([0.5])
+highW' ([0.25])
+knorth' (highN
+            ([knorth * (1 - vcenter) + 0.2 >= 1]
+                ([1])
+                ([knorth * (1 - vcenter) + 0.2 <= 0]
+                    ([0])
+                    ([knorth * (1 - vcenter) + 0.2])
+                )
+            )
+            ([knorth * (1 - vcenter) + 0.1 >= 1]
+                ([1])
+                ([knorth * (1 - vcenter) + 0.1 <= 0]
+                    ([0])
+                    ([knorth * (1 - vcenter) + 0.1])
+                )
+            )
+        )
+vnorth' ([knorth < 0.25]
+            ([0.5])
+            ([knorth < 0.5]
+                ([0.75 - knorth])
+                ([0.25*(-1*knorth*knorth*knorth + 4*knorth*knorth + 6*knorth + 3)])
+            )
+        )        
+kwest' (highW
+            ([kwest * (1 - vcenter) + 0.2 >= 1]
+                ([1])
+                ([kwest * (1 - vcenter) + 0.2 <= 0]
+                    ([0])
+                    ([kwest * (1 - vcenter) + 0.2])
+                )
+            )
+            ([kwest * (1 - vcenter) + 0.1 >= 1]
+                ([1])
+                ([kwest * (1 - vcenter) + 0.1 <= 0]
+                    ([0])
+                    ([kwest * (1 - vcenter) + 0.1])
+                )
+            )
+        )
+vwest' ([kwest < 0.25]
+            ([0.5])
+            ([kwest < 0.5]
+                ([0.75 - kwest])
+                ([0.25*(-1*kwest*kwest*kwest + 4*kwest*kwest + 6*kwest + 3)])
+            )
+        )
+kcenter' ([3.0])
+vcenter' ([4.0])
+reward ([kcenter > 0.3]
+            ([0.3])
+            ([kcenter > 0]
+                ([kcenter])
+                ([0.0])
+            )
+       )
+endaction
+
+discount 1.0000000
+InitialState (0 0 0 0 0 0) (false false) 
+iterations 12
+NONLINEAR
+MAXREWARD 1

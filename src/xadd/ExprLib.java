@@ -178,7 +178,7 @@ public abstract class ExprLib {
         }
 
         public boolean isGreater(){
-        	return (_type == CompOperation.GT || _type == CompOperation.GT_EQ);
+            return (_type == CompOperation.GT || _type == CompOperation.GT_EQ);
         }
         public String toString(boolean format) {
             return _lhs.toString(format) + " " + _type + " "
@@ -268,146 +268,146 @@ public abstract class ExprLib {
                     break;
             }
 
-            //		// TREATMENT OF DIVISION -- NOT CURRENTLY BEING USED BUT LEAVING IN
-            //		// SINCE CRUCIAL IF WORKING WITH POLYNOMIAL FRACTIONS IN FUTURE
+            //        // TREATMENT OF DIVISION -- NOT CURRENTLY BEING USED BUT LEAVING IN
+            //        // SINCE CRUCIAL IF WORKING WITH POLYNOMIAL FRACTIONS IN FUTURE
             //
-            //		// find first divisor on lhs
-            //		// only change the decision of the expr, not the _lhs,rhs
-            //		// NOTE: it does not matter which side the divisor belongs to, a
-            //		// negative expr changes the sign, a positive one does not.
-            //		// indicate that division has been multiplied
-            //		ArithExpr div = null;
+            //        // find first divisor on lhs
+            //        // only change the decision of the expr, not the _lhs,rhs
+            //        // NOTE: it does not matter which side the divisor belongs to, a
+            //        // negative expr changes the sign, a positive one does not.
+            //        // indicate that division has been multiplied
+            //        ArithExpr div = null;
             //
-            //		CompExpr temp_expr = new CompExpr(new_expr._type, new_expr._lhs,
-            //				new_expr._rhs);
-            //		do {
-            //			div = null;
-            //			if (temp_expr._lhs instanceof OperExpr)
-            //				div = checkDivisor((OperExpr) temp_expr._lhs, div);
-            //			if (div != null) {
-            //				// CANONICAL_DIVISOR.add(div);
-            //				// left side
-            //				if (showDiv.size() > 0) {
-            //					for (int i = 0; i < showDiv.size(); i++)
-            //						if (showDiv.get(i) != div)
-            //							showDiv.add(div);
-            //				} else
-            //					showDiv.add(div);
-            //				temp_expr._lhs = removeDivFromOtherTerms(
-            //						(OperExpr) temp_expr._lhs, div);
-            //				temp_expr._lhs = (ArithExpr) temp_expr._lhs.makeCanonical();
-            //				// we have multiplied the lhs but not the rhs, just multiply
-            //				// it
-            //				if (temp_expr._rhs instanceof OperExpr)
-            //					temp_expr._rhs = removeDivFromOtherTerms((OperExpr) temp_expr._rhs, div);
-            //				else if (temp_expr._rhs instanceof OperExpr)
-            //					temp_expr._rhs = (OperExpr) ArithExpr.op(temp_expr._rhs, div, PROD);
-            //				temp_expr._rhs = (ArithExpr) temp_expr._rhs.makeCanonical();
+            //        CompExpr temp_expr = new CompExpr(new_expr._type, new_expr._lhs,
+            //                new_expr._rhs);
+            //        do {
+            //            div = null;
+            //            if (temp_expr._lhs instanceof OperExpr)
+            //                div = checkDivisor((OperExpr) temp_expr._lhs, div);
+            //            if (div != null) {
+            //                // CANONICAL_DIVISOR.add(div);
+            //                // left side
+            //                if (showDiv.size() > 0) {
+            //                    for (int i = 0; i < showDiv.size(); i++)
+            //                        if (showDiv.get(i) != div)
+            //                            showDiv.add(div);
+            //                } else
+            //                    showDiv.add(div);
+            //                temp_expr._lhs = removeDivFromOtherTerms(
+            //                        (OperExpr) temp_expr._lhs, div);
+            //                temp_expr._lhs = (ArithExpr) temp_expr._lhs.makeCanonical();
+            //                // we have multiplied the lhs but not the rhs, just multiply
+            //                // it
+            //                if (temp_expr._rhs instanceof OperExpr)
+            //                    temp_expr._rhs = removeDivFromOtherTerms((OperExpr) temp_expr._rhs, div);
+            //                else if (temp_expr._rhs instanceof OperExpr)
+            //                    temp_expr._rhs = (OperExpr) ArithExpr.op(temp_expr._rhs, div, PROD);
+            //                temp_expr._rhs = (ArithExpr) temp_expr._rhs.makeCanonical();
             //
-            //			}
-            //		} while (div != null);
+            //            }
+            //        } while (div != null);
             //
-            //		do {
-            //			div = null;
-            //			if (temp_expr._rhs instanceof OperExpr)
-            //				div = checkDivisor((OperExpr) temp_expr._rhs, div);
-            //			if (div != null) {
-            //				// CANONICAL_DIVISOR.add(div);
-            //				if (showDiv.size() > 0) {
-            //					for (int i = 0; i < showDiv.size(); i++)
-            //						if (showDiv.get(i) != div)
-            //							showDiv.add(div);
-            //				} else
-            //					showDiv.add(div);
-            //				temp_expr._rhs = removeDivFromOtherTerms(
-            //						(OperExpr) temp_expr._rhs, div);
-            //				temp_expr._rhs = (ArithExpr) temp_expr._rhs.makeCanonical();
-            //				// we have multiplied the lhs but not the rhs, just multiply
-            //				// it
-            //				if (temp_expr._lhs instanceof OperExpr)
-            //					temp_expr._lhs = removeDivFromOtherTerms(
-            //							(OperExpr) temp_expr._lhs, div);
-            //				else if (temp_expr._lhs instanceof OperExpr)
-            //					temp_expr._lhs = (OperExpr) ArithExpr.op(temp_expr._lhs, div, PROD);
-            //				temp_expr._lhs = (ArithExpr) temp_expr._lhs.makeCanonical();
+            //        do {
+            //            div = null;
+            //            if (temp_expr._rhs instanceof OperExpr)
+            //                div = checkDivisor((OperExpr) temp_expr._rhs, div);
+            //            if (div != null) {
+            //                // CANONICAL_DIVISOR.add(div);
+            //                if (showDiv.size() > 0) {
+            //                    for (int i = 0; i < showDiv.size(); i++)
+            //                        if (showDiv.get(i) != div)
+            //                            showDiv.add(div);
+            //                } else
+            //                    showDiv.add(div);
+            //                temp_expr._rhs = removeDivFromOtherTerms(
+            //                        (OperExpr) temp_expr._rhs, div);
+            //                temp_expr._rhs = (ArithExpr) temp_expr._rhs.makeCanonical();
+            //                // we have multiplied the lhs but not the rhs, just multiply
+            //                // it
+            //                if (temp_expr._lhs instanceof OperExpr)
+            //                    temp_expr._lhs = removeDivFromOtherTerms(
+            //                            (OperExpr) temp_expr._lhs, div);
+            //                else if (temp_expr._lhs instanceof OperExpr)
+            //                    temp_expr._lhs = (OperExpr) ArithExpr.op(temp_expr._lhs, div, PROD);
+            //                temp_expr._lhs = (ArithExpr) temp_expr._lhs.makeCanonical();
             //
-            //			}
-            //		} while (div != null);
+            //            }
+            //        } while (div != null);
             //
-            //		// System.out.println(">> CompExpr: makeCanonical: " + _lhs + " - "
-            //		// + _rhs);
-            //		ArithExpr new_lhs = ArithExpr.op(temp_expr._lhs, temp_expr._rhs,
-            //				MINUS);
-            //		new_lhs = (ArithExpr) new_lhs.makeCanonical();
-            //		CompExpr current_expr = new CompExpr(temp_expr._type, new_lhs, ZERO);
-            //		// System.out.println(">> CompExpr: makeCanonical: " + new_expr);
+            //        // System.out.println(">> CompExpr: makeCanonical: " + _lhs + " - "
+            //        // + _rhs);
+            //        ArithExpr new_lhs = ArithExpr.op(temp_expr._lhs, temp_expr._rhs,
+            //                MINUS);
+            //        new_lhs = (ArithExpr) new_lhs.makeCanonical();
+            //        CompExpr current_expr = new CompExpr(temp_expr._type, new_lhs, ZERO);
+            //        // System.out.println(">> CompExpr: makeCanonical: " + new_expr);
             //
-            //		// divide all equation by coeff of first variable, invert type if
-            //		// negative
-            //		// if the prime versions appear, ignore!
-            //		String contVar = null;
-            //		boolean handlePrime = false;
-            //		if (!(_alContinuousVars.isEmpty())) {
-            //			for (int i = 0; i < _alContinuousVars.size(); i++) {
-            //				contVar = _alContinuousVars.get(i);
-            //				DoubleExpr doubleCoef = findVar(current_expr._lhs, contVar
-            //						+ "'", false);
-            //				if (doubleCoef != (DoubleExpr) ZERO) {
-            //					handlePrime = true;
-            //					break;
-            //				}
-            //			}
-            //			// making sure that the primes are not considered
-            //			if (!handlePrime) {
-            //				for (int i = 0; i < _alContinuousVars.size(); i++) {
-            //					contVar = _alContinuousVars.get(i);
-            //					DoubleExpr doubleCoef = (DoubleExpr) ZERO;
-            //					// first look for x*x
-            //					if (HANDLE_NONLINEAR)
-            //						doubleCoef = findVar(current_expr._lhs, contVar,
-            //								true);
-            //					if (doubleCoef == (DoubleExpr) ZERO)
-            //						doubleCoef = findVar(current_expr._lhs, contVar,
-            //								false);
-            //					if (doubleCoef != (DoubleExpr) ZERO) {
-            //						boolean flip_comparison = false;
-            //						flip_comparison = (doubleCoef._dConstVal < 0d)
-            //								&& (current_expr._type != EQ)
-            //								&& (current_expr._type != NEQ);
+            //        // divide all equation by coeff of first variable, invert type if
+            //        // negative
+            //        // if the prime versions appear, ignore!
+            //        String contVar = null;
+            //        boolean handlePrime = false;
+            //        if (!(_alContinuousVars.isEmpty())) {
+            //            for (int i = 0; i < _alContinuousVars.size(); i++) {
+            //                contVar = _alContinuousVars.get(i);
+            //                DoubleExpr doubleCoef = findVar(current_expr._lhs, contVar
+            //                        + "'", false);
+            //                if (doubleCoef != (DoubleExpr) ZERO) {
+            //                    handlePrime = true;
+            //                    break;
+            //                }
+            //            }
+            //            // making sure that the primes are not considered
+            //            if (!handlePrime) {
+            //                for (int i = 0; i < _alContinuousVars.size(); i++) {
+            //                    contVar = _alContinuousVars.get(i);
+            //                    DoubleExpr doubleCoef = (DoubleExpr) ZERO;
+            //                    // first look for x*x
+            //                    if (HANDLE_NONLINEAR)
+            //                        doubleCoef = findVar(current_expr._lhs, contVar,
+            //                                true);
+            //                    if (doubleCoef == (DoubleExpr) ZERO)
+            //                        doubleCoef = findVar(current_expr._lhs, contVar,
+            //                                false);
+            //                    if (doubleCoef != (DoubleExpr) ZERO) {
+            //                        boolean flip_comparison = false;
+            //                        flip_comparison = (doubleCoef._dConstVal < 0d)
+            //                                && (current_expr._type != EQ)
+            //                                && (current_expr._type != NEQ);
             //
-            //						current_expr._lhs = (ArithExpr) (new OperExpr(PROD,
-            //								(ArithExpr.op(new DoubleExpr(1d),
-            //										doubleCoef, DIV)),
-            //										current_expr._lhs)).makeCanonical();
-            //						int comp_oper = current_expr._type;
-            //						if (flip_comparison)
-            //							switch (comp_oper) {
-            //							case CompOperation.GT:
-            //								current_expr._type = CompOperation.LT;
-            //								break;
-            //							case CompOperation.GT_EQ:
-            //								current_expr._type = CompOperation.LT_EQ;
-            //								break;
-            //							case CompOperation.LT:
-            //								current_expr._type = CompOperation.GT;
-            //								break;
-            //							case CompOperation.LT_EQ:
-            //								current_expr._type = CompOperation.GT_EQ;
-            //								break;
-            //							}
+            //                        current_expr._lhs = (ArithExpr) (new OperExpr(PROD,
+            //                                (ArithExpr.op(new DoubleExpr(1d),
+            //                                        doubleCoef, DIV)),
+            //                                        current_expr._lhs)).makeCanonical();
+            //                        int comp_oper = current_expr._type;
+            //                        if (flip_comparison)
+            //                            switch (comp_oper) {
+            //                            case CompOperation.GT:
+            //                                current_expr._type = CompOperation.LT;
+            //                                break;
+            //                            case CompOperation.GT_EQ:
+            //                                current_expr._type = CompOperation.LT_EQ;
+            //                                break;
+            //                            case CompOperation.LT:
+            //                                current_expr._type = CompOperation.GT;
+            //                                break;
+            //                            case CompOperation.LT_EQ:
+            //                                current_expr._type = CompOperation.GT_EQ;
+            //                                break;
+            //                            }
             //
-            //						// ((ExprDec) d)._expr = comp;
-            //						break;
-            //					}
-            //				}
-            //			}
-            //		}
+            //                        // ((ExprDec) d)._expr = comp;
+            //                        break;
+            //                    }
+            //                }
+            //            }
+            //        }
 
             ArithExpr new_lhs = ArithExpr.op(new_expr._lhs, new_expr._rhs, ArithOperation.MINUS);
             new_lhs = (ArithExpr) new_lhs.makeCanonical();
             if (XADD.NORMALIZE_DECISIONS) {
                 if (new_lhs instanceof OperExpr) {
-                	// Normalize uses the first coefficient, to divide all, this may lead to problem if the coefficients are later reordered 
+                    // Normalize uses the first coefficient, to divide all, this may lead to problem if the coefficients are later reordered 
                     new_lhs = ((OperExpr) new_lhs).normalize();
                     new_lhs = new_lhs.round();
                 }
@@ -416,117 +416,117 @@ public abstract class ExprLib {
             return new_expr;
         }
 
-        //	// TREATMENT OF DIVISION -- NOT CURRENTLY BEING USED BUT LEAVING IN
-        //	// SINCE CRUCIAL IF WORKING WITH POLYNOMIAL FRACTIONS IN FUTURE
-        //	private OperExpr removeDivisor(OperExpr expr, ArithExpr div) {
-        //		// removing the divisor term from an OperExr that occurs on the
-        //		// lhs/rhs
-        //		// operands can be operExr or DoubleExpr
-        //		ArrayList<ArithExpr> local_terms = new ArrayList<ArithExpr>(
-        //				expr._terms);
-        //		local_terms.set(1, new DoubleExpr(1d));
-        //		// expr._type = PROD;
-        //		// expr = (OperExpr) expr._terms.get(0);
-        //		return new OperExpr(expr._type, local_terms);
-        //		// removing the divisor term from the expression
+        //    // TREATMENT OF DIVISION -- NOT CURRENTLY BEING USED BUT LEAVING IN
+        //    // SINCE CRUCIAL IF WORKING WITH POLYNOMIAL FRACTIONS IN FUTURE
+        //    private OperExpr removeDivisor(OperExpr expr, ArithExpr div) {
+        //        // removing the divisor term from an OperExr that occurs on the
+        //        // lhs/rhs
+        //        // operands can be operExr or DoubleExpr
+        //        ArrayList<ArithExpr> local_terms = new ArrayList<ArithExpr>(
+        //                expr._terms);
+        //        local_terms.set(1, new DoubleExpr(1d));
+        //        // expr._type = PROD;
+        //        // expr = (OperExpr) expr._terms.get(0);
+        //        return new OperExpr(expr._type, local_terms);
+        //        // removing the divisor term from the expression
         //
-        //	}
+        //    }
         //
-        //	// steps to multiply all terms by the divisor
-        //	private ArithExpr checkDivisor(OperExpr changing_expr, ArithExpr divisor) {
-        //		if (divisor == null) {
-        //			if (changing_expr._type == DIV) {
-        //				divisor = (ArithExpr) changing_expr._terms.get(1);
-        //				// (1)remove the divisor term from that term
-        //				changing_expr = removeDivisor(changing_expr, divisor);
-        //				// do not take division sign out for the next iteration
-        //				return divisor;
+        //    // steps to multiply all terms by the divisor
+        //    private ArithExpr checkDivisor(OperExpr changing_expr, ArithExpr divisor) {
+        //        if (divisor == null) {
+        //            if (changing_expr._type == DIV) {
+        //                divisor = (ArithExpr) changing_expr._terms.get(1);
+        //                // (1)remove the divisor term from that term
+        //                changing_expr = removeDivisor(changing_expr, divisor);
+        //                // do not take division sign out for the next iteration
+        //                return divisor;
         //
-        //			}
+        //            }
         //
-        //			else // have to go inside the expr
-        //			{
-        //				for (int i = 0; i < changing_expr._terms.size(); i++) {
-        //					if (changing_expr._terms.get(i) instanceof OperExpr)
-        //						divisor = checkDivisor(
-        //								(OperExpr) changing_expr._terms.get(i),
-        //								divisor);
-        //					if (divisor != null)
-        //						break;
-        //				}
-        //			}
-        //		}
-        //		return divisor;
-        //	}
+        //            else // have to go inside the expr
+        //            {
+        //                for (int i = 0; i < changing_expr._terms.size(); i++) {
+        //                    if (changing_expr._terms.get(i) instanceof OperExpr)
+        //                        divisor = checkDivisor(
+        //                                (OperExpr) changing_expr._terms.get(i),
+        //                                divisor);
+        //                    if (divisor != null)
+        //                        break;
+        //                }
+        //            }
+        //        }
+        //        return divisor;
+        //    }
         //
-        //	public OperExpr removeDivFromOtherTerms(OperExpr changing_expr,
-        //			ArithExpr divisor) {
-        //		OperExpr temp_expr = new OperExpr(changing_expr._type,
-        //				changing_expr._terms);
-        //		if (temp_expr._type == SUM)// we have to go in one level
-        //		{
-        //			ArrayList<ArithExpr> oper_list = new ArrayList<ArithExpr>();
-        //			for (int i = 0; i < temp_expr._terms.size(); i++)
-        //				if (temp_expr._terms.get(i) instanceof OperExpr)
-        //					oper_list.add(removeDivFromOtherTerms(
-        //							(OperExpr) temp_expr._terms.get(i), divisor));
-        //				else if (temp_expr._terms.get(i) instanceof DoubleExpr)
-        //					oper_list.add(ArithExpr.op(temp_expr._terms.get(i),
-        //							divisor, PROD));
-        //			for (int i = 0; i < oper_list.size(); i++)
-        //				return new OperExpr(SUM, oper_list);
-        //		}
-        //		// found the first instance of divisor.search the rest of the expr
-        //		// for the divisor
-        //		// for (int j=0;j<changing_expr._terms.size();j++)
-        //		// in the other statements there is either product or division (sum
-        //		// of products, this level is the products level)
-        //		else {
-        //			if (temp_expr._type == DIV) {
-        //				ArithExpr other_divisor = (ArithExpr) temp_expr._terms
-        //						.get(1);
-        //				// (1)remove the divisor term from that term
-        //				if (divisor.equals(other_divisor)) {
-        //					temp_expr = removeDivisor(temp_expr, divisor);
-        //					temp_expr._type = PROD;
-        //				} else
-        //					temp_expr = (OperExpr) ArithExpr.op(temp_expr, divisor,
-        //							PROD);
-        //			} else if (temp_expr._type == PROD) {
-        //				boolean removedDiv = false;
-        //				for (int k = 0; k < temp_expr._terms.size(); k++)
-        //					if (temp_expr._terms.get(k) instanceof OperExpr) {
-        //						if ((((OperExpr) temp_expr._terms.get(k))._type == DIV)
-        //								&& (((OperExpr) temp_expr._terms.get(k))._terms
-        //										.get(1).equals(divisor))) {
-        //							temp_expr._terms.set(
-        //									k,
-        //									removeDivisor(
-        //											(OperExpr) temp_expr._terms
-        //											.get(k), divisor));
-        //							((OperExpr) temp_expr._terms.get(k))._type = PROD;
-        //							removedDiv = true;
-        //						} else if ((((OperExpr) temp_expr._terms.get(k))._type == DIV)
-        //								&& (((OperExpr) temp_expr._terms.get(k))._terms
-        //										.get(1).equals(1d)))// previously
-        //							// found divisor
-        //						{
-        //							((OperExpr) temp_expr._terms.get(k))._type = PROD;
-        //							removedDiv = true;
-        //						}
+        //    public OperExpr removeDivFromOtherTerms(OperExpr changing_expr,
+        //            ArithExpr divisor) {
+        //        OperExpr temp_expr = new OperExpr(changing_expr._type,
+        //                changing_expr._terms);
+        //        if (temp_expr._type == SUM)// we have to go in one level
+        //        {
+        //            ArrayList<ArithExpr> oper_list = new ArrayList<ArithExpr>();
+        //            for (int i = 0; i < temp_expr._terms.size(); i++)
+        //                if (temp_expr._terms.get(i) instanceof OperExpr)
+        //                    oper_list.add(removeDivFromOtherTerms(
+        //                            (OperExpr) temp_expr._terms.get(i), divisor));
+        //                else if (temp_expr._terms.get(i) instanceof DoubleExpr)
+        //                    oper_list.add(ArithExpr.op(temp_expr._terms.get(i),
+        //                            divisor, PROD));
+        //            for (int i = 0; i < oper_list.size(); i++)
+        //                return new OperExpr(SUM, oper_list);
+        //        }
+        //        // found the first instance of divisor.search the rest of the expr
+        //        // for the divisor
+        //        // for (int j=0;j<changing_expr._terms.size();j++)
+        //        // in the other statements there is either product or division (sum
+        //        // of products, this level is the products level)
+        //        else {
+        //            if (temp_expr._type == DIV) {
+        //                ArithExpr other_divisor = (ArithExpr) temp_expr._terms
+        //                        .get(1);
+        //                // (1)remove the divisor term from that term
+        //                if (divisor.equals(other_divisor)) {
+        //                    temp_expr = removeDivisor(temp_expr, divisor);
+        //                    temp_expr._type = PROD;
+        //                } else
+        //                    temp_expr = (OperExpr) ArithExpr.op(temp_expr, divisor,
+        //                            PROD);
+        //            } else if (temp_expr._type == PROD) {
+        //                boolean removedDiv = false;
+        //                for (int k = 0; k < temp_expr._terms.size(); k++)
+        //                    if (temp_expr._terms.get(k) instanceof OperExpr) {
+        //                        if ((((OperExpr) temp_expr._terms.get(k))._type == DIV)
+        //                                && (((OperExpr) temp_expr._terms.get(k))._terms
+        //                                        .get(1).equals(divisor))) {
+        //                            temp_expr._terms.set(
+        //                                    k,
+        //                                    removeDivisor(
+        //                                            (OperExpr) temp_expr._terms
+        //                                            .get(k), divisor));
+        //                            ((OperExpr) temp_expr._terms.get(k))._type = PROD;
+        //                            removedDiv = true;
+        //                        } else if ((((OperExpr) temp_expr._terms.get(k))._type == DIV)
+        //                                && (((OperExpr) temp_expr._terms.get(k))._terms
+        //                                        .get(1).equals(1d)))// previously
+        //                            // found divisor
+        //                        {
+        //                            ((OperExpr) temp_expr._terms.get(k))._type = PROD;
+        //                            removedDiv = true;
+        //                        }
         //
-        //					}// after if
-        //				if (!removedDiv)
-        //					temp_expr = (OperExpr) (ArithExpr.op(temp_expr,
-        //							divisor, PROD));
-        //			} else
-        //				temp_expr = (OperExpr) (ArithExpr.op(temp_expr, divisor,
-        //						PROD));
-        //			// }
-        //			// changing_expr.makeCanonical();
-        //		}
-        //		return new OperExpr(temp_expr._type, temp_expr._terms);
-        //	}
+        //                    }// after if
+        //                if (!removedDiv)
+        //                    temp_expr = (OperExpr) (ArithExpr.op(temp_expr,
+        //                            divisor, PROD));
+        //            } else
+        //                temp_expr = (OperExpr) (ArithExpr.op(temp_expr, divisor,
+        //                        PROD));
+        //            // }
+        //            // changing_expr.makeCanonical();
+        //        }
+        //        return new OperExpr(temp_expr._type, temp_expr._terms);
+        //    }
 
         public boolean equals(Object o) {
             if (o instanceof CompExpr) {
@@ -826,9 +826,9 @@ public abstract class ExprLib {
         }
 
         // COMMENTED BY HADI
-//	public int hashCode() {
-//		return _terms.toString().hashCode() - _type.hashCode();
-//	}
+//    public int hashCode() {
+//        return _terms.toString().hashCode() - _type.hashCode();
+//    }
 // ADDED BY HADI
         @Override
         public int hashCode() {
@@ -1012,10 +1012,10 @@ public abstract class ExprLib {
 
             if (_type == ArithOperation.SUM) {
 
-            	//Error doesn't check for more than one term with the same variables!
+                //Error doesn't check for more than one term with the same variables!
                 HashSet<ArithExpr> seenVars = new HashSet<ArithExpr>();
 
-            	// Ensure all subterms are canonical
+                // Ensure all subterms are canonical
                 for (int i = 0; i < _terms.size(); i++) {
 
                     // First term can be a constant so long as more than one
@@ -1040,7 +1040,7 @@ public abstract class ExprLib {
                     OperExpr term = (OperExpr) _terms.get(i);
                     ArrayList<ArithExpr> termlist = new ArrayList<ArithExpr>(term._terms); //make a copy to avoid changing decisions
                     if (!(termlist.get(0) instanceof DoubleExpr))
-                    	return false;
+                        return false;
                     termlist.remove(0); //remove Double constant to obtain var name
                     OperExpr Var = new OperExpr(term._type, termlist);
                     if (!seenVars.add(Var)) return false; //repeated var
@@ -1824,10 +1824,10 @@ public abstract class ExprLib {
         }
 
         //      COMMENTED BY HADI
-//		@Override
-//		public int hashCode() {
-//			return _funName.hashCode() + _args.hashCode();
-//		}
+//        @Override
+//        public int hashCode() {
+//            return _funName.hashCode() + _args.hashCode();
+//        }
         //ADDED BY HADI:
         @Override
         public int hashCode() {
