@@ -106,7 +106,7 @@ otherwise it is rejected and the process is repeated.
 If $c$ is too small, the speed of this algorithm is low since often lots of samples are taken until one is accepted.
 
 \emph{Metropolis-Hastings (MH)}:
-To generate a new sample $\bvec{x}^{(t)}$ of a distribution $p(\bvec{x})$ given a previously taken sample $\bvec{x}^{(t-1)}$ in a Markov Chain, 
+To generate a new Markov Chain Monte Carlo (MCMC) sample $\bvec{x}^{(t)}$ of a distribution $p(\bvec{x})$ given a previously taken sample $\bvec{x}^{(t-1)}$, 
 firstly, a sample $\bvec{x}'$ is taken 
 from a symmetric \emph{proposal density} $q(\bvec{x} |\, \bvec{x}^{(t-1)})$ 
 from which samples can be taken efficiently 
@@ -117,16 +117,17 @@ Choosing a `right' \emph{proposal} is problem-dependent and requires tuning.
 
 
 \emph{Gibbs sampling}:
-In this method, to generate a new sample for variables $\bvec{x} = (x_1, \ldots, x_N)$, 
+In this MCMC method, to generate a new sample for variables $\bvec{x} = (x_1, \ldots, x_N)$, 
 each one of them is sampled conditioned on the others being instantiated with their last sampled values:
 $x_i \sim p(x_i | \bvec{x}_{-i})$. 
-Therefore,  
-computation of $N$ univariate \emph{cumulative distribution functions} (CDFs) 
+%Therefore,  
+Computation of $N$ univariate \emph{cumulative distribution functions} (CDFs) 
 (one for each $p(x_i | \, \bvec{x}_{-i})$) as well as their inverse functions is required which can be quite time consuming. 
-Due to this shortcoming, in practice, Gibbs sampling can be prohibitively expensive.   
+In practice, when these integrals are not convenient and efficient to compute, Gibbs sampling can be prohibitively expensive.   
 
-Compared to rejection sampling or MH, the performance of Gibbs sampling on the aforementioned piecewise modes is particularly poor (see Section~\ref{sect:experiment})
-However,  we are going to propose a novel Gibbs-based sampling method which is scalable in the amount of data.
+Compared to rejection sampling or MH, the performance of Gibbs sampling on the aforementioned \emph{piecewise} models is exponential in the amount of data (see Section~\ref{sect:experiment}).  
+In this work, we propose an alternative Gibbs sampler that is linear in the amount of data.
+%However,  we are going to propose a novel Gibbs-based sampling method which is scalable in the amount of data.
 
 %\paradot{Gibbs sampling from a piecewise model}
 %CDF of a piecewise (univariate) function is clearly the summation of the CDFs of each of its partitions.
