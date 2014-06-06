@@ -1,5 +1,5 @@
 Many real-world Bayesian inference problems such as preference
-learning or modeling trader valuations in financial markets naturally
+learning or trader valuation modeling in financial markets naturally
 use piecewise likelihoods.  Unfortunately, exact closed-form inference
 in the underlying Bayesian graphical models is intractable in the
 general case and existing approximation techniques provide few
@@ -11,7 +11,7 @@ derivation of Gibbs samplers require exponential space and time in the
 amount of data.  In this work, we show how to transform problematic
 piecewise likelihoods into equivalent mixture models and then provide
 a blocked Gibbs sampling approach for this transformed model that
-achieves an exponential-to-linear reduction in space and time compared
+achieves an \emph{exponential-to-linear} reduction in space and time compared
 to a conventional Gibbs sampler.  This enables fast, asymptotically
 unbiased Bayesian inference in a new expressive class of piecewise graphical
 models and empirically requires orders of magnitude less time than
