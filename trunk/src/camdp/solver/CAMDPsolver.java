@@ -50,7 +50,7 @@ public abstract class CAMDPsolver {
     protected static boolean VALIDATION_TEST = false;
     protected static boolean PERFORMANCE_TEST = false;
     protected static boolean PLOT_DD = false;
-    protected static boolean PRINT_DD = false;
+    protected static boolean PRINT_DD = true;
     
     /* For printing */
     public final static String RESULTS_DIR = "./results"; // Diagnostic output destination
@@ -250,10 +250,18 @@ public abstract class CAMDPsolver {
             MAIN_DEBUG = true;
             PERFORMANCE_TEST = true;
         }
-        if (verb >=2) PLOT_DD = true;
-        if (verb >=3) DEEP_DEBUG = true;
-        if (verb >=4) PRINT_DD = true;
-        if (verb >=5) VALIDATION_TEST = true;        
+        if (verb >=2) DEEP_DEBUG = true;
+        if (verb >=3) {
+            PLOT_DD = true;
+            DEEP_DEBUG = false;
+        }
+        if (verb >=4) DEEP_DEBUG = true;
+        if (verb >=5) {
+            PRINT_DD = true;
+            DEEP_DEBUG = false;
+        }
+        if (verb >=6) DEEP_DEBUG = true;
+        if (verb >=7) VALIDATION_TEST = true;        
         
         
     }

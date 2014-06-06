@@ -1,7 +1,7 @@
-cvariables (knorth vnorth kwest vwest kcenter vcenter)
-min-values (0 0 0 0 0 0)
-max-values (1 1 1 1 1 1)
-bvariables (highN highW)
+cvariables (kn kw kc vc)
+min-values (0 0 0 0)
+max-values (1 1 1 1)
+bvariables(hiN hiW)
 nvariables()
 icvariables()
 min-values ()
@@ -9,68 +9,150 @@ max-values ()
 ibvariables()
 avariables()
 
-action greenN
-highN' ([0.5])
-highW' ([0.25])
-knorth' (highN
-            ([knorth * (1 - vcenter) + 0.2 >= 1]
-                ([1])
-                ([knorth * (1 - vcenter) + 0.2 <= 0]
-                    ([0])
-                    ([knorth * (1 - vcenter) + 0.2])
-                )
-            )
-            ([knorth * (1 - vcenter) + 0.1 >= 1]
-                ([1])
-                ([knorth * (1 - vcenter) + 0.1 <= 0]
-                    ([0])
-                    ([knorth * (1 - vcenter) + 0.1])
-                )
-            )
-        )
-vnorth' ([knorth < 0.25]
-            ([0.5])
-            ([knorth < 0.5]
-                ([0.75 - knorth])
-                ([0.25*(-1*knorth*knorth*knorth + 4*knorth*knorth + 6*knorth + 3)])
-            )
-        )        
-kwest' (highW
-            ([kwest * (1 - vcenter) + 0.2 >= 1]
-                ([1])
-                ([kwest * (1 - vcenter) + 0.2 <= 0]
-                    ([0])
-                    ([kwest * (1 - vcenter) + 0.2])
-                )
-            )
-            ([kwest * (1 - vcenter) + 0.1 >= 1]
-                ([1])
-                ([kwest * (1 - vcenter) + 0.1 <= 0]
-                    ([0])
-                    ([kwest * (1 - vcenter) + 0.1])
-                )
+action N80
+hiN' (hiN
+        ([0.8])
+        ([0.3])
+)
+hiW' (hiW
+        ([0.7])
+        ([0.2])
+)
+
+kn' (hiN
+        ([kn * (1 - 0.8*vc) + 0.2 >= 1]
+            ([1])
+            ([kn * (1 - 0.8*vc) + 0.2 <= 0]
+                ([0])
+                ([kn * (1 - 0.8*vc) + 0.2])
             )
         )
-vwest' ([kwest < 0.25]
-            ([0.5])
-            ([kwest < 0.5]
-                ([0.75 - kwest])
-                ([0.25*(-1*kwest*kwest*kwest + 4*kwest*kwest + 6*kwest + 3)])
+        ([kn * (1 - 0.8*vc) + 0.1 >= 1]
+            ([1])
+            ([kn * (1 - 0.8*vc) + 0.1 <= 0]
+                ([0])
+                ([kn * (1 - 0.8*vc) + 0.1])
             )
         )
-kcenter' ([3.0])
-vcenter' ([4.0])
-reward ([kcenter > 0.3]
+)
+kw' (hiW
+        ([kw * (1 - 0.2*vc) + 0.2 >= 1]
+            ([1])
+            ([kw * (1 - 0.2*vc) + 0.2 <= 0]
+                ([0])
+                ([kw * (1 - 0.2*vc) + 0.2])
+            )
+        )
+        ([kw * (1 - 0.2*vc) + 0.1 >= 1]
+            ([1])
+            ([kw * (1 - 0.2*vc) + 0.1 <= 0]
+                ([0])
+                ([kw * (1 - 0.2*vc) + 0.1])
+            )
+        )
+)
+kc' ([kc > 0.3]
+        ([kc + 0.8*kn*vc + 0.2*kw*vc - 0.3 >= 1]
+            ([1])
+            ([kc + 0.8*kn*vc + 0.2*kw*vc - 0.3 <= 0]
+                ([0])
+                ([kc + 0.8*kn*vc + 0.2*kw*vc - 0.3])
+            )
+        )
+        ([0.8*kn*vc + 0.2*kw*vc >= 1]
+            ([1])
+            ([0.8*kn*vc + 0.2*kw*vc <= 0]
+                ([0])
+                ([0.8*kn*vc + 0.2*kw*vc])
+            )
+        )
+)
+vc' ([kc < 0.25]
+        ([0.5])
+        ([kc < 0.5]
+            ([0.75 - kc])
+            ([1*kc*kc - 2*kc + 1])
+        )
+    )
+
+reward ([kc > 0.3]
             ([0.3])
-            ([kcenter > 0]
-                ([kcenter])
-                ([0.0])
+            (kc)
+       )
+endaction
+
+action N20
+hiN' (hiN
+        ([0.8])
+        ([0.3])
+)
+hiW' (hiW
+        ([0.7])
+        ([0.2])
+)
+kn' (hiN
+        ([kn * (1 - 0.2*vc) + 0.2 >= 1]
+            ([1])
+            ([kn * (1 - 0.2*vc) + 0.2 <= 0]
+                ([0])
+                ([kn * (1 - 0.2*vc) + 0.2])
             )
+        )
+        ([kn * (1 - 0.2*vc) + 0.1 >= 1]
+            ([1])
+            ([kn * (1 - 0.2*vc) + 0.1 <= 0]
+                ([0])
+                ([kn * (1 - 0.2*vc) + 0.1])
+            )
+        )
+)
+kw' (hiW
+        ([kw * (1 - 0.8*vc) + 0.2 >= 1]
+            ([1])
+            ([kw * (1 - 0.8*vc) + 0.2 <= 0]
+                ([0])
+                ([kw * (1 - 0.8*vc) + 0.2])
+            )
+        )
+        ([kw * (1 - 0.8*vc) + 0.1 >= 1]
+            ([1])
+            ([kw * (1 - 0.8*vc) + 0.1 <= 0]
+                ([0])
+                ([kw * (1 - 0.8*vc) + 0.1])
+            )
+        )
+)
+kc' ([kc > 0.3]
+        ([kc + 0.2*kn*vc + 0.8*kw*vc - 0.3 >= 1]
+            ([1])
+            ([kc + 0.2*kn*vc + 0.8*kw*vc - 0.3 <= 0]
+                ([0])
+                ([kc + 0.2*kn*vc + 0.8*kw*vc - 0.3])
+            )
+        )
+        ([0.2*kn*vc + 0.8*kw*vc >= 1]
+            ([1])
+            ([0.2*kn*vc + 0.8*kw*vc <= 0]
+                ([0])
+                ([0.2*kn*vc + 0.8*kw*vc])
+            )
+        )
+)
+vc' ([kc < 0.25]
+        ([0.5])
+        ([kc < 0.5]
+            ([0.75 - kc])
+            ([1*kc*kc - 2*kc + 1])
+        )
+    )
+reward ([kc > 0.3]
+            ([0.3])
+            (kc)
        )
 endaction
 
 discount 1.0000000
-InitialState (0 0 0 0 0 0) (false false) 
+InitialState (0.505 0.505 0.205 0.5) (false false) 
 iterations 12
 NONLINEAR
-MAXREWARD 1
+MAXREWARD 0.4

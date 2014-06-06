@@ -88,7 +88,7 @@ public class XADD {
     /**
      * NOTE: all precision parameters are reset since in case leaves are of degree more than 1, they produce significant errors. (Hadi)
      */
-    public static double PRECISION = 1e-14; //'final' removed by Hadi. Hadi makes it 0.0 (see equality() of class DoubleExpr for the reason behind it)
+    public static double PRECISION = 1e-10; //'final' removed by Hadi. Hadi makes it 0.0 (see equality() of class DoubleExpr for the reason behind it)
     public final static double DEFAULT_UPPER_BOUND = Double.MAX_VALUE;//1e+10d; //change by Hadi
     public final static double DEFAULT_LOWER_BOUND = -DEFAULT_UPPER_BOUND;
     public static final Integer ROUND_PRECISION = null;//changed by Hadi. Null represents no rounding (solves lots of problems)
