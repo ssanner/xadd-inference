@@ -68,7 +68,7 @@ year = {2012}
 \end{filecontents*}
 
 \documentclass{article} % For LaTeX2e
-\usepackage{nips13submit_e,times}%{nips13submit_e,times}
+%\usepackage{nips13submit_e,times}%{nips13submit_e,times}
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{amsthm} %for theorems, examples, etc.
@@ -106,36 +106,7 @@ REPORT
 }
 
 
-\author{
-%David S.~Hippocampus\thanks{ Use footnote for providing further information
-%about author (webpage, alternative address)---\emph{not} for acknowledging
-%funding agencies.} \\
-%Department of Computer Science\\
-%Cranberry-Lemon University\\
-%Pittsburgh, PA 15213 \\
-%\texttt{hippo@cs.cranberry-lemon.edu} \\
-%\And
-%Coauthor \\
-Affiliation \\
-Address \\
-\texttt{email} \\
-\AND
-Coauthor \\
-Affiliation \\
-Address \\
-\texttt{email} \\
-\And
-Coauthor \\
-Affiliation \\
-Address \\
-\texttt{email} \\
-\And
-Coauthor \\
-Affiliation \\
-Address \\
-\texttt{email} \\
-(if needed)\\
-}
+
 
 % The \author macro works with any number of authors. There are two commands
 % used to separate the names and addresses of multiple authors: \And and \AND.
@@ -256,4 +227,67 @@ Address \\
 %\vspace{4mm}
 \end{figure}
 
+\begin{figure}%[t!]
+\centering
+\includegraphics[width=1.2\textwidth]{pic1/DimAnaysisData12Itr3.pdf}
+%\vspace{-6mm}
+\caption{itr 3; 1min; 2min...\\Seems to good to be real!}
+\label{fig:pref}
+%\caption{\footnotesize .} 
+%\vspace{4mm}
+\end{figure}
+
+
+\begin{figure}%[t!]
+\centering
+\includegraphics[width=1.2\textwidth]{pic1/DataAnalysisDim10ErrThr3Itr3GrndTruth1MaxWait2.pdf}
+%\vspace{-6mm}
+\caption{itr 3; 1min; 2min...}
+\label{fig:pref}
+%\caption{\footnotesize .} 
+%\vspace{4mm}
+\end{figure}
+
+\begin{figure}%[t!]
+\centering
+\includegraphics[width=1.2\textwidth]{pic1/dataAnalysis6GTbppl.pdf}
+%\vspace{-6mm}
+\caption{itr 3; 1min; 2min...}
+\label{fig:pref}
+%\caption{\footnotesize .} 
+%\vspace{4mm}
+\end{figure}
+
+\newpage
+\section{MMM}
+\begin{figure}%[t!]
+\centering
+\includegraphics[width=1.2\textwidth]{pic1/DataAnalysisMMMgtruth6Wait3Min005Thr.pdf}
+%\vspace{-6mm}
+\caption{itr 3; 6min; 3min...}
+\label{fig:pref}
+%\caption{\footnotesize .} 
+%\vspace{4mm}
+\end{figure}
+
+\begin{figure}%[t!]
+\centering
+\includegraphics[width=1.2\textwidth]{pic1/MMMdimAnalysisData6.pdf}
+%\vspace{-6mm}
+\caption{itr 3; 6min; 3min...}
+\label{fig:pref}
+%\caption{\footnotesize .} 
+%\vspace{4mm}
+\end{figure}
+
+
+\begin{figure}%[t!]
+\centering
+\includegraphics[width=1.2\textwidth]{pic1/DimAnalysisData8Itr5GT8minTest4minT01MMM.pdf}
+%\vspace{-6mm}
+\caption{Ground-Truth is estimated by rejection sampling for 8 mins. In each dim/data setting, each algorithm is averaged over 5 runs. If in 4 mins has not reached the error threshold 0.1 it is discarded.}
+\label{fig:pref}
+%\caption{\footnotesize .} 
+%\vspace{4mm}
+\end{figure}
 \end{document}
