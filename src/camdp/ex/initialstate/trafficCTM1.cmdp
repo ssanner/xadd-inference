@@ -1,0 +1,68 @@
+cvariables (nnorth nwest ncenter)
+min-values (0 0 0)
+max-values (200 200 200)
+bvariables ()
+nvariables()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables()
+
+action N80
+nnorth' ([nnorth > 100]
+            ([nnorth - 80 + 50])
+            ([0.2*nnorth + 50])
+)
+nwest' ([nwest > 100]
+            ([nwest - 20 + 30])
+            ([0.8*nwest + 30])
+)
+ncenter' 
+([nnorth > 100]
+    ([nwest > 100]
+        ([ncenter + 20])
+        ([ncenter +0.2*nwest])
+    )
+    ([nwest > 100]
+        ([ncenter + 0.8*nnorth - 60])
+        ([ncenter + 0.8*nnorth + 0.2*nwest - 80])
+    )
+)
+reward ([ncenter > 80]
+            ([80])
+            (ncenter)
+)
+endaction
+
+action N20
+nnorth' ([nnorth > 100]
+            ([nnorth - 20 + 50])
+            ([0.8*nnorth + 50])
+)
+nwest' ([nwest > 100]
+            ([nwest - 80 + 30])
+            ([0.2*nwest + 30])
+)
+ncenter' 
+([nnorth > 100]
+    ([nwest > 100]
+        ([ncenter + 20])
+        ([ncenter +0.8*nwest -60])
+    )
+    ([nwest > 100]
+        ([ncenter + 0.2*nnorth])
+        ([ncenter + 0.2*nnorth + 0.8*nwest - 80])
+    )
+)
+reward ([ncenter > 80]
+            ([80])
+            (ncenter)
+)
+endaction
+
+discount 1.0000000
+InitialState (70 70 100) () 
+iterations 2
+LINEAR
+MAXREWARD 100

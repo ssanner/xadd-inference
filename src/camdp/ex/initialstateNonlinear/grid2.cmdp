@@ -1,6 +1,6 @@
 cvariables (x1 x2)
-min-values (-10 -10)
-max-values (10 -10)
+min-values (-100 -100)
+max-values (100 -100)
 bvariables ()
 nvariables()
 icvariables()
@@ -45,7 +45,7 @@ reward
 endaction
 
 discount 1.0000000
-InitialState (2.1 2.1) () 
+InitialState (-8.11 2.11) () 
 iterations 10
 NONLINEAR
 MAXREWARD 0
