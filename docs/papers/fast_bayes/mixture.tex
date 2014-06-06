@@ -2,9 +2,17 @@
 \label{sect:mix}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %We begin by considering Gibbs sampling on 
+In this section we overcome the exponential complexity of standard Gibbs
+sampling by transforming piecewise models to (augmented) mixture models and performing
+linear time Gibbs sampling in this augmented model.  
 We motivate the algorithm by formula~\ref{e:expanded}:
-It represents a Bayesian inference model in which likelihood functions are piecewise.\footnote{Clearly, prior distributions can be piecewise as well but since exponential blow up in the posterior structure is due to the amount of data, our focus is on likelihood functions.}
-For readability, the case statements are numbered and without loss of generality, it is assumed that the number of partitions in each likelihood function is $M$:
+It represents a Bayesian inference model in which likelihood functions are piecewise.
+% Good point, but no space. -Scott
+%
+%\footnote{Clearly, prior distributions can be piecewise as well but since exponential blow up in the posterior structure is due to the amount of data, our focus is on likelihood functions.}
+For readability, case statements are numbered and without loss of
+generality, we assume the number of partitions in each
+likelihood function is $M$:
 \begin{align}
 \label{e:expanded}
 pr(\boldsymbol\theta | \, d_1, \ldots, d_n) \, 

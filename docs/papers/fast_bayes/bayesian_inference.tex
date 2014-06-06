@@ -109,16 +109,16 @@ If $c$ is too small, the speed of this algorithm is low since often lots of samp
 To generate a new Markov Chain Monte Carlo (MCMC) sample $\bvec{x}^{(t)}$ of a distribution $p(\bvec{x})$ given a previously taken sample $\bvec{x}^{(t-1)}$, 
 firstly, a sample $\bvec{x}'$ is taken 
 from a symmetric \emph{proposal density} $q(\bvec{x} |\, \bvec{x}^{(t-1)})$ 
-from which samples can be taken efficiently 
+%from which samples can be taken efficiently 
 (often an isotropic \emph{Gaussian} centered at $\bvec{x}^{(t-1)}$). 
 With probability $\min \big(1, p(\bvec{x}')/p(\bvec{x}^{(t-1)}) \big)$, 
 $\bvec{x}'$ is accepted as the next sample ($\bvec{x}^{(t)} \leftarrow \bvec{x}'$), otherwise, $\bvec{x}^{(t)} \leftarrow \bvec{x}^{(t-1)}$. 
-Choosing a `right' \emph{proposal} is problem-dependent and requires tuning. 
+Choosing a good \emph{proposal} is problem-dependent and requires tuning. 
 
 
 \emph{Gibbs sampling}:
-In this MCMC method, to generate a new sample for variables $\bvec{x} = (x_1, \ldots, x_N)$, 
-each one of them is sampled conditioned on the others being instantiated with their last sampled values:
+In this MCMC method, to generate a new sample for $\bvec{x} = (x_1, \ldots, x_N)$, 
+each variable is sampled conditioned on the last instantiated value of the others:
 $x_i \sim p(x_i | \bvec{x}_{-i})$. 
 %Therefore,  
 Computation of $N$ univariate \emph{cumulative distribution functions} (CDFs) 
