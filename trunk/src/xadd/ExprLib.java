@@ -153,9 +153,32 @@ public abstract class ExprLib {
                 if (this.equals(o))
                     return 0;
                 else {
-                    //todo commented by Hadi
-//                    return this.hashCode() - o.hashCode();
-                    //todo added by Hadi
+                    if (this_class == OPER_CLASS && other_class == OPER_CLASS && 
+                        (((OperExpr) this)._type == ArithOperation.PROD) && 
+                        (((OperExpr) o)._type ==ArithOperation.PROD) ){
+                        //Comparing two product terms, place smaller first and if same lenght order by var first, last by Double 
+                        OperExpr thisTerm = (OperExpr) this;
+                        OperExpr otherTerm = (OperExpr) o;
+                        if ( thisTerm._terms.get(0) instanceof DoubleExpr &&
+                             otherTerm._terms.get(0) instanceof DoubleExpr){
+                            if (thisTerm._terms.size() < otherTerm._terms.size()) return -1;
+                            if (thisTerm._terms.size() > otherTerm._terms.size()) return 1;
+                            for(int i = thisTerm._terms.size()-1; i>0;i--){
+                                if ( thisTerm._terms.get(i) instanceof VarExpr &&
+                                     otherTerm._terms.get(i) instanceof VarExpr){
+                                        int thisVar= ((VarExpr)thisTerm._terms.get(i)).hashCode();
+                                        int oVar= ((VarExpr)otherTerm._terms.get(i)).hashCode();
+                                        if (thisVar < oVar) return -1;
+                                        if (thisVar > oVar) return -1;
+                                }
+                            }
+                            double thisVal = ((DoubleExpr) thisTerm._terms.get(0))._dConstVal;
+                            double oVal = ((DoubleExpr) otherTerm._terms.get(0))._dConstVal;
+                            if (thisVal < oVal) return -1;
+                            if (thisVal > oVal) return -1;
+                        }
+                    }
+
                     if (this.hashCode() < o.hashCode()) return -1;
                     if (this.hashCode() > o.hashCode()) return 1;
                     return 0;
@@ -1695,7 +1718,7 @@ public abstract class ExprLib {
             //todo commented by hadi/scott
 //            return new DoubleExpr((Math.round(_dConstVal * XADD.ROUND_PRECISION) * 1d) / XADD.ROUND_PRECISION);
             //todo added by hadi/scott:
-            if (XADD.ROUND_PRECISION == null) return new DoubleExpr(_dConstVal);
+            if (XADD.ROUND_PRECISION == null) return this;
             else {
                 //todo: Warning by Hadi
 //                System.err.println("Note that this kind of rounding produces lots of approximation errors...");

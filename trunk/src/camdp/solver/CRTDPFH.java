@@ -37,7 +37,7 @@ public class CRTDPFH extends CAMDPsolver {
     /* Debugging Flags */
     
     //Local Debug flags    
-    private static final boolean BELLMAN_DEBUG = true;
+    private static final boolean BELLMAN_DEBUG = false;
     private static boolean REGRESS_DEBUG = false;
     private static boolean REGRESS_VAR_DEBUG = false;
     private static final boolean DD_BEFORE_TRIAL = false;
@@ -230,7 +230,7 @@ public class CRTDPFH extends CAMDPsolver {
     }
 
     private Double getStateVal(State currentS, int remainHorizon) {
-        return context.evaluate(valueDDList[remainHorizon], currentS._hmBoolVars, currentS._hmContVars);
+        return mdp.evaluateState(valueDDList[remainHorizon], currentS);
     }
     
     public ParametrizedAction  regionBellmanBackup(State currS, int h){
@@ -254,12 +254,12 @@ public class CRTDPFH extends CAMDPsolver {
                 CAMDP.resetTimer(RUN_DEPTH);
                 int regr = regressRegion(me.getValue(), currS, h);
 
-                double value = context.evaluate(regr, currS._hmBoolVars, currS._hmContVars);
+                double value = mdp.evaluateState(regr, currS);
                 if (value == Double.POSITIVE_INFINITY || value == Double.NEGATIVE_INFINITY || value == Double.NaN){
                     System.err.println("Regression Fail: Initial State value is Pos INF, Neg INF or NaN in Q value function:");
                     System.err.println("State is "+currS);
                     if (!CAMDP.SILENCE_ERRORS_PLOTS) mdp.displayGraph(regr, makeXADDLabel("Inf Q: Regr "+me.getValue()._sName+" DD", curTrial, h));
-                    context.evaluate(regr, currS._hmBoolVars, currS._hmContVars);
+                    mdp.evaluateState(regr, currS);
                     REGRESS_DEBUG = true;
                     REGRESS_VAR_DEBUG = true;
                     regressRegion(me.getValue(), currS, h);
@@ -278,8 +278,8 @@ public class CRTDPFH extends CAMDPsolver {
                     maxAction = me.getValue();
                     currSValue =value; 
                 }
-                if ( Math.abs(currSValue - context.evaluate(maxDD, currS._hmBoolVars, currS._hmContVars)) > STATE_PRECISION){
-                    System.err.println("Maxim fail, greedy value "+ currSValue+" different from value "+context.evaluate(maxDD, currS._hmBoolVars, currS._hmContVars)+" for "+currS);
+                if ( Math.abs(currSValue - mdp.evaluateState(maxDD, currS) ) > STATE_PRECISION){
+                    System.err.println("Maxim fail, greedy value "+ currSValue+" different from value "+mdp.evaluateState(maxDD, currS)+" for "+currS);
                     if (!CAMDP.SILENCE_ERRORS_PLOTS) {
                         mdp.displayGraph(regr, makeXADDLabel("Regr"+me.getValue()._sName+" DD", curTrial, h));
                         mdp.displayGraph(maxDD, makeXADDLabel("BB Max_DD", curTrial, h));
@@ -304,14 +304,12 @@ public class CRTDPFH extends CAMDPsolver {
         
         ParametrizedAction pA = new ParametrizedAction(maxAction, maxParam);
         
-        if ( Math.abs(currSValue - context.evaluate(valueDDList[h], currS._hmBoolVars, currS._hmContVars)) > STATE_PRECISION){
-            System.err.println("Backup fail, greedy value "+ currSValue+" different from value "+context.evaluate(valueDDList[h], currS._hmBoolVars, currS._hmContVars)+" for "+currS);
-            System.err.println("Max DD value is " + context.evaluate(maxDD, currS._hmBoolVars, currS._hmContVars));
+        if ( Math.abs(currSValue - mdp.evaluateState(valueDDList[h], currS)) > STATE_PRECISION){
+            System.err.println("Backup fail, greedy value "+ currSValue+" different from value "+mdp.evaluateState(valueDDList[h], currS)+" for "+currS);
+            System.err.println("Max DD Current State value is " + mdp.evaluateState(maxDD, currS));
             if (!CAMDP.SILENCE_ERRORS_PLOTS) {
-                mdp.doDisplay(maxDD, makeXADDLabel("BB Bug! MaxDD", curTrial, h));
-                mdp.doDisplay(valueDDList[h], makeXADDLabel("BB Bug! V_DD", curTrial, h));
+                mdp.displayDifError(maxDD, valueDDList[h]);
             }
-            
             if (PRINT_DD) debugOutput.println("MAX DD = "+maxDD+" DD:\n" + context.getExistNode(maxDD));
             if (PRINT_DD) debugOutput.println("Value DD= "+valueDDList[h]+" DD:\n" + context.getExistNode(valueDDList[h]));
             valueDDList[h] = context.apply(maxDD, valueDDList[h], XADD.MIN);

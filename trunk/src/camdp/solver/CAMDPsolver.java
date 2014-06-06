@@ -382,7 +382,7 @@ public abstract class CAMDPsolver {
                 static_dvars.put(xVar, (double) x);
                 static_dvars.put(yVar, (double) y);
                 //System.out.println("DD: "+xadd_id+ " Vars"+static_bvars+"d"+static_dvars);
-                context.evaluate(xadd_id, static_bvars, static_dvars);
+                //context.evaluate(xadd_id, static_bvars, static_dvars);
                 float z = context.evaluate(xadd_id, static_bvars, static_dvars).floatValue();
                 if (Float.isInfinite(z)) z = Float.NaN;
                 static_dvars.remove(xVar);
