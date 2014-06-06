@@ -43,7 +43,7 @@ public class CAMDP {
     private static final boolean SILENT_PLOT = true;
     private static final boolean DONT_SHOW_HUGE_GRAPHS = true;
     private static final int MAXIMUM_XADD_DISPLAY_SIZE = 500;
-    public static final boolean SILENCE_ERRORS_PLOTS = true;
+    public static final boolean SILENCE_ERRORS_PLOTS = false;
     
     //Prune and Linear Flags
     public double maxImediateReward;
@@ -273,7 +273,6 @@ public class CAMDP {
                 _logStream.println("Running max in iter " + _nCurIter + ":" + _context.getString(_maxDD));
                 flushCaches();
             }
-            checkReduceLP(_maxDD);
             // _maxDD should already be Canonical/LPpruned, check
             _valueDD = _maxDD;
             checkStandardDD(_valueDD);
@@ -364,7 +363,6 @@ public class CAMDP {
     }
 
     ////////// DD Property Tests /////////////////////////
-    
     public int standardizeDD(int dd){
         if (XADD.ROUND_PRECISION!= null) {dd = _context.reduceRound(dd); checkRound(dd);}
         dd = _context.makeCanonical(dd); checkCanon(dd);//Always use Canonization
@@ -379,7 +377,7 @@ public class CAMDP {
         if (LINEAR_PROBLEM && !checkReduceLP(dd)) standard = false;
         return standard;
     }
-    protected boolean checkRound(int dd) {
+    private boolean checkRound(int dd) {
         int roundDD = _context.reduceRound(dd);
         if (roundDD != dd){
             System.err.println("Check Round fail");
@@ -391,7 +389,7 @@ public class CAMDP {
         }
         return true;
     }
-    protected boolean checkCanon(int dd) {
+    private boolean checkCanon(int dd) {
         //Error checking and logging
         int canonDD = _context.makeCanonical(dd);
         if (dd != canonDD) {
@@ -403,7 +401,7 @@ public class CAMDP {
         }
         return true;
     }
-    private void displayDifError(int dd, int newDD) {
+    public void displayDifError(int dd, int newDD) {
         if (!SILENCE_ERRORS_PLOTS){
             doDisplay(dd,"ERROR plot 1: original");
             doDisplay(newDD,"ERROR plot 2:resulting");
@@ -411,7 +409,7 @@ public class CAMDP {
             doDisplay(dif,"ERROR plot 3: difference");
         }
     }
-    protected boolean checkReduceLP(int dd) {
+    private boolean checkReduceLP(int dd) {
         //Error checking and logging
         int reduLPDD = _context.reduceLP(dd);
         if (dd != reduLPDD) {
@@ -433,6 +431,16 @@ public class CAMDP {
     // Miscellaneous
     ////////////////////////////////////////////////////////////////////////////
 
+    public Double evaluateInitialS(int valueDD){
+        if (_initialS == null){
+            System.err.println("Trying to Evaluate initial State on a CAMDP without it.");
+            return Double.NaN;
+        }
+        return evaluateState(valueDD, _initialS);
+    }
+    public Double evaluateState(int valueDD, State s){
+        return _context.evaluate(valueDD, s._hmBoolVars, s._hmContVars);
+    }    
     public void flushCaches() {
         flushCaches(new ArrayList<Integer>());
     }

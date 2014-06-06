@@ -65,7 +65,7 @@ public class VI extends CAMDPsolver {
             solutionTimeList[curIter] = CAMDP.getElapsedTime() + (curIter >1? solutionTimeList[curIter-1]:0);
             solutionNodeList[curIter] = context.getNodeCount(valueDD);
             //if (mdp.LINEAR_PROBLEM) solutionMaxValueList[curIter] = context.linMaxVal(valueDD);
-            if( mdp._initialS != null) solutionInitialSValueList[curIter] = context.evaluate(valueDD, mdp._initialS._hmBoolVars, mdp._initialS._hmContVars);            
+            if( mdp._initialS != null) solutionInitialSValueList[curIter] = mdp.evaluateInitialS(valueDD);            
 
             if (MAIN_DEBUG){
                 debugOutput.println("Iter:" + curIter+" Complete");
@@ -73,6 +73,7 @@ public class VI extends CAMDPsolver {
                 if( mdp._initialS != null) debugOutput.println("Initial State Value = "+solutionInitialSValueList[curIter]);
                 if (PRINT_DD) debugOutput.println("ValueDD = "+context.getExistNode(valueDD).toString());
                 if (PLOT_DD) mdp.doDisplay(valueDD,makeXADDLabel("V",curIter, APPROX_ERROR));
+                debugOutput.println();
             }
             
             if (ENABLE_EARLY_CONVERGENCE && _prevDD.equals(valueDD) ) {
@@ -101,6 +102,10 @@ public class VI extends CAMDPsolver {
         int RUN_DEPTH=2;
         // Iterate over each action
         _maxDD = null;
+        
+        CAction greedyAction = null;
+        Double greedyValue = null;
+        
         for (Map.Entry<String,CAction> me : mdp._hmName2Action.entrySet()) {
 
             // Regress the current value function through each action (finite number of continuous actions)
@@ -111,6 +116,14 @@ public class VI extends CAMDPsolver {
             _maxDD = (_maxDD == null) ? regr : context.apply(_maxDD, regr, XADD.MAX);
             _maxDD = mdp.standardizeDD(_maxDD); // Round!
 
+            if (mdp._initialS != null){
+                double iniSVal = mdp.evaluateInitialS(regr);
+                if (greedyValue == null || greedyValue < iniSVal){
+                    greedyValue = iniSVal;
+                    greedyAction = me.getValue();
+                }
+                if (DEEP_DEBUG) debugOutput.println("InitialSValue for Action "+me.getValue()._sName+" = "+iniSVal);
+            }
             //Optional post-max approximation, can be used if overall error is being monitored 
             if (APPROX_ALWAYS)
                 _maxDD = mdp.approximateDD(_maxDD);
@@ -118,13 +131,14 @@ public class VI extends CAMDPsolver {
             flushCaches(Arrays.asList(_maxDD));
             if (DEEP_DEBUG){
                 debugOutput.println("Iter "+curIter+" Action "+me.getValue()._sName+" Maximization Complete. Regr Time = "+CAMDP.getElapsedTime(RUN_DEPTH));
-                if (PRINT_DD){ 
-                    debugOutput.println("MaxDD = "+ context.getExistNode(_maxDD));
-                }
+                if (PRINT_DD) debugOutput.println("MaxDD = "+ context.getExistNode(_maxDD));
             }
         }
 
         valueDD = _maxDD;
+        if (MAIN_DEBUG && mdp._initialS != null) {
+            debugOutput.println("At "+mdp._initialS+" greedy Action = "+greedyAction._sName+", Value = "+greedyValue);
+        }
     }
     
     private IntTriple _contRegrKey = new IntTriple(-1,-1,-1);
