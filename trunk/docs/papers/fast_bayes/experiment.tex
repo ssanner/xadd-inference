@@ -2,12 +2,8 @@
 \section{Experimental results}
 \label{sect:experiment}
 
-Since in contrast with Gibbs sampling, at each step of \emph{augmented Gibbs} sampling, 
-only a subset of partitions in the posterior distribution are activated, we clearly expect a faster sampling rate.
-However, the effect of this limitation on the mixing time of the Markov chain is unknown.   
-To figure out this question, in two different models we test augmented Gibbs versus baseline Gibbs, rejection sampling and Metropolis-Hastings (MH) by computing the time each algorithm takes till its distance to  the steady state distribution is less than a particular error threshold.
-The first test scenario is the BPPL model of Example~\ref{example:pref}.
-The second model which is motivated by \cite{Das:08} is as follows:
+In this section we wish to demonstrate that the mixing time of the proposed method, \emph{augmented Gibbs} sampling, is faster than Rejection sampling, baseline Gibbs and Metropolis-Hastings.     
+Algorithms are tested against two different models.  BPPL model of Example~\ref{example:pref} and a \emph{Market maker} (MM) model motivated by \cite{Das:08}:
 
 \begin{figure}
 \centering
@@ -132,27 +128,29 @@ In MM, $L = 0$, $H=20$, $\epsilon = 2.5$ and $\delta=10$.
 
 For each combination of the parameter space dimensionality $N$ and the number of observed data $n$, we generate observed data points from each model and simulate the associated expected value of ground truth posterior distribution by running rejection sampling on a 4 core, 3.40GHz PC for 15 to 30 minutes.
 Subsequently, using each algorithm, particles are generated and based on them, 
-average absolute error between samples and the ground truth $||\operatorname{E}[\boldsymbol\theta] - \boldsymbol\theta^*||_1$, is computed. 
+average absolute error between samples and the ground truth, $||\mathbb{E}[\boldsymbol\theta] - \boldsymbol\theta^*||_1$, is computed. 
 The time till the absolute error reaches the threshold error 3 is recored.
 For each algorithm 3 independent Markov chains are executed and the results are averaged.
 The whole process is repeated 15 times and the results are averaged and standard errors are computed. 
 
-The results are depicted in Figure~\ref{fig:results} where either dimensionality or the number of observations is kept fixed and the other varies. 
-In both models, the behavior of each algorithm has followed a similar pattern. 
+We observe that % where either dimensionality or the number of observations is kept fixed and the other varies. 
+in either model, the behavior of each algorithm has a particular pattern (Figure~\ref{fig:results}). 
 The speed of rejection sampling and consequently its mixing time deteriorates rapidly as the number of observations increase.\footnote{For the same reason we were obliged to constraint the observations to less than 18 points since after this level, even after 30 minutes the number of samples generated to simulate the ground truth (which as mentioned were taken using rejection sampling) were not sufficient to guarantee a fair comparison between algorithms.}
 The reason is that by observing new data, the posterior density tends to concentrate in smaller areas, 
 leaving most of the space sparse and therefore hard to sample from by rejection sampling.
-MH is scalable observations but its mixing time increases rapidly as the dimension increases. 
-This results is rather surprising since as MCMC method, MH should not suffer from the curse of dimensionality as rejection sampling does. 
-A reason may be that piecewise distributions can be non-smooth or broken which is far from the characteristics of the Gaussian \emph{proposal density} used in MH. 
+
 It is known the efficiency of MH depends crucially on the scaling of the \emph{proposal}.
-We have carefully tunned MH to reach the acceptance rate 0.234 after the well known algorithm \cite{Roberts:97}. We do not know if there is another tuning mechanism that leads to better results.
+We carefully tuned MH to reach the acceptance rate 0.234 after the well known algorithm \cite{Roberts:97}. 
+The experimental results show that MH is scalable in observations but its mixing time increases rapidly as the dimensionality increases. 
+This results are rather surprising since we expected that as an MCMC, MH does not suffer from the curse of dimensionality as rejection sampling does. 
+A reason may be that piecewise distributions can be non-smooth or broken which is far from the characteristics of the Gaussian \emph{proposal density} used in MH. 
+
 Efficiency of the baseline Gibbs sampling in particular decreases as data points increase.
 The reason is that this leads to a blow up in the number of partitions in the posterior density.
-In the other hand, on both models, the augmented Gibbs is scalable in both data and dimension. 
+One the other hand, on both models, the augmented Gibbs is scalable in both data and dimension. 
 Rather surprisingly, its efficiency even increases when dimensionality increases from 2 to 5.
-The reason may be that proportional to the total number of the posterior partitions, in lower dimensions the neighbors of each partition are not so numerous. 
-I.e.\ regardless of the number of observed data in the 2D BPPL, each partition is neighbored by only two partitions (see Figure~\ref{fig:pref-up-down}) leading to a slow trasfer between partitions. 
+The reason may be that proportional to the total number of posterior partitions, in lower dimensions the neighbors of each partition are not so numerous. 
+For instance, regardless of the number of observed data in the 2D BPPL, each partition is neighbored by only two partitions (see Figure~\ref{fig:pref-up-down}) leading to a slow transfer between partitions. 
 In higher dimensions however, this is not often the case.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%

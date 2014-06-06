@@ -1,8 +1,7 @@
-
 \section{Bayesian inference on graphical models with piecewise distributions}
 \label{sec:inference_piecewise_models}
-\paradot{Inference} Although the inference method that will be presented can be used on 
-any graphical model, for simplicity, we focus on \emph{Bayesian inference} 
+\paradot{Inference} Inference method that will be presented can be generalized to  
+any graphical model with piecewise factors. However, our focus is on \emph{Bayesian inference} 
 on Bayesian networks factorized as: 
 \begin{equation}
 \label{e:posterior}
@@ -11,13 +10,14 @@ pr(\boldsymbol\theta | \, d_1, \ldots, d_n)
 pr(\boldsymbol\theta, \, d_1, \ldots, d_n) 
 = pr(\boldsymbol\theta) \cdot \prod_{i=1}^{n} pr(d_i | \boldsymbol\theta)
 \end{equation} 
-where $\boldsymbol\theta$ is a parameter vector and $d_i$ are observed data points. 
-A typical inference task is the computation of the probability of a new data $d_{n+1}$ from the observed points:
+where $\boldsymbol\theta := (\theta_1, \ldots, \theta_N)$ is a parameter vector and $d_i$ are observed data points. 
+A typical inference task %is the computation of the probability of a new data $d_{n+1}$ from the observed points:
+is to compute the expectation of a function of $f(\boldsymbol\theta)$ given data:
 \begin{equation}
 \label{e:prob.outcome}
-pr(d_{n+1} | \, d_1, \ldots, d_n) = 
-\int_{\boldsymbol\theta} pr(d_{n+1} | \, \boldsymbol\theta) pr(\boldsymbol\theta | \, d_1, \ldots, d_n) d\boldsymbol\theta 
+\mathbb{E}_{\boldsymbol\theta}[f(\boldsymbol\theta) \,|\, d_1, \ldots, d_n \,]
 \end{equation}
+
 
 \paradot{Piecewise models} 
 We are interested in the inference on models where prior/likelihood distributions are piecewise.
@@ -87,7 +87,7 @@ The second best option is to seek \emph{asymptotically unbiased} inference metho
 The existing such tools are based on sampling.
 As an instance, given a set of $S$ samples (particles) $\{\boldsymbol\theta^{(1)}, \ldots, \boldsymbol\theta^{(S)}\}$ taken from a posterior $pr(\boldsymbol\theta | \, d_1, \ldots, d_n)$, 
 inference task of equation~\ref{e:prob.outcome} can be approximated by: 
-$\frac{1}{S} \sum_{i=1}^S pr(d_{n+1} | \, \boldsymbol\theta^{(i)})$.
+$\frac{1}{S} \sum_{i=1}^S f(\theta^{(i)} | \, d_1, \ldots, d_n)$.
 Three widely used sampling methods are as follows:
 
 \emph{Rejection sampling}:
@@ -120,12 +120,13 @@ computation of $N$ univariate \emph{cumulative distribution functions} (CDFs)
 (one for each $p(x_i | \, \bvec{x}_{-i})$) as well as their inverse functions is required which can be quite time consuming. 
 Due to this shortcoming, in practice, Gibbs sampling can be prohibitively expensive.   
 
-\paradot{Gibbs sampling from a piecewise model}
-CDF of a piecewise (univariate) function is clearly the summation of the CDFs of each of its partitions.
-Therefore Gibbs sampling does not get around the difficulties introduced by the exponential growth of posterior distributions in Bayesian models.\footnote{
-The reason is that the number of pieces in a function of form $p(x_i |\, \bvec{x}_{-i})$ is still in $O(M^n)$. 
-In practice, many univariate partitions might be empty (i.e.\ associated with infeasible constraints) but in general, detecting them is not such easier than computing CDFs.
-} %end footnote  
+Compared to rejection sampling or MH, the performance of Gibbs sampling on the aforementioned piecewise modes is particularly poor (see Section~\ref{sect:experiment})
+However,  we are going to propose a novel Gibbs-based sampling method which is scalable in the amount of data.
+
+%\paradot{Gibbs sampling from a piecewise model}
+%CDF of a piecewise (univariate) function is clearly the summation of the CDFs of each of its partitions.
+%is affected by does not get around the difficulties introduced by the exponential growth of posterior distributions in Bayesian models.\footnote{The reason is that the number of pieces in a function of form $p(x_i |\, \bvec{x}_{-i})$ is still in $O(M^n)$. In practice, many univariate partitions might be empty (i.e.\ associated with infeasible constraints) but in general, detecting them is not such easier than computing CDFs.
+%} %end footnote  
 %Therefore, according to the previous arguments, using Gibbs to take a single sample vector from the posterior distribution of an $N$ dimensional space of a Bayesian inference model with an $L$-piece prior and $n$ $M$-piece likelihood functions, up to $LM^nN$ CDFs (and CDF$^{-1}$s) should be computed.
 %With the aim of making Gibbs sampling more scalable, in Section~\ref{sect:mix} we introduce a technique using which this number can be reduced to {\color{red}an order of} $LM(N+n)$.
-however,  we are going to propose an equivalent transformation of the model that makes computation linear in the amount of data.
+
