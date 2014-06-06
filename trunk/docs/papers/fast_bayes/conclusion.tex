@@ -1,0 +1,11 @@
+\section{Conclusion}
+Unlike rejection sampling and baseline Gibbs sampling, the proposed method does not grow exponentially with the amount of observed data.
+In both our test scenarios, its mixing time in higher dimensions is also better than MH.
+Opposed to MH, it also does not require any tuning.
+Clearly, the proposed method has its own short comings.
+Being a variation of Gibbs sampler it also suffers from some of the shortcomings that Gibbs does:
+Some islands of high-probability states may be unreachable by Gibbs if there is no path between them.
+This problem can be more problematic in the augmented version since limiting the number of active regions can introduce more none-traversable gaps. 
+Hopefully, these problems are not so common and can be avoided by running more than one Markov chain. 
+On the other hand, the experimental efficiency of the algorithm has been rather surprising to us.
+We hope we have provided a viable toolkit for asymptotically unbiased reasoning on piecewise models.
