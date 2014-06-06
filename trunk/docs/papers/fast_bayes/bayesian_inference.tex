@@ -1,14 +1,15 @@
 \section{Bayesian inference on graphical models with piecewise distributions}
 \label{sec:inference_piecewise_models}
-\paradot{Inference} Inference method that will be presented can be generalized to  
-any graphical model with piecewise factors. However, our focus is on \emph{Bayesian inference} 
-on Bayesian networks factorized as: 
+\paradot{Inference} We will present an inference method that can be generalized to  
+a variety of graphical models with piecewise factors, however, our focus in this
+work is on \emph{Bayesian inference} on Bayesian networks factorized in the following
+standard form 
 \begin{equation}
 \label{e:posterior}
 pr(\boldsymbol\theta | \, d_1, \ldots, d_n) 
 \propto
 pr(\boldsymbol\theta, \, d_1, \ldots, d_n) 
-= pr(\boldsymbol\theta) \cdot \prod_{i=1}^{n} pr(d_i | \boldsymbol\theta)
+= pr(\boldsymbol\theta) \cdot \prod_{i=1}^{n} pr(d_i | \boldsymbol\theta) , 
 \end{equation} 
 where $\boldsymbol\theta := (\theta_1, \ldots, \theta_N)$ is a parameter vector and $d_i$ are observed data points. 
 A typical inference task %is the computation of the probability of a new data $d_{n+1}$ from the observed points:
@@ -35,12 +36,14 @@ f(\bvec{x}) =
 \end{cases}
 }%end footnote size
 \end{equation}
-In the implementation of our proposed algorithm, the constraints are restricted to linear/quadratic (in)equalities while sub-functions are polynomials in which real-exponents (except -1) are allowed.
-However, in theory, the algorithm can be applied to any family of piecewise models in which the constraints are solvable and sub-functions (and their products) are integrable. 
+In the forthcoming implementation of our proposed algorithm, the constraints are restricted to linear/quadratic (in)equalities while sub-functions are polynomials with real exponents.% in which real-exponents 
+%(except -1) -- no reason you cannot handle this
+%are allowed.
+  However, in theory, the algorithm can be applied to \emph{any} family of piecewise models in which the roots of univariate constraint expressions can be found and sub-functions (and their products) are integrable. 
 
 %In Example~\ref{example:pref}, BPPL is a \emph{piecewise constant} model in the sense that both prior and likelihood models are piecewise and their corresponding \emph{sub-functions} ($f_i$) are constant. A more general piecewise model where the sub-functions are not constant is presented in  Section~\ref{sect:experiment}. 
 
-\paradot{Complexity of piecewise modes}
+\paradot{Complexity of inference on piecewise models}
 
 
 If in the model of equation \ref{e:posterior}, the prior $pr(\boldsymbol\theta)$ 
@@ -74,21 +77,23 @@ the number of partitions can be less.
 \]
 
 \paradot{Exact inference on piecewise models}
-In theory, closed form inference on piecewise models (at least piecewise polynomials) with linear constraints is possible \cite{Sanner:12}.
-In practice, however, such symbolic methods rapidly become intractable.
-For example, by rule of thumb, a few observed data points with simple piecewise likelihood models lead to
-joint/posterior distributions with tens of partitions.
-For an inference problem formalized by equation~\ref{e:prob.outcome}, 
-the number of required marginalization integrals is $|\boldsymbol\theta|$ (dimensionality of the parameter space).
-Although that the family of piecewise polynomials are closed under integration, even a single \emph{closed form} integral over such a posterior can lead to a function with thousands of pieces \cite{Sanner:12}.   
+In theory, closed-form inference on piecewise models (at least piecewise polynomials) with linear constraints is possible \cite{Sanner:12}.
+In practice, however, such symbolic methods rapidly become intractable since the posterior requires
+the representation of $O(M^n)$ distinct case partitions.
+%For example, by rule of thumb, a few observed data points with simple piecewise likelihood models lead to
+%joint/posterior distributions with tens of partitions.
+%For an inference problem formalized by equation~\ref{e:prob.outcome}, 
+%the number of required marginalization integrals is $|\boldsymbol\theta|$ (dimensionality of the parameter space).
+%Although that the family of piecewise polynomials are closed under integration, even a single \emph{closed form} integral over such a posterior can lead to a function with thousands of pieces \cite{Sanner:12}.   
    
 \paradot{Approximate inference on piecewise modes} 
-The second best option is to seek \emph{asymptotically unbiased} inference methods. 
-The existing such tools are based on sampling.
-As an instance, given a set of $S$ samples (particles) $\{\boldsymbol\theta^{(1)}, \ldots, \boldsymbol\theta^{(S)}\}$ taken from a posterior $pr(\boldsymbol\theta | \, d_1, \ldots, d_n)$, 
-inference task of equation~\ref{e:prob.outcome} can be approximated by: 
+An alternative option is to seek \emph{asymptotically unbiased} inference methods
+via Monte Carlo sampling.
+%The existing such tools are based on sampling.
+Given a set of $S$ samples (particles) $\{\boldsymbol\theta^{(1)}, \ldots, \boldsymbol\theta^{(S)}\}$ taken from a posterior $pr(\boldsymbol\theta | \, d_1, \ldots, d_n)$, 
+the inference task of equation~\ref{e:prob.outcome} can be approximated by $S$: 
 $\frac{1}{S} \sum_{i=1}^S f(\theta^{(i)} | \, d_1, \ldots, d_n)$.
-Three widely used sampling methods are as follows:
+Three widely used methods to sample $S$ from an arbitrary $pr(\boldsymbol\theta | \, d_1, \ldots, d_n)$ are as follows:
 
 \emph{Rejection sampling}:
 Let $p(\bvec{x})$ and $q(\bvec{x})$ be two distributions 
@@ -98,17 +103,17 @@ $p(\bvec{x})/q(\bvec{x})$ is bound by a constant $c>0$.
 To take a sample from $p(\bvec{x})$ by means of \emph{rejection sampling}, 
 a sample $\bvec{s}$ is taken from $q(\bvec{x})$ and accepted with probability $p(\bvec{s}) / c q(\bvec{s})$, 
 otherwise it is rejected and the process is repeated. 
-If $c$ is too small, the speed of this algorithm is low since often lots of samples are taken till one is accepted.
+If $c$ is too small, the speed of this algorithm is low since often lots of samples are taken until one is accepted.
 
 \emph{Metropolis-Hastings (MH)}:
-To generate a new sample $\bvec{x}^{(t)}$ of a distribution $p(\bvec{x})$ given a previously taken sample $\bvec{x}^{(t-1)}$, 
+To generate a new sample $\bvec{x}^{(t)}$ of a distribution $p(\bvec{x})$ given a previously taken sample $\bvec{x}^{(t-1)}$ in a Markov Chain, 
 firstly, a sample $\bvec{x}'$ is taken 
 from a symmetric \emph{proposal density} $q(\bvec{x} |\, \bvec{x}^{(t-1)})$ 
 from which samples can be taken efficiently 
-(often a \emph{Gaussian} centered at $\bvec{x}^{(t-1)}$). 
+(often an isotropic \emph{Gaussian} centered at $\bvec{x}^{(t-1)}$). 
 With probability $\min \big(1, p(\bvec{x}')/p(\bvec{x}^{(t-1)}) \big)$, 
 $\bvec{x}'$ is accepted as the next sample ($\bvec{x}^{(t)} \leftarrow \bvec{x}'$), otherwise, $\bvec{x}^{(t)} \leftarrow \bvec{x}^{(t-1)}$. 
-Choosing a `right' \emph{proposal} is problem-dependent and requires extra tunings. 
+Choosing a `right' \emph{proposal} is problem-dependent and requires tuning. 
 
 
 \emph{Gibbs sampling}:
