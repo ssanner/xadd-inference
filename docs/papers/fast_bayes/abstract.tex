@@ -1,3 +1,23 @@
-Many real-world Bayesian inference problems such as preference learning, competitive skill learning, and Bayesian belief updating with state constraints naturally use piecewise transitions, likelihoods or prior models. Unfortunately, exact closed-form inference in these graphical models is intractable in the general case and existing approximation techniques provide few guarantees on both approximation quality and efficiency. While (Markov Chain) Monte Carlo sampling provides an attractive asymptotically unbiased approximation approach, rejection sampling and Metropolis-Hastings both prove inefficient in practice, and analytical derivation of Gibbs samplers require exponential space and time in the amount of data or other quantities relating to graphical model size. 
-In this work, we show how to interpret piecewise graphical models as mixture models whose values derive from an underlying set of random variables that are marginalized over. 
-We create equivalent models by augmenting the original piecewise models by reintroducing the ``supposedly" marginalized variables to them. We subsequently carry out asymptotically unbiased inference on the augmented model by using a variation of blocked Gibbs sampling. This algorithm achieves an exponential-to-linear reduction in space and time compared to a standard Gibbs sampler. This enables fast, asymptotically unbiased inference in a new expressive class of piecewise graphical models. 
+Many real-world Bayesian inference problems such as preference
+learning or modeling trader valuations in financial markets naturally
+use piecewise likelihoods.  Unfortunately, exact closed-form inference
+in the underlying Bayesian graphical models is intractable in the
+general case and existing approximation techniques provide few
+guarantees on both approximation quality and efficiency.  While
+(Markov Chain) Monte Carlo methods provide an attractive
+asymptotically unbiased approximation approach, rejection sampling and
+Metropolis-Hastings both prove inefficient in practice, and analytical
+derivation of Gibbs samplers require exponential space and time in the
+amount of data.  In this work, we show how to transform problematic
+piecewise likelihoods into equivalent mixture models and then provide
+a blocked Gibbs sampling approach for this transformed model that
+achieves an exponential-to-linear reduction in space and time compared
+to a conventional Gibbs sampler.  This enables fast, asymptotically
+unbiased Bayesian inference in a new expressive class of piecewise graphical
+models and empirically requires orders of magnitude less time than
+rejection, Metropolis-Hastings, and conventional Gibbs sampling
+methods to achieve the same level of accuracy.
+
+% (e.g, preferences constrain
+% possible utility functions and trader transactions constrain possible
+% instrument valuations)
