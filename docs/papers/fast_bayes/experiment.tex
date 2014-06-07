@@ -47,10 +47,10 @@ Assume the types indicate different versions of a same product and
 each version is more expensive than the older versions ($\theta_{i} \leq \theta_{i+1}$).
 The valuation of the oldest version is within some given price range $[L, H]$
 and the price difference of any consecutive versions is bound by a known parameter $\delta$:
-\begin{equation*}
-pr(\theta_{1}) = \mathcal{U}(L, H) \qquad \qquad
-pr(\theta_{i+1}) = \mathcal{U}(\theta_{i}, \theta_{i} + \delta) \quad \forall i \in \{1, \ldots, D-1\}
-\end{equation*} 
+\begin{align*}
+pr(\theta_{1}) & = \mathcal{U}(L, H) \qquad \qquad\\
+pr(\theta_{i+1}) & = \mathcal{U}(\theta_{i}, \theta_{i} + \delta) \quad \forall i \in \{1, \ldots, D-1\}
+\end{align*} 
 At each time-step $t$, a trader arrives. 
 He has a noisy estimation $\widetilde{\theta_{t}}$ of the actual value of the presented instrument $\tau_t$. 
 We assume 
