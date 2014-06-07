@@ -1,14 +1,15 @@
 \section{Introduction}
 
-Many real-world Bayesian inference problems such as preference
-learning or trader valuation modeling in financial markets naturally
-use piecewise likelihoods, e.g., preferences may induce constraints 
-on possible utility functions while trader transactions constrain 
-possible instrument valuations. \cite{Shogren:00}
-To be concrete, consider the following Bayesian approach to preference
-learning where our objective is to learn about a user's weighting of
-attributes for a class of items (e.g., cars, apartment rentals, movies)
-given their responses to pairwise comparison queries over those items:
+Many Bayesian inference problems such as preference
+learning~\cite{sanner:aistats10} or trader valuation modeling in
+financial markets naturally use piecewise
+likelihoods~\cite{Shogren:00}, e.g., preferences may induce
+constraints on possible utility functions while trader transactions
+constrain possible instrument valuations.  To be concrete, consider
+the following Bayesian approach to preference learning where our
+objective is to learn about a user's weighting of attributes for a
+class of items (e.g., cars, apartment rentals, movies) given their
+responses to pairwise comparison queries over those items:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}%[t!]
@@ -190,7 +191,7 @@ exact/asymptotically unbiased inference methods that can be applied to
 them in Section~\ref{sec:inference_piecewise_models}, a novel inference 
 algorithm (referred to as \emph{Augmented Gibbs} sampling throughout)
 is presented in Section~\ref{sect:mix}.  The performance of this
-algorithm against other sampling methods is tested in
+algorithm is tested against other sampling methods in
 Section~\ref{sect:experiment}.
 %on BPPL and another piecewise models. 
 %According to our experimental results, \emph{augmented Gibbs} is
