@@ -97,10 +97,10 @@ the number of partitions remains fixed rather than growing $O(M^n)$.
 %As an instance, for $n=2$,   $k_1 = M$ and $k_2 = 1$:
 
 The reason is that if  $k_1, \ldots, k_n$ are given, for an $i$-th likelihood, a single sub-function $f^i_{k_i}$ is `chosen' and:
-$pr(\theta_i | \boldsymbol\theta_{-i}) = 
+$pr(\theta_i | \boldsymbol\theta_{-i}, k_1, \ldots, k_n) = 
 pr(\boldsymbol\theta | \boldsymbol\theta_{-i})\prod_{k_i} f^i_{k_i}(\theta_i | \boldsymbol\theta_{-i})$.
 Assuming that sub-functions are not piecewise themselves, 
-the amount  of partitions in $pr(\theta_i | \boldsymbol\theta_{-i})$ is bound by the amount of partitions in the prior.
+the amount  of partitions in $pr(\theta_i | \boldsymbol\theta_{-i},  k_1, \ldots, k_n)$ is bound by the amount of partitions in the prior.
 
 What is remained is to show that equation~\ref{e:aaaax} is valid:
 %\[
