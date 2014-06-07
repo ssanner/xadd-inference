@@ -1,10 +1,34 @@
 \section{Piecewise models as mixture models}
 \label{sect:mix}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}
+\centering
+\begin{subfigure}{.49\textwidth}
+\centering
+\includegraphics[width=.28\textwidth]{pic/naive.pdf}
+\caption{}
+\label{fig:naive}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
+\centering
+  \includegraphics[width=.35\textwidth]{pic/naive-mix2.pdf}
+\caption{}
+\label{fig:naive.mix}
+\end{subfigure}
+\caption{\footnotesize 
+(a) A Bayesian inference model with parameter (vector) $\boldsymbol\theta$ and data points $d_1$ to $d_n$.
+(b) A mixture model with parameter (vector) $\boldsymbol\theta$ and data points $d_1$ to $d_n$ 
+}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %We begin by considering Gibbs sampling on 
 In this section we overcome the exponential complexity of standard Gibbs
 sampling by transforming piecewise models to (augmented) mixture models and performing
 linear time Gibbs sampling in this augmented model.  
+
 We motivate the algorithm by formula~\ref{e:expanded}:
 It represents a Bayesian inference model in which likelihood functions are piecewise.
 % Good point, but no space. -Scott
@@ -147,28 +171,6 @@ a piecewise model can be reinterpreted as a \emph{mixture model}
 which is the result of marginalizing over the \emph{intermediate} random variables $k$.
 This means that graphical models depicted in Figures~\ref{fig:naive} and \ref{fig:naive.mix} are equivalent.
 \end{comment}
-%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure}
-\centering
-\begin{subfigure}{.40\textwidth}
-\centering
-\includegraphics[width=.28\textwidth]{pic/naive.pdf}
-\caption{}
-\label{fig:naive}
-\end{subfigure}
-\begin{subfigure}{.40\textwidth}
-\centering
-  \includegraphics[width=.35\textwidth]{pic/naive-mix2.pdf}
-\caption{}
-\label{fig:naive.mix}
-\end{subfigure}
-\caption{\footnotesize 
-(a) A Bayesian inference model with parameter (vector) $\boldsymbol\theta$ and data points $d_1$ to $d_n$.
-(b) A mixture model with parameter (vector) $\boldsymbol\theta$ and data points $d_1$ to $d_n$ 
-}
-\end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%
-
 %----------------------------------------***
 \begin{proposition}
 \label{pro:discrete}
