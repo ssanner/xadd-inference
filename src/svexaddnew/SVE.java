@@ -26,6 +26,8 @@ import xadd.XADDUtils;
 import xadd.XADD.*;
 import xadd.ExprLib.*;
 
+// Note: Hadi suggests this version of SVE produces correct results in r519... 
+//       should also compare step-by-step with xaddorig 
 public class SVE {
 
     public final static HashMap<String, Boolean> EMPTY_BOOL = new HashMap<String, Boolean>();

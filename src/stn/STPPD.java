@@ -385,9 +385,9 @@ public class STPPD {
     	
     	if (DISPLAY) stn.getConstraintGraph(stn._alAllFactors).launchViewer("Constraint factor graph");
 
-    	stn.testReduceLP();
-        //stn.solveBucketElim();
-        //stn.solveMonolithic();
+    	//stn.testReduceLP();
+        stn.solveBucketElim();
+        stn.solveMonolithic();
     }
 
     public static STPPD BuildSimpleSTPPD(boolean additive_obj) throws Exception {

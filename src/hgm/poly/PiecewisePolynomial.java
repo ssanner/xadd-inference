@@ -1,6 +1,5 @@
 package hgm.poly;
 
-import com.sun.scenario.effect.impl.prism.ps.PPSBlend_ADDPeer;
 import hgm.poly.pref.FatalSamplingException;
 
 import java.util.*;
