@@ -169,13 +169,13 @@ public abstract class ExprLib {
                                         int thisVar= ((VarExpr)thisTerm._terms.get(i)).hashCode();
                                         int oVar= ((VarExpr)otherTerm._terms.get(i)).hashCode();
                                         if (thisVar < oVar) return -1;
-                                        if (thisVar > oVar) return -1;
+                                        if (thisVar > oVar) return 1; // Not -1!
                                 }
                             }
                             double thisVal = ((DoubleExpr) thisTerm._terms.get(0))._dConstVal;
                             double oVal = ((DoubleExpr) otherTerm._terms.get(0))._dConstVal;
                             if (thisVal < oVal) return -1;
-                            if (thisVal > oVal) return -1;
+                            if (thisVal > oVal) return 1; // Not -1!
                         }
                     }
 

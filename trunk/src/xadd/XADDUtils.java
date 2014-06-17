@@ -39,7 +39,9 @@ import util.DevNullPrintStream;
 
 public class XADDUtils {
 
-    /**
+    public static Float INFINITE_PLOT_VALUE = null;
+
+	/**
      * @param args
      */
     public static void main(String[] args) throws Exception {
@@ -435,8 +437,12 @@ public class XADDUtils {
                 static_dvars.put(xVar, (double) x);
                 static_dvars.put(yVar, (double) y);
                 float z = context.evaluate(xadd, static_bvars, static_dvars).floatValue();
-//                if (Float.isInfinite(z)) z = Float.NaN; //z >0? 17: -17; visualize difference between +Inf and -Inf
-                if (Float.isInfinite(z)) z = z >0? 17: -17;
+                if (Float.isInfinite(z)) {
+                	if (INFINITE_PLOT_VALUE == null)
+                		z = Float.NaN; 
+                	else
+                		z = z > 0 ? INFINITE_PLOT_VALUE : -INFINITE_PLOT_VALUE;
+                }
                 if (z == 0.0) z = (float) 0.01;
                 static_dvars.remove(xVar);
                 static_dvars.remove(yVar);
