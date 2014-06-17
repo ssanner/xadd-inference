@@ -1,0 +1,62 @@
+\section{Related Work}
+\label{sec:relatedwork}
+
+Solutions to stochastic games have been proposed from within both
+game theory and reinforcement learning. The first algorithm, game theoretic or otherwise, for 
+finding a solution to a stochastic game was given by Shapley \cite{Shapley_PotNAoS_1953}.
+Shapley's algorithm calculates a value function {\small $V(s)$} over discrete states
+which converges to an optimal value function {\small$V^{*}(s)$}. {\small $V^{*}(s)$} represents
+the expected discounted future reward if both players in the game follow
+the game's Nash equilibrium. The algorithm is in essence an 
+extension of the Value Iteration algorithm to stochastic games. 
+
+A partically implementable solution, based on reinforcement learning, for a 
+subclass of stochastic games was first introduced by 
+\cite{Littman_ICML_1994}. Littman's algorithm, Minimax-Q,
+extends the traditional Q-learning algorithm for MDPs to 
+zero-sum discrete stochastic games. The algorithm converges to the 
+stochastic game's equilibrium solution. Hu and Wellman \cite{Hu_ICML_1998}
+extended Minimax-Q to general-sum games and proved that it converges
+to a Nash equilibrium under certain restrictive conditions. Although
+both reinforcement learning based algorithms are able to calculate 
+equilibrium solutions they are limited to discrete state formulations of
+stochastic games. In this paper we provide the first known exact closed-form 
+solution to a subclass of continuous state zero-sum stochastic games defined by 
+piecewise constant reward and piecewise linear transition functions.
+
+%The Dec-MDP \cite{Bernstein_MoOR_2002} framework allows
+%for decentralised control within continuous state spaces but is limited
+%to general-sum systems.
+
+Several techniques have been put forward to tackle continuous state
+spaces in MDPs. Li and Littman \cite{Li_AAAI_2005} describe a method
+for approximate solutions to continuous
+state MDPs.  In their work, Li and Littman only allow for rectilinearly aligned 
+constraints in their reward and transition functions, not arbitrary linear constraints,
+and cannot handle general linear transition models without approximation.  
+Our SDP method provides exact solutions without these restrictions, which
+makes SDP strictly more general.  Also, Li and Littman did not consider 
+game-theoretic extensions of their work or the parameterised optimisation 
+problem that these extensions entail.
+
+Symbolic dynamic programming techniques have been previously used to
+calculate exact solutions to single agent MDPs with both continuous
+state and actions in a variety of non-game theoretic domains
+\cite{Sanner_UAI_2011,Zamani_AAAI_2012}.  In this paper we build on
+this work and present the first application of SDP to stochastic games
+with concurrently acting agents.
+
+%----------------------------------------------------------------------------
+%The use of reinforcement learning methods to solve stochastic games
+%was introduced by Littman \cite{Littman_ICML_1994}. Under Littman's
+%formulation optimal policies can be calculated for discrete state zero-sum 
+%stochastic games using an algorithm akin to Q-learning. Hu \cite{Hu_ICML_1998}
+%extended Littman's framework into the general-sum case. Whilst both
+%approaches provide optimal policies for stochastic games under zero-sum
+%and general sum settings, they are limited to discrete state formulations. 
+%
+%A lazy approximation technique for MDPs which imposes similar restrictions on the
+%form of the reward and transition functions was introduced by Li \cite{Li_AAAI_2005}
+%and allows for the calculation of approximate solutions. Our approach using
+%symbolic dynamic programming calculates exact solutions in game theoretic
+%settings. 

@@ -1,0 +1,63 @@
+\ProvidesPackage{myuaistyle}
+
+\usepackage{amsmath, amsthm, amsfonts}
+
+\usepackage{times}
+\usepackage[vlined,algoruled,titlenumbered,noend,oldcommands]{algorithm2e}
+
+\usepackage{graphicx}
+
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{multirow}
+
+\usepackage{enumitem}
+
+\usepackage{authordate1-4}
+
+\usepackage[explicit]{titlesec}
+
+%------------------------------------------------------------------------------
+% Paragraph spacing
+%------------------------------------------------------------------------------
+
+%\setlength{\parskip}{0.5\baselineskip}
+
+%------------------------------------------------------------------------------
+%  Section, Sub-section and Sub-sub-section Headings
+%  Titlesec commands
+%------------------------------------------------------------------------------
+
+% Section Headings
+\titleformat{\section}[hang]
+  {\filright\normalfont\fontsize{12}{15}\bfseries}
+  {\thesection}
+  {1em}
+  {\MakeUppercase{#1}}
+%\titlespacing*{\section}
+%  {0pt}
+%  {1\baselineskip}
+%  {0.5\baselineskip}
+  
+% Sub-Section Headings
+\titleformat{\subsection}[hang]
+  {\filright\normalfont\fontsize{10}{15}\bfseries}
+  {\thesubsection}
+  {1em}
+  {\MakeUppercase{#1}}
+%\titlespacing*{\subsection}
+%  {0pt}
+%  {1\baselineskip}
+%  {0.5\baselineskip}
+  
+% Sub-Sub-Section Headings
+\titleformat{\subsubsection}[hang]
+  {\filright\normalfont\fontsize{10}{15}\bfseries}
+  {\thesubsubsection}
+  {1em}
+  {#1}
+%\titlespacing*{\subsubsection}
+%  {0pt}
+%  {1\baselineskip}
+%  {0.5\baselineskip}

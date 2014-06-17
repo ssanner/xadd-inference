@@ -1,0 +1,42 @@
+\documentclass[10pt]{article}
+
+\usepackage{proceed2e}
+\usepackage{myuaistyle}
+
+\setlength{\abovedisplayskip}{0pt} 
+\setlength{\belowdisplayskip}{0pt} 
+\setlength{\abovedisplayshortskip}{0pt}
+\setlength{\belowdisplayshortskip}{0pt}
+
+% Figures directory
+\graphicspath{{./figures/}}
+
+\newcommand{\contmax}{\mathrm{max}}
+\newcommand{\casemax}{\mathrm{casemax}}
+\newcommand{\casemin}{\mathrm{casemin}}
+
+\begin{document}
+
+\input{./title}
+\input{./sections/abstract}
+\input{./sections/introduction}
+\input{./sections/mdp}
+\input{./sections/markov_games_discrete}
+\input{./sections/markov_games_continuous}
+\input{./sections/symbolic_dynamic_programming}
+\input{./sections/results}
+\input{./sections/related_work}
+\input{./sections/conclusion}
+
+\newpage
+
+% Hacky way to implement the Reference heading. 
+% UAI requires an unnumbered third level heading
+\subsubsection*{References}
+\begingroup
+\renewcommand{\section}[2]{}%
+\bibliographystyle{authordate1}
+\bibliography{uai2014}
+\endgroup
+
+\end{document}

@@ -1,0 +1,124 @@
+\section{Zero-sum Continuous Stochastic Games}
+\label{sec:csg}
+
+Continuous state stochastic games (CSGs) are formally defined by the tuple
+$ \left\langle \vec{x}, A_{1}, \ldots, A_{n}, T, R_{1}, \ldots, R_{n}, h, \gamma  \right\rangle$.
+In CSGs states are represented by vectors of continuous variables, $\vec{x} = \left(x_1, \ldots, x_m \right)$, 
+where $x_i \in \mathbb{R}$. The other components of the tuple are as 
+previously defined in Section~\ref{sec:dsg}.
+
+Zero-sum CSGs impose the same restrictions on the number of agents
+and the reward structure as their discrete state counterparts. 
+
+The optimal solution to zero-sum CSGs can be calculated via the following 
+recursive functions:
+
+{\small
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align}
+\label{eq:csgdiscqfunc}
+  Q^{h}(\vec{x}, a_1, a_2) &= R(\vec{x}, a_1, a_2) \quad + \nonumber \\
+  & \qquad  \gamma \cdot \int T(\vec{x}, a_1, a_2, \vec{x}') \cdot V^{h-1}(\vec{x}')\ d\vec{x}'
+\end{align}
+}%
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align}
+\label{eq:csgvfunccompact}
+  V^{h}(\vec{x}) = \max_{m \in \sigma(A_1)} \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(\vec{x}, a_1, a_2) \cdot m_{a_{1}}
+\end{align}
+}%
+
+We can derive Equation \eqref{eq:csgdiscqfunc} from Equation \eqref{eq:dsgdiscqfunc}
+by replacing $s$, $s'$ and the $\sum$ operator with their continuous
+state counterparts, $\vec{x}$, $\vec{x}'$ and $\int$, respectively. Equation~\eqref{eq:csgvfunccompact}
+is simply Equation~\eqref{eq:dsgvfunccompact} restated.
+
+\subsection{Solution Techniques}
+
+Zero-sum CSGs can be solved using a technique analogous to that 
+presented in Section \ref{subsec:dsgsolution}. Namely, the value function in Equation
+\eqref{eq:csgvfunccompact} can be reformulated as the following continuous 
+optimisation problem:
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{subequations}
+\begin{align}
+&\text{maximise}   \  V^{h}(\vec{x}) \nonumber \\
+&\text{subject to}   \nonumber \\
+&\   V^{h}(\vec{x}) \leq \sum_{a_1 \in A_1} Q^{h}(\vec{x}, a_1, a_2) \cdot m_{a_{1}} \   \forall a_2 \in A_2 \label{eq:bilinearconstraint} \\
+                          &\  \sum_{a_{1} \in A_1} m_{a_{1}} = 1 ; \  m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber
+\end{align}
+\end{subequations}
+}%
+
+This optimisation problem cannot be easily solved using existing techniques
+due to two factors: (1) there are infinitely many states in $\vec{x}$; and
+(2) constraint \eqref{eq:bilinearconstraint} is nonlinear in $\vec{x}$ and 
+$m_{a_{1}}$ for general representations of {\small $Q^{h}(\vec{x}, a_1, a_2)$}. 
+To further illustrate the second limitation consider {\small $Q^{h}(\vec{x}, a_1, a_2)$} in the 
+form of a linear function in $x$, for some $a_1$ and $a_2$:
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align}
+Q^{h}(\vec{x}, a_1, a_2) = \sum_{j} c_j \cdot x_j \label{eq:linqfunc}
+\end{align}
+}%
+
+Substituting Equation \eqref{eq:linqfunc} into constraint \eqref{eq:bilinearconstraint}
+yields:
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align}
+V^{h}(\vec{x}) \leq \sum_{a_1 \in A_1} m_{a_{1}} \sum_{j} c_j \cdot x_j \qquad \forall a_2 \in A_2. \label{eq:linqfuncresult}
+\end{align}
+}%
+
+It is clear from Equation \eqref{eq:linqfuncresult} that a linear representation
+of {\small $Q^{h}(\vec{x}, a_1, a_2)$} leads to a nonlinear constraint
+where $m_{a_{1}}$ must be optimal with respect to the free variable
+$\vec{x}$. This results in a parameterised nonlinear program, whose optimal solutions are known to be
+NP-hard \cite{Bennett_COA_1993,Petrik_JoMLR_2011}.
+
+At this point we present the first key insight of this paper: we can 
+transform constraint~\eqref{eq:bilinearconstraint} from a 
+parameterised nonlinear constraint to a piecewise linear constraint by 
+imposing the following restrictions: (1) restricting the reward function, 
+{\small $R(\vec{x}, a_1, a_2)$}, to piecewise constant functions; and 
+(2) restricting the transition function, 
+{\small $T(\vec{x}, a_1, a_2, \vec{x}')$}, to piecewise linear functions. 
+As a result, {\small $V^{h}(\vec{x})$} and 
+{\small $Q^{h}(\vec{x}, a_1, a_2)$} will be piecewise constant functions, thereby
+guaranteeing a tractable solution to constraint~\eqref{eq:bilinearconstraint}.
+
+One key challenge still remains, namely, dealing with the infinitely
+many states in $\vec{x}$. We know that the {\small $V^{h}(\vec{x})$} and 
+{\small $Q^{h}(\vec{x}, a_1, a_2)$} functions have structure, but are unable to derive
+them. Furthermore, given known structures for {\small $V^{h}(\vec{x})$} and 
+{\small $Q^{h}(\vec{x}, a_1, a_2)$} we must determine the restrictions that
+guarantee a tractable solution. The SDP framework in conjunction with its
+closed-form operations provide answers to both of these concerns.
+
+%------------------------------------------------------------------------------
+
+%In spite of this insight, two questions still remain: (1) how do we 
+%determine the structure of {\small $V^{h}(\vec{x})$} and (2) if we 
+%know the structure of {\small $V^{h}(\vec{x})$}, how do we solve the 
+%continuous optimisation problem ? Symbolic dynamic programming 
+%allows us to derive the structure of {\small $V^{h}(\vec{x})$} and 
+%bypass solving the continuous optimisation problem by implementing 
+%Equations~\eqref{eq:csgdiscqfunc} and ~\eqref{eq:csgvfunccompact} 
+%directly.
+
+In the next section we show that zero-sum CSGs, with the 
+aforementioned restrictions, can be solved optimally for arbitrary 
+horizons using symbolic dynamic programming.

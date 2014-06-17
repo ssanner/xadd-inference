@@ -1,0 +1,30 @@
+\section{Conclusions}
+\label{sec:conclusion}
+
+% Contributions
+
+In this paper we have characterised a subclass of zero-sum continuous stochastic
+games that can be solved exactly via parameterised linear optimisation. 
+We have also presented a novel symbolic dynamic programming 
+algorithm that can be used to calculate exact solutions to this subclass
+of games for arbitrary horizons. The algorithm was used to calculate the first known 
+exact solutions to a variety of continuous stochastic games with piecewise constant reward
+and piecewise linear transitions.
+
+% Future Research Directions
+
+There are a number of avenues for future research. Firstly, it is important
+to examine more general representations of the reward and transition functions while
+still guaranteeing exact solutions. Another direction of research lies within
+improving the scalability of the algorithm by either extending techniques for Algebraic
+Decision Diagrams \cite{Bahar_JoFMiSD_1993} from APRICODD \cite{St-Aubin_NIPS_2000} under 
+the current restrictions on the reward and transition functions, bounded error compression for 
+XADDs \cite{Vianna_UAI_2013} for more expressive representations, or lazy 
+approximation of value functions as piecewise linear XADDs \cite{Li_AAAI_2005}. 
+Search based approaches such as RTDP \cite{Barto_AI_1995} and HAO* \cite{Meuleau_JoAIR_2009}
+are also readily adaptable to SDP. These extensions may then be used to model sequential decision making in 
+more complex financial and economic domains. Finally, SDP can be
+used to calculate exact solutions to general sum stochastic games. The advances
+made within this paper open up a number of potential novel research paths
+which may be used to progress solutions to sequential game theoretic domains
+with continuous state.

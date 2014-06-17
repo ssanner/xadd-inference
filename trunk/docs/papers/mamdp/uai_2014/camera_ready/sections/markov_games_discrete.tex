@@ -1,0 +1,124 @@
+\section{Zero-sum Discrete Stochastic Games}
+\label{sec:dsg}
+Discrete state stochastic games (DSGs) are formally defined by the tuple
+$ \left\langle S, A_{1}, \ldots, A_{n}, T, R_{1}, \ldots, R_{n}, h, \gamma\right\rangle$.
+$S$ is a set of discrete states and $A_i$ is the action set available to agent 
+$i$. T is a transition function $T : S \times A_1 \times \ldots \times A_n \rightarrow \Delta(S)$, 
+where $\Delta(S)$ is the set of probability distributions over the state space $S$. 
+The reward function $R_i : S \times A_1 \times \ldots \times A_n \rightarrow \mathbb{R}$,
+encodes the individual preferences of agent $i$. The horizon $h$ represents the 
+number of decision steps until termination and the discount factor $\gamma \in [0, 1)$ 
+is used to discount future rewards. In general, an agent's objective is 
+to find a policy, $\pi_i : S \rightarrow \sigma_i(A_i)$ which maximises the expected 
+sum of discounted rewards over horizon $h$. Here $\sigma_i(A_i)$ specifies
+probability distributions over action set $A_i$. The optimal policy in a 
+DSG may be stochastic, that is, it may define a mixed strategy for each state. 
+
+Zero-sum DSGs are a type of DSG involving two agents with diametrically
+opposing goals. Under these conditions the reward structure for the 
+game can be represented by a single reward function since an agents
+reward function is simply the opposite of their opponent's. The objective
+of each agent is to maximise its expected discounted future rewards 
+in the minimax sense. That is, each agent views its opponent as
+acting to minimise the agent's reward. Zero-sum DSGs can be solved 
+using a technique analogous to value iteration for MDPs \cite{Littman_ICML_1994}. 
+The value function, {\small $ V^{h}(s) $}, in this setting can be defined as:
+
+{\small
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align}
+\label{eq:dsgvfunc}
+  & V^{h}(s) = \nonumber \\
+  & \max_{m \in \sigma_1(A_1)} \hspace{2pt} \min_{o \in \sigma_2(A_2)} \sum_{a_1 \in A_1} \sum_{a_2 \in A_2} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \cdot o_{a_{2}} &
+\end{align}
+}%
+
+where {\small $m \in \mathbb{R}^{|A_1|}$} and {\small $o \in \mathbb{R}^{|A_2|}$}
+are mixed (stochastic) strategies from {\small $\sigma_1(A_1) $} and {\small $\sigma_2(A_2) $}, 
+respectively. {\small $Q^{h}(s, a_1, a_2)$}, the quality of taking action $a_1$ against action $a_2$ in state $s$,
+is given by:
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align}
+\label{eq:dsgdiscqfunc}
+  Q^{h}(s, a_1, a_2) & = R(s, a_1, a_2) \quad + \nonumber \\
+  & \qquad \gamma \cdot \sum_{s' \in S} T(s, a_1, a_2, s') \cdot V^{h-1}(s').
+\end{align}
+}%
+
+Equation \eqref{eq:dsgvfunc} can be further simplified by noting that given any $m$, the 
+optimal minimum strategy is achieved through a deterministic action choice. This observation 
+leads to the following form:
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{equation}
+\label{eq:dsgvfunccompact}
+  V^{h}(s) = \max_{m \in \sigma_1(A_1)} \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_1}.
+\end{equation}
+}%
+
+Together Equations \eqref{eq:dsgdiscqfunc} and \eqref{eq:dsgvfunccompact}
+define a recursive method to calculate the optimal solution to zero-sum DSGs. The 
+policy for the opponent can be calculated by applying symmetric reasoning and the 
+Minimax theorem \cite{Neumann_MA_1928}. 
+
+\subsection{Solution Techniques}
+\label{subsec:dsgsolution}
+
+Zero-sum DSGs can be solved via discrete linear optimisation at each horizon \textit{h}. The value
+function in Equation \eqref{eq:dsgvfunccompact} can be reformulated as a linear
+program through the following steps:
+
+\begin{enumerate}
+  \item Define {\small $V^h(s)$ } to be the value of the inner minimisation term in
+            Equation \eqref{eq:dsgvfunccompact}. This leads to the following linear program for a known state $s$:
+{\small
+\begin{subequations}
+\begin{align}
+&\text{maximise}   \  V^{h}(s) \nonumber \\
+&\text{subject to}   \nonumber \\
+&\  V^{h}(s) = \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \label{eq:dsglpconstraint1} \\
+                          &\  \sum_{a_{1} \in A_1} m_{a_{1}} = 1 ; \  m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber
+\end{align}
+\end{subequations}
+}%
+
+  \item Replace the equality (=) in constraint \eqref{eq:dsglpconstraint1} with
+  $\leq$ by observing that the maximisation of {\small $V^{h}(s)$}  effectively pushes the $\leq$ condition to the = case. This gives: 
+{\small 
+\begin{subequations}
+\begin{align}
+&\text{maximise}   \  V^{h}(s) \nonumber \\
+&\text{subject to}   \nonumber \\
+&\  V^{h}(s) \leq \min_{a_2 \in A_2} \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \label{eq:dsglpconstraint2} \\
+                          &\  \sum_{a_{1} \in A_1} m_{a_{1}} = 1 ; \  m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber
+\end{align}
+\end{subequations}
+}%
+  
+  \item Remove the minimisation operator in constraint \eqref{eq:dsglpconstraint2}
+            by noting that the minimum of a set is less than or equal to the minimum of all elements in the set.
+            This leads to the final form of the discrete linear optimisation problem:
+{\small 
+\begin{align*}
+&\text{maximise}   \  V^{h}(s) \nonumber \\
+&\text{subject to}   \nonumber \\
+&\  V^{h}(s) \leq \sum_{a_1 \in A_1} Q^{h}(s, a_1, a_2) \cdot m_{a_{1}} \ \forall a_2 \in A_2\\
+                          &\  \sum_{a_{1} \in A_1} m_{a_{1}} = 1 ; \  m_{a_{1}} \geq 0 \qquad \forall a_{1} \in A_1 \nonumber
+\end{align*}
+}%
+\end{enumerate}
+
+We can now use existing linear programming solvers to compute the optimal
+solution to this linear program for each {\small $s \in S$} at a given horizon $h$.
+
+The linear program used to solve zero-sum DSGs cannot be used with 
+continuous state formulations, since there are infinitely many states.  A key contribution 
+of this paper is in showing that zero-sum continuous state stochastic games 
+can still be solved exactly through the use of symbolic dynamic programming. 
+In the next section we present the continuous state analogue to zero-sum DSGs.
