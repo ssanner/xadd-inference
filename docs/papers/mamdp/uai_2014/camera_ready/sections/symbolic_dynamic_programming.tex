@@ -1,0 +1,356 @@
+\section{Symbolic Dynamic Programming}
+\label{sec:sdp}
+
+Symbolic dynamic programming (SDP) \cite{Boutilier_IJCAI_2001} is 
+the process of performing dynamic programming via symbolic 
+manipulation. In the following sections we present a brief overview
+of SDP operations and also show how SDP can be used to solve
+zero-sum CSGs.
+
+\subsection{Case Representation}
+
+SDP assumes that all functions can be represented in case statement form \cite{Boutilier_IJCAI_2001} as follows:
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align*}
+  f = 
+    \begin{cases}
+      \phi_1: & f_1 \\ 
+      \vdots & \vdots\\ 
+      \phi_k: & f_k \\ 
+    \end{cases}
+\end{align*}
+}%
+
+Here, the $\phi_i$ are logical formulae defined over the state $\vec{x}$ 
+that can consist of arbitrary logical combinations of boolean variables and 
+linear inequalities $\left( \geq, >, <, \leq \right)$ over continuous variables. We assume that the set of
+conditions $\left\lbrace \phi_1, \ldots, \phi_k \right\rbrace$ disjointly
+and exhaustively partition $\vec{x}$ such that $f$ is well-defined for all $\vec{x}$.
+In general, the $f_i$ may be polynomials of $\vec{x}$ with non-negative exponents.
+However, in this paper we restrict the $f_i$ to be either constant or linear functions 
+of the state variable $\vec{x}$. Henceforth, we refer to functions with 
+linear $\phi_i$ and piecewise constant $f_i$ as linear piecewise constant (LPWC) 
+and functions with linear $\phi_i$ and piecewise linear $f_i$ 
+as linear piecewise linear (LPWL) functions.
+
+\subsection{Case Operations}
+
+Operations on case statements may be either unary or binary. In this section
+we present a brief overview of the SDP operations needed to calculate closed form
+solutions to zero-sum CSGs. All of the operations presented here are closed form
+for LPWC and LPWL functions. We refer the reader to \cite{Sanner_UAI_2011,Zamani_AAAI_2012} 
+for more thorough expositions of SDP and its operations.
+
+Unary operations on a aingle case statement \emph{f}, such as scalar 
+multiplication $c \cdot f$ where $ c \in \mathbb{R} $, are applied to each $f_i$ ($1 \leq i \leq k$). 
+
+Binary operations such as addition, subtraction and multiplication are executed 
+in two stages. Firstly, the cross-product of the logical partitions of each case statement 
+is taken, producing paired partitions. Finally, the binary operation 
+is applied to the resulting paired partitions. The ``cross-sum'' $\oplus$
+operation can be performed on two cases in the following manner:
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{center}
+  \begin{tabular}{r c c c l}
+    $\begin{cases}
+        \phi_1: \hspace{-1mm} & \hspace{-1mm} f_1  \\ 
+        \phi_2: \hspace{-1mm} & \hspace{-1mm} f_2  \\ 
+    \end{cases}$
+  $\oplus$
+  &
+  \hspace{-4mm}
+    $\begin{cases}
+        \psi_1: \hspace{-1mm} & \hspace{-1mm} g_1  \\ 
+        \psi_2: \hspace{-1mm} & \hspace{-1mm} g_2  \\ 
+    \end{cases}$
+  &
+  \hspace{-4mm} 
+  $ = $
+  &
+  \hspace{-4mm}
+    $\begin{cases}
+      \phi_1 \wedge \psi_1: & f_1 + g_1 \\
+      \phi_1 \wedge \psi_2: & f_1 + g_2 \\
+      \phi_2 \wedge \psi_1: & f_2 + g_1 \\
+      \phi_2 \wedge \psi_2: & f_2 + g_2  \\
+    \end{cases}$
+  \end{tabular}
+\end{center}
+}%
+
+``cross-subtraction''  $\ominus$ and ``cross-multiplication'' $\otimes$
+are defined in a similar manner but with the addition operator replaced
+by the subtraction and multiplication operators, respectively.
+Some partitions resulting from case operators may be inconsistent and 
+are thus removed. 
+
+Minimisation over cases, known as $\casemin$, is defined as:
+
+{\footnotesize 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{center}
+  \begin{tabular}{r c c c l}
+  \hspace{-7mm} 
+  
+  $\casemin \Bigg(
+    \begin{cases}
+        \phi_1: \hspace{-1mm} & \hspace{-1mm} f_1 \\ 
+        \phi_2: \hspace{-1mm} & \hspace{-1mm} f_2 \\ 
+    \end{cases}$
+  $,$
+  &
+  \hspace{-4mm}
+    $\begin{cases}
+        \psi_1: \hspace{-1mm} & \hspace{-1mm} g_1 \\ 
+        \psi_2: \hspace{-1mm} & \hspace{-1mm} g_2 \\ 
+    \end{cases} \Bigg)$
+  &
+  \hspace{-4mm} 
+  $ = $
+  &
+  \hspace{-4mm}
+    $\begin{cases}
+      \phi_1 \wedge \psi_1 \wedge f_1 < g_1    : & \hspace{-2mm} f_1 \\ 
+      \phi_1 \wedge \psi_1 \wedge f_1 \geq g_1 : & \hspace{-2mm} g_1 \\ 
+      \phi_1 \wedge \psi_2 \wedge f_1 < g_2    : & \hspace{-2mm} f_1 \\ 
+      \phi_1 \wedge \psi_2 \wedge f_1 \geq g_2 : & \hspace{-2mm} g_2 \\ 
+      \vdots & \vdots
+    \end{cases}$
+  \end{tabular}
+\end{center}
+}%
+
+$\casemin$ preserves the linearity of the constraints and the constant 
+or linear nature of the $f_i$ and $g_i$. If the $f_i$ or 
+$g_i$ are quadratic then the expressions $f_i > g_i$ or 
+$f_i \leq g_i$ will be at most univariate quadratic and any such 
+constraint can be linearised into a combination of at most two linear 
+inequalities by completing the square. 
+
+Substitution into case statements is performed via a set $\theta$ of variables and their
+substitutions e.g. {\small $\theta = \left\{ x'_1/(x_1 + x_2), x'_2/x^2_{1} \text{exp}(x_2) \right\}$},
+where the LHS of the / represents the substitution variable and the 
+RHS of the / represents the expression that should be substituted in its place.
+$\theta$ can be applied to both non-case functions $f_i$ and case 
+partitions $\phi_i$ as $f_i\theta$ and $\phi_i\theta$, respectively.
+Substitution into case statements can be written as:
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align*}
+  f\theta = 
+    \begin{cases}
+      \phi_1\theta: & f_1\theta \\ 
+      \vdots & \vdots\\ 
+      \phi_k\theta: & f_k\theta \\ 
+    \end{cases}
+\end{align*}
+}%
+
+Substitution is used when calculating integrals with respect to  deterministic $\delta$
+transitions \cite{Sanner_UAI_2011}.
+
+A case statement can be maximised with respect to a continuous parameter $y$
+as {\small $ f_1(\vec{x}, y) = \contmax_{y}f_2(\vec{x}, y) $}. The continuous maximisation
+operation is a complex case operation whose explanation is beyond the scope of 
+this paper. We refer the reader to \cite{Zamani_AAAI_2012} for further details.
+
+Case statements and their operations are implemented using Extended 
+Algebraic Decision Diagrams (XADDs) \cite{Sanner_UAI_2011}.
+XADDs provide a compact data structure with which to maintain
+compact forms of {\small $Q^{h}(\vec{x}, a_1, a_2)$} and {\small $V^{h}(\vec{x})$}. 
+
+\subsection{SDP for Zero-sum Continuous Stochastic Games}
+
+In this section we will show that a subclass of zero-sum continuous stochastic
+games with (a) piecewise constant rewards; and (b) piecewise linear transition
+functions can be solved exactly and in closed-form by using SDP.
+
+To calculate the exact solution to zero-sum CSGs we begin by replacing all functions
+and operations in Equations \eqref{eq:csgdiscqfunc} and \eqref{eq:csgvfunccompact}
+by their case statement equivalents. That is, we exchange operations such as 
+$+$, $\times$ and min, by their symbolic equivalents, $\oplus$, $\otimes$ and $\casemin$,
+respectively, and express {\small $R(\vec{x}, a_1, a_2)$}, 
+{\small $T(\vec{x}, a_1, a_2, \vec{x}')$}, {\small $V^0(\vec{x})$} as case statements. $m_{a_{1}}$
+is also encoded as a trivial case statement representing an uninstantiated symbolic variable:
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align*}
+  m_{a_{1}} = 
+    \begin{cases}
+      \top: & m_{a_{1}} \\ 
+    \end{cases}
+\end{align*}
+}%
+
+The optimal solution to zero-sum CSGs can now be described by the following
+recursive SDP equations:
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align}
+  Q^{h}(\vec{x}, a_1, a_2) &= R(\vec{x}, a_1, a_2) \quad \oplus \nonumber \\
+  & \gamma \otimes \int T(\vec{x}, a_1, a_2, \vec{x}') \otimes V^{h-1}(\vec{x}')\ d\vec{x}' \label{eq:sdpdiscqfunc} \\
+  \tilde{Q}^{h}(\vec{x}, a_2) &= \sum_{a_1 \in A_1} Q^{h}(\vec{x}, a_1, a_2) \otimes m_{a_{1}} \label{eq:sdpdiscqfunc2}
+\end{align}
+}%
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align}
+\label{eq:sdpvfunccompact}
+& V^{h}(\vec{x}) = \nonumber \\
+& \max_{m} \casemin \left( \casemin_{a_2 \in A_2} \left( \tilde{Q}^{h}(\vec{x}, a_2) \right), \mathbb{I} \right)
+\end{align}
+}%
+
+Equation \eqref{eq:sdpdiscqfunc2} calculates a symbolic $Q$ function weighted 
+by the variable $m_{a_{1}}$ for each $a_1$. In Equation \eqref{eq:sdpvfunccompact} the inner $\casemin$ operation 
+is calculated with respect to {\small $\tilde{Q}^{h}(\vec{x}, a_2)$} instantiated 
+with a particular $a_2$. The ``indicator'' function  $\mathbb{I}$ serves as the summation constraint 
+{\small $\sum_{a_{1} \in A_1} m_{a_{1}} = 1$} and ensures that the subsequent $\contmax$ operation returns 
+legal values for the $m_{a_{1}}$. The indicator is defined as follows:
+
+{\small
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align*}
+  & \mathbb{I} = \\
+  & {\footnotesize
+    \begin{cases}
+      \forall a_{1} \in A_1 \hspace{6pt}\left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \wedge (\sum m_{a_{1}} = 1) \right]: +\infty \\ 
+      \forall a_{1} \in A_1 \neg \left[(m_{a_{1}} \geq 0) \wedge (m_{a_{1}} \leq 1 ) \wedge (\sum m_{a_{1}} = 1) \right]: -\infty \\ 
+    \end{cases} 
+   }
+\end{align*}
+}%
+
+The function $\mathbb{I}$ returns $+\infty$ when the conjunction of all constraints on each $m_{a_1}$ are satisfied
+and $-\infty$, otherwise.
+
+In Algorithm~\ref{alg:csgvi} we present \texttt{CSG-VI}, a methodology to calculate the optimal $h$-stage-to-go value function
+through Equations ~\eqref{eq:sdpdiscqfunc} to ~\eqref{eq:sdpvfunccompact}. In the algorithm we notationally specify 
+the arguments of the $Q^h$ and $V^h$ functions when they are 
+instantiated by an operation. For the base case of $h = 0$, we set {\small $V^0(\vec{x})$}, expressed in 
+case statement form, to zero or to the terminal reward. For all $h > 0$
+we apply the previously defined SDP operations in the following steps:
+\begin{enumerate}
+  \item Prime the Value Function. 
+            In line \ref{alg:prime} we set up a 
+            substitution {\small $\theta = \left\{ x_1/x'_1, \ldots, x_m/x'_m \right\}$}, 
+            and obtain {\small $V^{h'} = V^{h}\theta$}, the ``next state''.
+  \item Discount and add Rewards. 
+            We assume that the reward function contains primed variables and incorporate it in line \ref{alg:dr1}.
+  \item Continuous Regression. For the continuous state variables in $\vec{x}$
+            lines \ref{alg:cmi1} -- \ref{alg:cmi2} follow the rules of integration w.r.t.~a $\delta$ function 
+            \cite{Sanner_UAI_2011}. This yields the following symbolic substitution: 
+            {\small $\int f(x'_j) \otimes \delta\left[ x'_j - g(\vec{z})\right] dx'_j = f(x'_j)\left\{ x'_j/g(\vec{z})\right\}$},
+            where $g(\vec{z})$ is a case statement and $\vec{z}$ does not contain $x'_j$.
+            The latter operation indicates that any occurrence of $x'_j$ in $f(x'_j)$ is symbolically substituted
+            with the case statement $g(\vec{z})$.
+  \item Incorporate Agent 1's strategy. 
+            At this point we have calculated {\small $Q^h(\vec{x}, a_1, a_2)$}, as shown in
+            Equation \eqref{eq:sdpdiscqfunc}. In lines \ref{alg:dm1} - \ref{alg:dm2} 
+            we weight the strategy for a specific $a_1$ by $m_{a_{1}}$.
+            We note that $m_{a_{1}}$ is a case statement representing
+            an uninstantiated symbolic variable.
+  \item Case Minimisation. 
+            In lines \ref{alg:cm1} -- \ref{alg:cm2} we compute the best case for 
+            $a_2$ as a function of all other variables, as shown in Equation~\eqref{eq:sdpdiscqfunc2}. 
+  \item Incorporate Constraints. 
+            In line \ref{alg:constraint} we incorporate constraints on the $m_{a_{1}}$ variable: 
+            {\small $\sum_{a_{1} \in A_1} m_{a_{1}} = 1$} and 
+            {\small $m_{a_{1}} \geq 0 \wedge m_{a_{1}} \leq 1 \hspace{10pt} \forall a_{1} \in A_1 $}.
+            The $\casemin$ operator ensures that all case partitions which involve illegal values of 
+            $m_{a_{1}}$ are mapped to $-\infty$.
+  \item Maximisation. 
+            In lines \ref{alg:max1} -- \ref{alg:max2} we compute the best response strategy for every state. We note that this can only be done
+            via symbolic methods since there are infinitely many states. At this point we have calculated $V^{h}(\vec{x})$ as shown in 
+            Equation \eqref{eq:sdpvfunccompact}.
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Algorithm: CSG-VI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{1.5em}
+\linesnumbered
+\begin{algorithm}[ht!]
+  \vspace{-.5mm}
+  \dontprintsemicolon
+  \SetKwFunction{remapWithPrimes}{Prime}
+  
+  \Begin{
+  
+    $V^0:=0, h:=0$\;
+
+    \While{$h < H$}{
+      $h := h + 1$\;
+      \emph{// Prime the value function}\;
+      $Q^h := \remapWithPrimes{$V^{h-1}$} \,$ \; \label{alg:prime}
+
+      \emph{// Discount and add Rewards }\;
+        $Q^h := R(\vec{x}, a_1, a_2, \vec{x}') \oplus (\gamma \otimes Q^h)$ \; \label{alg:dr1} 
+      
+      \emph{// Continuous Regression}\;
+      \For {all $x'_j \in Q^h$}{ \label{alg:cmi1}
+        $Q^h := \int Q^h \otimes T(x_j'|a_1, a_2, \vec{x}) \hspace{3pt} d_{x'_j}$\; \label{alg:cmi2}
+      }
+
+      \emph{// Incorporate Agent 1's strategy }\;
+      \For {all $a_1 \in A_1$}{ \label{alg:dm1}
+        $Q^h := Q^h \oplus \left( Q^h\left(a_1\right) \otimes \{ \top : m_{a_{1}} \right) $ \; \label{alg:dm2}
+      }
+
+      \emph{// Case Minimisation}\;
+      \For {all $a_2 \in A_2$}{ \label{alg:cm1}
+        $Q^h := \casemin(Q^h, Q^h\left(a_2\right)) $ \; \label{alg:cm2}
+      }
+
+      \emph{// Incorporate constraints }\;
+      $Q^h := \casemin(Q^{h}, \mathbb{I}) $\; \label{alg:constraint}
+
+      \emph{// Maximisation}\;
+      $V^h = Q^h$\;
+      \For {all $a_1 \in A_1$}{ \label{alg:max1}
+      $V^h := \contmax_{m_{a_{1}}} V^h\left(m_{a_{1}} \right)$ \; \label{alg:max2}
+      }
+
+       \emph{// Terminate if early convergence}\;
+      \If{$V^h = V^{h-1}$} {
+        break 
+        $\,$
+      }
+    }    
+    \Return{$(V^h)$} \;
+  }
+  \caption{
+    \footnotesize \texttt{CSG-VI}(CSG, $H$, $\mathbb{I}$) $\longrightarrow$ $(V^h)$ 
+    \label{alg:csgvi}
+  }
+  \vspace{-1mm}
+\end{algorithm}
+\decmargin{.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Algorithm: CSG-VI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+It can be proved that all of the SDP operations used in Algorithm 1 are
+closed form for LPWC or LPWL functions \cite{Sanner_UAI_2011,Zamani_AAAI_2012}. 
+Given a LPWC  {\small $V^0(\vec{x})$} and that SDP operations are closed
+form, the resulting {\small $V^{h+1}(\vec{x})$} is also LPWC.
+Therefore, by induction {\small $V^{h+1}(\vec{x})$} is LPWC for all horizons $h$.
+
+In the next section we demonstrate how SDP can be used to compute
+exact solutions to a variety of zero-sum continuous stochastic games.

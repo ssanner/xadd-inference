@@ -1,0 +1,46 @@
+\section{Markov Decision Processes}
+\label{sec:mdp}
+
+A Markov Decision Process (MDP) \cite{Howard_1960} is defined by the tuple
+$ \left\langle S, A, T, R, h, \gamma \right\rangle $. $S$ and $A$ 
+specify a finite set of states and actions, respectively.
+$T$ is the transition function $T : S \times A \rightarrow S$, which 
+defines the effect of an action on the state. $R$ is the
+reward function $R : S \times A \rightarrow \mathbb{R}$, which 
+encodes the preferences of the agent. The horizon $h$ represents the 
+number of decision steps until termination and the discount factor $\gamma \in [0, 1)$
+is used to discount future rewards. In general, an agent's objective is 
+to find a policy, $\pi : S \rightarrow A$, which maximises the expected 
+sum of discounted rewards over horizon $h$.
+
+Value iteration (VI) \cite{Bellman_1957} is a general dynamic programming 
+algorithm used to solve MDPs. VI is based on the set of Bellman equations,
+which mathematically express the optimal solution of an MDP. They 
+provide a recursive expansion to compute: (1) {\small $V^{*}(s)$}, the expected value of following
+the optimal policy in state $s$; and (2) {\small $Q^{*}(s, a)$}, the expected
+quality of taking $a$ in state $s$, then following the optimal policy. The
+key idea of VI is to successively approximate {\small $V^{*}(s)$} and {\small $Q^{*}(s, a)$}
+by {\small $V^{h}(s)$} and {\small $Q^{h}(s, a)$}, respectively, at each horizon $h$. These 
+two functions satisfy the following recursive relationship:
+
+{\small 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align}
+  Q^{h}(s, a) &= R(s, a) + \gamma \cdot \sum_{s' \in S} T(s, a, s') \cdot V^{h-1}(s') \label{eq:qfunc}\\
+  V^{h}(s) &= \max_{a \in A} \left\{ Q^{h}(s, a) \right\} \label{eq:vfunc}
+\end{align}
+}%
+
+The algorithm can be executed by first initialising {\small $V^{0}(s)$}  to zero or the terminal reward. 
+Then for each $h$, {\small $V^{h}(s)$} is calculated from {\small $V^{h-1}(s)$} via
+Equations \eqref{eq:qfunc} and \eqref{eq:vfunc}, until the intended 
+$h$-stage-to-go value function is computed. Value iteration converges 
+linearly in the number of iterations to the true values of {\small $Q^{*}(s, a)$} and {\small $V^{*}(s)$}
+\cite{Bertsekas_1987}.
+
+MDPs can be used to model multiagent systems by assuming that other agents are 
+part of the environment and have fixed behaviour. As a result, they ignore the difference 
+between responsive agents and a passive environment \cite{Hu_ICML_1998}. In the next 
+two sections we present game theoretic frameworks which generalises MDPs to situations 
+with two or more responsive agents.

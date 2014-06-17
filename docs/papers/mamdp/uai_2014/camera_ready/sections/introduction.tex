@@ -1,0 +1,41 @@
+\section{Introduction}
+
+Modelling competitive sequential interactions between agents has
+important applications within economic and financial decision-making.
+Stochastic games \cite{Shapley_PotNAoS_1953} provide a convenient
+framework to model sequential interactions between non-cooperative
+agents. In zero-sum stochastic games, participating agents have
+diametrically opposing goals. A reinforcement learning solution to
+discrete state zero-sum stochastic games was presented by Littman
+\cite{Littman_ICML_1994}.  Closed-form solutions for the continuous
+state case remain unknown, despite the general importance of this
+formalism --- zero-sum continuous state stochastic games provide a
+convenient framework with which to model robust sequential
+optimisation in adversarial settings including domains such as option valuation on derivative
+markets.
+
+The difficulty of solving zero-sum continuous state stochastic games
+originates from the need to calculate a Nash equilibrium for every state,
+of which there are infinitely many. In this paper we make the following 
+key contributions:
+\begin{itemize}
+  \item We characterise a subclass of zero-sum continuous state stochastic
+    games with restricted reward and transition functions that can be
+    solved exactly via parameterised linear optimisation.
+  \item We provide an algorithm that solves this subclass of
+    stochastic games exactly and optimally using Symbolic Dynamic
+    Programming (SDP)~\cite{Boutilier_IJCAI_2001,Sanner_UAI_2011,Zamani_AAAI_2012}
+     for arbitrary horizons.
+\end{itemize}
+
+This paper is organised as follows: In Section ~\ref{sec:mdp} we describe Markov 
+Decision Processes (MDPs)~\cite{Howard_1960} and value iteration~\cite{Bellman_1957}, 
+a widely used dynamic programming method for solving MDPs. In Sections~\ref{sec:dsg} and
+~\ref{sec:csg}, we present zero-sum stochastic games with discrete and continuous states, respectively,
+as game-theoretic generalisations of the MDP framework. Following this, in Section ~\ref{sec:sdp}, we 
+introduce SDP, and show how it can be used to calculate the first known exact solution 
+to a particular subclass of zero-sum continuous state stochastic games. In Section~\ref{sec:results} 
+we calculate exact solutions to three empirical domains: a continuous state generalisation of matching pennies, 
+binary option valuation and robust energy production. In Section~\ref{sec:relatedwork}, we
+survey the related literature. We conclude in Section~\ref{sec:conclusion} and identify
+interesting directions for future research.
