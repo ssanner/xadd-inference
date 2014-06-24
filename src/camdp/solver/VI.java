@@ -153,11 +153,9 @@ public class VI extends CAMDPsolver {
         
         if (DEEP_DEBUG){
             debugOutput.println("REGRESSING ACTION " + a._sName + " Iter "+ curIter );
-            debugOutput.println("Q Start "+a._sName+"^"+curIter);
-            if (PRINT_DD) debugOutput.println(context.getExistNode(q).toString());
+            if (PRINT_DD) debugOutput.println("Q Start "+a._sName+"^"+curIter+"\n"+context.getExistNode(q).toString());
             if (PLOT_DD) context.showGraph(q, "Q Start "+a._sName+"^"+curIter);
-            debugOutput.println("Reward"+a._sName+"^"+curIter);
-            if (PRINT_DD) debugOutput.println(context.getExistNode(q).toString());
+            if (PRINT_DD) debugOutput.println("Reward "+a._sName+"^"+curIter+"\n"+context.getExistNode(q).toString());
             if (PLOT_DD) context.showGraph(a._reward, "Reward"+a._sName+"^"+curIter);
         }
         
@@ -238,43 +236,8 @@ public class VI extends CAMDPsolver {
             _logStream.println("- Q^" + curIter + "(" + a._sName + " )" + context.collectVars(q) + "\n" + context.getString(q));
         }        
         
-        // Continuous action parameter maximization
-        if (a._actionParams.size() == 0) {
-            // No action params to maximize over
-            _logStream.println("- Q^" + curIter + "(" + a._sName + " ):\n" + " No action parameters to max over, skipping this step.");
-        } else 
-        {
-        
-                // Max out each action param in turn
-            HashSet<String> q_vars = context.collectVars(q);
-            for (int i=0; i < a._actionParams.size(); i++) 
-            {
-                String avar = a._actionParams.get(i);
-                double lb   = a._hmAVar2LB.get(avar);
-                double ub   = a._hmAVar2UB.get(avar);
-    
-                if (!q_vars.contains(avar)) {
-                    _logStream.println("- Skipping var '" + avar + "': [" + lb + "," + ub + "], which does not occur in q: " + context.collectVars(q));
-                    continue;
-                }
-                 
-                _logStream.println("- Maxing out action param '" + avar + "': [" + lb + "," + ub + "]");
-                q = maxOutVar(q, avar, lb, ub);
-                _logStream.println("-->: " + context.getString(q));
-                
-                // Can be computational expensive (max-out) so flush caches if needed
-                flushCaches( (_maxDD == null? Arrays.asList(q): Arrays.asList(q, _maxDD)) /* additional node to save */);
-                if (DEEP_DEBUG){
-                    if (PLOT_DD){
-                    mdp.displayGraph(q, "Q-" + a._sName + "-" + a._actionParams + "-End^" + curIter + "-" + Math.round(1000*APPROX_ERROR));
-                    }
-                }
-              }
-        
-            _logStream.println("- Done action parameter maximization");
-            _logStream.println("- Q^" + curIter + "(" + a._sName + " )\n" + context.getString(q));
-        }
-
+        q = regressAction(q, a);
+        q = regressNoise(q,a);
         //Final Display
         if (DEEP_DEBUG){
             debugOutput.println("Qfinal:");

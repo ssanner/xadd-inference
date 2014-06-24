@@ -23,6 +23,7 @@ PARAMS=$2
 
 echo "Parameters are $PARAMS"
 JLP=""
-# for USE on LINUX: JLP="-Djava.library.path=/usr/local/lib"
-#echo "java -Xmx3000M -cp $BIN_DIR:$CLASSPATH $MAINCLASS $PARAMS"
-java -Xmx3500M -cp $BIN_DIR:$CLASSPATH $JLP $MAINCLASS $PARAMS
+MEMLIMIT="-Xmx1000M"
+# for LINUX: JLP="-Djava.library.path=/usr/local/lib"
+echo "Running: java $MEMLIMIT $MAINCLASS $PARAMS"
+java $MEMLIMIT -cp $BIN_DIR:$CLASSPATH $JLP $MAINCLASS $PARAMS
