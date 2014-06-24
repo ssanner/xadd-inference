@@ -44,13 +44,13 @@ public class XADD {
     public final static boolean USE_CANONICAL_NODES = true; // Store nodes in canonical format?
     public final static boolean NORMALIZE_DECISIONS = true; //Store decision with normalized coefficients?
     private static final boolean USE_APPLY_GET_INODE_CANON = false;
-    private static final boolean TEST_CANON_METHODS = false;
+    private static final boolean TEST_CANON_METHODS = true;
 
     
     private static final boolean WARN_BOUND_UNUSED_VAR = false;
     private static final boolean WARN_INODE_CANON_NEG_DEC = false;
     public final static int MAX_BRANCH_COUNT = 1000000;
-
+    
     // Debug
     public final static boolean CHECK_LOCAL_ORDERING = true;
     public final static boolean SHOW_DECISION_EVAL = false;
@@ -111,7 +111,7 @@ public class XADD {
 
     //Decision Variable Maintenance
     public ArrayList<Decision> _alOrder = new ArrayList<Decision>();
-
+    
     // Node Maintenance
     public int _markCounter = 1;
     public int _nodeCounter = 1;
@@ -395,13 +395,13 @@ public class XADD {
             int result1 = getINodeCanonApplyTrick(var, low, high);        
             int result2 = getINodeCanonInsert(var,low,high);
                 
-            if (result1 != result2 && result1 != NAN){
+            if (result1 != result2 && (!containsNodeID(result1,NAN)) ){
                 System.out.println("Canonical Error (Difference not on NAN):");
                 System.out.println("PROD Result:");
                 System.out.println(getExistNode(result1));
                 System.out.println("New Canon:");
                 System.out.println(getExistNode(result2));
-            
+                
                 getINodeCanonApplyTrick(var, low, high);
                 getINodeCanonInsert(var,low,high);
             }
@@ -423,7 +423,6 @@ public class XADD {
 //            getGraph(result).launchViewer("[" + result + "] Output INode");        
         return result;
     }
-
     
     public int getINodeCanonInsert(int var, int low, int high){
         int false_half = reduceInsertNode(low, var, ZERO, true);
@@ -440,17 +439,17 @@ public class XADD {
         if (ret != null) return ret;
         
         XADDNode n = getExistNode(orig);
-        if ( (n instanceof XADDTNode) || (n instanceof XADDINode && ((XADDINode)n)._var > decision) ){
+        if ( (n instanceof XADDTNode) || (n instanceof XADDINode && (!localOrderCompareGE(decision, ((XADDINode)n)._var)) ) ){
             ret = dec_value? getINode(decision, orig, insertNode): getINode(decision, insertNode, orig);
         }
         else {
             XADDINode inode = (XADDINode) n;
-            if (decision > inode._var){
+            if (!localOrderCompareGE(inode._var,decision)){
                 int low = reduceInsertNodeInt(inode._low, decision, insertNode, dec_value, _hmInsertNodeCache);
                 int high = reduceInsertNodeInt(inode._high, decision, insertNode, dec_value, _hmInsertNodeCache);
                 ret = getINode(inode._var, low, high);
             }
-            else{
+            else {
                 //Inserting same Decision as in DD
                 if (dec_value) {
                     ret = reduceInsertNodeInt(inode._low, decision, insertNode, dec_value, _hmInsertNodeCache);
@@ -651,6 +650,11 @@ public class XADD {
         subNodeCache.put(main_id, ret);
         return ret;
     }
+
+    // Standard comparison method for enabling order of decisions modifications
+    public boolean localOrderCompareGE(int var1, int var2) {
+        return (var1 >= var2);
+    }
     
     public void checkLocalOrderingAndExitOnError(int node) {
         XADDNode new_node = getExistNode(node);
@@ -660,8 +664,8 @@ public class XADD {
             XADDNode low_n = getExistNode(new_inode._low);
             if (low_n instanceof XADDINode) {
                 XADDINode low_ni = (XADDINode) low_n;
-                if (var_id > low_ni._var) {
-                    System.out.println("Reordering problem: " + var_id + " > " + low_ni._var);
+                if (localOrderCompareGE(var_id, low_ni._var) ) {
+                    System.out.println("Reordering problem: " + var_id + " >= " + low_ni._var);
                     System.out.println(var_id + ": " + _alOrder.get(var_id));
                     System.out.println(low_ni._var + ": " + _alOrder.get(low_ni._var));
                     new Exception().printStackTrace(System.out);
@@ -671,8 +675,8 @@ public class XADD {
             XADDNode high_n = getExistNode(new_inode._high);
             if (high_n instanceof XADDINode) {
                 XADDINode high_ni = (XADDINode) high_n;
-                if (var_id > high_ni._var) {
-                    System.out.println("Reordering problem: " + var_id + " > " + high_ni._var);
+                if (localOrderCompareGE(var_id, high_ni._var)) {
+                    System.out.println("Reordering problem: " + var_id + " >= " + high_ni._var);
                     System.out.println(var_id + ": " + _alOrder.get(var_id));
                     System.out.println(high_ni._var + ": " + _alOrder.get(high_ni._var));
                     new Exception().printStackTrace(System.out);
@@ -781,6 +785,24 @@ public class XADD {
         return root.collectNodes().size();
     }
 
+    //Returns true if the diagram in root contains a node with the target ID
+    public boolean containsNodeID(int root, int target) {
+        HashSet<Integer> visited = new HashSet<Integer>();
+        return containsNodeIDInt(root, target, visited);
+    }
+
+    public boolean containsNodeIDInt(int id, int target, HashSet<Integer> visited) {
+        if (id == target) return true;
+        if (!visited.add(id)) return false;
+        XADDNode n = getExistNode(id);
+        if (n instanceof XADDINode){
+            XADDINode inode = (XADDINode) n;
+            if (containsNodeIDInt(inode._low, target, visited)) return true;
+            if (containsNodeIDInt(inode._high, target, visited)) return true;
+        }
+        return false;
+    }
+    
     ///////////////////////////////////////
     //         Operation Methods         //
     ///////////////////////////////////////
@@ -820,7 +842,7 @@ public class XADD {
             // Find node with min id (or only internal node)
             if (n1 instanceof XADDINode) {
                 if (n2 instanceof XADDINode) {
-                    if (((XADDINode) n1)._var < ((XADDINode) n2)._var) {
+                    if (localOrderCompareGE(((XADDINode) n2)._var, ((XADDINode) n1)._var) ) {
                         var = ((XADDINode) n1)._var;
                     } else {
                         var = ((XADDINode) n2)._var;
@@ -1445,7 +1467,7 @@ public class XADD {
     public int reduceLP(int node_id, boolean redun) {
         return RLPContext.reduceLP(node_id, redun);
     }
-
+    
     // Linear XADD Prunning
     public int linPruneRel(int node_id, double error) {
         LinearApproximationMethod linPrune = new LinearApproximationMethod(node_id, this);

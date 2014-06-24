@@ -83,7 +83,7 @@ public abstract class CAMDPsolver {
     
     //    Common Solution methods
     public abstract int solve();
-
+    
     //Regression functions 
     public Graph buildDBNDependencyDAG(CAction a, HashSet<String> vars) {
         // Works backward from this root factor
@@ -330,9 +330,7 @@ public abstract class CAMDPsolver {
         flushCaches(new ArrayList<Integer>());
     }
     public abstract void flushCaches(List<Integer> specialNodes);
-    
 
-    
     public void save3D(int xadd_id, String label) {
         // If DISPLAY_3D is enabled, it is expected that necessary parameters
         // have been placed in a _problemFile + ".3d"
