@@ -1,6 +1,7 @@
 package hgm.poly.pref;
 
 import hgm.poly.bayesian.PriorHandler;
+import hgm.poly.integral.OneDimFunction;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.sampling.SamplingUtils;
 import hgm.poly.vis.FunctionVisualizer;
@@ -19,12 +20,12 @@ import java.util.List;
  * Date: 12/03/14
  * Time: 5:53 AM
  */
-public class BayesianPairwisePreferenceLearningModelTest {
+public class SymbolicGibbsPolytopesSamplerOnBpplTest {
     public static String SAMPLES_FILE_PATH = "./test/hgm/poly/sampling/";//scatter2D.txt";
     public static void main(String[] args) throws FileNotFoundException {
-        BayesianPairwisePreferenceLearningModelTest instance = new BayesianPairwisePreferenceLearningModelTest();
-        instance.basicTest();
-//        instance.basicTestSymbolicGibbs();
+        SymbolicGibbsPolytopesSamplerOnBpplTest instance = new SymbolicGibbsPolytopesSamplerOnBpplTest();
+//        instance.basicTest();
+        instance.basicTestSymbolicGibbs();
     }
 
 
@@ -35,7 +36,7 @@ public class BayesianPairwisePreferenceLearningModelTest {
     ) {
         Preference[] prefs = new Preference[]{
                 new Preference(1, 2, Choice.FIRST),
-//                new Preference(1, 3, Choice.FIRST),
+                new Preference(1, 3, Choice.FIRST),
                 new Preference(2, 3, Choice.FIRST),
         };
 
@@ -75,7 +76,7 @@ public class BayesianPairwisePreferenceLearningModelTest {
         }
     }; //end inner class.
 
-    @Test
+   /* @Test
     public void basicTest() throws FileNotFoundException {
 
         BayesianPairwisePreferenceLearningModel learning = new BayesianPairwisePreferenceLearningModel(testDB1, 0.3);
@@ -105,20 +106,27 @@ public class BayesianPairwisePreferenceLearningModelTest {
         SamplingUtils.save2DSamples(sampler, 10000, SAMPLES_FILE_PATH + "scatter2D");//);"scatterGibbs");
         long t2 = System.currentTimeMillis();
         System.out.println("Time: "+ (t2-t1) + " \t That was all the folk!");
-    }
+    }*/
 
-   /* @Test
+    @Test
     public void basicTestSymbolicGibbs() throws FileNotFoundException {
 
-        BayesianPairwisePreferenceLearningModel learning = new BayesianPairwisePreferenceLearningModel(testDB1, 0.4);//0.3);
+        BayesianPairwisePreferenceLearningModel learning = new BayesianPairwisePreferenceLearningModel(testDB1, 0.2);//0.3);
 
         // Pr(W | R^{n+1})
-        ConstantBayesianPosteriorHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
+        final ConstantBayesianPosteriorHandler posterior = learning.computePosteriorWeightVector(Integer.MAX_VALUE);
 //        fixVarLimits(context, utilityWeights, -30d, 60d);
 
         FunctionVisualizer.visualize(posterior, -15d, 15d, 0.5, "Poly");
         FunctionVisualizer.save3DSurf(posterior, -20, 20, -20, 20, 0.5, SAMPLES_FILE_PATH + "synthetic");
 
+        /*FunctionVisualizer.visualize(new OneDimFunction() {
+            @Override
+            public double eval(double var) {
+                return posterior.evaluate(new Double[]{-8d, var});
+            }
+        }, -15d, 15d, 0.01, "w+0 fixed to -8...");
+*/
 
         //now I sample from it:
         SamplerInterface sampler =
@@ -127,7 +135,7 @@ public class BayesianPairwisePreferenceLearningModelTest {
 
 
 //        GatedGibbsPolytopesSampler.DEBUG = false;
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 10; i++) {
             Double[] assign = sampler.reusableSample();
             System.out.println("t = " + Arrays.toString(assign));
         }
@@ -139,9 +147,9 @@ public class BayesianPairwisePreferenceLearningModelTest {
         System.out.println("Time: "+ (t2-t1) + " \t That was all the folk!");
     }
 
-    /*//************************************************************************/
+    //***********************************************************************
 
-    @Test
+  /*  @Test
     public void basicTestClever() throws FileNotFoundException {
 
         BayesianPairwisePreferenceLearningModel learning = new BayesianPairwisePreferenceLearningModel(testDB1, 0.1);
@@ -167,5 +175,5 @@ public class BayesianPairwisePreferenceLearningModelTest {
         long t2 = System.currentTimeMillis();
         System.out.println("Time: "+ (t2-t1) + " \t That was all the folk!");
     }
-
+*/
 }

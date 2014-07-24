@@ -45,7 +45,7 @@ public class OriginalModelRejectionBasedGeneralBayesianSampler implements Sample
     }
 
     @Override
-    public Double[] sample() throws SamplingFailureException {
+    public Double[] reusableSample() throws SamplingFailureException {
         Double[] sample = new Double[numVars];
         for (; ; ) {
             for (int i = 0; i < numVars; i++) {
@@ -54,7 +54,7 @@ public class OriginalModelRejectionBasedGeneralBayesianSampler implements Sample
 
             double v = gph.evaluate(sample);
             double pr = v / dynamicEnvelope;
-            if (pr > 1)
+            if (pr > 1.0000001) //todo maybe precision error???
                 throw new RuntimeException("sampled value: f" + Arrays.toString(sample) + " = " + v + "\t is greater than envelope " + dynamicEnvelope);
 
             if (pr >= AbstractGeneralBayesianGibbsSampler.randomDoubleUniformBetween(0, 1)) {

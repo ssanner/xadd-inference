@@ -8,5 +8,10 @@ import hgm.sampling.SamplingFailureException;
  * Time: 8:21 AM
  */
 public interface SamplerInterface {
-    Double[] sample() throws SamplingFailureException;
+    /**
+     *
+     * @return  a (possibly and often) REUSABLE sample. For storing needs to be cloned.
+     * @throws SamplingFailureException
+     */
+    Double[] reusableSample() throws SamplingFailureException;
 }

@@ -29,16 +29,15 @@ public class TargetedGatedGibbsGeneralBayesianSampler extends AbstractGeneralBay
 
 
     @Override
-    protected void sampleSingleContinuousVar(String varToBeSampled, //todo IMPORTANT: VAR INDEX IS ENOUGH, YOU DO NOT NEED A STRING
-                                             int varIndexToBeSampled,
-                                             Double[] reusableVarAssign) throws FatalSamplingException { //todo: only var-index should be enough
+    protected void sampleSingleContinuousVar(int varIndexToBeSampled,
+                                             Double[] reusableVarAssign) throws FatalSamplingException {
 
         //todo: important: it is wrong to sample from all variables in the factory.... One should only sample from the variables in the cp
         List<Integer> gateMask = gph.adjustedReusableGateActivationMask(reusableVarAssign);
         final List<OneDimFunction> partitionCDFs = new ArrayList<OneDimFunction>(10 * numCasesInPrior);
 
         PiecewisePolynomial currentPartition = gph.makeActivatedSubFunction(gateMask);
-        makeAndAddCumulativeDistributionFunctionsToList(currentPartition, varToBeSampled, reusableVarAssign, partitionCDFs);
+        makeAndAddCumulativeDistributionFunctionsToList(currentPartition, varIndexToBeSampled, reusableVarAssign, partitionCDFs);
         if (partitionCDFs.isEmpty()) throw new FatalSamplingException("since current partition cannot be ZERO, the list should not be empty");
         List<Interval> currentIntervals = new ArrayList<Interval>();
         for (OneDimFunction partitionCDF : partitionCDFs) {
@@ -65,7 +64,7 @@ public class TargetedGatedGibbsGeneralBayesianSampler extends AbstractGeneralBay
         reusableVarAssign[varIndexToBeSampled] = aPointInAdjRegion;
         gateMask = gph.adjustedReusableGateActivationMask(reusableVarAssign);
         PiecewisePolynomial adjKeyPartitions = gph.makeActivatedSubFunction(gateMask);  //adjacent region to left or right...
-        makeAndAddCumulativeDistributionFunctionsToList(adjKeyPartitions, varToBeSampled, reusableVarAssign, partitionCDFs);
+        makeAndAddCumulativeDistributionFunctionsToList(adjKeyPartitions, varIndexToBeSampled, reusableVarAssign, partitionCDFs);
 
 //        Integer numCasesInTheCollapsedLikelihood = gph.getNumCasesInLikelihood(chosenGateIndex);
 //        final List<OneDimFunction> partitionCDFs = new ArrayList<OneDimFunction>(numCasesInTheCollapsedLikelihood * numCasesInPrior);

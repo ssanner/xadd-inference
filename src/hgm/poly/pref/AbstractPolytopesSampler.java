@@ -66,7 +66,7 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
         return gph.getPolynomialFactory();
     }
 
-    public Double[] sample() throws SamplingFailureException {
+    public Double[] reusableSample() throws SamplingFailureException {
         if (reusableSample == null) { // (no sample is taken yet)
             reusableSample = takeInitialSample();// initialization phase:
             return reusableSample;
@@ -104,8 +104,8 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
 
                 reusableSample = takeInitialSample();
                 debugNumUnsuccessfulSamplings++;
-//                System.out.println("replaced with --> reusableSample = " + Arrays.toString(reusableSample));
-                return reusableSample;
+                return professionalSample(reusableSample);
+//                return reusableSample;
             }
             if (DEBUG) System.out.println("reusableSample [" + i + "]= " + Arrays.toString(reusableSample));
 
@@ -124,7 +124,7 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
             reusableSample = takeInitialSample();
 
             debugNumUnsuccessfulSamplings++;
-            return reusableSample;
+            return professionalSample(reusableSample);
         }
 
         if (prevSampleHashCode == Arrays.hashCode(reusableSample)) {
@@ -149,8 +149,8 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
      */
     protected Double[] takeInitialSample() throws SamplingFailureException { //todo: maybe rejection based sampling should be used....
 
-        return cleverInitSample();
-        /*int failureCount = 0;
+//        return cleverInitSample();
+        int failureCount = 0;
 
         Double[] initSample = new Double[numVars];
         Double targetValue;
@@ -170,7 +170,7 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
             targetValue = gph.evaluate(initSample);
         } while (targetValue <= 0.0); // a valid sample is found
 
-        return initSample;*/
+        return initSample;
     }
 
     abstract protected void sampleSingleContinuousVar(String varToBeSampled, int varIndexToBeSampled, Double[] reusableVarAssign) throws FatalSamplingException;//todo: only var-index should be enough

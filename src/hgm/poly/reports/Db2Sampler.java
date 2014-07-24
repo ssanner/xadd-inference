@@ -7,4 +7,6 @@ public interface Db2Sampler {
     String getName();
 
     SamplerInterface createSampler(BayesianDataGenerator db);
+
+    void setReusableSample(double[] reuse);
 }

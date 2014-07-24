@@ -4,7 +4,6 @@ import hgm.poly.Function;
 import hgm.poly.bayesian.GatedGibbsGeneralBayesianSampler;
 import hgm.poly.bayesian.GeneralBayesianPosteriorHandler;
 import hgm.poly.bayesian.PriorHandler;
-import hgm.poly.bayesian.RejectionBasedGeneralBayesianSampler;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.sampling.SamplingUtils;
 import hgm.poly.vis.FunctionVisualizer;
@@ -33,8 +32,8 @@ public class BayesianMarketMakingModelTest {
 
     MarketMakingDatabase testDB1 = new MarketMakingDatabase(
 //            PriorHandler.uniformInEllipse("v", 30, 10), 8.001)
-            PriorHandler.serialDependent("v", 2, 15, 10)
-            , 8.001) {
+            PriorHandler.serialDependent("v", 2, 30, 10)
+            , 15.001) {
         List<TradingResponse> deals = new ArrayList<TradingResponse>();
 
         {
@@ -81,7 +80,7 @@ public class BayesianMarketMakingModelTest {
 
 //        GatedGibbsPolytopesSampler.DEBUG = false;
         for (int i = 0; i < 4; i++) {
-            Double[] assign = sampler.sample();
+            Double[] assign = sampler.reusableSample();
             System.out.println(">>>>>>>>> t  = " + Arrays.toString(assign));
             System.out.println("posterior(t) = " + posterior.evaluate(assign));
         }

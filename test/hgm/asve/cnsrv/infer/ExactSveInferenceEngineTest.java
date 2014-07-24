@@ -8,7 +8,8 @@ import org.junit.Test;
 import sve.GraphicalModel;
 import sve.Query;
 import sve.SVE;
-import xadd.XADD;
+import xaddorig.XADD;
+//import xadd.XADD;
 
 /**
  * Created by Hadi Afshar.
@@ -72,7 +73,7 @@ public class ExactSveInferenceEngineTest {
 
         XADD oldContext = oldSveResultF._localContext;
         int oldNodeCount = oldContext.getNodeCount(oldSveResultF._xadd);
-        int oldLeafCount = oldContext.getLeafCount(oldSveResultF._xadd);
+//        int oldLeafCount = oldContext.getLeafCount(oldSveResultF._xadd);
         int oldPathCount = oldContext.getBranchCount(oldSveResultF._xadd);
 
 
@@ -80,7 +81,7 @@ public class ExactSveInferenceEngineTest {
         System.out.println("exactRecords = " + exactRecords);
 
         System.out.println("----------- F I N A L   F A C T O R S --------------");
-        System.out.printf("old SVE final Result Record = \t\t\t\t\t\t\t\t\t\t\t [#Node: %d][#Leaf: %d][#path: %d]\n", oldNodeCount, oldLeafCount, oldPathCount);
+        System.out.printf("old SVE final Result Record = \t\t\t\t\t\t\t\t\t\t\t [#Node: %d][#path: %d]\n", oldNodeCount, oldPathCount);
         System.out.println("exactRecords.getFinalResultRecord() = " + exactRecords.getFinalResultRecord());
         System.out.println("----------- . . . . . . . . . . . . .---------------");
 

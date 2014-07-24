@@ -60,7 +60,7 @@ public abstract class GPolyPreferenceLearningPredictor implements PreferenceLear
         takenSamples = new ArrayList<Double[]>(numberOfSamples);
 
         for (int i = 0; i < numberOfSamples; i++) {
-            Double[] assign = sampler.sample();
+            Double[] assign = sampler.reusableSample();
 
             if (DEBUG_MODE) {
                 Double eval = posterior.evaluate(assign);

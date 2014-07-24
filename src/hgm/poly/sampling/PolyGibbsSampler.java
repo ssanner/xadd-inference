@@ -59,7 +59,7 @@ public class PolyGibbsSampler implements SamplerInterface {
     }
 
     @Override
-    public Double[] sample() throws SamplingFailureException {
+    public Double[] reusableSample() throws SamplingFailureException {
         if (reusableSample == null) { // (no sample is taken yet)
             reusableSample = takeInitialSample();// initialization phase:
         } else {

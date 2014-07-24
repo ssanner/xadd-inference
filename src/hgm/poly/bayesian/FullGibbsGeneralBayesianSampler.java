@@ -31,7 +31,7 @@ public class FullGibbsGeneralBayesianSampler extends AbstractGeneralBayesianGibb
     }
 
     @Override
-    protected void sampleSingleContinuousVar(String varToBeSampled,
+    protected void sampleSingleContinuousVar(/*String varToBeSampled,*/
                                              int varIndexToBeSampled,
                                              Double[] reusableVarAssign) throws FatalSamplingException { //todo: only var-index should be enough
 
@@ -64,7 +64,7 @@ public class FullGibbsGeneralBayesianSampler extends AbstractGeneralBayesianGibb
             gateMask = doubleArray2IntList(next);
             PiecewisePolynomial pp = gph.makeActivatedSubFunction(gateMask);
 //            polyCDFs.add(makeCumulativeDistributionFunction(polytope, varToBeSampled, reusableVarAssign));
-           makeAndAddCumulativeDistributionFunctionsToList(pp, varToBeSampled, reusableVarAssign, polyCDFs);
+           makeAndAddCumulativeDistributionFunctionsToList(pp, varIndexToBeSampled, reusableVarAssign, polyCDFs);
         }
 
 

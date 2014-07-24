@@ -48,8 +48,8 @@ public class DummyMarketMakingDatabase extends MarketMakingDatabase {
 
             double vStar_t = uniform(v - vStarEpsilon, v + vStarEpsilon);
 
-            double probBuy = (vStar_t >= a) ? 0.8 : 0.1;
-            double probSell = (vStar_t <= b) ? 0.8 : 0.1;
+            double probBuy = (vStar_t >= a) ? BayesianMarketMakingModel.B1 : BayesianMarketMakingModel.B3;//0.8 : 0.1;
+            double probSell = (vStar_t <= b) ? BayesianMarketMakingModel.S3 : BayesianMarketMakingModel.S1;//0.8 : 0.1;
 
 
             TradersChoice choice;

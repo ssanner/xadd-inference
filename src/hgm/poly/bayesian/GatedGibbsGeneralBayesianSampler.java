@@ -41,9 +41,9 @@ public class GatedGibbsGeneralBayesianSampler extends AbstractGeneralBayesianGib
 
 
     @Override
-    protected void sampleSingleContinuousVar(String varToBeSampled, //todo IMPORTANT: VAR INDEX IS ENOUGH, YOU DO NOT NEED A STRING
+    protected void sampleSingleContinuousVar(//String varToBeSampled,
                                              int varIndexToBeSampled,
-                                             Double[] reusableVarAssign) throws FatalSamplingException { //todo: only var-index should be enough
+                                             Double[] reusableVarAssign) throws FatalSamplingException {
 
         //todo: important: it is wrong to sample from all variables in the factory.... One should only sample from the variables in the cp
 
@@ -76,7 +76,7 @@ public class GatedGibbsGeneralBayesianSampler extends AbstractGeneralBayesianGib
         for (int i = 0; i < numCasesInTheCollapsedLikelihood; i++) {
             gateMask.set(chosenGateIndex, i);
             PiecewisePolynomial partition = gph.makeActivatedSubFunction(gateMask);
-            makeAndAddCumulativeDistributionFunctionsToList(partition, varToBeSampled, reusableVarAssign, partitionCDFs);
+            makeAndAddCumulativeDistributionFunctionsToList(partition, varIndexToBeSampled, reusableVarAssign, partitionCDFs);
         }
         if (partitionCDFs.isEmpty()) throw new FatalSamplingException("all regions are zero");
 

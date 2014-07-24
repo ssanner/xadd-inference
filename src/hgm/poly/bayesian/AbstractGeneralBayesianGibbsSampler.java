@@ -22,12 +22,12 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
     protected static final Random random = new Random();
     public static final double SAMPLE_ACCURACY = 1E-6;
     public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 20;
-    public static final int MAX_INITIAL_SAMPLING_TRIAL = 10000;    // if the function is not positive, (initial) sample cannot be
+    public static final int MAX_INITIAL_SAMPLING_TRIAL = 100000000;    // if the function is not positive, (initial) sample cannot be
     //    private List<String> allVars;
 //    private VarAssignment initialSample;
     protected OneDimPolynomialIntegral integrator;
 
-    static boolean DEBUG = false;
+    static boolean DEBUG = true;
 
     Double[] reusableSample;
     double[] cVarMins;
@@ -37,6 +37,9 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
 
     Double[] absoluteBestSample;
     double absoluteBestTarget = -1;
+
+    Double[] prevSample = null;
+    public double perplex = 0.0; //0.002;
 
     public AbstractGeneralBayesianGibbsSampler(GeneralBayesianPosteriorHandler gph/*, double[] cVarMins, double[] cVarMaxes*/, Double[] reusableInitialSample) {
 
@@ -72,31 +75,20 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
     }
 
     @Override
-    public Double[] sample() throws SamplingFailureException {
+    public Double[] reusableSample() throws SamplingFailureException {
         if (reusableSample == null) { // (no sample is taken yet)
             reusableSample = takeInitialSample();// initialization phase:
             return reusableSample;
         }
 
-
-//            for (String bVar : bVars) {
-//                throw new RuntimeException("does not work with boolean variables YET....");
-//                sampleSingleVar(bVar, reusableVarAssignment);
-//            }
-
-//        System.out.println("1...this.gph.evaluate(reusableSample) = " + this.gph.evaluate(reusableSample));
-
         reusableSample = professionalSample(reusableSample);
-
-//        System.out.println("Arrays.toString(reusableSample) = " + Arrays.toString(reusableSample));
-
-//        System.out.println("2...this.gph.evaluate(reusableSample) = " + this.gph.evaluate(reusableSample));
 
         //just for debug....
         if (gph.evaluate(reusableSample) <= 0) {
 //            throw new SamplingFailureException("evaluation of " + Arrays.toString(reusableSample) + " is " + gph.evaluate(reusableSample));
             System.err.println("evaluation of " + Arrays.toString(reusableSample) + " is " + gph.evaluate(reusableSample));
             reusableSample = takeInitialSample();
+            return reusableSample();
         }
 
 
@@ -107,50 +99,48 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
 
     //override if not Gibbs variations...
     protected Double[] professionalSample(Double[] reusableSample) {
-//        int prevSampleHashCode = Arrays.hashCode(reusableSample);   //todo this is nonsense....
+        if (prevSample != null && random.nextDouble() < perplex) {
+            System.arraycopy(prevSample, 0, reusableSample, 0, reusableSample.length);
+            System.out.print(".");
+            return reusableSample;
+        }
 
-        String[] allVars = gph.getPolynomialFactory().getAllVars();
+//        String[] allVars = gph.getPolynomialFactory().getAllVars();
         for (int i = 0; i < numVars; i++) {
 //            double vBeforeSampling = reusableSample[i];
             try {
-                sampleSingleContinuousVar(allVars[i], i, reusableSample);
+                sampleSingleContinuousVar(/*allVars[i], */i, reusableSample);
             } catch (FatalSamplingException e) {
+                debugNumUnsuccessfulSamplings++;
                 if (DEBUG) {
                     e.printStackTrace();
-                }
-                reusableSample = takeInitialSample();
-                debugNumUnsuccessfulSamplings++;
-//                System.out.println("replaced with --> reusableSample = " + Arrays.toString(reusableSample));
-                return reusableSample;
-            }
-            if (DEBUG) System.out.println("reusableSample [" + i + "]= " + Arrays.toString(reusableSample));
+                    System.err.println("" +
+                            "#unsuccessful samples: " + debugNumUnsuccessfulSamplings);
 
-            //todo: is this ok?
-//                if (vBeforeSampling == reusableSample[i]) {
-//                    reusableSample = takeInitialSample();
-//                    return reusableSample;
-//                }
+                }
+                this.reusableSample = takeInitialSample();
+
+                return reusableSample();  //since if it is directly returned, the samples tend towards a uniform distribution
+            }
+//            if (DEBUG) System.out.println("reusableSample [" + i + "]= " + Arrays.toString(reusableSample));
 
         }
-        if (DEBUG) System.out.println("* reusableSample = " + Arrays.toString(reusableSample));
+//        if (DEBUG) System.out.println("* reusableSample = " + Arrays.toString(reusableSample));
 
         if (filledWithZeros(reusableSample)) {
             if (DEBUG) {
-                System.err.println("sample= " + Arrays.toString(reusableSample) + "!");
+                System.err.println("[" + debugNumUnsuccessfulSamplings + "] \t sample= " + Arrays.toString(reusableSample) + "!");
             }
-
-            reusableSample = takeInitialSample();
+            if (prevSample == null) {
+                reusableSample = takeInitialSample();
+                return professionalSample(reusableSample);
+            } else {
+                System.arraycopy(prevSample, 0, reusableSample, 0, reusableSample.length);
+            }
 
             debugNumUnsuccessfulSamplings++;
             return reusableSample;
         }
-
-//        if (prevSampleHashCode == Arrays.hashCode(reusableSample)) {
-//            if (DEBUG)       //todo this trick is useless... REMOVE(?)
-//                System.err.println(Arrays.toString(reusableSample) + " is a repeated sample! Do a random jump...");
-//            reusableSample = takeInitialSample();
-//        }
-
         return reusableSample;
     }
 
@@ -165,10 +155,10 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
      * uniformly sample each variable in the interval between its min and max values and reject the produced sample if its probability is not positive...
      */
     protected Double[] takeInitialSample() throws SamplingFailureException { //todo: maybe rejection based sampling should be used....
-        boolean alternativeMethod = false;
-        if (alternativeMethod)
-            return clvAlternativeInitSample();
-        else {
+//        boolean alternativeMethod = false;
+//        if (alternativeMethod)
+//            return clvAlternativeInitSample();
+//        else {
             int failureCount = 0;
 
             Double[] initSample = new Double[numVars];
@@ -190,10 +180,10 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
             } while (targetValue <= 0.0); // a valid sample is found
 
             return initSample;
-        }
+//        }
     }
 
-    abstract protected void sampleSingleContinuousVar(String varToBeSampled, int varIndexToBeSampled, Double[] reusableVarAssign) throws FatalSamplingException;//todo: only var-index should be enough
+    abstract protected void sampleSingleContinuousVar(/*String varToBeSampled, */int varIndexToBeSampled, Double[] reusableVarAssign) throws FatalSamplingException;//todo: only var-index should be enough
 
     protected double takeSampleFrom1DFunc(OneDimFunction varCDF, double minVarValue, double maxVarValue) {
         Double cdfInfinity = varCDF.eval(maxVarValue + 0.1);
@@ -228,11 +218,11 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
         return average;
     }
 
-    public void makeAndAddCumulativeDistributionFunctionsToList(PiecewisePolynomial pp, String var, Double[] currentVarAssign, List<OneDimFunction> cdfList) {
+    public void makeAndAddCumulativeDistributionFunctionsToList(PiecewisePolynomial pp, int varIndex, Double[] currentVarAssign, List<OneDimFunction> cdfList) {
         for (ConstrainedPolynomial cp : pp.getCases()) {
 
             // returns int_{w=-infty}^{var} (func[var->w]dw) for instantiated function:
-            OneDimFunction cdf = integrator.integrate(cp, var, currentVarAssign);
+            OneDimFunction cdf = integrator.integrate(cp, varIndex, currentVarAssign);
             if (!cdf.equals(OneDimFunction.ZERO_1D_FUNCTION)) {
                 cdfList.add(cdf);
             }
@@ -260,20 +250,15 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
 //    }
 
 
+/*
+    @Deprecated
     Double[] clvAlternativeInitSample() {
         Double[] bestTakenSample = new Double[numVars];
         double bestSeenTarget = -1;
-
-
-//        int failureCount = 0;
-
         Double[] sample = new Double[numVars];
         double targetValue;
 
         for (; ; ) {
-//            if (failureCount++ > MAX_INITIAL_SAMPLING_TRIAL)
-//                throw new SamplingFailureException("Unable to take initial sample");
-
             for (int n = 0; n < 1000; n++) {
 
                 //take a sample
@@ -308,7 +293,17 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
             if (absoluteBestTarget > 0) return absoluteBestSample;
         }
     }
+*/
 
+    public static Double[] cloneSample(Double[] reusableSample) {
+        Double[] clonedSample = new Double[reusableSample.length];
+        System.arraycopy(reusableSample, 0, clonedSample, 0, reusableSample.length);
+        return clonedSample;
+    }
+
+//    public void setReusable(Double[] reuse) {
+//        prevSample = reuse;
+//    }
 }
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
