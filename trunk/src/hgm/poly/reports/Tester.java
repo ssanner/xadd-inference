@@ -17,16 +17,364 @@ import java.util.*;
  * Time: 8:58 PM
  */
 public class Tester {
-    public static final String REPORT_PATH = "E:/REPORT_PATH/";
+    public static final String REPORT_PATH = "E:/REPORT_PATH3/MMM-DIM/100aaaaaaa/";//"E:/REPORT_PATH3/BPPL-DATA/3/";
 
     public static void main(String[] args) throws IOException {
+//        System.out.println("REPORT_PATH = " + REPORT_PATH);
         Tester instance = new Tester();
-        instance.nipsTest();
+//        instance.nipsTest();
+//        instance.nipsMmmDimAnalysisTest();
+//        instance.nipsMmmDataAnalysisTest();
+//        instance.nipsBpplDataAnalysisTest();
+        instance.nipsBpplDimAnalysisTest();
     }
 
     interface ParamDataCount2DataGenerator {
+
         BayesianDataGenerator createDataGenerator(int paramSpaceDim, int numObservedDataPoints);
+
     }
+
+    public static final int FIXED_DATA_FOR_BPPL_FINAL_DIM_ANALYSIS = 12;
+    public static final int FIXED_DIM_FOR_FINAL_BPPL_DATA_ANALYSIS = 15;
+
+    public static final String REPORT_PATH_FOR_FINAL_BPPL_DIM_ANALYSIS = "E:/REPORT_PATH3/BPPL-DIM/21/";
+    public static final String REPORT_PATH_FOR_FINAL_BPPL_DATA_ANALYSIS = "E:/REPORT_PATH3/BPPL-DATA/25/";
+
+    public static final String TESTER_ALGORITHM_FOR_FINAL_BPPL_TESTS = SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_BPPL;
+    public static final String[] TESTED_ALGORITHMS_FOR_FINAL_BPPL_TESTS = new String[]{
+            SamplingAlgorithmBank.TARGETED_GATED_GIBBS_GENERAL_BPPL
+            , SamplingAlgorithmBank.TUNED_MH_GENERAL_BPPL
+            , SamplingAlgorithmBank.REJ_GENERAL_BPPL
+            , SamplingAlgorithmBank.FULL_GIBBS_GENERAL_BPPL
+    };
+
+    //
+
+    public static final int FIXED_DATA_FOR_MMM_DIM_ANALYSIS = 8; //todo
+    public static final int FIXED_DIM_FOR_MMM_DATA_ANALYSIS = 10; //todo
+    public static final String REPORT_PATH_FOR_FINAL_MMM_DIM_ANALYSIS = "E:/REPORT_PATH3/MMM-DIM/124/";  //gibs from 106
+    public static final String REPORT_PATH_FOR_FINAL_MMM_DATA_ANALYSIS = "E:/REPORT_PATH3/MMM-DATA/75/";
+
+    public static final int NUM_ALG_ITERS_FOR_MMM_DIM_ANALYSIS = 3; //todo
+
+    public static final String[] TESTED_ALGORITHMS_FOR_FINAL_MMM_TESTS = new String[]{
+            SamplingAlgorithmBank.TUNED_MH_GENERAL_MMM
+            , SamplingAlgorithmBank.REJ_GENERAL_MMM
+            , SamplingAlgorithmBank.TARGETED_GATED_GIBBS_GENERAL_MMM
+            , SamplingAlgorithmBank.FULL_GIBBS_GENERAL_MMM
+    };
+
+
+    public void nipsBpplDimAnalysisTest() throws IOException {
+        System.out.println("REPORT_PATH_FOR_FINAL_BPPL_DIM_ANALYSIS = " + REPORT_PATH_FOR_FINAL_BPPL_DIM_ANALYSIS);
+        //BPPL params:
+        final double bppl_indicatorNoise = 0.4;
+        final int maxGatingConditionViolation = Integer.MAX_VALUE;
+        final int numberOfItems = 100; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
+        final double minAttribBound = 0d;
+        final double maxAttribBound = 5d;
+
+        List<Db2Sampler> algorithmsBeingTested = null;
+        ParamDataCount2DataGenerator paramDataCount2dataGenerator = null;
+        Db2Sampler testerAlgorithm = null;
+
+        testerAlgorithm = SamplingAlgorithmBank.makeDb2Samplers4PrefLearningModel(bppl_indicatorNoise, maxGatingConditionViolation,
+                TESTER_ALGORITHM_FOR_FINAL_BPPL_TESTS).get(0);
+
+        algorithmsBeingTested = SamplingAlgorithmBank.makeDb2Samplers4PrefLearningModel(bppl_indicatorNoise, maxGatingConditionViolation,
+                TESTED_ALGORITHMS_FOR_FINAL_BPPL_TESTS);
+
+        paramDataCount2dataGenerator = new ParamDataCount2DataGenerator() {
+            @Override
+            public BayesianDataGenerator createDataGenerator(int numDims, int numObservedDataPoints) {
+                PriorHandler prior = PriorHandler.uniformInHypercube("w", numDims, BayesianPairwisePreferenceLearningModel.C);
+                return new DummyFeasiblePreferenceDatabase(
+                        minAttribBound,
+                        maxAttribBound,
+                        numObservedDataPoints,
+                        prior,
+                        numberOfItems /* number of items */,
+                        bppl_indicatorNoise);
+            }
+        };
+
+
+        //Testing params:
+        int[] numDimsArray = new int[]{3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22, 25, 26, 28, 30, 35, 40, 45, 50, 60, 80};
+        int[] numObservedDataPointsArray = new int[]{FIXED_DATA_FOR_BPPL_FINAL_DIM_ANALYSIS};//{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 48, 55, 65, 70, 80, 90, 100};//{3, 4, 5, 7, 9, 12, 15, 18, 25, 35};//{5, 7, 9, 12, 14, 18, 22, 25}; //num. observed data
+        Integer numSamplesFromTesterToSimulateTrueDistribution = 1000000;//550000;//for BPPL/dim10;constr10: 50000;
+        int numMinDesiredSamples = 3;//10000;//10000;
+        int numIterationsForEachAlgorithm = 3;//10
+        int burnedSamples = 0;
+
+        long maxWaitingTimeForTesterToSimulateTrueDistributionMillis = (int) 4*60*1000;//(15 * 60 * 1000); //todo!!!!!!!!!!!!
+        long maxWaitingTimeForTakingDesiredSamplesMillis = 1*60*1000;//(10 * 60 * 1000);//10 * 60 * 1000;
+        long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = maxWaitingTimeForTakingDesiredSamplesMillis;//(int) (1 * 60 * 1000);//10*60*1000; //(int) (10* 60 * 1000); //****
+
+        Integer numTimePointsForWhichErrIsPersisted = 500;
+
+        double goldenErrThreshold = 3d; //Another terminating condition: If reached sampling would be terminated. If you do not like it make it 0. or negative
+
+        testSamplersPerformanceWrtDimsAndConstraints(
+                paramDataCount2dataGenerator,
+                testerAlgorithm,
+                numSamplesFromTesterToSimulateTrueDistribution,
+                maxWaitingTimeForTesterToSimulateTrueDistributionMillis,
+                algorithmsBeingTested,
+                numDimsArray,
+                numObservedDataPointsArray,
+                numMinDesiredSamples,
+                maxWaitingTimeForTakingDesiredSamplesMillis,
+                minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+                numTimePointsForWhichErrIsPersisted,
+                numIterationsForEachAlgorithm,
+                burnedSamples,
+                REPORT_PATH_FOR_FINAL_BPPL_DIM_ANALYSIS,
+                goldenErrThreshold);
+
+        //*****************************************************************************************
+
+        System.out.println("TESTER: that was all folk FOR BPPL Dim analysis");
+    }
+
+    public void nipsBpplDataAnalysisTest() throws IOException {
+        System.out.println("REPORT_PATH_FOR_FINAL_BPPL_DATA_ANALYSIS = " + REPORT_PATH_FOR_FINAL_BPPL_DATA_ANALYSIS);
+        //BPPL params:
+        final double bppl_indicatorNoise = 0.4;
+        final int maxGatingConditionViolation = Integer.MAX_VALUE;
+        final int numberOfItems = 100; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
+        final double minAttribBound = 0d;
+        final double maxAttribBound = 5d;
+
+        List<Db2Sampler> algorithmsBeingTested = null;
+        ParamDataCount2DataGenerator paramDataCount2dataGenerator = null;
+        Db2Sampler testerAlgorithm = null;
+
+        testerAlgorithm = SamplingAlgorithmBank.makeDb2Samplers4PrefLearningModel(bppl_indicatorNoise, maxGatingConditionViolation,
+                TESTER_ALGORITHM_FOR_FINAL_BPPL_TESTS).get(0);
+
+        algorithmsBeingTested = SamplingAlgorithmBank.makeDb2Samplers4PrefLearningModel(bppl_indicatorNoise, maxGatingConditionViolation,
+                TESTED_ALGORITHMS_FOR_FINAL_BPPL_TESTS);
+
+        paramDataCount2dataGenerator = new ParamDataCount2DataGenerator() {
+            @Override
+            public BayesianDataGenerator createDataGenerator(int numDims, int numObservedDataPoints) {
+                PriorHandler prior = PriorHandler.uniformInHypercube("w", numDims, BayesianPairwisePreferenceLearningModel.C);
+                return new DummyFeasiblePreferenceDatabase(
+                        minAttribBound,
+                        maxAttribBound,
+                        numObservedDataPoints,
+                        prior,
+                        numberOfItems /* number of items */,
+                        bppl_indicatorNoise);
+            }
+        };
+
+
+        //Testing params:
+        int[] numDimsArray = new int[]{FIXED_DIM_FOR_FINAL_BPPL_DATA_ANALYSIS};//{3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22, 25, 26, 28, 30, 35, 40, 45, 50, 60, 80};
+        int[] numObservedDataPointsArray = new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18};//, 20, 22, 24, 26, 28, 30, 34, 38, 42, 48, 55, 65, 70, 80, 90, 100};//{3, 4, 5, 7, 9, 12, 15, 18, 25, 35};//{5, 7, 9, 12, 14, 18, 22, 25}; //num. observed data
+        Integer numSamplesFromTesterToSimulateTrueDistribution = 1000000;//550000;//for BPPL/dim10;constr10: 50000;
+        int numMinDesiredSamples = 3;//10000;//10000;
+        int numIterationsForEachAlgorithm = 3;//10
+        int burnedSamples = 0;
+
+        long maxWaitingTimeForTesterToSimulateTrueDistributionMillis = (int) (5 * 60 * 1000);//(15*60 * 1000); //todo!!!!!!!!!!!!
+        long maxWaitingTimeForTakingDesiredSamplesMillis = (1 * 60 * 1000);//10 * 60 * 1000;
+        long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = maxWaitingTimeForTakingDesiredSamplesMillis;//(int) (1 * 60 * 1000);//10*60*1000; //(int) (10* 60 * 1000); //****
+
+        Integer numTimePointsForWhichErrIsPersisted = 500;
+
+        double goldenErrThreshold = 3d; //Another terminating condition: If reached sampling would be terminated. If you do not like it make it 0. or negative
+
+        testSamplersPerformanceWrtDimsAndConstraints(
+                paramDataCount2dataGenerator,
+                testerAlgorithm,
+                numSamplesFromTesterToSimulateTrueDistribution,
+                maxWaitingTimeForTesterToSimulateTrueDistributionMillis,
+                algorithmsBeingTested,
+                numDimsArray,
+                numObservedDataPointsArray,
+                numMinDesiredSamples,
+                maxWaitingTimeForTakingDesiredSamplesMillis,
+                minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+                numTimePointsForWhichErrIsPersisted,
+                numIterationsForEachAlgorithm,
+                burnedSamples,
+                REPORT_PATH_FOR_FINAL_BPPL_DATA_ANALYSIS,
+                goldenErrThreshold);
+
+        //*****************************************************************************************
+
+        System.out.println("TESTER: that was all folk FOR BPPL Dim analysis");
+    }
+
+
+
+    public void nipsMmmDataAnalysisTest() throws IOException {
+        System.out.println("REPORT_PATH_FOR_FINAL_MMM_DATA_ANALYSIS = " + REPORT_PATH_FOR_FINAL_MMM_DATA_ANALYSIS);
+
+        //MM params:
+        final double mm_epsilon_for_star_vars = BayesianPairwisePreferenceLearningModel.C / 4.0;
+
+        //----------------------------------------
+
+        List<Db2Sampler> algorithmsBeingTested;
+        ParamDataCount2DataGenerator paramDataCount2dataGenerator;
+        Db2Sampler testerAlgorithm;
+
+        testerAlgorithm = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(
+                SamplingAlgorithmBank.REJ_GENERAL_MMM).get(0);
+//                SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_MMM).get(0);
+//                        SamplingAlgorithmBank.TARGETED_GATED_GIBBS_GENERAL_MMM)[0];
+
+
+        algorithmsBeingTested = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(TESTED_ALGORITHMS_FOR_FINAL_MMM_TESTS);
+
+        paramDataCount2dataGenerator = new ParamDataCount2DataGenerator() {
+            @Override
+            public BayesianDataGenerator createDataGenerator(int numDims, int numObservedDataPoints) {
+                PriorHandler prior =
+                        //todo: change to serial dependent...
+//                        PriorHandler.serialDependent("v",
+//                                numDims, BayesianPairwisePreferenceLearningModel.C/*first uniform bound*/,
+//                                BayesianPairwisePreferenceLearningModel.C / 2.0/*conditional dependence parameter*/);
+                        PriorHandler.uniformInHypercube("v", numDims, BayesianPairwisePreferenceLearningModel.C);
+
+                return new DummyMarketMakingDatabase(
+                        numObservedDataPoints,
+                        prior,
+                        mm_epsilon_for_star_vars //for v*
+                );
+            }
+        };
+
+
+        //Testing params:
+        int[] numDimsArray = new int[]{Tester.FIXED_DIM_FOR_MMM_DATA_ANALYSIS};//{3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22, 25, 26, 28, 30, 35, 40, 45, 50, 60, 80};
+//        int[] numObservedDataPointsArray = new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 48, 55, 65, 70, 80, 90, 100};//{3, 4, 5, 7, 9, 12, 15, 18, 25, 35};//{5, 7, 9, 12, 14, 18, 22, 25}; //num. observed data
+        int[] numObservedDataPointsArray = new int[]{18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 48, 55, 65, 70, 80, 90, 100};//{3, 4, 5, 7, 9, 12, 15, 18, 25, 35};//{5, 7, 9, 12, 14, 18, 22, 25}; //num. observed data
+        Integer numSamplesFromTesterToSimulateTrueDistribution = 1000000;//550000;//for BPPL/dim10;constr10: 50000;
+        int numMinDesiredSamples = 3;//10000;//10000;
+        int numIterationsForEachAlgorithm = NUM_ALG_ITERS_FOR_MMM_DIM_ANALYSIS;//10
+        int burnedSamples = 0;
+
+        long maxWaitingTimeForTesterToSimulateTrueDistributionMillis = (int) (30 * 60 * 1000);//was 2...(15*60 * 1000); //todo!!!!!!!!!!!!
+        long maxWaitingTimeForTakingDesiredSamplesMillis = (5 * 60 * 1000);//10 * 60 * 1000;
+        long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = maxWaitingTimeForTakingDesiredSamplesMillis;//(int) (1 * 60 * 1000);//10*60*1000; //(int) (10* 60 * 1000); //****
+
+        Integer numTimePointsForWhichErrIsPersisted = 500;
+
+        double goldenErrThreshold = 3d; //Another terminating condition: If reached sampling would be terminated. If you do not like it make it 0. or negative
+
+        testSamplersPerformanceWrtDimsAndConstraints(
+                paramDataCount2dataGenerator,
+                testerAlgorithm,
+                numSamplesFromTesterToSimulateTrueDistribution,
+                maxWaitingTimeForTesterToSimulateTrueDistributionMillis,
+                algorithmsBeingTested,
+                numDimsArray,
+                numObservedDataPointsArray,
+                numMinDesiredSamples,
+                maxWaitingTimeForTakingDesiredSamplesMillis,
+                minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+                numTimePointsForWhichErrIsPersisted,
+                numIterationsForEachAlgorithm,
+                burnedSamples,
+                REPORT_PATH_FOR_FINAL_MMM_DATA_ANALYSIS,
+                goldenErrThreshold);
+
+        //*****************************************************************************************
+
+        System.out.println("TESTER: that was all folk");
+
+    }
+
+
+
+    public void nipsMmmDimAnalysisTest() throws IOException {
+        System.out.println("REPORT_PATH_FOR_FINAL_MMM_DIM_ANALYSIS = " + REPORT_PATH_FOR_FINAL_MMM_DIM_ANALYSIS);
+
+        //MM params:
+        final double mm_epsilon_for_star_vars = BayesianPairwisePreferenceLearningModel.C / 4.0;
+
+        //----------------------------------------
+
+        List<Db2Sampler> algorithmsBeingTested;
+        ParamDataCount2DataGenerator paramDataCount2dataGenerator;
+        Db2Sampler testerAlgorithm;
+
+        testerAlgorithm = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(
+                        SamplingAlgorithmBank.REJ_GENERAL_MMM).get(0);
+//                SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_MMM).get(0);
+//                        SamplingAlgorithmBank.TARGETED_GATED_GIBBS_GENERAL_MMM)[0];
+
+
+        algorithmsBeingTested = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(TESTED_ALGORITHMS_FOR_FINAL_MMM_TESTS);
+
+        paramDataCount2dataGenerator = new ParamDataCount2DataGenerator() {
+            @Override
+            public BayesianDataGenerator createDataGenerator(int numDims, int numObservedDataPoints) {
+                PriorHandler prior =
+                        //todo: change to serial dependent...
+//                        PriorHandler.serialDependent("v",
+//                                numDims, BayesianPairwisePreferenceLearningModel.C/*first uniform bound*/,
+//                                BayesianPairwisePreferenceLearningModel.C / 2.0/*conditional dependence parameter*/);
+                                PriorHandler.uniformInHypercube("v", numDims, BayesianPairwisePreferenceLearningModel.C);
+
+                return new DummyMarketMakingDatabase(
+                        numObservedDataPoints,
+                        prior,
+                        mm_epsilon_for_star_vars //for v*
+                );
+            }
+        };
+
+
+        //Testing params:
+        int[] numDimsArray = new int[]{3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22, 25, 26, 28, 30, 35, 40, 45, 50};//, 60, 80};
+        int[] numObservedDataPointsArray = new int[]{Tester.FIXED_DATA_FOR_MMM_DIM_ANALYSIS};//{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 48, 55, 65, 70, 80, 90, 100};//{3, 4, 5, 7, 9, 12, 15, 18, 25, 35};//{5, 7, 9, 12, 14, 18, 22, 25}; //num. observed data
+        Integer numSamplesFromTesterToSimulateTrueDistribution = 1000000;//550000;//for BPPL/dim10;constr10: 50000;
+        int numMinDesiredSamples = 3;//10000;//10000;
+        int numIterationsForEachAlgorithm = NUM_ALG_ITERS_FOR_MMM_DIM_ANALYSIS;//10
+        int burnedSamples = 0;
+
+        long maxWaitingTimeForTesterToSimulateTrueDistributionMillis = (int) (5 * 60 * 1000);//2(15*60 * 1000); //todo!!!!!!!!!!!!
+        long maxWaitingTimeForTakingDesiredSamplesMillis = (1 * 60 * 1000);//10 * 60 * 1000;
+        long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = maxWaitingTimeForTakingDesiredSamplesMillis;//(int) (1 * 60 * 1000);//10*60*1000; //(int) (10* 60 * 1000); //****
+
+        Integer numTimePointsForWhichErrIsPersisted = 500;
+
+        double goldenErrThreshold = 3d; //Another terminating condition: If reached sampling would be terminated. If you do not like it make it 0. or negative
+
+        testSamplersPerformanceWrtDimsAndConstraints(
+                paramDataCount2dataGenerator,
+                testerAlgorithm,
+                numSamplesFromTesterToSimulateTrueDistribution,
+                maxWaitingTimeForTesterToSimulateTrueDistributionMillis,
+                algorithmsBeingTested,
+                numDimsArray,
+                numObservedDataPointsArray,
+                numMinDesiredSamples,
+                maxWaitingTimeForTakingDesiredSamplesMillis,
+                minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+                numTimePointsForWhichErrIsPersisted,
+                numIterationsForEachAlgorithm,
+                burnedSamples,
+                REPORT_PATH_FOR_FINAL_MMM_DIM_ANALYSIS,
+                goldenErrThreshold);
+
+        //*****************************************************************************************
+
+        System.out.println("TESTER: that was all folk");
+
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void nipsTest() throws IOException {
 
@@ -38,7 +386,7 @@ public class Tester {
         final double maxAttribBound = 5d;
 
         //MM params:
-        final double mm_epsilon_for_star_vars = BayesianPairwisePreferenceLearningModel.C / 10.0;
+        final double mm_epsilon_for_star_vars = BayesianPairwisePreferenceLearningModel.C / 4.0;
 
         //----------------------------------------
 
@@ -46,25 +394,26 @@ public class Tester {
                 ModelType.MMM;
 //                ModelType.BPPL;
 
-        Db2Sampler[] algorithmsBeingTested = null;
+        List<Db2Sampler> algorithmsBeingTested = null;
         ParamDataCount2DataGenerator paramDataCount2dataGenerator = null;
         Db2Sampler testerAlgorithm = null;
 
         switch (problem) {
             case MMM:
                 testerAlgorithm = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(
-                        SamplingAlgorithmBank.REJ_GENERAL_MMM)[0];
-//                        SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_MMM)[0];
+//                        SamplingAlgorithmBank.REJ_GENERAL_MMM).get(0);
+                        SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_MMM).get(0);
 //                        SamplingAlgorithmBank.TARGETED_GATED_GIBBS_GENERAL_MMM)[0];
 
 
                 algorithmsBeingTested = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(
-                        SamplingAlgorithmBank.TARGETED_GATED_GIBBS_GENERAL_MMM,
-                        SamplingAlgorithmBank.MH_GENERAL_MMM,
-                        SamplingAlgorithmBank.GATED_GIBBS_GENERAL_MMM,
-                        SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_MMM,
-                        SamplingAlgorithmBank.REJ_GENERAL_MMM,
-                        SamplingAlgorithmBank.FULL_GIBBS_GENERAL_MMM
+                        SamplingAlgorithmBank.TARGETED_GATED_GIBBS_GENERAL_MMM
+                        , SamplingAlgorithmBank.TUNED_MH_GENERAL_MMM
+                        , SamplingAlgorithmBank.REJ_GENERAL_MMM
+                        , SamplingAlgorithmBank.FULL_GIBBS_GENERAL_MMM
+//                        , SamplingAlgorithmBank.MH_GENERAL_MMM
+//                        , SamplingAlgorithmBank.GATED_GIBBS_GENERAL_MMM
+//                        ,SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_MMM
                 );
 
                 paramDataCount2dataGenerator = new ParamDataCount2DataGenerator() {
@@ -72,10 +421,10 @@ public class Tester {
                     public BayesianDataGenerator createDataGenerator(int numDims, int numObservedDataPoints) {
                         PriorHandler prior =
                                 //todo: change to serial dependent...
-//                                PriorHandler.serialDependent("v",
-//                                        numDims, BayesianPairwisePreferenceLearningModel.C/*first uniform bound*/,
-//                                        BayesianPairwisePreferenceLearningModel.C / 5.0/*conditional dependence parameter*/);
-                                PriorHandler.uniformInHypercube("v", numDims, BayesianPairwisePreferenceLearningModel.C);
+                                PriorHandler.serialDependent("v",
+                                        numDims, BayesianPairwisePreferenceLearningModel.C/*first uniform bound*/,
+                                        BayesianPairwisePreferenceLearningModel.C / 2.0/*conditional dependence parameter*/);
+//                                PriorHandler.uniformInHypercube("v", numDims, BayesianPairwisePreferenceLearningModel.C);
 
                         return new DummyMarketMakingDatabase(
                                 numObservedDataPoints,
@@ -89,22 +438,24 @@ public class Tester {
 
             case BPPL:
                 testerAlgorithm = SamplingAlgorithmBank.makeDb2Samplers4PrefLearningModel(bppl_indicatorNoise, maxGatingConditionViolation,
-                        SamplingAlgorithmBank.REJ_GENERAL_BPPL)[0];
-//                        SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_BPPL)[0];
+//                        SamplingAlgorithmBank.REJ_GENERAL_BPPL).get(0);
+                        SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_BPPL).get(0);
 //                        SamplingAlgorithmBank.TARGETED_GATED_GIBBS_CONST_BPPL)[0];
 
                 algorithmsBeingTested = SamplingAlgorithmBank.makeDb2Samplers4PrefLearningModel(bppl_indicatorNoise, maxGatingConditionViolation
-                        ,SamplingAlgorithmBank.REJ_GENERAL_BPPL
-                        ,SamplingAlgorithmBank.MH_GENERAL_BPPL
+                        , SamplingAlgorithmBank.TARGETED_GATED_GIBBS_GENERAL_BPPL
+                        , SamplingAlgorithmBank.TUNED_MH_GENERAL_BPPL
+                        , SamplingAlgorithmBank.REJ_GENERAL_BPPL
+//                        , SamplingAlgorithmBank.MH_GENERAL_BPPL
+                        , SamplingAlgorithmBank.FULL_GIBBS_GENERAL_BPPL
 //                        ,SamplingAlgorithmBank.SYMBOLIC_GIBBS_CONST_BPPL
-                        ,SamplingAlgorithmBank.TARGETED_GATED_GIBBS_CONST_BPPL
-                        ,SamplingAlgorithmBank.GATED_GIBBS_CONST_BPPL   //this is the best...
-//                        ,SamplingAlgorithmBank.FULL_GIBBS_GENERAL_BPPL
+//                        , SamplingAlgorithmBank.TARGETED_GATED_GIBBS_CONST_BPPL
+//                        , SamplingAlgorithmBank.GATED_GIBBS_CONST_BPPL  .
 //                        ,SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_BPPL
 //                        ,SamplingAlgorithmBank.MH_GENERAL_BPPL2
-                        ,SamplingAlgorithmBank.GATED_GIBBS_GENERAL_BPPL
+//                        , SamplingAlgorithmBank.GATED_GIBBS_GENERAL_BPPL
 //                        ,SamplingAlgorithmBank.TESTER_CONST_BPPL
-                        ,SamplingAlgorithmBank.FULL_GIBBS_CONST_BPPL
+//                        , SamplingAlgorithmBank.FULL_GIBBS_CONST_BPPL
                 );
 
                 paramDataCount2dataGenerator = new ParamDataCount2DataGenerator() {
@@ -129,18 +480,20 @@ public class Tester {
 
 
         //Testing params:
-        int[] numDimsArray = new int[]{10};//{3, 5, 8, 12, 16};
-        int[] numObservedDataPointsArray = new int[]{10};//{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100};//{3, 4, 5, 7, 9, 12, 15, 18, 25, 35};//{5, 7, 9, 12, 14, 18, 22, 25}; //num. observed data
-        Integer numSamplesFromTesterToSimulateTrueDistribution = 50000;//for BPPL/dim10;constr10: 50000;
-        int numMinDesiredSamples = 10000;//10000;
-        int numQueries = 20;
+        int[] numDimsArray = new int[]{3, 4, 5, 6, 7, 8, 10, 12, 14};//{15};//{3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22, 25, 26, 28, 30, 35, 40, 45, 50, 60, 80};
+        int[] numObservedDataPointsArray = new int[]{8};//{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 48, 55, 65, 70, 80, 90, 100};//{3, 4, 5, 7, 9, 12, 15, 18, 25, 35};//{5, 7, 9, 12, 14, 18, 22, 25}; //num. observed data
+        Integer numSamplesFromTesterToSimulateTrueDistribution = 1000000;//550000;//for BPPL/dim10;constr10: 50000;
+        int numMinDesiredSamples = 3;//10000;//10000;
+        int numIterationsForEachAlgorithm = 3;//10
         int burnedSamples = 0;
 
-        long maxWaitingTimeForTesterToSimulateTrueDistributionMillis = (int)(20 * 60 * 1000);
-        long maxWaitingTimeForTakingDesiredSamplesMillis = (1*60*1000);//10 * 60 * 1000;
-        long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = (int)(1*60*1000);//10*60*1000; //(int) (10* 60 * 1000); //****
+        long maxWaitingTimeForTesterToSimulateTrueDistributionMillis = (int) (2 * 60 * 1000);//(15*60 * 1000); //todo!!!!!!!!!!!!
+        long maxWaitingTimeForTakingDesiredSamplesMillis = (1 * 60 * 1000);//10 * 60 * 1000;
+        long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = maxWaitingTimeForTakingDesiredSamplesMillis;//(int) (1 * 60 * 1000);//10*60*1000; //(int) (10* 60 * 1000); //****
 
         Integer numTimePointsForWhichErrIsPersisted = 500;
+
+        double goldenErrThreshold = 3d; //Another terminating condition: If reached sampling would be terminated. If you do not like it make it 0. or negative
 
         testSamplersPerformanceWrtDimsAndConstraints(
                 paramDataCount2dataGenerator,
@@ -154,9 +507,10 @@ public class Tester {
                 maxWaitingTimeForTakingDesiredSamplesMillis,
                 minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
                 numTimePointsForWhichErrIsPersisted,
-                numQueries,
+                numIterationsForEachAlgorithm,
                 burnedSamples,
-                REPORT_PATH);
+                REPORT_PATH,
+                goldenErrThreshold);
 
         //*****************************************************************************************
 
@@ -169,26 +523,22 @@ public class Tester {
             Db2Sampler testerSampleMaker,  //used as baseline
             int numSamplesFromTesterToSimulateTrueDistribution,
             long maxWaitingTimeForTesterToSimulateMillis,
-            Db2Sampler[] samplerMakersToBeTested,
+            List<Db2Sampler> samplerMakersToBeTested,
             int[] numDimsArray, // parameter space dimension
             int[] numObservedDataPointsArray,
             int numMinDesiredSamples,     //used for error vs. #samples diagram
             long maxWaitingTimeForTakingDesiredSamples, //if sampling takes more than this, sampling would be terminated without an answer
             long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis, //used for error vs. time diagram
             int approxNumTimePointsForWhichErrIsPersisted,
-            int numQueries,
+            int numRuns,
             int burnedSamples, //used for both tester and tested algorithms
-            String outputDirectoryPath) throws IOException {
-
-        //these are for generating qs:
-        double minAttribBound = 0d;
-        double maxAttribBound = 5d;
-
+            String outputDirectoryPath,
+            double goldenErrThreshold) throws IOException {
 
         TotalTimeKeeper timeKeeper = new TotalTimeKeeper(samplerMakersToBeTested, numDimsArray, numObservedDataPointsArray, outputDirectoryPath);
 
         AlgorithmDeathLimitKeeper testedAlgsDeathKeeper = new AlgorithmDeathLimitKeeper(samplerMakersToBeTested);
-        AlgorithmDeathLimitKeeper testerDeathKeeper = new AlgorithmDeathLimitKeeper(new Db2Sampler[]{testerSampleMaker});
+//        AlgorithmDeathLimitKeeper testerDeathKeeper = new AlgorithmDeathLimitKeeper(new Db2Sampler[]{testerSampleMaker});
 
 
         //note: both arrays should be sorted.
@@ -198,58 +548,69 @@ public class Tester {
                 System.out.println(".......\nnumDims = " + numDims);
                 System.out.println("numObservedDataPoints = " + numObservedDataPoints);
 
-                if (testerDeathKeeper.algorithmWillDie(testerSampleMaker, numDims, numObservedDataPoints)) {
-                    System.err.println("It is believed that for #dims: " + numDims +
-                            " #data: " + numObservedDataPoints +
-                            " True distribution cannot be made. For this setting, whole Test abolished");
-                    continue;
-                }
+//                if (testerDeathKeeper.algorithmWillDie(testerSampleMaker, numDims, numObservedDataPoints)) {
+//                    System.err.println("It is believed that for #dims: " + numDims +
+//                            " #data: " + numObservedDataPoints +
+//                            " True distribution cannot be made. For this setting, whole Test abolished");
+//                    continue;
+//                }
 
                 BayesianDataGenerator db = paramDataCount2DataGenerator.createDataGenerator(numDims, numObservedDataPoints);
 
-                List<double[]> fs = createRandomItems(numQueries, numDims, minAttribBound, maxAttribBound);
+//                List<double[]> fs = createRandomItems(numRuns, numDims, minAttribBound, maxAttribBound);
+//                double[] f = new double[numDims];
+//                Arrays.fill(f, 1.0);
 
                 //Calc. ground truth means:
 //                takeGroundSamples(db, testerSampleMaker, numSamplesFromTesterToSimulateTrueDistribution, maxWaitingTimeForTesterToSimulate);
-                List<Double[]> groundTruth = fetchAndCompletePersistedGroundTruth(outputDirectoryPath, numDims, numObservedDataPoints, db, testerSampleMaker,
-                        numSamplesFromTesterToSimulateTrueDistribution, maxWaitingTimeForTesterToSimulateMillis);
+//                List<Double[]> groundTruth = fetchAndCompletePersistedGroundTruth(outputDirectoryPath, numDims, numObservedDataPoints, db, testerSampleMaker,
+//                if (groundTruth.isEmpty()) {
+//                    System.err.println("NO GROUND TRUTH TAKEN! TERMINATED....");
+//                    continue;
+//                }
 
-//                StatInfo groundTruthStat = meansAndStdErrors(fs, null /*groundTruthMeans is not calculated yet*/, db, testerSampleMaker,
-//                        burnedSamples, numSamplesFromTesterToSimulateTrueDistribution/*numMinDesiredSamples*/,
-//                        maxWaitingTimeForTesterToSimulate,
-//                        0 /*no temporal analysis for baseline algorithm*/, 0 /*approxNumTimePointsForWhichErrIsPersisted not needed...*/);
+//                double[] groundTruthMeans = new double[numDims];
+//                for (Double[] groundTruthParticle : groundTruth) {
+//                    for (int i = 0; i < groundTruthParticle.length; i++) {
+//                        groundTruthMeans[i] += (groundTruthParticle[i] / (double) groundTruth.size());
+//                    }
+//                }
+//                groundTruth = null; //I do not need it; let garbage collected
 
-                StatInfo groundTruthStat = meansAndStdErrors(fs, null /*groundTruthMeans is not calculated yet*/, db, testerSampleMaker,
-                        burnedSamples, groundTruth.size()/*numSamplesFromTesterToSimulateTrueDistribution/*numMinDesiredSamples*/,
-                        maxWaitingTimeForTesterToSimulateMillis,
-                        0 /*no temporal analysis for baseline algorithm*/, 0 /*approxNumTimePointsForWhichErrIsPersisted not needed...*/,
-                        groundTruth);
-                if (groundTruthStat.timeToTakeFirstSamples/*.totalProcessTimeMillis*/ == null) {
-                    System.err.println("Ground truth could not be made. Test with #Dims: " + numDims + " #Data: " + numObservedDataPoints + " is terminated...");
-                    testerDeathKeeper.recordDeath(testerSampleMaker, numDims, numObservedDataPoints);
+                double[] groundTruthMeans;
+                try {
+                    groundTruthMeans = computeGroundTruthMean(db, testerSampleMaker, numSamplesFromTesterToSimulateTrueDistribution, maxWaitingTimeForTesterToSimulateMillis);
+                    System.out.println("{{{groundTruthMeans = " + Arrays.toString(groundTruthMeans) + "}}}");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.err.println("NO GROUND TRUTH TAKEN! TERMINATED....");
                     continue;
                 }
-                System.out.println("::groundTruthStat.timeToTakeFirstSamples = " + groundTruthStat.timeToTakeFirstSamples);
 
-                double[] groundTruthMeans = groundTruthStat.groundTruthMeans;
-                groundTruthStat = null; // I do not need other information, so I let garbage collector takes it.
-
-
-                //Analysis of other algorithms:
+                //Analysis of tested algorithms:
                 for (Db2Sampler samplerMaker : samplerMakersToBeTested) {
                     if (!testedAlgsDeathKeeper.algorithmWillDie(samplerMaker, numDims, numObservedDataPoints)) {
-                    StatInfo statInfo = meansAndStdErrors(fs, groundTruthMeans, db, samplerMaker, burnedSamples,
-                            numMinDesiredSamples, maxWaitingTimeForTakingDesiredSamples, minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis, approxNumTimePointsForWhichErrIsPersisted, null);
-                    statInfo.persistMeanStdErrForFirstTakenSamples(outputDirectoryPath, numDims, numObservedDataPoints, samplerMaker.getName(), numMinDesiredSamples);
-                    statInfo.persistMeanStdErrForTimePoints(outputDirectoryPath, numDims, numObservedDataPoints, samplerMaker.getName(), maxWaitingTimeForTakingDesiredSamples);
+//                        StatInfo statInfo = meansAndStdErrors(numRuns, groundTruthMeans, db, samplerMaker, burnedSamples,numMinDesiredSamples, maxWaitingTimeForTakingDesiredSamples, minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis, approxNumTimePointsForWhichErrIsPersisted, null);
+                        StatInfo statInfo = meansAndStdErrors(numRuns,
+                                groundTruthMeans,
+                                db,
+                                samplerMaker,
+                                burnedSamples,
+                                numMinDesiredSamples,
+                                maxWaitingTimeForTakingDesiredSamples,
+                                minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+                                approxNumTimePointsForWhichErrIsPersisted,
+                                goldenErrThreshold);
+                        statInfo.persistMeanStdErrForFirstTakenSamples(outputDirectoryPath, numDims, numObservedDataPoints, samplerMaker.getName(), numMinDesiredSamples);
+                        statInfo.persistMeanStdErrForTimePoints(outputDirectoryPath, numDims, numObservedDataPoints, samplerMaker.getName(), maxWaitingTimeForTakingDesiredSamples);
 
-                    if (statInfo.timeToTakeFirstSamples != null) { //did not die
-                        timeKeeper.persist(numDims, numObservedDataPoints, samplerMaker.getName(), statInfo.timeToTakeFirstSamples);
-                    } else { //died
-                        testedAlgsDeathKeeper.recordDeath(samplerMaker, numDims, numObservedDataPoints);
-                    }
+                        if (statInfo.timeToTakeFirstSamplesOrGoldenTime != null) { //did not die
+                            timeKeeper.persist(numDims, numObservedDataPoints, samplerMaker.getName(), statInfo.timeToTakeFirstSamplesOrGoldenTime);
+                        } else { //died
+                            testedAlgsDeathKeeper.recordDeath(samplerMaker, numDims, numObservedDataPoints);
+                        }
 
-                    System.out.println(samplerMaker.getName() + ".timeN = " + statInfo.timeToTakeFirstSamples/*totalProcessTimeMillis*/ + "\t\tsamples=" + statInfo.means4FirstSamples.size());
+                        System.out.println(samplerMaker.getName() + ".timeN/GOLD = " + statInfo.timeToTakeFirstSamplesOrGoldenTime/*totalProcessTimeMillis*/ + "\t\tsamples=" + statInfo.means4FirstSamples.size());
 
                     } else {
                         System.err.println(samplerMaker.getName() + " skipped...");
@@ -261,68 +622,68 @@ public class Tester {
 
     }
 
-    private List<Double[]> fetchAndCompletePersistedGroundTruth(String path,
-                                                                int numDims, int numObservedDataPoints,
-                                                                BayesianDataGenerator db, Db2Sampler testerSampleMaker, int numDesiredSamplesFromTesterToSimulateTrueDistribution,
-                                                                long maxWaitingTimeForTakingDesiredSamplesMillis) throws IOException{
-        //1. upload data if exists...
+//    private List<Double[]> fetchAndCompletePersistedGroundTruth(String path,
+//                                                                int numDims, int numObservedDataPoints,
+//                                                                BayesianDataGenerator db, Db2Sampler testerSampleMaker, int numDesiredSamplesFromTesterToSimulateTrueDistribution,
+//                                                                long maxWaitingTimeForTakingDesiredSamplesMillis) throws IOException {
+    //1. upload data if exists...
 //    private List<Double[]> fetchAndCompletePersistedGroudTruth(List<Double[]> groundTruth, String path, int numDims, int numObservedDataPoints, String algorithmName, int numDesiredSamples) throws IOException {
-        System.out.println("...maxWaitingTimeForTakingDesiredSamplesMillis = " + maxWaitingTimeForTakingDesiredSamplesMillis);
-        String algorithmName = testerSampleMaker.getName();
-        String generalInfo = "GroundTruthPersisted-dim" + numDims + "-data" + numObservedDataPoints + "-" + algorithmName + "-samples" + numDesiredSamplesFromTesterToSimulateTrueDistribution;
-        String fileName = path + generalInfo;
+//        System.out.println("...maxWaitingTimeForTakingDesiredSamplesMillis = " + maxWaitingTimeForTakingDesiredSamplesMillis);
+//        String algorithmName = testerSampleMaker.getName();
+//        String generalInfo = "GroundTruthPersisted-dim" + numDims + "-data" + numObservedDataPoints + "-" + algorithmName + "-samples" + numDesiredSamplesFromTesterToSimulateTrueDistribution;
+//        String fileName = path + generalInfo;
 
-        List<Double[]> oldData = new ArrayList<Double[]>();
-        File file = new File(fileName);
-        if (file.isFile()) {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
-            String line;
-            int index = 0;
-            while ((line = bufferedReader.readLine()) != null) {
-                index++;
-                String[] split = line.split(" ");
-                if (split.length != numDims + 1) throw new RuntimeException("parsing error: " + line);
-                if (Integer.parseInt(split[0]) != index) throw new RuntimeException("parsing error: " + line);
-                Double[] particle = new Double[numDims];
-                for (int j = 0; j < numDims; j++) {
-                    particle[j] = Double.parseDouble(split[j + 1]);
-                }
-                oldData.add(particle);
-            }
-            System.out.println(index + " entries already exist for ground truth");
-            bufferedReader.close();
-        } //end if file exists
+//        List<Double[]> oldData = new ArrayList<Double[]>();
+//        File file = new File(fileName);
+//        if (file.isFile()) {
+//            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
+//            String line;
+//            int index = 0;
+//            while ((line = bufferedReader.readLine()) != null) {
+//                index++;
+//                String[] split = line.split(" ");
+//                if (split.length != numDims + 1) throw new RuntimeException("parsing error: " + line);
+//                if (Integer.parseInt(split[0]) != index) throw new RuntimeException("parsing error: " + line);
+//                Double[] particle = new Double[numDims];
+//                for (int j = 0; j < numDims; j++) {
+//                    particle[j] = Double.parseDouble(split[j + 1]);
+//                }
+//                oldData.add(particle);
+//            }
+//            System.out.println(index + " entries already exist for ground truth");
+//            bufferedReader.close();
+//        } //end if file exists
 
-        //2. if existing data is enough then return it:
-        if (oldData.size() >= numDesiredSamplesFromTesterToSimulateTrueDistribution) {
-            System.out.println("oldData.size() = " + oldData.size() + "... enough existing data. No new data generated");
-            return oldData;
-        }
+    //2. if existing data is enough then return it:
+//        if (oldData.size() >= numDesiredSamplesFromTesterToSimulateTrueDistribution) {
+//            System.out.println("oldData.size() = " + oldData.size() + "... enough existing data. No new data generated");
+//            return oldData;
+//        }
 
-        int newDesiredSamples = numDesiredSamplesFromTesterToSimulateTrueDistribution - oldData.size();
-        List<Double[]> newGroundTruth = takeGroundSamples(db, testerSampleMaker, newDesiredSamples, maxWaitingTimeForTakingDesiredSamplesMillis);
+//        int newDesiredSamples = numDesiredSamplesFromTesterToSimulateTrueDistribution; - oldData.size();
+//        List<Double[]> newGroundTruth = takeGroundSamples(db, testerSampleMaker, newDesiredSamples, maxWaitingTimeForTakingDesiredSamplesMillis);
 
 
-        //now append old data to new data and persist....
-        newGroundTruth.addAll(oldData);
-        PrintStream ps = new PrintStream(new FileOutputStream(fileName));
+    //now append old data to new data and persist....
+//        newGroundTruth.addAll(oldData);
+//        PrintStream ps = new PrintStream(new FileOutputStream(fileName));
 
-        for (int i = 0; i < newGroundTruth.size(); i++) {
-            //          #index      particle
-            Double[] particle = newGroundTruth.get(i);
-            StringBuilder sb = new StringBuilder();
-            for (Double d : particle) {
-                sb.append(d + " ");
-            }
-            ps.println((i + 1) + " " + sb.toString().trim());
-        }
-        ps.close();
+//        for (int i = 0; i < newGroundTruth.size(); i++) {
+    //          #index      particle
+//            Double[] particle = newGroundTruth.get(i);
+//            StringBuilder sb = new StringBuilder();
+//            for (Double d : particle) {
+//                sb.append(d + " ");
+//            }
+//            ps.println((i + 1) + " " + sb.toString().trim());
+//        }
+//        ps.close();
+//
+//        System.out.println("#" + newGroundTruth.size() + " Ground truth data generated...");
+//        return newGroundTruth;
+//    }
 
-        System.out.println("#" + newGroundTruth.size() + " Ground truth data generated...");
-        return newGroundTruth;
-    }
-
-    private List<double[]> createRandomItems(int numQueries, int attributeCount, double minAttribBound, double maxAttribBound) {
+    /*private List<double[]> createRandomItems(int numQueries, int attributeCount, double minAttribBound, double maxAttribBound) {
         List<double[]> items = new ArrayList<double[]>(numQueries);
         for (int q = 0; q < numQueries; q++) {
             double[] item = makeNewItem(attributeCount, minAttribBound, maxAttribBound);
@@ -330,21 +691,21 @@ public class Tester {
         }
         return items;
     }
+*/
+//    Random random = new Random();
 
-    Random random = new Random();
-
-    public double[] makeNewItem(int attributeCount, double minAttribBound, double maxAttribBound) {
+    /*public double[] makeNewItem(int attributeCount, double minAttribBound, double maxAttribBound) {
         double[] item = new double[attributeCount];
         for (int i = 0; i < attributeCount; i++) {
             item[i] = random.nextDouble() * (maxAttribBound - minAttribBound) + minAttribBound;
         }
         return item;
-    }
+    }*/
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public List<Double[]> takeGroundSamples(
+   /* public List<Double[]> takeGroundSamples(
             BayesianDataGenerator db, Db2Sampler samplerMaker,
             final int numDesiredSamples,
             long maxWaitingTimeForTakingDesiredSamplesMillis //in ms
@@ -353,7 +714,7 @@ public class Tester {
         List<Double[]> groundTruthSamples = new ArrayList<Double[]>(numDesiredSamples); //this will be saved...
         long t1 = System.currentTimeMillis();
         for (int i = 0; i < numDesiredSamples; i++) {
-            Double[] sample = sampler.sample();
+            Double[] sample = sampler.reusableSample();
             Double[] clonedSample = new Double[sample.length];
             System.arraycopy(sample, 0, clonedSample, 0, sample.length);
 //            System.out.println("Arrays.toString(sample) = " + Arrays.toString(sample));
@@ -365,105 +726,151 @@ public class Tester {
 //            }
         }
         return groundTruthSamples;
+    }*/
+
+    public double[] computeGroundTruthMean(
+            BayesianDataGenerator db, Db2Sampler samplerMaker,
+            final int numDesiredSamples,
+            long maxWaitingTimeForTakingDesiredSamplesMillis //in ms
+    ) {
+        double[] mean = null;
+        int numTakenSamples = 0;
+        SamplerInterface sampler = samplerMaker.createSampler(db);
+//        List<Double[]> groundTruthSamples = new ArrayList<Double[]>(numDesiredSamples); //this will be saved...
+        long t1 = System.currentTimeMillis();
+        for (int sampleCount = 0; sampleCount < numDesiredSamples; sampleCount++) {
+            Double[] sample = sampler.reusableSample();
+
+            if (mean == null) {
+                mean = new double[sample.length];
+            }
+
+            for (int j = 0; j < mean.length; j++) {
+                mean[j] = mean[j] + sample[j];
+            }
+            numTakenSamples++;
+            if (System.currentTimeMillis() - t1 > maxWaitingTimeForTakingDesiredSamplesMillis) break;
+        }
+
+        System.out.println("num. Ground. Truth. TakenSamples = " + numTakenSamples + "\t in time <= " + maxWaitingTimeForTakingDesiredSamplesMillis + "(ms)");
+
+        for (int j = 0; j < mean.length; j++) {
+            mean[j] = mean[j] / (double) numTakenSamples;
+        }
+
+        return mean;
     }
 
-
     public StatInfo meansAndStdErrors(
-            List<double[]> fList,
-            double[] groundTruthMeansPerF,
-            //
+            int numRunsPerAlgorithm,
+            double[] groundTruthMeanVector, //of size #dims
             BayesianDataGenerator db,
             Db2Sampler samplerMaker,//SamplerInterface sampler,
-            //
             int burnedSamples,
             //
             final int numMinDesiredSamples,
             long maxWaitingTimeForTakingDesiredSamplesMillis, //in ms
             long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
             int approxNumTimePointsForWhichErrIsPersisted,
-            List<Double[]> allGroundTruthSamples
-    ) {
+            double goldenErrThreshold) {
 
-//        double timePersistIntervalPerNanoSeconds = (minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis * 1000000 /*milli to nano second*/) / (double) approxNumTimePointsForWhichErrIsPersisted; //intervals after which error vs time points are persisted
+        double rootNumRuns = Math.sqrt(numRunsPerAlgorithm);
+        Double[] meanFirstSampledErrs = new Double[numMinDesiredSamples]; //E{X}:: {E{alg_1_err1, alg2_err1, ...algN_err1}, E{alg_1_err2, alg2_err2, ...algN_err2},...}
+        Arrays.fill(meanFirstSampledErrs, 0d);
+        double[] exp2FirstSampledErrs = new double[numMinDesiredSamples]; //E{X^2}
+        int minFirstSamplesTakenPerIterations = numMinDesiredSamples;
 
+        List<Long> hallmarkTimeStampsInNano = null;
+        List<Double> meanErrForTimes = null;
+        double[] exp2ErrForTimes = null;
 
-        boolean groundTruthMeansAreGiven = groundTruthMeansPerF != null;
-        if (groundTruthMeansAreGiven && allGroundTruthSamples!=null) throw new RuntimeException("if truth info is given why do we need samples?");
-        boolean samplesShouldBeTaken = true;
-        if (!groundTruthMeansAreGiven) {
-            if (allGroundTruthSamples!=null) samplesShouldBeTaken = false;  //we are dealing with the ground truth directly... no sample should be taken but means should be calculated
-        }
-        if (!samplesShouldBeTaken){
-            if (burnedSamples!=0) throw new RuntimeException("if samples should not be taken why burning?");
-            if (minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis !=0) throw new RuntimeException("if no sample should be taken why waiting?");
-            if (numMinDesiredSamples != allGroundTruthSamples.size()) throw new RuntimeException("info mismatch");
-        }
+        List<Long> timesToAccomplishMillisOrGoldenNanos = new ArrayList<Long>(numRunsPerAlgorithm);
 
-        Long timeToTakeFirstSamplesMillis = null; //not necessarily total time if the time analysis takes more time...
+        for (int runNum = 0; runNum < numRunsPerAlgorithm; runNum++) {
+            System.out.println("ALG: " + samplerMaker.getName() + " -- ITR. = " + runNum);
 
-        int numFs = fList.size();
-        if (!groundTruthMeansAreGiven) {
-            groundTruthMeansPerF = new double[numFs];
-        }
+            Err4Samples_Err4times_Times err4Samples_err4times_times = errorVsSamplesAndTime(groundTruthMeanVector, db, samplerMaker, burnedSamples,
+                    numMinDesiredSamples, maxWaitingTimeForTakingDesiredSamplesMillis,
+                    minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis, approxNumTimePointsForWhichErrIsPersisted, goldenErrThreshold);
 
-        if (groundTruthMeansPerF.length != numFs) throw new RuntimeException("size mismatch");
+            Long accomplishTimeMSOrGoldenTimeNS = err4Samples_err4times_times.timeToAccomplishTaskMillisOrGoldenTimeNano;
+            if (accomplishTimeMSOrGoldenTimeNS != null)
+                timesToAccomplishMillisOrGoldenNanos.add(accomplishTimeMSOrGoldenTimeNS);
 
-        //burned samples:
-        SamplerInterface sampler = samplerMaker.createSampler(db);
-        for (int i = 0; i < burnedSamples; i++) {
-            sampler.sample(); //discard samples...
-        }
-
-        double[] runningSumPerF = new double[numFs];
-        double[] runningErrorPerF = new double[numFs];
-
-        List<Double> meanOfErrorVsFirstSamples = new ArrayList<Double>(numMinDesiredSamples);
-        List<Double> stdErrOfErrorVsFirstSamples = new ArrayList<Double>(numMinDesiredSamples);
-
-        List<Double> meanOfErrorVsTime = new ArrayList<Double>(approxNumTimePointsForWhichErrIsPersisted);
-        List<Double> stdErrOfErrorVsTime = new ArrayList<Double>(approxNumTimePointsForWhichErrIsPersisted);
-        List<Long> recordedTimePointsInNano = new ArrayList<Long>(approxNumTimePointsForWhichErrIsPersisted);
-
-        //trying to take the desired number of samples...
-        long absoluteStartTimeMillis = System.currentTimeMillis();
-
-        long absoluteStartTimeNanos = System.nanoTime();
-
-//        long absoluteTimeFromLastTimeSavingNano = System.nanoTime();
-
-        int savedTimePoints = 0;
-
-        int takenSamples = 0;
-
-        boolean samplingPerformedInIntendedTimeSuccessfully;
-
-        for (; ; ) {//(int i = 0; i < numMinDesiredSamples; i++) {
-            long samplingStarts = System.nanoTime();
-            Double[] sample = samplesShouldBeTaken ?
-                    sampler.sample()
-                    :
-                    allGroundTruthSamples.get(takenSamples);
-            long samplingEnds = System.nanoTime();
-            long singleSampleTimeNano = (samplingEnds - samplingStarts);
-            takenSamples++;
-
-            //F(W) = sum_k ( f_k * W_k)
-            for (int fId = 0; fId < numFs; fId++) {
-                double[] f = fList.get(fId);
-                if (f.length != sample.length) throw new RuntimeException("size mismatch"); //debug
-                for (int k = 0; k < sample.length; k++) {
-                    runningSumPerF[fId] += (f[k] * sample[k]);    //running sum of f(W)
-                }
-
-                if (!groundTruthMeansAreGiven) {
-                    groundTruthMeansPerF[fId] = runningSumPerF[fId] / (double) takenSamples;
-                }
-
-                runningErrorPerF[fId] = Math.abs((runningSumPerF[fId] / (double) takenSamples) - groundTruthMeansPerF[fId]);
+            //means and std-errors for "errors for first samples":
+            List<Double> errList = err4Samples_err4times_times.errForFirstTakenSamples; //err. for first taken samples
+            minFirstSamplesTakenPerIterations = Math.min(minFirstSamplesTakenPerIterations, errList.size());
+            for (int i = 0; i < minFirstSamplesTakenPerIterations; i++) {   //the entries more than this min... are useless, discarded eventually
+                Double currentErrForFirstTakenSamples = errList.get(i);
+                meanFirstSampledErrs[i] = meanFirstSampledErrs[i] + (currentErrForFirstTakenSamples / (double) numRunsPerAlgorithm);
+                exp2FirstSampledErrs[i] = exp2FirstSampledErrs[i] + (currentErrForFirstTakenSamples * currentErrForFirstTakenSamples) / (double) numRunsPerAlgorithm;
             }
 
-            //mean and stdErr for all F
-            double rootNumF = Math.sqrt(numFs);
+            //means and std-errors for "errors in time stamps":
+            List<Long> recordedTimePointsInNano = err4Samples_err4times_times.recordedTimePointsInNano;
+            List<Double> errVsTimes = err4Samples_err4times_times.errVsTimes;
+            if (hallmarkTimeStampsInNano == null) {
+                hallmarkTimeStampsInNano = recordedTimePointsInNano; //so the times points of the first algorithm-run are the hall marks...
+                meanErrForTimes = errVsTimes; //means of a single elements = same single elements\
+                exp2ErrForTimes = new double[meanErrForTimes.size()];
+                for (int i = 0; i < errVsTimes.size(); i++) {
+                    Double errVsTime = errVsTimes.get(i);
+                    exp2ErrForTimes[i] = errVsTime * errVsTime;
+                }
+            } else if (!recordedTimePointsInNano.isEmpty()) { //E[X], E[X^2] of 'means vs Times' should be updated
+                int index2 = 0;
+                for (int index1 = 0; index1 < hallmarkTimeStampsInNano.size(); index1++) {
+                    Long hallMarkTime = hallmarkTimeStampsInNano.get(index1);
+                    for (int i = index2; i < recordedTimePointsInNano.size(); i++) {
+                        Long newT1 = recordedTimePointsInNano.get(i);
+                        Long newT2 = (i == recordedTimePointsInNano.size() - 1) ? newT1 : recordedTimePointsInNano.get(i + 1);
+                        long deltaT1 = Math.abs(newT1 - hallMarkTime);
+                        long deltaT2 = Math.abs(newT2 - hallMarkTime);
+                        if (deltaT1 <= deltaT2) {
+                            index2 = i; //so that next time search is started from here
+                            break;
+                        }
+                    }
+//                    long nearestTime = recordedTimePointsInNano.get(index2);
+                    Double errAssociatedWithNearestTime = errVsTimes.get(index2);
+                    meanErrForTimes.set(index1, ((meanErrForTimes.get(index1) * runNum) + errAssociatedWithNearestTime) / (double) (runNum + 1));//mean is updated with the closest new time
+                    exp2ErrForTimes[index1] = ((exp2ErrForTimes[index1] * runNum) + errAssociatedWithNearestTime * errAssociatedWithNearestTime) / (double) (runNum + 1);
+                }
+            }
+
+        } //end alg. run num.
+
+        if (meanFirstSampledErrs.length != minFirstSamplesTakenPerIterations) {
+            //prune the useless end of the mean array:
+            Double[] resizeArray = new Double[minFirstSamplesTakenPerIterations];
+            System.arraycopy(meanFirstSampledErrs, 0, resizeArray, 0, minFirstSamplesTakenPerIterations);
+            meanFirstSampledErrs = resizeArray;
+        }
+
+
+        Double[] stdErrs4FirstSamples = new Double[minFirstSamplesTakenPerIterations];
+        for (int i = 0; i < minFirstSamplesTakenPerIterations; i++) {
+            stdErrs4FirstSamples[i] = Math.sqrt(exp2FirstSampledErrs[i] - meanFirstSampledErrs[i] * meanFirstSampledErrs[i]) / rootNumRuns;
+        }
+
+        Double[] stdErrs4Times = new Double[meanErrForTimes.size()];
+        for (int i = 0; i < meanErrForTimes.size(); i++) {
+            double mean = meanErrForTimes.get(i);
+            stdErrs4Times[i] = Math.sqrt(exp2ErrForTimes[i] - mean * mean) / rootNumRuns;
+        }
+
+        Long averageTimeToAccomplishOrGolden = null;//todo std err may be calculated as well.
+        if (!timesToAccomplishMillisOrGoldenNanos.isEmpty()) {
+            averageTimeToAccomplishOrGolden = 0L;
+            for (Long time : timesToAccomplishMillisOrGoldenNanos) {
+                averageTimeToAccomplishOrGolden += time;
+            }
+            averageTimeToAccomplishOrGolden /= timesToAccomplishMillisOrGoldenNanos.size();
+        }
+
+        return new StatInfo(Arrays.asList(meanFirstSampledErrs), Arrays.asList(stdErrs4FirstSamples), meanErrForTimes, Arrays.asList(stdErrs4Times), hallmarkTimeStampsInNano, averageTimeToAccomplishOrGolden, numRunsPerAlgorithm);
+
+        /*    //mean and stdErr for all Iterations
             double mean = 0d;  //E[X]
             double ex2 = 0;  //E[X^2]
             for (int fId = 0; fId < numFs; fId++) {
@@ -471,42 +878,87 @@ public class Tester {
                 mean += (x / (double) numFs);
                 ex2 += (x * x / (double) numFs);
             }
-            double stdErr = (ex2 - mean * mean) / rootNumF;
+            double stdErr = root(ex2 - mean * mean) / rootNumRuns;
+*/
 
+    }
+
+    public Err4Samples_Err4times_Times errorVsSamplesAndTime(
+            double[] groundTruthMeanVector, //of size #dims
+            BayesianDataGenerator db,
+            Db2Sampler samplerMaker,
+            int burnedSamples,
+            final int numMinDesiredSamples,
+            long maxWaitingTimeForTakingDesiredSamplesMillis,
+            long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+            int approxNumTimePointsForWhichErrIsPersisted,
+            //
+            double goldenErrThreshold
+    ) {
+        Long goldenErrTimeMillisOrNano = null;
+        boolean goldenErrRecorded = false;
+//        Long timeToTakeFirstSamplesMillis = null; //not necessarily total time if the time analysis takes more time...
+//        samplerMaker.setReusableSample(groundTruthMeanVector);
+        //burned samples:
+        SamplerInterface sampler = samplerMaker.createSampler(db);
+        for (int i = 0; i < burnedSamples; i++) {
+            sampler.reusableSample(); //discard samples...
+        }
+
+        double[] runningAccumulatedSample = null; //since maybe I do not know the dim yet...(if no burned sample is taken)
+
+        List<Double> errVsFirstSamples = new ArrayList<Double>(numMinDesiredSamples);
+        List<Long> recordedTimePointsInNano = new ArrayList<Long>(approxNumTimePointsForWhichErrIsPersisted);
+        List<Double> errVsTimes = new ArrayList<Double>(approxNumTimePointsForWhichErrIsPersisted);
+
+        //trying to take the desired number of samples...
+        long absoluteStartTimeMillis = System.currentTimeMillis();
+        long absoluteStartTimeNanos = System.nanoTime();
+
+        int savedTimePoints = 0;
+        int takenSamples = 0;
+
+        boolean samplingPerformedInIntendedTimeSuccessfully;
+
+        for (; ; ) {
+            Double[] sample = sampler.reusableSample();
+            takenSamples++;
+
+            if (runningAccumulatedSample == null) {
+                runningAccumulatedSample = new double[sample.length];
+            }
+
+            for (int i = 0; i < sample.length; i++) {
+                runningAccumulatedSample[i] = runningAccumulatedSample[i] + sample[i];
+            }
+
+            //sum_i (absolute difference of (average of taken_sample_i and ground_truth_i)):
+            double runErr = 0;  //running error
+            for (int i = 0; i < sample.length; i++) {
+                runErr += Math.abs((runningAccumulatedSample[i] / (double) takenSamples) - groundTruthMeanVector[i]);
+            }
+            runErr /= (double) sample.length;
+
+            //first samples:
             if (takenSamples <= numMinDesiredSamples) { //save first samples:
-                meanOfErrorVsFirstSamples.add(mean);
-                stdErrOfErrorVsFirstSamples.add(stdErr);
+                errVsFirstSamples.add(runErr); //error till current taken sample
             }
 
-            if (takenSamples == numMinDesiredSamples) {
-                timeToTakeFirstSamplesMillis = System.currentTimeMillis() - absoluteStartTimeMillis;
-            }
-
-//            long timeFromLastTimeRecordInNano = System.nanoTime() - absoluteTimeFromLastTimeSavingNano;
+            //samples vs. time:
             long nanosFromStart = System.nanoTime() - absoluteStartTimeNanos;
-//            if (groundTruthMeansAreGiven){
-//            System.out.println("nanosFromStart = " + nanosFromStart);
-//            System.out.println("(double)(savedTimePoints * minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis *1000000) / (double) approxNumTimePointsForWhichErrIsPersisted) = " +
-//                    (double) (savedTimePoints * minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis * 1000000) / (double) (approxNumTimePointsForWhichErrIsPersisted+1));
-//            System.out.println("minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis *1000000 = " + minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis * 1000000);
-//            }
             if ((nanosFromStart >= (double) (((long) savedTimePoints) * minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis * 1000000) / (double) (approxNumTimePointsForWhichErrIsPersisted + 1))
-//                    && (savedTimePoints <= approxNumTimePointsForWhichErrIsPersisted)
-                    && nanosFromStart <= minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis * 1000000
-                    ) {
+                    && nanosFromStart <= minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis * 1000000) {
                 savedTimePoints++;
-//                absoluteTimeFromLastTimeSavingNano = System.nanoTime();
-
-                meanOfErrorVsTime.add(mean);
-                stdErrOfErrorVsTime.add(stdErr);
-//                recordedTimePointsInNano.add(timeFromLastTimeRecordInNano);
+                errVsTimes.add(runErr);
                 recordedTimePointsInNano.add(System.nanoTime() - absoluteStartTimeNanos);
             }
 
-            //timeout.
-            if (System.currentTimeMillis() - absoluteStartTimeMillis > maxWaitingTimeForTakingDesiredSamplesMillis) {
-                samplingPerformedInIntendedTimeSuccessfully = false;
-                System.err.println("time out after taking " + takenSamples + " samples.");
+            //saving golden Err. time:
+            if (!goldenErrRecorded && runErr < goldenErrThreshold) {
+                goldenErrRecorded = true;
+                goldenErrTimeMillisOrNano = System.nanoTime() - absoluteStartTimeNanos;//System.currentTimeMillis() - absoluteStartTimeMillis;
+                System.out.println("sampling successfully terminated due to reaching golden error rate: " + goldenErrRecorded + " -in " + goldenErrTimeMillisOrNano + "(ns)");
+                samplingPerformedInIntendedTimeSuccessfully = true;
                 break;
             }
 
@@ -515,8 +967,17 @@ public class Tester {
                     System.currentTimeMillis() - absoluteStartTimeMillis >= minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis &&//savedTimePoints >= approxNumTimePointsForWhichErrIsPersisted &&
                             takenSamples >= numMinDesiredSamples) {
                 samplingPerformedInIntendedTimeSuccessfully = true;
+                System.out.println("successfull after " + takenSamples + " samples.");
                 break;
             }
+
+            //timeout.
+            if (System.currentTimeMillis() - absoluteStartTimeMillis > maxWaitingTimeForTakingDesiredSamplesMillis) {
+                samplingPerformedInIntendedTimeSuccessfully = false;
+//                System.err.println("time out after taking " + takenSamples + " samples.");
+                break;
+            }
+
         }//end for loop
 
         Long timeToAccomplishTaskMillis = samplingPerformedInIntendedTimeSuccessfully ?
@@ -524,21 +985,33 @@ public class Tester {
                 :
                 null;
 
+        System.out.println("goldenErrTimeMillis/nanos = " + goldenErrTimeMillisOrNano + "\n");
+        return new Err4Samples_Err4times_Times(errVsFirstSamples, errVsTimes, recordedTimePointsInNano, samplingPerformedInIntendedTimeSuccessfully, goldenErrTimeMillisOrNano/*timeToAccomplishTaskMillis*/);
+    }
 
-        return new StatInfo(groundTruthMeansPerF, meanOfErrorVsFirstSamples, stdErrOfErrorVsFirstSamples, meanOfErrorVsTime, stdErrOfErrorVsTime, recordedTimePointsInNano/*, timeToAccomplishTaskMillis*/, timeToTakeFirstSamplesMillis);
+    class Err4Samples_Err4times_Times {
+        List<Double> errForFirstTakenSamples;
+        List<Double> errVsTimes;
+        List<Long> recordedTimePointsInNano;
+        boolean samplingPerformedInIntendedTimeSuccessfully;
+        Long timeToAccomplishTaskMillisOrGoldenTimeNano;
 
-//        if (!groundTruthMeansAreGiven) {
-//            info.setListOfAllGroundSamples(listOfAllGroundTruthSamplesIfGroundTruthIsBeingCalculated);
-//        }
-//        return info;
+        Err4Samples_Err4times_Times(List<Double> errForFirstTakenSamples, List<Double> errVsTimes, List<Long> recordedTimePointsInNano,
+                                    boolean samplingPerformedInIntendedTimeSuccessfully, Long timeToAccomplishTaskMillisOrGoldenTimeNano) {
+            this.errForFirstTakenSamples = errForFirstTakenSamples;
+            this.errVsTimes = errVsTimes;
+            this.recordedTimePointsInNano = recordedTimePointsInNano;
+            this.samplingPerformedInIntendedTimeSuccessfully = samplingPerformedInIntendedTimeSuccessfully;
+            this.timeToAccomplishTaskMillisOrGoldenTimeNano = timeToAccomplishTaskMillisOrGoldenTimeNano;
+        }
     }
 
 
     class StatInfo {
         //general info:
 
-        int numF;
-        double[] groundTruthMeans; //this is an array of size #F not persisted but kept in case ground truth is calculated for the first time.
+//        int numF;
+//        double[] groundTruthMeans; //this is an array of size #F not persisted but kept in case ground truth is calculated for the first time.
 
         //calculated info:
         List<Double> means4FirstSamples;
@@ -546,20 +1019,16 @@ public class Tester {
         List<Double> means4TimePoints;
         List<Double> stdErrs4TimePoints;
         List<Long> recordedTimePointsInNano;
-//        Long totalProcessTimeMillis;
-        Long timeToTakeFirstSamples;
+        //        Long totalProcessTimeMillis;
+        Long timeToTakeFirstSamplesOrGoldenTime;
 
-        public StatInfo(/*int numParamDims, int numDataPoints, String algorithmName, int maxAllowedSamplingTime,*/ double[] groundTruthMeansPerF,
-                        List<Double> meanOfErrorVsFirstSamples, List<Double> stdErrOfErrorVsFirstSamples,
+        int numIterationsForEachAlgorithm;
+
+        public StatInfo(List<Double> meanOfErrorVsFirstSamples, List<Double> stdErrOfErrorVsFirstSamples,
                         List<Double> meanOfErrorVsTime, List<Double> stdErrOfErrorVsTime, List<Long> recordedTimePointsInNano,
-//                        Long timeToAccomplishTask,
-                        Long timeToTakeFirstSamples) {
-//            this.numParamDims = numParamDims;
-//            this.numDataPoints = numDataPoints;
-//            this.algorithmName = algorithmName;
-//            this.maxAllowedSamplingTime = maxAllowedSamplingTime;
-            this.groundTruthMeans = groundTruthMeansPerF;
-            this.numF = groundTruthMeans.length;
+                        Long timeToTakeFirstSamplesOrGoldenTime, int numIterationsForEachAlgorithm) {
+            this.numIterationsForEachAlgorithm = numIterationsForEachAlgorithm;
+//            this.numF = groundTruthMeans.length;
 
             this.means4FirstSamples = meanOfErrorVsFirstSamples;
             this.stdErrs4FirstSamples = stdErrOfErrorVsFirstSamples;
@@ -568,17 +1037,17 @@ public class Tester {
             this.stdErrs4TimePoints = stdErrOfErrorVsTime;
             this.recordedTimePointsInNano = recordedTimePointsInNano;
 
-            this.timeToTakeFirstSamples = timeToTakeFirstSamples;
-//            this.totalProcessTimeMillis = timeToAccomplishTask;
+            this.timeToTakeFirstSamplesOrGoldenTime = timeToTakeFirstSamplesOrGoldenTime;
 
-            if (means4FirstSamples.size() != stdErrs4FirstSamples.size()) throw new RuntimeException("size mismatch");
+            if (means4FirstSamples.size() != stdErrs4FirstSamples.size())
+                throw new RuntimeException("size mismatch between |mean|= " + means4FirstSamples.size() + " and |stdErr|= " + stdErrs4FirstSamples.size());
             if ((means4TimePoints.size() != stdErrs4TimePoints.size()) || (means4TimePoints.size() != this.recordedTimePointsInNano.size()))
                 throw new RuntimeException("size mismatch");
 
         }
 
         private String generalInfo(int numParamDims, int numDataPoints, String algorithmName/*, int maxAllowedSamplingTime*/) {
-            return "dim" + numParamDims + "-data" + numDataPoints + "-f" + numF /*+ "-maxT" + maxAllowedSamplingTime */ + "-" + algorithmName;
+            return "dim" + numParamDims + "-data" + numDataPoints + "-itr" + numIterationsForEachAlgorithm /*+ "-maxT" + maxAllowedSamplingTime */ + "-" + algorithmName;
         }
 
         public void persistMeanStdErrForFirstTakenSamples(String path, int numParamDims, int numDataPoints, String algorithmName, int numDesiredSamples) throws FileNotFoundException {
@@ -603,7 +1072,7 @@ public class Tester {
 
             for (int i = 0; i < means4TimePoints.size(); i++) {
                 //          #index      #time.point(ms)         #mean       #stdErr
-                ps.println((i + 1) + "\t" + recordedTimePointsInNano.get(i) / 1000000 + "\t" + means4TimePoints.get(i) + "\t" + stdErrs4TimePoints.get(i));
+                ps.println((i + 1) + "\t" + recordedTimePointsInNano.get(i) /*/ 1000000*/ + "\t" + means4TimePoints.get(i) + "\t" + stdErrs4TimePoints.get(i));
             }
 
             ps.close();
@@ -630,7 +1099,8 @@ public class Tester {
         int[] dataArray;
         String[] samplerNames;
         Map<String /*alg*/, Long/*time*/>[][] dimIndexDataIndexAlgTime;
-        public TotalTimeKeeper(Db2Sampler[] samplers, int[] dimsArray, int[] dataArray, String outputDirectoryPath) {
+
+        public TotalTimeKeeper(List<Db2Sampler> samplers, int[] dimsArray, int[] dataArray, String outputDirectoryPath) {
             this.outputDirectoryPath = outputDirectoryPath;
 
             this.dimsArray = new int[dimsArray.length];
@@ -642,14 +1112,14 @@ public class Tester {
 
             dimIndexDataIndexAlgTime = new HashMap[dimsArray.length][dataArray.length];
 
-            this.samplerNames = new String[samplers.length];
-            for (int i = 0; i < samplers.length; i++) {
-                this.samplerNames[i] = samplers[i].getName();
+            this.samplerNames = new String[samplers.size()];
+            for (int i = 0; i < samplers.size(); i++) {
+                this.samplerNames[i] = samplers.get(i).getName();
             }
 
             for (int i = 0; i < dimsArray.length; i++) {
                 for (int j = 0; j < dataArray.length; j++) {
-                    dimIndexDataIndexAlgTime[i][j] = new HashMap<String, Long>(samplers.length);
+                    dimIndexDataIndexAlgTime[i][j] = new HashMap<String, Long>(samplers.size());
                 }
             }
         }
@@ -657,7 +1127,11 @@ public class Tester {
         public void persist(int dim, int data, String samplerName, Long timeMillis) throws FileNotFoundException {
             int dimIndex = Arrays.binarySearch(dimsArray, dim);
             int dataIndex = Arrays.binarySearch(dataArray, data);
-            if (dimIndexDataIndexAlgTime[dimIndex][dataIndex].put(samplerName, timeMillis) != null) throw new RuntimeException(samplerName + " already exists!");
+            if (dimIndexDataIndexAlgTime[dimIndex][dataIndex].put(samplerName, timeMillis) != null) {
+                System.err.println("for dim: " + dim + " /data: " + data + ", " + samplerName + " already exists! and will be replaced");
+                System.out.println("dimsArray = " + Arrays.toString(dimsArray));
+                System.out.println("dataArray = " + Arrays.toString(dataArray));
+            }
             persistDimFix(samplerName, dimIndex);
             persistDataFix(samplerName, dataIndex);
         }
@@ -698,7 +1172,7 @@ public class Tester {
             PrintStream ps = new PrintStream(new FileOutputStream(outputFileName));
 
             int n = otherElementList.size();
-            if (n!= timeList.size()) throw new RuntimeException("size mismatch");
+            if (n != timeList.size()) throw new RuntimeException("size mismatch");
             for (int i = 0; i < n; i++) {
                 ps.println(otherElementList.get(i) + "\t" + timeList.get(i));
             }

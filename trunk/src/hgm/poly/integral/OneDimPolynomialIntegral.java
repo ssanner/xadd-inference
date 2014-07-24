@@ -2,6 +2,7 @@ package hgm.poly.integral;
 
 import hgm.poly.*;
 import hgm.sampling.gibbs.integral.Interval;
+
 import java.util.*;
 
 /**
@@ -15,34 +16,13 @@ import java.util.*;
 public class OneDimPolynomialIntegral {
     boolean DEBUG = false;
 
-     /*
-     public Piecewise1DPolynomial integrate(List<PolynomialInAnInterval> piecewisePolynomial, String var) {
-        //todo only works for functions with no boolean variable...
-        Piecewise1DPolynomial result = new Piecewise1DPolynomial(var);
-        HashMap<String, Double> assign = new HashMap<String, Double>(1);
-        double runningSum = 0.0d;
-        for (PolynomialInAnInterval intervalPoly : piecewisePolynomial) {
-            ExprLib.ArithExpr indefIntegral = intervalPoly.getPolynomial().integrateExpr(var);
-            assign.put(var, intervalPoly.getLowBound());
-            Double l = indefIntegral.evaluate(assign);
-            if (l.isNaN()) l = 0d; //this happens in the fist interval with lower bound -infty...
-            assign.put(var, intervalPoly.getHighBound());
-            Double h = indefIntegral.evaluate(assign);
-            Double intervalVol = h - l;
-            result.put(intervalPoly.getLowBound(), ExprLib.ArithExpr.op(indefIntegral, (runningSum - l), ExprLib.ArithOperation.SUM));
-            runningSum += intervalVol; // mass of this interval will be added to the offset of the next one...
-        }
-        return result;
-    }
-
-     */
-
     /**
      * @param cp                        integrand
      * @param integrationVar            integration variable
      * @param usableContinuousVarAssign a variable assignment according to which all variables expect the integration var are instantiated
      * @return The integration of a uni-dimensional function where except the 'integration var', all variables are instantiated due to the given value in the assignment:
      */
+    @Deprecated
     public OneDimFunction integrate(ConstrainedPolynomial cp, String integrationVar, Double[] usableContinuousVarAssign) {
 //        if (DEBUG) {
 //            System.out.println("cp.evaluate(" + Arrays.toString(usableContinuousVarAssign) + "=" + cp.evaluate(usableContinuousVarAssign));  [by be incomplete]
@@ -55,11 +35,13 @@ public class OneDimPolynomialIntegral {
                 System.out.println("cp.evaluate(usableContinuousVarAssign) = " + cp.evaluate(usableContinuousVarAssign));
             }
         }
-
-
         //1. instantiate all variables except one that should be integrated on:
         //Exclude the integration var from the assignment by making it NULL
         int integrationVarIndex = cp.getPolynomialFactory().getVarIndex(integrationVar);
+        return integrate(cp, integrationVarIndex, usableContinuousVarAssign);
+    }
+
+    public OneDimFunction integrate(ConstrainedPolynomial cp, int integrationVarIndex, Double[] usableContinuousVarAssign) {
         //excluding the integration var:
         usableContinuousVarAssign[integrationVarIndex] = null;
         ConstrainedPolynomial substitutedCP = cp.substitute(usableContinuousVarAssign);
@@ -80,7 +62,7 @@ public class OneDimPolynomialIntegral {
 
         //calc. indefinite integral:
         Polynomial indefIntegral = substitutedCP.getPolynomial();
-        indefIntegral.replaceThisWithIndefiniteIntegral(integrationVar);
+        indefIntegral.replaceThisWithIndefiniteIntegral(integrationVarIndex);
         PiecewiseOffset1DPolynomial result = new PiecewiseOffset1DPolynomial(indefIntegral, integrationVarIndex);
 
         double runningSum = 0.0;

@@ -25,7 +25,7 @@ public class SymbolicMultiDimPolynomialIntegralTest {
     public void testIntegral1() {
         PolynomialFactory f = new PolynomialFactory("x", "y");
 //        Polynomial p1 = f.makePolynomial("x^(2)*y^(2) + 3*y^(2)*x^(2) + 4*x^(2) + 1*x^(1)");
-        Polynomial p1 = f.makePolynomial("x^(1) + y^(1)");//("x^(2) + y^(2) + 5");
+        Polynomial p1 = f.makePolynomial("x^(1) + 0.1*y^(1) + 0.05");//("x^(2) + y^(2) + 5");
 
         List<Polynomial> cnstrns = Arrays.asList(
                 f.makePositiveConstraint("1*x^(1)>0"),

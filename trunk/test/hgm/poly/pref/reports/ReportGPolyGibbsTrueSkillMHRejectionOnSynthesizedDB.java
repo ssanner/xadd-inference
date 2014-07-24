@@ -495,7 +495,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
                 ModelType.MMM;
 //                ProblemKind.BPPL;
 
-        Db2Sampler[] samplerMakers = null;
+        List<Db2Sampler> samplerMakers = null;
         switch (problem) {
             case MMM:
                 samplerMakers = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(
@@ -532,7 +532,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
     enum AnalysisType {ERROR_VS_TIME, TIME_VS_NUM_CONSTRAINTS}
 
-    private void testEffectOfNumSamplesWrtDimsAndConstraints(Db2Sampler[] samplerMakers, ModelType dbKind) throws FileNotFoundException {
+    private void testEffectOfNumSamplesWrtDimsAndConstraints(List<Db2Sampler> samplerMakers, ModelType dbKind) throws FileNotFoundException {
         int numberOfItems = 500; // shouldn't have any significant effect (?) unless if its too small, dummy items will be repeated...
         int[] numDimsArray = new int[]{6};
         int[] numConstraintsArray = new int[]{3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 18, 22, 25}; //num. observed data
@@ -696,13 +696,13 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
         SamplerInterface sampler = samplerMaker.createSampler(db);
         for (int i = 0; i < burnedSamples; i++) {
-            sampler.sample(); //discard samples...
+            sampler.reusableSample(); //discard samples...
         }
 
 
         for (int i = 0; i < numSamples; i++) {
             long samplingStarts = System.currentTimeMillis();
-            Double[] sample = sampler.sample();
+            Double[] sample = sampler.reusableSample();
             long samplingEnds = System.currentTimeMillis();
             double singleSampleTakingTime = samplingEnds - samplingStarts;
             times[i] = (i == 0 ? 0 : times[i - 1]) + singleSampleTakingTime;
@@ -810,7 +810,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
 
         SamplerInterface sampler = samplerMaker.createSampler(db);
         for (int i = 0; i < burnedSamples; i++) {
-            sampler.sample(); //discard samples...
+            sampler.reusableSample(); //discard samples...
         }
 
 
@@ -826,7 +826,7 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
             }
 
 //            long samplingStarts = System.currentTimeMillis();
-            Double[] sample = sampler.sample();
+            Double[] sample = sampler.reusableSample();
             numTakenSamples++;
 //            long samplingEnds = System.currentTimeMillis();
 
@@ -1033,10 +1033,10 @@ public class ReportGPolyGibbsTrueSkillMHRejectionOnSynthesizedDB {
         final double[] _EX2 = new double[numSamples];
 
         for (int i = 0; i < burnedSamples; i++) {
-            sampler.sample(); //discard samples...
+            sampler.reusableSample(); //discard samples...
         }
         for (int i = 0; i < numSamples; i++) {
-            Double[] sample = sampler.sample();
+            Double[] sample = sampler.reusableSample();
 
 
             double sampleSum = 0d;

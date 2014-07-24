@@ -40,7 +40,7 @@ public class RejectionBasedGeneralBayesianSampler implements SamplerInterface {
     }
 
     @Override
-    public Double[] sample() throws SamplingFailureException {
+    public Double[] reusableSample() throws SamplingFailureException {
         Double[] sample = new Double[numVars];
         for (; ; ) {
             for (int i = 0; i < numVars; i++) {

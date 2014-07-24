@@ -11,7 +11,6 @@ import java.util.*;
  * <p/>
  * Integration of a single polytope
  */
-//todo test the class...
 public class SymbolicMultiDimPolynomialIntegral {
     boolean DEBUG = false;
 
@@ -88,18 +87,41 @@ public class SymbolicMultiDimPolynomialIntegral {
         return new SymbolicOneDimFunctionGenerator(){
 
             @Override
+            public String toString() {
+                return "value:\t" + indefIntegral +
+                        "\nIndependents:\t" + independentConstraints +
+                        "\nminUB:\t\t\t" + minUB +
+                        "\nmaxLB:\t\t\t" + maxLB + "\n";
+            }
+
+            @Override
             public OneDimFunction makeFunction(final Double[] reusableVarAssign) { //NOTE: be very careful about the reusable array
 //                if (reusableVarAssign[integrationVarIndex] != null)
 //                    throw new RuntimeException("although does not matter, for debug sake please make it NULL"); //to exclude integration var from being instantiated
+
                 //independent constraints and lower/higher bounds do not contain the integration var so we do not need to 'null' it.
                 for (Polynomial independent : independentConstraints) {
+
+                    //todo just test:
+//                    Double[] debugArr = new Double[]{-8d, -2d};
+//                    System.out.println("DEBUG = " + independent.evaluate(debugArr));
+
+
+
                     double v = independent.evaluate(reusableVarAssign);
-                    if (v <= 0) return OneDimFunction.ZERO_1D_FUNCTION; //what should I do with '='?
+                    if (v <= 0) {
+//                        System.out.println("Returning 0");
+                        return OneDimFunction.ZERO_1D_FUNCTION; //what should I do with '='?
+                    }
                     //since independent "positive" constraints are not satisfied.
                 }
 
                 final double lb = max(maxLB, reusableVarAssign);
                 final double ub = min(minUB, reusableVarAssign);
+
+//                System.out.println("lb = " + lb);
+//                System.out.println("ub = " + ub);
+                if (lb >=ub) return OneDimFunction.ZERO_1D_FUNCTION;
 
                 reusableVarAssign[integrationVarIndex]=lb;
                 final double offset1 = indefIntegral.evaluate(reusableVarAssign);

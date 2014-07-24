@@ -1,5 +1,7 @@
 package hgm.poly.sampling;
 
+import hgm.sampling.SamplingFailureException;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -16,9 +18,13 @@ public class SamplingUtils {
         ps = new PrintStream(new FileOutputStream(fileName + ".txt"));
 
         for (int i = 0; i < numSamples; i++) {
-            Double[] sample = sampler.sample();
+            try{
+            Double[] sample = sampler.reusableSample();
 //            System.out.println("sample = " + Arrays.toString(sample));
             ps.println(sample[0] + "\t" + sample[1]);
+            }catch (SamplingFailureException e) {
+                e.printStackTrace();
+            }
 
         }
 
@@ -31,7 +37,7 @@ public class SamplingUtils {
         ps = new PrintStream(new FileOutputStream(outputFileName));
 
         for (int i = 0; i < numSamples; i++) {
-            Double[] sample = sampler.sample();
+            Double[] sample = sampler.reusableSample();
 //            System.out.println("Arrays.toString(sample) = " + Arrays.toString(sample));
 
             StringBuilder sb = new StringBuilder();

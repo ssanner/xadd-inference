@@ -13,9 +13,13 @@ z = load([current_path file_name '.z.txt']);
 %zlabel('P(...)','FontSize',fontsize);
 %title(fig_title);
 
-figure(2);
+hold on;
+figure('visible', 'on');
+%figure(2);
 
 contourf(x,y,z);
+
+hold off;
 
 eps_file = [current_path file_name '-contour.eps'];
 print('-depsc', eps_file);
@@ -24,15 +28,16 @@ system(['epstopdf ', eps_file]);
 
 %figure(1);
 %plot3(x,y,z);
-
-figure(1);
+hold on;
+figure('visible', 'on');
+%figure(1);
 surf(x,y,z);
 %shading faceted
 %shading interp;
 %shading phong
 %colormap jet
 rotate3d;
-
+hold off;
 %figure(3);
 %mesh(x,y,z);
 
@@ -43,7 +48,10 @@ rotate3d;
 %xlabel('x_1','FontSize',fontsize);
 %zlabel('P(...)','FontSize',fontsize);
 %title(fig_title);
-figure(1);
+hold on;
+figure('visible', 'on');
+%figure(1);
+hold off;
 %print(gcf, '-depsc', ['radar.',id,'.eps']);
 
 eps_file = [current_path file_name '.eps'];

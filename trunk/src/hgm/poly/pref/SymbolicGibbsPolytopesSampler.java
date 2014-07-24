@@ -4,6 +4,7 @@ import hgm.poly.ConstrainedPolynomial;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.integral.SymbolicMultiDimPolynomialIntegral;
 import hgm.poly.integral.SymbolicOneDimFunctionGenerator;
+import hgm.poly.vis.FunctionVisualizer;
 
 import java.util.*;
 
@@ -11,10 +12,9 @@ import java.util.*;
  * Created by Hadi Afshar.
  * Date: 4/04/14
  * Time: 12:25 AM
- *
+ * <p/>
  * Pre-calculates the integrals...
- *
- * //todo currently does not work properly....DEBUG.....
+ * <p/>
  */
 public class SymbolicGibbsPolytopesSampler extends AbstractPolytopesSampler {
     public static SymbolicGibbsPolytopesSampler makeSampler(ConstantBayesianPosteriorHandler gph, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
@@ -44,10 +44,13 @@ public class SymbolicGibbsPolytopesSampler extends AbstractPolytopesSampler {
             for (int i = 0; i < caseStatements.length; i++) {
                 ConstrainedPolynomial caseStatement = caseStatements[i];
                 SymbolicOneDimFunctionGenerator symbolicVarCdf = symbolicIntegrator.integrate(caseStatement, var);
+//                System.out.println("symbolicVarCdf = " + symbolicVarCdf);
                 varCdfGenerators[i] = symbolicVarCdf;
             }
             varToSymbolicIntegralMap.put(var, new SymbolicCDFListHandler(varCdfGenerators));
         }
+
+//        System.out.println("varToSymbolicIntegralMap = " + varToSymbolicIntegralMap);
     }
 
     private ConstrainedPolynomial[] makeExplicitCaseStatements(ConstantBayesianPosteriorHandler gph) {
@@ -78,12 +81,18 @@ public class SymbolicGibbsPolytopesSampler extends AbstractPolytopesSampler {
         double minVarValue = cVarMins[varIndexToBeSampled];
 
         SymbolicCDFListHandler symbolicCDFListHandler = varToSymbolicIntegralMap.get(varToBeSampled);
-        OneDimFunction varCDF = symbolicCDFListHandler.instantiate(reusableVarAssign);
+
+        OneDimFunction varCDF = symbolicCDFListHandler.instantiate(
+//                new Double[]{-8d, -2d});
+                reusableVarAssign);
+
+//        FunctionVisualizer.visualize(varCDF, -15d, 15d, 0.01, "varCDF + " + varToBeSampled);
 
         double s = takeSampleFrom1DFunc(varCDF, minVarValue, maxVarValue);
 
         // here the sample is stored....
         reusableVarAssign[varIndexToBeSampled] = s;
+//        System.out.println("reusableVarAssign = " + Arrays.toString(reusableVarAssign));
     }
 
 }
@@ -97,6 +106,11 @@ class SymbolicCDFListHandler {
         reusableInstantiatedFunctions = new OneDimFunction[generators.length];
     }
 
+    @Override
+    public String toString() {
+        return "Generators: " + Arrays.toString(generators);
+    }
+
     //note that each instantiation changes the result of the former due to reused object
     public OneDimFunction instantiate(Double[] varAssign) {
         for (int i = 0; i < generators.length; i++) {
@@ -105,6 +119,12 @@ class SymbolicCDFListHandler {
 //            if (!segmentCdf.equals(OneDimFunction.ZERO_1D_FUNCTION)) {
             reusableInstantiatedFunctions[i] = segmentCdf;
         }
+
+
+       /* for (int i = 0, reusableInstantiatedFunctionsLength = reusableInstantiatedFunctions.length; i < reusableInstantiatedFunctionsLength; i++) {
+            OneDimFunction reusableInstantiatedFunction = reusableInstantiatedFunctions[i];
+            FunctionVisualizer.visualize(reusableInstantiatedFunction, -20d, 20d, 0.01, "sub func. #" + i);
+        }*/
 
         return new OneDimFunction() {
             @Override

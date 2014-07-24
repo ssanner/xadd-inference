@@ -81,4 +81,14 @@ public class PolynomialTest {
         p1.replaceThisWithIndefiniteIntegral("x");
         Assert.assertEquals("5.0*x^(1.0)*y^(2.0)+1.0*x^(3.0)+0.3333333333333333*x^(3.0)*y^(2.0)", p1.toString());
     }
+
+    @Test
+    public void testEqualityHash() throws Exception {
+        PolynomialFactory factory = new PolynomialFactory("x y z".split(" "));
+        Polynomial p1 = factory.makePolynomial("1.0*x^(1.0)*z^(0.0) + 3.66*z^(1)");
+        Polynomial p2 = factory.makePolynomial("3*z^(1) + 0.66*z^(1.0) + x^(1)");
+        Assert.assertEquals(p1, p2);
+        Polynomial p3 = factory.makePolynomial("3.66000001*z^(1) + x^(1)");
+        Assert.assertFalse(p1.equals(p3));
+    }
 }

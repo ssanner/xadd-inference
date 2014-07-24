@@ -31,6 +31,25 @@ public class Polynomial implements Cloneable{
 //        System.out.println("zeroPowers = " + zeroPowers);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Polynomial that = (Polynomial) o;
+
+        if (!factory.equals(that.factory)) return false;
+        if (!powers2coefMap.equals(that.powers2coefMap)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = factory.hashCode();
+        result = 31 * result + powers2coefMap.hashCode();
+        return result;
+    }
 
     public Double getCoefficient(List<Double> powers) {
         Double c = powers2coefMap.get(powers);
@@ -148,8 +167,13 @@ public class Polynomial implements Cloneable{
 
     }
 
+    @Deprecated
     public void replaceThisWithIndefiniteIntegral(String integrationVar) {
         int varIndex = factory.getVarIndex(integrationVar);
+        replaceThisWithIndefiniteIntegral(varIndex);
+    }
+
+    public void replaceThisWithIndefiniteIntegral(int integrationVarIndex) {
 
         Map<List<Double>, Double> newEntries = new HashMap<List<Double>, Double>(powers2coefMap.size());
 
@@ -159,8 +183,8 @@ public class Polynomial implements Cloneable{
             iterator.remove();
             List<Double> pow = term.getKey();
 
-            Double newP = pow.get(varIndex) + 1;
-            pow.set(varIndex, newP);
+            Double newP = pow.get(integrationVarIndex) + 1;
+            pow.set(integrationVarIndex, newP);
             newEntries.put(pow, term.getValue() / newP);
         }
 
@@ -228,7 +252,7 @@ public class Polynomial implements Cloneable{
         }
         return maxTermDegree;
     }
-    
+
     //degree w.r.t. a particular var
     public int degree(int varIndex) {
         int maxDegree = 0;
@@ -236,6 +260,36 @@ public class Polynomial implements Cloneable{
             maxDegree = Math.max(maxDegree,  pow.get(varIndex).intValue());
         }
         return maxDegree;
+    }
+
+    public Polynomial subtract(Polynomial m) {
+        Polynomial mNeg = m.clone();
+        mNeg.multiplyScalarInThis(-1.0);
+        return add(mNeg);
+    }
+
+    public Polynomial add(Polynomial a) {
+        Polynomial r = this.clone();
+        r.addToThis(a);
+        return r;
+    }
+
+    //todo test this method...
+    /**
+     * @return The variables used in this expression rather than all factory variables.
+     */
+    public Set<String> getScopeVars(){
+        Set<String> scopeVars = new HashSet<String>();
+        String[] allVars = factory.getAllVars();
+            for (List<Double> powers : powers2coefMap.keySet()) {
+                for (int vId = 0; vId < powers.size(); vId++) {
+                    Double power = powers.get(vId);
+                    if (power != 0) {
+                        scopeVars.add(allVars[vId]);
+                    }
+                }
+            }
+        return scopeVars;
     }
 }
 

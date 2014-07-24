@@ -139,6 +139,45 @@ public abstract class PriorHandler {
         };
     }
 
+    public static PriorHandler quadraticInEllipse(String varBaseName, /*final double x0, final double y0, */final double a, final double b) {
+        return new PriorHandler(varBaseName, 2 /*only for 2D*/) {
+            @Override
+            public PiecewisePolynomial makePrior() {
+                String[] vars = factory.getAllVars();
+                if (vars.length != 2) throw new RuntimeException("only for two vars...");
+
+                double theta = -Math.PI / 4.0; //static
+                double d = Math.cos(theta); //static
+                double e = Math.sin(theta); //static
+
+                String x = vars[0];
+                String y = vars[1];
+                String constraintStr =
+                        (d * d / (a * a) + e * e / (b * b)) + " * " + x + "^(2) + " +
+                                (e * e / (a * a) + d * d / (b * b)) + " * " + y + "^(2) + " +
+                                (-2.0 * d * e / (a * a) + 2.0 * d * e / (b * b) + " * " + x + "^(1) * " + y + "^(1) + -1");
+                //this constraint <0, so:
+                Polynomial constraint = factory.makePolynomial(constraintStr);
+                constraint.multiplyScalarInThis(-1.0);
+
+                return new PiecewisePolynomial(false, new ConstrainedPolynomial(factory.makePolynomial("-1*" + x + "^(2) + -1*" + y + "^(2)" + " + 100"), Arrays.asList(constraint))); //otherwise 0
+            }
+
+            @Override
+            protected Pair<double[], double[]> surroundingLowerUpperBounds() {
+                if (factory.getAllVars().length != 2) throw new RuntimeException("dims=2 expected");
+                double min = Math.min(-a, -b);
+                double max = Math.max(a, b);
+                return new Pair<double[], double[]>(new double[]{min, min}, new double[]{max, max});
+            }
+
+            @Override
+            protected double functionUpperBound() {
+                return 1.0;
+            }
+        };
+    }
+
     // pr(x_0)          ~ U(-bound0, bound0)
     // pr(x_i|x_{i-1})  ~ U(x_{i-1} - conditionalBound, x_{i-1} + conditionalBound)
     public static PriorHandler serialDependent(String varBaseName, int numVars, final double firstBound, final double conditionalBound) {

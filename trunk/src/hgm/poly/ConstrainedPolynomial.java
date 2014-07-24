@@ -2,8 +2,7 @@ package hgm.poly;
 
 import hgm.sampling.VarAssignment;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Hadi Afshar.
@@ -15,24 +14,52 @@ public class ConstrainedPolynomial implements Function {
     /**
      * By assumption, all constraints should be > 0
      */
-    private List<Polynomial> constraints;
+    private CaseStatementConstraints constraints;  // private Set<Polynomial> constraints;
 
-    public ConstrainedPolynomial(Polynomial polynomial, List<Polynomial> constraints) {
+    public ConstrainedPolynomial(Polynomial polynomial, Collection<Polynomial> constraints) {
         this.polynomial = polynomial;
-        this.constraints = constraints;
+        this.constraints = new CaseStatementConstraints(constraints); //todo making a new set is maybe useless...
     }
 
     public Polynomial getPolynomial() {
         return polynomial;
     }
 
-    public List<Polynomial> getConstraints() {
+    public CaseStatementConstraints getConstraints() {
         return constraints;
     }
 
-    public void setConstraints(List<Polynomial> augmentedConstraints) {
-        this.constraints = augmentedConstraints;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ConstrainedPolynomial that = (ConstrainedPolynomial) o;
+
+        if (!constraints.equals(that.constraints)) return false;
+        if (!polynomial.equals(that.polynomial)) return false;
+
+        return true;
     }
+
+    @Override
+    public int hashCode() {
+        int result = polynomial.hashCode();
+        result = 31 * result + constraints.hashCode();
+        return result;
+    }
+
+    //    public int getConstraintsHashCode() {
+//        int h = 0;
+//        for (Polynomial constraint : constraints) {
+//            h += constraint.hashCode(); //treating the constraints as a set...
+//        }
+//        return h;
+//    }
+
+//    public void setConstraints(List<Polynomial> augmentedConstraints) {
+//        this.constraints = augmentedConstraints;
+//    }
 
     //NOTE: although factory is not checked for speed clearly the new value should be associated to the same factory
     public void setPolynomial(Polynomial polynomial) {
@@ -49,10 +76,6 @@ public class ConstrainedPolynomial implements Function {
     public double evaluate(VarAssignment fullVarAssign) {
         Double[] varValues = polynomial.getFactory().getReusableVarValues(fullVarAssign.getContinuousVarAssign());
         return evaluate(varValues);
-//        for (Polynomial constraint : constraints) {
-//            if (constraint.evaluate(fullVarAssign) < 0.0) return 0; //what about equality?
-//        }
-//        return polynomial.evaluate(fullVarAssign);
     }
 
     public double evaluate(Double[] fullVarAssign) {
@@ -72,17 +95,30 @@ public class ConstrainedPolynomial implements Function {
         return new ConstrainedPolynomial(polynomial.substitute(continuousVarAssign), instantiatedConstraints);
     }
 
-//    }
-
-
-    //todo: but active vars should be returned not all vars....
     @Override
     public String[] collectContinuousVars() {
-        return polynomial.getFactory().getAllVars();
+//        return polynomial.getFactory().getAllVars(); //but active vars should be returned not all vars....
+        Set<String> scopeVarsSet = getScopeVars();
+        String[] scopeVars = new String[scopeVarsSet.size()];
+        int i = 0;
+        for (String v : scopeVars) {
+           scopeVars[i++] = v;
+        }
+        return scopeVars;
     }
 
+    public Set<String> getScopeVars(){
+        Set<String> scopeVars = new HashSet<String>();
+        for (Polynomial constraint : constraints) {
+            scopeVars.addAll(constraint.getScopeVars());
+        }
+        scopeVars.addAll(polynomial.getScopeVars());
+        return scopeVars;
+    }
 
-//    }
+    public ConstrainedPolynomial substitute(Map<String, Double> assign) {
+        return new ConstrainedPolynomial(this.polynomial.substitute(assign), this.constraints.substitute(assign));
+    }
 
 
     @Override

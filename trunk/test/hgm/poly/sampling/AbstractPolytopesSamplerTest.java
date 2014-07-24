@@ -217,7 +217,7 @@ public class AbstractPolytopesSamplerTest {
         double aVariance = 0;
 
         for (int i = 0; i < numSamples; i++) {
-            Double[] assign = sampler.sample();
+            Double[] assign = sampler.reusableSample();
 
 //            System.out.println("sample = " + assign);
             double x = assign[varIndex];

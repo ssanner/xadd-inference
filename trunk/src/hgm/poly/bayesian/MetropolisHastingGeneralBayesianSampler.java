@@ -11,13 +11,13 @@ import java.util.Arrays;
  * Time: 9:05 PM
  */
 public class MetropolisHastingGeneralBayesianSampler implements SamplerInterface {
-    GeneralBayesianPosteriorHandler gph;
+    protected GeneralBayesianPosteriorHandler gph;
     double[] cVarMins;
     double[] cVarMaxes;
     int numVars;
 
-    double proposalVariance;
-    Double[] lastSample;
+    private double proposalVariance;
+    protected Double[] lastSample;
 
     public MetropolisHastingGeneralBayesianSampler(GeneralBayesianPosteriorHandler gph/*, double[] cVarMins, double[] cVarMaxes,*/, double proposalVariance) {
         this.gph = gph;
@@ -45,8 +45,12 @@ public class MetropolisHastingGeneralBayesianSampler implements SamplerInterface
 
     }
 
+    public void setProposalVariance(double proposalVariance) {
+        this.proposalVariance = proposalVariance;
+    }
+
     @Override
-    public Double[] sample() throws SamplingFailureException {
+    public Double[] reusableSample() throws SamplingFailureException {
         Double[] proposalState = jump(lastSample, proposalVariance);
 
         double prCurrentState = gph.evaluate(lastSample);
@@ -67,7 +71,7 @@ public class MetropolisHastingGeneralBayesianSampler implements SamplerInterface
         }
     }
 
-    private Double[] jump(Double[] mean, double variance) {
+    protected Double[] jump(Double[] mean, double variance) {
         Double[] newState = new Double[mean.length];
         for (int i = 0; i < mean.length; i++) {
             newState[i] = AbstractGeneralBayesianGibbsSampler.randomGaussianDouble(mean[i], variance);
