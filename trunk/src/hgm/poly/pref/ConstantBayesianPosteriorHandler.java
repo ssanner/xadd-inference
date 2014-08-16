@@ -1,6 +1,6 @@
 package hgm.poly.pref;
 
-import hgm.poly.ConstrainedPolynomial;
+import hgm.poly.ConstrainedExpression;
 import hgm.poly.Function;
 import hgm.poly.Polynomial;
 import hgm.poly.PolynomialFactory;
@@ -21,13 +21,13 @@ public class ConstantBayesianPosteriorHandler implements Function {
     int maxAllowedGatingViolations;
     double indicatorNoise;
 
-    ConstrainedPolynomial prior;
+    ConstrainedExpression<Polynomial> prior;
 
     List<Polynomial> posGatingConstraints = new ArrayList<Polynomial>();
     List<Polynomial> negGatingConstraints = new ArrayList<Polynomial>();
     List<Boolean> reusableGatingMask = new ArrayList<Boolean>();
 
-    public ConstantBayesianPosteriorHandler(PolynomialFactory factory, ConstrainedPolynomial prior, double indicatorNoise, int maxAllowedGatingViolations) {
+    public ConstantBayesianPosteriorHandler(PolynomialFactory factory, ConstrainedExpression prior, double indicatorNoise, int maxAllowedGatingViolations) {
         this.factory = factory;
         this.prior = prior;
 
@@ -97,7 +97,7 @@ public class ConstantBayesianPosteriorHandler implements Function {
     }
 
     //todo by reusing objects this may be faster...
-    public ConstrainedPolynomial makePolytope(List<Boolean> gateMask) {
+    public ConstrainedExpression makePolytope(List<Boolean> gateMask) {
         List<Polynomial> constraints = new ArrayList<Polynomial>(gateMask.size() + prior.getConstraints().size());
         double c =1d;
         for (int i = 0; i < gateMask.size(); i++) {
@@ -110,11 +110,11 @@ public class ConstantBayesianPosteriorHandler implements Function {
             }
         }
 
-        Polynomial clonedPrior = prior.getPolynomial().clone();
+        Polynomial clonedPrior = prior.getFruit().clone();
         clonedPrior.multiplyScalarInThis(c);
 
         constraints.addAll(prior.getConstraints());
-        return new ConstrainedPolynomial(clonedPrior, constraints);
+        return new ConstrainedExpression(clonedPrior, constraints);
     }
 
     public int numberOfConstraints(){

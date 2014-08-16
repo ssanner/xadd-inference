@@ -9,7 +9,7 @@ import java.util.*;
  * Date: 20/02/14
  * Time: 11:07 AM
  */
-public class Polynomial implements Cloneable{
+public class Polynomial implements Expression<Polynomial>, Cloneable{
     private PolynomialFactory factory;
     private Map<List<Double> /*powers*/, Double /*coefficient*/> powers2coefMap;
 
@@ -108,7 +108,14 @@ public class Polynomial implements Cloneable{
         }
     }
 
-    public Polynomial multiply(Polynomial other) {
+    public Polynomial scalarMultiplication(double c) {
+        Polynomial result = this.clone();
+        result.multiplyScalarInThis(c);
+        return result;
+    }
+
+    @Override
+    public Polynomial returnMultiplication(Polynomial other) {
         assetMatching(other);
         Polynomial prod = new Polynomial(factory);
         for (Map.Entry<List<Double>, Double> thisEntry : powers2coefMap.entrySet()) {
@@ -138,11 +145,13 @@ public class Polynomial implements Cloneable{
         return Arrays.asList(prodPow);
     }
 
+    @Override
     public Polynomial substitute(Map<String, Double> assign) {
         Double[] varValues = factory.getReusableVarValues(assign);
         return substitute(varValues);
     }
 
+    @Override
     public Polynomial substitute(Double[] varValues) {
         Polynomial result = new Polynomial(factory);
         for (Map.Entry<List<Double>, Double> term : powers2coefMap.entrySet()) {
@@ -191,9 +200,38 @@ public class Polynomial implements Cloneable{
         powers2coefMap = newEntries;
     }
 
+    public Polynomial returnIndefiniteIntegral(int integrationVarIndex) {
+        Polynomial cloned = this.clone();
+        cloned.replaceThisWithIndefiniteIntegral(integrationVarIndex);
+        return cloned;
+    }
+
+    //like 2 + 3.5*x^(3.9) + 6.66*x^(9.7)*y^(-3)
     @Override
     public String toString() {
-        return factory.toString(this);
+        if (this.powers2coefMap.isEmpty()) return "0.0";
+
+        StringBuilder sb = new StringBuilder(this.size());
+        String[] allVars = factory.getAllVars();
+
+        for (List<Double> powers : this.getAllPowers()) {
+
+            sb.append(this.getCoefficient(powers)).append("*");
+            for (int i = 0; i < powers.size(); i++) {
+                Double p = powers.get(i);
+                if (p != 0d) {
+                    sb.append(allVars[i]).append("^(").append(p).append(")*");
+                }
+            }
+            if (sb.charAt(sb.length() - 1) == '*') {
+                sb.deleteCharAt(sb.length() - 1); //last "*"
+            }
+
+            sb.append("+");
+        }
+        if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1); //last "+"
+
+        return sb.toString();
     }
 
     @Override
@@ -216,6 +254,7 @@ public class Polynomial implements Cloneable{
         return evaluate(varValues);
     }
 
+    @Override
     public double evaluate(Double[] fullVarValues) {
         double eval = 0d;
         for (Map.Entry<List<Double>, Double> term : powers2coefMap.entrySet()) {
@@ -235,6 +274,7 @@ public class Polynomial implements Cloneable{
         return eval;
     }
 
+    @Override
     public PolynomialFactory getFactory() {
         return factory;
     }
@@ -262,22 +302,28 @@ public class Polynomial implements Cloneable{
         return maxDegree;
     }
 
-    public Polynomial subtract(Polynomial m) {
+    /**
+     * @return  this - m
+     */
+    public Polynomial returnSubtraction(Polynomial m) {
         Polynomial mNeg = m.clone();
         mNeg.multiplyScalarInThis(-1.0);
-        return add(mNeg);
+        return returnAddition(mNeg);
     }
 
-    public Polynomial add(Polynomial a) {
+
+    @Override
+    public Polynomial returnAddition(Polynomial a) {
         Polynomial r = this.clone();
         r.addToThis(a);
         return r;
     }
 
-    //todo test this method...
+
     /**
      * @return The variables used in this expression rather than all factory variables.
      */
+    @Override
     public Set<String> getScopeVars(){
         Set<String> scopeVars = new HashSet<String>();
         String[] allVars = factory.getAllVars();
@@ -290,6 +336,85 @@ public class Polynomial implements Cloneable{
                 }
             }
         return scopeVars;
+    }
+
+    @Override
+    public Polynomial substitute(String var, Polynomial value) {
+        Polynomial result = new Polynomial(factory); //zero
+        int varId = factory.getVarIndex(var);
+        Polynomial substitution = (Polynomial)value; // not implemented for other expressions    //todo....
+        Polynomial[] splits = this.split();
+        Map<String, Double> map = new HashMap<String, Double>(1);
+        map.put(var, 1d);
+        for (Polynomial split : splits) {
+            int degree = split.degree(varId);
+            Polynomial powValue = substitution.toPower(degree);
+            Polynomial varReduced = split.substitute(map);
+            Polynomial r = varReduced.returnMultiplication(powValue);
+            result.addToThis(r);
+        }
+        return result;
+    }
+
+    //e.g. split 'x*y + 5*x*z^2' to ['x*y', '5*x*z^2']
+    public Polynomial[] split() {
+        Polynomial[] results = new Polynomial[powers2coefMap.size()];
+        int i=0;
+        for (Map.Entry<List<Double>, Double> power2coef : powers2coefMap.entrySet()) {
+            Polynomial split = new Polynomial(factory);
+            split.addTerm(power2coef.getKey(), power2coef.getValue());
+            results[i++] = split;
+        }
+        return results;
+    }
+
+    public Polynomial toPower(int power) {
+        if (power<0) throw new RuntimeException("implemented only for non-negative integer powers");
+        Polynomial result = factory.one();
+        for (int i = 0; i < power; i++) {
+            result = result.returnMultiplication(this);
+        }
+        return result;
+    }
+
+    public Polynomial[] sortWithRespectTo(String var){
+        int varIndex = factory.getVarIndex(var);
+        return sortWithRespectTo(varIndex);
+    }
+
+    //   x^2 + 3*x^2*y  +      2*x + -x*y +   y^3 w.r.t. 'x' is:
+    //  [1  + 3*y],            [2    -y],     [y^3]
+    //      2                      1           0        : <- note the index
+    public Polynomial[] sortWithRespectTo(int varIndex){
+        //calc degree w.r.t. the given var:
+        Polynomial[] result = new Polynomial[degree(varIndex) + 1];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = new Polynomial(factory);
+        }
+
+        for (List<Double> pow : getAllPowers()) {
+            int varDegree = pow.get(varIndex).intValue(); //only works for int
+            List<Double> clonedPow = new ArrayList<Double>(pow);
+            clonedPow.set(varIndex, 0d);
+            result[varDegree].addTerm(clonedPow, getCoefficient(pow));
+        }
+        return result;
+    }
+
+    public boolean isNumber() {
+        if (powers2coefMap.size() >1) return false; //just to make it a bit faster.
+        return degree() == 0;
+    }
+
+    public double getNumericalValue() {
+        if (!isNumber()) throw new RuntimeException("this is a symbolic expression: " + this);
+        if (powers2coefMap.size() == 0) return 0;
+        List<Double> allZeroPow = powers2coefMap.keySet().iterator().next();
+        return getCoefficient(allZeroPow);
+    }
+
+    public boolean isZero() {
+        return powers2coefMap.isEmpty();
     }
 }
 

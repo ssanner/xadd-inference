@@ -1,9 +1,8 @@
 package hgm.poly.gm;
 
-import hgm.poly.ConstrainedPolynomial;
-import hgm.poly.PiecewisePolynomial;
-import hgm.poly.Polynomial;
-import hgm.poly.PolynomialFactory;
+import hgm.poly.*;
+
+import java.util.Arrays;
 
 /**
  * Created by Hadi Afshar.
@@ -50,7 +49,7 @@ public class Distributions {
         }
     };*/
 
-    public PiecewisePolynomial createUniformDistribution(String var, String leftBoundStr, String rightBoundStr) {
+    public PiecewiseExpression createUniformDistribution(String var, String leftBoundStr, String rightBoundStr) {
         return createUniformDistribution(var, factory.makePolynomial(leftBoundStr), factory.makePolynomial(rightBoundStr));
     }
 
@@ -58,14 +57,28 @@ public class Distributions {
      *
      * @return U(var; leftBound, rightBound)
      */
-    public PiecewisePolynomial createUniformDistribution(String var, Polynomial leftBound, Polynomial rightBound){
+    public PiecewiseExpression createUniformDistribution(String var, Polynomial leftBound, Polynomial rightBound){
         Polynomial negLB = leftBound.clone();
         negLB.multiplyScalarInThis(-1.0);
                 String[] constraints = new String[]{
                 var + "^(1) + " + negLB + ">0",
          "-1*" + var + "^(1) + " + rightBound + ">0"
         };
-        ConstrainedPolynomial singleCase = factory.makeConstrainedPolynomial("1", constraints);
-        return new PiecewisePolynomial(false, singleCase);
+        ConstrainedExpression singleCase = factory.makeConstrainedPolynomial("1", constraints);
+        return new PiecewiseExpression(false, singleCase);
     }
+
+    public PiecewiseExpression<Fraction> createUniformDistributionFraction(String var, String leftBoundStr, String rightBoundStr) {
+        return createUniformDistributionFraction(var, factory.makeFraction(leftBoundStr), factory.makeFraction(rightBoundStr));
+    }
+
+    public PiecewiseExpression<Fraction> createUniformDistributionFraction(String var, Fraction leftBound, Fraction rightBound){
+        Fraction varF = factory.makeFraction(var + "^(1)");
+        Fraction f1 = varF.subtract(leftBound);       //x - a >0
+        Fraction f2 = rightBound.subtract(varF);      //b - x >0
+        Fraction d = factory.makeFraction("1").divide(rightBound.subtract(leftBound));                                     // 1 / b - a
+        ConstrainedExpression<Fraction> singleCase = new ConstrainedExpression<Fraction>(d, Arrays.asList(f1, f2));
+        return new PiecewiseExpression<Fraction>(false, singleCase);
+    }
+
 }

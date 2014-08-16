@@ -7,6 +7,7 @@ import java.util.*;
 /**
  * Created by Hadi Afshar. Date: 3/01/14 Time: 11:02 PM
  */
+@Deprecated
 public abstract class XaddSampler implements SamplerInterface {
 
     private static Random random = new Random();

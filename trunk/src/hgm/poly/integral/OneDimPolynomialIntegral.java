@@ -23,7 +23,7 @@ public class OneDimPolynomialIntegral {
      * @return The integration of a uni-dimensional function where except the 'integration var', all variables are instantiated due to the given value in the assignment:
      */
     @Deprecated
-    public OneDimFunction integrate(ConstrainedPolynomial cp, String integrationVar, Double[] usableContinuousVarAssign) {
+    public OneDimFunction integrate(ConstrainedExpression cp, String integrationVar, Double[] usableContinuousVarAssign) {
 //        if (DEBUG) {
 //            System.out.println("cp.evaluate(" + Arrays.toString(usableContinuousVarAssign) + "=" + cp.evaluate(usableContinuousVarAssign));  [by be incomplete]
 //        }
@@ -41,10 +41,10 @@ public class OneDimPolynomialIntegral {
         return integrate(cp, integrationVarIndex, usableContinuousVarAssign);
     }
 
-    public OneDimFunction integrate(ConstrainedPolynomial cp, int integrationVarIndex, Double[] usableContinuousVarAssign) {
+    public OneDimFunction integrate(ConstrainedExpression cp, int integrationVarIndex, Double[] usableContinuousVarAssign) {
         //excluding the integration var:
         usableContinuousVarAssign[integrationVarIndex] = null;
-        ConstrainedPolynomial substitutedCP = cp.substitute(usableContinuousVarAssign);
+        ConstrainedExpression substitutedCP = cp.substitute(usableContinuousVarAssign);
         if (DEBUG) {
             System.out.println("substitutedCP = " + substitutedCP);
 //            FunctionVisualizer.visualize(substitutedCP, -50, 50, 0.1, "substitutedCP");
@@ -61,7 +61,7 @@ public class OneDimPolynomialIntegral {
         }
 
         //calc. indefinite integral:
-        Polynomial indefIntegral = substitutedCP.getPolynomial();
+        Polynomial indefIntegral = (Polynomial) substitutedCP.getFruit(); //here I should cast.... (?)
         indefIntegral.replaceThisWithIndefiniteIntegral(integrationVarIndex);
         PiecewiseOffset1DPolynomial result = new PiecewiseOffset1DPolynomial(indefIntegral, integrationVarIndex);
 
@@ -90,7 +90,7 @@ public class OneDimPolynomialIntegral {
     }
 
     //assumptions: 1. constraints are linear or quadratic, 2. The polytope is univariate. Note: The returned list is sorted.
-    public List<Interval> fetchSortedIntervalsInWhichConstraintsAreSatisfied(ConstrainedPolynomial uniVarConstrainedPoly) {
+    public List<Interval> fetchSortedIntervalsInWhichConstraintsAreSatisfied(ConstrainedExpression<Polynomial> uniVarConstrainedPoly) {    //todo I do not like this casting here...
 
         List<Interval> intervals = new ArrayList<Interval>(); //note: more than one interval is used to cover non linear conditions as well...
         intervals.add(new Interval(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
@@ -205,155 +205,5 @@ public class OneDimPolynomialIntegral {
         return cloned;
     }
 
-
-   /* public Polynomial integrate1D(List<Interval> intervals, Polynomial poly, String var) {
-        if (intervals.size() != 1) throw new RuntimeException("not implemented for more that one interval :(");
-
-//        List<Polynomial> integrals = new ArrayList<Polynomial>(intervals.size());
-//        Collections.sort(intervals);
-        poly.replaceThisWithIndefiniteIntegral(var);
-//        double c=0d;
-//        for (Interval interval : intervals) {
-//            integrals.add();
-//
-//        }
-
-        //todo only works for functions with no boolean variable...
-        Piecewise1DPolynomial result = new Piecewise1DPolynomial(var);
-        HashMap<String, Double> assign = new HashMap<String, Double>(1);
-        double runningSum = 0.0d;
-        for (PolynomialInAnInterval intervalPoly : intervals) {
-            ArithExpr indefIntegral = intervalPoly.getPolynomial().integrateExpr(var);
-
-            assign.put(var, intervalPoly.getLowBound());
-            Double l = indefIntegral.evaluate(assign);
-            if (l.isNaN()) l = 0d; //this happens in the fist interval with lower bound -infty...
-
-            assign.put(var, intervalPoly.getHighBound());
-            Double h = indefIntegral.evaluate(assign);
-
-//            System.out.println("h = " + h);
-//            System.out.println("l = " + l);
-            Double intervalVol = h - l;
-//            System.out.println("IntervalVol = " + intervalVol + "; for " + indefIntegral + " with max: " + assign);
-
-
-            result.put(intervalPoly.getLowBound(), ArithExpr.op(indefIntegral, (runningSum - l), ArithOperation.SUM));
-
-            runningSum += intervalVol; // mass of this interval will be added to the offset of the next one...
-//            System.out.println("runningSum = " + runningSum);
-        }
-        return result;
-    }*/
-
-
-   /* private Interval fetchComparableExprBounds(CompExpr comparableExpression) {
-        Interval interval = new Interval(null, null);
-
-
-        //todo Only for debug...
-        if (!comparableExpression._rhs.equals(ExprLib.ZERO)) {
-            throw new RuntimeException("processXADDLeaf: Expected RHS = 0 for '" + comparableExpression + "'");
-        }
-
-        if (comparableExpression._type != CompOperation.GT && comparableExpression._type != CompOperation.GT_EQ)
-            throw new RuntimeException("Not implemented for Comparable operation '" + comparableExpression._type + "' in " + comparableExpression);
-
-        // I expect patterns like "(1 + (-0.2 * x))" or "(-0.2 * x)" in the LHS:
-        ArithExpr lhs = comparableExpression._lhs;
-        if (lhs instanceof DoubleExpr) {
-            double c = ((DoubleExpr) lhs)._dConstVal;
-            if (c > 0 || (c >= 0 && comparableExpression._type == CompOperation.GT_EQ)) {
-                return new Interval(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY); //always true
-            } else {
-                return new Interval(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY); //always false
-            }
-        } else if (!(lhs instanceof OperExpr)) {
-            throw new RuntimeException(lhs + " is not an operation...");
-        }
-
-        double a, b = 0.0d; // to have (b + a * x)
-        OperExpr op = (OperExpr) lhs;
-        ArrayList<ArithExpr> terms;
-        switch (op._type) {
-            case SUM:
-                //like: (1 + (-0.2 * x)) [bias + coeff * var]
-                terms = op._terms;
-                if (terms.size() != 2) throw new RuntimeException("cannot parse: " + terms);
-                DoubleExpr bias = (DoubleExpr) terms.get(0);
-                b = bias._dConstVal;
-                if (!(terms.get(1) instanceof OperExpr)) {
-                    throw new RuntimeException("Operation expression was expected in the second argument of: " + op);
-                }
-
-                op = ((OperExpr) terms.get(1));
-                // after this the PROD CASE should be run as well...
-            case PROD:
-                //like: (-0.2 * x)  [coeff * var]
-                terms = op._terms;
-                if (terms.size() != 2) throw new RuntimeException("cannot parse: " + terms);
-                DoubleExpr coefficient = (DoubleExpr) terms.get(0);
-                a = coefficient._dConstVal;
-                if (!(terms.get(1) instanceof VarExpr)) {
-                    throw new RuntimeException("Variable was expected as the second param. of: " + op);
-                }
-                break;
-
-            default:
-                throw new RuntimeException("cannot parse Operation " + op);
-        }
-
-//        System.out.println("a = " + a);
-//        System.out.println("b = " + b);
-
-        double bound = -b / a;
-
-        boolean varIsGreaterThanBound = (a > 0);
-
-        if (varIsGreaterThanBound) interval.setLowBound(bound);
-        else interval.setHighBound(bound);
-
-        return interval;
-    }*/
-
-
 }
 
-/*
-class OneDimIntegralFunc implements OneDimFunction {
-
-    Polynomial integral;
-    Double[] vars;
-    Interval interval;
-    double maxValue;
-    int varIndex;
-
-
-    OneDimIntegralFunc(Polynomial integral, Interval interval, String integrationVar) {
-
-        this.integral = integral;
-        this.interval = interval;
-
-        PolynomialFactory factory = integral.getFactory();
-        vars = new Double[factory.getAllVars().length];
-//        Arrays.fill(vars, null);
-
-        varIndex = factory.getVarIndex(integrationVar);
-        vars[varIndex] = interval.getHighBound();
-
-        maxValue = integral.evaluate(vars);
-    }
-
-
-    @Override
-    public double eval(double varValue) {
-        if (varValue < interval.getLowBound()) return 0d;
-        if (varValue > interval.getHighBound()) return maxValue;
-        vars[varIndex] = varValue;
-        return integral.evaluate(vars);
-    }
-
-    public double getNormalizationFactor() {
-        return maxValue;
-    }
-};*/

@@ -1,8 +1,8 @@
 package hgm.poly.bayesian;
 
 import hgm.asve.Pair;
-import hgm.poly.ConstrainedPolynomial;
-import hgm.poly.PiecewisePolynomial;
+import hgm.poly.ConstrainedExpression;
+import hgm.poly.PiecewiseExpression;
 import hgm.poly.Polynomial;
 import hgm.poly.PolynomialFactory;
 
@@ -17,7 +17,7 @@ public abstract class PriorHandler {
     protected PolynomialFactory factory;
     protected String varBaseName;
     protected int numVars;
-    private PiecewisePolynomial priorPiecewisePolynomial;
+    private PiecewiseExpression priorPiecewisePolynomial;
     private double[] lowerBoundsPerDim;
     private double[] upperBoundsPerDim;
     private double functionUpperBound;
@@ -40,7 +40,7 @@ public abstract class PriorHandler {
         functionUpperBound = functionUpperBound();
     }
 
-    public PiecewisePolynomial getPrior() {
+    public PiecewiseExpression getPrior() {
         return priorPiecewisePolynomial;
     }
 
@@ -56,7 +56,7 @@ public abstract class PriorHandler {
         return functionUpperBound;
     }
 
-    protected abstract PiecewisePolynomial/*ConstrainedPolynomial*/ makePrior();
+    protected abstract PiecewiseExpression/*ConstrainedPolynomial*/ makePrior();
 
     // the bounds are not necessarily tight
     protected abstract Pair<double[] /*mins*/, double[] /*maxes*/> surroundingLowerUpperBounds();
@@ -67,7 +67,7 @@ public abstract class PriorHandler {
     public static PriorHandler uniformInHypercube(String varBaseName, int numVars, final double bound) {
         return new PriorHandler(varBaseName, numVars) {
             @Override
-            public PiecewisePolynomial makePrior() {
+            public PiecewiseExpression makePrior() {
                 String[] vars = factory.getAllVars();
                 int numVars = vars.length;//factory.numberOfVars();
                 //1. prior: pr(W)
@@ -78,8 +78,8 @@ public abstract class PriorHandler {
                     constraints[2 * i + 1] = "-1*" + w_i + "^(1) + " + bound + ">0";
                 }
 
-                ConstrainedPolynomial singeCase = factory.makeConstrainedPolynomial("1", constraints);//only one case...
-                return new PiecewisePolynomial(false, singeCase); //otherwise 0
+                ConstrainedExpression singeCase = factory.makeConstrainedPolynomial("1", constraints);//only one case...
+                return new PiecewiseExpression(false, singeCase); //otherwise 0
             }
 
             @Override
@@ -103,7 +103,7 @@ public abstract class PriorHandler {
     public static PriorHandler uniformInEllipse(String varBaseName, /*final double x0, final double y0, */final double a, final double b) {
         return new PriorHandler(varBaseName, 2 /*only for 2D*/) {
             @Override
-            public PiecewisePolynomial makePrior() {
+            public PiecewiseExpression makePrior() {
                 String[] vars = factory.getAllVars();
                 if (vars.length != 2) throw new RuntimeException("only for two vars...");
 
@@ -121,7 +121,7 @@ public abstract class PriorHandler {
                 Polynomial constraint = factory.makePolynomial(constraintStr);
                 constraint.multiplyScalarInThis(-1.0);
 
-                return new PiecewisePolynomial(false, new ConstrainedPolynomial(factory.makePolynomial("1"), Arrays.asList(constraint))); //otherwise 0
+                return new PiecewiseExpression(false, new ConstrainedExpression(factory.makePolynomial("1"), Arrays.asList(constraint))); //otherwise 0
             }
 
             @Override
@@ -142,7 +142,7 @@ public abstract class PriorHandler {
     public static PriorHandler quadraticInEllipse(String varBaseName, /*final double x0, final double y0, */final double a, final double b) {
         return new PriorHandler(varBaseName, 2 /*only for 2D*/) {
             @Override
-            public PiecewisePolynomial makePrior() {
+            public PiecewiseExpression makePrior() {
                 String[] vars = factory.getAllVars();
                 if (vars.length != 2) throw new RuntimeException("only for two vars...");
 
@@ -160,7 +160,7 @@ public abstract class PriorHandler {
                 Polynomial constraint = factory.makePolynomial(constraintStr);
                 constraint.multiplyScalarInThis(-1.0);
 
-                return new PiecewisePolynomial(false, new ConstrainedPolynomial(factory.makePolynomial("-1*" + x + "^(2) + -1*" + y + "^(2)" + " + 100"), Arrays.asList(constraint))); //otherwise 0
+                return new PiecewiseExpression(false, new ConstrainedExpression(factory.makePolynomial("-1*" + x + "^(2) + -1*" + y + "^(2)" + " + 100"), Arrays.asList(constraint))); //otherwise 0
             }
 
             @Override
@@ -184,7 +184,7 @@ public abstract class PriorHandler {
         if (firstBound < 0 || conditionalBound < 0) throw new RuntimeException("positive values expected");
         return new PriorHandler(varBaseName, numVars) {
             @Override
-            public PiecewisePolynomial makePrior() {
+            public PiecewiseExpression makePrior() {
                 String[] vars = factory.getAllVars();
                 int numVars = vars.length;
                 String[] constraints = new String[numVars * 2];
@@ -197,7 +197,7 @@ public abstract class PriorHandler {
                     constraints[2 * i] = w_i + "^(1) + -1*" + w_i_1 + "^(1) + " + conditionalBound + ">0";  // w_i > w_{i-1} - c
                     constraints[2 * i + 1] = "-1*" + w_i + "^(1) + " + w_i_1 + "^(1) + " + conditionalBound + ">0";  // w_i < w_{i-1} + c
                 }
-                return new PiecewisePolynomial(false, factory.makeConstrainedPolynomial("1", constraints)); //otherwise 0
+                return new PiecewiseExpression(false, factory.makeConstrainedPolynomial("1", constraints)); //otherwise 0
             }
 
             @Override

@@ -1,7 +1,8 @@
 package hgm.poly.bayesian;
 
-import hgm.poly.ConstrainedPolynomial;
-import hgm.poly.PiecewisePolynomial;
+import hgm.poly.ConstrainedExpression;
+import hgm.poly.PiecewiseExpression;
+import hgm.poly.Polynomial;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.integral.OneDimPolynomialIntegral;
@@ -218,8 +219,8 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
         return average;
     }
 
-    public void makeAndAddCumulativeDistributionFunctionsToList(PiecewisePolynomial pp, int varIndex, Double[] currentVarAssign, List<OneDimFunction> cdfList) {
-        for (ConstrainedPolynomial cp : pp.getCases()) {
+    public void makeAndAddCumulativeDistributionFunctionsToList(PiecewiseExpression<Polynomial> pp, int varIndex, Double[] currentVarAssign, List<OneDimFunction> cdfList) {
+        for (ConstrainedExpression cp : pp.getCases()) {
 
             // returns int_{w=-infty}^{var} (func[var->w]dw) for instantiated function:
             OneDimFunction cdf = integrator.integrate(cp, varIndex, currentVarAssign);
@@ -243,11 +244,6 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
     public static Double randomGaussianDouble(Double mean, double variance) {
         return mean + random.nextGaussian() * variance;
     }
-
-
-//    protected static boolean randomBoolean() {
-//        return random.nextBoolean();
-//    }
 
 
 /*
@@ -301,70 +297,5 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
         return clonedSample;
     }
 
-//    public void setReusable(Double[] reuse) {
-//        prevSample = reuse;
-//    }
 }
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
 
-/*class PolyRejectionSampler implements SamplerInterface {
-
-//    private VarAssignment _initialSample;
-    private double m;
-    private Double[] sample;
-
-    double min;
-    double max;
-
-    GatedPolytopesHandler gph;
-
-    public PolyRejectionSampler(GatedPolytopesHandler gph, int sampleVecSize, double minForAllVars, double maxForAllVars, double m) {
-        this.gph = gph;
-        this.m = m;
-        sample = new Double[sampleVecSize];
-
-        this.min = minForAllVars;
-        this.max =maxForAllVars;
-    }
-
-    @Override
-    public Double[] sample() throws SamplingFailureException {
-
-        double p, u, g;
-        Double[] bestSample = new Double[sample.length];
-
-//        HashMap<String, Double> sample = new HashMap<String, Double>();
-        boolean accepted = false;
-        for (int attempt = 0; attempt < 1000 && !accepted; attempt++) {
-            g = 1;
-            for (int i=0; i<sample.length; i++) {
-                sample[i] = GatedPolytopesSampler.randomDoubleUniformBetween(min, max);
-                g = (max - min) * g;
-            }
-
-            g = 1.0 / g; // probability
-            p = super.context.evaluate(super.rootId, null, sample);
-            u = XaddSampler.randomDoubleUniformBetween(0, 1);
-            if (u < (p / (m * g))) {
-                accepted = true;
-            }
-        }
-
-        if (!accepted)
-            sample = lastSample;
-        else
-            _noAccepted++;
-
-        for (String key : sample.keySet()) {
-            super.reusableVarAssignment.getContinuousVarAssign().put(key, sample.get(key));
-        }
-    }
-
-    private int _noAccepted = 0;
-    private static int counter = 1;
-
-    public void finish() {
-        Utils.writeMat("rejection_accepted" + (counter++) + ".mat", "noAccepted", new double[]{(double) _noAccepted});
-    }
-}*/

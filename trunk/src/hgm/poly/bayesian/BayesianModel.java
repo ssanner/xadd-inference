@@ -1,7 +1,7 @@
 package hgm.poly.bayesian;
 
 import hgm.BayesianDataGenerator;
-import hgm.poly.PiecewisePolynomial;
+import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
 
 /**
@@ -38,12 +38,12 @@ public abstract class BayesianModel<R> {
 
         for (R response : db.getObservedDataPoints()) {
             // Pr(q_{ab} | theta):
-            PiecewisePolynomial likelihood = computeLikelihoodGivenValueVector(response);
+            PiecewiseExpression likelihood = computeLikelihoodGivenValueVector(response);
             posterior.addLikelihood(likelihood);
         }
 
         return posterior;
     }
 
-    protected abstract PiecewisePolynomial computeLikelihoodGivenValueVector(R response);
+    protected abstract PiecewiseExpression computeLikelihoodGivenValueVector(R response);
 }

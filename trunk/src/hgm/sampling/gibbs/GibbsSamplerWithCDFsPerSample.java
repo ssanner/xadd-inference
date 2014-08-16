@@ -20,6 +20,7 @@ import java.util.List;
 /**
  * This is a an implementation of Gibbs sampler that calculates CDF per sample
  */
+@Deprecated
 public class GibbsSamplerWithCDFsPerSample extends XaddSampler {
     public static final double SAMPLE_ACCURACY = Double.MIN_VALUE;//1E-10;//1E-6;  //todo: on small leaves this causes problems!
     public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 25;

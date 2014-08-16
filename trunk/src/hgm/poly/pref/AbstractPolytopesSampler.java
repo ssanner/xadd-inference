@@ -1,6 +1,6 @@
 package hgm.poly.pref;
 
-import hgm.poly.ConstrainedPolynomial;
+import hgm.poly.ConstrainedExpression;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.integral.OneDimPolynomialIntegral;
@@ -210,7 +210,7 @@ public abstract class AbstractPolytopesSampler implements SamplerInterface {
 
     //NOTE: only works with continuous vars...
     // returns int_{w=-infty}^{var} (func[var->w]dw) for instantiated function
-    public OneDimFunction makeCumulativeDistributionFunction(ConstrainedPolynomial cp, String var, Double[] currentVarAssign) {
+    public OneDimFunction makeCumulativeDistributionFunction(ConstrainedExpression cp, String var, Double[] currentVarAssign) {
 
         OneDimFunction cdf = integrator.integrate(cp, var, currentVarAssign);
 

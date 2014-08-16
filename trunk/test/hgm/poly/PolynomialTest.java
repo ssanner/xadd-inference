@@ -3,6 +3,7 @@ package hgm.poly;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,11 +44,11 @@ public class PolynomialTest {
     public void testMultiply() throws Exception {
         PolynomialFactory factory = new PolynomialFactory("v", "w", "x", "y", "z");
         Polynomial p1 = factory.makePolynomial("x^(2)*y^(2) + 3*x^(2) + 5*y^(2)");
-        Polynomial p2 = p1.multiply(factory.makePolynomial("10*x^(10)"));
+        Polynomial p2 = p1.returnMultiplication(factory.makePolynomial("10*x^(10)"));
         Assert.assertEquals("10.0*x^(12.0)*y^(2.0)+30.0*x^(12.0)+50.0*x^(10.0)*y^(2.0)", p2.toString());
-        Polynomial p3 = p1.multiply(factory.makePolynomial("1000 + 2*x^(1)"));
+        Polynomial p3 = p1.returnMultiplication(factory.makePolynomial("1000 + 2*x^(1)"));
         Assert.assertEquals("1000.0*x^(2.0)*y^(2.0)+2.0*x^(3.0)*y^(2.0)+3000.0*x^(2.0)+5000.0*y^(2.0)+10.0*x^(1.0)*y^(2.0)+6.0*x^(3.0)", p3.toString());
-        Polynomial p4 = p1.multiply(factory.makePolynomial("10*x^(1)*v^(1)*w^(1)"));
+        Polynomial p4 = p1.returnMultiplication(factory.makePolynomial("10*x^(1)*v^(1)*w^(1)"));
         Assert.assertEquals("50.0*v^(1.0)*w^(1.0)*x^(1.0)*y^(2.0)+10.0*v^(1.0)*w^(1.0)*x^(3.0)*y^(2.0)+30.0*v^(1.0)*w^(1.0)*x^(3.0)", p4.toString());
     }
 
@@ -71,6 +72,26 @@ public class PolynomialTest {
         assign.put("x", 10d);
         p4 = p1.substitute(assign);
         Assert.assertEquals(p3.toString(), p4.toString());
+    }
+
+    @Test
+    public void testSymbolicSubstitute() {
+        PolynomialFactory factory = new PolynomialFactory("v", "w", "x", "y", "z");
+        Polynomial p1 = factory.makePolynomial("x^(2)*y^(2) + 3*x^(2)*y^(1) + 5*y^(2)");
+        Polynomial p2 = factory.makePolynomial("z^(2)");
+        Polynomial p3 = p1.substitute("y", p2);
+        Assert.assertEquals("3.0*x^(2.0)*z^(2.0)+5.0*z^(4.0)+1.0*x^(2.0)*z^(4.0)", p3.toString());
+        Polynomial p4 = factory.makePolynomial("x^(2)*y^(2) + 5*y^(2)").substitute("x", factory.makePolynomial("v^(1) + w^(1)"));
+        Assert.assertEquals("2.0*v^(1.0)*w^(1.0)*y^(2.0)+1.0*w^(2.0)*y^(2.0)+1.0*v^(2.0)*y^(2.0)+5.0*y^(2.0)", p4.toString());
+    }
+
+    @Test
+    public void testSplit(){
+        PolynomialFactory factory = new PolynomialFactory("v", "w", "x", "y", "z");
+        Polynomial p1 = factory.makePolynomial("x^(2)*y^(2) + 3*x^(2)*y^(1) + 5*y^(2)");
+        Polynomial[] splits = p1.split();
+        System.out.println("splits = " + Arrays.toString(splits));
+        Assert.assertEquals(3, splits.length);
 
     }
 
@@ -90,5 +111,17 @@ public class PolynomialTest {
         Assert.assertEquals(p1, p2);
         Polynomial p3 = factory.makePolynomial("3.66000001*z^(1) + x^(1)");
         Assert.assertFalse(p1.equals(p3));
+    }
+
+    @Test
+    public void testSort() {
+        PolynomialFactory f = new PolynomialFactory("x", "y");
+
+        Polynomial[] sorted = f.makePolynomial("x^(2) + 3*y^(2) + 5").sortWithRespectTo("x");
+        Assert.assertEquals(Arrays.toString(sorted), "[3.0*y^(2.0)+5.0, 0.0, 1.0]");
+
+        Assert.assertEquals(Arrays.toString(f.makePositiveConstraint("1*y^(1)+-5<0").sortWithRespectTo("y")), "[5.0, -1.0]");
+        Assert.assertEquals(Arrays.toString(f.makePositiveConstraint("2*x^(1) + 3*y^(1) + -7<0").sortWithRespectTo("y")), "[-2.0*x^(1.0)+7.0, -3.0]");
+
     }
 }

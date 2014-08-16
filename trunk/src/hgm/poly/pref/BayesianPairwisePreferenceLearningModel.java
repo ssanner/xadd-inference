@@ -2,7 +2,6 @@ package hgm.poly.pref;
 
 import hgm.poly.*;
 import hgm.poly.bayesian.BayesianModel;
-import hgm.poly.bayesian.GeneralBayesianPosteriorHandler;
 import hgm.preference.Preference;
 import hgm.preference.db.PreferenceDatabase;
 import hgm.sampling.VarAssignment;
@@ -46,10 +45,10 @@ public class BayesianPairwisePreferenceLearningModel extends BayesianModel<Prefe
     private ConstantBayesianPosteriorHandler computePrefPosteriorWeightVector(List<Preference> preferenceResponses,
                                                               int maxGatingConditionViolation) {
 
-        PiecewisePolynomial priorPP = prior.getPrior();
-        List<ConstrainedPolynomial> priorCases = priorPP.getCases();
+        PiecewiseExpression priorPP = prior.getPrior();
+        List<ConstrainedExpression> priorCases = priorPP.getCases();
         if (priorCases.size() != 1) throw new RuntimeException("this old fashioned method works only with a prior with a single case");
-        ConstrainedPolynomial priorOnlyCase = priorCases.get(0);
+        ConstrainedExpression priorOnlyCase = priorCases.get(0);
 //        ConstrainedPolynomial prior = computePrior();
         ConstantBayesianPosteriorHandler gatedPolytopes = new ConstantBayesianPosteriorHandler(factory, priorOnlyCase, indicatorNoise, maxGatingConditionViolation);
 
@@ -73,17 +72,17 @@ public class BayesianPairwisePreferenceLearningModel extends BayesianModel<Prefe
 //    }
 
     @Override
-    protected PiecewisePolynomial computeLikelihoodGivenValueVector(Preference response) {
+    protected PiecewiseExpression computeLikelihoodGivenValueVector(Preference response) {
         Polynomial likelihoodPositiveConstraint = computePreferenceLikelihoodPositiveConstraintGivenUtilityWeights((PreferenceDatabase)db, response);  //I wish I could avoid casting
         Polynomial posPoly = factory.makePolynomial(Double.toString(1 - indicatorNoise));
         Polynomial negPoly = factory.makePolynomial(Double.toString(indicatorNoise));
-        ConstrainedPolynomial posCase = new ConstrainedPolynomial(posPoly, Arrays.asList(likelihoodPositiveConstraint));
+        ConstrainedExpression posCase = new ConstrainedExpression(posPoly, Arrays.asList(likelihoodPositiveConstraint));
 
         Polynomial likelihoodNegativeConstraint = likelihoodPositiveConstraint.clone();
         likelihoodNegativeConstraint.multiplyScalarInThis(-1);
-        ConstrainedPolynomial negCase = new ConstrainedPolynomial(negPoly, Arrays.asList(likelihoodNegativeConstraint));
+        ConstrainedExpression negCase = new ConstrainedExpression(negPoly, Arrays.asList(likelihoodNegativeConstraint));
 
-        return new PiecewisePolynomial(posCase, negCase);
+        return new PiecewiseExpression(posCase, negCase);
     }
 
     //--------------------------------------------------------------------------

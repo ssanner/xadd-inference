@@ -30,11 +30,30 @@ public class PolynomialFactory {
         zeroPowers = Arrays.asList(zerosPowerArray);
 
         one = makePolynomial("1");
+    }
 
+    //[numerator]/[denominator]
+    public Fraction makeFraction(String str) {
+        String[] parts = str.split("/");
+        if (parts.length == 1) {
+            return makeFraction(str, "1");
+        }
+
+        if (parts.length == 2) {
+            for (int i = 0; i < 2; i++) {
+                parts[i] = parts[i].trim();
+                if (!parts[i].startsWith("[")) throw new RuntimeException("cannot parse: " + parts[i]);
+                if (!parts[i].endsWith("]")) throw new RuntimeException("cannot parse: " + parts[i]);
+                parts[i] = parts[i].substring(1, parts[i].length() - 1);
+            }
+            return makeFraction(parts[0], parts[1]);
+        }
+
+        throw new RuntimeException("cannot parse " + Arrays.toString(parts));
     }
 
     public Polynomial one() {
-        return one;   //NOTE: this polynomial should not be modified. To modify, clone it...
+        return one.clone();
     }
 
     public List<Double> getZeroPowers() {
@@ -100,7 +119,7 @@ public class PolynomialFactory {
     }
 
     //like 2 + 3.5*x^(3.9) + 6.66*x^(9.7)*y^(-3)
-    public String toString(Polynomial poly) {
+   /* public String toString(Polynomial poly) {
         StringBuilder sb = new StringBuilder(poly.size());
 
         for (List<Double> powers : poly.getAllPowers()) {
@@ -121,7 +140,7 @@ public class PolynomialFactory {
         if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1); //last "+"
 
         return sb.toString();
-    }
+    }*/
 
     public Double[] getReusableVarValues(Map<String, Double> assign) {
 
@@ -153,14 +172,14 @@ public class PolynomialFactory {
         return polynomial;
     }
 
-    public ConstrainedPolynomial makeConstrainedPolynomial(String polynomialStr, String... conditionsStr) {
+    public ConstrainedExpression makeConstrainedPolynomial(String polynomialStr, String... conditionsStr) {
         Polynomial poly = makePolynomial(polynomialStr);
         Polynomial[] posConstraints = new Polynomial[conditionsStr.length];
         for (int i = 0; i < conditionsStr.length; i++) {
             posConstraints[i] = makePositiveConstraint(conditionsStr[i]);
         }
 
-        return new ConstrainedPolynomial(poly, Arrays.asList(posConstraints));
+        return new ConstrainedExpression(poly, Arrays.asList(posConstraints));
     }
 
     public String[] getAllVars() {
@@ -171,4 +190,9 @@ public class PolynomialFactory {
         return vars.length;
     }
 
+    public Fraction makeFraction(String numeratorStr, String denominatorStr) {
+        Polynomial n = makePolynomial(numeratorStr);
+        Polynomial d = makePolynomial(denominatorStr);
+        return new Fraction(n, d);
+    }
 }

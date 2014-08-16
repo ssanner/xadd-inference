@@ -65,4 +65,16 @@ public class VarAssignment {
 
         return result;
     }
+
+    public static Map<String, Double> str2continuousAssign(String s) {
+        Map<String, Double> map = new HashMap<String, Double>();
+        String[] vvs = s.split(",");
+        for (String vv : vvs) {
+            String[] split = vv.split("=");
+            String var = split[0].trim();
+            Double value = Double.parseDouble(split[1].trim());
+            map.put(var, value);
+        }
+        return map;
+    }
 }
