@@ -1,6 +1,6 @@
 package hgm.poly.pref;
 
-import hgm.poly.ConstrainedPolynomial;
+import hgm.poly.ConstrainedExpression;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.integral.PiecewiseOffset1DPolynomial;
 import hgm.sampling.gibbs.integral.Interval;
@@ -37,7 +37,7 @@ public class TargetedGatedGibbsPolytopesSampler extends AbstractPolytopesSampler
 
 
         List<Boolean> gateMask = gph.adjustedReusableGateActivationMask(reusableVarAssign);
-        ConstrainedPolynomial currentKeyPolytope = gph.makePolytope(gateMask);
+        ConstrainedExpression currentKeyPolytope = gph.makePolytope(gateMask);
         final PiecewiseOffset1DPolynomial currentCDF;
         try {
             currentCDF = (PiecewiseOffset1DPolynomial) //since current partition cannot be ZERO, the casting should cause no problem...
@@ -70,7 +70,7 @@ public class TargetedGatedGibbsPolytopesSampler extends AbstractPolytopesSampler
         reusableVarAssign[varIndexToBeSampled] = aPointInAdjRegion;
         gateMask = gph.adjustedReusableGateActivationMask(reusableVarAssign);
         //todo maybe a debug is necessary to check that the updated gate mask only differs with itself in one bit...
-        ConstrainedPolynomial adjKeyPolytope = gph.makePolytope(gateMask);  //adjacent region to left or right...
+        ConstrainedExpression adjKeyPolytope = gph.makePolytope(gateMask);  //adjacent region to left or right...
         final OneDimFunction adjCDF = makeCumulativeDistributionFunction(adjKeyPolytope, varToBeSampled, reusableVarAssign);
 
         if (DEBUG) {

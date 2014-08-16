@@ -1,6 +1,6 @@
 package hgm.poly.market;
 
-import hgm.poly.PiecewisePolynomial;
+import hgm.poly.PiecewiseExpression;
 import hgm.poly.bayesian.AbstractGeneralBayesianGibbsSampler;
 import hgm.poly.bayesian.PriorHandler;
 
@@ -86,7 +86,7 @@ public class DummyMarketMakingDatabase extends MarketMakingDatabase {
         double[] cVarMins = prior.getLowerBoundsPerDim();
         double[] cVarMaxes = prior.getUpperBoundsPerDim();
         double envelope = prior.getFunctionUpperBound();
-        PiecewisePolynomial priorPiecewisePolynomial = prior.getPrior();
+        PiecewiseExpression priorPiecewisePolynomial = prior.getPrior();
 
         Double[] sample = new Double[getNumberOfParameters()];
         for (; ; ) {

@@ -1,6 +1,6 @@
 package hgm.poly.pref;
 
-import hgm.poly.ConstrainedPolynomial;
+import hgm.poly.ConstrainedExpression;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.vis.FunctionVisualizer;
 
@@ -41,13 +41,13 @@ public class GatedGibbsPolytopesSampler extends AbstractPolytopesSampler {
         if (DEBUG) System.out.println("gateMask = " + gateMask + "\t chosen gate index: " + chosenGateVarIndex);
 
         gateMask.set(chosenGateVarIndex, true);
-        ConstrainedPolynomial posKeyPolytope = gph.makePolytope(gateMask);     //todo at least one of the polytopes can be cached...
+        ConstrainedExpression posKeyPolytope = gph.makePolytope(gateMask);     //todo at least one of the polytopes can be cached...
         if (DEBUG) {
             FunctionVisualizer.visualize(posKeyPolytope, -11, 11, 0.1, "pos key");
         }
 
         gateMask.set(chosenGateVarIndex, false);
-        ConstrainedPolynomial negKeyPolytope = gph.makePolytope(gateMask);
+        ConstrainedExpression negKeyPolytope = gph.makePolytope(gateMask);
         if (DEBUG) {
             FunctionVisualizer.visualize(negKeyPolytope, -11, 11, 0.1, "neg key");
         }

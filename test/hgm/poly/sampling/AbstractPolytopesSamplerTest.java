@@ -1,6 +1,6 @@
 package hgm.poly.sampling;
 
-import hgm.poly.ConstrainedPolynomial;
+import hgm.poly.ConstrainedExpression;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.pref.*;
 import hgm.poly.vis.FunctionVisualizer;
@@ -43,7 +43,7 @@ public class AbstractPolytopesSamplerTest {
         String cond1 = "x^(1)>0".replaceAll("B", "" + b).replaceAll("W", "" + w);
         String cond2 = "x^(1)+y^(1)+-B<0".replaceAll("B", "" + b).replaceAll("W", "" + w);
         String cond3 = "x^(1)+-W*y^(1)+-B<0".replaceAll("B", "" + b).replaceAll("W", "" + w);
-        ConstrainedPolynomial cp = factory.makeConstrainedPolynomial("1", cond1, cond2, cond3);
+        ConstrainedExpression cp = factory.makeConstrainedPolynomial("1", cond1, cond2, cond3);
 
         /*String cond1 = "x^(1)+10>0";
         String cond2 = "x^(1)+-10<0";
@@ -91,7 +91,7 @@ public class AbstractPolytopesSamplerTest {
         String cond1 = "x^(1)>0".replaceAll("B", "" + b).replaceAll("W", "" + w);
         String cond2 = "x^(1)+y^(1)+-B<0".replaceAll("B", "" + b).replaceAll("W", "" + w);
         String cond3 = "x^(1)+-W*y^(1)+-B<0".replaceAll("B", "" + b).replaceAll("W", "" + w);
-        ConstrainedPolynomial cp = factory.makeConstrainedPolynomial(
+        ConstrainedExpression cp = factory.makeConstrainedPolynomial(
 //                "x^(2)+-10*x^(1)+y^(2)"
                 "x^(2)+-10*x^(1)+25+y^(2)"
                 , cond1, cond2, cond3);
@@ -125,7 +125,7 @@ public class AbstractPolytopesSamplerTest {
         String cond1 = "x^(1)>0".replaceAll("B", "" + b).replaceAll("W", "" + w);
         String cond2 = "x^(1)+y^(1)+-B<0".replaceAll("B", "" + b).replaceAll("W", "" + w);
         String cond3 = "x^(1)+-W*y^(1)+-B<0".replaceAll("B", "" + b).replaceAll("W", "" + w);
-        ConstrainedPolynomial cp = factory.makeConstrainedPolynomial("x^(1)", cond1, cond2, cond3);
+        ConstrainedExpression cp = factory.makeConstrainedPolynomial("x^(1)", cond1, cond2, cond3);
 
         double minVarLim = -30d;
         double maxVarLim = 30d;
@@ -145,7 +145,7 @@ public class AbstractPolytopesSamplerTest {
         PolynomialFactory factory = new PolynomialFactory("x", "y");
         String cond1 = "x^(2)+y^(2)+-20>0";
         String cond2 = "x^(2)+y^(2)+-150<0";
-        ConstrainedPolynomial cp = factory.makeConstrainedPolynomial("1", cond1, cond2);
+        ConstrainedExpression cp = factory.makeConstrainedPolynomial("1", cond1, cond2);
 
         double minVarLim = -30d;
         double maxVarLim = 30d;
@@ -173,7 +173,7 @@ public class AbstractPolytopesSamplerTest {
         String cond1 = "3*x^(2)+y^(2)+-20>0";
         String cond2 = "x^(2)+y^(2)+-150<0";
         String cond3 = "x^(2)+-" + twoA + "*x^(1)+y^(2)+-" + twoB + "*y^(1)+" + a2b2 + "+-" + r + ">0";
-        ConstrainedPolynomial cp = factory.makeConstrainedPolynomial("1", cond1, cond2, cond3);
+        ConstrainedExpression cp = factory.makeConstrainedPolynomial("1", cond1, cond2, cond3);
 
         double minVarLim = -30d;
         double maxVarLim = 30d;
@@ -193,7 +193,7 @@ public class AbstractPolytopesSamplerTest {
         PolynomialFactory factory = new PolynomialFactory("x", "y");
         String cond1 = "x^(2)+y^(2)+-20>0";
         String cond2 = "x^(2)+y^(2)+-50<0";
-        ConstrainedPolynomial cp = factory.makeConstrainedPolynomial("x^(2)", cond1, cond2);
+        ConstrainedExpression cp = factory.makeConstrainedPolynomial("x^(2)", cond1, cond2);
 
         double minVarLim = -30d;
         double maxVarLim = 30d;

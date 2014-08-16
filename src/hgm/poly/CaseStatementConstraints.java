@@ -10,8 +10,8 @@ import java.util.Set;
  * Date: 5/07/14
  * Time: 12:18 AM
  */
-public class CaseStatementConstraints extends HashSet<Polynomial> {
-    public CaseStatementConstraints(Collection<Polynomial> constraints) {
+public class CaseStatementConstraints<E extends Expression> extends HashSet<E> {
+    public CaseStatementConstraints(Collection<E> constraints) {
         super(constraints);
     }
 
@@ -19,21 +19,29 @@ public class CaseStatementConstraints extends HashSet<Polynomial> {
         super(initialCapacity);
     }
 
-    public CaseStatementConstraints substitute(Map<String, Double> assign) {
-        CaseStatementConstraints result = new CaseStatementConstraints(this.size());
-        for (Polynomial polynomial : this) {
-            result.add(polynomial.substitute(assign));
+    public CaseStatementConstraints<E> substitute(Map<String, Double> assign) {
+        CaseStatementConstraints<E> result = new CaseStatementConstraints<E>(this.size());
+        for (E polynomial : this) {
+            result.add((E)polynomial.substitute(assign));  //todo I do not know how to prevent this weird  casting!!!
+        }
+        return result;
+    }
+
+    public CaseStatementConstraints<E> substitute(String var, Expression value) {
+        CaseStatementConstraints<E> result = new CaseStatementConstraints<E>(this.size());
+        for (E expr : this) {
+            result.add((E)expr.substitute(var, value));  //todo I do not know how to prevent this weird  casting!!!
         }
         return result;
     }
 
     //todo complete by semantic tests such as e.g. x>2 entails x>1
-    public boolean isEntailedBy(CaseStatementConstraints other) {
+    public boolean isEntailedBy(CaseStatementConstraints<E> other) {
 //        if (this.size() > other.size()) return false;
 
-        for (Polynomial otherCn : other) {
+        for (Expression otherCn : other) {
             boolean isInThis = false;
-            for (Polynomial cn : this) {
+            for (Expression cn : this) {
                 if (otherCn.equals(cn)) {
                     isInThis = true;
                     break;

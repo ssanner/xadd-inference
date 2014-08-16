@@ -1,12 +1,5 @@
 package hgm.poly.pref;
 
-import hgm.poly.ConstrainedPolynomial;
-import hgm.poly.integral.OneDimFunction;
-import hgm.poly.integral.PiecewiseOffset1DPolynomial;
-import hgm.poly.vis.FunctionVisualizer;
-
-import java.util.*;
-
 /**
  * Created by Hadi Afshar.
  * Date: 11/03/14

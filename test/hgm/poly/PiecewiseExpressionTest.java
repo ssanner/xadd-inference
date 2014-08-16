@@ -11,7 +11,7 @@ import java.util.Map;
  * Date: 6/07/14
  * Time: 7:13 AM
  */
-public class PiecewisePolynomialTest {
+public class PiecewiseExpressionTest {
     @Test
     public void testMultiply() throws Exception {
         /*
@@ -53,20 +53,20 @@ public class PiecewisePolynomialTest {
         Polynomial g2 = factory.makePolynomial("1*g^(2)");
         Polynomial g3 = factory.makePolynomial("1*g^(3)");
 
-        PiecewisePolynomial pp1 = new PiecewisePolynomial( false,
-                new ConstrainedPolynomial(f1, Arrays.asList(a1, a2)),
-                new ConstrainedPolynomial(f2, Arrays.asList(a1, a3)),
-                new ConstrainedPolynomial(f3, Arrays.asList(b1)),
-                new ConstrainedPolynomial(f4, Arrays.asList(c))
+        PiecewiseExpression pp1 = new PiecewiseExpression( false,
+                new ConstrainedExpression(f1, Arrays.asList(a1, a2)),
+                new ConstrainedExpression(f2, Arrays.asList(a1, a3)),
+                new ConstrainedExpression(f3, Arrays.asList(b1)),
+                new ConstrainedExpression(f4, Arrays.asList(c))
         );
 
-        PiecewisePolynomial pp2 = new PiecewisePolynomial(
-                new ConstrainedPolynomial(g1, Arrays.asList(a1_copy)),
-                new ConstrainedPolynomial(g2, Arrays.asList(b1, b2)),
-                new ConstrainedPolynomial(g3, Arrays.asList(d))
+        PiecewiseExpression pp2 = new PiecewiseExpression(
+                new ConstrainedExpression(g1, Arrays.asList(a1_copy)),
+                new ConstrainedExpression(g2, Arrays.asList(b1, b2)),
+                new ConstrainedExpression(g3, Arrays.asList(d))
         );
 
-        PiecewisePolynomial pp3 = pp1.multiply(pp2);
+        PiecewiseExpression pp3 = pp1.multiply(pp2);
         Assert.assertTrue(pp3.numCases() == 7);
 
         /*
@@ -78,14 +78,14 @@ public class PiecewisePolynomialTest {
                 *      C.A1:   f4.g1
                 *      C.D:    f4.g3
          */
-        PiecewisePolynomial expectedPp3 = new PiecewisePolynomial( false,
-                new ConstrainedPolynomial(f1.multiply(g1), Arrays.asList(a1, a2)),
-                new ConstrainedPolynomial(f2.multiply(g1), Arrays.asList(a1, a3)),
-                new ConstrainedPolynomial(f3.multiply(g1), Arrays.asList(b1, a1)),
-                new ConstrainedPolynomial(f3.multiply(g2), Arrays.asList(b1, b2)),
-                new ConstrainedPolynomial(f3.multiply(g3), Arrays.asList(b1, d)),
-                new ConstrainedPolynomial(f4.multiply(g1), Arrays.asList(c, a1)),
-                new ConstrainedPolynomial(f4.multiply(g3), Arrays.asList(c, d))
+        PiecewiseExpression expectedPp3 = new PiecewiseExpression( false,
+                new ConstrainedExpression(f1.returnMultiplication(g1), Arrays.asList(a1, a2)),
+                new ConstrainedExpression(f2.returnMultiplication(g1), Arrays.asList(a1, a3)),
+                new ConstrainedExpression(f3.returnMultiplication(g1), Arrays.asList(b1, a1)),
+                new ConstrainedExpression(f3.returnMultiplication(g2), Arrays.asList(b1, b2)),
+                new ConstrainedExpression(f3.returnMultiplication(g3), Arrays.asList(b1, d)),
+                new ConstrainedExpression(f4.returnMultiplication(g1), Arrays.asList(c, a1)),
+                new ConstrainedExpression(f4.returnMultiplication(g3), Arrays.asList(c, d))
                 );
 
         System.out.println("pp3 = " + pp3);
@@ -138,17 +138,17 @@ public class PiecewisePolynomialTest {
         Polynomial g2 = factory.makePolynomial("1*g^(2)");
         Polynomial g3 = factory.makePolynomial("1*g^(3)");
 
-        PiecewisePolynomial pp1 = new PiecewisePolynomial(
-                new ConstrainedPolynomial(f1, Arrays.asList(a1, a2)),
-                new ConstrainedPolynomial(f2, Arrays.asList(a1, a3)),
-                new ConstrainedPolynomial(f3, Arrays.asList(b1)),
-                new ConstrainedPolynomial(f4, Arrays.asList(c))
+        PiecewiseExpression pp1 = new PiecewiseExpression(
+                new ConstrainedExpression(f1, Arrays.asList(a1, a2)),
+                new ConstrainedExpression(f2, Arrays.asList(a1, a3)),
+                new ConstrainedExpression(f3, Arrays.asList(b1)),
+                new ConstrainedExpression(f4, Arrays.asList(c))
         );
 
-        PiecewisePolynomial pp2 = new PiecewisePolynomial(
-                new ConstrainedPolynomial(g1, Arrays.asList(a1_copy)),
-                new ConstrainedPolynomial(g2, Arrays.asList(b1, b2)),
-                new ConstrainedPolynomial(g3, Arrays.asList(d))
+        PiecewiseExpression pp2 = new PiecewiseExpression(
+                new ConstrainedExpression(g1, Arrays.asList(a1_copy)),
+                new ConstrainedExpression(g2, Arrays.asList(b1, b2)),
+                new ConstrainedExpression(g3, Arrays.asList(d))
         );
 
         Assert.assertEquals(a1, a1_copy);

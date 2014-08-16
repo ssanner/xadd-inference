@@ -11,6 +11,7 @@ import java.util.*;
 /**
  * Created by Hadi Afshar. Date: 3/01/14 Time: 9:37 PM
  */
+@Deprecated
 public class GibbsSampler extends XaddSampler {
 
     public static final double SAMPLE_ACCURACY = 1E-6;

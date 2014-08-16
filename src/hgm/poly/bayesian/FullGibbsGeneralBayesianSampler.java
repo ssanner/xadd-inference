@@ -1,7 +1,7 @@
 package hgm.poly.bayesian;
 
 import hgm.asve.cnsrv.approxator.sampler.GridSampler;
-import hgm.poly.PiecewisePolynomial;
+import hgm.poly.PiecewiseExpression;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.pref.FatalSamplingException;
 
@@ -62,7 +62,7 @@ public class FullGibbsGeneralBayesianSampler extends AbstractGeneralBayesianGibb
             double[] next = sampleIterator.next();
 //            System.out.println("next = " + Arrays.toString(next));
             gateMask = doubleArray2IntList(next);
-            PiecewisePolynomial pp = gph.makeActivatedSubFunction(gateMask);
+            PiecewiseExpression pp = gph.makeActivatedSubFunction(gateMask);
 //            polyCDFs.add(makeCumulativeDistributionFunction(polytope, varToBeSampled, reusableVarAssign));
            makeAndAddCumulativeDistributionFunctionsToList(pp, varIndexToBeSampled, reusableVarAssign, polyCDFs);
         }

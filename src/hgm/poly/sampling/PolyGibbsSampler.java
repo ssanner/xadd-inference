@@ -1,6 +1,6 @@
 package hgm.poly.sampling;
 
-import hgm.poly.ConstrainedPolynomial;
+import hgm.poly.ConstrainedExpression;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.integral.OneDimPolynomialIntegral;
 import hgm.sampling.SamplingFailureException;
@@ -25,10 +25,10 @@ public class PolyGibbsSampler implements SamplerInterface {
     double[] cVarMins;
     double[] cVarMaxes;
     int numVars;
-    ConstrainedPolynomial cp;
+    ConstrainedExpression cp;
 
 
-    public static PolyGibbsSampler makeGibbsSampler(ConstrainedPolynomial cp, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
+    public static PolyGibbsSampler makeGibbsSampler(ConstrainedExpression cp, double minForAllVars, double maxForAllVars, Double[] reusableInitialSample) {
         int varNum = cp.getPolynomialFactory().getAllVars().length;
         double[] cVarMins = new double[varNum];
         double[] cVarMaxes = new double[varNum];
@@ -37,7 +37,7 @@ public class PolyGibbsSampler implements SamplerInterface {
         return new PolyGibbsSampler(cp, cVarMins, cVarMaxes, reusableInitialSample);
     }
 
-    public PolyGibbsSampler(ConstrainedPolynomial cp, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
+    public PolyGibbsSampler(ConstrainedExpression cp, double[] cVarMins, double[] cVarMaxes, Double[] reusableInitialSample) {
 
         this.cp = cp;
 
@@ -146,7 +146,7 @@ public class PolyGibbsSampler implements SamplerInterface {
 
     //NOTE: only works with continuous vars...
     // returns int_{w=-infty}^{var} (func[var->w]dw) for instantiated function
-    public OneDimFunction makeCumulativeDistributionFunction(ConstrainedPolynomial cp, String var, Double[] currentVarAssign) {
+    public OneDimFunction makeCumulativeDistributionFunction(ConstrainedExpression cp, String var, Double[] currentVarAssign) {
 
         OneDimFunction cdf = integrator.integrate(cp, var, currentVarAssign);
 
@@ -155,10 +155,6 @@ public class PolyGibbsSampler implements SamplerInterface {
 
     protected static double randomDoubleUniformBetween(double min, double max) {
         return random.nextDouble() * (max - min) + min;
-    }
-
-    protected static boolean randomBoolean() {
-        return random.nextBoolean();
     }
 
 }

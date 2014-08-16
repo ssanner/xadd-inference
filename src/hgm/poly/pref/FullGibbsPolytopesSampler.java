@@ -1,6 +1,6 @@
 package hgm.poly.pref;
 
-import hgm.poly.ConstrainedPolynomial;
+import hgm.poly.ConstrainedExpression;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.vis.FunctionVisualizer;
 
@@ -52,7 +52,7 @@ public class FullGibbsPolytopesSampler extends AbstractPolytopesSampler {
                 ii >>= 1;
             }
 //            System.out.println("gateMask = " + gateMask);
-            ConstrainedPolynomial polytope = gph.makePolytope(gateMask);
+            ConstrainedExpression polytope = gph.makePolytope(gateMask);
             polyCDFs[i] = makeCumulativeDistributionFunction(polytope, varToBeSampled, reusableVarAssign);
         }
 

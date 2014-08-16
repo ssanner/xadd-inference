@@ -1,9 +1,5 @@
 package hgm.poly.gm;
 
-import hgm.poly.PiecewisePolynomial;
-import hgm.poly.Polynomial;
-import hgm.poly.PolynomialFactory;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -18,9 +14,11 @@ public interface GraphicalModel {
     /**
      * It should be guaranteed that [at least in the case of deterministic factors] parents come before children
      */
-    public List<Factor> allInferenceRelevantFactors(Collection<String> vars);
+    List<Factor> allInferenceRelevantFactors(Collection<String> vars);
 
-    Factor getAssociatedFactor(String var);
+//    Factor getAssociatedFactor(String var);
+
+    List<String> allDeterministicVars();
 
 
    /* PolynomialFactory factory;

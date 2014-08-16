@@ -1,6 +1,6 @@
 package hgm.poly.bayesian;
 
-import hgm.poly.PiecewisePolynomial;
+import hgm.poly.PiecewiseExpression;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.pref.FatalSamplingException;
 
@@ -75,7 +75,7 @@ public class GatedGibbsGeneralBayesianSampler extends AbstractGeneralBayesianGib
         final List<OneDimFunction> partitionCDFs = new ArrayList<OneDimFunction>(numCasesInTheCollapsedLikelihood * numCasesInPrior);
         for (int i = 0; i < numCasesInTheCollapsedLikelihood; i++) {
             gateMask.set(chosenGateIndex, i);
-            PiecewisePolynomial partition = gph.makeActivatedSubFunction(gateMask);
+            PiecewiseExpression partition = gph.makeActivatedSubFunction(gateMask);
             makeAndAddCumulativeDistributionFunctionsToList(partition, varIndexToBeSampled, reusableVarAssign, partitionCDFs);
         }
         if (partitionCDFs.isEmpty()) throw new FatalSamplingException("all regions are zero");

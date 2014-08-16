@@ -21,7 +21,7 @@ public class GeneralBayesianPosteriorHandler implements Function {
 //    PiecewisePolynomial prior;
     PriorHandler priorHandler;
 
-    List<PiecewisePolynomial> likelihoods = new ArrayList<PiecewisePolynomial>();
+    List<PiecewiseExpression<Polynomial>> likelihoods = new ArrayList<PiecewiseExpression<Polynomial>>();    //todo why not more general?...
     private List<Integer> likelihoodsNumCases = new ArrayList<Integer>(); //size of the case statements of each likelihood
 
     //todo rename
@@ -39,7 +39,7 @@ public class GeneralBayesianPosteriorHandler implements Function {
         this.priorHandler = priorHandler;
     }
 
-    public void addLikelihood(PiecewisePolynomial likelihood) {
+    public void addLikelihood(PiecewiseExpression likelihood) {
         likelihoods.add(likelihood);
         likelihoodsNumCases.add(likelihood.numCases());
         reusableLikelihoodGatingMask.add(null); //since no sentence is chosen yet...
@@ -68,7 +68,7 @@ public class GeneralBayesianPosteriorHandler implements Function {
         if (priorEval == 0) return 0;
 
         double c = 1d; //product of likelihoods
-        for (PiecewisePolynomial likelihood : likelihoods) {
+        for (PiecewiseExpression likelihood : likelihoods) {
             double likelihoodEval = likelihood.evaluate(reusableSample);
             c *= likelihoodEval;
 
@@ -85,24 +85,24 @@ public class GeneralBayesianPosteriorHandler implements Function {
     //length of assignment = dimension of the space; length of mask = number of observations...
     public List<Integer> adjustedReusableGateActivationMask(Double[] assignment) throws FatalSamplingException {
         for (int i = 0; i < likelihoods.size(); i++) {
-            PiecewisePolynomial likelihood = likelihoods.get(i);
+            PiecewiseExpression likelihood = likelihoods.get(i);
             reusableLikelihoodGatingMask.set(i, likelihood.getActivatedCaseId(assignment));
         }
 
         return reusableLikelihoodGatingMask;
     }
 
-    public PiecewisePolynomial makeActivatedSubFunction(List<Integer> gateMask) {
+    public PiecewiseExpression makeActivatedSubFunction(List<Integer> gateMask) {
         int numLikelihoods = gateMask.size();
         List<Polynomial> productOfActiveLikelihoodSegments = new ArrayList<Polynomial>(numLikelihoods);
         Polynomial productOfActiveLikelihoodsPoly = factory.one();
 
         for (int i = 0; i < numLikelihoods; i++) {
-            PiecewisePolynomial likelihood = likelihoods.get(i);
+            PiecewiseExpression<Polynomial> likelihood = likelihoods.get(i);
             int caseId = gateMask.get(i);
-            ConstrainedPolynomial activeCase = likelihood.getCases().get(caseId);
+            ConstrainedExpression activeCase = likelihood.getCases().get(caseId);
             productOfActiveLikelihoodSegments.addAll(activeCase.getConstraints());
-            productOfActiveLikelihoodsPoly = productOfActiveLikelihoodsPoly.multiply(activeCase.getPolynomial());
+            productOfActiveLikelihoodsPoly = productOfActiveLikelihoodsPoly.returnMultiplication((Polynomial) activeCase.getFruit());  //todo I do not like this casting here...
         }
 
         return priorHandler.getPrior().multiply(productOfActiveLikelihoodSegments, productOfActiveLikelihoodsPoly);
@@ -137,7 +137,7 @@ public class GeneralBayesianPosteriorHandler implements Function {
         return likelihoodsNumCases;
     }
 
-    public List<PiecewisePolynomial> getLikelihoods() {
+    public List<PiecewiseExpression<Polynomial>> getLikelihoods() {
         return likelihoods;
     }
 }

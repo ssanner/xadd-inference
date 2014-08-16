@@ -1,6 +1,7 @@
 package hgm.poly.gm;
 
-import hgm.poly.PiecewisePolynomial;
+import hgm.poly.Expression;
+import hgm.poly.PolynomialFactory;
 
 import java.util.Map;
 
@@ -9,22 +10,13 @@ import java.util.Map;
  * Date: 3/07/14
  * Time: 4:07 AM
  */
-public abstract class Factor {
-    PiecewisePolynomial piecewisePolynomial;
-    String associatedVar;
+public interface Factor {
 
-    protected Factor(PiecewisePolynomial piecewisePolynomial, String associatedVar) {
-        this.piecewisePolynomial = piecewisePolynomial;
-        this.associatedVar = associatedVar;
-    }
+    Factor substitution(Map<String, Double> assign);
+    Factor substitution(String var, Expression value);
 
-    PiecewisePolynomial getPiecewisePolynomial() {
-        return piecewisePolynomial;
-    }
+    PolynomialFactory getFactory();
 
-    public abstract  Factor substitute(Map<String, Double> assign);
+//    Set<String> getScopeVars();
 
-    public String getAssociatedVar() {
-        return associatedVar;
-    }
 }
