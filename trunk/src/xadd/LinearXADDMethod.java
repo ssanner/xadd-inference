@@ -62,7 +62,6 @@ public class LinearXADDMethod {
         } //Flag invalid Vars
         int i = 0;
         for (String var : pruneVars) {
-
             localID2cVarID[i] = context._cvar2ID.get(var);
             cVarID2localID[context._cvar2ID.get(var)] = i;
             i++;
@@ -261,7 +260,7 @@ public class LinearXADDMethod {
         return new OperExpr(ArithOperation.SUM, varTerms);
     }
 
-    //Linear Functions//
+    //Linear Optimization Functions//
     public double linMaxVal(int id) {
         return linMaxMinVal(id, true);
     }
@@ -309,6 +308,53 @@ public class LinearXADDMethod {
         }
     }
 
+    // Linear Optimization Argument Functions 
+    public NamedOptimResult linMaxArg(int id) {
+        return linMaxMinArg(id, true);
+    }
+
+    public NamedOptimResult linMinArg(int id) {
+        return linMaxMinArg(id, false);
+    }
+
+    public NamedOptimResult linMaxMinArg(int id, boolean isMax) {
+//      while( id != reduceLP(id) ){
+//          System.err.println("linMaxMin WARNING: " + id + " different from reduceLP");
+//          id=reduceLP(id);
+//      }
+        OptimResult res = linMaxMinArgInt(id, new HashSet<Integer>(), isMax);
+        HashMap<String, Double> sol = new HashMap<String,Double>();
+        for(int i=0; i<res.solution.length;i++){
+            sol.put(globalContinuousVarList.get(localID2cVarID[i]), res.solution[i]);
+        }
+        return new NamedOptimResult(res.sol_value,sol);
+    }
+
+    public OptimResult linMaxMinArgInt(int id, HashSet<Integer> domain, boolean isMax) {
+        XADDNode r = context.getExistNode(id);
+        if (r instanceof XADDTNode) {
+            ArithExpr expr = ((XADDTNode) r)._expr;
+            return (restrictedMax(expr, domain, isMax)); //nothing to prune on single leaf
+        } else { //Inode
+            XADDINode node = (XADDINode) r;
+            OptimResult lowR = null;
+            OptimResult highR = null;
+            if (context._alOrder.get(node._var) instanceof ExprDec) {
+                domain.add(-1 * node._var);
+                lowR = linMaxMinArgInt(node._low, domain, isMax);
+                domain.remove(-1 * node._var);
+                domain.add(node._var);
+                highR = linMaxMinArgInt(node._high, domain, isMax);
+                domain.remove(node._var);
+            } else {
+                lowR = linMaxMinArgInt(node._low, domain, isMax);
+                highR = linMaxMinArgInt(node._high, domain, isMax);
+            }
+            return isMax ? (lowR.sol_value >= highR.sol_value? lowR: highR): (lowR.sol_value >= highR.sol_value? highR:lowR);
+        }
+    }
+    
+    
     //Maximize a Linear function
     private OptimResult restrictedMax(ArithExpr e, HashSet<Integer> domain, boolean isMax) {
         double[] coefs = new double[nLocalCVars];
@@ -390,6 +436,16 @@ public class LinearXADDMethod {
         OptimResult(double val, double point[]) {
             sol_value = val;
             solution = point.clone();
+        }
+    }
+    
+    public class NamedOptimResult{
+        public double sol_value;
+        public HashMap<String, Double> assignment;
+       
+        NamedOptimResult(double val, HashMap<String, Double> sol) {
+            sol_value = val;
+            assignment = (HashMap<String,Double>) sol.clone();
         }
     }
 }

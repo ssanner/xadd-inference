@@ -1,0 +1,39 @@
+cvariables (x1 x2)
+min-values (-1000 -1000)
+max-values (500 500)
+bvariables (d1 d2)
+ivariables()
+avariables(q1 q2)
+
+action order (0 <= q1 <= 75 ^ 0 <= q2 <= 75)
+
+d1' (d1 ([0.7])([0.3]))
+d2' (d2 ([0.7])([0.3]))
+x1' (d1  ([-150 + x1 + q1])([-50 + x1 + q1]))
+x2' (d2  ([-150 + x2 + q2])([-50 + x2 + q2]))
+
+reward 
+(d1 
+    ([x1 >= 150]
+        ([0])
+        ([(x1 - 150)] ))
+    ([x1 >=50]
+        ([0])
+        ([(x1 - 50)]))
+)
++
+(d2 
+    ([x2 >= 150]
+        ([0])
+        ([(x2 - 150)] ))
+    ([x2 >=50]
+        ([0])
+        ([(x2 - 50)]))
+)
+endaction
+
+discount 1.000000
+InitialState (75 75) (true false) 
+iterations 10
+LINEAR
+MAXREWARD 0

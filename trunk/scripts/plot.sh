@@ -27,7 +27,7 @@ then
 	do	
 		for solve in $SOLVERS
 		do
-	#		echo "Solver $solve at iter $i."
+			#echo "Solver $solve at iter $i."
 			dot -Tpdf "$solve-Value$i.dot" -o "$PROBLEM-$solve-Value$i-DD.pdf"
 		done
 	done

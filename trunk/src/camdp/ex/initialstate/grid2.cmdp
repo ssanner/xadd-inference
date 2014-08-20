@@ -1,0 +1,91 @@
+cvariables (x1 x2)
+min-values (-100 -100)
+max-values (100 -100)
+bvariables ()
+nvariables()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables()
+
+action stay
+x1' ([x1])
+x2' ([x2])
+reward 
+([x1 > 0]
+    ([-x1])
+    ([x1])
+)
++
+([x2 > 0]
+    ([-x2])
+    ([x2])
+)
+endaction
+
+action down1
+x1' ([x1 - 1])
+x2' ([x2])
+reward 
+([x1 > 0]
+    ([-x1])
+    ([x1])
+)
++
+([x2 > 0]
+    ([-x2])
+    ([x2])
+)
+endaction
+
+action up1
+x1' ([x1 + 1])
+x2' ([x2])
+reward 
+([x1 > 0]
+    ([-x1])
+    ([x1])
+)
++
+([x2 > 0]
+    ([-x2])
+    ([x2])
+)
+endaction
+
+action down2
+x1' ([x1])
+x2' ([x2 - 1])
+reward 
+([x1 > 0]
+    ([-x1])
+    ([x1])
+)
++
+([x2 > 0]
+    ([-x2])
+    ([x2])
+)
+endaction
+
+action up2
+x1' ([x1])
+x2' ([x2 + 1])
+reward 
+([x1 > 0]
+    ([-x1])
+    ([x1])
+)
++
+([x2 > 0]
+    ([-x2])
+    ([x2])
+)
+endaction
+
+discount 1.0000000
+InitialState (-8.11 2.11) () 
+iterations 10
+LINEAR
+MAXREWARD 0

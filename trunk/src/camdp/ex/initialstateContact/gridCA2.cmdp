@@ -1,0 +1,31 @@
+cvariables (x1 x2)
+min-values (-100 -100)
+max-values (100 100)
+bvariables ()
+nvariables()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables(dx1 dx2)
+
+action move (-5<= dx1 <=5 ^ -5<= dx2 <=5)
+x1' ([x1 + dx1])
+x2' ([x2 + dx2])
+reward 
+([x1 > 0]
+    ([- x1])
+    ([x1])
+)
++
+([x2 > 0]
+    ([-x2])
+    ([x2])
+)
+endaction
+
+discount 1.0000000
+InitialState (17.11 -17.11) () 
+iterations 10
+LINEAR
+MAXREWARD 0
