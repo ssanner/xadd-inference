@@ -516,6 +516,7 @@ public class CAMDP {
         sb.append("Max-values:  " + _context._hmMaxVal + "\n");
         sb.append("Order:       " + _context._alOrder + "\n");
         sb.append("Iterations:  " + _nMaxIter + "\n");
+        sb.append("Linearity:  " + LINEAR_PROBLEM + "\n");
         //sb.append("Constraints (" + _alConstraints.size() + "):\n");
         //for (Integer cons : _alConstraints) {
         //    sb.append("- " + _context.getString(cons) + "\n");

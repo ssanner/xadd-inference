@@ -23,16 +23,16 @@ public class Main {
     
     // Results Configurations
     private static final boolean SAVE_RESULTS = true;
-    private static final boolean PRINT_RESULTS = true;
+    private static boolean PRINT_RESULTS = true;
     
     public static void Usage() {
-        System.out.println("\nUsage: MDP-filename #solver #iter #Ddisplay(2or3) #trials [VERBOSE]");
+        System.out.println("\nUsage: MDP-filename #solver #iter #Ddisplay(2or3) #trials [VERBOSE(int) DEBUG_PLOT(boolean)]");
         System.exit(1);
     }
 
     public static void main(String args[]) {
         int nargs = args.length;
-        if (nargs < 5 || nargs >6) {
+        if (nargs < 5 || nargs >7) {
             Usage();
         }
         
@@ -67,14 +67,14 @@ public class Main {
         
         if (args.length > 5){
             VERBOSE=Integer.parseInt(args[5]);
-            CAMDPsolver.debugSetUp(VERBOSE);
+            if (args.length > 6) CAMDPsolver.debugSetUp(VERBOSE, Boolean.parseBoolean(args[6]));
         }
         
         
         if (VERBOSE >=0) {
-            System.out.println("Main Solution Start: Solving "+filename+" with solving option "+solvers[solution]+" for "+iter+" iterations and "+trials+" trials.");
+            System.out.println("Main Solution Start: Solving "+filename+" with solver "+solvers[solution]+" for "+iter+" iterations and "+trials+" trials.");
         }
-        if (VERBOSE > 0){
+        if (VERBOSE > 1){
             System.out.println(mdp.toString(false, false));
         }
         

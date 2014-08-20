@@ -33,10 +33,29 @@
 		\draw{\filename-\solver-Value\iter-DD.pdf}{0.6\textwidth}\\
 	}
 }
-\else
-{
-No 3DValue plot.
-}
+%\else
+%{
+%No 3DValue plot.
+%}
 \fi
+
+\ifdrawtwod
+\newpage
+\section{Value Function 2D-Plots:}
+\foreach \solver in {SDP, CRTDP}
+{
+	\subsection{\solver \hspace{0.2cm} Value Function Plots and Diagrams:}
+	\foreach \iter in {1,2,..., NVALUE}
+	{
+		\draw{\filename-\solver-Value\iter.pdf}{0.6\textwidth}
+		\draw{\filename-\solver-Value\iter-DD.pdf}{0.6\textwidth}\\
+	}
+}
+%\else
+%{
+%No 2DValue plot.
+%}
+\fi
+
 
 \end{document} 

@@ -28,6 +28,7 @@ import xadd.ExprLib.OperExpr;
 import xadd.ExprLib.VarExpr;
 import xadd.ExprLib.ArithOperation;
 import xadd.ExprLib.CompExpr;
+import xadd.LinearXADDMethod.NamedOptimResult;
 
 /**
  * General class for implementation of ADD data structure
@@ -612,7 +613,21 @@ public class XADD {
         subst_cache.put(node_id, ret);
         return ret;
     }
-    
+
+    public int substituteBoolVars(int node_id, HashMap<String, Boolean> subst){
+        HashSet<String> varSet = collectVars(node_id);
+        for (String var: subst.keySet()){
+            if (varSet.contains(var)){
+                int var_id = getVarIndex(new BoolDec(var), false);
+                if (subst.get(var) == true)
+                    node_id = opOut(node_id, var_id, XADD.RESTRICT_HIGH);
+                else
+                    node_id = opOut(node_id, var_id, XADD.RESTRICT_LOW);
+            }
+        }
+        return node_id;
+    }
+
     public Integer substituteNode(int main_id, int target_id, int replace_id){
         HashMap<Integer,Integer> subNodeCache =  new HashMap<Integer, Integer>();
         subNodeCache.put(target_id, replace_id);
@@ -1481,6 +1496,12 @@ public class XADD {
         return linMax.linMaxVal(node_id);
     }
 
+    // Linear Optimization 
+    public NamedOptimResult linMaxArg(int node_id) {
+        LinearXADDMethod linMax = new LinearXADDMethod(node_id, this);
+        return linMax.linMaxArg(node_id);
+    }
+    
     public double linMaxDiff(int id1, int id2) {
         int dif1 = reduceLP(apply(id1, id2, XADD.MINUS));
         int dif2 = reduceLP(apply(id2, id1, XADD.MINUS));
@@ -1761,7 +1782,7 @@ public class XADD {
     }
 
     ///////////////////////////////////////
-    //             Mask Functions             //
+    //             Mask Functions        //
     ///////////////////////////////////////    
     
     public Integer createMask(Integer id,
@@ -1806,37 +1827,67 @@ public class XADD {
             return ret;
     }
 
-//    public Integer createPosInfMask(Integer id,HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign){
-//        return createMask(id, bool_assign, cont_assign, POS_INF);
-//    }
+    public IntPair retrieveMask(Integer id,
+    HashMap<String, Boolean> bool_assign,
+    HashMap<String, Double> cont_assign, Integer mask_replacement) {
+        return reduceRetrieveMask(id, bool_assign, cont_assign, new HashMap<Integer,Integer>(), ZERO);
+    }
     
-//    public Integer createPosInfMask(Integer id,
-//            HashMap<String, Boolean> bool_assign,
-//            HashMap<String, Double> cont_assign) {
-//
-//            XADDNode n = getExistNode(id);
-//
-//            // Traverse decision diagram until terminal found
-//            if (n instanceof XADDINode) {
-//                XADDINode inode = (XADDINode) n;
-//                Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
-//                
-//                //Not all required variables were assigned
-//                if (branch_high == null){
-//                    return getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), createPosInfMask(inode._high, bool_assign, cont_assign));
-//                }
-//                
-//                // Advance down to next node
-//                return branch_high ? getINode(inode._var, POS_INF, createPosInfMask(inode._high, bool_assign, cont_assign)):
-//                                     getINode(inode._var, createPosInfMask(inode._low, bool_assign, cont_assign), POS_INF);
-//            }
-//            
-//            // else id is a TNode, trivial mask
-//            return id;
-//    }
+    private IntPair reduceRetrieveMask(Integer id,
+            HashMap<String, Boolean> bool_assign,
+            HashMap<String, Double> cont_assign, HashMap<Integer,Integer> maskCache, Integer runningMaskId) {
 
-    
-    
+            Integer ret = null;
+            if ( (ret = maskCache.get(id))!= null){
+                /* if ret is on cache no need to update mask*/
+                return new IntPair(ret,runningMaskId);
+            }    
+            XADDNode n = getExistNode(id);
+
+            if (n instanceof XADDTNode) {
+                ret = id;
+            }
+            else{
+                if (!(n instanceof XADDINode)) { System.err.println("Invalid node, neither TNode nor INode:\n"+n.toString()); } 
+                // Traverse decision diagram until terminal found
+                XADDINode inode = (XADDINode) n;
+                Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
+                
+                if (branch_high == null){
+                    //Not all required variables were assigned, mask both paths
+                    IntPair lowPair = reduceRetrieveMask(inode._low, bool_assign, cont_assign, maskCache, runningMaskId);
+                    IntPair highPair = reduceRetrieveMask(inode._high, bool_assign, cont_assign, maskCache, runningMaskId);
+                    ret = getINode(inode._var, lowPair._i1 /*MaskRetrieved low*/, highPair._i1 /*MaskRetrieved high*/);
+
+                    //Assumes runningMaskId are indicators and can be combined
+                    runningMaskId = combine(runningMaskId, lowPair._i2);
+                    runningMaskId = combine(runningMaskId, highPair._i2);
+                }
+                else{                
+                    if (branch_high){
+                        int indicator = getINode(inode._var, NAN, ZERO);
+                        IntPair newPair = reduceRetrieveMask(inode._high, bool_assign, cont_assign, maskCache, runningMaskId);
+                        ret = newPair._i1; /*maskRetrieved high*/
+                        runningMaskId = combine(indicator, newPair._i2);
+                    }
+                    else{
+                        int indicator = getINode(inode._var, ZERO, NAN);
+                        IntPair newPair = reduceRetrieveMask(inode._low, bool_assign, cont_assign, maskCache, runningMaskId);
+                        ret = newPair._i1; /*maskRetrieved low*/
+                        runningMaskId = combine(indicator, newPair._i2);
+                    }
+                }
+            }
+            maskCache.put(id, ret);
+            return new IntPair(ret, runningMaskId);
+    }
+
+    public Integer combine(Integer indicator1, Integer indicator2){
+        //Assumes indicators are ZERO-NAN and can be combined safely by sum.
+        // OBS: a ONE-NAN mask combining with PROD fails if trying to mask TNode with ZERO.
+        return apply(indicator1, indicator2, SUM);
+    }
+ 
     ///////////////////////////////////////
     //             Helper Classes              //
     ///////////////////////////////////////
@@ -2465,14 +2516,12 @@ public class XADD {
         if ((n instanceof XADDTNode) && (leaf_op instanceof XADDLeafMinOrMax)) {
             return ((XADDLeafMinOrMax) leaf_op).processXADDLeaf(decisions,
                     decision_values, ((XADDTNode) n)._expr); // Assuming that to have
-            // a node id means
-            // canonical
+            // a node id means canonical
         }
         if (n instanceof XADDTNode) {
             return leaf_op.processXADDLeaf(decisions, decision_values,
                     ((XADDTNode) n)._expr); // Assuming that to have
-            // a node id means
-            // canonical
+            // a node id meanscanonical
         }
 
         // If its an internal node, check the reduce cache

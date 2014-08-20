@@ -55,40 +55,54 @@ plot for [i=1:words(SOLVERS)] sprintf("%s.log",word(SOLVERS,i))\
 	u 1:4 title sprintf("%s",word(SOLVERS,i)) ls i+1 w lp
 
 #Val per Time
-set title #sprintf("Initial State Value per time: %s",filename)
+set title sprintf("Initial State Value per time: %s",filename)
 set xlabel "Cumulated Time (s)" textcolor ls 11
-#set xtics 4
 set ylabel "Value" textcolor ls 11
-#set ytics 200
 set output sprintf("%s-ValTime.%s",filename, format)
 plot for [i=1:words(SOLVERS)] sprintf("%s.log",word(SOLVERS,i))\
 	u 2:4 title sprintf("%s",word(SOLVERS,i)) ls i+1 w lp
 
 #Val per Nodes
-set title #sprintf("Initial State Value per Nodes: %s",filename)
+set title sprintf("Initial State Value per Nodes: %s",filename)
 set xlabel "Memory (# of nodes)" textcolor ls 11
-#set xtics 350
+#set xtics 4
 set ylabel "Value" textcolor ls 11
 #set ytics 200
 set output sprintf("%s-ValNodes.%s",filename, format)
 plot for [i=1:words(SOLVERS)] sprintf("%s.log",word(SOLVERS,i))\
 	u 3:4 title sprintf("%s",word(SOLVERS,i)) ls i+1 w lp
 
-reset
+#reset
 if (plotdim == 3){
 	set palette color	
 	do for[h=1:nvalue]{
 		do for [i=1:words(SOLVERS)]{
 		  
-    		set xlabel "time" offset -8
+    		set xlabel "VAR1" offset -8
 #    		set xtics 30
-    		set ylabel "energy" offset 0
+    		set ylabel "VAR2" offset 0
 #    		set ytics 30
     		set zlabel "Value" offset -3
 #            set ztics h*50
 			set title sprintf("%s-%s-Value%d.",filename,word(SOLVERS,i),h)
 			set output sprintf("%s-%s-Value%d.%s",filename, word(SOLVERS,i),h, format)
 			splot sprintf("%s-Value%d.txt",word(SOLVERS,i),h) notitle w pm3d
+		}
+	}
+}
+
+if (plotdim == 2){
+	set palette color	
+	do for[h=1:nvalue]{
+		do for [i=1:words(SOLVERS)]{
+		  
+    		set xlabel "Var1" offset 0
+#    		set xtics 30
+    		set ylabel "Value" offset 0
+#    		set ytics 30
+			set title sprintf("%s-%s-Value%d",filename,word(SOLVERS,i),h)
+			set output sprintf("%s-%s-Value%d.%s",filename, word(SOLVERS,i),h, format)
+			plot sprintf("%s-Value%d.txt",word(SOLVERS,i),h) notitle w l
 		}
 	}
 }

@@ -12,10 +12,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import camdp.CAMDP;
 import camdp.CAction;
 import camdp.CAMDP.FileOptions;
+import camdp.State;
 import util.DevNullPrintStream;
 import xadd.XADD;
 import xadd.XADDUtils;
@@ -23,8 +25,8 @@ import xadd.XADD.XADDLeafMinOrMax;
 
 public abstract class CAMDPsolver {
     
-    public CAMDP mdp;
-    public XADD context;
+    public static CAMDP mdp;
+    public static XADD context;
     public Integer valueDD;
     public int nIter;
     public Integer curIter;
@@ -32,25 +34,22 @@ public abstract class CAMDPsolver {
     
     /*General Solution Parameter*/
     public final boolean ENABLE_EARLY_CONVERGENCE = false;
+    public final boolean CALCULATE_GREEDY_ACTION = false;
     public final double STATE_PRECISION = 1e-12;
     
     /* Approximation Parameters */
-    public boolean APPROXIMATION = false;
-    public double APPROX_ERROR = 0.0d;
-    public boolean APPROX_ALWAYS = false;
-    public boolean APPROX_PRUNING = false;
-    public boolean COMPARE_OPTIMAL = false;
+    public static boolean APPROXIMATION = false;
+    public static double APPROX_ERROR = 0.0d;
+    public static boolean APPROX_ALWAYS = false;
+    public static boolean APPROX_PRUNING = false;
+    public static boolean COMPARE_OPTIMAL = false;
     
     /* DEBUG PARAMETER */
-    protected static boolean MAIN_DEBUG = true;
-    protected static boolean DEEP_DEBUG = true;
+    protected static int DEBUG_DEPTH = 0;
     protected static PrintStream debugOutput = System.out;
-    
-    //Debug Format flags
-    protected static boolean VALIDATION_TEST = false;
-    protected static boolean PERFORMANCE_TEST = false;
-    protected static boolean PLOT_DD = false;
-    protected static boolean PRINT_DD = true;
+    private static boolean PLOT_DD = false;
+    private static boolean PRINT_DD = false;
+    protected static boolean PERFORMANCE_DEBUG = false;
     
     /* For printing */
     public final static String RESULTS_DIR = "./results"; // Diagnostic output destination
@@ -60,6 +59,7 @@ public abstract class CAMDPsolver {
     public PrintStream _resultStream = null;    
     public final static String ASCII_BAR = "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"; // Display shortcut
     private static final int MAX_GRAPH_NODES = 700;
+    private static final boolean SHOW_ABSENT_PARAMS = false;
     
     /* Time & Memory Management  Moved to CAMDP*/ 
 //    public final static int nTimers = 8;
@@ -83,7 +83,8 @@ public abstract class CAMDPsolver {
     
     //    Common Solution methods
     public abstract int solve();
-    
+    public abstract ParametrizedAction getGreedyAction(int valueDD, State s);
+
     //Regression functions 
     public Graph buildDBNDependencyDAG(CAction a, HashSet<String> vars) {
         // Works backward from this root factor
@@ -177,6 +178,7 @@ public abstract class CAMDPsolver {
         return q;
     }
     protected int regressAction(int q, CAction a) {
+        int RUN_DEPTH = 5;
         if (a._actionParams.size() == 0) {// No action params to maximize over            
             return q;
         }
@@ -188,14 +190,20 @@ public abstract class CAMDPsolver {
             double lb   = a._hmAVar2LB.get(avar);
             double ub   = a._hmAVar2UB.get(avar);
 
-            if (!q_vars.contains(avar)) {
-                _logStream.println("- Skipping var '" + avar + "': [" + lb + "," + ub + "], which does not occur in q: " + context.collectVars(q));
+            if (!q_vars.contains(avar)){
+                if (DEBUG_DEPTH > RUN_DEPTH && SHOW_ABSENT_PARAMS) 
+                    debugOutput.println("- Skipping var '" + avar + "': [" + lb + "," + ub + "], which does not occur in q: " + context.collectVars(q));
                 continue;
             }
-
-            _logStream.println("- Maxing out action param '" + avar + "': [" + lb + "," + ub + "]");
+            if (DEBUG_DEPTH > RUN_DEPTH){
+                debugOutput.println("- Maxing out action param '" + avar + "': [" + lb + "," + ub + "]");
+                debugShow(q, "Q BeforeMaxParam "+avar+" "+a._sName, false);
+            }
             q = maxOutVar(q, avar, lb, ub);
-            _logStream.println("-->: " + context.getString(q));
+            if (DEBUG_DEPTH > RUN_DEPTH){
+                debugOutput.println("- Maxing out action param '" + avar + "': [" + lb + "," + ub + "]");
+                debugShow(q, "Q AfterMaxParam "+avar+" "+a._sName, false);
+            }
             // Can be computational expensive (max-out) so flush caches if needed
             flushCaches(Arrays.asList(q) /* additional node to save */);
         }
@@ -214,6 +222,12 @@ public abstract class CAMDPsolver {
                 filter_vars.add(var);
         return filter_vars;
     }
+    public HashSet<String> filterAVars(HashSet<String> vars) {
+        HashSet<String> filter_vars = new HashSet<String>();
+        for (String var : vars)
+                if (mdp._hsContAVars.contains(var)) filter_vars.add(var);
+        return filter_vars;
+    }
     public int maxOutVar(int ixadd, String var, double lb, double ub) {
         XADD.XADDLeafMinOrMax max = context.new XADDLeafMinOrMax(var, lb, ub, true /* is_max */, _logStream);
         ixadd  = context.reduceProcessXADDLeaf(ixadd, max, false);
@@ -230,56 +244,29 @@ public abstract class CAMDPsolver {
             dd = context.linPruneRel(dd, APPROX_ERROR);
         return dd;
     }
+
+    ////////// Space Management ///////////////////////////
+    public void flushCaches(){
+        flushCaches(new ArrayList<Integer>());
+    }
+    public abstract void flushCaches(List<Integer> specialNodes);
     
     // Debugging Management
-    public static void debugSetUp(int verb){
-        PRINT_DD = false;
-        PLOT_DD = false;
-        MAIN_DEBUG = false;
-        PERFORMANCE_TEST = false;
-        DEEP_DEBUG = false;
-        if (verb ==0){
-            try {
-                debugOutput = new PrintStream("/dev/null");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-        if (verb >=1){
-            debugOutput = System.out;
-            MAIN_DEBUG = true;
-            PERFORMANCE_TEST = true;
-        }
-        if (verb >=2) DEEP_DEBUG = true;
-        if (verb >=3) {
-            PLOT_DD = true;
-            DEEP_DEBUG = false;
-        }
-        if (verb >=4) DEEP_DEBUG = true;
-        if (verb >=5) {
-            PRINT_DD = true;
-            DEEP_DEBUG = false;
-        }
-        if (verb >=6) DEEP_DEBUG = true;
-        if (verb >=7) VALIDATION_TEST = true;        
-        
-        
+    public static void debugSetUp(int verb, boolean plot){
+        DEBUG_DEPTH = verb;
+        PLOT_DD = plot;
     }
+    public static void debugShow(int dd, String name, boolean plotValue){
+        if (PLOT_DD) {
+            if (plotValue) mdp.doDisplay(dd, name);
+            else mdp.displayGraph(dd, name);
+        }
+        if (PRINT_DD) debugOutput.println(name+" DD_ID="+dd+":\n"+context.getExistNode(dd));
+    }
+
     
     // Results
     public void makeResultStream(){
-//        int filenamestart = mdp._problemFile.lastIndexOf('/');
-//        String filename = mdp._problemFile.substring(filenamestart,mdp._problemFile.length()-5);
-//        String problemType = 
-//                (mdp._initialS == null)? 
-//                    mdp.LINEAR_PROBLEM?
-//                        mdp.CONTINUOUS_ACTIONS?
-//                            "/contact":
-//                            "/discact":
-//                        "/discactnonlin":
-//                    mdp.LINEAR_PROBLEM?
-//                            "/initialstate":
-//                        "/initialstateNonlinear";
 
         String fullFile = mdp._problemFile;
         String[] filenameList = fullFile.split("/");
@@ -310,27 +297,8 @@ public abstract class CAMDPsolver {
     public abstract void setupResults();
     public abstract void printResults();
     public abstract void saveResults();
-    
-    /////// Time Management utilities ////////////////////// 
-//    public void resetTimer() {
-//        resetTimer(0);
-//    }
-//    public void resetTimer(int n) {
-//        _lTime[n] = System.currentTimeMillis();
-//    }
-//    public long getElapsedTime() {
-//        return getElapsedTime(0);
-//    }
-//    public long getElapsedTime(int n) {
-//        return System.currentTimeMillis() - _lTime[n];
-//    }
-    
-    ////////// Space Management ///////////////////////////
-    public void flushCaches(){
-        flushCaches(new ArrayList<Integer>());
-    }
-    public abstract void flushCaches(List<Integer> specialNodes);
-
+        
+    ////////////Result Storage Methods /////////////////////
     public void save3D(int xadd_id, String label) {
         // If DISPLAY_3D is enabled, it is expected that necessary parameters
         // have been placed in a _problemFile + ".3d"
@@ -399,6 +367,48 @@ public abstract class CAMDPsolver {
                 ps.println(x + "\t" + y + "\t" + z);
             }
             ps.println();
+        }
+        ps.close();
+    }
+    public void save2D(int xadd_id, String label) {
+        // If DISPLAY_2D is enabled, it is expected that necessary parameters
+        // have been placed in a _problemFile + ".2d"
+        FileOptions opt = new FileOptions(mdp._problemFile + ".2d");
+        if ( opt == null){
+            System.err.println("ERROR in display 2D:Couldn't open"+mdp._problemFile + ".2d");
+            return;
+        }
+        double low_x = opt._varLB.get(0);
+        double inc_x = opt._varInc.get(0);
+        double high_x = opt._varUB.get(0);
+        int nSamples = (int) Math.ceil( (high_x - low_x)/inc_x);        
+        HashMap<String,Boolean> static_bvars = opt._bassign;
+        HashMap<String, Double> static_dvars = opt._dassign;
+        String xVar = opt._var.get(0);
+        
+        ArrayList<Float> alX = new ArrayList<Float>(nSamples);
+        float temp_x = (float) low_x;
+        for (int i = 0; i < nSamples; i++) {
+            temp_x += inc_x;
+            alX.add(temp_x);
+        }
+        PrintStream ps = null;
+        String filename = OUTPUT_DIR+"/"+ label +".txt";
+        try {
+            ps = new PrintStream(new FileOutputStream(filename));
+        } catch (Exception e) {
+            System.err.println("Could not open " + filename + " for data export.");
+            ps = new DevNullPrintStream();
+        }
+
+        static_dvars = new HashMap<String, Double>(static_dvars);
+        for (int i = 0; i < alX.size(); i++) {
+                float x = alX.get(i);
+                static_dvars.put(xVar, (double) x);
+                float z = context.evaluate(xadd_id, static_bvars, static_dvars).floatValue();
+                if (Float.isInfinite(z)) z = Float.NaN;
+                static_dvars.remove(xVar);
+                ps.println(x + "\t" + z);
         }
         ps.close();
     }

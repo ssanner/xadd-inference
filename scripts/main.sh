@@ -13,9 +13,10 @@ NITER=$6
 NTRIAL=$7
 DISPLAY=$8
 VERBOSE=$9 
-if [ $# -lt 9 ]
+PLOT_DBG=$10
+if [[ $# -lt 9 || $# -gt 10 ]]
 then
-	echo "missing parameters, usage: compile? run? plotResults? problemType problem nIter nTrial Display Verbose"
+	echo "Wrong parameters, usage: compile? run? plotResults? problemType problem nIter nTrial Display Verbose [PLOT]"
 	exit
 fi
 
@@ -38,7 +39,7 @@ then
 	SOLVERS="1 3" 
 	for i in $SOLVERS
 		do
-		$SCRIPTDIR/run.sh $MAINCLASS "$INSTANCE $i $NITER $DISPLAY $NTRIAL $VERBOSE"
+		$SCRIPTDIR/run.sh $MAINCLASS "$INSTANCE $i $NITER $DISPLAY $NTRIAL $VERBOSE $PLOT_DBG"
 		done
 echo "Run Ok"
 fi
