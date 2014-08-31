@@ -1,0 +1,26 @@
+An MDP~\cite{puterman94} is defined by a set of states $\mathcal{S}$, actions $\mathcal{A}$, a probabilistic transition function $\mathcal{P}$ and a reward function $\mathcal{R}$.
+In an HMDP, we consider a model factored in terms of state variables~\cite{boutilier99}, i.e.
+a state $s \in \mathcal{S}$ is an assignment vector of variables $(\vec{b},\vec{x}) = (b_1,\ldots,b_n,x_{1},\ldots,x_m )$, where each $b_i \in \{ 0,1 \}$ ($1 \leq i \leq n$) is boolean$\,$ and each $x_j \in \mathbb{R}$ ($1 \leq j \leq m$) is continuous.
+We assume the action set $A$ to be composed of a finite set of parametric actions, i.e. $ A = \{ a_1(\vec{y}), \ldots, a_K(\vec{y})\}$, where each $\vec{y}$ is the vector of parameter variables.
+The functions of state and action variables can be compactly represented if structural independencies among variables are exploited in dynamic Bayesian network (DBN)~\cite{dean90DBN}. 
+
+We assume that the factored transition model satisfies the following properties: (i) the next state boolean variables are defined by a probabilistic distribution that only depends on previous state variables and action; (ii) the continuous variables are deterministically dependent on previous state variables, the chosen action and current state boolean variables; (iii) transition functions are piecewise polynomial on the continuous variables. 
+These assumptions allow us to write the transition function in terms of state variables, i.e.:
+\begin{equation}
+\small
+\hspace{-0.6mm} \mathcal{P}(\vec{b'},\vec{x'} | a(\vec{y}),\vec{b},\vec{x}) =\hspace{-0.2mm} \prod_{i=1}^{n} \mathcal{P}(b_i' | a(\vec{y}),\vec{b},\vec{x}) \prod_{j=1}^{m} \mathcal{P}(x_j' | \vec{b'}, a(\vec{y}),\vec{b},\vec{x}).\hspace{-2mm}
+\end{equation}
+Assumption (ii) implies the conditional probabilities for continuous variables $\mathcal{P}(x_j' | \vec{b'}, a(\vec{y}),\vec{b},\vec{x})$ are Dirac Delta functions, which correspond to deterministic transitions, $\vec{x'} \gets \vec{T}_{a(\vec{y})}(\vec{b},\vec{x},\vec{b'})$.
+While this restricts stochasticity only to boolean variables, continuous transitions depend on their sampled values, thus allowing the representation general finite distributions.
+This is a common restriction in exact HMDP solutions~(\cite{feng04,meuleau09HAO,sanner11}).
+
+The reward function $\mathcal{R}(\vec{b},\vec{x},a(\vec{y}))$ specifies the immediate reward obtained by taking action $a(\vec{y})$ in state $(\vec{b},\vec{x})$ and also is a piecewise polynomial function on the continuous variables.
+
+In this paper, we consider HMDPs with an initial state $s_0 \in \mathcal{S}$ and a finite horizon $H \in \mathbb{N}$.
+A non-stationary policy $\pi$ is a function which specifies the action $a(\vec{y}) = \pi(s, h)$ to take in state $s \in \mathcal{S}$ at step $h \leq H$.
+The solution of an HMDP planning problem is an optimal policy $\pi^*$ that maximizes the expected accumulated reward, $V^{\pi^*}(s_0)$:
+\begin{align}
+V^{\pi^*} (s_0) & = \mathbb{E} \left[ \sum_{t=1}^{H} \mathcal{R}(s_t, a_t(\vec{y_t})) \Big| s_{t+1} \sim \mathcal{P}(s'|s_{t},a_t(\vec{y_t})) \right], \label{eq:vfun_def}
+\end{align}
+where $a_t = \pi^*(s_t,t)$ is action chosen by $\pi^*$ at step $t$.
+

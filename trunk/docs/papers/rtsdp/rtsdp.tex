@@ -1,0 +1,134 @@
+%% Real Time Symbolic Dynamic Programming -> AAAI15 submission
+%% V0.2
+%% 2014/08/08
+%% by Luis Rocha
+\documentclass[letterpaper]{article}
+
+% Required Packages
+\usepackage{aaai}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\setlength{\pdfpagewidth}{8.5in}
+\setlength{\pdfpageheight}{11in}
+
+% PDFINFO for PDFLATEX
+\pdfinfo{
+/Title (Real Time Symbolic Dynamic Programming)
+/Author (Luis Vianna, Scott Sanner, Leliane Nunes de Barros)
+/Keywords (Continuous Planning)
+}
+
+% Section Numbers
+%\setcounter{secnumdepth}{0}
+
+
+% Title, Author, and Address Information
+\title{Real Time Symbolic Dynamic Programming for Hybrid MDPs}
+\author{
+Luis G. R. Vianna \and Leliane N. de Barros\\
+IME - USP\\
+S\~ao Paulo, Brazil\\
+\And
+Scott Sanner\\
+NICTA \& ANU\\
+Canberra, Australia}
+
+\usepackage[pdftex]{graphicx}
+\graphicspath{{../figures}}
+\usepackage[cmex10]{amsmath}
+\usepackage{amssymb}
+\usepackage{verbatim}
+\usepackage{color}
+\usepackage[vlined,algoruled,linesnumbered,titlenumbered]{algorithm2e}
+\usepackage[]{subfig}
+
+\newcommand{\solutionExample}{inventory2Value}
+\newcommand{\solutionSecond}{roverXY1Value}
+\newcommand{\perfOne}{inventory2performance}
+\newcommand{\perfTwo}{roverXY1performance}
+
+\renewcommand{\l}{\langle}
+\renewcommand{\r}{\rangle}
+\newcommand{\true}{\mathit{true}}
+\newcommand{\false}{\mathit{false}}
+\newcommand{\Mars}{\textsc{Mars Rover}}
+\newcommand{\Invent}{\textsc{Inventory Control}}
+\newcommand{\argcasemax}{\mathrm{arg~casemax}}
+\newcommand{\argcasemin}{\mathrm{arg~casemin}}
+\newcommand{\parametermax}{\mathrm{pmax}}
+\newcommand{\casemax}{\mathrm{casemax}}
+\newcommand{\casemin}{\mathrm{casemin}}
+\def\argmax{\operatornamewithlimits{arg~max}}
+\def\argmin{\operatornamewithlimits{arg~min}}
+%\def\subst{\operatornamewithlimits{subst}}
+\def\pmax{\operatornamewithlimits{pmax}}
+\def\argpmax{\operatornamewithlimits{arg~pmax}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+%Applications of automated planning under uncertainty are often modelled
+%as a discrete and continuous state Markov Decision Process (DC-MDP).
+%Symbolic Dynamic Programming is the existent exact solution for
+%DC-MDPs that uses the eXtended Algebraic Decision Diagrams
+%(XADDs) to symbolically represent the state value function and that
+%computes a complete state-space policy (which is very costly and limits
+%solutions to problems with small size and depth). Real-Time
+%Dynamic Programming (RTDP) is an efficient solution method for
+%discrete state MDPs that provides a partial solution for a known
+%initial state. In this paper we combine the RTDP solution with XADD
+%symbolic representation and computation of the value function to
+%propose the Continuous Real Time Dynamic Programming (CRTDP)
+%algorithm. This novel planner uses heuristic search and symbolic
+%generalisation to efficiently update the value function by regions. We
+%show that using the initial state information greatly reduces the
+%number of regions in the value function, therefore allowing CRTDP to solve DC-MDPs more 
+%efficiently than standard symbolic dynamic programming both in time and space
+%required for the solution.
+
+Symbolic Dynamic Programming (SDP) has been recently proposed as an exact and complete solution for finite-horizon Hybrid Markov Decision Processes (HMDPs), i.e. an MDP with mixed continuous and discrete state-space and actions with continuous parameters.
+In SDP, piecewise continuous functions are represented as eXtended Algebraic Decision Diagrams (XADDs).
+The XADD representation of piecewise functions naturally factors the continuous state-space into regions that share the same expression and allows an efficient symbolic update of the value for each region.
+If the initial state is known, using SDP to update the value of the whole state-space is unnecessary and costly.
+In this case, the optimal policy can be computed only for regions containing relevant states, as it is done in Real Time Dynamic Programming (RTDP) for MDPs. 
+In this work, we propose combining SDP with RTDP into a new HMDP exact solution, named Real Time Symbolic Dynamic Programming (RTSDP).
+Unlike conventional RTDP, our proposed algorithm updates are not restricted to a single state but are generalised to the  region where the current state belongs, which allows easier reuse of previous updates.
+Our algorithm is empirically tested on a nonlinear domain in which the action set is finite and a continuous actions domain in which actions have continuous parameters.
+We empirically show that, given an initial state, RTSDP can solve these HMDP problems faster and using less memory than SDP.
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\input 1introduction.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Hybrid Markov Decision Processes}
+\input 2hmdps.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Symbolic Dynamic Programming}
+\input 3sdp.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Real Time Symbolic Dynamic Programming}
+\input 4rtsdp.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Empirical Evaluation}
+\input 5exp.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Related Work}
+\input 6related.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+\input 7conclusion.tex
+
+%\section*{Acknowledgment}
+%\small This work has been supported by the Brazilian agencies FAPESP (under 
+% grant2011/16962-0)
+\newpage
+~
+\newpage
+~
+\newpage
+\bibliography{mybib}
+\bibliographystyle{aaai}
+\end{document}
