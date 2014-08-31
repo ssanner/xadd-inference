@@ -1,0 +1,165 @@
+In this section we describe the RTSDP algorithm~(Section 4.2), an extension of the RTDP algorithm for MDPs~(Section 4.1) and the first asynchronous exact solution for HMDPs.
+
+\subsection{The RTDP algorithm}
+
+The RTDP algorithm~\cite{Barto95RTDP} (Algorithm \ref{alg:rtdp}) uses an initial admissible heuristic value function $V$ and performs trials to improve it iteratively. A trial, described in Procedure 2.1, is a simulated execution of a policy interleaved with local Bellman updates on the visited states. Starting from a known initial state, an update is performed, an action is chosen and a next state is sampled and the trial continues from this new state. Trials are stopped when they reach the horizon $H$.
+
+The update operation (Procedure 2.2) uses the current value function $V$ to estimate the future reward and evaluates every action $a$ on the current state in terms of its quality $Q_a$. The action with greatest quality, called greedy action $a_g$, is chosen and the state's value is set to $Q_{a_g}$.
+
+RTDP performs updates on one state at a time and only on relevant states, i.e. states that are reachable under the greedy policy. Nevertheless, if the initial heuristic is admissible, there is an optimal policy whose relevant states are visited infinitely often in RTDP trials. Thus the value function converges to $V^*$ on these states and an optimal partial policy closed for the initial state is obtained.
+
+\vspace{-2mm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{algorithm}[th!]
+\small
+\DontPrintSemicolon
+\caption{\texttt{RTDP}(MDP $\mathit{M}$, $s_0$, $H$, $V$) $\longrightarrow$ $V^*_H(s_0)$ \label{alg:rtdp}}
+\SetKwFunction{maketrial}{MakeTrial}
+\SetKwFunction{timeout}{TimeOut}
+\SetKwFunction{solved}{Solved}
+\SetKwFunction{update}{Update}
+\SetKwFunction{sample}{Sample}
+\SetKwFunction{myproc}{\bf Procedure}
+
+\While{$\neg~\solved(M,s_0,V) \wedge \neg \timeout() $}{
+	$V \gets \maketrial(\mathit{M}, s_0, V, H)$\;
+	}
+     \Return{$V$} \;
+\vspace{4mm}
+
+\setcounter{AlgoLine}{0}
+\myproc~{\bf 2.1}:~\maketrial{MDP $\mathit{M}$, $s$, $V$, $h$}{
+
+	\If {$s \in GoalStates$ or $h == 0$} {\Return {$V$}}
+	$V_h(s), a_g \gets \update(M, s, V, h)$\;
+	// Sample next state from $P(s, a, s')$\;
+	$s^{new} \gets \sample(s, a_g, \mathit{M})$ \;
+	\Return {$\maketrial(\mathit{M}, s^{new}, V, h-1)$}\;
+}
+\vspace{4mm}
+
+\setcounter{AlgoLine}{0}
+\myproc~{\bf 2.2}:~\update{MDP $\mathit{M}$, $s$, $V$, $h$}{
+
+\ForEach {$a \in A$}{
+              $Q_{a} \gets R(s, a) + \sum_{s' \in S} P(s, a, s') \cdot \left[V_{h-1}(s') \right] $\;
+    }
+    $a_g \gets \argmax_a Q_a$\;
+    $V_h(s) \gets Q_{a_g}$\;
+    \Return {$V_h(s), a_g$}\;
+}
+\vspace{4mm}
+
+\setcounter{AlgoLine}{0}
+\myproc~{\bf 2.3}:~\sample{MDP $\mathit{M}$, $s$, $a_g$}{
+
+    $s' \sim P(s,a_g)$\;
+    \Return {$s'$}\;
+}
+
+\end{algorithm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{-6mm}
+
+\subsection{The RTSDP Algorithm}
+
+We will now generalise the RTDP algorithm for HMDPs.
+The main \texttt{RTDP} (Algorithm \ref{alg:rtdp}) and \texttt{makeTrial} (Procedure 2.1) functions are trivially extended as they are independent of the state or action representation. %structure.
+The procedure that requires a non-trivial extension is the \texttt{Update} function (Procedure 2.2).
+Considering the continuous state space, it is inefficient to represent values for individual states, therefore we define a new type of update, named \emph{region update}, which is one of the contributions of this work.
+
+While the synchronous SDP update (Equations \ref{eq:SDPregrDD} and \ref{eq:SDPmaxDD}) modifies the expressions for all paths of $V^{DD(\vec{b},\vec{x})}$, the region update only modifies a single path, the one that corresponds to the region containing the current state $(\vec{b}_c,\vec{x}_c)$, denoted by $\Omega$.
+This can be achieved by using a ``mask", which restricts the update operation to region $\Omega$. The  ``mask'' is an XADD symbolic indicator of whether any $(\vec{b},\vec{x})$ belongs to $\Omega$, i.e.:
+\begin{equation}
+I[ (\vec{b},\vec{x}) \in \Omega] = \begin{cases}
+	0,&\mbox{if } (\vec{b},\vec{x}) \in \Omega\\
+	+\infty, & otherwise
+	\end{cases},
+\end{equation}
+where $0$ indicates valid regions and $+\infty$ invalid ones. The mask is applied in an XADD with a sum~($\oplus$) operation, the valid regions stay unchanged whereas the invalid regions change to $+\infty$.
+The mask is applied to probability, transition and reward functions restricting these operations to $\Omega$, i.e.:
+\begin{equation}
+T_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'},\vec{x'})} = T_{a}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'},\vec{x'})} \oplus I[ (b,x) \in \Omega] 
+\end{equation}
+\begin{equation}
+P_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'})} = P_{a}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'})} \oplus I[ (b,x) \in \Omega] 
+\end{equation}
+\begin{equation}
+R_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y})} = R_{a}^{DD(\vec{b},\vec{x},\vec{y})} \oplus I[ (b,x) \in \Omega] 
+\end{equation}
+Finally we can define the region update using the symbolic XADD operations with these restricted functions. In the following steps:
+\begin{itemize}
+\item {
+Regression of region $\Omega$:
+\begin{align}
+Q_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y})} & =  R_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y})} \oplus \nonumber \\
+	& \hspace{-1.6cm}  \sum_{\vec{b}'}  P_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'})} \otimes \left[ subst_{(x' = T_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'})})} V_{h-1}'^{DD(b',x')} \right]. 
+\label{eq:RTSDPregrDD}
+\end{align}
+}
+\item{
+Maximization on region $\Omega$ w.r.t. parametrised actions:
+\begin{equation}
+V_{h,\Omega}^{DD(\vec{b},\vec{x})} = \max_{a} \left( \pmax_{\vec{y}}~ Q_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y})} \right).
+\label{eq:RTSDPmaxDD}
+\end{equation}
+}
+
+\item{
+Update of $V$ restricted to region $\Omega$:
+\begin{equation}
+V_h^{DD(b, x)} = \begin{cases}
+	V_{h,\Omega}^{DD(b, x)},&\mbox{if } (\vec{b},\vec{x}) \in \Omega\\
+	V_h^{DD(b, x)}, & otherwise
+	\end{cases}
+\end{equation}
+}
+This case update is performed by a XADD minimisation:
+\begin{equation}
+V_h^{DD(b, x)} \leftarrow \min( V_{h,\Omega}^{DD(b, x)}, V_h^{DD(b, x)}) ,
+\end{equation}
+where $V_{h,\Omega}$ is $+\infty$ for the invalid regions, and is lower on the valid regions, so that the minimum is indeed the correctly updated $V_h$.
+\end{itemize}
+
+This new update procedure is described in Algorithm~\ref{alg:regionupdate}. 
+Note that the current state is denoted by $(\vec{b_c}, \vec{x_c})$ to distinguish it from symbolic variables $(\vec{b}, \vec{x})$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{algorithm}[h!]
+\small
+\SetKwFunction{getregion}{GetRegion}
+\SetKwFunction{remapWithPrimes}{Prime}
+\DontPrintSemicolon
+\caption{ \\ \texttt{Region-update}(HMDP,$(\vec{b_c}, \vec{x_c}$),$V$, $h$) \hspace{-0.13cm} $\longrightarrow$ \hspace{-0.14cm} $V_{h}$,~$a_g$, $\vec{y}_g$ \vspace{-0.2cm} \label{alg:regionupdate} }
+	 \emph{//\getregion extracts XADD path for} $(\vec{b_c},\vec{x_c}))$ \;
+	$I[ (\vec{b},\vec{x}) \in \Omega]  \gets \getregion(V_{h}, (\vec{b_c},\vec{x_c}))$\;
+	$V'^{DD(b',x')} \gets $\remapWithPrimes{$V_{h-1}^{DD(b,x)}$} \, \emph{// Prime variable names} \;
+   	\ForEach {$a(\vec{y}) \in A$}{
+		$P_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'})} \gets P_{a}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'})} \oplus I[ (b,x) \in \Omega]$\; 
+		$T_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'},\vec{x'})} \gets T_{a}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'},\vec{x'})} \oplus I[ (b,x) \in \Omega]$\;
+		$R_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y})} \gets R_{a}^{DD(\vec{b},\vec{x},\vec{y})} \oplus I[ (b,x) \in \Omega] $\;
+	
+		$Q_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y})} \gets  R_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y})} \oplus \sum_{\vec{b}'}  P_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'})} \otimes \left[ subst_{(x' = T_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y},\vec{b'})})} V'^{DD(b',x')} \right]  $\;
+		$\vec{y}_g^{~a} \gets \argpmax_{\vec{y}} Q_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y})}$\, \emph{//Maximizing parameter} \;
+		
+	}
+	$V_{h,\Omega}^{DD(\vec{b},\vec{x})} \gets \max_{a} \left( \pmax_{\vec{y}}~ Q_{a,\Omega}^{DD(\vec{b},\vec{x},\vec{y})} \right)$\;
+	$a_g \gets \argmax_{a} \left( Q_{a,\Omega}^{DD(\vec{b},\vec{x})}(\vec{y}_g^{~a}) \right)$\;
+    //The value is updated through a minimisation.\;
+    $V_h^{DD(b, x)} \gets \min(V_h^{DD(b, x)}, V_{h,\Omega}^{DD(b, x)})$\; 
+    \Return {$V_h(b_c, x_c), a_g, \vec{y}_g^{~a_g}$}\;
+\end{algorithm}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
