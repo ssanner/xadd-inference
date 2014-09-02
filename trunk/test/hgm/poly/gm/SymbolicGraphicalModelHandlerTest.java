@@ -4,7 +4,9 @@ import hgm.poly.*;
 import hgm.poly.integral.frac.Digester;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.sampling.SamplingUtils;
-import hgm.poly.sampling.frac.SymbolicFractionGibbsSampler;
+import hgm.poly.sampling.frac.FractionalJointBaselineGibbsSampler;
+import hgm.poly.sampling.frac.FractionalJointRejectionSampler;
+import hgm.poly.sampling.frac.SymbolicFractionalJointGibbsSampler;
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -143,7 +145,7 @@ public class SymbolicGraphicalModelHandlerTest {
 //        System.out.println("digester.getInters() = " + digester.getInters());
 
         //Sampler:
-        SymbolicFractionGibbsSampler sampler = SymbolicFractionGibbsSampler.makeSampler(joint, -10, 10);
+        SymbolicFractionalJointGibbsSampler sampler = SymbolicFractionalJointGibbsSampler.makeSampler(joint, -10, 10);
         for (int i = 0; i < 10; i++) {
             Double[] sample = sampler.reusableSample();
             System.out.println("sample = " + Arrays.toString(sample));
@@ -157,7 +159,7 @@ public class SymbolicGraphicalModelHandlerTest {
 
         System.out.println("----------------------------");
 
-        SamplerInterface sampler2 = handler.makeSampler(bn, "m_1 v_1 m_2 v_2".split(" "), evidence, -10, 10);
+        SamplerInterface sampler2 = handler.makeSampler(bn, "m_1 v_1 m_2 v_2".split(" "), evidence, -10, 10, SymbolicFractionalJointGibbsSampler.makeJointToSampler());
         for (int i = 0; i < 10; i++) {
             Double[] sample = sampler2.reusableSample();
             System.out.println("sample = " + Arrays.toString(sample));
@@ -202,7 +204,13 @@ public class SymbolicGraphicalModelHandlerTest {
         evidence.put("m_1", 2d);
 //        evidence.put("v_2", 0.2d);
 
-        SamplerInterface sampler = handler.makeSampler(bn, "v_1 v_2".split(" "), evidence, -10, 10);
+        SamplerInterface sampler = handler.makeSampler(bn, "v_1 v_2".split(" "), evidence, -10, 10,
+                FractionalJointBaselineGibbsSampler.makeJointToSampler()
+//                FractionalJointRejectionSampler.makeJointToSampler(1)
+//                SelfTunedFractionalJointMetropolisHastingSampler.makeJointToSampler(10, 30, 100)
+//                FractionalJointMetropolisHastingSampler.makeJointToSampler(10)
+//                SymbolicFractionalJointGibbsSampler.makeJointToSampler()
+        );
 //        for (int i = 0; i<10; i++) {
 //            Double[] sample = sampler.reusableSample();
 //            System.out.println("sample = " + Arrays.toString(sample));
@@ -213,7 +221,7 @@ public class SymbolicGraphicalModelHandlerTest {
 //            double v_2 = sample[3];
 //            System.out.println("(m_1*v_1 + m_2*v_2) = " + (m_1 * v_1 + m_2 * v_2));
 
-        int numSamples = 10000;
+        int numSamples = 1000;
         for (int i = 0; i < numSamples; i++) {
             Double[] s = sampler.reusableSample();
             System.out.println(i + ". sample = " + Arrays.toString(s));
@@ -258,7 +266,7 @@ public class SymbolicGraphicalModelHandlerTest {
         System.out.println("digester.getInters() = " + digester.getInters());*/
 
 
-        SamplerInterface sampler = handler.makeSampler(bn, "a d".split(" "), evidence, -20, 20);
+        SamplerInterface sampler = handler.makeSampler(bn, "a d".split(" "), evidence, -20, 20, SymbolicFractionalJointGibbsSampler.makeJointToSampler());
 
         int numSamples = 10000;
         for (int i = 0; i < numSamples; i++) {
@@ -296,7 +304,7 @@ public class SymbolicGraphicalModelHandlerTest {
 //        System.out.println("digester.getInters() = " + digester.getInters());
 
         //Sampler:
-        SymbolicFractionGibbsSampler sampler = SymbolicFractionGibbsSampler.makeSampler(joint, -10, 20);
+        SymbolicFractionalJointGibbsSampler sampler = SymbolicFractionalJointGibbsSampler.makeSampler(joint, -10, 20);
         for (int i = 0; i < 100; i++) {
             Map<String, Double> sample = sampler.reusableSampleAssignment();
 //            Double[] sample = sampler.reusableSample();
@@ -308,6 +316,7 @@ public class SymbolicGraphicalModelHandlerTest {
             System.out.println("sample = " + sample);
         }
     }
+
 
 
 }

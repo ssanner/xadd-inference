@@ -5,6 +5,7 @@ import hgm.poly.Fraction;
 import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 

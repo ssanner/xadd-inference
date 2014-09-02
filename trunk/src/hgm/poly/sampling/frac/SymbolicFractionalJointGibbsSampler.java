@@ -1,13 +1,13 @@
 package hgm.poly.sampling.frac;
 
 import hgm.poly.*;
+import hgm.poly.gm.JointToSampler;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.integral.frac.Digester;
 import hgm.poly.pref.FatalSamplingException;
 import hgm.poly.pref.SymbolicCdfArrayHandler;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.sampling.SamplingFailureException;
-import util.MultiMap;
 
 import java.util.*;
 
@@ -16,30 +16,44 @@ import java.util.*;
  * Date: 5/08/14
  * Time: 9:23 AM
  */
-//todo I do this we need SymbolicCdfArrayHandler at all.
-// todo for all vars x we have integrals w.r.t. x.
-//todo  and also instead of adding things together I should terminate as soon as a single constraint holds...
-//todo I do not know, to be thought about after the NIPS feedback
-public class SymbolicFractionGibbsSampler implements SamplerInterface {
+public class SymbolicFractionalJointGibbsSampler implements SamplerInterface {
 
-    public static SymbolicFractionGibbsSampler makeSampler(PiecewiseExpression<Fraction> joint, double minForAllVars, double maxForAllVars/*, Double[] reusableInitialSample*/) {
+    public static JointToSampler makeJointToSampler() {
+        return new JointToSampler() {
+            @Override
+            public SamplerInterface makeSampler(PiecewiseExpression<Fraction> joint, double minLimitForAllVars, double maxLimitForAllVars) {
+                return SymbolicFractionalJointGibbsSampler.makeSampler(joint, minLimitForAllVars, maxLimitForAllVars);
+            }
+
+            @Override
+            public String getName() {
+                return "symbolic.gibbs";
+            }
+        };
+
+
+    }
+
+    public static SymbolicFractionalJointGibbsSampler makeSampler(PiecewiseExpression<Fraction> joint,
+                                                                  double minForAllVars, double maxForAllVars/*, Double[] reusableInitialSample*/) {
         List<String> jointScopeVars = new ArrayList<String>(joint.getScopeVars());
         int numScopeVars = jointScopeVars.size(); // note: these are not all vars in the factory.
         double[] cVarMins = new double[numScopeVars];
         double[] cVarMaxes = new double[numScopeVars];
         Arrays.fill(cVarMins, minForAllVars);
         Arrays.fill(cVarMaxes, maxForAllVars);
-        return new SymbolicFractionGibbsSampler(joint, jointScopeVars, cVarMins, cVarMaxes/*, reusableInitialSample*/);
+        return new SymbolicFractionalJointGibbsSampler(joint, jointScopeVars, cVarMins, cVarMaxes/*, reusableInitialSample*/);
     }
 
+    //..................
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
     protected static final Random random = new Random();
-    public static final double SAMPLE_ACCURACY = 1E-6;
-    public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 20;
-    public static final int MAX_INITIAL_SAMPLING_TRIAL = 10000000;    // if the function is not positive, (initial) sample cannot be
+    public static final double SAMPLE_ACCURACY = 1E-6;//1E-6;
+    public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 30;//20;
+    public static final int MAX_INITIAL_SAMPLING_TRIAL = 100000000;    // if the function is not positive, (initial) sample cannot be
     int numScopeVars;
-    Double[] prevSample = null;
+    //    Double[] prevSample = null;
     PiecewiseExpression<Fraction> joint;
     Map<Integer/*var Index*/, SymbolicCdfArrayHandler> varToSymbolicIntegralMap;
     Map<Integer, Double> varIndex2MinMap;
@@ -51,10 +65,9 @@ public class SymbolicFractionGibbsSampler implements SamplerInterface {
     private Map<String, Double> reusableSampleAssignment;
 
 
-
-    public SymbolicFractionGibbsSampler(PiecewiseExpression<Fraction> joint,
-                                        List<String> scopeVars,
-                                        double[] cVarMins, double[] cVarMaxes/*, Double[] reusableInitialSample*/) {
+    public SymbolicFractionalJointGibbsSampler(PiecewiseExpression<Fraction> joint,
+                                               List<String> scopeVars,
+                                               double[] cVarMins, double[] cVarMaxes/*, Double[] reusableInitialSample*/) {
         this.joint = joint;
 
         numScopeVars = scopeVars.size();
@@ -82,11 +95,7 @@ public class SymbolicFractionGibbsSampler implements SamplerInterface {
             varIndex2MinMap.put(scopeVarIndexes[i], cVarMins[i]);
             varIndex2MaxMap.put(scopeVarIndexes[i], cVarMaxes[i]);
         }
-//        this.cVarMins = cVarMins;
-//        this.cVarMaxes = cVarMaxes;
 
-
-//        if (reusableInitialSample != null && reusableInitialSample.length != allVars.length) throw new RuntimeException("size mismatch");
         this.reusableSample = new Double[allVars.length];
         takeInitialSample(reusableSample);//reusableInitialSample;//reusableSample();
 
@@ -113,10 +122,12 @@ public class SymbolicFractionGibbsSampler implements SamplerInterface {
     public Map<String, Double> reusableSampleAssignment() throws SamplingFailureException {
         reusableSample = reusableSample();
         for (String v : reusableSampleAssignment.keySet()) {
-           reusableSampleAssignment.put(v, reusableSample[factory.getVarIndex(v)]);
+            reusableSampleAssignment.put(v, reusableSample[factory.getVarIndex(v)]);
         }
         return reusableSampleAssignment;
     }
+
+    int zeroReusableSamplesCount = 0;
 
     @Override
     public Double[] reusableSample() throws SamplingFailureException {
@@ -126,12 +137,15 @@ public class SymbolicFractionGibbsSampler implements SamplerInterface {
 //        }
 
         reusableSample = professionalSample(reusableSample);
+        debug("reusableSample = " + Arrays.toString(reusableSample));
 
         //just for debug....
         if (joint.evaluate(reusableSample) <= 0) {
 //            throw new SamplingFailureException("evaluation of " + Arrays.toString(reusableSample) + " is " + gph.evaluate(reusableSample));
-            System.err.println("evaluation of " + Arrays.toString(reusableSample) + " is " + joint.evaluate(reusableSample));
+            zeroReusableSamplesCount++;
+            System.err.println(zeroReusableSamplesCount + ".\t evaluation of " + Arrays.toString(reusableSample) + " is " + joint.evaluate(reusableSample));
             takeInitialSample(reusableSample);
+            debug("reusableSample (by init sample)= " + Arrays.toString(reusableSample));
             return reusableSample();
         }
 
@@ -168,8 +182,8 @@ public class SymbolicFractionGibbsSampler implements SamplerInterface {
                 sampleSingleContinuousVar(/*allVars[i], */scopeVarIndexes[i], reusableSample);
             } catch (FatalSamplingException e) {
                 debugNumUnsuccessfulSamplings++;
+                e.printStackTrace();
                 if (DEBUG) {
-                    e.printStackTrace();
                     System.err.println("" +
                             "#unsuccessful samples: " + debugNumUnsuccessfulSamplings);
 
@@ -231,8 +245,9 @@ public class SymbolicFractionGibbsSampler implements SamplerInterface {
     }
 
 
-    protected double takeSampleFrom1DFunc(OneDimFunction varCDF, double minVarValue, double maxVarValue) {
+    public static double takeSampleFrom1DFunc(OneDimFunction varCDF, double minVarValue, double maxVarValue) throws FatalSamplingException {
         Double cdfInfinity = varCDF.eval(maxVarValue + 0.1);
+        double normalizedAccuracy = SAMPLE_ACCURACY * cdfInfinity;
 
         double s = randomDoubleUniformBetween(0.0, cdfInfinity);
         //now: F^{-1}(X=s) should be computed:
@@ -254,36 +269,56 @@ public class SymbolicFractionGibbsSampler implements SamplerInterface {
 
             approxS = varCDF.eval(average);
 
+            if (approxS == 0) {
+                double leftLimit = average - ((high - low) * 1E-7);
+                double leftLimitValue = varCDF.eval(leftLimit);
+                if (leftLimitValue > 0) {
+                    //This should not be the case since varCDF is should not decrease!
+                    //The only possibility is that we have fallen in hole between the partitions.
+                    average = leftLimit;
+                    approxS = leftLimitValue;
+                }
+            }
+
             if (approxS < s) {
                 low = average;
             } else {
                 high = average;
             }
-        } while ((Math.abs(approxS - s) > SAMPLE_ACCURACY) && counter++ < MAX_ITERATIONS_TO_APPROX_F_INVERSE);
+
+            if (low >= high) {
+                System.err.println(low + " should be < " + high);
+                throw new RuntimeException(low + " should be < " + high);
+            }
+        } while ((Math.abs(approxS - s) > normalizedAccuracy) && counter++ < MAX_ITERATIONS_TO_APPROX_F_INVERSE);
+
+//        average = (high + low) / 2.0;
+        //for test:
+        if (varCDF.eval(average) <= 0) {
+//            average = (high + low) / 2.0;
+            throw new FatalSamplingException("sampling failure." +
+            "\nvarCDF.eval(average: " + average + ") = " + varCDF.eval(average) +
+            "\nMath.abs(approxS:"+approxS+"\t - s:" + s+ ") = " + Math.abs(approxS - s) + " should be < normalizedAccuracy = " + normalizedAccuracy +
+            "\ncounter = " + counter +
+            "\nvarCDF.eval(minVarValue: " + minVarValue + ") = " + varCDF.eval(minVarValue) +
+            "\nvarCDF.eval(maxVarValue: " + maxVarValue + ") = " + varCDF.eval(maxVarValue) +
+            "\nvarCDF.eval(maxVarValue+1000) = " + varCDF.eval(maxVarValue + 1000));
+//            System.out.println("Math.abs(approxS:"+approxS+"\t - s:" + s+ ") = " + Math.abs(approxS - s) + " should be < normalizedAccuracy = " + normalizedAccuracy);
+//            System.out.println("counter = " + counter);
+//            System.out.println("varCDF.eval(minVarValue: " + minVarValue + ") = " + varCDF.eval(minVarValue));
+//            System.out.println("varCDF.eval(maxVarValue: " + maxVarValue + ") = " + varCDF.eval(maxVarValue));
+//            System.out.println("varCDF.eval(maxVarValue+1000) = " + varCDF.eval(maxVarValue + 1000));
+//            System.err.println("___________________________");//throw new RuntimeException("average" + average);
+        }
 
         return average;
     }
-
-   /* public void makeAndAddCumulativeDistributionFunctionsToList(PiecewiseExpression<Polynomial> pp, int varIndex, Double[] currentVarAssign, List<OneDimFunction> cdfList) {
-        for (ConstrainedExpression cp : pp.getCases()) {
-
-            // returns int_{w=-infty}^{var} (func[var->w]dw) for instantiated function:
-            OneDimFunction cdf = integrator.integrate(cp, varIndex, currentVarAssign);
-            if (!cdf.equals(OneDimFunction.ZERO_1D_FUNCTION)) {
-                cdfList.add(cdf);
-            }
-        }
-    }*/
 
     public static double randomDoubleUniformBetween(double min, double max) {
         return random.nextDouble() * (max - min) + min;
     }
 
-    /*
-    public static Double randomGaussianDouble(Double mean, double variance) {
-        return mean + random.nextGaussian() * variance;
-    }
-*/
+
 }
 
 

@@ -9,7 +9,7 @@ import java.util.*;
  * Date: 26/02/14
  * Time: 8:07 PM
  */
-public class PiecewiseExpression<E extends Expression> {
+public class PiecewiseExpression<E extends Expression>{
     /**
      * It is assumed that (the constraints of) different cases are mutually exclusive and jointly exhaustive.
      * However, if this parameter is unset, it is assumed that a case exists with constraint = 'negation of constraints of other cases' and value = 0.
@@ -289,15 +289,24 @@ public class PiecewiseExpression<E extends Expression> {
         throw new RuntimeException("not found");
     }
 
-    public Set<String> getScopeVars() {
-        Set<String> scopeVars = new HashSet<String>();
+    public SortedSet<String> getScopeVars() {
+        SortedSet<String> scopeVars = new TreeSet<String>();
         for (ConstrainedExpression constrainedExpression : cases) {
             scopeVars.addAll(constrainedExpression.getScopeVars());
         }
+
         return scopeVars;
     }
 
     public PiecewiseExpression<E> substitute(Map<String, Double> assign) {
+        List<ConstrainedExpression<E>> newCases = new ArrayList<ConstrainedExpression<E>>(this.numCases());
+        for (ConstrainedExpression<E> c : cases) {
+            newCases.add(c.substitute(assign));
+        }
+        return new PiecewiseExpression<E>(this.isJointlyExhaustive, newCases);
+    }
+
+    public PiecewiseExpression<E> substitute(Double[] assign) {
         List<ConstrainedExpression<E>> newCases = new ArrayList<ConstrainedExpression<E>>(this.numCases());
         for (ConstrainedExpression<E> c : cases) {
             newCases.add(c.substitute(assign));

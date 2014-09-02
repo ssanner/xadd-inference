@@ -2,6 +2,7 @@ package hgm.poly.gm;
 
 import hgm.poly.*;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,7 +19,7 @@ public class DeterministicFactor extends VarAssociatedFactor {
     private Set<String> parentVars;
 
     // Delta(associatedVar - g)  indicating: associated_var = g
-    protected DeterministicFactor(String associatedVar, Fraction g) {
+    public DeterministicFactor(String associatedVar, Fraction g) {
         super.associatedVar = associatedVar;
         this.g = g;
         parentVars = g.getScopeVars();
