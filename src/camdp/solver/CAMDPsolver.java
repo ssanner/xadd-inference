@@ -414,12 +414,13 @@ public abstract class CAMDPsolver {
     }
     public void saveGraph(int xadd_id, String label) {
         Graph g;
-        if (context.getNodeCount(xadd_id)< MAX_GRAPH_NODES)
+        int nNodes = context.getNodeCount(xadd_id);
+        if (nNodes < MAX_GRAPH_NODES)
             g = context.getGraph(xadd_id);
         else {
             g = new Graph();
             g.addNode("_warn_");
-            g.addNodeLabel("_warn_", "Too many Nodes to plot Graph");
+            g.addNodeLabel("_warn_", nNodes+" Nodes: Too many to plot.");
             g.addNodeShape("_warn_", "box");
             g.addNodeStyle("_warn_", "filled");
             g.addNodeColor("_warn_", "red1");

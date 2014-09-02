@@ -1,0 +1,72 @@
+cvariables (x1 x2 x3)
+min-values (-100 -100 -100)
+max-values (100 -100 100)
+bvariables ()
+nvariables()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables()
+
+action stay
+x1' ([x1])
+x2' ([x2])
+x3' ([x3])
+reward 
+([- x1 *x1 - x2 *x2 - x3 *x3])
+endaction
+
+action down1
+x1' ([x1 - 1])
+x2' ([x2])
+x3' ([x3])
+reward 
+([- x1 *x1 - x2 *x2 - x3 *x3])
+endaction
+
+action up1
+x1' ([x1 + 1])
+x2' ([x2])
+x3' ([x3])
+reward 
+([- x1 *x1 - x2 *x2 - x3 *x3])
+endaction
+
+action down2
+x1' ([x1])
+x2' ([x2 - 1])
+x3' ([x3])
+reward 
+([- x1 *x1 - x2 *x2 - x3 *x3])
+endaction
+
+action up2
+x1' ([x1])
+x2' ([x2 + 1])
+x3' ([x3])
+reward 
+([- x1 *x1 - x2 *x2 - x3 *x3])
+endaction
+
+action down3
+x1' ([x1])
+x2' ([x2])
+x3' ([x3 - 1])
+reward 
+([- x1 *x1 - x2 *x2 - x3 *x3])
+endaction
+
+action up3
+x1' ([x1])
+x2' ([x2])
+x3' ([x3 + 1])
+reward 
+([- x1 *x1 - x2 *x2 - x3 *x3])
+endaction
+
+discount 1.0000000
+InitialState (-8.1 2.1 5.1) () 
+iterations 10
+NONLINEAR
+MAXREWARD 0

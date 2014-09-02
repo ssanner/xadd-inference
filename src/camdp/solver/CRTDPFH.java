@@ -71,7 +71,7 @@ public class CRTDPFH extends CAMDPsolver {
         nIter = ni; 
         valueDDList = new Integer[nIter+1];
         _logStream = camdp._logStream;
-        solveMethod = "CRTDP";
+        solveMethod = "RTSDP";
         makeResultStream();
         setupResults();
     }
@@ -85,7 +85,7 @@ public class CRTDPFH extends CAMDPsolver {
         int RUN_DEPTH = 1;
         if (DEBUG_DEPTH > RUN_DEPTH) debugOutput.println("Starting "+solveMethod+" solution, Horizon = "+nIter+", nTrial = " + nTrials);
         if (mdp._initialS == null){
-            System.err.println("Impossible to solve Unknown Initial State MDP with RTDP!");
+            System.err.println("Impossible to solve Unknown Initial State MDP with "+solveMethod);
             return -1;
         }
         
@@ -202,7 +202,7 @@ public class CRTDPFH extends CAMDPsolver {
             for(int i=0; i<= nIter; i++) {
                 if (prevDDList[i] != valueDDList[i]) return false; 
             }
-            debugOutput.println("!CRTDP: Converged to solution early, in Trial "+curTrial);
+            debugOutput.println("Converged to solution early, in Trial "+curTrial);
             return true;
         }
     }        
@@ -580,6 +580,13 @@ public class CRTDPFH extends CAMDPsolver {
         // Perform regression via delta function substitution
         q = context.reduceProcessXADDLeaf(dd_conditional_sub, context.new DeltaFunctionSubstitution(var, q), true);
        
+        //Second Mask!
+        //MaskQ not from current state
+        IntPair cleanqPair = context.retrieveMask(q, currS._hmBoolVars, currS._hmContVars, context.NAN);
+        q = cleanqPair._i1;
+        regressionMask = context.combine(regressionMask, cleanqPair._i2);
+        if (DEBUG_DEPTH > RUN_DEPTH) debugShow(regressionMask, "Cvar Current RM "+ var, false);        
+        
         if (DEBUG_DEPTH > RUN_DEPTH) debugShow(q, "CVar Final Q "+var, false);
         return q;        
     }
@@ -634,6 +641,8 @@ public class CRTDPFH extends CAMDPsolver {
         int restrict_low  = context.opOut(q, var_id, XADD.RESTRICT_LOW);
         if (DEBUG_DEPTH > RUN_DEPTH) debugShow(restrict_low, "BVar Low_q "+ var, false);
         q = context.apply(restrict_high, restrict_low, XADD.SUM);
+        
+        //No need for a second mask in Boolean Variables, there is no substitution to generate decidable decisions.
         if (DEBUG_DEPTH > RUN_DEPTH) debugShow(q, "BVar Final_Q "+ var, false);
         return q;
     }
@@ -769,7 +778,7 @@ public class CRTDPFH extends CAMDPsolver {
         }
     }
     public void printResults() {
-        debugOutput.println("Results for CRTDP-FH: " + finalTrial + " trials of Depth "+nIter);
+        debugOutput.println("Results for "+solveMethod+": "+finalTrial + " trials of Depth "+nIter);
 
         if (COMPLETE_RESULTS){
             debugOutput.print("Time:"); long sumTime = 0;
