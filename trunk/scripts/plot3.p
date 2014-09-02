@@ -4,7 +4,7 @@ set autoscale                        # scale axes automatically
 set xtic auto                          # set xtics automatically
 set ytic auto                          # set ytics automatically
 
-SOLVERS="SDP CRTDP"
+SOLVERS="SDP RTSDP"
 std_width = 2
 std_type = 1
 pointtypes ="0 1 2 4 6 8 10 12" 
@@ -78,9 +78,9 @@ if (plotdim == 3){
 	do for[h=1:nvalue]{
 		do for [i=1:words(SOLVERS)]{
 		  
-    		set xlabel "VAR1" offset -8
+    		set xlabel "X1" offset -8
 #    		set xtics 30
-    		set ylabel "VAR2" offset 0
+    		set ylabel "X2" offset 0
 #    		set ytics 30
     		set zlabel "Value" offset -3
 #            set ztics h*50
