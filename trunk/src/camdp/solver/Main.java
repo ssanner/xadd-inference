@@ -18,7 +18,7 @@ public class Main {
     
     //Running Configurations
     private static int VERBOSE = 1;
-    private static String[] solvers = {"Invalid","VI","CRTDP","RTDPFH","VI, CRTDP & CRTDPFH"};// 1 -> Value Iteration 2-> RTDP 3-> RTDPFH, Run all and Save All
+    private static String[] solvers = {"Invalid","VI","CRTDP","RTSDP","VI, CRTDP & CRTDPFH"};// 1 -> Value Iteration 2-> RTDP 3-> RTDPFH, Run all and Save All
     private static int TRIALS_DEFAULT = 15; // For RTDP and RTDPFH solution
     
     // Results Configurations
@@ -102,16 +102,16 @@ public class Main {
             used = solver.solve();
             if (SAVE_RESULTS) solver.saveResults();
             if (PRINT_RESULTS) solver.printResults();
-            if (VERBOSE > 0) System.out.println("\nContinuous RTDPFH Solution complete, " + used + " trials of depth " + iter + ".");
+            if (VERBOSE > 0) System.out.println(solvers[3]+" solution complete, " + used + " trials of depth " + iter + ".");
             break;            
 
-        case 4:
-            solver = new VI(mdp, iter);
-            int used1 = solver.solve();
-            if (SAVE_RESULTS) solver.saveResults();
-            if (PRINT_RESULTS) solver.printResults();
-            System.out.println();
-            
+//        case 4:
+//            solver = new VI(mdp, iter);
+//            int used1 = solver.solve();
+//            if (SAVE_RESULTS) solver.saveResults();
+//            if (PRINT_RESULTS) solver.printResults();
+//            System.out.println();
+//            
 //            System.out.println("RTDP");
 //            checkInitialS(mdp);
 //            solver = new CRTDP(mdp, trials, iter);
@@ -119,14 +119,12 @@ public class Main {
 //            if (SAVE_RESULTS) solver.saveResults();
 //            if (PRINT_RESULTS) solver.printResults();
 //            System.out.println();
-            
-            System.out.println("RTDPFH");
-            solver = new CRTDPFH(mdp, trials, iter);
-            int used3 = solver.solve();
-            if (SAVE_RESULTS) solver.saveResults();
-            if (PRINT_RESULTS) solver.printResults();
-            if (VERBOSE > 0) System.out.println("\nTriple solution complete, VI used "+used1+ ", RTDPFH used "+used3);
-            break;            
+//            solver = new CRTDPFH(mdp, trials, iter);
+//            int used3 = solver.solve();
+//            if (SAVE_RESULTS) solver.saveResults();
+//            if (PRINT_RESULTS) solver.printResults();
+//            if (VERBOSE > 0) System.out.println("\nTriple solution complete. "+solvers[0]+" used "+used1+", "+solvers[3] used "+used3);
+//            break;            
             
     default:
             System.err.println("\n Invalid Solution Method!");
