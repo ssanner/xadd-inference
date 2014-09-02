@@ -19,5 +19,5 @@ cd $CLASSPATH
 CLASSPATH=$JAR_PATH$CLASSPATH
 
 MAINJAVA=$MAIN".java"
-javac -source 1.6 -target 1.6 -d $BIN_DIR -cp $CLASSPATH $MAINJAVA
+javac -source 1.6 -target 1.6 -d $BIN_DIR -cp $CLASSPATH $MAINJAVA 2>/dev/null #comment to debug compilation
 cd $ORI

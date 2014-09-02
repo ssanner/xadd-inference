@@ -1,7 +1,7 @@
-#plots.sh plot graph with multiple curver using plotter.p
-if [ $# -lt 2 ]
+#plot.sh plot graph with multiple curver using plotter.p
+if [[ $# -lt 4 || $# -gt 4 ]]
 then
-	echo "missing args: PROBLEMTYPE PROBLEM"
+	echo "plot.sh script wrong arguments number. Usage: PROBLEMTYPE PROBLEM PLOTDIM=$3 NVALUE=$4"
 	exit
 fi
 
@@ -22,7 +22,7 @@ gnuplot -e "filename='$PROBLEM'; plotdim='$PLOTDIM';nvalue='$NVALUE'" $plot
 if [ $PLOTDIM -gt 1 ]
 then
 	#Change .dot to .pdf
-	SOLVERS="SDP CRTDP" 
+	SOLVERS="SDP RTSDP" 
 	for i in $(seq 1 $NVALUE);
 	do	
 		for solve in $SOLVERS
@@ -55,5 +55,5 @@ comm3="s/PLOTDIM/$PLOTDIMWORD$end"
 temptex="$ORI/results/$PROBLEMTYPE/$PROBLEM/$PROBLEM.tex"
 sed -e $comm1 -e $comm2 -e $comm3 <$tex >$temptex
 cd $ORI/results/$PROBLEMTYPE/$PROBLEM
-pdflatex $PROBLEM.tex >/dev/null
+pdflatex $PROBLEM.tex 1>/dev/null #Comment out to debug the latex run.
 cd $ORI

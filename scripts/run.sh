@@ -21,9 +21,10 @@ cd $ORI
 MAINCLASS=$1
 PARAMS=$2
 
-echo "Parameters are $PARAMS"
+#printf "Parameters are $PARAMS"
 JLP=""
 MEMLIMIT="-Xmx1000M"
 # for LINUX: JLP="-Djava.library.path=/usr/local/lib"
-echo "Running: java $MEMLIMIT $MAINCLASS $PARAMS"
+printf "Running: java $MEMLIMIT $MAINCLASS $PARAMS \n"
 java $MEMLIMIT -cp $BIN_DIR:$CLASSPATH $JLP $MAINCLASS $PARAMS
+printf "\n\n"
