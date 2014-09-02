@@ -18,15 +18,6 @@ public class RejectionBasedGeneralBayesianSampler implements SamplerInterface {
 
     double envelope;
 
-    /*public static RejectionBasedGeneralBayesianSampler makeSampler(GeneralBayesianPosteriorHandler gph, double minForAllVars, double maxForAllVars, double envelope) {
-        int varNum = gph.getPolynomialFactory().getAllVars().length;
-        double[] cVarMins = new double[varNum];
-        double[] cVarMaxes = new double[varNum];
-        Arrays.fill(cVarMins, minForAllVars);
-        Arrays.fill(cVarMaxes, maxForAllVars);
-        return new RejectionBasedGeneralBayesianSampler(gph, cVarMins, cVarMaxes, envelope);
-    }
-*/
     public RejectionBasedGeneralBayesianSampler(GeneralBayesianPosteriorHandler gph/*, double[] cVarMins, double[] cVarMaxes*/, double envelopeCoef) {
         this.gph = gph;
         this.cVarMins = gph.getPriorHandler().getLowerBoundsPerDim();//cVarMins;

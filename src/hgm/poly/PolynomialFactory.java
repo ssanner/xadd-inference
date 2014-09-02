@@ -195,4 +195,15 @@ public class PolynomialFactory {
         Polynomial d = makePolynomial(denominatorStr);
         return new Fraction(n, d);
     }
+
+    public static String[] makeIndexedVars(String varPrefix, int firstIndex, int lastIndex) {
+        if (firstIndex < 0) throw new RuntimeException();
+        if (lastIndex < firstIndex) throw new RuntimeException();
+        String[] results = new String[1 + lastIndex - firstIndex];
+        int j = 0;
+        for (int i = firstIndex; i <= lastIndex ; i++) {
+            results[j++] = varPrefix + "_" + i;
+        }
+        return results;
+    }
 }

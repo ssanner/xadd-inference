@@ -231,7 +231,53 @@ public class Fraction implements Expression<Fraction>, Cloneable {
                 }
             };
         }
-        throw new RuntimeException("Integral of this not implemented yet: " + this);
+
+        //3. for: (c1)/(a2*x^2 + b2*x + c2)
+        if (numeratorRelDegree == 0 && denominatorRelDegree == 2) {
+            final Polynomial c1 = numerator.clone();
+            Polynomial[] a2b2c2 = denominator.sortWithRespectTo(varIndex);
+            if (a2b2c2.length != 3) throw new RuntimeException("how possible!");
+            final Polynomial a2 = a2b2c2[2];
+            final Polynomial b2 = a2b2c2[1];
+            final Polynomial c2 = a2b2c2[0];
+            return new WeakExpression() {
+                String xStr = c1.getFactory().getAllVars()[varIndex];
+
+                // see http://en.wikipedia.org/wiki/List_of_integrals_of_rational_functions
+                @Override
+                public double evaluate(Double[] fullVarAssign) {
+                    double g = c1.evaluate(fullVarAssign);
+
+                    double x = fullVarAssign[varIndex];
+                    double a = a2.evaluate(fullVarAssign);
+                    double b = b2.evaluate(fullVarAssign);
+                    double c = c2.evaluate(fullVarAssign);
+                    double del = 4 * a * c - b * b;
+                    double two_ax_plus_b = 2 * a * x + b;
+
+                    if (del > 0) {
+                        double delRoot = Math.sqrt(del);
+                        double result = (2 * c1.evaluate(fullVarAssign) * Math.atan(two_ax_plus_b / delRoot)) / delRoot;
+                        if (Double.isNaN(result)) throw new RuntimeException();
+                        return result;
+                    } else if (del < 0) {
+                        double delRoot = Math.sqrt(-del);
+                        double result = (1/delRoot) * Math.log(Math.abs((two_ax_plus_b - delRoot)/(two_ax_plus_b + delRoot)));
+                        if (Double.isNaN(result)) throw new RuntimeException();
+                        return result;
+                    } else { //del == 0
+                        return -2/two_ax_plus_b;
+                    }
+                }
+
+                @Override
+                public String toString() {
+                    return "INTEGRAL[" + c1 + "]/[(" + a2 + ")X^2 + (" + b2 + ")X + (" + c2 + ")] dX";
+                }
+            };
+        }
+
+        throw new RuntimeException("Integral of this not implemented yet: " + this + "\n\t w.r.t. var " + numerator.getFactory().getAllVars()[varIndex]);
     }
 }
 

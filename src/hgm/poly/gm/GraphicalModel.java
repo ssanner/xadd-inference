@@ -16,33 +16,6 @@ public interface GraphicalModel {
      */
     List<Factor> allInferenceRelevantFactors(Collection<String> vars);
 
-//    Factor getAssociatedFactor(String var);
-
     List<String> allDeterministicVars();
 
-
-   /* PolynomialFactory factory;
-    List<Factor> factors;
-
-    public GraphicalModel(List<Factor> factors) {
-        this.factors = factors;
-
-        factory = factors.get(0).getPiecewisePolynomial().getFactory();
-        for (Factor factor : factors) {
-            if (factor.getPiecewisePolynomial().getFactory() != factory) {
-                throw new RuntimeException();
-            }
-        }
-    }
-
-    //todo later on only parents of evidence and query nodes should be multiplied...
-    Factor jointOfAllFactors() {
-        Polynomial result = factory.one().clone();
-        for (Factor factor : factors) {
-            PiecewisePolynomial p = factor.getPiecewisePolynomial();
-            result = result.multiply(p);
-
-        }
-
-    }*/
 }

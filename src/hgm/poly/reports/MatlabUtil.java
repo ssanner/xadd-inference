@@ -29,8 +29,8 @@ public class MatlabUtil {
         "70 71 72 73 74 75").split(" ");
         //{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 
-        String[] algorithms = Tester.TESTED_ALGORITHMS_FOR_FINAL_MMM_TESTS;
-        int fixedDim = Tester.FIXED_DIM_FOR_MMM_DATA_ANALYSIS;//8;//6;//12;
+        String[] algorithms = Nips2014FastBayesTester.TESTED_ALGORITHMS_FOR_FINAL_MMM_TESTS;
+        int fixedDim = Nips2014FastBayesTester.FIXED_DIM_FOR_MMM_DATA_ANALYSIS;//8;//6;//12;
 
         Map<String/*algorithm*/, VarToValues> algInfo = new HashMap<String, VarToValues>();
         for (String alg : algorithms) {
@@ -56,8 +56,8 @@ public class MatlabUtil {
         String[] subFolders = //{"6", "7", "8", "9", "10", "1", "2", "3", "4", "5", "100"};
                 ("1 2 3 4 5 6 7 8 9 10 " +
                         "100 101 102 103 104 105 106 107 108 109 110 111 112 113 120 121 122 123 124").split(" ");
-        String[] algorithms = Tester.TESTED_ALGORITHMS_FOR_FINAL_MMM_TESTS;
-        int fixedData = Tester.FIXED_DATA_FOR_MMM_DIM_ANALYSIS;//8;//6;//12;
+        String[] algorithms = Nips2014FastBayesTester.TESTED_ALGORITHMS_FOR_FINAL_MMM_TESTS;
+        int fixedData = Nips2014FastBayesTester.FIXED_DATA_FOR_MMM_DIM_ANALYSIS;//8;//6;//12;
 
         Map<String/*algorithm*/, VarToValues> algInfo = new HashMap<String, VarToValues>();
         for (String alg : algorithms) {
@@ -78,8 +78,8 @@ public class MatlabUtil {
         String rootPath = "E:/REPORT_PATH3/BPPL-DIM/";//"E:/REPORT_PATH2/";
         String[] subFolders = //{"1", "2", "3"};
                 ("1 2 3 10 11 12 13 14 15 16 17 18 19 20 21").split(" ");
-        String[] algorithms = Tester.TESTED_ALGORITHMS_FOR_FINAL_BPPL_TESTS;
-        int fixedData = Tester.FIXED_DATA_FOR_BPPL_FINAL_DIM_ANALYSIS;
+        String[] algorithms = Nips2014FastBayesTester.TESTED_ALGORITHMS_FOR_FINAL_BPPL_TESTS;
+        int fixedData = Nips2014FastBayesTester.FIXED_DATA_FOR_BPPL_FINAL_DIM_ANALYSIS;
 
         Map<String/*algorithm*/, VarToValues> algInfo = new HashMap<String, VarToValues>();
         for (String alg : algorithms) {
@@ -101,8 +101,8 @@ public class MatlabUtil {
         String[] subFolders = //{"1", "2", "3"};
                 ("1 2 3 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25").split(" ");
 
-        String[] algorithms = Tester.TESTED_ALGORITHMS_FOR_FINAL_BPPL_TESTS;
-        int fixedDim = Tester.FIXED_DIM_FOR_FINAL_BPPL_DATA_ANALYSIS;
+        String[] algorithms = Nips2014FastBayesTester.TESTED_ALGORITHMS_FOR_FINAL_BPPL_TESTS;
+        int fixedDim = Nips2014FastBayesTester.FIXED_DIM_FOR_FINAL_BPPL_DATA_ANALYSIS;
 
         Map<String/*algorithm*/, VarToValues> algInfo = new HashMap<String, VarToValues>();
         for (String alg : algorithms) {

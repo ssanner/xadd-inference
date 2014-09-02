@@ -6,7 +6,6 @@ import hgm.poly.Fraction;
 import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.sampling.SamplerInterface;
-import hgm.poly.sampling.frac.SymbolicFractionGibbsSampler;
 import hgm.sampling.SamplingFailureException;
 
 import java.util.*;
@@ -19,12 +18,12 @@ import java.util.*;
 public class SymbolicGraphicalModelHandler {
     public static final boolean DEBUG = false;
 
-    PiecewiseExpression<Fraction> makeJoint(GraphicalModel gm, List<String> queryVars, Map<String, Double> evidence) {
+    public PiecewiseExpression<Fraction> makeJoint(GraphicalModel gm, List<String> queryVars, Map<String, Double> evidence) {
         Pair<PiecewiseExpression<Fraction>, List<DeterministicFactor>> jointAndEliminatedStochasticVars = makeJointAndEliminatedStochasticVars(gm, queryVars, evidence);
         return jointAndEliminatedStochasticVars.getFirstEntry();
     }
 
-    Pair<PiecewiseExpression<Fraction> /*joint*/, List<DeterministicFactor> /*eliminatedStochasticVars*/> makeJointAndEliminatedStochasticVars(GraphicalModel gm, List<String> queryVars, Map<String, Double> evidence) {
+    public Pair<PiecewiseExpression<Fraction> /*joint*/, List<DeterministicFactor> /*eliminatedStochasticVars*/> makeJointAndEliminatedStochasticVars(GraphicalModel gm, List<String> queryVars, Map<String, Double> evidence) {
         //step 0.
         Set<String> queryAndEvidenceVars = new HashSet<String>(queryVars.size() + evidence.size());
         queryAndEvidenceVars.addAll(queryVars);
@@ -145,9 +144,9 @@ public class SymbolicGraphicalModelHandler {
         if (DEBUG) System.out.println(str);
     }
 
-    public SamplerInterface makeSampler(GraphicalModel bn, String[] varsToBeSampledJointly, Map<String, Double> evidence, int minVarLimit, int maxVarLimit) {
+    public SamplerInterface makeSampler(GraphicalModel gm, String[] varsToBeSampledJointly, Map<String, Double> evidence, double minVarLimit, double maxVarLimit, JointToSampler joint2sampler) {
         Pair<PiecewiseExpression<Fraction>, List<DeterministicFactor>> jointAndEliminatedStochasticVars =
-                makeJointAndEliminatedStochasticVars(bn, Arrays.asList(varsToBeSampledJointly), evidence);
+                makeJointAndEliminatedStochasticVars(gm, Arrays.asList(varsToBeSampledJointly), evidence);
         PiecewiseExpression<Fraction> joint = jointAndEliminatedStochasticVars.getFirstEntry();
         PolynomialFactory factory = joint.getFactory();
         final List<DeterministicFactor> eliminatedStochasticVarFactors = jointAndEliminatedStochasticVars.getSecondEntry();
@@ -158,7 +157,7 @@ public class SymbolicGraphicalModelHandler {
         }
 
         //Sampler:
-        final SymbolicFractionGibbsSampler sampler = SymbolicFractionGibbsSampler.makeSampler(joint, minVarLimit, maxVarLimit);  //todo any sampler should be acceptable....
+        final SamplerInterface sampler = joint2sampler.makeSampler(joint, minVarLimit, maxVarLimit);
 
         final Double[] querySample = new Double[varsToBeSampledJointly.length];
         final int[] varsToBeSampledIndexes = new int[varsToBeSampledJointly.length];

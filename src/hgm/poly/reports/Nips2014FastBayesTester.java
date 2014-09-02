@@ -16,12 +16,12 @@ import java.util.*;
  * Date: 10/05/14
  * Time: 8:58 PM
  */
-public class Tester {
+public class Nips2014FastBayesTester {
     public static final String REPORT_PATH = "E:/REPORT_PATH3/MMM-DIM/100aaaaaaa/";//"E:/REPORT_PATH3/BPPL-DATA/3/";
 
     public static void main(String[] args) throws IOException {
 //        System.out.println("REPORT_PATH = " + REPORT_PATH);
-        Tester instance = new Tester();
+        Nips2014FastBayesTester instance = new Nips2014FastBayesTester();
 //        instance.nipsTest();
 //        instance.nipsMmmDimAnalysisTest();
 //        instance.nipsMmmDataAnalysisTest();
@@ -252,7 +252,7 @@ public class Tester {
 
 
         //Testing params:
-        int[] numDimsArray = new int[]{Tester.FIXED_DIM_FOR_MMM_DATA_ANALYSIS};//{3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22, 25, 26, 28, 30, 35, 40, 45, 50, 60, 80};
+        int[] numDimsArray = new int[]{Nips2014FastBayesTester.FIXED_DIM_FOR_MMM_DATA_ANALYSIS};//{3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22, 25, 26, 28, 30, 35, 40, 45, 50, 60, 80};
 //        int[] numObservedDataPointsArray = new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 48, 55, 65, 70, 80, 90, 100};//{3, 4, 5, 7, 9, 12, 15, 18, 25, 35};//{5, 7, 9, 12, 14, 18, 22, 25}; //num. observed data
         int[] numObservedDataPointsArray = new int[]{18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 48, 55, 65, 70, 80, 90, 100};//{3, 4, 5, 7, 9, 12, 15, 18, 25, 35};//{5, 7, 9, 12, 14, 18, 22, 25}; //num. observed data
         Integer numSamplesFromTesterToSimulateTrueDistribution = 1000000;//550000;//for BPPL/dim10;constr10: 50000;
@@ -334,7 +334,7 @@ public class Tester {
 
         //Testing params:
         int[] numDimsArray = new int[]{3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22, 25, 26, 28, 30, 35, 40, 45, 50};//, 60, 80};
-        int[] numObservedDataPointsArray = new int[]{Tester.FIXED_DATA_FOR_MMM_DIM_ANALYSIS};//{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 48, 55, 65, 70, 80, 90, 100};//{3, 4, 5, 7, 9, 12, 15, 18, 25, 35};//{5, 7, 9, 12, 14, 18, 22, 25}; //num. observed data
+        int[] numObservedDataPointsArray = new int[]{Nips2014FastBayesTester.FIXED_DATA_FOR_MMM_DIM_ANALYSIS};//{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 48, 55, 65, 70, 80, 90, 100};//{3, 4, 5, 7, 9, 12, 15, 18, 25, 35};//{5, 7, 9, 12, 14, 18, 22, 25}; //num. observed data
         Integer numSamplesFromTesterToSimulateTrueDistribution = 1000000;//550000;//for BPPL/dim10;constr10: 50000;
         int numMinDesiredSamples = 3;//10000;//10000;
         int numIterationsForEachAlgorithm = NUM_ALG_ITERS_FOR_MMM_DIM_ANALYSIS;//10

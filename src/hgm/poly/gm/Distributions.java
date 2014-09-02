@@ -81,4 +81,22 @@ public class Distributions {
         return new PiecewiseExpression<Fraction>(false, singleCase);
     }
 
+    public PiecewiseExpression<Fraction> createBowlDistributionFraction(String[] vars, double radius, int halfPow) {
+        // if (x^2 + y^2 + ... ) < radius : (x + y + ... )^(2*halfPow)
+        StringBuilder conditionSb = new StringBuilder();
+        StringBuilder fruitSb = new StringBuilder();
+
+        for (String var : vars) {
+            conditionSb.append("-1*" + var + "^(2) +");
+            fruitSb.append(var + "^(1) +");
+        }
+        String hyperSphere = conditionSb.substring(0, conditionSb.length() - 1) + " + " + radius*radius;
+        String fruit = fruitSb.substring(0, fruitSb.length() - 1);
+        Polynomial fruitP = factory.makePolynomial(fruit);
+        fruitP = fruitP.toPower(2 * halfPow);
+        fruitP.multiplyScalarInThis(1/(Math.pow(radius, 2*halfPow) * Math.pow(vars.length, halfPow)));  //to guarantee that all values are less than 1 (although it is not normalized)
+        Fraction fruitF = new Fraction(fruitP, factory.one());
+        ConstrainedExpression<Fraction> singleCase = new ConstrainedExpression<Fraction>(fruitF, Arrays.asList(factory.makeFraction(hyperSphere)));
+        return new PiecewiseExpression<Fraction>(false, singleCase);
+    }
 }
