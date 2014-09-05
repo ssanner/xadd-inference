@@ -9,8 +9,8 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static tskill.jskills.numerics.MathUtils.square;
 import tskill.jskills.Rating;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+//import lombok.EqualsAndHashCode;
+//import lombok.Getter;
 
 /**
  * Immutable representation of the Gaussian distribution of one variable. Not
@@ -30,9 +30,8 @@ import lombok.Getter;
  *        σ * sqrt(2*pi)
  * </pre>
  * 
- * @see http://mathworld.wolfram.com/NormalDistribution.html
+ * @see /mathworld.wolfram.com/NormalDistribution.html
  */
-@EqualsAndHashCode
 public class GaussianDistribution {
     @Override
     public boolean equals(Object o) {
@@ -93,22 +92,22 @@ public class GaussianDistribution {
     }
 
     /** The peak of the Gaussian, μ **/
-	@Getter private final double mean;
+	private final double mean;
 	
 	/** The width of the Gaussian, σ, where the height drops to max/e **/
-	@Getter private final double standardDeviation;
+	private final double standardDeviation;
 	
 	/** The square of the standard deviation, σ^2 **/
-	@Getter private final double variance;
+	private final double variance;
 	
 	// Precision and PrecisionMean are used because they make multiplying and
 	// dividing simpler (see the accompanying math paper for more details)
 	
 	/** 1/σ^2 **/
-	@Getter private final double precision;
+	private final double precision;
 	
 	/** Precision times mean, μ/σ^2 **/
-	@Getter private final double precisionMean;
+	private final double precisionMean;
 
 
 	/**
@@ -228,7 +227,7 @@ public class GaussianDistribution {
 	 *            the location to evaluate a normalized Gaussian at
 	 * @return the value at x of a normalized Gaussian centered at 0 of unit
 	 *         width.
-	 * @see http://mathworld.wolfram.com/NormalDistribution.html
+	 * @see /mathworld.wolfram.com/NormalDistribution.html
 	 */
     public static double at(double x) { return at(x, 0, 1); }
 
@@ -243,7 +242,7 @@ public class GaussianDistribution {
 	 *            the location to evaluate a normalized Gaussian at
 	 * @return the value at x of a normalized Gaussian centered at 0 of unit
 	 *         width.
-	 * @see http://mathworld.wolfram.com/NormalDistribution.html
+	 * @see /http://mathworld.wolfram.com/NormalDistribution.html
 	 */
     public static double at(double x, double mean, double standardDeviation) {
         double multiplier = 1.0/(standardDeviation*sqrt(2*PI));

@@ -4,6 +4,7 @@ import hgm.asve.Pair;
 import hgm.poly.Fraction;
 import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
+import hgm.poly.diagnostics.*;
 import hgm.poly.gm.*;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.sampling.frac.*;
@@ -19,13 +20,13 @@ import java.util.*;
  * Date: 18/08/14
  * Time: 7:24 PM
  */
-public class SymbolicGibbsAAAI2015Tester {
+public class NewSymbolicGibbsAAAI2015Tester {
 
     public static final String REPORT_PATH_COLLISION_ANALYSIS = "E:/REPORT_PATH_AAAI15/";
     public static final String REPORT_PATH_FERMENTATION_ANALYSIS = "E:/REPORT_PATH_AAAI15/";
 
     public static void main(String[] args) throws IOException {
-        SymbolicGibbsAAAI2015Tester instance = new SymbolicGibbsAAAI2015Tester();
+        NewSymbolicGibbsAAAI2015Tester instance = new NewSymbolicGibbsAAAI2015Tester();
 //        instance.collisionAAAI2015Test();
         instance.fermentationAAAI2015Test();
     }
@@ -39,8 +40,8 @@ public class SymbolicGibbsAAAI2015Tester {
 //                FractionalJointMetropolisHastingSampler.makeJointToSampler(4.0);
                 FractionalJointBaselineGibbsSampler.makeJointToSampler();
 
-        int numSamplesFromTesterToSimulateTrueDistribution = 100000;
-        int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60 * 100;
+        int numSamplesFromTesterToSimulateTrueDistribution = 1000000;//1000;
+        int maxWaitingTimeForTesterToSimulateMillis = 1000*60*60*5;//1000 * 60 * 1;
         List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
                 SymbolicFractionalJointGibbsSampler.makeJointToSampler(),
                 FractionalJointBaselineGibbsSampler.makeJointToSampler(),
@@ -49,12 +50,12 @@ public class SymbolicGibbsAAAI2015Tester {
                 FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10)
         );
         int[] numParams = {4, 5, 6, 7, 8, 9, 10};
-        int numMinDesiredSamples = 10000;
-        int maxWaitingTimeForTakingDesiredSamples = 1000 * 20 * 100;
-        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = maxWaitingTimeForTakingDesiredSamples/2;//1000 * 5;
-        int approxNumTimePointsForWhichErrIsPersisted = 33;
-        int numRuns = 4;
-        int burnedSamples = 100;
+        int numMinDesiredSamples = 50000;//1000;
+        int maxWaitingTimeForTakingDesiredSamples = 1000*60*15;//1000 * 20;
+        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = maxWaitingTimeForTakingDesiredSamples / 2;//1000 * 5;
+        int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
+        int numRuns = 15;
+        int burnedSamples = 200;//10;
         int goldenErrThreshold = 0;
 
 
@@ -223,8 +224,9 @@ public class SymbolicGibbsAAAI2015Tester {
                         minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
                         approxNumTimePointsForWhichErrIsPersisted,
                         goldenErrThreshold);
-                statInfo.persistMeanStdErrForFirstTakenSamples(outputDirectoryPath, param, samplerMaker.getName(), numMinDesiredSamples);
+                statInfo.persistMeanStdErrForFirstTakenErrSamples(outputDirectoryPath, param, samplerMaker.getName(), numMinDesiredSamples);
                 statInfo.persistMeanStdErrForTimePoints(outputDirectoryPath, param, samplerMaker.getName(), maxWaitingTimeForTakingDesiredSamples);
+                statInfo.persistGelmanRubinDiagnostics(outputDirectoryPath, param, samplerMaker.getName());
 
 //                if (statInfo.timeToTakeFirstSamplesOrGoldenTime != null) { //did not die        //todo!!!!!!!!!!!!!!!!!!!!
 //                    timeKeeper.persist(param, samplerMaker.getName(), statInfo.timeToTakeFirstSamplesOrGoldenTime);
@@ -233,7 +235,7 @@ public class SymbolicGibbsAAAI2015Tester {
 //                    testedAlgsDeathKeeper.recordDeath(samplerMaker, param); //todo uncomment if necessary
 //                }
 
-                System.out.println(samplerMaker.getName() + ".timeN/GOLD = " + statInfo.timeToTakeFirstSamplesOrGoldenTime/*totalProcessTimeMillis*/ + "\t\tsamples=" + statInfo.means4FirstSamples.size());
+                System.out.println(samplerMaker.getName() + ".timeN/GOLD = " + statInfo.timeToTakeFirstSamplesOrGoldenTime/*totalProcessTimeMillis*/ + "\t\tsamples=" + statInfo.numberOfFirstSamples());//.means4FirstSamples.size());
 
 //                } else {
 //                    System.err.println(samplerMaker.getName() + " skipped...");
@@ -257,20 +259,24 @@ public class SymbolicGibbsAAAI2015Tester {
             int approxNumTimePointsForWhichErrIsPersisted,
             double goldenErrThreshold) {
 
-        double rootNumRuns = Math.sqrt(numRunsPerAlgorithm);
-        Double[] meanFirstSampledErrs = new Double[numMinDesiredSamples]; //E{X}:: {E{alg_1_err1, alg2_err1, ...algN_err1}, E{alg_1_err2, alg2_err2, ...algN_err2},...}
-        Arrays.fill(meanFirstSampledErrs, 0d);
-        double[] exp2FirstSampledErrs = new double[numMinDesiredSamples]; //E{X^2}
-        int minFirstSamplesTakenPerIterations = numMinDesiredSamples;
+//.        double rootNumRuns = Math.sqrt(numRunsPerAlgorithm);
+//.        Double[] meanFirstSampledErrs = new Double[numMinDesiredSamples]; //E{X}:: {E{alg_1_err1, alg2_err1, ...algN_err1}, E{alg_1_err2, alg2_err2, ...algN_err2},...}
+//.        Arrays.fill(meanFirstSampledErrs, 0d);
+//.        double[] exp2FirstSampledErrs = new double[numMinDesiredSamples]; //E{X^2}
+//.        int minFirstSamplesTakenPerIterations = numMinDesiredSamples;
+        MultiArrayMultiStatistics errs4FirstSamplesMultiStat = new MultiArrayMultiStatistics(numMinDesiredSamples, numRunsPerAlgorithm);
+        MultiArrayMultiStatFlexibleIndex errs4timesMultiStat = new MultiArrayMultiStatFlexibleIndex(approxNumTimePointsForWhichErrIsPersisted + 10, numRunsPerAlgorithm);
+        MultiArrayMultiStatFlexibleIndex sampleMeans4timesMultiStat = new MultiArrayMultiStatFlexibleIndex(approxNumTimePointsForWhichErrIsPersisted + 10, numRunsPerAlgorithm);          //for Gelman and Rubin
+        MultiArrayMultiStatFlexibleIndex sampleVariances4timesMultiStat = new MultiArrayMultiStatFlexibleIndex(approxNumTimePointsForWhichErrIsPersisted + 10, numRunsPerAlgorithm);      //for Gelman and Rubin
 
-        List<Long> hallmarkTimeStampsInNano = null;
-        List<Double> meanErrForTimes = null;
-        double[] exp2ErrForTimes = null;
+//.        List<Long> hallmarkTimeStampsInNano = null;
+// .       List<Double> meanErrForTimes = null;
+//  .      double[] exp2ErrForTimes = null;
 
         List<Long> timesToAccomplishMillisOrGoldenNanos = new ArrayList<Long>(numRunsPerAlgorithm);
 
         for (int runNum = 0; runNum < numRunsPerAlgorithm; runNum++) {
-            System.out.println("ALG: " + samplerMaker.getName() + " -- ITR. = " + runNum);
+            System.out.println("\n* * *\n ALG: " + samplerMaker.getName() + " -- ITR. = " + runNum);
 
             Err4Samples_Err4times_Times err4Samples_err4times_times = errorVsSamplesAndTime(groundTruthMeanVector, joint, samplerMaker, burnedSamples,
                     numMinDesiredSamples, maxWaitingTimeForTakingDesiredSamplesMillis,
@@ -282,65 +288,78 @@ public class SymbolicGibbsAAAI2015Tester {
 
             //means and std-errors for "errors for first samples":
             List<Double> errList = err4Samples_err4times_times.errForFirstTakenSamples; //err. for first taken samples
-            minFirstSamplesTakenPerIterations = Math.min(minFirstSamplesTakenPerIterations, errList.size());
-            for (int i = 0; i < minFirstSamplesTakenPerIterations; i++) {   //the entries more than this min... are useless, discarded eventually
-                Double currentErrForFirstTakenSamples = errList.get(i);
-                meanFirstSampledErrs[i] = meanFirstSampledErrs[i] + (currentErrForFirstTakenSamples / (double) numRunsPerAlgorithm);
-                exp2FirstSampledErrs[i] = exp2FirstSampledErrs[i] + (currentErrForFirstTakenSamples * currentErrForFirstTakenSamples) / (double) numRunsPerAlgorithm;
-            }
+            errs4FirstSamplesMultiStat.addNewValue(errList);
+//.            minFirstSamplesTakenPerIterations = Math.min(minFirstSamplesTakenPerIterations, errList.size());
+// .           for (int i = 0; i < minFirstSamplesTakenPerIterations; i++) {   //the entries more than this min... are useless, discarded eventually
+//  .              Double currentErrForFirstTakenSamples = errList.get(i);
+//   .             meanFirstSampledErrs[i] = meanFirstSampledErrs[i] + (currentErrForFirstTakenSamples / (double) numRunsPerAlgorithm);
+//    .            exp2FirstSampledErrs[i] = exp2FirstSampledErrs[i] + (currentErrForFirstTakenSamples * currentErrForFirstTakenSamples) / (double) numRunsPerAlgorithm;
+//     .       }
 
             //means and std-errors for "errors in time stamps":
             List<Long> recordedTimePointsInNano = err4Samples_err4times_times.recordedTimePointsInNano;
             List<Double> errVsTimes = err4Samples_err4times_times.errVsTimes;
-            if (hallmarkTimeStampsInNano == null) {
-                hallmarkTimeStampsInNano = recordedTimePointsInNano; //so the times points of the first algorithm-run are the hall marks...
-                meanErrForTimes = errVsTimes; //means of a single elements = same single elements\
-                exp2ErrForTimes = new double[meanErrForTimes.size()];
-                for (int i = 0; i < errVsTimes.size(); i++) {
-                    Double errVsTime = errVsTimes.get(i);
-                    exp2ErrForTimes[i] = errVsTime * errVsTime;
-                }
-            } else if (!recordedTimePointsInNano.isEmpty()) { //E[X], E[X^2] of 'means vs Times' should be updated
-                int index2 = 0;
-                for (int index1 = 0; index1 < hallmarkTimeStampsInNano.size(); index1++) {
-                    Long hallMarkTime = hallmarkTimeStampsInNano.get(index1);
-                    for (int i = index2; i < recordedTimePointsInNano.size(); i++) {
-                        Long newT1 = recordedTimePointsInNano.get(i);
-                        Long newT2 = (i == recordedTimePointsInNano.size() - 1) ? newT1 : recordedTimePointsInNano.get(i + 1);
-                        long deltaT1 = Math.abs(newT1 - hallMarkTime);
-                        long deltaT2 = Math.abs(newT2 - hallMarkTime);
-                        if (deltaT1 <= deltaT2) {
-                            index2 = i; //so that next time search is started from here
-                            break;
-                        }
-                    }
-//                    long nearestTime = recordedTimePointsInNano.get(index2);
-                    Double errAssociatedWithNearestTime = errVsTimes.get(index2);
-                    meanErrForTimes.set(index1, ((meanErrForTimes.get(index1) * runNum) + errAssociatedWithNearestTime) / (double) (runNum + 1));//mean is updated with the closest new time
-                    exp2ErrForTimes[index1] = ((exp2ErrForTimes[index1] * runNum) + errAssociatedWithNearestTime * errAssociatedWithNearestTime) / (double) (runNum + 1);
-                }
-            }
+            errs4timesMultiStat.addNewValue(recordedTimePointsInNano, errVsTimes);
+
+            List<Double> sampleMeanVsTimes = err4Samples_err4times_times.sampleMeanVsTimes;
+            sampleMeans4timesMultiStat.addNewValue(recordedTimePointsInNano, sampleMeanVsTimes);
+
+            List<Double> sampleVarianceVsTimes = err4Samples_err4times_times.sampleVarianceVsTimes;
+            sampleVariances4timesMultiStat.addNewValue(recordedTimePointsInNano, sampleVarianceVsTimes);
+
+            //todo
+//.            if (hallmarkTimeStampsInNano == null) {
+// .               hallmarkTimeStampsInNano = recordedTimePointsInNano; //so the times points of the first algorithm-run are the hall marks...
+//  .              meanErrForTimes = errVsTimes; //means of a single elements = same single elements\
+//   .             exp2ErrForTimes = new double[meanErrForTimes.size()];
+//    .            for (int i = 0; i < errVsTimes.size(); i++) {
+//     .               Double errVsTime = errVsTimes.get(i);
+//      .              exp2ErrForTimes[i] = errVsTime * errVsTime;
+//       .         }
+//        .    } else if (!recordedTimePointsInNano.isEmpty()) { //E[X], E[X^2] of 'means vs Times' should be updated
+//.                int index2 = 0;
+// .               for (int index1 = 0; index1 < hallmarkTimeStampsInNano.size(); index1++) {
+//  .                  Long hallMarkTime = hallmarkTimeStampsInNano.get(index1);
+//   .                 for (int i = index2; i < recordedTimePointsInNano.size(); i++) {
+//    .                    Long newT1 = recordedTimePointsInNano.get(i);
+//     .                   Long newT2 = (i == recordedTimePointsInNano.size() - 1) ? newT1 : recordedTimePointsInNano.get(i + 1);
+//      .                  long deltaT1 = Math.abs(newT1 - hallMarkTime);
+//       .                 long deltaT2 = Math.abs(newT2 - hallMarkTime);
+//.                        if (deltaT1 <= deltaT2) {
+// .                           index2 = i; //so that next time search is started from here
+//  .                          break;
+//   .                     }
+//    .                }
+//     .               Double errAssociatedWithNearestTime = errVsTimes.get(index2);
+//      .              meanErrForTimes.set(index1, ((meanErrForTimes.get(index1) * runNum) + errAssociatedWithNearestTime) / (double) (runNum + 1));//mean is updated with the closest new time
+//       .             exp2ErrForTimes[index1] = ((exp2ErrForTimes[index1] * runNum) + errAssociatedWithNearestTime * errAssociatedWithNearestTime) / (double) (runNum + 1);
+//        .        }
+//         .   }
 
         } //end alg. run num.
 
-        if (meanFirstSampledErrs.length != minFirstSamplesTakenPerIterations) {
-            //prune the useless end of the mean array:
-            Double[] resizeArray = new Double[minFirstSamplesTakenPerIterations];
-            System.arraycopy(meanFirstSampledErrs, 0, resizeArray, 0, minFirstSamplesTakenPerIterations);
-            meanFirstSampledErrs = resizeArray;
-        }
+//        List<Double> meanFirstSampledErrs = multiMeasure4FirstSamplesErrsMeasure.computeMean();
+// .       if (meanFirstSampledErrs.length != minFirstSamplesTakenPerIterations) {
+//  .          prune the useless end of the mean array:
+//   .         Double[] resizeArray = new Double[minFirstSamplesTakenPerIterations];
+//    .        System.arraycopy(meanFirstSampledErrs, 0, resizeArray, 0, minFirstSamplesTakenPerIterations);
+//     .       meanFirstSampledErrs = resizeArray;
+//      .  }
 
 
-        Double[] stdErrs4FirstSamples = new Double[minFirstSamplesTakenPerIterations];
-        for (int i = 0; i < minFirstSamplesTakenPerIterations; i++) {
-            stdErrs4FirstSamples[i] = Math.sqrt(exp2FirstSampledErrs[i] - meanFirstSampledErrs[i] * meanFirstSampledErrs[i]) / rootNumRuns;
-        }
+//        List<Double> stdErrs4FirstSamples = multiMeasure4FirstSamplesErrsMeasure.computeCorrectedStdErr();
+//.        Double[] stdErrs4FirstSamples = new Double[minFirstSamplesTakenPerIterations];
+// .       for (int i = 0; i < minFirstSamplesTakenPerIterations; i++) {
+//  .          stdErrs4FirstSamples[i] = Math.sqrt(exp2FirstSampledErrs[i] - meanFirstSampledErrs[i] * meanFirstSampledErrs[i]) / rootNumRuns;
+//   .     }
 
-        Double[] stdErrs4Times = new Double[meanErrForTimes.size()];
-        for (int i = 0; i < meanErrForTimes.size(); i++) {
-            double mean = meanErrForTimes.get(i);
-            stdErrs4Times[i] = Math.sqrt(exp2ErrForTimes[i] - mean * mean) / rootNumRuns;
-        }
+//        List<Double> stdErrs4Times = multiMeasure4timedErrs.computeCorrectedStdErr();   //std error for timed errors
+//        List<Double> meanErrForTimes = multiMeasure4timedErrs.computeMean();
+//.        Double[] stdErrs4Times = new Double[meanErrForTimes.size()];
+// .       for (int i = 0; i < meanErrForTimes.size(); i++) {
+//  .          double mean = meanErrForTimes.get(i);
+//   .         stdErrs4Times[i] = Math.sqrt(exp2ErrForTimes[i] - mean * mean) / rootNumRuns;
+//    .    }
 
         Long averageTimeToAccomplishOrGolden = null;//todo std err may be calculated as well.
         if (!timesToAccomplishMillisOrGoldenNanos.isEmpty()) {
@@ -351,7 +370,11 @@ public class SymbolicGibbsAAAI2015Tester {
             averageTimeToAccomplishOrGolden /= timesToAccomplishMillisOrGoldenNanos.size();
         }
 
-        return new StatInfo(Arrays.asList(meanFirstSampledErrs), Arrays.asList(stdErrs4FirstSamples), meanErrForTimes, Arrays.asList(stdErrs4Times), hallmarkTimeStampsInNano, averageTimeToAccomplishOrGolden, numRunsPerAlgorithm);
+        return new StatInfo(errs4FirstSamplesMultiStat, errs4timesMultiStat,
+                sampleMeans4timesMultiStat, sampleVariances4timesMultiStat,
+
+
+                averageTimeToAccomplishOrGolden, numRunsPerAlgorithm);
 
         /*    //mean and stdErr for all Iterations
             double mean = 0d;  //E[X]
@@ -376,8 +399,7 @@ public class SymbolicGibbsAAAI2015Tester {
             long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
             int approxNumTimePointsForWhichErrIsPersisted,
             //
-            double goldenErrThreshold
-    ) {
+            double goldenErrThreshold) {
         Long goldenErrTimeMillisOrNano = null;
         boolean goldenErrRecorded = false;
 //        Long timeToTakeFirstSamplesMillis = null; //not necessarily total time if the time analysis takes more time...
@@ -388,11 +410,16 @@ public class SymbolicGibbsAAAI2015Tester {
             sampler.reusableSample(); //discard samples...
         }
 
-        double[] runningAccumulatedSample = null; //since maybe I do not know the dim yet...(if no burned sample is taken)
+//        double[] runningAccumulatedSample = null; //since maybe I do not know the dim yet...(if no burned sample is taken)
 
         List<Double> errVsFirstSamples = new ArrayList<Double>(numMinDesiredSamples);
         List<Long> recordedTimePointsInNano = new ArrayList<Long>(approxNumTimePointsForWhichErrIsPersisted);
         List<Double> errVsTimes = new ArrayList<Double>(approxNumTimePointsForWhichErrIsPersisted);
+
+        List<Double> meanVsFirstSamples = new ArrayList<Double>(numMinDesiredSamples);
+        List<Double> varianceVsFirstSamples = new ArrayList<Double>(numMinDesiredSamples);
+        List<Double> meanVsTimes = new ArrayList<Double>(approxNumTimePointsForWhichErrIsPersisted);            //for Gelman and Rubin, think of it as a list of samples where the length of each sample vector is 1
+        List<Double> varianceVsTimes = new ArrayList<Double>(approxNumTimePointsForWhichErrIsPersisted);        //for Gelman and Rubin
 
         //trying to take the desired number of samples...
         long absoluteStartTimeMillis = System.currentTimeMillis();
@@ -403,29 +430,43 @@ public class SymbolicGibbsAAAI2015Tester {
 
         boolean samplingPerformedInIntendedTimeSuccessfully;
 
+        AbsDifferenceMeasure errMeasure = new AbsDifferenceMeasure(groundTruthMeanVector);
+        MeanMeasure meanMeasure = new MeanMeasure();
+        VarianceMeasure varianceMeasure = new VarianceMeasure();
+
         for (; ; ) {
             Double[] sample = sampler.reusableSample();
             sample = pruneNulls(sample);
             takenSamples++;
 
-            if (runningAccumulatedSample == null) {
-                runningAccumulatedSample = new double[sample.length];
-            }
+//.            if (runningAccumulatedSample == null) {
+// .               runningAccumulatedSample = new double[sample.length];
+//  .          }
 
-            for (int i = 0; i < sample.length; i++) {
-                runningAccumulatedSample[i] = runningAccumulatedSample[i] + sample[i];
-            }
+// .           for (int i = 0; i < sample.length; i++) {
+//  .              runningAccumulatedSample[i] = runningAccumulatedSample[i] + sample[i];
+//   .         }
+
+            meanMeasure.addNewValue(sample);
+            varianceMeasure.addNewValue(sample);
+
+            errMeasure.addNewValue(sample);
+            double runErr = errMeasure.computeMeasure();
+            double runSingleDimensionalSampleMean = meanMeasure.computeMeasure();    //the mean of single dimensional samples so far. A single dimensional sample is the average of sample entries.
+            double runSingleDimensionalSampleVariance = varianceMeasure.computeMeasure(); //variance of single dimensional samples so far.
 
             //sum_i (absolute difference of (average of taken_sample_i and ground_truth_i)):
-            double runErr = 0;  //running error
-            for (int i = 0; i < sample.length; i++) {
-                runErr += Math.abs((runningAccumulatedSample[i] / (double) takenSamples) - groundTruthMeanVector[i]);
-            }
-            runErr /= (double) sample.length;
+//.            double runErr = 0;  //running error
+// .           for (int i = 0; i < sample.length; i++) {
+//  .              runErr += Math.abs((runningAccumulatedSample[i] / (double) takenSamples) - groundTruthMeanVector[i]);
+//   .         }
+//    .        runErr /= (double) sample.length;
 
             //first samples:
             if (takenSamples <= numMinDesiredSamples) { //save first samples:
                 errVsFirstSamples.add(runErr); //error till current taken sample
+                meanVsFirstSamples.add(runSingleDimensionalSampleMean);
+                varianceVsFirstSamples.add(runSingleDimensionalSampleVariance);
             }
 
             //samples vs. time:
@@ -435,6 +476,8 @@ public class SymbolicGibbsAAAI2015Tester {
                 savedTimePoints++;
                 errVsTimes.add(runErr);
                 recordedTimePointsInNano.add(System.nanoTime() - absoluteStartTimeNanos);
+                meanVsTimes.add(runSingleDimensionalSampleMean);
+                varianceVsTimes.add(runSingleDimensionalSampleVariance);
             }
 
             //saving golden Err. time:
@@ -470,7 +513,10 @@ public class SymbolicGibbsAAAI2015Tester {
                 null;
 
         System.out.println("goldenErrTimeMillis/nanos = " + goldenErrTimeMillisOrNano + "\n");
-        return new Err4Samples_Err4times_Times(errVsFirstSamples, errVsTimes, recordedTimePointsInNano, samplingPerformedInIntendedTimeSuccessfully, goldenErrTimeMillisOrNano/*timeToAccomplishTaskMillis*/);
+        return new Err4Samples_Err4times_Times(errVsFirstSamples, errVsTimes,
+                meanVsFirstSamples, meanVsTimes,
+                varianceVsFirstSamples, varianceVsTimes,
+                recordedTimePointsInNano, samplingPerformedInIntendedTimeSuccessfully, goldenErrTimeMillisOrNano/*timeToAccomplishTaskMillis*/);
     }
 
     class Err4Samples_Err4times_Times {
@@ -480,13 +526,26 @@ public class SymbolicGibbsAAAI2015Tester {
         boolean samplingPerformedInIntendedTimeSuccessfully;
         Long timeToAccomplishTaskMillisOrGoldenTimeNano;
 
-        Err4Samples_Err4times_Times(List<Double> errForFirstTakenSamples, List<Double> errVsTimes, List<Long> recordedTimePointsInNano,
+        List<Double> sampleMeanVsFirstSamples;   //mean of single dim. samples so far
+        List<Double> sampleMeanVsTimes;          //mean of single dim. samples up to the current time slot
+        List<Double> sampleVarianceVsFirstSamples;  //var. of single dim. samples so far
+        List<Double> sampleVarianceVsTimes;         //var. of single dim. samples so far
+
+        Err4Samples_Err4times_Times(List<Double> errForFirstTakenSamples, List<Double> errVsTimes,
+                                    List<Double> sampleMeanVsFirstSamples, List<Double> sampleMeanVsTimes,
+                                    List<Double> sampleVarianceVsFirstSamples, List<Double> sampleVarianceVsTimes,
+                                    List<Long> recordedTimePointsInNano,
                                     boolean samplingPerformedInIntendedTimeSuccessfully, Long timeToAccomplishTaskMillisOrGoldenTimeNano) {
             this.errForFirstTakenSamples = errForFirstTakenSamples;
             this.errVsTimes = errVsTimes;
             this.recordedTimePointsInNano = recordedTimePointsInNano;
             this.samplingPerformedInIntendedTimeSuccessfully = samplingPerformedInIntendedTimeSuccessfully;
             this.timeToAccomplishTaskMillisOrGoldenTimeNano = timeToAccomplishTaskMillisOrGoldenTimeNano;
+
+            this.sampleMeanVsFirstSamples = sampleMeanVsFirstSamples;
+            this.sampleMeanVsTimes = sampleMeanVsTimes;
+            this.sampleVarianceVsFirstSamples = sampleVarianceVsFirstSamples;
+            this.sampleVarianceVsTimes = sampleVarianceVsTimes;
         }
     }
 
@@ -498,35 +557,97 @@ public class SymbolicGibbsAAAI2015Tester {
 //        double[] groundTruthMeans; //this is an array of size #F not persisted but kept in case ground truth is calculated for the first time.
 
         //calculated info:
-        List<Double> means4FirstSamples;
-        List<Double> stdErrs4FirstSamples;
-        List<Double> means4TimePoints;
-        List<Double> stdErrs4TimePoints;
-        List<Long> recordedTimePointsInNano;
-        //        Long totalProcessTimeMillis;
+//        List<Double> means4FirstSamples;
+//        List<Double> stdErrs4FirstSamples;
+//        List<Double> means4TimePoints;
+//        List<Double> stdErrs4TimePoints;
+//        List<Long> recordedTimePointsInNano;
+        MultiArrayMultiStatistics errVsFirstSamplesStat;
+        MultiArrayMultiStatFlexibleIndex errsVsTimesStat;
+
+        MultiArrayMultiStatFlexibleIndex sampleMeans4timesMultiStat;
+        MultiArrayMultiStatFlexibleIndex sampleVariances4timesMultiStat;
+
+
+        ////        Long totalProcessTimeMillis;
         Long timeToTakeFirstSamplesOrGoldenTime;
 
         int numIterationsForEachAlgorithm;
 
-        public StatInfo(List<Double> meanOfErrorVsFirstSamples, List<Double> stdErrOfErrorVsFirstSamples,
-                        List<Double> meanOfErrorVsTime, List<Double> stdErrOfErrorVsTime, List<Long> recordedTimePointsInNano,
+        public StatInfo(
+                MultiArrayMultiStatistics errVsFirstSamplesStat,
+//                List<Double> meanOfErrorVsFirstSamples, List<Double> stdErrOfErrorVsFirstSamples,
+                MultiArrayMultiStatFlexibleIndex errsVsTimesStat,
+//                        List<Double> meanOfErrorVsTime, List<Double> stdErrOfErrorVsTime, List<Long> recordedTimePointsInNano,
+
+                MultiArrayMultiStatFlexibleIndex sampleMeans4timesMultiStat, MultiArrayMultiStatFlexibleIndex sampleVariances4timesMultiStat,
+
                         Long timeToTakeFirstSamplesOrGoldenTime, int numIterationsForEachAlgorithm) {
             this.numIterationsForEachAlgorithm = numIterationsForEachAlgorithm;
-//            this.numF = groundTruthMeans.length;
+////            this.numF = groundTruthMeans.length;
 
-            this.means4FirstSamples = meanOfErrorVsFirstSamples;
-            this.stdErrs4FirstSamples = stdErrOfErrorVsFirstSamples;
+            this.errVsFirstSamplesStat = errVsFirstSamplesStat;
+            this.errsVsTimesStat = errsVsTimesStat;
 
-            this.means4TimePoints = meanOfErrorVsTime;
-            this.stdErrs4TimePoints = stdErrOfErrorVsTime;
-            this.recordedTimePointsInNano = recordedTimePointsInNano;
+            this.sampleMeans4timesMultiStat = sampleMeans4timesMultiStat;          //used for Gelman & Rubin diagnostics
+            this.sampleVariances4timesMultiStat = sampleVariances4timesMultiStat;  //used for Gelman & Rubin diagnostics
+
+//            this.means4FirstSamples = meanOfErrorVsFirstSamples;
+//            this.stdErrs4FirstSamples = stdErrOfErrorVsFirstSamples;
+//            this.means4TimePoints = meanOfErrorVsTime;
+//            this.stdErrs4TimePoints = stdErrOfErrorVsTime;
+//            this.recordedTimePointsInNano = recordedTimePointsInNano;
 
             this.timeToTakeFirstSamplesOrGoldenTime = timeToTakeFirstSamplesOrGoldenTime;
 
-            if (means4FirstSamples.size() != stdErrs4FirstSamples.size())
-                throw new RuntimeException("size mismatch between |mean|= " + means4FirstSamples.size() + " and |stdErr|= " + stdErrs4FirstSamples.size());
-            if ((means4TimePoints.size() != stdErrs4TimePoints.size()) || (means4TimePoints.size() != this.recordedTimePointsInNano.size()))
-                throw new RuntimeException("size mismatch");
+//            if (means4FirstSamples.size() != stdErrs4FirstSamples.size())
+//                throw new RuntimeException("size mismatch between |mean|= " + means4FirstSamples.size() + " and |stdErr|= " + stdErrs4FirstSamples.size());
+//            if ((means4TimePoints.size() != stdErrs4TimePoints.size()) || (means4TimePoints.size() != this.recordedTimePointsInNano.size()))
+//                throw new RuntimeException("size mismatch");
+
+        }
+
+        public double[] calcGelmanRubinDiagnosticsPSRF(){
+            //see http://support.sas.com/documentation/cdl/en/statug/63033/HTML/default/viewer.htm#statug_introbayes_sect008.htm#statug.introbayes.bayesgelman
+            //big theta bar := 1/M sigma_{m:1 to M} average(theta_m) where average(theta_m) is 1/n sigma_{t = 1 ot n} theta_{m,t} where theta_{m,t} is the t-th single dimensional sample of m-th chain
+
+            List<Double> b = sampleMeans4timesMultiStat.computeVariance(); //should be multiplied in 'n' the number of taken samples in the current chain
+            for (int i = 0; i < b.size(); i++) {
+                double n = i+1;
+                Double b0 = b.get(i);
+                b.set(i, b0 * n);
+            }
+
+            List<Double> w = sampleVariances4timesMultiStat.computeMean();
+
+            double m = sampleVariances4timesMultiStat.numberOfChains();
+
+            double[] potentialScaleReductionFactor = new double[b.size()];
+            for (int i = 0; i < b.size(); i++) {
+                double n = i+1;
+                double vHat_i = ((n-1)/n) * w.get(i) + b.get(i)/n;//((m+1)/(n*m))*b.get(i);    //modified due to http://www.people.fas.harvard.edu/~plam/teaching/methods/convergence/convergence_print.pdf
+                potentialScaleReductionFactor[i] = Math.sqrt(vHat_i/w.get(i));
+            }
+
+            return potentialScaleReductionFactor;
+
+        }
+
+        public void persistGelmanRubinDiagnostics(String path, int numParamDims, String algorithmName) throws FileNotFoundException {
+            double[] psrf = calcGelmanRubinDiagnosticsPSRF();
+
+            List<Long> recordedTimePointsInNano = sampleMeans4timesMultiStat.getHallmarkTimeStampsInNano();
+
+            String outputFileName = path + generalInfo(numParamDims, algorithmName) + "-times-gelman";
+
+            PrintStream ps = new PrintStream(new FileOutputStream(outputFileName));
+
+            for (int i = 0; i < psrf.length; i++) {
+                //          #index      #time.point(ms)         #mean       #stdErr
+                ps.println((i + 1) + "\t" + recordedTimePointsInNano.get(i) + "\t" + psrf[i]);
+            }
+
+            ps.close();
 
         }
 
@@ -534,7 +655,10 @@ public class SymbolicGibbsAAAI2015Tester {
             return "param" + param + "-itr" + numIterationsForEachAlgorithm /*+ "-maxT" + maxAllowedSamplingTime */ + "-" + algorithmName;
         }
 
-        public void persistMeanStdErrForFirstTakenSamples(String path, int param, String algorithmName, int numDesiredSamples) throws FileNotFoundException {
+        public void persistMeanStdErrForFirstTakenErrSamples(String path, int param, String algorithmName, int numDesiredSamples) throws FileNotFoundException {
+            List<Double> means4FirstSamples = errVsFirstSamplesStat.computeMean();
+            List<Double> stdErrs4FirstSamples = errVsFirstSamplesStat.computeCorrectedStdErr();
+
             PrintStream ps;
             String outputFileName = path + generalInfo(param, algorithmName/*, maxAllowedSamplingTime*/) + "-samples" + numDesiredSamples;
 
@@ -550,6 +674,10 @@ public class SymbolicGibbsAAAI2015Tester {
 
 
         public void persistMeanStdErrForTimePoints(String path, int numParamDims, String algorithmName, long maxAllowedSamplingTime) throws FileNotFoundException {
+            List<Double> means4TimePoints = errsVsTimesStat.computeMean();
+            List<Double> stdErrs4TimePoints = errsVsTimesStat.computeCorrectedStdErr();
+            List<Long> recordedTimePointsInNano = errsVsTimesStat.getHallmarkTimeStampsInNano();
+
             String outputFileName = path + generalInfo(numParamDims, algorithmName/*, maxAllowedSamplingTime*/) + "-times";// + means4TimePoints.size();
 
             PrintStream ps = new PrintStream(new FileOutputStream(outputFileName));
@@ -561,6 +689,12 @@ public class SymbolicGibbsAAAI2015Tester {
 
             ps.close();
         }
+
+        public int numberOfFirstSamples() {
+            return errVsFirstSamplesStat.numberOfSamples();
+        }
+
+
     }//end class Stat info
 
     private class TotalTimeKeeper {

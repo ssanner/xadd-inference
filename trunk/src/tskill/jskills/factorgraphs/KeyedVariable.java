@@ -1,10 +1,8 @@
 package tskill.jskills.factorgraphs;
 
-import lombok.Getter;
-
 public class KeyedVariable<TKey, TValue> extends Variable<TValue> {
 
-    @Getter private final TKey key;
+    private final TKey key;
 
     public TKey getKey() {
         return key;

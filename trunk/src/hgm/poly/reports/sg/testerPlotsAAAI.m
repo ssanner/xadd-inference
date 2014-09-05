@@ -1,18 +1,18 @@
 current_path = 'E:\REPORT_PATH_AAAI15\';
 
-param = 4;
-samples = 1000;
-itr = 1; 
+param = 5;
+samples = 50000;
+itr = 15; 
 %%%%%%%%%
 
 %algs = {'symbolic.gibbs', 'baseline.gibbs', 'rej', 'mh', 'tuned.mh'};
-algs = {'symbolic.gibbs', 'baseline.gibbs', 'mh', 'tuned.mh'};
+algs = {'symbolic.gibbs', 'baseline.gibbs', 'mh'};%, 'tuned.mh'};
 
 colors = {'k', 'b', 'r', 'g', 'c', 'm', 'y', 'b'};
 numAlgs = size(algs, 2);
 %%%%%%%%%
 %transparent = true;
-doTest1 = false;
+doTest1 = true;
 doTest2 = true;
 doTest3 = false;
 
@@ -80,7 +80,7 @@ end %for
 
 %just to create semi log axis:
 %semilogy(info2{1}(:,2) * timeCoeff,info2{1}(:,3), [colors{1} '-']);%semilogx(data2{1}(:,2),data2{1}(:,3),'k-');
-semilogy(info2{1}(:,2) * timeCoeff,info2{1}(:,3), [colors{1} '-']);%semilogx(data2{1}(:,2),data2{1}(:,3),'k-');
+plot(info2{1}(:,2) * timeCoeff,info2{1}(:,3), [colors{1} '-']);%semilogx(data2{1}(:,2),data2{1}(:,3),'k-');
 hold on;
 
 for i=2:numAlgs

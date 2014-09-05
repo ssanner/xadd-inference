@@ -1,7 +1,5 @@
 package tskill.jskills;
 
-import lombok.Getter;
-
 /**
  * Represents a player who has a {@link Rating}.
  */
@@ -14,7 +12,7 @@ public class Player<T> implements IPlayer, ISupportPartialPlay, ISupportPartialU
     private static final double DefaultPartialUpdatePercentage = 1.0;
 
     /** The identifier for the player, such as a name. **/
-    @Getter private final T id;
+    private final T id;
 
     public T getId() {
         return id;
@@ -33,13 +31,13 @@ public class Player<T> implements IPlayer, ISupportPartialPlay, ISupportPartialU
      * indicates the player didn't play and 1.0 indicates the player played 100%
      * of the time.
      */
-    @Getter private final double partialPlayPercentage;
+    private final double partialPlayPercentage;
 
     /**
      * Indicated how much of a skill update a player should receive where 0.0
      * represents no update and 1.0 represents 100% of the update.
      */
-    @Getter private final double partialUpdatePercentage;
+    private final double partialUpdatePercentage;
 
     @Override
     public int hashCode() {
