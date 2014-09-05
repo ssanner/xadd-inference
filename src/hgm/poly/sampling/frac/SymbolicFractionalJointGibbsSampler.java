@@ -49,8 +49,8 @@ public class SymbolicFractionalJointGibbsSampler implements SamplerInterface {
 
     public static final boolean DEBUG = false;
     protected static final Random random = new Random();
-    public static final double SAMPLE_ACCURACY = 1E-6;//1E-6;
-    public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 30;//20;
+    public static final double SAMPLE_ACCURACY = 1E-9;//1E-6;
+    public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 45;//30;
     public static final int MAX_INITIAL_SAMPLING_TRIAL = 100000000;    // if the function is not positive, (initial) sample cannot be
     int numScopeVars;
     //    Double[] prevSample = null;

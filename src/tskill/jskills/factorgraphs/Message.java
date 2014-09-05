@@ -1,14 +1,11 @@
 package tskill.jskills.factorgraphs;
 
-import lombok.Getter;
-import lombok.Setter;
-
 public class Message<T> {
 
     private final String nameFormat;
     private final Object[] nameFormatArgs;
 
-    @Getter @Setter private T value;
+    private T value;
 
     public T getValue() {
         return value;

@@ -1,13 +1,10 @@
 package tskill.jskills.factorgraphs;
 
-import lombok.Getter;
-import lombok.Setter;
-
 public class Variable<TValue>
 {
     private final String name;
     private final TValue prior;
-    @Getter @Setter private TValue value;
+    private TValue value;
 
 
     public String getName() {
