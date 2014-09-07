@@ -16,13 +16,13 @@ import java.util.*;
  * Date: 5/08/14
  * Time: 9:23 AM
  */
-public class SymbolicFractionalJointGibbsSampler implements SamplerInterface {
+public class FractionalJointSymbolicGibbsSampler implements SamplerInterface {
 
     public static JointToSampler makeJointToSampler() {
         return new JointToSampler() {
             @Override
             public SamplerInterface makeSampler(PiecewiseExpression<Fraction> joint, double minLimitForAllVars, double maxLimitForAllVars) {
-                return SymbolicFractionalJointGibbsSampler.makeSampler(joint, minLimitForAllVars, maxLimitForAllVars);
+                return FractionalJointSymbolicGibbsSampler.makeSampler(joint, minLimitForAllVars, maxLimitForAllVars);
             }
 
             @Override
@@ -34,7 +34,7 @@ public class SymbolicFractionalJointGibbsSampler implements SamplerInterface {
 
     }
 
-    public static SymbolicFractionalJointGibbsSampler makeSampler(PiecewiseExpression<Fraction> joint,
+    public static FractionalJointSymbolicGibbsSampler makeSampler(PiecewiseExpression<Fraction> joint,
                                                                   double minForAllVars, double maxForAllVars/*, Double[] reusableInitialSample*/) {
         List<String> jointScopeVars = new ArrayList<String>(joint.getScopeVars());
         int numScopeVars = jointScopeVars.size(); // note: these are not all vars in the factory.
@@ -42,7 +42,7 @@ public class SymbolicFractionalJointGibbsSampler implements SamplerInterface {
         double[] cVarMaxes = new double[numScopeVars];
         Arrays.fill(cVarMins, minForAllVars);
         Arrays.fill(cVarMaxes, maxForAllVars);
-        return new SymbolicFractionalJointGibbsSampler(joint, jointScopeVars, cVarMins, cVarMaxes/*, reusableInitialSample*/);
+        return new FractionalJointSymbolicGibbsSampler(joint, jointScopeVars, cVarMins, cVarMaxes/*, reusableInitialSample*/);
     }
 
     //..................
@@ -65,7 +65,7 @@ public class SymbolicFractionalJointGibbsSampler implements SamplerInterface {
     private Map<String, Double> reusableSampleAssignment;
 
 
-    public SymbolicFractionalJointGibbsSampler(PiecewiseExpression<Fraction> joint,
+    public FractionalJointSymbolicGibbsSampler(PiecewiseExpression<Fraction> joint,
                                                List<String> scopeVars,
                                                double[] cVarMins, double[] cVarMaxes/*, Double[] reusableInitialSample*/) {
         this.joint = joint;

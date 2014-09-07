@@ -19,6 +19,7 @@ import java.util.*;
  * Date: 18/08/14
  * Time: 7:24 PM
  */
+@Deprecated
 public class SymbolicGibbsAAAI2015Tester {
 
     public static final String REPORT_PATH_COLLISION_ANALYSIS = "E:/REPORT_PATH_AAAI15/";
@@ -42,7 +43,7 @@ public class SymbolicGibbsAAAI2015Tester {
         int numSamplesFromTesterToSimulateTrueDistribution = 100000;
         int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60 * 100;
         List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
-                SymbolicFractionalJointGibbsSampler.makeJointToSampler(),
+                FractionalJointSymbolicGibbsSampler.makeJointToSampler(),
                 FractionalJointBaselineGibbsSampler.makeJointToSampler(),
 //                FractionalJointRejectionSampler.makeJointToSampler(1),
                 FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0),
@@ -109,7 +110,7 @@ public class SymbolicGibbsAAAI2015Tester {
         int numSamplesFromTesterToSimulateTrueDistribution = 1000;
         int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60;
         List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
-                SymbolicFractionalJointGibbsSampler.makeJointToSampler(),
+                FractionalJointSymbolicGibbsSampler.makeJointToSampler(),
                 FractionalJointBaselineGibbsSampler.makeJointToSampler(),
                 FractionalJointRejectionSampler.makeJointToSampler(1),
                 FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0),

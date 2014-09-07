@@ -5,7 +5,7 @@ import hgm.poly.Function;
 import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.sampling.SamplingUtils;
-import hgm.poly.sampling.frac.SymbolicFractionalJointGibbsSampler;
+import hgm.poly.sampling.frac.FractionalJointSymbolicGibbsSampler;
 import hgm.poly.vis.FunctionVisualizer;
 import hgm.sampling.VarAssignment;
 import org.junit.Test;
@@ -72,7 +72,7 @@ public class DistributionsTest {
         System.out.println("joint.getFactory().getAllVars() = " + Arrays.toString(joint.getFactory().getAllVars()));
 
         //Sampler:
-        SymbolicFractionalJointGibbsSampler sampler = SymbolicFractionalJointGibbsSampler.makeSampler(joint, -1.001, 1.001);
+        FractionalJointSymbolicGibbsSampler sampler = FractionalJointSymbolicGibbsSampler.makeSampler(joint, -1.001, 1.001);
         for (int i = 0; i < 10; i++) {
             Map<String, Double> sample = sampler.reusableSampleAssignment();
             System.out.println("sample = " + sample);

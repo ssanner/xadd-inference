@@ -18,6 +18,7 @@ import java.util.*;
  * Date: 18/08/14
  * Time: 7:24 PM
  */
+@Deprecated
 public class SymbolicGibbsTesterForErrorVsTimeAnalysis {
 
     public static final String REPORT_PATH = "E:/REPORT_PATH_AAAI15/symmetric/";
@@ -34,7 +35,7 @@ public class SymbolicGibbsTesterForErrorVsTimeAnalysis {
         List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
 //                FractionalJointBaselineGibbsSampler.makeJointToSampler(),
                 FractionalJointRejectionSampler.makeJointToSampler(1),
-                SymbolicFractionalJointGibbsSampler.makeJointToSampler(),
+                FractionalJointSymbolicGibbsSampler.makeJointToSampler(),
                 FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0)
 //                ,FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 100, 100)
         );
@@ -71,7 +72,7 @@ public class SymbolicGibbsTesterForErrorVsTimeAnalysis {
         System.out.println("REPORT_PATH = " + REPORT_PATH);
 
         List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
-                SymbolicFractionalJointGibbsSampler.makeJointToSampler(),
+                FractionalJointSymbolicGibbsSampler.makeJointToSampler(),
                 FractionalJointBaselineGibbsSampler.makeJointToSampler(),
                 FractionalJointRejectionSampler.makeJointToSampler(1),
                 FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0),

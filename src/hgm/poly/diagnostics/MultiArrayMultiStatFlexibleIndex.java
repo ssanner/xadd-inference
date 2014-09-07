@@ -23,6 +23,18 @@ public class MultiArrayMultiStatFlexibleIndex {
         return hallmarkTimeStampsInNano;
     }
 
+    public void addNewIntegerValue(List<Long> recordedTimePointsInNano, List<Integer> infoVsTimes) {
+          addNewValue(recordedTimePointsInNano, intListAsDoubleList(infoVsTimes));
+    }
+
+    public static List<Double> intListAsDoubleList(List<Integer> ints) {
+        Double[] doubles = new Double[ints.size()];
+        for (int i = 0; i < ints.size(); i++) {
+            doubles[i] = (double)ints.get(i);
+        }
+        return Arrays.asList(doubles);
+    }
+
     public void addNewValue(List<Long> recordedTimePointsInNano, List<Double> errVsTimes) {
         if (hallmarkTimeStampsInNano == null) {
             hallmarkTimeStampsInNano = recordedTimePointsInNano; //so the times points of the first algorithm-run are the hall marks...
@@ -54,7 +66,7 @@ public class MultiArrayMultiStatFlexibleIndex {
 //                exp2ErrForTimes[index1] = ((exp2ErrForTimes[index1] * runNum) + errAssociatedWithNearestTime * errAssociatedWithNearestTime) / (double) (runNum + 1);
             }
             innerMultiMeasure.addNewValue(Arrays.asList(newDataWithAdjustedIndex));
-        }   else throw new RuntimeException("what is going on?");
+        }   else System.err.println("recorded time points is EMPTY.");
     }
 
     //////////////////////////////////////////////////////////////////

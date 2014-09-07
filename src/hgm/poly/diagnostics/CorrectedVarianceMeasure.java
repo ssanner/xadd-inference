@@ -5,7 +5,7 @@ package hgm.poly.diagnostics;
  * Date: 3/09/14
  * Time: 10:24 PM
  */
-public class VarianceMeasure implements MeasureOnTheRun<Double[]> {
+public class CorrectedVarianceMeasure implements MeasureOnTheRun<Double[]> {
 
     double esm;  //expectation of sample means E[X]
     double esm2; // expectation of the square of sample means E[X^2]
@@ -13,7 +13,7 @@ public class VarianceMeasure implements MeasureOnTheRun<Double[]> {
 
     int takenSamples = 0;
 
-    public VarianceMeasure() {
+    public CorrectedVarianceMeasure() {
     }
 
     @Override

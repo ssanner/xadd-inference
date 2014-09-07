@@ -107,7 +107,7 @@ public class FractionalJointMetropolisHastingSampler implements SamplerInterface
         ///////////////////////////////////////////////////////////////////////////////////////
 
         double initSampleValue = joint.evaluate(lastSample);
-        debug("initSampleValue (" + Arrays.toString(lastSample) + ") = " + initSampleValue);
+//        debug("initSampleValue (" + Arrays.toString(lastSample) + ") = " + initSampleValue);
         if (initSampleValue <= 0.0) {
             throw new SamplingFailureException("valuation of the initial sample is not positive: " + initSampleValue);
         }

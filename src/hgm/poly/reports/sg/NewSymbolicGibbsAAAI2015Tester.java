@@ -1,13 +1,12 @@
 package hgm.poly.reports.sg;
 
-import hgm.asve.Pair;
 import hgm.poly.Fraction;
 import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
-import hgm.poly.diagnostics.*;
 import hgm.poly.gm.*;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.sampling.frac.*;
+import hgm.sampling.SamplingFailureException;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -22,13 +21,13 @@ import java.util.*;
  */
 public class NewSymbolicGibbsAAAI2015Tester {
 
-    public static final String REPORT_PATH_COLLISION_ANALYSIS = "E:/REPORT_PATH_AAAI15/";
+    public static final String REPORT_PATH_COLLISION_ANALYSIS = "E:/REPORT_PATH_AAAI15/collision/";
     public static final String REPORT_PATH_FERMENTATION_ANALYSIS = "E:/REPORT_PATH_AAAI15/";
 
     public static void main(String[] args) throws IOException {
         NewSymbolicGibbsAAAI2015Tester instance = new NewSymbolicGibbsAAAI2015Tester();
-//        instance.collisionAAAI2015Test();
-        instance.fermentationAAAI2015Test();
+        instance.collisionAAAI2015Test(true);
+//        instance.fermentationAAAI2015Test();
     }
 
     public void fermentationAAAI2015Test() throws IOException {
@@ -41,9 +40,9 @@ public class NewSymbolicGibbsAAAI2015Tester {
                 FractionalJointBaselineGibbsSampler.makeJointToSampler();
 
         int numSamplesFromTesterToSimulateTrueDistribution = 1000000;//1000;
-        int maxWaitingTimeForTesterToSimulateMillis = 1000*60*60*5;//1000 * 60 * 1;
+        int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60 * 60 * 5;//1000 * 60 * 1;
         List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
-                SymbolicFractionalJointGibbsSampler.makeJointToSampler(),
+                FractionalJointSymbolicGibbsSampler.makeJointToSampler(),
                 FractionalJointBaselineGibbsSampler.makeJointToSampler(),
 //                FractionalJointRejectionSampler.makeJointToSampler(1),
                 FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0),
@@ -51,7 +50,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
         );
         int[] numParams = {4, 5, 6, 7, 8, 9, 10};
         int numMinDesiredSamples = 50000;//1000;
-        int maxWaitingTimeForTakingDesiredSamples = 1000*60*15;//1000 * 20;
+        int maxWaitingTimeForTakingDesiredSamples = 1000 * 60 * 15;//1000 * 20;
         int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = maxWaitingTimeForTakingDesiredSamples / 2;//1000 * 5;
         int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
         int numRuns = 15;
@@ -89,6 +88,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
 
 
         testSamplersPerformanceWrtParameterTimeAndSampleCount(fermentationModelParam2Joint,
+                null,
                 testerSampleMaker,
                 numSamplesFromTesterToSimulateTrueDistribution,
                 maxWaitingTimeForTesterToSimulateMillis,
@@ -102,44 +102,42 @@ public class NewSymbolicGibbsAAAI2015Tester {
     }
 
     //////////////////////////////////////////////////////////////////////////
-
-    public void collisionAAAI2015Test() throws IOException {
+    public void nonSymmetricCollisionAAAI2015Test() throws IOException {
         System.out.println("REPORT_PATH_COLLISION_ANALYSIS = " + REPORT_PATH_COLLISION_ANALYSIS);
 
-        JointToSampler testerSampleMaker = FractionalJointRejectionSampler.makeJointToSampler(1.0);
-        int numSamplesFromTesterToSimulateTrueDistribution = 1000;
-        int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60;
+        JointToSampler testerSampleMaker =
+                FractionalJointRejectionSampler.makeJointToSampler(1.0);
+//                FractionalJointSymbolicGibbsSampler.makeJointToSampler();
+        int numSamplesFromTesterToSimulateTrueDistribution = 1000;//100000;
+        int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60 * 1;//1000 * 60 * 10;
         List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
-                SymbolicFractionalJointGibbsSampler.makeJointToSampler(),
+                FractionalJointSymbolicGibbsSampler.makeJointToSampler(),
                 FractionalJointBaselineGibbsSampler.makeJointToSampler(),
                 FractionalJointRejectionSampler.makeJointToSampler(1),
                 FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0),
                 FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10)
         );
-        int[] numParams = {2, 3};
-        int numMinDesiredSamples = 100;
-        int maxWaitingTimeForTakingDesiredSamples = 1000 * 20;
-        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 5;
-        int approxNumTimePointsForWhichErrIsPersisted = 33;
-        int numRuns = 2;
-        int burnedSamples = 50;
+        int[] numParams = {2};//{2, 3};
+        int numMinDesiredSamples = 1000;//1000; //100;
+        int maxWaitingTimeForTakingDesiredSamples = 1000 * 30;//1000*60*5;//1000 * 20;
+        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 25;//1000*60;//1000 * 5;
+        int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
+        int numRuns = 2;//20;//2;
+        int burnedSamples = 100;//50;
         int goldenErrThreshold = 0;
 
-
         Param2JointWrapper collisionModelParam2Joint = new Param2JointWrapper() {
-
             @Override
             public JointWrapper makeJointWrapper(int param) {
                 Double muAlpha = 0.2;
                 Double muBeta = 2.2;
                 Double nuAlpha = -2.0;
                 Double nuBeta = 2.0;
-                double minVarLimit = -10;
-                double maxVarLimit = 10;
+                double minVarLimit = -2.3;
+                double maxVarLimit = 2.3;
 
-                GraphicalModel bn = makeCollisionModel(param,
-                        muAlpha, muBeta, nuAlpha, nuBeta);//paramDataCount2DataGenerator.createJointGenerator(param);
-
+                GraphicalModel bn =
+                        makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, false);//paramDataCount2DataGenerator.createJointGenerator(param);
 
                 SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
                 Map<String, Double> evidence = new HashMap<String, Double>();
@@ -157,6 +155,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
 
 
         testSamplersPerformanceWrtParameterTimeAndSampleCount(collisionModelParam2Joint,
+                null,
                 testerSampleMaker,
                 numSamplesFromTesterToSimulateTrueDistribution,
                 maxWaitingTimeForTesterToSimulateMillis,
@@ -169,10 +168,80 @@ public class NewSymbolicGibbsAAAI2015Tester {
 
     }
 
+    //////////////////////////////////////////////////////////////////////////
+
+    public void collisionAAAI2015Test(final boolean symmetric) throws IOException {
+        System.out.println("REPORT_PATH_COLLISION_ANALYSIS = " + REPORT_PATH_COLLISION_ANALYSIS);
+
+        JointToSampler testerSampleMaker =
+                FractionalJointRejectionSampler.makeJointToSampler(1.0);
+//                FractionalJointSymbolicGibbsSampler.makeJointToSampler();
+//        int numSamplesFromTesterToSimulateTrueDistribution = 170000;//100000;
+//        int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60*10;//1000 * 60 * 10;
+        List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
+                FractionalJointSymbolicGibbsSampler.makeJointToSampler(),
+                FractionalJointBaselineGibbsSampler.makeJointToSampler(),
+                FractionalJointRejectionSampler.makeJointToSampler(1),
+                FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0),
+                FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10)
+        );
+        int[] numParams = {3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
+        int numMinDesiredSamples = 200;//1000; //100;
+        int maxWaitingTimeForTakingDesiredSamples = 1000 * 60 * 2;//1000*60*5;//1000 * 20;
+        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 5;//1000*60;//1000 * 5;
+        int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
+        int numRuns = 10;//20;//2;
+        int burnedSamples = 100;//50;
+        double goldenErrThreshold = 0.2;
+
+
+        Param2JointWrapper collisionModelParam2Joint = new Param2JointWrapper() {
+
+            @Override
+            public JointWrapper makeJointWrapper(int param) {
+                Double muAlpha = -2.2;//0.2;
+                Double muBeta = 2.2;
+                Double nuAlpha = -2.0;
+                Double nuBeta = 2.0;
+                double minVarLimit = -2.3;
+                double maxVarLimit = 2.3;
+
+                GraphicalModel bn =
+                        makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric);//paramDataCount2DataGenerator.createJointGenerator(param);
+
+                SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
+                Map<String, Double> evidence = new HashMap<String, Double>();
+
+                evidence.put("p_t", 3d);        //todo...    ???
+//                evidence.put("m_1", 2d);
+//        evidence.put("v_2", 0.2d);
+
+                List<String> query = Arrays.asList("v_1", "v_" + (param - 1));
+                PiecewiseExpression<Fraction> joint = handler.makeJoint(bn, query, evidence);
+                JointWrapper jointWrapper = new JointWrapper(joint, minVarLimit, maxVarLimit);
+                return jointWrapper;
+            }
+        };
+
+
+        testSamplersPerformanceWrtParameterTimeAndSampleCount(collisionModelParam2Joint, 0d,
+                testerSampleMaker,
+                -1, //                numSamplesFromTesterToSimulateTrueDistribution,
+                -1, // maxWaitingTimeForTesterToSimulateMillis,
+                samplerMakersToBeTested, numParams, numMinDesiredSamples,
+                maxWaitingTimeForTakingDesiredSamples,
+                minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+                approxNumTimePointsForWhichErrIsPersisted, numRuns, burnedSamples, REPORT_PATH_COLLISION_ANALYSIS, goldenErrThreshold);
+
+        System.out.println(" That was all the folk for symmetric collision problem. ");
+
+    }
+
     private void testSamplersPerformanceWrtParameterTimeAndSampleCount(
             Param2JointWrapper paramToJointWrapper, //model
-            JointToSampler testerSampleMaker,  //used as baseline
-            int numSamplesFromTesterToSimulateTrueDistribution,
+            Double knownGroundTruthMeansOfAllVariables, //null if unknown
+            JointToSampler testerSampleMaker,  //used as baseline (if known ground truth is null)
+            int numSamplesFromTesterToSimulateTrueDistribution, // (used only if ground truth means are not given)
             long maxWaitingTimeForTesterToSimulateMillis,
             List<JointToSampler> samplerMakersToBeTested,
             int[] numParams, // number of states in a dynamic model, or number of objects in collision model, ..., parameter space dimension
@@ -186,12 +255,12 @@ public class NewSymbolicGibbsAAAI2015Tester {
             double goldenErrThreshold) throws IOException {
 
 
-        TotalTimeKeeper timeKeeper = new TotalTimeKeeper(samplerMakersToBeTested, numParams, outputDirectoryPath);
-
+//        TotalTimeKeeper timeKeeper = new TotalTimeKeeper(samplerMakersToBeTested, numParams, outputDirectoryPath);
 //        AlgorithmDeathLimitKeeper testedAlgsDeathKeeper = new AlgorithmDeathLimitKeeper(samplerMakersToBeTested);  todo un-comment if necessary
 
+        GoldenTimesKeeper timeToPassGoldErrKeeper = new GoldenTimesKeeper(samplerMakersToBeTested, outputDirectoryPath);
+        GoldenTimesKeeper timeToTakeGoldSamplesKeeper = new GoldenTimesKeeper(samplerMakersToBeTested, outputDirectoryPath);
 
-        //note: this array should be sorted
         for (int param : numParams) {
             System.out.println(".......\nparam = " + param);
 
@@ -201,32 +270,41 @@ public class NewSymbolicGibbsAAAI2015Tester {
             //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
             double[] groundTruthMeans;
-            try {
-                groundTruthMeans = computeGroundTruthMean(jointWrapper, testerSampleMaker,
-                        numSamplesFromTesterToSimulateTrueDistribution, maxWaitingTimeForTesterToSimulateMillis);
-                System.out.println("{{{groundTruthMeans = " + Arrays.toString(groundTruthMeans) + "}}}");
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("NO GROUND TRUTH TAKEN! TERMINATED....");
-                continue;
+            if (knownGroundTruthMeansOfAllVariables != null) {
+                groundTruthMeans = new double[jointWrapper.joint.getScopeVars().size()];
+                Arrays.fill(groundTruthMeans, knownGroundTruthMeansOfAllVariables);
+                System.out.println("known groundTruthMeans = " + Arrays.toString(groundTruthMeans));
+            } else { //ground truth mean is not given...
+                try {
+                    groundTruthMeans = computeGroundTruthMean(jointWrapper, testerSampleMaker,
+                            numSamplesFromTesterToSimulateTrueDistribution, maxWaitingTimeForTesterToSimulateMillis);
+                    System.out.println("{{{groundTruthMeans = " + Arrays.toString(groundTruthMeans) + "}}}");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.err.println("NO GROUND TRUTH TAKEN! TERMINATED....");
+                    continue;
+                }
             }
 
             //Analysis of tested algorithms:
             for (JointToSampler samplerMaker : samplerMakersToBeTested) {
 //                if (!testedAlgsDeathKeeper.algorithmWillDie(samplerMaker, param, numObservedDataPoints)) {
-                StatInfo statInfo = meansAndStdErrors(numRuns,
-                        groundTruthMeans,
-                        jointWrapper,
-                        samplerMaker,
-                        burnedSamples,
-                        numMinDesiredSamples,
-                        maxWaitingTimeForTakingDesiredSamples,
-                        minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
-                        approxNumTimePointsForWhichErrIsPersisted,
-                        goldenErrThreshold);
-                statInfo.persistMeanStdErrForFirstTakenErrSamples(outputDirectoryPath, param, samplerMaker.getName(), numMinDesiredSamples);
-                statInfo.persistMeanStdErrForTimePoints(outputDirectoryPath, param, samplerMaker.getName(), maxWaitingTimeForTakingDesiredSamples);
-                statInfo.persistGelmanRubinDiagnostics(outputDirectoryPath, param, samplerMaker.getName());
+                try {
+                    MultiMCMCChainAnalysis multiMCMCChainAnalysis = new MultiMCMCChainAnalysis(numRuns,
+                            groundTruthMeans,
+                            jointWrapper,
+                            samplerMaker,
+                            burnedSamples,
+                            numMinDesiredSamples,
+                            maxWaitingTimeForTakingDesiredSamples,
+                            minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+                            approxNumTimePointsForWhichErrIsPersisted,
+                            goldenErrThreshold);
+                    multiMCMCChainAnalysis.persistMeanStdErrForFirstTakenErrSamples(outputDirectoryPath, param, samplerMaker.getName(), numMinDesiredSamples);
+                    multiMCMCChainAnalysis.persistMeanStdErrForTimePoints(outputDirectoryPath, param, samplerMaker.getName(), maxWaitingTimeForTakingDesiredSamples);
+//                statInfo.persistGelmanRubinDiagnostics(outputDirectoryPath, param, samplerMaker.getName());
+                    multiMCMCChainAnalysis.persistNumTakenSamplesForTimePoints(outputDirectoryPath, param, samplerMaker.getName());
+//                multiMCMCChainAnalysis.persistAutoCorrelationForFirstTakenErrSamples(outputDirectoryPath, param, samplerMaker.getName(), numMinDesiredSamples);
 
 //                if (statInfo.timeToTakeFirstSamplesOrGoldenTime != null) { //did not die        //todo!!!!!!!!!!!!!!!!!!!!
 //                    timeKeeper.persist(param, samplerMaker.getName(), statInfo.timeToTakeFirstSamplesOrGoldenTime);
@@ -235,490 +313,101 @@ public class NewSymbolicGibbsAAAI2015Tester {
 //                    testedAlgsDeathKeeper.recordDeath(samplerMaker, param); //todo uncomment if necessary
 //                }
 
-                System.out.println(samplerMaker.getName() + ".timeN/GOLD = " + statInfo.timeToTakeFirstSamplesOrGoldenTime/*totalProcessTimeMillis*/ + "\t\tsamples=" + statInfo.numberOfFirstSamples());//.means4FirstSamples.size());
+                    if (multiMCMCChainAnalysis.timeToPassGoldenErrStat != null) {
+                        timeToPassGoldErrKeeper.persist(samplerMaker.getName(), "toPassErrThr", param,
+                                multiMCMCChainAnalysis.timeToPassGoldenErrStat.computeMean().get(0),
+                                multiMCMCChainAnalysis.timeToPassGoldenErrStat.computeCorrectedStdErr().get(0)); //we know that if it is not null it contains exactly one entry
+                    }
+
+                    if (multiMCMCChainAnalysis.timeToTakeGoldenSamplesStat != null) {
+                        timeToTakeGoldSamplesKeeper.persist(samplerMaker.getName(), "toTake100samples", param,
+                                multiMCMCChainAnalysis.timeToTakeGoldenSamplesStat.computeMean().get(0),
+                                multiMCMCChainAnalysis.timeToTakeGoldenSamplesStat.computeCorrectedStdErr().get(0)); //we know that if it is not null it contains exactly one entry
+                    }
+
+
+
+//                    System.out.println(samplerMaker.getName() + ".timeN/GOLD = " + multiMCMCChainAnalysis.averageTimeToAccomplishOrGolden/*totalProcessTimeMillis*/ + "\t\tsamples=" + multiMCMCChainAnalysis.numberOfFirstSamples());//.means4FirstSamples.size());
 
 //                } else {
 //                    System.err.println(samplerMaker.getName() + " skipped...");
 //                }
-            }
+                } catch (SamplingFailureException e) {
+                    e.printStackTrace();
+                    System.err.println("Sampling using " + samplerMaker.getName() + " with param " + param + " terminated UNSUCCESSFULLY without saving any info.");
+                }
+            }  //end sampler
 //                FunctionVisualizer.visualize(stdErr, 0, numSamples, 1, statType + " #dim:" + numDims + " #cnstrnt:" + numConstraints);
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public StatInfo meansAndStdErrors(
-            int numRunsPerAlgorithm,
-            double[] groundTruthMeanVector,
-            JointWrapper joint,
-            JointToSampler samplerMaker,
-            int burnedSamples,
-            //
-            final int numMinDesiredSamples,
-            long maxWaitingTimeForTakingDesiredSamplesMillis, //in ms
-            long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
-            int approxNumTimePointsForWhichErrIsPersisted,
-            double goldenErrThreshold) {
 
-//.        double rootNumRuns = Math.sqrt(numRunsPerAlgorithm);
-//.        Double[] meanFirstSampledErrs = new Double[numMinDesiredSamples]; //E{X}:: {E{alg_1_err1, alg2_err1, ...algN_err1}, E{alg_1_err2, alg2_err2, ...algN_err2},...}
-//.        Arrays.fill(meanFirstSampledErrs, 0d);
-//.        double[] exp2FirstSampledErrs = new double[numMinDesiredSamples]; //E{X^2}
-//.        int minFirstSamplesTakenPerIterations = numMinDesiredSamples;
-        MultiArrayMultiStatistics errs4FirstSamplesMultiStat = new MultiArrayMultiStatistics(numMinDesiredSamples, numRunsPerAlgorithm);
-        MultiArrayMultiStatFlexibleIndex errs4timesMultiStat = new MultiArrayMultiStatFlexibleIndex(approxNumTimePointsForWhichErrIsPersisted + 10, numRunsPerAlgorithm);
-        MultiArrayMultiStatFlexibleIndex sampleMeans4timesMultiStat = new MultiArrayMultiStatFlexibleIndex(approxNumTimePointsForWhichErrIsPersisted + 10, numRunsPerAlgorithm);          //for Gelman and Rubin
-        MultiArrayMultiStatFlexibleIndex sampleVariances4timesMultiStat = new MultiArrayMultiStatFlexibleIndex(approxNumTimePointsForWhichErrIsPersisted + 10, numRunsPerAlgorithm);      //for Gelman and Rubin
-
-//.        List<Long> hallmarkTimeStampsInNano = null;
-// .       List<Double> meanErrForTimes = null;
-//  .      double[] exp2ErrForTimes = null;
-
-        List<Long> timesToAccomplishMillisOrGoldenNanos = new ArrayList<Long>(numRunsPerAlgorithm);
-
-        for (int runNum = 0; runNum < numRunsPerAlgorithm; runNum++) {
-            System.out.println("\n* * *\n ALG: " + samplerMaker.getName() + " -- ITR. = " + runNum);
-
-            Err4Samples_Err4times_Times err4Samples_err4times_times = errorVsSamplesAndTime(groundTruthMeanVector, joint, samplerMaker, burnedSamples,
-                    numMinDesiredSamples, maxWaitingTimeForTakingDesiredSamplesMillis,
-                    minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis, approxNumTimePointsForWhichErrIsPersisted, goldenErrThreshold);
-
-            Long accomplishTimeMSOrGoldenTimeNS = err4Samples_err4times_times.timeToAccomplishTaskMillisOrGoldenTimeNano;
-            if (accomplishTimeMSOrGoldenTimeNS != null)
-                timesToAccomplishMillisOrGoldenNanos.add(accomplishTimeMSOrGoldenTimeNS);
-
-            //means and std-errors for "errors for first samples":
-            List<Double> errList = err4Samples_err4times_times.errForFirstTakenSamples; //err. for first taken samples
-            errs4FirstSamplesMultiStat.addNewValue(errList);
-//.            minFirstSamplesTakenPerIterations = Math.min(minFirstSamplesTakenPerIterations, errList.size());
-// .           for (int i = 0; i < minFirstSamplesTakenPerIterations; i++) {   //the entries more than this min... are useless, discarded eventually
-//  .              Double currentErrForFirstTakenSamples = errList.get(i);
-//   .             meanFirstSampledErrs[i] = meanFirstSampledErrs[i] + (currentErrForFirstTakenSamples / (double) numRunsPerAlgorithm);
-//    .            exp2FirstSampledErrs[i] = exp2FirstSampledErrs[i] + (currentErrForFirstTakenSamples * currentErrForFirstTakenSamples) / (double) numRunsPerAlgorithm;
-//     .       }
-
-            //means and std-errors for "errors in time stamps":
-            List<Long> recordedTimePointsInNano = err4Samples_err4times_times.recordedTimePointsInNano;
-            List<Double> errVsTimes = err4Samples_err4times_times.errVsTimes;
-            errs4timesMultiStat.addNewValue(recordedTimePointsInNano, errVsTimes);
-
-            List<Double> sampleMeanVsTimes = err4Samples_err4times_times.sampleMeanVsTimes;
-            sampleMeans4timesMultiStat.addNewValue(recordedTimePointsInNano, sampleMeanVsTimes);
-
-            List<Double> sampleVarianceVsTimes = err4Samples_err4times_times.sampleVarianceVsTimes;
-            sampleVariances4timesMultiStat.addNewValue(recordedTimePointsInNano, sampleVarianceVsTimes);
-
-            //todo
-//.            if (hallmarkTimeStampsInNano == null) {
-// .               hallmarkTimeStampsInNano = recordedTimePointsInNano; //so the times points of the first algorithm-run are the hall marks...
-//  .              meanErrForTimes = errVsTimes; //means of a single elements = same single elements\
-//   .             exp2ErrForTimes = new double[meanErrForTimes.size()];
-//    .            for (int i = 0; i < errVsTimes.size(); i++) {
-//     .               Double errVsTime = errVsTimes.get(i);
-//      .              exp2ErrForTimes[i] = errVsTime * errVsTime;
-//       .         }
-//        .    } else if (!recordedTimePointsInNano.isEmpty()) { //E[X], E[X^2] of 'means vs Times' should be updated
-//.                int index2 = 0;
-// .               for (int index1 = 0; index1 < hallmarkTimeStampsInNano.size(); index1++) {
-//  .                  Long hallMarkTime = hallmarkTimeStampsInNano.get(index1);
-//   .                 for (int i = index2; i < recordedTimePointsInNano.size(); i++) {
-//    .                    Long newT1 = recordedTimePointsInNano.get(i);
-//     .                   Long newT2 = (i == recordedTimePointsInNano.size() - 1) ? newT1 : recordedTimePointsInNano.get(i + 1);
-//      .                  long deltaT1 = Math.abs(newT1 - hallMarkTime);
-//       .                 long deltaT2 = Math.abs(newT2 - hallMarkTime);
-//.                        if (deltaT1 <= deltaT2) {
-// .                           index2 = i; //so that next time search is started from here
-//  .                          break;
-//   .                     }
-//    .                }
-//     .               Double errAssociatedWithNearestTime = errVsTimes.get(index2);
-//      .              meanErrForTimes.set(index1, ((meanErrForTimes.get(index1) * runNum) + errAssociatedWithNearestTime) / (double) (runNum + 1));//mean is updated with the closest new time
-//       .             exp2ErrForTimes[index1] = ((exp2ErrForTimes[index1] * runNum) + errAssociatedWithNearestTime * errAssociatedWithNearestTime) / (double) (runNum + 1);
-//        .        }
-//         .   }
-
-        } //end alg. run num.
-
-//        List<Double> meanFirstSampledErrs = multiMeasure4FirstSamplesErrsMeasure.computeMean();
-// .       if (meanFirstSampledErrs.length != minFirstSamplesTakenPerIterations) {
-//  .          prune the useless end of the mean array:
-//   .         Double[] resizeArray = new Double[minFirstSamplesTakenPerIterations];
-//    .        System.arraycopy(meanFirstSampledErrs, 0, resizeArray, 0, minFirstSamplesTakenPerIterations);
-//     .       meanFirstSampledErrs = resizeArray;
-//      .  }
-
-
-//        List<Double> stdErrs4FirstSamples = multiMeasure4FirstSamplesErrsMeasure.computeCorrectedStdErr();
-//.        Double[] stdErrs4FirstSamples = new Double[minFirstSamplesTakenPerIterations];
-// .       for (int i = 0; i < minFirstSamplesTakenPerIterations; i++) {
-//  .          stdErrs4FirstSamples[i] = Math.sqrt(exp2FirstSampledErrs[i] - meanFirstSampledErrs[i] * meanFirstSampledErrs[i]) / rootNumRuns;
-//   .     }
-
-//        List<Double> stdErrs4Times = multiMeasure4timedErrs.computeCorrectedStdErr();   //std error for timed errors
-//        List<Double> meanErrForTimes = multiMeasure4timedErrs.computeMean();
-//.        Double[] stdErrs4Times = new Double[meanErrForTimes.size()];
-// .       for (int i = 0; i < meanErrForTimes.size(); i++) {
-//  .          double mean = meanErrForTimes.get(i);
-//   .         stdErrs4Times[i] = Math.sqrt(exp2ErrForTimes[i] - mean * mean) / rootNumRuns;
-//    .    }
-
-        Long averageTimeToAccomplishOrGolden = null;//todo std err may be calculated as well.
-        if (!timesToAccomplishMillisOrGoldenNanos.isEmpty()) {
-            averageTimeToAccomplishOrGolden = 0L;
-            for (Long time : timesToAccomplishMillisOrGoldenNanos) {
-                averageTimeToAccomplishOrGolden += time;
-            }
-            averageTimeToAccomplishOrGolden /= timesToAccomplishMillisOrGoldenNanos.size();
-        }
-
-        return new StatInfo(errs4FirstSamplesMultiStat, errs4timesMultiStat,
-                sampleMeans4timesMultiStat, sampleVariances4timesMultiStat,
-
-
-                averageTimeToAccomplishOrGolden, numRunsPerAlgorithm);
-
-        /*    //mean and stdErr for all Iterations
-            double mean = 0d;  //E[X]
-            double ex2 = 0;  //E[X^2]
-            for (int fId = 0; fId < numFs; fId++) {
-                double x = runningErrorPerF[fId];
-                mean += (x / (double) numFs);
-                ex2 += (x * x / (double) numFs);
-            }
-            double stdErr = root(ex2 - mean * mean) / rootNumRuns;
-*/
-
-    }
-
-    public Err4Samples_Err4times_Times errorVsSamplesAndTime(
-            double[] groundTruthMeanVector, //of size #dims
-            JointWrapper db,
-            JointToSampler samplerMaker,
-            int burnedSamples,
-            final int numMinDesiredSamples,
-            long maxWaitingTimeForTakingDesiredSamplesMillis,
-            long minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
-            int approxNumTimePointsForWhichErrIsPersisted,
-            //
-            double goldenErrThreshold) {
-        Long goldenErrTimeMillisOrNano = null;
-        boolean goldenErrRecorded = false;
-//        Long timeToTakeFirstSamplesMillis = null; //not necessarily total time if the time analysis takes more time...
-//        samplerMaker.setReusableSample(groundTruthMeanVector);
-        //burned samples:
-        SamplerInterface sampler = samplerMaker.makeSampler(db.joint, db.minVarLimit, db.maxVarLimit);
-        for (int i = 0; i < burnedSamples; i++) {
-            sampler.reusableSample(); //discard samples...
-        }
-
-//        double[] runningAccumulatedSample = null; //since maybe I do not know the dim yet...(if no burned sample is taken)
-
-        List<Double> errVsFirstSamples = new ArrayList<Double>(numMinDesiredSamples);
-        List<Long> recordedTimePointsInNano = new ArrayList<Long>(approxNumTimePointsForWhichErrIsPersisted);
-        List<Double> errVsTimes = new ArrayList<Double>(approxNumTimePointsForWhichErrIsPersisted);
-
-        List<Double> meanVsFirstSamples = new ArrayList<Double>(numMinDesiredSamples);
-        List<Double> varianceVsFirstSamples = new ArrayList<Double>(numMinDesiredSamples);
-        List<Double> meanVsTimes = new ArrayList<Double>(approxNumTimePointsForWhichErrIsPersisted);            //for Gelman and Rubin, think of it as a list of samples where the length of each sample vector is 1
-        List<Double> varianceVsTimes = new ArrayList<Double>(approxNumTimePointsForWhichErrIsPersisted);        //for Gelman and Rubin
-
-        //trying to take the desired number of samples...
-        long absoluteStartTimeMillis = System.currentTimeMillis();
-        long absoluteStartTimeNanos = System.nanoTime();
-
-        int savedTimePoints = 0;
-        int takenSamples = 0;
-
-        boolean samplingPerformedInIntendedTimeSuccessfully;
-
-        AbsDifferenceMeasure errMeasure = new AbsDifferenceMeasure(groundTruthMeanVector);
-        MeanMeasure meanMeasure = new MeanMeasure();
-        VarianceMeasure varianceMeasure = new VarianceMeasure();
-
-        for (; ; ) {
-            Double[] sample = sampler.reusableSample();
-            sample = pruneNulls(sample);
-            takenSamples++;
-
-//.            if (runningAccumulatedSample == null) {
-// .               runningAccumulatedSample = new double[sample.length];
-//  .          }
-
-// .           for (int i = 0; i < sample.length; i++) {
-//  .              runningAccumulatedSample[i] = runningAccumulatedSample[i] + sample[i];
-//   .         }
-
-            meanMeasure.addNewValue(sample);
-            varianceMeasure.addNewValue(sample);
-
-            errMeasure.addNewValue(sample);
-            double runErr = errMeasure.computeMeasure();
-            double runSingleDimensionalSampleMean = meanMeasure.computeMeasure();    //the mean of single dimensional samples so far. A single dimensional sample is the average of sample entries.
-            double runSingleDimensionalSampleVariance = varianceMeasure.computeMeasure(); //variance of single dimensional samples so far.
-
-            //sum_i (absolute difference of (average of taken_sample_i and ground_truth_i)):
-//.            double runErr = 0;  //running error
-// .           for (int i = 0; i < sample.length; i++) {
-//  .              runErr += Math.abs((runningAccumulatedSample[i] / (double) takenSamples) - groundTruthMeanVector[i]);
-//   .         }
-//    .        runErr /= (double) sample.length;
-
-            //first samples:
-            if (takenSamples <= numMinDesiredSamples) { //save first samples:
-                errVsFirstSamples.add(runErr); //error till current taken sample
-                meanVsFirstSamples.add(runSingleDimensionalSampleMean);
-                varianceVsFirstSamples.add(runSingleDimensionalSampleVariance);
-            }
-
-            //samples vs. time:
-            long nanosFromStart = System.nanoTime() - absoluteStartTimeNanos;
-            if ((nanosFromStart >= (double) (((long) savedTimePoints) * minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis * 1000000) / (double) (approxNumTimePointsForWhichErrIsPersisted + 1))
-                    && nanosFromStart <= minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis * 1000000) {
-                savedTimePoints++;
-                errVsTimes.add(runErr);
-                recordedTimePointsInNano.add(System.nanoTime() - absoluteStartTimeNanos);
-                meanVsTimes.add(runSingleDimensionalSampleMean);
-                varianceVsTimes.add(runSingleDimensionalSampleVariance);
-            }
-
-            //saving golden Err. time:
-            if (!goldenErrRecorded && runErr < goldenErrThreshold) {
-                goldenErrRecorded = true;
-                goldenErrTimeMillisOrNano = System.nanoTime() - absoluteStartTimeNanos;//System.currentTimeMillis() - absoluteStartTimeMillis;
-                System.out.println("sampling successfully terminated due to reaching golden error rate: " + goldenErrRecorded + " -in " + goldenErrTimeMillisOrNano + "(ns)");
-                samplingPerformedInIntendedTimeSuccessfully = true;
-                break;
-            }
-
-            //successful termination:
-            if (
-                    System.currentTimeMillis() - absoluteStartTimeMillis >= minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis &&//savedTimePoints >= approxNumTimePointsForWhichErrIsPersisted &&
-                            takenSamples >= numMinDesiredSamples) {
-                samplingPerformedInIntendedTimeSuccessfully = true;
-                System.out.println("successfull after " + takenSamples + " samples.");
-                break;
-            }
-
-            //timeout.
-            if (System.currentTimeMillis() - absoluteStartTimeMillis > maxWaitingTimeForTakingDesiredSamplesMillis) {
-                samplingPerformedInIntendedTimeSuccessfully = false;
-//                System.err.println("time out after taking " + takenSamples + " samples.");
-                break;
-            }
-
-        }//end for loop
-
-        Long timeToAccomplishTaskMillis = samplingPerformedInIntendedTimeSuccessfully ?
-                System.currentTimeMillis() - absoluteStartTimeMillis
-                :
-                null;
-
-        System.out.println("goldenErrTimeMillis/nanos = " + goldenErrTimeMillisOrNano + "\n");
-        return new Err4Samples_Err4times_Times(errVsFirstSamples, errVsTimes,
-                meanVsFirstSamples, meanVsTimes,
-                varianceVsFirstSamples, varianceVsTimes,
-                recordedTimePointsInNano, samplingPerformedInIntendedTimeSuccessfully, goldenErrTimeMillisOrNano/*timeToAccomplishTaskMillis*/);
-    }
-
-    class Err4Samples_Err4times_Times {
-        List<Double> errForFirstTakenSamples;
-        List<Double> errVsTimes;
-        List<Long> recordedTimePointsInNano;
-        boolean samplingPerformedInIntendedTimeSuccessfully;
-        Long timeToAccomplishTaskMillisOrGoldenTimeNano;
-
-        List<Double> sampleMeanVsFirstSamples;   //mean of single dim. samples so far
-        List<Double> sampleMeanVsTimes;          //mean of single dim. samples up to the current time slot
-        List<Double> sampleVarianceVsFirstSamples;  //var. of single dim. samples so far
-        List<Double> sampleVarianceVsTimes;         //var. of single dim. samples so far
-
-        Err4Samples_Err4times_Times(List<Double> errForFirstTakenSamples, List<Double> errVsTimes,
-                                    List<Double> sampleMeanVsFirstSamples, List<Double> sampleMeanVsTimes,
-                                    List<Double> sampleVarianceVsFirstSamples, List<Double> sampleVarianceVsTimes,
-                                    List<Long> recordedTimePointsInNano,
-                                    boolean samplingPerformedInIntendedTimeSuccessfully, Long timeToAccomplishTaskMillisOrGoldenTimeNano) {
-            this.errForFirstTakenSamples = errForFirstTakenSamples;
-            this.errVsTimes = errVsTimes;
-            this.recordedTimePointsInNano = recordedTimePointsInNano;
-            this.samplingPerformedInIntendedTimeSuccessfully = samplingPerformedInIntendedTimeSuccessfully;
-            this.timeToAccomplishTaskMillisOrGoldenTimeNano = timeToAccomplishTaskMillisOrGoldenTimeNano;
-
-            this.sampleMeanVsFirstSamples = sampleMeanVsFirstSamples;
-            this.sampleMeanVsTimes = sampleMeanVsTimes;
-            this.sampleVarianceVsFirstSamples = sampleVarianceVsFirstSamples;
-            this.sampleVarianceVsTimes = sampleVarianceVsTimes;
-        }
-    }
-
-
-    class StatInfo {
-        //general info:
-
-//        int numF;
-//        double[] groundTruthMeans; //this is an array of size #F not persisted but kept in case ground truth is calculated for the first time.
-
-        //calculated info:
-//        List<Double> means4FirstSamples;
-//        List<Double> stdErrs4FirstSamples;
-//        List<Double> means4TimePoints;
-//        List<Double> stdErrs4TimePoints;
-//        List<Long> recordedTimePointsInNano;
-        MultiArrayMultiStatistics errVsFirstSamplesStat;
-        MultiArrayMultiStatFlexibleIndex errsVsTimesStat;
-
-        MultiArrayMultiStatFlexibleIndex sampleMeans4timesMultiStat;
-        MultiArrayMultiStatFlexibleIndex sampleVariances4timesMultiStat;
-
-
-        ////        Long totalProcessTimeMillis;
-        Long timeToTakeFirstSamplesOrGoldenTime;
-
-        int numIterationsForEachAlgorithm;
-
-        public StatInfo(
-                MultiArrayMultiStatistics errVsFirstSamplesStat,
-//                List<Double> meanOfErrorVsFirstSamples, List<Double> stdErrOfErrorVsFirstSamples,
-                MultiArrayMultiStatFlexibleIndex errsVsTimesStat,
-//                        List<Double> meanOfErrorVsTime, List<Double> stdErrOfErrorVsTime, List<Long> recordedTimePointsInNano,
-
-                MultiArrayMultiStatFlexibleIndex sampleMeans4timesMultiStat, MultiArrayMultiStatFlexibleIndex sampleVariances4timesMultiStat,
-
-                        Long timeToTakeFirstSamplesOrGoldenTime, int numIterationsForEachAlgorithm) {
-            this.numIterationsForEachAlgorithm = numIterationsForEachAlgorithm;
-////            this.numF = groundTruthMeans.length;
-
-            this.errVsFirstSamplesStat = errVsFirstSamplesStat;
-            this.errsVsTimesStat = errsVsTimesStat;
-
-            this.sampleMeans4timesMultiStat = sampleMeans4timesMultiStat;          //used for Gelman & Rubin diagnostics
-            this.sampleVariances4timesMultiStat = sampleVariances4timesMultiStat;  //used for Gelman & Rubin diagnostics
-
-//            this.means4FirstSamples = meanOfErrorVsFirstSamples;
-//            this.stdErrs4FirstSamples = stdErrOfErrorVsFirstSamples;
-//            this.means4TimePoints = meanOfErrorVsTime;
-//            this.stdErrs4TimePoints = stdErrOfErrorVsTime;
-//            this.recordedTimePointsInNano = recordedTimePointsInNano;
-
-            this.timeToTakeFirstSamplesOrGoldenTime = timeToTakeFirstSamplesOrGoldenTime;
-
-//            if (means4FirstSamples.size() != stdErrs4FirstSamples.size())
-//                throw new RuntimeException("size mismatch between |mean|= " + means4FirstSamples.size() + " and |stdErr|= " + stdErrs4FirstSamples.size());
-//            if ((means4TimePoints.size() != stdErrs4TimePoints.size()) || (means4TimePoints.size() != this.recordedTimePointsInNano.size()))
-//                throw new RuntimeException("size mismatch");
-
-        }
-
-        public double[] calcGelmanRubinDiagnosticsPSRF(){
-            //see http://support.sas.com/documentation/cdl/en/statug/63033/HTML/default/viewer.htm#statug_introbayes_sect008.htm#statug.introbayes.bayesgelman
-            //big theta bar := 1/M sigma_{m:1 to M} average(theta_m) where average(theta_m) is 1/n sigma_{t = 1 ot n} theta_{m,t} where theta_{m,t} is the t-th single dimensional sample of m-th chain
-
-            List<Double> b = sampleMeans4timesMultiStat.computeVariance(); //should be multiplied in 'n' the number of taken samples in the current chain
-            for (int i = 0; i < b.size(); i++) {
-                double n = i+1;
-                Double b0 = b.get(i);
-                b.set(i, b0 * n);
-            }
-
-            List<Double> w = sampleVariances4timesMultiStat.computeMean();
-
-            double m = sampleVariances4timesMultiStat.numberOfChains();
-
-            double[] potentialScaleReductionFactor = new double[b.size()];
-            for (int i = 0; i < b.size(); i++) {
-                double n = i+1;
-                double vHat_i = ((n-1)/n) * w.get(i) + b.get(i)/n;//((m+1)/(n*m))*b.get(i);    //modified due to http://www.people.fas.harvard.edu/~plam/teaching/methods/convergence/convergence_print.pdf
-                potentialScaleReductionFactor[i] = Math.sqrt(vHat_i/w.get(i));
-            }
-
-            return potentialScaleReductionFactor;
-
-        }
-
-        public void persistGelmanRubinDiagnostics(String path, int numParamDims, String algorithmName) throws FileNotFoundException {
-            double[] psrf = calcGelmanRubinDiagnosticsPSRF();
-
-            List<Long> recordedTimePointsInNano = sampleMeans4timesMultiStat.getHallmarkTimeStampsInNano();
-
-            String outputFileName = path + generalInfo(numParamDims, algorithmName) + "-times-gelman";
-
-            PrintStream ps = new PrintStream(new FileOutputStream(outputFileName));
-
-            for (int i = 0; i < psrf.length; i++) {
-                //          #index      #time.point(ms)         #mean       #stdErr
-                ps.println((i + 1) + "\t" + recordedTimePointsInNano.get(i) + "\t" + psrf[i]);
-            }
-
-            ps.close();
-
-        }
-
-        private String generalInfo(int param, String algorithmName/*, int maxAllowedSamplingTime*/) {
-            return "param" + param + "-itr" + numIterationsForEachAlgorithm /*+ "-maxT" + maxAllowedSamplingTime */ + "-" + algorithmName;
-        }
-
-        public void persistMeanStdErrForFirstTakenErrSamples(String path, int param, String algorithmName, int numDesiredSamples) throws FileNotFoundException {
-            List<Double> means4FirstSamples = errVsFirstSamplesStat.computeMean();
-            List<Double> stdErrs4FirstSamples = errVsFirstSamplesStat.computeCorrectedStdErr();
-
-            PrintStream ps;
-            String outputFileName = path + generalInfo(param, algorithmName/*, maxAllowedSamplingTime*/) + "-samples" + numDesiredSamples;
-
-            ps = new PrintStream(new FileOutputStream(outputFileName));
-
-            for (int i = 0; i < means4FirstSamples.size(); i++) {
-                //          #sample         #mean       #stdErr
-                ps.println((i + 1) + "\t" + means4FirstSamples.get(i) + "\t" + stdErrs4FirstSamples.get(i));
-            }
-
-            ps.close();
-        }
-
-
-        public void persistMeanStdErrForTimePoints(String path, int numParamDims, String algorithmName, long maxAllowedSamplingTime) throws FileNotFoundException {
-            List<Double> means4TimePoints = errsVsTimesStat.computeMean();
-            List<Double> stdErrs4TimePoints = errsVsTimesStat.computeCorrectedStdErr();
-            List<Long> recordedTimePointsInNano = errsVsTimesStat.getHallmarkTimeStampsInNano();
-
-            String outputFileName = path + generalInfo(numParamDims, algorithmName/*, maxAllowedSamplingTime*/) + "-times";// + means4TimePoints.size();
-
-            PrintStream ps = new PrintStream(new FileOutputStream(outputFileName));
-
-            for (int i = 0; i < means4TimePoints.size(); i++) {
-                //          #index      #time.point(ms)         #mean       #stdErr
-                ps.println((i + 1) + "\t" + recordedTimePointsInNano.get(i) /*/ 1000000*/ + "\t" + means4TimePoints.get(i) + "\t" + stdErrs4TimePoints.get(i));
-            }
-
-            ps.close();
-        }
-
-        public int numberOfFirstSamples() {
-            return errVsFirstSamplesStat.numberOfSamples();
-        }
-
-
-    }//end class Stat info
-
-    private class TotalTimeKeeper {
+    private class GoldenTimesKeeper {
         String outputDirectoryPath;
-        Map<String/*algorithm*/, SortedSet<Pair<Integer /*data*/, Long /*totalTime*/>>> alg2dataTime;
-        Map<String/*algorithm*/, SortedSet<Pair<Integer /*dims*/, Long /*totalTime*/>>> alg2dimsTime;
+        Map<String /*alg.*/, Map<Integer /*param*/, Double /*gold*/>> alg2paramGoldMeanMap;
+        Map<String /*alg.*/, Map<Integer /*param*/, Double /*gold*/>> alg2paramGoldStdErrMap;
+
+        public GoldenTimesKeeper(List<JointToSampler> samplers, String outputDirectoryPath) {
+            this.outputDirectoryPath = outputDirectoryPath;
+
+            alg2paramGoldMeanMap = new HashMap<String, Map<Integer, Double>>(samplers.size());
+            alg2paramGoldStdErrMap = new HashMap<String, Map<Integer, Double>>(samplers.size());
+
+            for (JointToSampler sampler : samplers) {
+                alg2paramGoldMeanMap.put(sampler.getName(), new HashMap<Integer, Double>());
+                alg2paramGoldStdErrMap.put(sampler.getName(), new HashMap<Integer, Double>());
+            }
+        }
+
+        public void persist(String samplerName, String fileSuffix, Integer param, Double goldMean, Double goldStdErr) throws FileNotFoundException {
+            Map<Integer, Double> paramToMeanMap = alg2paramGoldMeanMap.get(samplerName);
+            Map<Integer, Double> paramToStdErrMap = alg2paramGoldStdErrMap.get(samplerName);
+
+            if (paramToMeanMap.put(param, goldMean)!= null) throw new RuntimeException("double entry for param " + param);
+            if (paramToStdErrMap.put(param, goldStdErr)!= null) throw new RuntimeException("double entry for param " + param);
+
+            persistInner(samplerName, fileSuffix, paramToMeanMap, paramToStdErrMap);
+        }
+
+        private void persistInner(String samplerName, String fileSuffix, Map<Integer, Double> param2Means, Map<Integer, Double> param2StdErrs) throws FileNotFoundException {
+            String outputFileName = this.outputDirectoryPath + samplerName + "-" + fileSuffix;
+
+            PrintStream ps = new PrintStream(new FileOutputStream(outputFileName));
+
+            SortedSet<Integer> params = new TreeSet<Integer>(param2Means.keySet());
+            int i=1;
+            for (Integer param : params) {
+                ps.println((i++) + "\t" + param + "\t" + param2Means.get(param) + "\t" + param2StdErrs.get(param));
+            }
+
+            ps.close();
+        }
+
+    }
+
+  /*  private class TotalTimeKeeper {
+        String outputDirectoryPath;
+        Map<String*//*algorithm*//*, SortedSet<Pair<Integer *//*dims*//*, Long *//*totalTime*//*>>> alg2dimsTime;
+//        Map<String*//*algorithm*//*, SortedSet<Pair<Integer *//*data*//*, Long *//*totalTime*//*>>> alg2dataTime;
 
         public TotalTimeKeeper(JointToSampler[] samplers, String outputDirectoryPath) {
             this.outputDirectoryPath = outputDirectoryPath;
 
-            alg2dataTime = new HashMap<String, SortedSet<Pair<Integer, Long>>>(samplers.length);
             alg2dimsTime = new HashMap<String, SortedSet<Pair<Integer, Long>>>(samplers.length);
+//            alg2dataTime = new HashMap<String, SortedSet<Pair<Integer, Long>>>(samplers.length);
 
-            for (JointToSampler sampler : samplers) {
-                alg2dataTime.put(sampler.getName(), new TreeSet<Pair<Integer, Long>>());
-            }
+//            for (JointToSampler sampler : samplers) {
+//                alg2dataTime.put(sampler.getName(), new TreeSet<Pair<Integer, Long>>());
+//            }
         }
 
         int[] dimsArray;
         //        int[] dataArray;
         String[] samplerNames;
-        Map<String /*alg*/, Long/*time*/>[] dimIndexDataIndexAlgTime;
+        Map<String *//*alg*//*, Long*//*time*//*>[] dimIndexDataIndexAlgTime;
 
-        public TotalTimeKeeper(List<JointToSampler> samplers, int[] dimsArray/*, int[] dataArray*/, String outputDirectoryPath) {
+        public TotalTimeKeeper(List<JointToSampler> samplers, int[] dimsArray*//*, int[] dataArray*//*, String outputDirectoryPath) {
             this.outputDirectoryPath = outputDirectoryPath;
 
             this.dimsArray = new int[dimsArray.length];
@@ -751,7 +440,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
 //                System.out.println("dataArray = " + Arrays.toString(dataArray));
             }
 //            persistDimFix(samplerName, dimIndex);
-            persistDataFix(samplerName/*, dataIndex*/);
+            persistDataFix(samplerName*//*, dataIndex*//*);
         }
 
 //        private void persistDimFix(String samplerName, int dimIndex) throws FileNotFoundException {
@@ -769,7 +458,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
 //            persistOneEntryFixed(samplerName, "dim", dim, dataList, timeList);
 //        }
 
-        private void persistDataFix(String samplerName/*, int dataIndex*/) throws FileNotFoundException {
+        private void persistDataFix(String samplerName*//*, int dataIndex*//*) throws FileNotFoundException {
 //            int data = dataArray[dataIndex];
 
             List<Integer> dimList = new ArrayList<Integer>();
@@ -798,7 +487,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
             ps.close();
         }
 
-    }
+    }*/
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public double[] computeGroundTruthMean(
@@ -816,7 +505,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
         long t1 = System.currentTimeMillis();
         for (int sampleCount = 0; sampleCount < numDesiredSamples; sampleCount++) {
             Double[] sample = sampler.reusableSample();
-            sample = pruneNulls(sample);
+            sample = SingleMCMCChainAnalysis.pruneNulls(sample);
 
             if (mean == null) {
                 mean = new double[sample.length];
@@ -838,20 +527,6 @@ public class NewSymbolicGibbsAAAI2015Tester {
         return mean;
     }
 
-    private Double[] pruneNulls(Double[] sample) {
-        int nonNullEntryCount = 0;
-        for (Double s : sample) {
-            if (s != null) nonNullEntryCount++;
-        }
-        Double[] nonNullEntries = new Double[nonNullEntryCount];
-        int i = 0;
-        for (Double s : sample) {
-            if (s != null) {
-                nonNullEntries[i++] = s;
-            }
-        }
-        return nonNullEntries;
-    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public GraphicalModel makeSimplifiedFermentationModel(int n /*num colliding objects*/,
@@ -963,12 +638,13 @@ public class NewSymbolicGibbsAAAI2015Tester {
 
     public GraphicalModel makeCollisionModel(int n /*num colliding objects*/,
                                              Double muAlpha, Double muBeta,
-                                             Double nuAlpha, Double nuBeta) {
+                                             Double nuAlpha, Double nuBeta,
+                                             boolean symmetric) {
 //                                                 double minVarLimit, double maxVarLimit,
-//                                                 JointToSampler jointToSampler) {
-        // m_1      v_1   v_n     m_2
-        //   \__p_1__/    \__p_n__/
-        //       \_____p_t____/
+//                       (?)                          JointToSampler jointToSampler) {
+        // m_1      v_1 ---->  v_n     m_2
+        //   \__p_1__/        \__p_n__/
+        //       \______p_t______/
 
 
         String[] vars = new String[3 * n + 3];
@@ -994,8 +670,12 @@ public class NewSymbolicGibbsAAAI2015Tester {
         String totalMassFormula = "";
         for (int i = 0; i < n; i++) {
             massesF[i] = dBank.createUniformDistributionFraction("m_" + (i + 1), muAlpha.toString(), muBeta.toString());
-            velocitiesF[i] = i == 0 ? dBank.createUniformDistributionFraction("v_1", nuAlpha.toString(), nuBeta.toString())
-                    : dBank.createUniformDistributionFraction("v_" + (i + 1), nuAlpha.toString(), "v_" + i + "^(1)");
+            if (symmetric) {
+                velocitiesF[i] = dBank.createUniformDistributionFraction("v_1", nuAlpha.toString(), nuBeta.toString());
+            } else {
+                velocitiesF[i] = i == 0 ? dBank.createUniformDistributionFraction("v_1", nuAlpha.toString(), nuBeta.toString())
+                        : dBank.createUniformDistributionFraction("v_" + (i + 1), nuAlpha.toString(), "v_" + i + "^(1)");
+            }
             momentaF[i] = factory.makeFraction("m_" + (i + 1) + "^(1) * v_" + (i + 1) + "^(1)");
             totalMomentumFormula += ("p_" + (i + 1) + "^(1) +");
             totalMassFormula += ("m_" + (i + 1) + "^(1) +");
@@ -1028,18 +708,6 @@ public class NewSymbolicGibbsAAAI2015Tester {
 //                SymbolicFractionalJointGibbsSampler.makeJointToSampler()
 //        );
 
-    }
-
-    private class JointWrapper {
-        PiecewiseExpression<Fraction> joint;
-        double minVarLimit;
-        double maxVarLimit;
-
-        private JointWrapper(PiecewiseExpression<Fraction> joint, double minVarLimit, double maxVarLimit) {
-            this.joint = joint;
-            this.minVarLimit = minVarLimit;
-            this.maxVarLimit = maxVarLimit;
-        }
     }
 
     private interface Param2JointWrapper {
