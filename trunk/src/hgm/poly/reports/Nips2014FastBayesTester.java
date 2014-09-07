@@ -957,7 +957,7 @@ public class Nips2014FastBayesTester {
             if (!goldenErrRecorded && runErr < goldenErrThreshold) {
                 goldenErrRecorded = true;
                 goldenErrTimeMillisOrNano = System.nanoTime() - absoluteStartTimeNanos;//System.currentTimeMillis() - absoluteStartTimeMillis;
-                System.out.println("sampling successfully terminated due to reaching golden error rate: " + goldenErrRecorded + " -in " + goldenErrTimeMillisOrNano + "(ns)");
+                System.out.println("sampling successfully terminated due to reaching golden error rate: " + goldenErrRecorded + " -in " + goldenErrTimeMillisOrNano + "(ns) after taking " + takenSamples + " samples");
                 samplingPerformedInIntendedTimeSuccessfully = true;
                 break;
             }

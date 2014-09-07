@@ -98,7 +98,7 @@ public class FractionalJointBaselineGibbsSampler implements SamplerInterface {
         takeInitialSample(reusableSample);//reusableInitialSample;//reusableSample();
 
         double initSampleValue = joint.evaluate(reusableSample);
-        debug("initSampleValue (" + Arrays.toString(reusableSample) + ") = " + initSampleValue);
+//        debug("initSampleValue (" + Arrays.toString(reusableSample) + ") = " + initSampleValue);
         if (initSampleValue <= 0.0) {//todo maybe the XADD is 0
             throw new SamplingFailureException("valuation of the initial sample is not positive: " + initSampleValue);
         }
@@ -153,7 +153,7 @@ public class FractionalJointBaselineGibbsSampler implements SamplerInterface {
         SymbolicCdfArrayHandler symbolicCdfArrayHandler = d.calcSymbolicIntegral();
         OneDimFunction varCDF = symbolicCdfArrayHandler.instantiate(reusableVarAssign);
 
-        double s = SymbolicFractionalJointGibbsSampler.takeSampleFrom1DFunc(varCDF, minVarValue, maxVarValue);
+        double s = FractionalJointSymbolicGibbsSampler.takeSampleFrom1DFunc(varCDF, minVarValue, maxVarValue);
 
         // here the sample is stored....
         reusableVarAssign[varIndexToBeSampled] = s;

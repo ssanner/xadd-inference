@@ -47,7 +47,8 @@ public class FractionalJointRejectionSampler implements SamplerInterface{
 
     //............................
     public static final boolean DEBUG = true;
-    public static final int MAX_INITIAL_SAMPLING_TRIAL = 100000000;    // if the function is not positive, (initial) sample cannot be
+//    public static final int MAX_INITIAL_SAMPLING_TRIAL = 100000000;    // if the function is not positive, (initial) sample cannot be
+    public static final long MAX_WAITING_MILLI_SECONDS_TO_TAKE_A_SAMPLE = 1000 * 10;
     int numScopeVars;
     PiecewiseExpression<Fraction> joint;
     Map<Integer, Double> varIndex2MinMap;
@@ -99,13 +100,17 @@ public class FractionalJointRejectionSampler implements SamplerInterface{
     }
 
     public Double[] reusableSample() throws SamplingFailureException {
-        int failureCount = 0;
+        long startTimeMillis = System.currentTimeMillis();
+
+//        int failureCount = 0;
 
         Double[] sample = new Double[sampleArraySize];
 
         for(;;) {
-            if (failureCount++ > MAX_INITIAL_SAMPLING_TRIAL)
-                throw new SamplingFailureException("Unable to take initial sample");
+            if (System.currentTimeMillis() - startTimeMillis > MAX_WAITING_MILLI_SECONDS_TO_TAKE_A_SAMPLE) {
+//            if (failureCount++ > MAX_INITIAL_SAMPLING_TRIAL) {
+                throw new SamplingFailureException("Unable to take initial sample after " + MAX_WAITING_MILLI_SECONDS_TO_TAKE_A_SAMPLE/1000 + " seconds");
+            }
 
             for (int scopeVarIndex : scopeVarIndexes){
                 double minVarValue = varIndex2MinMap.get(scopeVarIndex);
