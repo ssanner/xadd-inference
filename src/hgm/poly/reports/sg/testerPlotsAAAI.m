@@ -1,23 +1,26 @@
 current_path = 'E:\REPORT_PATH_AAAI15\collision\';
 
-param = 18;
-samples = 1000;%1000;
-itr = 2;%20; 
+numParams = [4, 30]; %[3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
+%param = 18;
+samples = 200;%1000;%1000;
+itr = 10;%20; 
 %%%%%%%%%
 
 %algs = {'symbolic.gibbs', 'baseline.gibbs', 'rej', 'mh', 'tuned.mh'};
 algs = {'symbolic.gibbs', 'baseline.gibbs', 'mh', 'tuned.mh', 'rej'};
+alg_titles = {'Symbolic Gibbs', 'Baseline Gibbs', 'MH', 'Tuned MH', 'Rejection'};
 
 colors = {'k', 'b', 'r', 'g', 'c', 'm', 'y', 'b'};
 numAlgs = size(algs, 2);
 %%%%%%%%%
-%transparent = true;
 doTestErr_vs_samples = false;
 doTestErr_vs_times = true;
 doTestSampleCount_vs_times = false;
 doTestSampleEffectiveCount_vs_numSamples = false;%always false
-doTest3 = true;
+doTestTimeToPassGoldenErrThreshold_vs_param = true;
+doTestTimeToTake100Samples = false;
 
+for param = numParams
 %%%%%%%%%
 
 if doTestErr_vs_samples    
@@ -32,7 +35,7 @@ for i=1:numAlgs
     end
 end %for
 
-artplot(info1, algs, colors, '#samples', 'error', 'plot', 'shaded', current_path, 'err-vs-samples');%'shaded'); %;'halo'); %'errorbar');
+artplot(info1, alg_titles, colors, strcat('#samples (size=', num2str(param), ')'), 'error', 'plot', 'halo', current_path, strcat('err-vs-samples__param', num2str(param)));%'shaded'); %;'halo'); %'errorbar');
 
 end %if do test 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,7 +48,7 @@ for i=1:numAlgs
             info2{i} = load(d{1});
         end
 end %for
-artplot(info2, algs, colors, 'time', 'error', 'plot', 'halo', current_path, 'err-vs-time');%'shaded'); %;'halo'); %'errorbar');
+artplot(info2, alg_titles, colors, strcat('wall-clock time (size=', num2str(param), ')'), 'error', 'plot', 'shaded', current_path, strcat('err-vs-time__param', num2str(param)));%'shaded'); %;'halo'); %'errorbar');
 
 end %do test 2
 
@@ -61,7 +64,7 @@ if doTestSampleCount_vs_times
             infoN{i} = load(d{1});
         end
     end %for
-    artplot(infoN, algs, colors, 'time', '# samples', 'semilogy', 'halo', current_path, 'samples-vs-time');%'shaded'); %;'halo'); %'errorbar');
+    artplot(infoN, alg_titles, colors, strcat('time (size=', num2str(param), ')'), '# samples', 'semilogy', 'halo', current_path, strcat('samples-vs-time__param', num2str(param)));%'shaded'); %;'halo'); %'errorbar');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -74,24 +77,39 @@ if doTestSampleEffectiveCount_vs_numSamples
                 infoN{i} = load(d{1});
             end
     end %for
-    artplot(infoN, algs, colors, 'effective-samples', '# samples', 'plot', 'halo', current_path, 'effective-samples');%'shaded'); %;'halo'); %'errorbar');
+    artplot(infoN, alg_titles, colors, strcat('effective-samples size=', num2str(param), ')'), '# samples', 'plot', 'halo', current_path, strcat('effective-samples__param', num2str(param)));%'shaded'); %;'halo'); %'errorbar');
 end
 
+end %param
 
-if doTest3
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%IV. Error vs parameter dim
 
+if doTestTimeToPassGoldenErrThreshold_vs_param
+%IV. Error vs parameter dim
 info4 = cell([1, numAlgs]);
-j = 1;
 for i=1:numAlgs
        d = strcat(current_path, algs(i), '-toPassErrThr');
         if exist(d{1}, 'file')
             info4{i} = load(d{1});
         end
 end %for
-artplot(info4, algs, colors, 'parameter', 'time to pass threshold', 'semilogy', 'halo', current_path, 'time_vs_param');%'shaded'); %;'halo'); %'errorbar');
+artplot(info4, alg_titles, colors, 'size', 'wall-clock time to pass threshold', 'semilogy', 'errorbar', current_path, 'time_vs_param');%'shaded'); %;'halo'); %'errorbar');
 end %do test4
+
 %%%%%%%%%%%%
+
+if doTestTimeToTake100Samples
+    %time to take 100 samples vs. params
+    info5 = cell([1, numAlgs]);
+
+    for i=1:numAlgs
+       d = strcat(current_path, algs(i), '-toTake100samples');
+        if exist(d{1}, 'file')
+            info5{i} = load(d{1});
+        end   
+    end %for
+artplot(info5, alg_titles, colors, 'size', 'time to take 100 samples', 'semilogy', 'halo', current_path, 'toTake100samples_vs_param');%'shaded'); %;'halo'); %'errorbar');
+
+end
 
 
