@@ -1,4 +1,4 @@
-function artplot( data, algs, colors, x_label, y_label, scaling_type, plot_type, current_path, file_title )
+function artplot( data, alg_names, colors, x_label, y_label, scaling_type, plot_type, current_path, file_title )
 %NOTE at least data{1} should not be EMPTY
 columns = size(data{1}, 2);
 index = -1;
@@ -23,22 +23,20 @@ figure('visible', vis);
 %just to create semi log axis:
 if strcmp(scaling_type,'loglog')
 loglog(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} '-'], ...
-    'LineWidth',2);
+    'LineWidth',3);
 end
 if strcmp(scaling_type,'semilogx')
 semilogx(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} '-'], ...
-    'LineWidth',2);
+    'LineWidth',3);
 end
 if strcmp(scaling_type,'semilogy')
 semilogy(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} '-'], ...
-    'LineWidth',2);
+    'LineWidth',3);
 end
 if strcmp(scaling_type,'plot')
 plot(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} '-'], ...
-    'LineWidth',2);
+    'LineWidth',3);
 end
-
-
 
 
 hold on;
@@ -49,10 +47,10 @@ for i=2:numAlgs
         data{i} = [0, 0, 0, 0; 0, 0, 0, 0];
     end
     plot(data{i}(:,1 + index),data{i}(:,2 + index),c, ...
-        'LineWidth',2);
+        'LineWidth',3);
 end
 
-legend(algs);
+leg = legend(alg_names);%(algs);
 xlabel(x_label);
 ylabel(y_label)
 
@@ -112,7 +110,7 @@ end
 
 figureHandle = gcf;
 %# make all text in the figure to size 14 and bold
-set(findall(figureHandle,'type','text'),'fontSize',12)
+set(findall(figureHandle,'type','text'),'fontSize',15)
 
 hold off;
 

@@ -22,12 +22,12 @@ import java.util.*;
 public class NewSymbolicGibbsAAAI2015Tester {
 
     public static final String REPORT_PATH_COLLISION_ANALYSIS = "E:/REPORT_PATH_AAAI15/collision/";
-    public static final String REPORT_PATH_FERMENTATION_ANALYSIS = "E:/REPORT_PATH_AAAI15/";
+    public static final String REPORT_PATH_FERMENTATION_ANALYSIS = "E:/REPORT_PATH_AAAI15/fermentation/";
 
     public static void main(String[] args) throws IOException {
         NewSymbolicGibbsAAAI2015Tester instance = new NewSymbolicGibbsAAAI2015Tester();
-        instance.collisionAAAI2015Test(true);
-//        instance.fermentationAAAI2015Test();
+//        instance.collisionAAAI2015Test(true);
+        instance.fermentationAAAI2015Test();
     }
 
     public void fermentationAAAI2015Test() throws IOException {
