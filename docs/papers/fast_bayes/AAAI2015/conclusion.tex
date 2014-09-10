@@ -1,0 +1,37 @@
+\section{Conclusion}
+\label{sect:conclusion}
+
+In this work, we showed how to transform piecewise likelihoods in
+graphical models for Bayesian inference into equivalent mixture models
+and then provide a blocked Gibbs sampling approach for this
+transformed model that achieves an \emph{exponential-to-linear}
+reduction in space and time compared to a conventional Gibbs sampler.
+Unlike rejection sampling and baseline Gibbs sampling, the time
+complexity of the proposed method does not grow exponentially with the
+amount of observed data.  In both our test scenarios, its mixing time
+in higher dimensions is also better than Metropolis-Hastings.
+And in contrast to Metropolis-Hastings, it also does not require any tuning.  
+
+Future extensions of this work can also examine application of this
+work to non-Bayesian inference models (i.e., general piecewise
+graphical models).  For example, some clustering models can be
+formalized as piecewise models with latent cluster assignments for
+each datum -- the method proposed here allows linear-time Gibbs
+sampling in such models.  To this end, this work opens up a variety of
+future possibilities for efficient asymptotically unbiased (Bayesian)
+inference in expressive piecewise graphical models that to date have
+proved intractable or inaccurate for existing (Markov Chain) Monte
+Carlo inference approaches.
+
+%Clearly,
+%the proposed method has its own short comings.  Being a variation of
+%Gibbs sampler it also suffers from some of the shortcomings that Gibbs
+%does: Some islands of high-probability states may be unreachable by
+%Gibbs if there is no path between them.  This problem can be more
+%problematic in the augmented version since limiting the number of
+%active regions can introduce more none-traversable gaps.  Hopefully,
+%these problems are not so common and can be avoided by running more
+%than one Markov chain.  On the other hand, the experimental efficiency
+%of the algorithm has been rather surprising to us.  We hope we have
+%provided a viable toolkit for asymptotically unbiased reasoning on
+%piecewise models.

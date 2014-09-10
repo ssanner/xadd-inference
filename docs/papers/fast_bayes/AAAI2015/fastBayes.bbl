@@ -1,0 +1,38 @@
+\begin{thebibliography}{RGG97}
+
+\bibitem[DMI08]{Das:08}
+Sanmay Das and Malik Magdon-Ismail.
+\newblock Adapting to a market shock: Optimal sequential market-making.
+\newblock In {\em NIPS}, pages 361--368, 2008.
+
+\bibitem[KR93]{Keeney:93}
+Ralph~L Keeney and Howard Raiffa.
+\newblock {\em Decisions with multiple objectives: preferences and value
+  trade-offs}.
+\newblock Cambridge university press., 1993.
+
+\bibitem[PD06]{Poon:06}
+Hoifung Poon and Pedro Domingos.
+\newblock Sound and efficient inference with probabilistic and deterministic
+  dependencies.
+\newblock In {\em AAAI}, volume~6, pages 458--463, 2006.
+
+\bibitem[RGG97]{Roberts:97}
+Gareth~O. Roberts, Andrew Gelman, and Walter~R. Gilks.
+\newblock Weak convergence and optimal scaling of random walk metropolis
+  algorithms.
+\newblock {\em The annals of applied probability}, 7(1):110--120, 1997.
+
+\bibitem[SA12]{Sanner:12}
+Scott Sanner and Ehsan Abbasnejad.
+\newblock Symbolic variable elimination for discrete and continuous graphical
+  models.
+\newblock In {\em AAAI}, 2012.
+
+\bibitem[SLH00]{Shogren:00}
+Jason~F Shogren, John~A List, and Dermot~J Hayes.
+\newblock Preference learning in consecutive experimental auctions.
+\newblock {\em American Journal of Agricultural Economics}, 82(4):1016--1021,
+  2000.
+
+\end{thebibliography}

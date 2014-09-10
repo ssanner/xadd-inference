@@ -1,0 +1,138 @@
+\section{Bayesian inference on graphical models with piecewise distributions}
+\label{sec:inference_piecewise_models}
+\paradot{Inference} We will present an inference method that can be generalized to  
+a variety of graphical models with piecewise factors, however, our focus in this
+work is on \emph{Bayesian inference} on Bayesian networks factorized in the following
+standard form 
+\begin{equation}
+\label{e:posterior}
+pr(\boldsymbol\theta | \, d_1, \ldots, d_n) 
+\propto
+pr(\boldsymbol\theta, \, d_1, \ldots, d_n) 
+= pr(\boldsymbol\theta) \cdot \prod_{i=1}^{n} pr(d_i | \boldsymbol\theta) , 
+\end{equation} 
+where $\boldsymbol\theta := (\theta_1, \ldots, \theta_N)$ is a parameter vector and $d_i$ are observed data points. 
+A typical inference task %is the computation of the probability of a new data $d_{n+1}$ from the observed points:
+with this posterior distribution is to compute the expectation of a function of $f(\boldsymbol\theta)$ given data:
+\begin{equation}
+\label{e:prob.outcome}
+\mathbb{E}_{\boldsymbol\theta}[f(\boldsymbol\theta) \,|\, d_1, \ldots, d_n \,]
+\end{equation}
+
+
+\paradot{Piecewise models} 
+We are interested in the inference on models where prior/likelihood distributions are piecewise.
+A function $f(\bvec{x})$ is $n$-piece \emph{piecewise} if it can be represented in form of Equation~(\ref{e:piecewise}) where $\phi_1$ to $\phi_m$ are mutually exclusive and jointly exhaustive Boolean functions (constraints) 
+that partition the space of variables $\bvec{x}$. If for a particular variable assignment $\bvec{x}_0$, a constraint $\phi_i(\bvec{x}_0)$ is satisfied, then by definition, the function returns the value of its $i$-th \emph{sub-function}: $f(\bvec{x}_0) = f_i(\bvec{x}_0)$.  
+In this case, it is said that sub-function $f_i$ is \emph{activated} by assignment $\bvec{x}_0$.
+\begin{equation}
+\label{e:piecewise}
+f(\bvec{x}) = 
+{\footnotesize
+\begin{cases}
+\phi_1(\bvec{x}) : & f_1(\bvec{x})\\
+\vdots\\
+\phi_m(\bvec{x}) : & f_m(\bvec{x})
+\end{cases}
+}%end footnote size
+\end{equation}
+In the forthcoming implementation of our proposed algorithm, the constraints are restricted to linear/quadratic (in)equalities while sub-functions are polynomials with real exponents.% in which real-exponents 
+%(except -1) -- no reason you cannot handle this
+%are allowed.
+  However, in theory, the algorithm can be applied to \emph{any} family of piecewise models in which the roots of univariate constraint expressions can be found and sub-functions (and their products) are integrable. 
+
+%In Example~\ref{example:pref}, BPPL is a \emph{piecewise constant} model in the sense that both prior and likelihood models are piecewise and their corresponding \emph{sub-functions} ($f_i$) are constant. A more general piecewise model where the sub-functions are not constant is presented in  Section~\ref{sect:experiment}. 
+
+\paradot{Complexity of inference on piecewise models}
+
+
+If in the model of equation \ref{e:posterior}, the prior $pr(\boldsymbol\theta)$ 
+is an $L$-piece distribution and each of the $n$ likelihoods is a piecewise function with number of partitions  bound by $M$, 
+then the joint distribution is a piecewise function with number of partitions bound by $LM^n$ (therefore, $O(M^n)$).
+The reason, as clarified by the following simple formula,   
+is that the number of partitions in the product of two piecewise functions is bound by the product of their number of partitions:\footnote{
+If pruning potential inconsistent (infeasible) constraint is possible
+(i.e.\ by \emph{linear constraint solvers} for linear constrains) and the imposed extra costs are justified,
+the number of partitions can be less.
+}%endfootnote
+\[
+{\footnotesize
+\begin{cases}
+\phi_1(\bvec{x}) : & f_1(\bvec{x})\\
+\phi_2(\bvec{x}) : & f_2(\bvec{x})
+\end{cases}
+\otimes
+\begin{cases}
+\psi_1(\bvec{x}) : & g_1(\bvec{x})\\
+\psi_2(\bvec{x}) : & g_2(\bvec{x})
+\end{cases}
+=
+\begin{cases}
+\phi_1(\bvec{x}) \wedge \psi_1(\bvec{x}) : & f_1(\bvec{x}) g_1(\bvec{x})\\
+\phi_1(\bvec{x}) \wedge \psi_2(\bvec{x}) : & f_1(\bvec{x}) g_2(\bvec{x})\\
+\phi_2(\bvec{x}) \wedge \psi_1(\bvec{x}) : & f_2(\bvec{x}) g_1(\bvec{x})\\
+\phi_2(\bvec{x}) \wedge \psi_2(\bvec{x}) : & f_2(\bvec{x}) g_2(\bvec{x})
+\end{cases}
+}%end footnote size
+\]
+
+\paradot{Exact inference on piecewise models}
+In theory, closed-form inference on piecewise models (at least piecewise polynomials) with linear constraints is possible \cite{Sanner:12}.
+In practice, however, such symbolic methods rapidly become intractable since the posterior requires
+the representation of $O(M^n)$ distinct case partitions.
+%For example, by rule of thumb, a few observed data points with simple piecewise likelihood models lead to
+%joint/posterior distributions with tens of partitions.
+%For an inference problem formalized by equation~\ref{e:prob.outcome}, 
+%the number of required marginalization integrals is $|\boldsymbol\theta|$ (dimensionality of the parameter space).
+%Although that the family of piecewise polynomials are closed under integration, even a single \emph{closed form} integral over such a posterior can lead to a function with thousands of pieces \cite{Sanner:12}.   
+   
+\paradot{Approximate inference on piecewise modes} 
+An alternative option is to seek \emph{asymptotically unbiased} inference methods
+via Monte Carlo sampling.
+%The existing such tools are based on sampling.
+Given a set of $S$ samples (particles) $\{\boldsymbol\theta^{(1)}, \ldots, \boldsymbol\theta^{(S)}\}$ taken from a posterior $pr(\boldsymbol\theta | \, d_1, \ldots, d_n)$, 
+the inference task of equation~\ref{e:prob.outcome} can be approximated by $S$: 
+$\frac{1}{S} \sum_{i=1}^S f(\theta^{(i)} | \, d_1, \ldots, d_n)$.
+Three widely used methods to sample $S$ from an arbitrary $pr(\boldsymbol\theta | \, d_1, \ldots, d_n)$ are as follows:
+
+\emph{Rejection sampling}:
+Let $p(\bvec{x})$ and $q(\bvec{x})$ be two distributions 
+such that direct sampling from them is respectively hard and easy
+and
+$p(\bvec{x})/q(\bvec{x})$ is bound by a constant $c>0$. 
+To take a sample from $p(\bvec{x})$ by means of \emph{rejection sampling}, 
+a sample $\bvec{s}$ is taken from $q(\bvec{x})$ and accepted with probability $p(\bvec{s}) / c q(\bvec{s})$, 
+otherwise it is rejected and the process is repeated. 
+If $c$ is too small, the speed of this algorithm is low since often lots of samples are taken until one is accepted.
+
+\emph{Metropolis-Hastings (MH)}:
+To generate a new Markov Chain Monte Carlo (MCMC) sample $\bvec{x}^{(t)}$ of a distribution $p(\bvec{x})$ given a previously taken sample $\bvec{x}^{(t-1)}$, 
+firstly, a sample $\bvec{x}'$ is taken 
+from a symmetric \emph{proposal density} $q(\bvec{x} |\, \bvec{x}^{(t-1)})$ 
+%from which samples can be taken efficiently 
+(often an isotropic \emph{Gaussian} centered at $\bvec{x}^{(t-1)}$). 
+With probability $\min \big(1, p(\bvec{x}')/p(\bvec{x}^{(t-1)}) \big)$, 
+$\bvec{x}'$ is accepted as the next sample ($\bvec{x}^{(t)} \leftarrow \bvec{x}'$), otherwise, $\bvec{x}^{(t)} \leftarrow \bvec{x}^{(t-1)}$. 
+Choosing a good \emph{proposal} is problem-dependent and requires tuning. 
+
+
+\emph{Gibbs sampling}:
+In this MCMC method, to generate a new sample for $\bvec{x} = (x_1, \ldots, x_N)$, 
+each variable is sampled conditioned on the last instantiated value of the others:
+$x_i \sim p(x_i | \bvec{x}_{-i})$. 
+%Therefore,  
+Computation of $N$ univariate \emph{cumulative distribution functions} (CDFs) 
+(one for each $p(x_i | \, \bvec{x}_{-i})$) as well as their inverse functions is required which can be quite time consuming. 
+In practice, when these integrals are not convenient and efficient to compute, Gibbs sampling can be prohibitively expensive.   
+
+Compared to rejection sampling or MH, the performance of Gibbs sampling on the aforementioned \emph{piecewise} models is exponential in the amount of data (see Section~\ref{sect:experiment}).  
+In this work, we propose an alternative Gibbs sampler that is linear in the amount of data.
+%However,  we are going to propose a novel Gibbs-based sampling method which is scalable in the amount of data.
+
+%\paradot{Gibbs sampling from a piecewise model}
+%CDF of a piecewise (univariate) function is clearly the summation of the CDFs of each of its partitions.
+%is affected by does not get around the difficulties introduced by the exponential growth of posterior distributions in Bayesian models.\footnote{The reason is that the number of pieces in a function of form $p(x_i |\, \bvec{x}_{-i})$ is still in $O(M^n)$. In practice, many univariate partitions might be empty (i.e.\ associated with infeasible constraints) but in general, detecting them is not such easier than computing CDFs.
+%} %end footnote  
+%Therefore, according to the previous arguments, using Gibbs to take a single sample vector from the posterior distribution of an $N$ dimensional space of a Bayesian inference model with an $L$-piece prior and $n$ $M$-piece likelihood functions, up to $LM^nN$ CDFs (and CDF$^{-1}$s) should be computed.
+%With the aim of making Gibbs sampling more scalable, in Section~\ref{sect:mix} we introduce a technique using which this number can be reduced to {\color{red}an order of} $LM(N+n)$.
+
