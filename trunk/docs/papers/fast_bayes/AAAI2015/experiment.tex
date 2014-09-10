@@ -1,0 +1,193 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Experimental results}
+\label{sect:experiment}
+
+In this section we wish to demonstrate that the mixing time of the proposed method, \emph{augmented Gibbs} sampling, is faster than Rejection sampling, baseline Gibbs and Metropolis-Hastings.     
+Algorithms are tested against two different models.  BPPL model of Example~\ref{example:pref} and a \emph{Market maker} (MM) model motivated by \cite{Das:08}:
+
+\begin{figure}
+\centering
+\begin{subfigure}{.35\textwidth}
+\centering
+\includegraphics[width=.90\textwidth]{pic/market4w.pdf}
+%\vspace{-6mm}
+\caption{}%\footnotesize Market maker model using plate notation. }
+\label{fig:market}
+\end{subfigure}
+\begin{subfigure}{.24\textwidth}%\vspace{2mm}
+  \centering
+  \includegraphics[width=.82\textwidth]{pic/elipsePrior.png}
+  \caption{}
+  \label{fig:mmm.prior}
+\end{subfigure}%
+\begin{subfigure}{.24\textwidth}%\vspace{8mm}
+  \centering
+  \includegraphics[width=.8\textwidth]{pic/MM2.png}
+  \caption{}
+  \label{fig:mmm.posterior}
+\end{subfigure}
+\caption{\footnotesize Instrument type value distribution of Market Maker problem of Example~\ref{example:market}.
+(a) prior, (b) posterior given 4 observed data points (trader responses).}
+\label{fig:mmm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{1mm}
+\fexample{example:market}{Market maker (MM)}{
+Suppose there are $D$ different types of \emph{instruments} with 
+respective valuations $\theta_{1}$ to $\theta_{D}$.
+There is a \emph{market maker} 
+that at each time step $t$, deals an instruments of type $\tau_t \in \{1, \ldots D\}$ by setting \emph{bid} and \emph{ask} prices $b_{t}$ and $a_{t}$ for it
+at which she is willing to buy and sell one unit %(of type $\tau_t$) 
+respectively 
+(where $b_{t} \leq a_{t}$).
+The ``true" valuations of different types
+are unknown (to her) but any a priori knowledge over their dependencies that can be expressed via a DAG structure over their associated random variables is permitted.
+Nonetheless, without loss of generality we only consider the following simple dependency:  
+Assume the types indicate different versions of a same product and
+each version is more expensive than the older versions ($\theta_{i} \leq \theta_{i+1}$).
+The valuation of the oldest version is within some given price range $[L, H]$
+and the price difference of any consecutive versions is bound by a known parameter $\delta$:
+\begin{align*}
+pr(\theta_{1}) & = \mathcal{U}(L, H) \qquad \qquad\\
+pr(\theta_{i+1}) & = \mathcal{U}(\theta_{i}, \theta_{i} + \delta) \quad \forall i \in \{1, \ldots, D-1\}
+\end{align*} 
+At each time-step $t$, a trader arrives. 
+He has a noisy estimation $\widetilde{\theta_{t}}$ of the actual value of the presented instrument $\tau_t$. 
+We assume 
+$pr(\widetilde{\theta_{t}} | \, \boldsymbol\theta, \, \tau_t = i) = 
+\mathcal{U}(\theta_{i} - \epsilon, \theta_{i} + \epsilon)$
+where $\boldsymbol\theta := (\theta_{1}, \ldots, \theta_{D})$.
+The trader response to bid and ask prices 
+$a_{t}$ and $b_{t}$ is $d_t$ in $\{\textsc{Buy}, \textsc{Sell}, \textsc{Hold}\}$. 
+If he thinks the instrument is undervalued by the ask price (or overvalued by the bid price), with probability 0.8, he will buy it (resp. sell it), otherwise holds. 
+\begin{align*}
+pr (\textsc{Buy} \, | \, \widetilde{\theta_{t}}, a_{t}, b_{t}) =
+{\footnotesize
+\begin{cases}
+\widetilde{\theta_{t}}  <     a_{t} 		: 0\\
+\widetilde{\theta_{t}}  \geq a_{t}  		: 0.8
+\end{cases}
+}
+&\qquad
+pr (\textsc{Sell} \, | \, \widetilde{\theta_{t}} , a_{t}, b_{t}) = 
+{\footnotesize
+\begin{cases}
+\widetilde{\theta_{t}} \leq b_{t} 		: 0.8\\
+\widetilde{\theta_{t}} > b_{t} 		: 0
+\end{cases}
+}
+\\
+pr (\textsc{Hold} \, | \, \widetilde{\theta_{t}}, a_{t}, b_{t}) &=
+{\footnotesize
+\begin{cases}
+b_{t} < \widetilde{\theta_{t}} < a_{t} 								 & : 1\\
+\widetilde{\theta_{t}} \leq b_{t} \, \vee\,  \widetilde{\theta_{t}} \geq a_{t}	 	 & : 0.2
+\end{cases}
+}
+\end{align*}
+Based on traders' responses, the market maker intends to compute the posterior distribution of the valuations of all instrument types.
+To transform this problem (with corresponding model shown in Fig.~\ref{fig:market})
+to the model represented by Equation~\ref{e:posterior}, variables $\widetilde{\theta_{t}}$ should be marginalized.
+For instance:
+\begin{align*}
+&pr(\textsc{Buy} \, | \, \boldsymbol\theta, a_{t}, b_{t}, \tau_t) = 
+\int_{-\infty}^{\infty} pr(\textsc{Buy} \, | \, \widetilde{\theta_t}, a_{t}, b_{t})
+\cdot pr (\widetilde{\theta_t} \, | \, \boldsymbol\theta, \tau_t ) d \widetilde{\theta_t} \\
+&= \! \int_{-\infty}^{\infty}
+{\footnotesize
+\!
+\begin{cases}
+\widetilde{\theta_t}  		<     a_{t}  : 0\\
+\widetilde{\theta_t}  		\geq a_{t}  : 0.8
+\end{cases} 
+}
+\!\!\!\!\!\!
+\otimes
+{\footnotesize
+\begin{cases}
+\theta_{\tau_t} \!-\! \epsilon \leq \widetilde{\theta_t} \leq \theta_{\tau_t} \!+\! \epsilon 					: \frac{1}{2 \epsilon} \\
+\widetilde{\theta_t} \!<\! \theta_{\tau_t} \!-\! \epsilon \, \vee \, \widetilde{\theta_t} \!>\! \theta_{\tau_t} \!+\! \epsilon 	: 0  
+\end{cases}
+}
+\!\!\!\!\!
+d \widetilde{\theta_t}
+=
+{\footnotesize
+\begin{cases}
+\theta_{\tau_t} \leq a_{t} - \epsilon: 0\\
+a_{t} \!-\! \epsilon < \theta_{\tau_t} \leq a_{t} \!+\! \epsilon: 
+0.4(1 \!+\! \frac{\theta_{\tau_t} - a_t}{\epsilon})\\
+\theta_{\tau_t} > a_{t} + \epsilon : 0.8
+\end{cases}
+}
+\end{align*}
+}% end MM example
+
+Models are configured as follows: In BPPL, $\eta = 0.4$ and \emph{prior} is uniform in a hypercube.
+In MM, $L = 0$, $H=20$, $\epsilon = 2.5$ and $\delta=10$. 
+
+For each combination of the parameter space dimensionality $N$ and the number of observed data $n$, we generate observed data points from each model and simulate the associated expected value of ground truth posterior distribution by running rejection sampling on a 4 core, 3.40GHz PC for 15 to 30 minutes.
+Subsequently, using each algorithm, particles are generated and based on them, 
+average absolute error between samples and the ground truth, $||\mathbb{E}[\boldsymbol\theta] - \boldsymbol\theta^*||_1$, is computed. 
+The time till the absolute error reaches the threshold error 3 is recored.
+For each algorithm 3 independent Markov chains are executed and the results are averaged.
+The whole process is repeated 15 times and the results are averaged and standard errors are computed. 
+
+We observe that % where either dimensionality or the number of observations is kept fixed and the other varies. 
+in either model, the behavior of each algorithm has a particular pattern (Figure~\ref{fig:results}). 
+The speed of rejection sampling and consequently its mixing time deteriorates rapidly as the number of observations increase.\footnote{For the same reason we were obliged to constraint the observations to less than 18 points since after this level, even after 30 minutes the number of samples generated to simulate the ground truth (which as mentioned were taken using rejection sampling) were not sufficient to guarantee a fair comparison between algorithms.}
+The reason is that by observing new data, the posterior density tends to concentrate in smaller areas, 
+leaving most of the space sparse and therefore hard to sample from by rejection sampling.
+
+It is known the efficiency of MH depends crucially on the scaling of the \emph{proposal}.
+We carefully tuned MH to reach the acceptance rate 0.234 after the well known algorithm \cite{Roberts:97}. 
+The experimental results show that MH is scalable in observations but its mixing time increases rapidly as the dimensionality increases. 
+This results are rather surprising since we expected that as an MCMC, MH does not suffer from the curse of dimensionality as rejection sampling does. 
+A reason may be that piecewise distributions can be non-smooth or broken which is far from the characteristics of the Gaussian \emph{proposal density} used in MH. 
+
+Efficiency of the baseline Gibbs sampling in particular decreases as data points increase.
+The reason is that this leads to a blow up in the number of partitions in the posterior density.
+One the other hand, on both models, the augmented Gibbs is scalable in both data and dimension. 
+Rather surprisingly, its efficiency even increases when dimensionality increases from 2 to 5.
+The reason may be that proportional to the total number of posterior partitions, in lower dimensions the neighbors of each partition are not so numerous. 
+For instance, regardless of the number of observed data in the 2D BPPL, each partition is neighbored by only two partitions (see Figure~\ref{fig:pref-up-down}) leading to a slow transfer between partitions. 
+In higher dimensions however, this is not often the case.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[thb!]
+\centering
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \includegraphics[width=0.95\textwidth]{plot/bppl_data_analysis_fit.pdf}
+  \caption{}
+  \label{fig:error-samples-bppl}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \hspace{5mm} \includegraphics[width=0.95\textwidth]{plot/bppl_dim_analysis_fit.pdf}
+  \caption{}
+  \label{fig:error-samples-bppl}
+\end{subfigure}
+%\caption{Performance of Rejection/Metropolis-Hastings, baseline and augmented Gibbs on (a) \& (b) BPPL and (c) \& (d) MM models against different configurations of the number of observed data and the dimensionality of the parameter space.}
+%\label{fig:results1}
+%\end{figure}
+%
+%\begin{figure}[thbp!]
+\centering
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \includegraphics[width=0.95\textwidth]{plot/mmm_data_analysis2.pdf}
+  \caption{}
+  \label{fig:mmm_data_analysis}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \hspace{5mm} \includegraphics[width=0.95\textwidth]{plot/mmm_dim_analysis10.pdf}
+  \caption{}
+  \label{fig:mmm_dim_analysis}
+\end{subfigure}
+\caption{Performance of Rejection/Metropolis-Hastings, baseline and augmented Gibbs on (a) \& (b) BPPL and (c) \& (d) MM models against different configurations of the number of observed data and the dimensionality of the parameter space.  In almost all cases, Augmented Gibbs takes orders of magnitude less time to achieve the same error as other methods and this performance separation from competing algorithms increases in many cases with the amount of data and dimensionality.}
+\label{fig:results}
+\end{figure*}
+

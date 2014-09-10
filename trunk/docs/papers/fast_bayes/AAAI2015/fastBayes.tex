@@ -1,0 +1,104 @@
+%-------------------------------%
+% Biblography
+%------------------------------%
+\RequirePackage{filecontents}        % loading package filecontents
+% writing file \jobname.bib, for example mb-bibtex.bib.
+
+\documentclass[letterpaper]{article}
+\usepackage{aaai}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\frenchspacing
+\setlength{\pdfpagewidth}{8.5in}
+\setlength{\pdfpageheight}{11in}
+\pdfinfo{
+/Title (Insert Your Title Here)
+/Author (Put All Your Authors Here, Separated by Commas)}
+\setcounter{secnumdepth}{0}  
+
+
+\usepackage{aaai,times}%{nips13submit_e,times}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{amsthm} %for theorems, examples, etc.
+\usepackage{amsfonts} %for matbb font
+\usepackage{graphicx}
+\usepackage{caption} %for graphics
+\usepackage{subcaption} %for graphics
+\usepackage{amsmath} %for cases
+
+\usepackage{algorithmic} %for algorithms
+% Import an algorithm formatting package
+\usepackage[vlined,algoruled,titlenumbered,noend]{algorithm2e}
+%\documentstyle[nips13submit_09,times,art10]{article} % For LaTeX 2.09
+%\usepackage{algpseudocode} %new tpr
+%\usepackage{algorithm} %new tpr
+
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{verbatim} %for commenting
+
+\newcommand{\denselist}{\itemsep 0pt\partopsep 0pt}
+
+%\newenvironment{proof}{{\noindent\bf Proof.}}\qed%{\hspace*{\fill}\ensuremath{\diamondsuit\quad}%{\vskip 1ex}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{example}{Example}
+\def\fexample#1#2#3{\vspace{-1ex}\begin{example}[#2]\label{#1}\rm #3
+\hspace*{\fill} $\diamondsuit\quad$ \end{example}\vspace{-2ex} }
+\newcommand{\tuple}[1] {\langle #1 \rangle}
+\newcommand{\bvec}[1]{\textbf{#1}}
+\newcommand{\indicator}{\mathbb{I}}%{I\!\!I}
+
+\def\eqvsp{}  \newdimen\paravsp  \paravsp=1.3ex
+\def\paradot#1{\vspace{\paravsp plus 0.5\paravsp minus 0.5\paravsp}\noindent{\bf\boldmath{#1.}}}
+
+\def\lgap{3.2mm}% little gap. by Hadi
+\newcommand{\svdots}{\vspace{-\lgap}.\vspace{-\lgap}\\.\vspace{-\lgap}\\.} %small vdots by Hadi
+
+\title{
+%Blocked Gibbs Sampling on Piecewise Bayesian Networks
+Fast Bayesian Inference in Piecewise Graphical Models
+}
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+%\nipsfinalcopy % Uncomment for camera-ready version
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+%In many real world probabilistic inference tasks such as \emph{preference learning}, predicting traders behaviors in a financial market, etc. prior/likelihood models are intrinsically piecewise. This work shows that Gibbs sampling can effectively be used on piecewise linear/quadratic polynomial distributions. It happens that in a Bayesian model,  the number of partitions in the \emph{posterior} distribution can grow exponentially if the \emph{likelihood} is piecewise. A major contribution is to show that such networks can be regarded to as mixture models leading to a computation reduction which is exponential to linear in the amount of data. We provide a Blocked Gibbs sampling algorithm which is quite effective on such models. The empirical results show that the performance of this sampling method is order of magnitudes better than candidate algorithms for asymptotically unbiased reasoning. The generalization of the proposed sampling method to any piecewise distribution with a huge number of partitions is straight forward. 
+\input abstract
+\end{abstract}
+
+
+\input intro
+
+
+
+\input bayesian_inference
+
+
+\input mixture
+
+\input experiment
+
+\input conclusion
+
+
+%\subsubsection*{References}
+\small{
+\bibliographystyle{alpha}%{plain}%{plainnat}  % needs package natbib
+\bibliography{\jobname}       % uses \jobname.bib, according to \jobname.tex
+}
+
+
+
+\end{document}
