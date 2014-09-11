@@ -1,0 +1,37 @@
+cvariables (x1 x2)
+min-values (-10000 -10000)
+max-values (10000 10000)
+bvariables ()
+icvariables()
+min-values ()
+max-values ()
+ibvariables()
+avariables(a1 a2)
+
+action order (0 <= a1 <= 200 ^ 0 <= a2 <= 200)
+
+x1' ([-300 + x1 + a1 +x2 + a2 > 1000]
+    ([x1 - 150])
+    ([-150 + x1 + a1])
+)
+
+x2' ([-300 + x1 + a1 +x2 + a2 > 1000]
+    ([x2 - 150])
+    ([-150 + x2 + a2])
+)
+
+reward ([x1>=150]
+    ([150 -0.1 * a1 -0.05 * x1])			
+    ([(x1 - 150)- 0.1 * a1 - 0.05 * x1] )
+)
++ ([x2>=150]
+    ([150 -0.1 * a2 -0.05 * x2])
+    ([(x2 - 150)- 0.1 * a2 - 0.05 * x2] )
+)
+endaction
+
+discount 1.000000
+InitialState (200 200) () 
+iterations 10
+LINEAR
+MAXREWARD 750

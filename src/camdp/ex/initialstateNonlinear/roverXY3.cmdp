@@ -29,7 +29,7 @@ reward ([-1.0])
 endaction
 
 action move2
-y' ([0.3333333 * (y - 1)])
+y' ([1 + 0.3333333 * (y - 1)])
 x' ([0.3333333 * x])
 
 takenp1' ( takenp1
@@ -49,7 +49,7 @@ endaction
 
 action move3
 y' ([0.3333333 * y])
-x' ([0.3333333 * (x - 1)])
+x' ([1 + 0.3333333 * (x - 1)])
 
 takenp1' ( takenp1
    ([1.0])
@@ -133,13 +133,13 @@ takenp2'(takenp2
         )
 takenp3'([ (x - 1)*(x - 1) + y*y < 4]
         ([1.0])
-        (takenp2
+        (takenp3
             ([1.0])
             ([0.0])
         )
 )
 reward ([(x - 1)*(x - 1) + y*y < 4]
-        (takenp2
+        (takenp3
             ([0.0])
             ([(4 - (x - 1)*(x - 1) - y*y )])
         )

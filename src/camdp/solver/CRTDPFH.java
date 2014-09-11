@@ -121,7 +121,7 @@ public class CRTDPFH extends CAMDPsolver {
             
             if (DEBUG_DEPTH > RUN_DEPTH){
                 debugOutput.println("Trial:" + curTrial+" Complete");
-                debugOutput.println("Value DD:"+getValueDD()+" Nodes= "+solutionNodeList[curTrial]+" Time ="+solutionTimeList[curTrial]);
+                debugOutput.println("Value DD:"+getValueDD()+" Nodes= "+solutionNodeList[curTrial]+"("+context.getNodeCount(getValueDD())+") Time ="+solutionTimeList[curTrial]);
                 debugOutput.println("Initial State Value = "+solutionInitialSValueList[curTrial]);
                 debugShow(getValueDD(), "Value after Trial "+curTrial, true);
                 debugOutput.println();

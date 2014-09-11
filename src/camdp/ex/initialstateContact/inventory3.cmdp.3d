@@ -1,0 +1,6 @@
+bassign d1 false
+bassign d2 false
+bassign d3 false
+var	x1	-100	10 500
+var	x2	-100	10 500
+cassign x3	200
