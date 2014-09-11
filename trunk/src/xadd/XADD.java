@@ -1083,6 +1083,18 @@ public class XADD {
         }
         return null;
     }
+
+    public Boolean evaluateDecisionSlack(Decision d, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign, Double eps) {
+        if (d instanceof TautDec)
+            return ((TautDec) d)._bTautology;
+        else if (d instanceof BoolDec)
+            return bool_assign.get(((BoolDec) d)._sVarName);
+        else if (d instanceof ExprDec) {
+            if (SHOW_DECISION_EVAL) { System.out.println(" - " + ((ExprDec) d)._expr + ": " + ((ExprDec) d)._expr.evaluate(cont_assign));}
+            return  ((ExprDec) d)._expr.evaluateSlack(cont_assign, eps);            
+        }
+        return null;
+    }
     
     public Double evaluate(int node_id, HashMap<String, Boolean> bool_assign, HashMap<String, Double> cont_assign) {
         // Get root
@@ -1851,7 +1863,7 @@ public class XADD {
                 if (!(n instanceof XADDINode)) { System.err.println("Invalid node, neither TNode nor INode:\n"+n.toString()); } 
                 // Traverse decision diagram until terminal found
                 XADDINode inode = (XADDINode) n;
-                Boolean branch_high = evaluateDecision(_alOrder.get(inode._var), bool_assign, cont_assign);
+                Boolean branch_high = evaluateDecisionSlack(_alOrder.get(inode._var), bool_assign, cont_assign, 0.1d);
                 
                 if (branch_high == null){
                     //Not all required variables were assigned, mask both paths

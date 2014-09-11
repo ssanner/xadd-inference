@@ -74,7 +74,7 @@ public class Main {
         if (VERBOSE >=0) {
             System.out.println("Main Solution Start: Solving "+filename+" with solver "+solvers[solution]+" for "+iter+" iterations and "+trials+" trials.");
         }
-        if (VERBOSE > 1){
+        if (VERBOSE > 2){
             System.out.println(mdp.toString(false, false));
         }
         

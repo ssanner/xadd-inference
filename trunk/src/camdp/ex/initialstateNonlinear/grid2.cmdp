@@ -45,7 +45,7 @@ reward
 endaction
 
 discount 1.0000000
-InitialState (-8.11 2.11) () 
+InitialState (-3.0 2.0) () 
 iterations 10
 NONLINEAR
 MAXREWARD 0

@@ -1,4 +1,4 @@
 var	kn	0	0.05	1
 var	kw	0   0.05	1
-cassign kc 0.25
+cassign kc 0.205
 cassign vc 0.5

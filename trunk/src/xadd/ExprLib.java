@@ -602,7 +602,33 @@ public abstract class ExprLib {
                     return null;
             } 
         }
-        
+
+        public Boolean evaluateSlack(HashMap<String, Double> cont_assign, double eps) {
+
+            Double dval_lhs = _lhs.evaluate(cont_assign);
+            Double dval_rhs = _rhs.evaluate(cont_assign);
+
+            if (dval_lhs == null || dval_rhs == null || Math.abs(dval_rhs - dval_lhs) <eps)
+                return null;
+
+            switch (_type) {
+                case EQ:
+                    return (dval_lhs == dval_rhs);
+                case NEQ:
+                    return (dval_lhs != dval_rhs);
+                case GT:
+                    return (dval_lhs > dval_rhs);
+                case GT_EQ:
+                    return (dval_lhs >= dval_rhs);
+                case LT:
+                    return (dval_lhs < dval_rhs);
+                case LT_EQ:
+                    return (dval_lhs <= dval_rhs);
+                default:
+                    return null;
+            } 
+        }
+
         public void collectVars(HashSet<String> vars) {
             _lhs.collectVars(vars);
             _rhs.collectVars(vars);
