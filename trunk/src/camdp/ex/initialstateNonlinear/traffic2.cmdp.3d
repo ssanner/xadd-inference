@@ -1,0 +1,8 @@
+var	kn	0	0.02	1
+var	kw	0   0.02	1
+cassign ke 0.405
+cassign vc 0.5
+cassign kc 0.25
+bassign hiN true
+bassign hiW false
+bassign hiE false

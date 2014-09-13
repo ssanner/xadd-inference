@@ -1,0 +1,4 @@
+var	l1	-1000	100 5000
+var	l2	-1000	100 5000
+cassign l3  1500
+bassign rain false
