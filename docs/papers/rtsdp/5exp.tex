@@ -9,7 +9,8 @@ The time efficiency is measured by the convergency of the value of the initial s
 There are also $k$ boolean $tp_i$ variables, one for each point, indicating whether the picture of point $i$ was already taken.
 There is a single move action in this domain that simply reduces the distance from the rover to a specific point by $\frac{1}{3}$ of the current distance.
 For all experiments, this target point was set to (0, 0).
-The intent of this action is to represent the fact that a rover may move progressively moreslowly as it approaches a target position in order to reach the position with high accuracy.
+The intent of this action is to represent the fact that a rover may move progressively more
+slowly as it approaches a target position in order to reach the position with high accuracy.
 There are $k$ $take-pic_i$ actions that provide reward according to nonlinear expressions over the continuous x and y variables, e.g. it is quadratically proportional to the distance from the picture point.
 Hence for various points, the rover has to trade-off whether to take each picture at its current position or to get a larger reward by first moving and potentially getting closer before taking the picture. The reward for the $take-pic$ actions for a point in (0,0) is:
 \begin{align*}
@@ -30,7 +31,7 @@ Thus, our solver can achieve the optimal value for the initial state much faster
 
 \vspace{-3mm}
 \begin{figure}[ht]
-\hspace{-5mm}
+\hspace{-2mm}
 \subfloat[$V(s_0)$  $vs$ $Space$.]{
 \includegraphics[width=1.65in]{figures/\perfOne/ValNodes.pdf}
 }
@@ -39,12 +40,21 @@ Thus, our solver can achieve the optimal value for the initial state much faster
 }
 
 \vspace{-4mm}
-\hspace{-5mm}
+\hspace{-2mm}
 \subfloat[$V(s_0)$  $vs$ $Space$.]{
 \includegraphics[width=1.65in]{figures/\perfTwo/ValNodes.pdf}
 }
 \subfloat[$V(s_0)$ $vs$ $Time$.]{
 \includegraphics[width=1.65in]{figures/\perfTwo/ValTime.pdf}
+}
+
+\vspace{-4mm}
+\hspace{-2mm}
+\subfloat[$V(s_0)$  $vs$ $Space$.]{
+\includegraphics[width=1.65in]{figures/\perfThree/ValNodes.pdf}
+}
+\subfloat[$V(s_0)$ $vs$ $Time$.]{
+\includegraphics[width=1.65in]{figures/\perfThree/ValTime.pdf}
 }
 \caption{CRTDP and SDP performance comparison on two domains \Invent ~($top$) and \Mars~($bottom$). Initial state value per memory ($left$) and time ($right$). SDP points are complete iterations (horizon) and RTSDP points are complete trials.}
 \label{fig:performance}
@@ -68,91 +78,81 @@ A peculiarity of this algorithm is that even though its solution is focused to o
 
 \begin{figure*}[!ht]
 \hspace{-5mm}
-\subfloat[RTSDP - $V^1$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionExample/CRTDP-Value1.pdf}
+\subfloat[RTSDP - $V^1$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-Value1.pdf}
 \label{invent2rtdp_plot1}}
-\subfloat[RTSDP - $DD^1$]{\includegraphics[width=0.24\linewidth, height=0.17\linewidth]{figures/\solutionExample/CRTDP-DD1.pdf}
+\subfloat[RTSDP - $DD^1$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-DD1.pdf}
 \label{invent2rtdp_dd1}} 
 \hspace{0.1cm}
-\subfloat[SDP - $V^1$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionExample/SDP-Value1.pdf}
+\subfloat[SDP - $V^1$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-Value1.pdf}
 \label{invent2sdp_plot1}}
-\subfloat[SDP - $DD^1$]{\includegraphics[width=0.24\linewidth, height=0.17\linewidth]{figures/\solutionExample/SDP-DD1.pdf}
+\subfloat[SDP - $DD^1$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-DD1.pdf}
 \label{invent2sdp_dd1}} 
 
 \hspace{-5mm}
-\subfloat[RTSDP - $V^2$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionExample/CRTDP-Value2.pdf}
+\subfloat[RTSDP - $V^2$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-Value2.pdf}
 \label{invent2rtdp_plot2}}
-\subfloat[RTSDP - $DD^2$]{\includegraphics[width=0.24\linewidth, height=0.17\linewidth]{figures/\solutionExample/CRTDP-DD2.pdf}
+\subfloat[RTSDP - $DD^2$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-DD2.pdf}
 \label{invent2rtdp_dd2}} 
 \hspace{0.1cm}
-\subfloat[SDP - $V^2$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionExample/SDP-Value2.pdf}
+\subfloat[SDP - $V^2$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-Value2.pdf}
 \label{invent2sdp_plot2}}
-\subfloat[SDP - $DD^2$]{\includegraphics[width=0.24\linewidth, height=0.17\linewidth]{figures/\solutionExample/SDP-DD2.pdf}
+\subfloat[SDP - $DD^2$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-DD2.pdf}
 \label{invent2sdp_dd2}} 
 
 \hspace{-5mm}
-\subfloat[RTSDP - $V^3$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionExample/CRTDP-Value3.pdf}
+\subfloat[RTSDP - $V^3$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-Value3.pdf}
 \label{invent2rtdp_plot3}}
-\subfloat[RTSDP - $DD^3$]{\includegraphics[width=0.24\linewidth, height=0.17\linewidth]{figures/\solutionExample/CRTDP-DD3.pdf}
+\subfloat[RTSDP - $DD^3$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-DD3.pdf}
 \label{invent2rtdp_dd3}} 
 \hspace{0.1cm}
-\subfloat[SDP - $V^3$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionExample/SDP-Value3.pdf}
+\subfloat[SDP - $V^3$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-Value3.pdf}
 \label{invent2sdp_plot3}}
-\subfloat[SDP - $DD^3$]{\includegraphics[width=0.24\linewidth, height=0.17\linewidth]{figures/\solutionExample/SDP-DD3.pdf}
+\subfloat[SDP - $DD^3$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-DD3.pdf}
 \label{invent2sdp_dd3}} 
-\caption{Partial value functions generated by RTSDP and SDP on \Invent, with $H=3$ for different number of steps-to-go.}
+
+\hspace{-5mm}
+\subfloat[RTSDP - $V^4$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-Value4.pdf}
+\label{invent2rtdp_plot4}}
+\subfloat[RTSDP - $DD^4$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-DD4.pdf}
+\label{invent2rtdp_dd4}} 
+\hspace{0.1cm}
+\subfloat[SDP - $V^4$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-Value4.pdf}
+\label{invent2sdp_plot4}}
+\subfloat[SDP - $DD^4$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-DD4.pdf}
+\label{invent2sdp_dd4}} 
+\caption{Value functions generated by RTSDP and SDP on \Invent, with $H=4$.}
 \label{invent2solution}
 \vspace{-6mm}
 \end{figure*}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[!ht]
+\hspace{-5mm}
+\subfloat[RTSDP - $V^2$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExampleTwo/RTSDP-Value2.pdf}
+\label{traffic1rtsdp_plot2}}
+\subfloat[RTSDP - $DD^2$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExampleTwo/RTSDP-DD2.pdf}
+\label{traffic1rtsdp_dd2}} 
+\hspace{0.1cm}
+\subfloat[SDP - $V^2$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExampleTwo/SDP-Value2.pdf}
+\label{traffic1sdp_plot2}}
+\subfloat[SDP - $DD^2$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExampleTwo/SDP-DD2.pdf}
+\label{traffic1sdp_dd2}} 
+\caption{Value 2 functions generated by RTSDP and SDP on \Traffic, with $H=2$.}
+\vspace{-6mm}
+\end{figure*}
 
 \begin{figure*}[!ht]
 \hspace{-5mm}
-\subfloat[RTSDP - $V^1$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionSecond/CRTDP-Value1.pdf}
-\label{roverXY1rtdp_plot1}}
-\subfloat[RTSDP - $DD^1$]{\includegraphics[width=0.24\linewidth, height=0.17\linewidth]{figures/\solutionSecond/CRTDP-DD1.pdf}
-\label{roverXY1rtdp_dd1}} 
+\subfloat[RTSDP - $V^2$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExampleThree/RTSDP-Value2.pdf}
+\label{reservoir3rtsdp_plot2}}
+\subfloat[RTSDP - $DD^2$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExampleThree/RTSDP-DD2.pdf}
+\label{reservoir3rtsdp_dd2}} 
 \hspace{0.1cm}
-\subfloat[SDP - $V^1$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionSecond/SDP-Value1.pdf}
-\label{roverXY1sdp_plot1}}
-\subfloat[SDP - $DD^1$]{\includegraphics[width=0.24\linewidth, height=0.17\linewidth]{figures/\solutionSecond/SDP-DD1.pdf}
-\label{roverXY1sdp_dd1}} 
-
-%\hspace{-5mm}
-%\subfloat[RTSDP - $V^2$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionSecond/CRTDP-Value2.pdf}
-%\label{roverXY1rtdp_plot2}}
-%\subfloat[RTSDP - $DD^2$]{\includegraphics[width=0.24\linewidth, height=0.17\linewidth]{figures/\solutionSecond/CRTDP-DD2.pdf}
-%\label{roverXY1rtdp_dd2}} 
-%\hspace{0.1cm}
-%\subfloat[SDP - $V^2$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionSecond/SDP-Value2.pdf}
-%\label{roverXY1sdp_plot2}}
-%\subfloat[SDP - $DD^2$]{\includegraphics[width=0.24\linewidth, height=0.17\linewidth]{figures/\solutionSecond/SDP-DD2.pdf}
-%\label{roverXY1sdp_dd2}} 
-
-\hspace{-5mm}
-\subfloat[RTSDP - $V^3$]{\includegraphics[width=0.28\linewidth, height=0.21\linewidth]{figures/\solutionSecond/CRTDP-Value3.pdf}
-\label{roverXY1rtdp_plot3}}
-\subfloat[RTSDP - $DD^3$]{\includegraphics[width=0.24\linewidth, height=0.21\linewidth]{figures/\solutionSecond/CRTDP-DD3.pdf}
-\label{roverXY1rtdp_dd3}} 
-\hspace{0.1cm}
-\subfloat[SDP - $V^3$]{\includegraphics[width=0.28\linewidth, height=0.21\linewidth]{figures/\solutionSecond/SDP-Value3.pdf}
-\label{roverXY1sdp_plot3}}
-\subfloat[SDP - $DD^3$]{\includegraphics[width=0.24\linewidth, height=0.21\linewidth]{figures/\solutionSecond/SDP-DD3.pdf}
-\label{roverXY1sdp_dd3}} 
-
-\hspace{-5mm}
-\subfloat[RTSDP - $V^4$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionSecond/CRTDP-Value4.pdf}
-\label{roverXY1rtdp_plot4}}
-\subfloat[RTSDP - $DD^4$]{\includegraphics[width=0.24\linewidth, height=0.17\linewidth]{figures/\solutionSecond/CRTDP-DD4.pdf}
-\label{roverXY1rtdp_dd4}} 
-\hspace{0.1cm}
-\subfloat[SDP - $V^4$]{\includegraphics[width=0.28\linewidth, height=0.17\linewidth]{figures/\solutionSecond/SDP-Value4.pdf}
-\label{roverXY1sdp_plot4}}
-\subfloat[SDP - $DD^4$ Nœmero de n—s!]{\includegraphics[width=0.24\linewidth,height=0.17\linewidth]{figures/\solutionSecond/SDP-DD4.pdf}
-\label{roverXY1sdp_dd4}} 
-\caption{Partial value functions generated by RTSDP and RTSDP on \Mars Nonlinear, with $H=4$ for different actions-to-go.}
-\label{rover4solution}
+\subfloat[SDP - $V^2$]{\includegraphics[width=0.28\linewidth, height=0.14\linewidth]{figures/\solutionExampleThree/SDP-Value2.pdf}
+\label{reservoir3sdp_plot2}}
+\subfloat[SDP - $DD^2$]{\includegraphics[width=0.24\linewidth, height=0.14\linewidth]{figures/\solutionExampleThree/SDP-DD2.pdf}
+\label{reservoir3sdp_dd2}} 
+\caption{Value 2 functions generated by RTSDP and SDP on \Reservoir, with $H=2$.}
 \vspace{-6mm}
-\label{roverXY1solution}
-
 \end{figure*}
+
+\input tablesp

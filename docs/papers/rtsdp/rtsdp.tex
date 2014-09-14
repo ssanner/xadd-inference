@@ -12,6 +12,10 @@
 \setlength{\pdfpagewidth}{8.5in}
 \setlength{\pdfpageheight}{11in}
 
+% Table
+\usepackage{booktabs}
+\usepackage{multirow}
+
 % PDFINFO for PDFLATEX
 \pdfinfo{
 /Title (Real Time Symbolic Dynamic Programming)
@@ -44,9 +48,11 @@ Canberra, Australia}
 \usepackage[]{subfig}
 
 \newcommand{\solutionExample}{inventory2Value}
-\newcommand{\solutionSecond}{roverXY1Value}
-\newcommand{\perfOne}{inventory2performance}
-\newcommand{\perfTwo}{roverXY1performance}
+\newcommand{\solutionExampleTwo}{traffic1Value}
+\newcommand{\solutionExampleThree}{reservoir3Value}
+\newcommand{\perfOne}{reservoir3convergence}
+\newcommand{\perfTwo}{inventory3convergence}
+\newcommand{\perfThree}{traffic1convergence}
 
 \renewcommand{\l}{\langle}
 \renewcommand{\r}{\rangle}
@@ -54,6 +60,9 @@ Canberra, Australia}
 \newcommand{\false}{\mathit{false}}
 \newcommand{\Mars}{\textsc{Mars Rover}}
 \newcommand{\Invent}{\textsc{Inventory Control}}
+\newcommand{\Traffic}{\textsc{Traffic Control}}
+\newcommand{\Reservoir}{\textsc{Reservoir}}
+
 \newcommand{\argcasemax}{\mathrm{arg~casemax}}
 \newcommand{\argcasemin}{\mathrm{arg~casemin}}
 \newcommand{\parametermax}{\mathrm{pmax}}
