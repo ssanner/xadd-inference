@@ -7,8 +7,8 @@ likelihoods~\cite{Shogren:00}, e.g., preferences may induce
 constraints on possible utility functions while trader transactions
 constrain possible instrument valuations.  To be concrete, consider
 the following Bayesian approach to preference learning where our
-objective is to learn about a user's weighting of attributes for a
-class of items (e.g., cars, apartment rentals, movies) given their
+objective is to learn a user's weighting of attributes for
+classes of items (e.g., cars, apartment rentals, movies) given their
 responses to pairwise comparison queries over those items:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -22,7 +22,6 @@ responses to pairwise comparison queries over those items:
 \begin{subfigure}{.24\textwidth}
 \centering
 \includegraphics[width=1.0\textwidth]{pic/pref2w.pdf}
-\caption{}
 \end{subfigure}
 %\begin{subfigure}{.2\textwidth}
 %  \centering
@@ -42,7 +41,6 @@ responses to pairwise comparison queries over those items:
 \begin{subfigure}{.76\textwidth}
 \centering
 \includegraphics[width=1.0\textwidth]{pic/running1.pdf}
-\caption{}
 \label{fig:pref}
 \end{subfigure}
 %\begin{subfigure}{.2\textwidth}
@@ -53,7 +51,7 @@ responses to pairwise comparison queries over those items:
 \caption{\footnotesize 
 (a) Graphical model for BPPL problem in Example \ref{example:pref}.
 (b) A 2D instance of Example \ref{example:pref}: 
-(i) An (unnormalized) prior uniform in a hyperrectangle with center (0,0).
+(i) An (unnormalized) prior uniform in a rectangle with center (0,0).
 (ii) Likelihood model $pr(\bvec{a}_1 \succ \bvec{b}_1 | \, \boldsymbol\theta)$ and
 (iii) $pr(\bvec{a}_2 \succ \bvec{b}_2 | \, \boldsymbol\theta)$ 
 (as in equation~\ref{e:pref1likelihood}) where
@@ -62,8 +60,7 @@ $\bvec{a}_1 = (5, 3)$, $\bvec{b}_1 = (6, 2)$, $\bvec{a}_2 = \bvec{a}_1$ and $\bv
 \label{fig:pref-up-down}
 %\caption{\footnotesize Graphical model for BPPL problem in Example \ref{example:pref}. }
 \end{figure*}
-
-\vspace{2mm}
+% \vspace{2mm}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \fexample{example:pref}{Bayesian pairwise preference learning (BPPL)}{
   Suppose each \emph{item} $\bvec{a}$ is modeled by an $N$-dimensional
@@ -73,11 +70,11 @@ $\bvec{a}_1 = (5, 3)$, $\bvec{b}_1 = (6, 2)$, $\bvec{a}_2 = \bvec{a}_1$ and $\bv
   that describes the utility of each attribute choice from user
   responses to preference queries.  As commonly done in
   \emph{multi-attribute utility theory} \cite{Keeney:93}, the overall
-  item utility $u(\bvec{a}|\, \boldsymbol\theta)$ can be decomposed 
+  item utility $u(\bvec{a}|\, \boldsymbol\theta)$ is decomposed 
   additively over the attribute choices of $\bvec{a}$:
 %
 $$
-u(\bvec{a} | \, \boldsymbol\theta) = \sum_{j=1}^N \theta_j \cdot \alpha_j
+u(\bvec{a} | \, \boldsymbol\theta) = \sum_{j=1}^N \theta_j\cdot\alpha_j
 $$
 %
 User responses are in the form of $n$ queries (i.e.\ observed data
@@ -104,13 +101,13 @@ u(\bvec{a}_i|\boldsymbol\theta) > u(\bvec{b}_i|\boldsymbol\theta) : 1-\eta
 pr(\bvec{a}_i \preceq \bvec{b}_i \,|\, \boldsymbol\theta) = 
 1 - pr(\bvec{a}_i \succ \bvec{b}_i \,|\, \boldsymbol\theta)
 \end{align}
-As the graphical model in Figure~(\ref{fig:pref}) illustrates, our posterior
+As the graphical model in Figure~\ref{fig:pref-up-down} illustrates, our posterior
 belief over the user's attribute weights is provided by the standard
 Bayesian inference expression:
 $
 pr(\boldsymbol\theta | \, d_1, \ldots, d_n) 
 \propto pr(\boldsymbol\theta) \cdot \prod_{i=1}^{n} pr(d_i | \, \boldsymbol\theta)
-$.  As also evidenced in Figure~(\ref{fig:pref}), since the
+$. As also evidenced, since the
 prior and likelihoods are piecewise distribitions, the posterior
 distribution is also piecewise.  
 } %end example 1
@@ -120,12 +117,12 @@ distribution is also piecewise.
 Unfortunately, Bayesian inference in models with piecewise likelihoods
 like BPPL in Example~\ref{example:pref} often lead to posterior
 distributions with a number of piecewise partitions \emph{exponential in the
-amount of data}, thus rendering exact analytical inference impossible.
+number of data points and attributes}, thus rendering exact analytical inference impossible.
 While (Markov Chain) Monte Carlo methods provide an attractive
 asymptotically unbiased approximation approach, rejection sampling and
 Metropolis-Hastings both prove inefficient in practice, and analytical
 derivation of Gibbs samplers require exponential space and time in the
-amount of data.
+number of data points and attributes of data.
 
 %However, the number of partitions in
 %the posterior grow exponential as the amount of observed data grows.
@@ -149,8 +146,7 @@ unbiased Bayesian inference in a new expressive class of piecewise graphical
 models and empirically requires orders of magnitude less time than
 rejection, Metropolis-Hastings, and conventional Gibbs sampling
 methods to achieve the same level of accuracy -- especially
-when the number of posterior partitions grows rapidly in the amount
-of observed data.
+when the number of posterior partitions grows rapidly in the number of observed data points.
 
 %Many real world Bayesian inference problems such as preference
 %learning, predicting traders’ behavior in a financial market,
@@ -188,14 +184,14 @@ of observed data.
 %dealing with the total space.
 After a brief introduction to piecewise models and the
 exact/asymptotically unbiased inference methods that can be applied to 
-them in Section~\ref{sec:inference_piecewise_models}, a novel inference 
+them in the following section, a novel inference 
 algorithm (referred to as \emph{Augmented Gibbs} sampling throughout)
-is presented in Section~\ref{sect:mix}.  The performance of this
-algorithm is tested against other sampling methods in
-Section~\ref{sect:experiment}.
+is presented. %  The performance of this algorithm is tested against other sampling methods in Section~\ref{sect:experiment}.
+
 %on BPPL and another piecewise models. 
 %According to our experimental results, \emph{augmented Gibbs} is
 %scalable in both dimensionality of the parameter space and the amount
 %of observed data while the costs of other algorithms grows rapidly
 %either in data, dimension or both. 
-Section~\ref{sect:conclusion} concludes with possible future extensions.
+
+%Section~\ref{sect:conclusion} concludes with possible future extensions.

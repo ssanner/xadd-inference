@@ -9,6 +9,7 @@
 \usepackage{times}
 \usepackage{helvet}
 \usepackage{courier}
+
 \frenchspacing
 \setlength{\pdfpagewidth}{8.5in}
 \setlength{\pdfpageheight}{11in}
@@ -18,7 +19,6 @@
 \setcounter{secnumdepth}{0}  
 
 
-\usepackage{aaai,times}%{nips13submit_e,times}
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{amsthm} %for theorems, examples, etc.
@@ -35,9 +35,6 @@
 %\usepackage{algpseudocode} %new tpr
 %\usepackage{algorithm} %new tpr
 
-\usepackage{graphicx}
-\usepackage{caption}
-\usepackage{subcaption}
 
 \usepackage{verbatim} %for commenting
 
@@ -79,6 +76,7 @@ Fast Bayesian Inference in Piecewise Graphical Models
 \end{abstract}
 
 
+
 \input intro
 
 
@@ -92,12 +90,13 @@ Fast Bayesian Inference in Piecewise Graphical Models
 
 \input conclusion
 
+\clearpage
 
 %\subsubsection*{References}
-\small{
-\bibliographystyle{alpha}%{plain}%{plainnat}  % needs package natbib
-\bibliography{\jobname}       % uses \jobname.bib, according to \jobname.tex
-}
+% \small{
+\bibliographystyle{aaai} %{plain}%{plainnat}  % needs package natbib
+\bibliography{fastBayes} % \jobname}       % uses \jobname.bib, according to \jobname.tex
+% }
 
 
 
