@@ -1,0 +1,19 @@
+{
+	"build_systems":
+    [
+        {
+            "name": "MyLatex",
+            "working_dir": "${project_path:${folder}}",
+            // "cmd": ["pdflatex", "-interaction=nonstopmode", "fastBayes.tex", "skim", "fastBayes.pdf"],  //  ["${project_path}/compile.sh"], //
+            "cmd": ["sh", "compile.sh"]
+            // "shell": true,
+        }
+    ],
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": "."
+		}
+	]
+}
