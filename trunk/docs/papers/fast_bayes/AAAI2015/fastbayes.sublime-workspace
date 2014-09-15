@@ -1,0 +1,781 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"prior",
+				"prior_mat"
+			],
+			[
+				"stat",
+				"stats	(imported, module)"
+			],
+			[
+				"pspa",
+				"psparql_LearnRelation  (module)"
+			],
+			[
+				"gene",
+				"generate_samples"
+			],
+			[
+				"norm_",
+				"norm_pdf_multivariate(x, mu, sigma)	(global, function)"
+			],
+			[
+				"Learn",
+				"LearnRelation_Sigmoid"
+			],
+			[
+				"LearnRelation_Si",
+				"LearnRelation_Sigmoid"
+			],
+			[
+				"psp",
+				"psparql_LearnRelation_RP_SVD"
+			],
+			[
+				"Ys",
+				"Ysym"
+			],
+			[
+				"sum_",
+				"sum_entries"
+			],
+			[
+				"constr",
+				"constraints	(local, instance)"
+			],
+			[
+				"sel",
+				"self.__P"
+			],
+			[
+				"Test",
+				"TestUpperTri"
+			],
+			[
+				"max",
+				"maxIter"
+			],
+			[
+				"ran",
+				"rank"
+			],
+			[
+				"sim",
+				"simple_reg_nuc_norm"
+			],
+			[
+				"tra",
+				"trace"
+			],
+			[
+				"na",
+				"nablaF"
+			],
+			[
+				"matrix",
+				"matrix_to_decompose"
+			],
+			[
+				"eps",
+				"epsilon	(local, instance)"
+			],
+			[
+				"lam",
+				"lambd	(local, instance)"
+			],
+			[
+				"R",
+				"R1D"
+			],
+			[
+				"file",
+				"filename=	(parameter_keyword, instance)"
+			],
+			[
+				"write",
+				"writer	(imported, instance)"
+			],
+			[
+				"pl",
+				"plot_curve"
+			],
+			[
+				"err",
+				"err_norms"
+			],
+			[
+				"Fu",
+				"full_matrices=	(parameter_keyword, instance)"
+			],
+			[
+				"lin",
+				"linalg"
+			],
+			[
+				"normalize",
+				"normalize_X"
+			],
+			[
+				"matrix_",
+				"matrix_rank  (function)"
+			],
+			[
+				"matr",
+				"matrix_to_decompose"
+			],
+			[
+				"do_",
+				"do_run_opts"
+			],
+			[
+				"lo",
+				"logistic"
+			],
+			[
+				"psparql_",
+				"psparql_LearnRelation"
+			],
+			[
+				"optimize_margin_bigmat_",
+				"optimize_margin_bigmat_semidefinite"
+			],
+			[
+				"se",
+				"semidefinite"
+			],
+			[
+				"optimize_",
+				"optimize_margin_max_eta"
+			],
+			[
+				"optimize_hardmargin_",
+				"optimize_hardmargin_const_eta(X, rank)	(attribute, function)"
+			],
+			[
+				"optimize",
+				"optimize_hardmargin_min_nuc_norm"
+			],
+			[
+				"prin",
+				"print_tex=	(parameter_keyword, instance)"
+			],
+			[
+				"print",
+				"print_latex_mat  (function)"
+			],
+			[
+				"min",
+				"optimize_hardmargin_min_nuc_norm  (function)"
+			],
+			[
+				"Lear",
+				"LearnRelation	(imported, class)"
+			],
+			[
+				"optimize_margin_min",
+				"optimize_margin_min_xz"
+			],
+			[
+				"optimize_margin",
+				"optimize_margin(X, rank)	(attribute, function)"
+			],
+			[
+				"optimize_margin_min_",
+				"optimize_margin_min_xz_eta"
+			],
+			[
+				"optimize_margin_",
+				"optimize_margin_min_xz"
+			],
+			[
+				"get",
+				"get_UV"
+			],
+			[
+				"LearnRelation_",
+				"LearnRelation_MaxEnt"
+			],
+			[
+				"Tre",
+				"True"
+			],
+			[
+				"ca",
+				"calibrate_X"
+			],
+			[
+				"X",
+				"X	(local, instance)"
+			],
+			[
+				"p",
+				"print_x  (function)"
+			],
+			[
+				"learn",
+				"LearnRelation	(imported, class)"
+			],
+			[
+				"Y",
+				"Y	(local, instance)"
+			],
+			[
+				"big",
+				"big_mat"
+			],
+			[
+				"predic",
+				"predict_all"
+			],
+			[
+				"to",
+				"to_pos_neg"
+			],
+			[
+				"LearnRelation_Sigmoid_",
+				"LearnRelation_Sigmoid_Dual"
+			],
+			[
+				"__",
+				"__alpha"
+			],
+			[
+				"psparql_LearnRelatio",
+				"psparql_LearnRelation_sigmoid"
+			],
+			[
+				"pspq",
+				"psparql_LearnRelation_sigmoid"
+			],
+			[
+				"concat",
+				"concat_type"
+			],
+			[
+				"relatoin",
+				"relation_tensors"
+			],
+			[
+				"pro",
+				"prob_dim"
+			],
+			[
+				"show",
+				"save_show"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "fastBayes.tex",
+			"settings":
+			{
+				"buffer_size": 3616,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "MyLatex",
+	"command_palette":
+	{
+		"height": 74.0,
+		"selected_items":
+		[
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"got",
+				"Python: Go to definition"
+			],
+			[
+				"doc",
+				"Python: Get documentation"
+			],
+			[
+				"docu",
+				"Python: Get documentation"
+			],
+			[
+				"go",
+				"Python: Go to definition"
+			],
+			[
+				"goto",
+				"Python: Go to definition"
+			],
+			[
+				"git qui",
+				"Git: Quick Commit"
+			],
+			[
+				"git com",
+				"Git: Commit"
+			],
+			[
+				"git",
+				"Git: Status"
+			],
+			[
+				"git :",
+				"Git: Quick Commit"
+			],
+			[
+				"git sta",
+				"Git: Status"
+			],
+			[
+				"git commit",
+				"Git: Amend Commit"
+			],
+			[
+				"git comm",
+				"Git: Commit"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"brwos",
+				"Browser Integration: Main Menu"
+			],
+			[
+				"br",
+				"Browser Integration: Launch Browser"
+			],
+			[
+				"open an",
+				"LaTeXing: Open Anywhere"
+			],
+			[
+				"ope ",
+				"LaTeXing: Open Anywhere"
+			],
+			[
+				"open ",
+				"LaTeXing: Open Anywhere"
+			],
+			[
+				"open a",
+				"LaTeXing: Open Anywhere"
+			],
+			[
+				"latexig",
+				"LaTeXing: Open Anywhere"
+			],
+			[
+				"def",
+				"Python: Go to definition"
+			],
+			[
+				"doci",
+				"Python: Get documentation"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"packa",
+				"Preferences: Browse Packages"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"",
+				"BracketHighlighter: Match Brackets (ignore threshold)"
+			],
+			[
+				"ins",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 435.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404' + 'e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by) ",
+			" import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404' + 'e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by) "
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": true,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/eabbasnejad/Dropbox/workspace/fast_bayes"
+	],
+	"file_history":
+	[
+		"/home/eabbasnejad/Dropbox/workspace/fast_bayes/fastbayes.sublime-build",
+		"/Users/eabbasnejad/Dropbox/workspace/fast_bayes/fastbayes1.sublime-build",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/User/aaai.sublime-build",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/Users/eabbasnejad/Documents/xerox/psparql/tests/psparql_tests.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation_RP_SVD.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation.py",
+		"/Users/eabbasnejad/Documents/xerox/proj/psparql/stats_util.py",
+		"/Users/eabbasnejad/Documents/xerox/proj/psparql/invwishart.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/tests/psparql_synthetic_mat_gen.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/data/scientists/scientists.data.nq",
+		"/Users/eabbasnejad/Documents/xerox/psparql/tests/psparql_scientist_test.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation_sigmoid.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/LearnRelation_bayes_mcmc.py",
+		"/Users/eabbasnejad/Documents/xerox/proj/psparql/psparql_LearnRelation_RP_SVD.py",
+		"/Users/eabbasnejad/Documents/xerox/proj/psparql/low_rank_bayes_mcmc.py",
+		"/Users/eabbasnejad/Documents/xerox/proj/psparql/psparql_LearnRelation_hardmargin.py",
+		"/Users/eabbasnejad/Documents/xerox/proj/docs/report_reasoning_with_la2.tex",
+		"/Users/eabbasnejad/Documents/xerox/proj/psparql/tests/psparql_tests_impl.py",
+		"/Users/eabbasnejad/Documents/xerox/proj/psparql/psparql_LearnRelation.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/.project",
+		"/Users/eabbasnejad/Documents/xerox/psparql/.pydevproject",
+		"/Users/eabbasnejad/Documents/xerox/psparql/__init__.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/err_norms0.csv",
+		"/Users/eabbasnejad/Documents/xerox/psparql/err_norms1.csv",
+		"/Users/eabbasnejad/Documents/xerox/psparql/err_norms1.tex",
+		"/Users/eabbasnejad/Documents/xerox/proj/psparql/sdp_nuclear.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/min_bigmat_beta.txt",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation_maxent.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation_Convex.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/min_nuc_const_eta0.5.txt",
+		"/Users/eabbasnejad/Documents/xerox/psparql/min_nuc_const_eta.txt",
+		"/Users/eabbasnejad/Documents/xerox/psparql/optimize_hardmargin_const_eta.txt",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation_ExactInference.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/tests/test_matrix3.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/tests/test_matrix.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/err_norms3.tex",
+		"/Users/eabbasnejad/Documents/xerox/psparql/err_norms2.tex",
+		"/Users/eabbasnejad/Documents/xerox/psparql/tex3.tex",
+		"/Users/eabbasnejad/Documents/xerox/psparql/tex2.tex",
+		"/Users/eabbasnejad/Documents/xerox/psparql/tex1.tex",
+		"/Users/eabbasnejad/Documents/xerox/psparql/tex0.tex",
+		"/Users/eabbasnejad/Documents/xerox/psparql/test_rev",
+		"/Users/eabbasnejad/Documents/xerox/proj/psparql/proximal_gradient_descent.py",
+		"/Users/eabbasnejad/Documents/xerox/docs/report_reasoning_with_la2.tex",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation_hardmargin.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/hard_margin_result",
+		"/Users/eabbasnejad/Documents/xerox/psparql/max_eta.txt",
+		"/Users/eabbasnejad/Documents/xerox/psparql/run_test.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/Plotter.py",
+		"/Users/eabbasnejad/Documents/xerox/docs/tex1.tex",
+		"/Users/eabbasnejad/Documents/xerox/docs/tex2.tex",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation_sigmoid_dual.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation_sigmoid_maxent.py",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips2014-final-scott/nips2014.tex",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/User/Terminal.sublime-settings",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/Terminal/Terminal.sublime-settings",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_learnRelation_hardmargin.py",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/SublimePythonIDE/SublimePython.sublime-settings",
+		"/Users/eabbasnejad/Documents/xerox/psparql/untitled",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/Preferences-2.sublime-settings",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/User/SublimePython.sublime-settings",
+		"/Users/eabbasnejad/Documents/xerox/psparql/project.sublime-project",
+		"/Users/eabbasnejad/Documents/xerox/psparql/LearnRelation_sigmoid_dual.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/LearnRelation_logistic_dual.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation_Probit_rescal.py",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/Shell Turtlestein/Shell Turtlestein.sublime-settings",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/User/Default (OSX).sublime-keymap",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/User/Shell Turtlestein.sublime-settings",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation_rp_svd.pyc",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_LearnRelation_sigmoid_symmetric.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_tests.py",
+		"/Users/eabbasnejad/Documents/xerox/psparql/psparql_synthetic_mat_gen.py",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/IPython Notebook/README.md",
+		"/Users/eabbasnejad/Documents/workspace_test/test.py",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/results.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/marketing.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/mcmc/plot_used.m",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/nips2014.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/mcmc/plot_dist_vals.m",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/mcmc/plot_prob.m",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/intro.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/mcmc/plot_results.m",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/mcmc/plot_results_all.m",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/mcmc/plot_dir.m",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/lib.bib",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/mh_short.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/util_aware_uncertain.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/multi_action_uncertain.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/two_action_uncertain.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/util_aware.tex",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/User/LaTeXTools.sublime-settings",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/util_aware.log",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/conclusion.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/bdt.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/asymptotics.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/mh.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/multiaction.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/results.log",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/mcmc_java/src/mcmc/experiments/RoboticsExperiment.java",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/mcmc/plot_dims.m",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/mcmc_java/src/mcmc/test/RepititiveSamplerTest.java",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/Default/Default (OSX).sublime-keymap",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/results_dist.tex",
+		"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips/robotics.tex",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/User/SimpleClone.sublime-settings",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/SimpleClone/SimpleClone.sublime-settings",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/SublimeCodeIntel/Default (OSX).sublime-keymap",
+		"/Users/eabbasnejad/Dropbox/Personal docs/nesha-docs/وثیقه.txt",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/SublimeCodeIntel/SublimeCodeIntel.sublime-settings",
+		"/Users/eabbasnejad/Library/Application Support/Sublime Text 3/Packages/User/Package Control.sublime-settings"
+	],
+	"find":
+	{
+		"height": 22.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"/Users/eabbasnejad/Dropbox/workspace/loss_calibrated/tex/nips"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"rank",
+			"print",
+			"M",
+			"print_tex",
+			"latex",
+			"X",
+			"rank",
+			"family",
+			"font",
+			"v",
+			"x",
+			"X",
+			"x",
+			"X",
+			"x",
+			"X",
+			"Y",
+			"X",
+			"Y",
+			"X",
+			"optimize_margin",
+			"line nu",
+			"float",
+			"rel",
+			"font",
+			"rand",
+			"build",
+			"xscale",
+			"@",
+			"\\bx",
+			"\\xx",
+			"\\hat{\\UU}_q",
+			"super+k",
+			"super+shift",
+			"split"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"init_params",
+			"\\btheta",
+			"\\Uhat"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "fastBayes.tex",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3616,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2109,
+								2109
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/LaTeX/LaTeX.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 752.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 22.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 208.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.git":
+	{
+		"height": 92.0
+	},
+	"output.rope_python_documentation":
+	{
+		"height": 314.0
+	},
+	"output.shell_turtlestein":
+	{
+		"height": 0.0
+	},
+	"project": "fastbayes.sublime-project",
+	"replace":
+	{
+		"height": 40.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"learn",
+				"psparql_LearnRelation.py"
+			],
+			[
+				"",
+				"~/Documents/xerox/proj/psparql/psparql_LearnRelation_hardmargin.py"
+			],
+			[
+				"sig",
+				"psparql_LearnRelation_sigmoid.py"
+			],
+			[
+				"margin",
+				"psparql_LearnRelation_hardmargin.py"
+			],
+			[
+				"learnre",
+				"psparql_LearnRelation.py"
+			],
+			[
+				"run",
+				"run_test.py"
+			],
+			[
+				"ro",
+				"~/Dropbox/workspace/loss_calibrated/tex/nips/robotics.tex"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 374.0,
+		"selected_items":
+		[
+			[
+				"",
+				"LearnRelation_RP_SVD"
+			],
+			[
+				"svd",
+				"LearnRelation_RP_SVD"
+			]
+		],
+		"width": 360.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": false,
+	"side_bar_width": 303.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

@@ -1,0 +1,4 @@
+{
+    "cmd": ["pdflatex", "-interaction=nonstopmode", "fastBayes.tex"],
+    "selector": "source.latex1"
+}
