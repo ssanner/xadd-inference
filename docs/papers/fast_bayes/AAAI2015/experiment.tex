@@ -160,14 +160,14 @@ In MM, $L = 0$, $H=20$, $\epsilon = 2.5$ and $\delta=10$.
 \vspace{-5mm}
 \begin{subfigure}{.48\textwidth}
   \centering
-  \includegraphics[scale=0.6]{plot/bppl_data_analysis_fit.pdf}
+  \includegraphics[scale=0.55]{plot/bppl_data_analysis_fit.pdf}
   \caption{}
   \label{fig:error-samples-bppl}
 \end{subfigure}
 \begin{subfigure}{.48\textwidth}
   \centering
   \hspace{5mm} 
-  \includegraphics[scale=0.6]{plot/bppl_dim_analysis_fit.pdf}
+  \includegraphics[scale=0.55]{plot/bppl_dim_analysis_fit.pdf}
   \caption{}
   \label{fig:error-samples-bppl}
 \end{subfigure}
@@ -179,18 +179,20 @@ In MM, $L = 0$, $H=20$, $\epsilon = 2.5$ and $\delta=10$.
 \centering
 \begin{subfigure}{.48\textwidth}
   \centering
-  \includegraphics[scale=0.6]{plot/mmm_data_analysis2.pdf}
+  \includegraphics[scale=0.55]{plot/mmm_data_analysis2.pdf}
   \caption{}
   \label{fig:mmm_data_analysis}
 \end{subfigure}
 \begin{subfigure}{.48\textwidth}
   \centering
-  \hspace{5mm} \includegraphics[scale=0.6]{plot/mmm_dim_analysis10.pdf}
+  \hspace{5mm} \includegraphics[scale=0.55]{plot/mmm_dim_analysis10.pdf}
   \caption{}
   \label{fig:mmm_dim_analysis}
 \end{subfigure}
-\caption{Performance of Rejection/Metropolis-Hastings, baseline and augmented Gibbs on (a) \& (b) BPPL and (c) \& (d) MM models against different configurations of the number of observed data and the dimensionality of the parameter space.  In almost all cases, Augmented Gibbs takes orders of magnitude less time to achieve the same error as the other methods and this performance separation from competing algorithms increases in many cases with the amount of data and dimensionality.}
+\vspace{-1mm}
+\caption{\footnotesize Performance of Rejection/Metropolis-Hastings, baseline and augmented Gibbs on (a) \& (b) BPPL and (c) \& (d) MM models against different configurations of the number of observed data and the dimensionality of the parameter space.  In almost all cases, Augmented Gibbs takes orders of magnitude less time to achieve the same error as the other methods and this performance separation from competing algorithms increases in many cases with both the amount of data and dimensionality.}
 \label{fig:results}
+\vspace{-3mm}
 \end{figure*}
 
 
@@ -210,24 +212,26 @@ The whole process is repeated 15 times and the results are averaged and standard
 We observe that % where either dimensionality or the number of observations is kept fixed and the other varies. 
 in both models, the behavior of each algorithm has a particular pattern 
 (Figure~\ref{fig:results}). 
-The speed of rejection sampling and consequently its mixing time deteriorates rapidly as the number of observations increases.\footnote{For the same reason we were obliged to constraint the observations to less than 18 data points since beyond this, even after 30 minutes the number of samples generated to simulate the ground truth (which as mentioned were taken using rejection sampling) were not sufficient to guarantee a fair comparison between algorithms.}
+The speed of rejection sampling and consequently its mixing time deteriorates rapidly as the number of observations increases.\footnote{For the same reason we were obliged to constrain the observations to less than 18 data points since beyond this, even after 30 minutes the number of samples generated to simulate the ground truth (which as mentioned were taken using rejection sampling) were not sufficient to allow a comparison between algorithms.}
 The reason is that by observing new data, the posterior density tends to concentrate in smaller areas, 
 leaving most of the space sparse and therefore hard to sample from by rejection sampling.
 
------------
-It is known that the efficiency of MH depends crucially on the scaling of the 
-\emph{proposal}.
-We carefully tuned MH to reach the acceptance rate 0.234 after the well known algorithm \cite{Roberts:97}. 
-The experimental results show that MH is scalable in observations but its mixing time increases rapidly as the dimensionality increases. 
-This results are rather surprising since we expected that as an MCMC, MH does not suffer from the curse of dimensionality as rejection sampling does. 
-A reason may be that piecewise distributions can be non-smooth or broken which is far from the characteristics of the Gaussian \emph{proposal density} used in MH. 
+It is known that the efficiency of MH depends crucially on the scaling
+of the \emph{proposal}.  We carefully tuned MH to reach the optimal
+acceptance rate of 0.234~\cite{Roberts:97}.  The experimental results
+show that MH is scalable in observations but its mixing time increases
+rapidly as the dimensionality increases.  These results are rather
+surprising since we expected that as an MCMC, MH does not suffer from
+the curse of dimensionality as rejection sampling does.  A reason may
+be that piecewise distributions can be non-smooth or broken (see
+Figure~\ref{fig:mmm}) which is far from the characteristics of the
+Gaussian \emph{proposal density} used in MH.
 
-
-Efficiency of the baseline Gibbs sampling in particular decreases as data points increase.
-The reason is that this leads to a blow up in the number of partitions in the posterior density.
-On the other hand, on both models, the augmented Gibbs is scalable in both data 
-and dimension. 
-Rather surprisingly, its efficiency even increases when dimensionality increases from 2 to 5.
-The reason may be that proportional to the total number of posterior partitions, in lower dimensions the neighbors of each partition are not so numerous. 
+Efficiency of the baseline Gibbs sampling in particular decreases as data points increase since
+this leads to an exponential blow-up in the number of partitions in the posterior density.
+On the other hand, Augmented Gibbs is scalable in both data 
+and dimension for both models. 
+Interestingly, its efficiency even increases as dimensionality increases from 2 to 5 ---
+the reason may be that proportional to the total number of posterior partitions, in lower dimensions the neighbors of each partition are not as numerous. 
 For instance, regardless of the number of observed data in the 2D BPPL, each partition is neighbored by only two partitions (see Figure~\ref{fig:pref-up-down}) leading to a slow transfer between partitions. 
 In higher dimensions however, this is not often the case.

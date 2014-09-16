@@ -1,5 +1,26 @@
 %[A]
 
+@article{sw_mc,
+  author = "Swendsen, R. H., and Wang, J.-S.",
+  year = "1987", 
+  title = "Nonuniversal critical dynamics in Monte Carlo simulations", 
+  booktitle = "Physical Review Letters",
+  volume = "58",
+  number = "2",
+  pages = "86-88"
+}
+
+@conference {fly_mc,
+	title = {Firefly Monte Carlo: Exact MCMC with Subsets of Data},
+	booktitle = {Thirtieth Conference on Uncertainty in Artificial Intelligence (UAI)},
+	year = {2014},
+	month = {07/2014},
+	abstract = {Markov chain Monte Carlo (MCMC) is a popular and successful general-purpose tool for Bayesian inference. However, MCMC cannot be practically applied to large data sets because of the prohibitive cost of evaluating every likelihood term at every iteration. Here we present Fire- fly Monte Carlo (FlyMC) an auxiliary variable MCMC algorithm that only queries the likelihoods of a potentially small subset of the data at each iteration yet simulates from the exact posterior distribution, in contrast to recent proposals that are approximate even in the asymptotic limit. FlyMC is compatible with a wide variety of modern MCMC algorithms, and only requires a lower bound on the per-datum likelihood factors. In experiments, we find that FlyMC generates samples from the posterior more than an order of magnitude faster than regular MCMC, opening up MCMC methods to larger datasets than were previously considered feasible.},
+	keywords = {markov chain monte carlo},
+	author = {Dougal Maclaurin and Ryan P. Adams}
+}
+
+
 @inproceedings{sanner:aistats10,
   title={Real-time multiattribute bayesian preference elicitation with pairwise comparison queries},
   author={Guo, Shengbo and Sanner, Scott},
