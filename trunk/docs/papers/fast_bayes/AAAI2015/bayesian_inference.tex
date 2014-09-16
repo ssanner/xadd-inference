@@ -47,8 +47,6 @@ However, in theory, the algorithm can be applied to \emph{any} family of piecewi
 %In Example~\ref{example:pref}, BPPL is a \emph{piecewise constant} model in the sense that both prior and likelihood models are piecewise and their corresponding \emph{sub-functions} ($f_i$) are constant. A more general piecewise model where the sub-functions are not constant is presented in  Section~\ref{sect:experiment}. 
 
 \paradot{Complexity of inference on piecewise models}
-
-
 If in the model of equation \ref{e:posterior}, the prior $pr(\boldsymbol\theta)$ 
 is an $L$-piece distribution and each of the $n$ likelihoods is a piecewise function with number of partitions  bound by $M$, 
 then the joint distribution is a piecewise function with number of partitions bound by $LM^n$ (therefore, $O(M^n)$).
@@ -79,8 +77,7 @@ the number of partitions can be less.
 \end{cases}
 \end{align}
 }%end footnote size
-\paradot{Exact inference on piecewise models}
-In theory, closed-form inference on piecewise models (at least piecewise polynomials) with linear constraints is possible \cite{Sanner:12}.
+\noindent{\bf Exact inference on piecewise models.} In theory, closed-form inference on piecewise models (at least piecewise polynomials) with linear constraints is possible \cite{Sanner:12}.
 In practice, however, such symbolic methods rapidly become intractable since the posterior requires
 the representation of $O(M^n)$ distinct case partitions.
 %For example, by rule of thumb, a few observed data points with simple piecewise likelihood models lead to

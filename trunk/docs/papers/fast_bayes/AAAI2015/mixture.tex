@@ -16,10 +16,12 @@
 \caption{}
 \label{fig:naive.mix}
 \end{subfigure}
+\vspace{-2mm}
 \caption{\footnotesize 
 (a) A Bayesian inference model with parameter (vector) $\boldsymbol\theta$ and data points $d_1$ to $d_n$.
 (b) A mixture model with parameter (vector) $\boldsymbol\theta$ and data points $d_1$ to $d_n$ 
 }
+\vspace{-5mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%
 
@@ -27,7 +29,17 @@
 %We begin by considering Gibbs sampling on 
 In this section we detail how to overcome the exponential complexity of standard Gibbs
 sampling by transforming piecewise models to (augmented) mixture models and performing
-linear time Gibbs sampling in this augmented model.  
+linear time Gibbs sampling in this augmented model.  While augmented models to facilitate
+Gibbs sampling have been proposed previously, e.g., Swendsen-Wang (SW) sampling~\cite{sw_mc} 
+and more recently FlyMC sampling~\cite{fly_mc} methods like SW are specific to restricted
+Ising models and FlyMC requires careful problem-specific proposal design and tuning.  In this paper,
+we present a generic augmented model for an expressive class of piecewise models and
+an analytical Gibbs sampler that does not require problem-specific proposal design.  
+Furthermore, our Augmented Gibbs proposal achieves a novel \emph{exponential-to-linear reduction} in the complexity
+of sampling from a Bayesian posterior with an exponential number of pieces.
+%Furthermore, we achieve an \emph{exponential-to-linear reduction} in the computational complexity
+%of sampling from a Bayesian posterior with an exponential number of pieces --- the first time
+%we are aware such a result has been shown.
 
 We motivate the algorithm by first introducing the augmented posterior for piecewise likelihoods:
 \begin{align}
@@ -81,7 +93,7 @@ We observe that each $k_i$ can be seen as a random variable.
 It deterministically takes the value of the partition whose associated constraint holds (given $\boldsymbol\theta$) and its possible outcomes are in $\textsc{Val}(k_i) = \{1, \ldots, M\}$. 
 Note that for any given $\boldsymbol\theta$, exactly one constraint holds for a piecewise function, therefore, 
 $\sum_{k_i = 1}^M pr(k_i \,|\, \boldsymbol\theta) = 1$.
-Intuitively, it can be assumed that $k_i$ is the underlying variable that determines which partition of each likelihood function is `chosen'. As we have:
+Intuitively, it can be assumed that $k_i$ is the underlying variable that determines which partition of each likelihood function is `chosen'. As we have 
 \begin{equation}
 \label{e:aaaax}
 pr(d_i | \, \boldsymbol\theta) = \sum_{k_i = 1}^M pr(k_i | \, \boldsymbol\theta) pr(d_i | \, k_i, \boldsymbol\theta) \text{,}
@@ -116,17 +128,23 @@ Therefore, instead of taking samples from \ref{fig:naive},
 they can be taken from the \emph{augmented model} \ref{fig:naive.mix}. A key observation, however, is that 
 unlike the conditional distributions $pr(\boldsymbol\theta_i | \, \boldsymbol\theta_{-i})$, 
 in $pr(\boldsymbol\theta_i | \boldsymbol\theta_{-i}, k_1, \ldots, k_n)$ 
-the number of partitions remains fixed, namely $L$, rather than growing $M^n$.
+the number of partitions is constant rather than growing as $M^n$.
+% ---
+%yielding the desired \emph{exponential-to-linear} reduction.
+% in the time to compute 
+%$pr(\boldsymbol\theta_i | \boldsymbol\theta_{-i}, k_1, \ldots, k_n)$ that forms
+%the first key insight of the paper.
+%
 %As an instance, for $n=2$,   $k_1 = M$ and $k_2 = 1$:
 
 The reason is that if  $\bvec{k}=k_1, \ldots, k_n$ are given, for $i$-th 
 likelihood, a single sub-function $f^i_{k_i}$ is `chosen' and
 $pr(\boldsymbol\theta_i | \boldsymbol\theta_{-i}, k_1, \ldots, k_n) = 
 pr(\boldsymbol\theta | \boldsymbol\theta_{-i})\prod_{k_i} f^i_{k_i}(\boldsymbol\theta_i | \boldsymbol\theta_{-i})$.
-Assuming that sub-functions are not piecewise themselves, 
+Since the sub-functions are not piecewise themselves, 
 the number of partitions in $pr(\boldsymbol\theta_i | \boldsymbol\theta_{-i},  k_1, \ldots, k_n)$ is bound by the number of partitions in the prior.
 
-In the following proposition we prove that Equation~(\ref{e:aaaax}) is valid:
+In the following proposition, we prove Equation~(\ref{e:aaaax}) is valid:
 %\[
 %p(x_i |\, \bvec{x}_{i-1}, \bvec{k}) = 
  % f_{1, 2}(\bvec{x}) \ldots f_{n, 2}(\bvec{x})
@@ -174,7 +192,7 @@ This means that graphical models depicted in Figures~\ref{fig:naive} and \ref{fi
 %----------------------------------------***
 \begin{proposition}
 \label{pro:discrete}
-Piecewise likelihood function $pr(d | \, \boldsymbol\theta)$ 
+The piecewise likelihood function $pr(d | \, \boldsymbol\theta)$ 
 defined by (\ref{e:piecewise.likelihood22}) is equivalent to 
 $\sum_{k = 1}^M pr(k | \, \boldsymbol\theta) pr(d | \, k, \boldsymbol\theta)$
 where:
@@ -240,23 +258,23 @@ On the other hand, by marginalizing $k$, (\ref{e:2rel22}) and (\ref{e:2rel222}) 
 \neg \phi_k(\boldsymbol\theta) &: 0
 \end{cases}
 }%end font size
-\, \cdot \, f_k(\boldsymbol \theta, d)
+\, \cdot \, f^d_k(\boldsymbol \theta)
 &&\text{\hspace{-5mm}by (\ref{e:2rel22}), (\ref{e:2rel222})}
 \\
 &=
 \sum_{k=1}^N 
 {\footnotesize
 \begin{cases}
-		\phi_k(\boldsymbol\theta)  &: f_k(\boldsymbol\theta, d)\\
+		\phi_k(\boldsymbol\theta)  &: f^d_k(\boldsymbol\theta, d)\\
 \neg 	\phi_k(\boldsymbol\theta)  &: 0
 \end{cases}
 }%end font size
 \nonumber \\
 &= {\footnotesize
 \begin{cases}
-\phi_1(\boldsymbol\theta)  &: f_1(\boldsymbol\theta, d)\\
+\phi_1(\boldsymbol\theta)  &: f^d_1(\boldsymbol\theta)\\
 \vdots\\
-\phi_n(\boldsymbol\theta)  &: f_N(\boldsymbol\theta, d)
+\phi_n(\boldsymbol\theta)  &: f^d_N(\boldsymbol\theta)
 \end{cases}
 }%end font size
 = pr(d | \, \boldsymbol\theta) 
@@ -298,6 +316,12 @@ point in (A), the auxiliary variables kept their initial values. %I.e.\ only on
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\subsection{Blocked Gibbs sampling on mixture models}
 %\label{sect:collapsed}
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% NOTE TO HADI: need to define the sampler!  Symbolic CDF then binary search for inverse!
+%%               also need to clean up conditioning on data; also partition for datum d?
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
 \paradot{Blocked Gibbs}
 We avoid deterministic dependencies by Blocked sampling:
 at each step of Gibbs sampling, a parameter variable $\boldsymbol\theta_i$ is 
@@ -351,9 +375,8 @@ adjacent partitions would differ in multiple auxiliary variables.
 In such cases, more than one auxiliary variable should be used in blocked sampling.
 
 Finding such auxiliary variables has a simple geometric interpretation. As 
-such, instead of trying to formalize the solution, we explain it by a simple 
-example depicted in Figure~(\ref{fig:simple.example}): 
-
+such, we explain it by a simple 
+example depicted in Figure~(\ref{fig:simple.example}).
 Consider finding a proper $k_j$ 
 for blocked sampling $pr(\boldsymbol\theta_1, k_j | \, 
 \boldsymbol\theta_2^{(0)}, \bvec{k}_{-j})$. 

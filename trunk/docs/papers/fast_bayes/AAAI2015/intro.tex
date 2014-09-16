@@ -2,8 +2,8 @@
 
 Many Bayesian inference problems such as preference
 learning~\cite{sanner:aistats10} or trader valuation modeling in
-financial markets naturally use piecewise
-likelihoods~\cite{Shogren:00}, e.g., preferences may induce
+financial markets~\cite{Shogren:00} naturally use piecewise
+likelihoods, e.g., preferences may induce
 constraints on possible utility functions while trader transactions
 constrain possible instrument valuations.  To be concrete, consider
 the following Bayesian approach to preference learning where our
@@ -107,22 +107,25 @@ Bayesian inference expression:
 $
 pr(\boldsymbol\theta | \, d_1, \ldots, d_n) 
 \propto pr(\boldsymbol\theta) \cdot \prod_{i=1}^{n} pr(d_i | \, \boldsymbol\theta)
-$. As also evidenced, since the
+$. As also evidenced in Figure~\ref{fig:pref-up-down}, since the
 prior and likelihoods are piecewise distribitions, the posterior
-distribution is also piecewise.  
+distribution is also piecewise with the number of pieces growing exponentially
+in $n$.  
 } %end example 1
 \vspace{2mm}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Unfortunately, Bayesian inference in models with piecewise likelihoods
-like BPPL in Example~\ref{example:pref} often lead to posterior
-distributions with a number of piecewise partitions \emph{exponential in the
-number of data points and attributes}, thus rendering exact analytical inference impossible.
-While (Markov Chain) Monte Carlo methods provide an attractive
-asymptotically unbiased approximation approach, rejection sampling and
-Metropolis-Hastings both prove inefficient in practice, and analytical
-derivation of Gibbs samplers require exponential space and time in the
-number of data points and attributes of data.
+like BPPL in Example~\ref{example:pref} (and illustrated in
+Figure~\ref{fig:pref-up-down}) often lead to posterior distributions
+with a number of piecewise partitions \emph{exponential in the number
+  of data points and attributes}, thus rendering exact analytical
+inference impossible.  While (Markov Chain) Monte Carlo methods
+provide an attractive asymptotically unbiased approximation approach,
+rejection sampling and Metropolis-Hastings both prove inefficient in
+practice, and analytical derivation of Gibbs samplers require
+exponential space and time in the number of data points and attributes
+of data.
 
 %However, the number of partitions in
 %the posterior grow exponential as the amount of observed data grows.
