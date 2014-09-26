@@ -88,18 +88,19 @@ public class MarketMaker {
 		 * Solve the mmPOMDP using the PBVI algorithm
 		 */
 		
-		PBVI.DomainDirectoryPath = domainDir;
+		PBVIDiscreteAction.DOMAIN_DIR_PATH = domainDir;
 		
 		// Initialise a set of belief points
 		String bpFile1 = domainDir + File.separator + "belief_point_1.xadd";
 		String bpFile2 = domainDir + File.separator + "belief_point_2.xadd"; 
-		ArrayList<Integer> beliefPointSet = PBVI.InitialiseBeliefPoints(bpFile1);
-		beliefPointSet = PBVI.InitialiseBeliefPoints(bpFile2, beliefPointSet);		
+		ArrayList<Integer> beliefPointSet = PBVIDiscreteAction.InitialiseBeliefPoints(bpFile1, null);
+		beliefPointSet = PBVIDiscreteAction.InitialiseBeliefPoints(bpFile2, beliefPointSet);		
 		
 		// Solve the mmPOMDP using the PBVI algorithm	
-		Integer numIterations = 2;
+		Integer numIterations = 1;
 		Double discountFactor = 1.0;
 
-		PBVI.Run(ActionType.DISCRETE, mmPOMDP, beliefPointSet, numIterations, discountFactor);
+//		xPBVI.Run(ActionType.DISCRETE, mmPOMDP, beliefPointSet, numIterations, discountFactor);
+		PBVIDiscreteAction.Run(mmPOMDP, beliefPointSet, numIterations, discountFactor);
 	}
 }

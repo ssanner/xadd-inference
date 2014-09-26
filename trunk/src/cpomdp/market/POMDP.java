@@ -64,7 +64,7 @@ public class POMDP {
 			
 			int rewardID = XADDHelper.BuildXADD(domainDir + File.separator + "reward_func.xadd");
 			xaddMap.put("rewardFunc", rewardID);
-//			XADDHelper.PlotXADD(rewardID, "Reward");		
+			XADDHelper.PlotXADD(rewardID, "Reward");		
 			
 			// Iterate through all of the XADDs and apply the substitution the
 			// actionValue
@@ -128,17 +128,17 @@ public class POMDP {
         HashMap<String, ArithExpr> a3 = new HashMap<String, ArithExpr>();
         HashMap<String, ArithExpr> a4 = new HashMap<String, ArithExpr>();
    
-        a1.put("bp", new DoubleExpr(10.0));
-        a1.put("ap", new DoubleExpr(15.0));
-
-        a2.put("bp", new DoubleExpr(20.0));
-        a2.put("ap", new DoubleExpr(25.0));
+        a1.put("ap", new DoubleExpr(13.0));
+        a1.put("bp", new DoubleExpr(7.0));
         
-        a3.put("bp", new DoubleExpr(30.0));
-        a3.put("ap", new DoubleExpr(35.0));
-                
-        a4.put("bp", new DoubleExpr(40.0));
-        a4.put("ap", new DoubleExpr(45.0));
+        a2.put("ap", new DoubleExpr(15.0));
+        a2.put("bp", new DoubleExpr(5.0));
+        
+        a3.put("ap", new DoubleExpr(17.0));
+        a3.put("bp", new DoubleExpr(3.0));
+        
+        a4.put("ap", new DoubleExpr(19.0));        
+        a4.put("bp", new DoubleExpr(1.0));        
         
 		actionMap.put("a1", a1);
 		actionMap.put("a2", a2);

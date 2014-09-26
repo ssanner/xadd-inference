@@ -1,13 +1,13 @@
 (   [v > 0]
-    (   [i > 0]
-        (   [v > ap - n]
-            ([ap - v])
-            (   [v < bp - n]
-                ([bp - v])
-                ([0])
-            )            
+    (   [v > ap - n]
+        (   [i > 0]
+            ([v - ap])
+            ([-Infinity])                
         )
-        ([-Infinity])
+        (   [v < bp - n]
+            ([v - bp])
+            ([0])
+        )
     )
     ([-Infinity])
 )
