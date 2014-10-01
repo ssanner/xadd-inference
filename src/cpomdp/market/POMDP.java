@@ -12,6 +12,7 @@ import xadd.ExprLib.ArithExpr;
 import xadd.ExprLib.VarExpr;
 import xadd.ExprLib.DoubleExpr;
 import cpomdp.market.utils.XADDHelper;
+import cpomdp.market.utils.XADDWrapper;
 
 /**
  * @author skinathil
@@ -64,7 +65,7 @@ public class POMDP {
 			
 			int rewardID = XADDHelper.BuildXADD(domainDir + File.separator + "reward_func.xadd");
 			xaddMap.put("rewardFunc", rewardID);
-			XADDHelper.PlotXADD(rewardID, "Reward");		
+//			XADDHelper.PlotXADD(rewardID, "Reward");		
 			
 			// Iterate through all of the XADDs and apply the substitution the
 			// actionValue
@@ -72,7 +73,7 @@ public class POMDP {
 			HashMap<String, ArithExpr> actionValue = new HashMap<String, ArithExpr>();
 			actionValue.put("n", new DoubleExpr(0.001));			
 			for(Entry<String, Integer> e : xaddMap.entrySet()) {
-				Integer xaddID = XADDHelper.substitute(e.getValue(), actionValue);
+				Integer xaddID = XADDWrapper.substitute(e.getValue(), actionValue);
 				xaddMap.put(e.getKey(), xaddID);
 			}
 		} 
@@ -127,23 +128,28 @@ public class POMDP {
         HashMap<String, ArithExpr> a2 = new HashMap<String, ArithExpr>();
         HashMap<String, ArithExpr> a3 = new HashMap<String, ArithExpr>();
         HashMap<String, ArithExpr> a4 = new HashMap<String, ArithExpr>();
+        HashMap<String, ArithExpr> a5 = new HashMap<String, ArithExpr>();
    
-        a1.put("ap", new DoubleExpr(13.0));
+        a1.put("ap", new DoubleExpr(15.0));
         a1.put("bp", new DoubleExpr(7.0));
         
-        a2.put("ap", new DoubleExpr(15.0));
+        a2.put("ap", new DoubleExpr(30.0));
         a2.put("bp", new DoubleExpr(5.0));
         
-        a3.put("ap", new DoubleExpr(17.0));
+        a3.put("ap", new DoubleExpr(45.0));
         a3.put("bp", new DoubleExpr(3.0));
         
-        a4.put("ap", new DoubleExpr(19.0));        
+        a4.put("ap", new DoubleExpr(60.0));        
         a4.put("bp", new DoubleExpr(1.0));        
         
+        a5.put("ap", new DoubleExpr(2.0));        
+        a5.put("bp", new DoubleExpr(1.0));        
+                
 		actionMap.put("a1", a1);
 		actionMap.put("a2", a2);
 		actionMap.put("a3", a3);
-		actionMap.put("a4", a4);		
+		actionMap.put("a4", a4);
+		actionMap.put("a5", a5);	
 		
 		/*
 		 * Observations

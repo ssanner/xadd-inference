@@ -74,7 +74,7 @@ public class VIHelper {
                 qFuncID = regressBooleanVariable(qFuncID, cpfID, varToEliminate);
             }
             else if (hsContinuousVariables.contains(varToEliminate)) {
-                qFuncID = regressContinuousVariable(qFuncID, cpfID, varToEliminate);
+                qFuncID = RegressContinuousVariable(qFuncID, cpfID, varToEliminate);
             }
             
             XADDHelper.PlotXADD(qFuncID, "Q - after regression (" + varToEliminate + ")");
@@ -151,19 +151,21 @@ public class VIHelper {
      * @param var
      * @return
      */
-    public static int regressContinuousVariable(int qFuncID, Integer cpfID, String var) {
+    public static int RegressContinuousVariable(int qFuncID, Integer cpfID, String var) {
 
         // Get cpf for continuous var'
         // int var_id = ValueIterationHelper.getXADD()._cvar2ID.get(var);
         Integer dd_conditional_sub = cpfID;
         
-//        XADDHelper.PlotXADD(qFuncID, "regressContinuousVariable - qFuncID");
+//        XADDHelper.PlotXADD(qFuncID, "regressContinuousVariable - qFuncID Before");
 //        XADDHelper.PlotXADD(cpfID, "regressContinuousVariable - cpfID");
         
         // Perform regression via delta function substitution
         qFuncID = VIHelper.getXADD()
                 .reduceProcessXADDLeaf(dd_conditional_sub,
                         VIHelper.getXADD().new DeltaFunctionSubstitution(var, qFuncID), true);
+        
+//        XADDHelper.PlotXADD(qFuncID, "regressContinuousVariable - qFuncID After");
         
         return qFuncID;
     }

@@ -31,6 +31,10 @@ public class MarketMaker {
 
 	public static String USAGE_STRING = "Usage: ";    
     
+	/**
+	 * 
+	 * @return
+	 */
     private static String ProjectRootDirectory() {
 
         if (MarketMaker.PACKAGE_DIR_PATH.isEmpty()) {
@@ -42,6 +46,11 @@ public class MarketMaker {
         return MarketMaker.PACKAGE_DIR_PATH;
     }
 
+    /**
+     * 
+     * @param domainName
+     * @return
+     */
     private static String DomainDirectory(String domainName) {
 
         if (MarketMaker.DOMAINS_DIR_PATH.isEmpty()) {
@@ -92,15 +101,20 @@ public class MarketMaker {
 		
 		// Initialise a set of belief points
 		String bpFile1 = domainDir + File.separator + "belief_point_1.xadd";
-		String bpFile2 = domainDir + File.separator + "belief_point_2.xadd"; 
+		String bpFile2 = domainDir + File.separator + "belief_point_2.xadd";
+//		String bpFile3 = domainDir + File.separator + "belief_point_3.xadd"; 
+//		String bpFile4 = domainDir + File.separator + "belief_point_4.xadd"; 
+//		String bpFile5 = domainDir + File.separator + "belief_point_5.xadd"; 
 		ArrayList<Integer> beliefPointSet = PBVIDiscreteAction.InitialiseBeliefPoints(bpFile1, null);
 		beliefPointSet = PBVIDiscreteAction.InitialiseBeliefPoints(bpFile2, beliefPointSet);		
+//		beliefPointSet = PBVIDiscreteAction.InitialiseBeliefPoints(bpFile3, beliefPointSet);
+//		beliefPointSet = PBVIDiscreteAction.InitialiseBeliefPoints(bpFile4, beliefPointSet);
+//		beliefPointSet = PBVIDiscreteAction.InitialiseBeliefPoints(bpFile5, beliefPointSet);
 		
 		// Solve the mmPOMDP using the PBVI algorithm	
-		Integer numIterations = 1;
+		Integer numIterations = 3;
 		Double discountFactor = 1.0;
 
-//		xPBVI.Run(ActionType.DISCRETE, mmPOMDP, beliefPointSet, numIterations, discountFactor);
 		PBVIDiscreteAction.Run(mmPOMDP, beliefPointSet, numIterations, discountFactor);
 	}
 }

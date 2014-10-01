@@ -10,14 +10,11 @@ import graph.Graph;
 
 import java.io.File;
 import java.text.DecimalFormat;
-import java.util.HashMap;
 import java.util.List;
 
-import camdp.CAMDP.FileOptions;
-import xadd.ExprLib.ArithExpr;
 import xadd.XADD;
 import xadd.XADDUtils;
-import xadd.XADD.BoolDec;
+import camdp.CAMDP.FileOptions;
 
 /**
  * Contains a selection of methods from XADD.java
@@ -70,27 +67,7 @@ public class XADDHelper {
         
         return XADDHelper.CONTEXT;
     }
-
-    /*-------------------------------------------------------------------------
-     * XADD related functions 
-     *-----------------------------------------------------------------------*/
-    
-    public static int Apply(Integer xadd1, Integer xadd2, Integer operation) {
-    	return XADDHelper.getXADD().apply(xadd1, xadd2, operation);
-    }
-    
-    public static int ZeroXADD() {
-    	return XADDHelper.getXADD().ZERO;
-    }
-    
-    public static int NegInfXADD() {
-    	return XADDHelper.getXADD().NEG_INF;
-    }
-    
-    public static int NewBoolDec(String variableName) {
-    	return XADDHelper.getXADD().getVarIndex(XADDHelper.getXADD().new BoolDec(variableName), false);
-    }
-    
+   
     /**
      * Build and XADD from a file
      * 
@@ -226,26 +203,4 @@ public class XADDHelper {
                 _df.format(RUNTIME.freeMemory() / 10e6d) + " MB = " +
                 _df.format(100d * RUNTIME.freeMemory() / (double) RUNTIME.totalMemory()) + "% available memory");
     }
-
-    /**
-     * 
-     * @param valueXADD
-     * @param stateSetMap
-     * @return
-     */
-	public static int substitute(Integer node_id, HashMap<String, ArithExpr> subst) {
-		return XADDHelper.getXADD().substitute(node_id, subst);
-	}
-
-	/**
-	 * 
-	 * @param aID
-	 * @param discountFactor
-	 * @param prod
-	 * @return
-	 */
-	public static Integer ScalarOp(Integer dd, Double val, int op) {
-		// TODO Auto-generated method stub
-		return XADDHelper.getXADD().scalarOp(dd, val, op);
-	}
 }
