@@ -4,9 +4,12 @@
 package cpomdp.market.utils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
-import xadd.XADD;
 import xadd.ExprLib.ArithExpr;
+import xadd.XADD;
+import xadd.XADD.BoolDec;
+import xadd.XADD.Decision;
 import xadd.XADD.XADDTNode;
 
 /**
@@ -78,8 +81,8 @@ public class XADDWrapper {
 	 * @param variableName
 	 * @return
 	 */
-    public static int BoolDec(String variableName) {
-    	return XADDWrapper.getInstance().getVarIndex((XADDWrapper.getInstance()).new BoolDec(variableName), false);
+    public static BoolDec BoolDec(String variableName) {
+    	return (XADDWrapper.getInstance()).new BoolDec(variableName);
     }	
 	
     /**
@@ -99,6 +102,36 @@ public class XADDWrapper {
      */
     public static XADDTNode getNode(int node_id) {
     	return (XADDTNode) XADDWrapper.getInstance().getNode(node_id);
+    }
+    
+    /**
+     * 
+     * @param d
+     * @param create
+     * @return
+     */
+    public static Integer getVarIndex(Decision d, Boolean create) { 
+    	return XADDWrapper.getInstance().getVarIndex(d, false);
+    }
+    
+    /**
+     * 
+     * @param xadd
+     * @return
+     */
+    public static HashSet<String> collectVars(int xadd) {
+    	return XADDWrapper.getInstance().collectVars(xadd);
+    }
+    
+    /**
+     * 
+     * @param node_id
+     * @param var_id
+     * @param op
+     * @return
+     */
+    public static int opOut(int node_id, int var_id, int op) {
+    	return XADDWrapper.getInstance().opOut(node_id, var_id, op);
     }
     
     /**

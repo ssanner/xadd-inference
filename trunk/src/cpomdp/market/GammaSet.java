@@ -68,6 +68,23 @@ public class GammaSet implements Iterable<AlphaVector>{
 
 	/**
 	 * 
+	 * @param vectorList
+	 */
+	public void addVectors(ArrayList<AlphaVector> vectorList) {
+		this.vectors.addAll(vectorList);		
+	}
+	
+	/**
+	 * 
+	 * @param otherGamma
+	 */
+	public void mergeGammaSet(GammaSet otherGamma) {
+		
+		this.addVectors(otherGamma.getVectors());
+	}
+	
+	/**
+	 * 
 	 * @return the number of vectors
 	 */
 	public Integer size() {
@@ -114,7 +131,7 @@ public class GammaSet implements Iterable<AlphaVector>{
 	 * 
 	 * @param vectors
 	 */
-	private void setVectors(ArrayList<AlphaVector> vectors) {
+	public void setVectors(ArrayList<AlphaVector> vectors) {
 		this.vectors = vectors;
 	}
 	
