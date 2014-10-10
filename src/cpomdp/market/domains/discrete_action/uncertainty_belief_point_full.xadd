@@ -2,10 +2,10 @@
     (   [v < 100]
         (   [i > 0]
             (   [i < 100]
-                (   [v > m - lb]
-                    (   [v < m + ub]
-                        (   [i > m - lb]
-                            (   [i < m + ub]
+                (   [v > mv - lbv]
+                    (   [v < mv + ubv]
+                        (   [i > mi - lbi]
+                            (   [i < mi + ibi]
                                 ([p])
                                 ([0.0])
                             )

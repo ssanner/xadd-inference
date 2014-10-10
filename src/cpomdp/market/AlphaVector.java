@@ -15,8 +15,13 @@ public class AlphaVector {
 	private String actionName = null;
 	private String observationName = null;
 	private Integer horizon = null;
+	private Integer beliefPointID = null;
 	private Integer valueXADD = XADDWrapper.ZERO();
 
+	/*
+	 * Constructors
+	 */
+	
 	/**
 	 * 
 	 * @param horizonNum
@@ -49,6 +54,10 @@ public class AlphaVector {
 		
 		this.setHorizon(horizonNum);
 	}
+	
+	/*
+	 * Getters and Setters
+	 */
 	
 	/**
 	 * @return the horizon
@@ -108,6 +117,10 @@ public class AlphaVector {
 		this.observationName = obsName;
 	}
 	
+	/*
+	 * Constructors
+	 */
+	
 	/**
 	 * @param alphaVector the alphaVector to be added to the current 
 	 */
@@ -119,9 +132,14 @@ public class AlphaVector {
 	}
 
 	@Override
-	public String toString() {		
+	public String toString() {
 		
 		String strFormat = String.format("AVec (H:%d", this.getHorizon());
+
+		if(this.getBeliefPointID() != null) {
+			strFormat = String.format("%s BP:%s", strFormat, this.getBeliefPointID().toString());
+		}
+		
 		
 		if(this.getActionName() != null) {
 			strFormat = String.format("%s A:%s", strFormat, this.getActionName());
@@ -131,6 +149,20 @@ public class AlphaVector {
 			strFormat = String.format("%s O:%s", strFormat, this.getObservationName());
 		}
 		
-		return String.format("%s)", strFormat);		
+		return String.format("%s)", strFormat);
+	}
+
+	/**
+	 * @return the beliefPointID
+	 */
+	public Integer getBeliefPointID() {
+		return beliefPointID;
+	}
+
+	/**
+	 * @param beliefPointID the beliefPointID to set
+	 */
+	public void setBeliefPointID(Integer beliefPointID) {
+		this.beliefPointID = beliefPointID;
 	}
 }

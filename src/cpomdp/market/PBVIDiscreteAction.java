@@ -5,12 +5,19 @@
 package cpomdp.market;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import util.DevNullPrintStream;
 import xadd.ExprLib.ArithExpr;
 import xadd.ExprLib.DoubleExpr;
 import xadd.XADD.XADDTNode;
@@ -25,44 +32,11 @@ import cpomdp.market.utils.XADDWrapper;
  */
 public class PBVIDiscreteAction {
 
-	public static String DOMAIN_DIR_PATH = null;	
-	private final static Double EPSILON =  0.000001; 
+	public static String DOMAIN_DIR_PATH = null;
+	public static String OUTPUT_DIR_NAME = "output";
 
-	/**
-	 * 
-	 * @param beliefPointFile
-	 * @param beliefPoints
-	 * @return
-	 */
-	public static ArrayList<Integer> InitialiseBeliefPoints(String beliefPointFile, ArrayList<Integer> beliefPoints) {
-
-		if(beliefPoints == null) {
-			beliefPoints = new ArrayList<Integer>();
-		}
-
-		Integer bpXADD = PBVIDiscreteAction.InitialiseBeliefPoint(beliefPointFile);		
-		beliefPoints.add(bpXADD);
-
-		return beliefPoints;
-	}
-
-	/**
-	 * 
-	 * @param beliefPointFile
-	 * @return
-	 */
-	public static Integer InitialiseBeliefPoint(String beliefPointFile) {
-
-		Integer bpXADD = XADDHelper.BuildXADD(beliefPointFile);
-
-		// Check that the bpXADD is valid i.e. it integrates to 1
-		if(!PBVIDiscreteAction.IsValidBeliefPoint(bpXADD)) {
-			System.out.println("PBVI.InitialiseBeliefPoints: Invalid belief point contained in " + beliefPointFile);
-		}
-
-		return bpXADD;
-	}	
-
+	public static final Boolean SHOW_PLOTS = false;
+	
 	/**
 	 * 
 	 * @param mmPOMDP
@@ -70,42 +44,50 @@ public class PBVIDiscreteAction {
 	 * @param numIterations
 	 * @param discountFactor
 	 */
-	public static void Run(POMDP mmPOMDP, ArrayList<Integer> beliefSet,
-			Integer numIterations, 
-			Double discountFactor) {
+	public static void Run(MMPOMDP mmPOMDP, ArrayList<Integer> beliefSet,
+														Integer numIterations, 
+														Double discountFactor, 
+														String outputDirPath,
+														Boolean showPlots) {
 
 		/*
 		 * Extract information from the mmPOMDP
 		 */
+		
 		HashMap<String, HashMap<String, ArithExpr>> actionSetMap = mmPOMDP.actionMap;
-		HashMap<String, ArithExpr> stateSetMap = mmPOMDP.hmPrimeSubs;	
-		HashSet<String> observationSet = mmPOMDP.observationSet;
+		HashMap<String, ArithExpr> stateSetMap = mmPOMDP.stateMap;	
+		Set<String> observationSet = mmPOMDP.observationSet;
 
-		Integer rFunc = mmPOMDP.rewardFunc;
+		Integer rFunc = null;
 		HashMap<String, Integer> tFuncMap = mmPOMDP.transitionFuncMap;
 		HashMap<String, Integer> oFuncMap = mmPOMDP.observationFuncMap;
 
+		Set<String> continuousVarSet = stateSetMap.keySet();
+		
+		String domainDirPath = mmPOMDP.domain.getDomainPath();
+
+		// Create the outputDirPath folder, if it doesn't already exist
+		try {
+			Files.createDirectory(Paths.get(outputDirPath));
+		} catch (IOException e) {
+			e.printStackTrace();
+			outputDirPath = "";
+		}
+		
 		/*
 		 * Initialise data structure to hold the information needed to extract a 
 		 * policy
 		 */
 
-		//		HashMap<Integer, ArrayList<GammaSet>> policyData = new HashMap<Integer, ArrayList<GammaSet>>();
 		// { horizon -> { beliefPointID -> { ObservationName -> { GammaSets } } } }
-		HashMap<Integer, HashMap<Integer, HashMap<String, ArrayList<GammaSet>>>> 
-		policyData = new HashMap<Integer, HashMap<Integer, HashMap<String, ArrayList<GammaSet>>>>(); 
-
-		/* Initialise an Uncertainty XADD
-		 * 
-		 */
-
-		Double mu = 50.0;
-		Double sigma = 25.0;
-        Integer uncertaintyXADD = PBVIDiscreteAction.InitialiseUncertaintyXADD(mu, sigma);
+		PolicyData policyData2 = new PolicyData();
+		
+		AltPolicyData policyDataAlt = new AltPolicyData();
 
 		/*
 		 * Initialise the Value function at time zero (GammaSet)
 		 */
+		
 		GammaSet prevGamma = new GammaSet(0);
 		prevGamma.addVector(new AlphaVector(0));
 
@@ -114,7 +96,7 @@ public class PBVIDiscreteAction {
 		/*
 		 * Execute the PBVI algorithm
 		 */
-		
+
 		for(int horizon = 1; horizon < (numIterations + 1); horizon++) {
 			System.out.println("H: " + horizon);
 
@@ -145,7 +127,7 @@ public class PBVIDiscreteAction {
 					// Substitute the "ap" and "bp" variables in the rFunc with 
 					// the contents of the bidAskMap
 					rFunc = XADDWrapper.substitute(mmPOMDP.rewardFunc, bidAskMap);
-//					XADDHelper.PlotXADD(rFunc, "rFunc " + actionName);
+					//					XADDHelper.PlotXADD(rFunc, "rFunc " + actionName);
 
 					AlphaVector optActAVec = new AlphaVector(horizon, actionName);
 
@@ -160,12 +142,12 @@ public class PBVIDiscreteAction {
 
 						Integer oFunc = oFuncMap.get(obsName);
 						Integer oFuncPrimed = XADDWrapper.substitute(oFunc, stateSetMap);
-						
+
 						// Substitute the "ap" and "bp" variables in the oFuncPrimed 
 						// with the contents of the bidAskMap
 						oFuncPrimed = XADDWrapper.substitute(oFuncPrimed, bidAskMap);
-//						XADDHelper.PlotXADD(oFuncPrimed, "oFuncPrimed " + actionName + " " + obsName);
-						
+						//						XADDHelper.PlotXADD(oFuncPrimed, "oFuncPrimed " + actionName + " " + obsName);
+
 						// Iterate through all of the alpha vectors in the prevGamma
 						// set
 						Iterator<AlphaVector> aVecIterator = prevGamma.iterator();
@@ -183,11 +165,11 @@ public class PBVIDiscreteAction {
 
 							// Prime the variables in the newAVecXADD
 							newAVecXADD = XADDWrapper.substitute(newAVecXADD, stateSetMap);
-//							XADDHelper.PlotXADD(newAVecXADD, "After prime");
+							//							XADDHelper.PlotXADD(newAVecXADD, "After prime");
 
 							// Multiply through by the oFuncPrimed
 							newAVecXADD = XADDWrapper.Apply(newAVecXADD, oFuncPrimed, XADDOperator.PROD);
-//							XADDHelper.PlotXADD(newAVecXADD, "After * oFuncPrimed " + actionName + " " + obsName);
+							//							XADDHelper.PlotXADD(newAVecXADD, "After * oFuncPrimed " + actionName + " " + obsName);
 
 							for(String currState : stateSetMap.keySet()) {
 								System.out.println("\t\t\t\t\tState = " + currState);
@@ -203,27 +185,27 @@ public class PBVIDiscreteAction {
 
 								// Regress the continuous variables
 								newAVecXADD = VIHelper.RegressContinuousVariable(newAVecXADD, tFunc, nextState);
-//								XADDHelper.PlotXADD(newAVecXADD, "After Regress " + nextState);
+								//								XADDHelper.PlotXADD(newAVecXADD, "After Regress " + nextState);
 							}				    		
 
 							// Discount
 							newAVecXADD = XADDWrapper.ScalarOp(newAVecXADD, discountFactor, XADDOperator.PROD);
-//							XADDHelper.PlotXADD(newAVecXADD, "After Discount");
-							
+							//							XADDHelper.PlotXADD(newAVecXADD, "After Discount");
+
 							// Add the rFunc
 							newAVecXADD = XADDWrapper.Apply(newAVecXADD, rFunc, XADDOperator.SUM);				
 //							XADDHelper.PlotXADD(newAVecXADD, "After + Reward");							
 //							XADDHelper.Display3D(newAVecXADD, "newAVec", 
 //									PBVIDiscreteAction.DOMAIN_DIR_PATH + File.separator + "plot", 
 //									PBVIDiscreteAction.DOMAIN_DIR_PATH.replace(".", File.separator));							
-							
+
 							// Add the newAVecXADD to the newAlphaVector 
 							newAVec.setXADD(newAVecXADD);
 							System.out.println("\t\t\t\tNew " + newAVec);
 
 							// Add the newAVec to the currBPActObsGamma set
 							currBPActObsGamma.addVector(newAVec);
-//							System.out.println("\t\t\t\t" + currBPActObsGamma);   			
+							//							System.out.println("\t\t\t\t" + currBPActObsGamma);   			
 						}
 
 						// Make sure that there is one new AlphaVector per AlphaVector
@@ -234,44 +216,14 @@ public class PBVIDiscreteAction {
 						/*
 						 *  Add the currBPActObsGamma to the policyData map under the horizon
 						 */
+						policyData2.updatePolicy(horizon, beliefPointID, obsName, currBPActObsGamma);
 						
-						ArrayList<GammaSet> obsList = null;
-						HashMap<String, ArrayList<GammaSet>> obMap = null;
-						HashMap<Integer, HashMap<String, ArrayList<GammaSet>>> bpMap = null;
-
-						if(policyData.containsKey(horizon)) {							
-							bpMap = policyData.get(horizon);
-
-							if(bpMap.containsKey(beliefPointID)) {
-								obMap = bpMap.get(beliefPointID);
-
-								if(obMap.containsKey(obsName)) {
-									obsList = obMap.get(obsName);
-								} 
-								else {
-									obsList = new ArrayList<GammaSet>();
-								}
-							} 
-							else {
-								obMap = new HashMap<String, ArrayList<GammaSet>>();
-								obsList = new ArrayList<GammaSet>();
-							}
-						}
-						else {
-							bpMap = new HashMap<Integer, HashMap<String, ArrayList<GammaSet>>>();
-							obsList = new ArrayList<GammaSet>();
-							obMap = new HashMap<String, ArrayList<GammaSet>>();
-						}
-
-						obsList.add(currBPActObsGamma);
-						obMap.put(obsName, obsList);
-						bpMap.put(beliefPointID, obMap);						
-						policyData.put(horizon, bpMap);
+						policyDataAlt.updatePolicy(horizon, obsName, currBPActObsGamma);
 
 						// Calculate argmax_{\alpha \in \Gamma^{a, o}} (\alpha \cdot b)
 						// The optimal AlphaVector in the currBPActObsGamma for the current
 						// beliefPointID
-						AlphaVector optActObsAVec = PBVIDiscreteAction.ArgMaxOperation(currBPActObsGamma, beliefPointID);
+						AlphaVector optActObsAVec = PBVI.ArgMax(currBPActObsGamma, beliefPointID);
 						System.out.format("\t\t\t%s. Opt %s%n", currBPActObsGamma, optActObsAVec);
 
 						// Add the optActObsAVec to the optActAVec
@@ -286,7 +238,8 @@ public class PBVIDiscreteAction {
 				// Calculate argmax_{\alpha \in \Gamma^{a, b}, \forall a \in A} (\Gamma^{a, b} \cdot b)
 				// The optimal AlphaVector in the currBPActGamma for the current
 				// beliefPointID
-				AlphaVector optAVec = PBVIDiscreteAction.ArgMaxOperation(currBPGamma, beliefPointID);
+				AlphaVector optAVec = PBVI.ArgMax(currBPGamma, beliefPointID);
+				optAVec.setBeliefPointID(beliefPointID);
 				System.out.format("\t%s. Opt %s%n", currBPGamma, optAVec);
 
 				// Add the optAVec for the current beliefPointID to the currGamma set
@@ -295,102 +248,354 @@ public class PBVIDiscreteAction {
 				/*
 				 *  Plot the optAVec
 				 */				
-				
-				String plotTitle = "BP: " + beliefPointID + " " + optAVec.toString();
-				XADDHelper.PlotXADD(optAVec.getXADD(), plotTitle);
 
-				XADDHelper.Display3D(optAVec.getXADD(), plotTitle.replace(":", "-"), 
-						PBVIDiscreteAction.DOMAIN_DIR_PATH + File.separator + "plot", 
-						PBVIDiscreteAction.DOMAIN_DIR_PATH.replace(".", File.separator));				
+				if (PBVIDiscreteAction.SHOW_PLOTS) {
+					String plotTitle = "BP: " + beliefPointID + " " + optAVec.toString();
+					XADDHelper.PlotXADD(optAVec.getXADD(), plotTitle);
 
-				/*
-				 *  Plot the optAVec as a function of uncertainty
-				 */
-				
-//	            Integer tmpXADD = XADDWrapper.Apply(uncertaintyXADD, optAVec.getXADD(), XADDOperator.PROD);
-////	            String plotTitle2 = "BP: " + beliefPointID + " " + optAVec.toString() + " Uncertainty " + "Mu: " + mu + " Sigma: " + sigma;
-//	            String plotTitle2 = "BP: " + beliefPointID + " " + optAVec.toString() + " Uncertainty";
-//	            XADDHelper.PlotXADD(tmpXADD, plotTitle2);
-//	            
-//	            XADDHelper.Display3D(tmpXADD, plotTitle2.replace(":", "-"), 
-//	            		PBVIDiscreteAction.DOMAIN_DIR_PATH + File.separator + "u_plot", 
-//	            		PBVIDiscreteAction.DOMAIN_DIR_PATH.replace(".", File.separator));	            
+					XADDHelper.Display3D(optAVec.getXADD(), plotTitle.replace(":", "-"), 
+						domainDirPath + "plot", outputDirPath);
+				}
+
 			}
 
 			System.out.format("%s%n", currGamma);
-		}
 
+			/*
+			 *  Plot the value function (currGamma) at the current horizon
+			 */
+
+			if (PBVIDiscreteAction.SHOW_PLOTS)
+				PBVIDiscreteAction.PlotValueFunction(currGamma, continuousVarSet, 
+					50.0, 0.0, 1.0, 
+					50.0, 0.0, 1.0, 
+					outputDirPath, domainDirPath);						
+		}
 
 		/*
 		 * Policy Extraction
 		 */
+		Integer peBPID = PBVI.InitialiseBeliefPoint(domainDirPath + "policy_extraction_belief_point_1.xadd");
+		ArrayList<Integer> peBPList = new ArrayList<Integer>();
+		peBPList.add(peBPID);
+		
+//		PBVIDiscreteAction.ExtractPolicies(peBPList, numIterations, policyData2);
+		PBVIDiscreteAction.ExtractPolicies(peBPList, numIterations, policyDataAlt);
+	}
+
+	public static void ExtractPolicies(ArrayList<Integer> beliefSet, 
+							Integer ultimateHorizon, AltPolicyData policyData) {
 
 		// Iterate through all belief points in the beliefSet
 		for (Integer beliefPointID : beliefSet) {
-			System.out.println("\tBP: " + beliefPointID);
+			System.out.format("Extract Policy for %s%n", beliefPointID);
 
-			PBVIDiscreteAction.ExtractPolicy(numIterations, beliefPointID, null, policyData);
+			PBVIDiscreteAction.ExtractPolicy(ultimateHorizon, beliefPointID, null, policyData);
+		}				
+	}
+
+	public static void ExtractPolicy(Integer currHorizon, Integer beliefPointID, 
+			String actionName, AltPolicyData policyData) {
+	
+		GammaSet gammaSet = null;
+		GammaSet gammaSet2 = null;
+		GammaSet gammaSet3 = null;
+		GammaSet allAlpha = null;
+		String optActionName = null;
+		String optObsActionName = null;
+		
+		Boolean recurseFlag = currHorizon > 1 ? true : false;
+
+		if(actionName == null) {
+			gammaSet = new GammaSet(currHorizon, beliefPointID);
+			gammaSet2 = new GammaSet(currHorizon, beliefPointID);
+			gammaSet3 = new GammaSet(currHorizon, beliefPointID);
+			
+			allAlpha = new GammaSet(currHorizon, beliefPointID);
+		} 
+		else {
+			gammaSet = new GammaSet(currHorizon, beliefPointID, actionName);
+			gammaSet2 = new GammaSet(currHorizon, beliefPointID, actionName);			
+			gammaSet3 = new GammaSet(currHorizon, beliefPointID, actionName);
 		}
+
+		Set<String> obsNames = policyData.getObservationNames(currHorizon);
+		
+		// Iterate through the obsNames
+		for(String obsName : obsNames) {
+			
+			System.out.format("H: %d O: %s A: %s %n", currHorizon, obsName, actionName == null ? "-" : actionName);
+			
+			// The data pertaining to the currHorizon, beliefPointID and obsName
+			ArrayList<GammaSet> obsGammaSetList = policyData.getObservationData(currHorizon, obsName);
+			
+			//Iterate through all of the AlphaVectors in the obsGammaSetList
+			for (GammaSet obsGammaSet: obsGammaSetList) {
+				
+				if(actionName == null) {
+					allAlpha.mergeGammaSet(obsGammaSet);
+					continue;
+				}
+				
+				if(actionName != null && obsGammaSet.getAction() == actionName) {
+					// The optimal AlphaVector for the currHorizon, beliefPointID and obsName
+					AlphaVector optAVec = PBVI.ArgMax(obsGammaSet, beliefPointID);
+					gammaSet2.addVector(optAVec);
+				}
+			}
+			
+			if(gammaSet2.size() > 0) {
+				AlphaVector optAVec = PBVI.ArgMax(gammaSet2, beliefPointID);
+				optObsActionName = optAVec.getActionName();
+	
+				System.out.format("\tOpt: %s%n", optObsActionName);
+				
+				if(recurseFlag)
+					PBVIDiscreteAction.ExtractPolicy(currHorizon - 1, beliefPointID, optObsActionName, policyData);		
+			}
+		}
+		
+		if(actionName == null) {
+			AlphaVector optAVec = PBVI.ArgMax(allAlpha, beliefPointID);
+			optActionName = optAVec.getActionName();
+			
+			System.out.format("\tOpt: %s%n", optActionName);
+			
+			if(recurseFlag)
+				PBVIDiscreteAction.ExtractPolicy(currHorizon - 1, beliefPointID, optActionName, policyData);
+		}		
 	}
 	
 	/**
-	 * Determines whether a belief point is valid. i.e. if it integrates to 1.0
 	 * 
-	 * @param 	bpID 			(Integer)
-	 * @return	validBelief?	(Boolean)
+	 * @param gammaSet
+	 * @param continuousVarSet
+	 * @param highX
+	 * @param lowX
+	 * @param incrementX
+	 * @param highY
+	 * @param lowY
+	 * @param incrementY
 	 */
-	private static boolean IsValidBeliefPoint(Integer bpID) {
+	private static void PlotValueFunction(GammaSet gammaSet, Set<String> continuousVarSet,
+			Double highX, double lowX, Double incrementX, 
+			Double highY, double lowY, Double incrementY, 
+			String outputDirPath, String domainDirPath) {
 
-		boolean validBP = true;
+		/*
+		 *  Plot the optAVec as a function of uncertainty
+		 */
 
-		// Get the variables in the bpID XADD
+		System.out.format("Plotting %s%n", gammaSet);
 
-		int integral1 = XADDWrapper.computeDefiniteIntegral(bpID, "v");
-		int integral2 = XADDWrapper.computeDefiniteIntegral(integral1, "i");
+		Integer numXSamples = (int) Math.ceil((highX - lowX)/incrementX);
+		Integer numYSamples = (int) Math.ceil((highY - lowY)/incrementY);
 
-		// The result of integrating over the two continuous variables
-		XADDTNode t = XADDWrapper.getNode(integral2);
-		Double val = ((DoubleExpr) t._expr)._dConstVal;
+		ArrayList<Float> alX = new ArrayList<Float>(numXSamples);
+		ArrayList<Float> alY = new ArrayList<Float>(numYSamples);
 
-		assert(Math.abs(val - 1.0) < PBVIDiscreteAction.EPSILON) : 
-			"Belief point does not integrate out to 1.0";
+		float temp_x = (float) lowX;
+		for (int i = 0; i < numXSamples; i++) {
+			temp_x += incrementX;
+			alX.add(temp_x);
+		}			
 
-		return validBP;
+		float temp_y = (float) lowY;
+		for (int i = 0; i < numYSamples; i++) {
+			temp_y += incrementY;
+			alY.add(temp_y);
+		}			
+
+		for(AlphaVector aVec : gammaSet) {
+
+			float[][] xArr = new float[alY.size()][alX.size()];
+			float[][] yArr = new float[alY.size()][alX.size()];
+			float[][] zArr = new float[alY.size()][alX.size()];
+
+			Integer uncertaintyXADD = null;
+
+			String title = aVec.toString().replace("AVec ", "").replace(" ", "_")
+					.replace('^', '_').replace("(", "").replace(")", "")
+					.replace("[", "").replace("]", "").replace(":", "-")
+					.replace(" ", "").replace(".dot", "");
+			String outputFileName = outputDirPath + File.separator + title + ".txt";
+
+			PrintStream ps = null;				
+			try {
+				ps = new PrintStream(new FileOutputStream(outputFileName));
+			} catch (Exception e) {
+				System.err.println("Could not open " + outputFileName + " for data export.");
+				ps = new DevNullPrintStream();
+			}
+
+			for (int i = 0; i < alY.size(); i++) {
+				for (int j = 0; j < alX.size(); j++) {
+
+					float mean = alX.get(j);
+					float width = alY.get(i);
+
+					uncertaintyXADD = PBVIDiscreteAction.InitialiseUncertaintyXADD(domainDirPath,mean, width);
+
+					Integer innerProdXADD = XADDWrapper.Apply(uncertaintyXADD, aVec.getXADD(), XADDOperator.PROD);
+					innerProdXADD = PBVI.Integrate(innerProdXADD, continuousVarSet);
+
+					// Get the value of the innerProdXADD
+					XADDTNode t = XADDWrapper.getNode(innerProdXADD);
+					double innerProdValue = ((DoubleExpr) t._expr)._dConstVal;
+
+					xArr[i][j] = mean;
+					yArr[i][j] = width;
+					zArr[j][i] = (float) innerProdValue;
+
+					ps.println(mean + "\t" + width + "\t" + (float) innerProdValue);
+				}
+			}
+			ps.close();
+
+			System.out.format("%s%n", outputFileName);
+
+			XADDHelper.Plot3D(title, outputFileName, xArr, yArr, zArr, alX.size(), alY.size());
+		}
 	}
 
 	/**
 	 * 
-	 * @param mu
-	 * @param sigma
+	 * @param mean
+	 * @param width
 	 * @return
 	 */
-	private static Integer InitialiseUncertaintyXADD(Double mu, Double sigma) {
-		String uBPFile = PBVIDiscreteAction.DOMAIN_DIR_PATH + File.separator + "uncertainty_belief_point_1.xadd";
+	private static Integer InitialiseUncertaintyXADD(String domainDirPath, float mean, float width) {
 
+		String uBPFile = domainDirPath + "uncertainty_belief_point.xadd";
 		Integer uncertaintyXADD = XADDHelper.BuildXADD(uBPFile);
+		
+//		XADDHelper.PlotXADD(uncertaintyXADD, "Uncertainty XADD Before");
+		
+		Double prob = null;
 
-//		HashMap<String, ArithExpr> a1 = new HashMap<String, ArithExpr>();
-//
-//		a1.put("m", new DoubleExpr(mu));
-//		a1.put("w", new DoubleExpr(sigma));		
-////		a1.put("p", new DoubleExpr(1/(12 * (sigma*sigma))));
-////		a1.put("sq", new DoubleExpr(Math.sqrt(3)));
-//
-//		uncertaintyXADD = XADDWrapper.substitute(uncertaintyXADD, a1);
-//
-//		XADDHelper.PlotXADD(uncertaintyXADD, "Uncertainty XADD Mu: " + mu + " Sigma: " + sigma);
-//
-//		int integral1 = XADDWrapper.computeDefiniteIntegral(uncertaintyXADD, "v");
-//		int integral2 = XADDWrapper.computeDefiniteIntegral(integral1, "i");
-//
-//		XADDTNode t = XADDWrapper.getNode(integral2);
-//		Double val = ((DoubleExpr) t._expr)._dConstVal;
-//
-//		assert(Math.abs(val - 1.0) < PBVIDiscreteAction.EPSILON) : 
-//			"Distribution does not integrate out to 1.0";		
+		// Substitute values for "lb", "ub" and "p"
+		HashMap<String, ArithExpr> subs = new HashMap<String, ArithExpr>();
+		subs.put("m", new DoubleExpr(mean));
+		
+//		if(mean < width) {
+//			subs.put("lb", new DoubleExpr(0));
+//			prob = Math.pow((1/(0 + width)), 2);
+//		}
+//		else {
+			subs.put("lb", new DoubleExpr(width));
+			prob = Math.pow((1/(width + width)), 2);
+//		}
+		subs.put("ub", new DoubleExpr(width));		
 
-		return uncertaintyXADD;
-	}	
+		subs.put("p", new DoubleExpr(prob));
+		
+		uncertaintyXADD = XADDWrapper.substitute(uncertaintyXADD, subs);
+		
+//		if(!PBVI.IsValidBeliefPoint(uncertaintyXADD, false)) {
+//			System.out.format("INVALID: (%f, %f)%n", mean, width);
+//			XADDHelper.PlotXADD(uncertaintyXADD, "Uncertainty XADD After (" + mean + ", " + width + ")");
+//		} else {
+//			System.out.format("VALID: (%f, %f)%n", mean, width);
+//		}
+		
+		return uncertaintyXADD;		
+	}
+
+	/**
+	 * 
+	 * @param beliefSet
+	 * @param ultimateHorizon
+	 * @param policyData
+	 */
+	public static void ExtractPolicies(ArrayList<Integer> beliefSet, 
+			Integer ultimateHorizon, PolicyData policyData) {
+
+		// Iterate through all belief points in the beliefSet
+		for (Integer beliefPointID : beliefSet) {
+			System.out.format("Extract Policy for %s%n", beliefPointID);
+
+			PBVIDiscreteAction.ExtractPolicy(ultimateHorizon, beliefPointID, null, policyData);
+		}				
+	}
+
+	/**
+	 * 
+	 * @param currHorizon
+	 * @param beliefPointID
+	 * @param actionName
+	 * @param policyData
+	 */
+	public static void ExtractPolicy(Integer currHorizon, Integer beliefPointID, 
+									String actionName, PolicyData policyData) {
+
+		GammaSet gammaSet = null;
+		GammaSet gammaSet2 = null;
+		GammaSet gammaSet3 = null;
+		GammaSet allAlpha = null;
+		String optActionName = null;
+		String optObsActionName = null;
+		
+		Boolean recurseFlag = currHorizon > 1 ? true : false;
+
+		if(actionName == null) {
+			gammaSet = new GammaSet(currHorizon, beliefPointID);
+			gammaSet2 = new GammaSet(currHorizon, beliefPointID);
+			gammaSet3 = new GammaSet(currHorizon, beliefPointID);
+			
+			allAlpha = new GammaSet(currHorizon, beliefPointID);
+		} 
+		else {
+			gammaSet = new GammaSet(currHorizon, beliefPointID, actionName);
+			gammaSet2 = new GammaSet(currHorizon, beliefPointID, actionName);			
+			gammaSet3 = new GammaSet(currHorizon, beliefPointID, actionName);
+		}
+
+		Set<String> obsNames = policyData.getObservationNames(currHorizon, beliefPointID);
+		
+		// Iterate through the obsNames
+		for(String obsName : obsNames) {
+			
+			System.out.format("H: %d O: %s A: %s %n", currHorizon, obsName, actionName == null ? "-" : actionName);
+			
+			// The data pertaining to the currHorizon, beliefPointID and obsName
+			ArrayList<GammaSet> obsGammaSetList = policyData.getObservationData(currHorizon, beliefPointID, obsName);
+			
+			//Iterate through all of the AlphaVectors in the obsGammaSetList
+			for (GammaSet obsGammaSet: obsGammaSetList) {
+				
+				if(actionName == null) {
+					allAlpha.mergeGammaSet(obsGammaSet);
+					continue;
+				}
+				
+				if(actionName != null && obsGammaSet.getAction() == actionName) {
+					// The optimal AlphaVector for the currHorizon, beliefPointID and obsName
+					AlphaVector optAVec = PBVI.ArgMax(obsGammaSet, beliefPointID);
+					gammaSet2.addVector(optAVec);
+				}
+			}
+			
+			if(gammaSet2.size() > 0) {
+				AlphaVector optAVec = PBVI.ArgMax(gammaSet2, beliefPointID);
+				optObsActionName = optAVec.getActionName();
+	
+				System.out.format("\tOpt: %s%n", optObsActionName);
+				
+				if(recurseFlag)
+					PBVIDiscreteAction.ExtractPolicy(currHorizon - 1, beliefPointID, optObsActionName, policyData);		
+			}
+		}
+		
+		if(actionName == null) {
+			AlphaVector optAVec = PBVI.ArgMax(allAlpha, beliefPointID);
+			optActionName = optAVec.getActionName();
+			
+			if(recurseFlag)
+				PBVIDiscreteAction.ExtractPolicy(currHorizon - 1, beliefPointID, optActionName, policyData);
+		}
+	}
+	
+	
 
 	/**
 	 * Extract Policy
@@ -429,7 +634,7 @@ public class PBVIDiscreteAction {
 
 			// Calculate argmax_{\alpha \in \Gamma^{a, b}, \forall a \in A} (\Gamma^{a, b} \cdot b)
 			// The optimal AlphaVector in the bpGammaSet for the current beliefPointID
-			AlphaVector optAVec = PBVIDiscreteAction.ArgMaxOperation(bpGammaSet, beliefPointID);
+			AlphaVector optAVec = PBVI.ArgMax(bpGammaSet, beliefPointID);
 			optActionName = optAVec.getActionName();
 
 			if(actionName == null) {
@@ -446,7 +651,7 @@ public class PBVIDiscreteAction {
 		}
 
 		if(actionName == null) {
-			AlphaVector optAVec = PBVIDiscreteAction.ArgMaxOperation(bpGammaSet2, beliefPointID);
+			AlphaVector optAVec = PBVI.ArgMax(bpGammaSet2, beliefPointID);
 			optActionName = optAVec.getActionName();
 		}
 
@@ -466,14 +671,14 @@ public class PBVIDiscreteAction {
 	 * @param beliefSet
 	 * @return
 	 */
-	private static ArrayList<Integer> ExpandBeliefSet(POMDP mmPOMDP, ArrayList<Integer> beliefSet) {
+	private static ArrayList<Integer> ExpandBeliefSet(MMPOMDP mmPOMDP, ArrayList<Integer> beliefSet) {
 
 		/*
 		 * Extract information from the mmPOMDP
 		 */
 		HashMap<String, HashMap<String, ArithExpr>> actionSetMap = mmPOMDP.actionMap;
-		HashMap<String, ArithExpr> stateSetMap = mmPOMDP.hmPrimeSubs;	
-		HashSet<String> observationSet = mmPOMDP.observationSet;
+		HashMap<String, ArithExpr> stateSetMap = mmPOMDP.stateMap;	
+		Set<String> observationSet = mmPOMDP.observationSet;
 
 		HashMap<String, Integer> tFuncMap = mmPOMDP.transitionFuncMap;
 		HashMap<String, Integer> oFuncMap = mmPOMDP.observationFuncMap;
@@ -536,54 +741,6 @@ public class PBVIDiscreteAction {
 		}
 
 		return beliefSet;
-	}
-
-	/**
-	 * 
-	 * @param list
-	 * @param beliefPoint
-	 * @return
-	 */
-	private static AlphaVector ArgMaxOperation(GammaSet gammaSet, Integer beliefPoint) {
-
-		AlphaVector maxAlphaVector = null;
-		Integer innerProdXADD = null;		
-		Double innerProdValue = null;
-		Double maxInnerProdValue = Double.NEGATIVE_INFINITY;
-
-		//		XADDHelper.PlotXADD(beliefPoint, "BP: " + beliefPoint);
-
-		if(gammaSet.size() == 1) {
-			return gammaSet.getVectors().get(0);
-		}
-
-		// Iterate through each AlphaVector in the gammaSet
-		for (AlphaVector currAlphaV : gammaSet) {
-			//			XADDHelper.PlotXADD(currAlphaV.getXADD(), currAlphaV.toString());
-
-			// The inner product of the currAlphaV and the  beliefPoint
-			innerProdXADD = XADDWrapper.Apply(currAlphaV.getXADD(), beliefPoint, XADDOperator.PROD);
-			//			XADDHelper.PlotXADD(innerProdXADD, "Inner Product BP: " + beliefPoint + " " + currAlphaV.toString());
-
-			// Compute the definite integral of the innerProdXADD over the continuous
-			// variables
-			Integer int1 =  XADDWrapper.computeDefiniteIntegral(innerProdXADD, "i");
-			//			XADDHelper.PlotXADD(int1, "Integral 1 v");
-			Integer int2 =  XADDWrapper.computeDefiniteIntegral(int1, "v");
-
-			// The result ...
-			XADDTNode t = XADDWrapper.getNode(int2);
-			innerProdValue = ((DoubleExpr) t._expr)._dConstVal;
-
-			//			System.out.format("%s x %s = %f%n", beliefPoint, currAlphaV, innerProdValue);
-
-			if(innerProdValue > maxInnerProdValue) {
-				maxAlphaVector = currAlphaV;
-				maxInnerProdValue = innerProdValue; 
-			}
-		}		
-
-		return maxAlphaVector;
 	}
 
 }
