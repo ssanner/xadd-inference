@@ -89,7 +89,7 @@ pr(d | \, \boldsymbol\theta) = \sum_{k = 1}^M pr(k | \, \boldsymbol\theta) pr(d 
 \end{equation}
 we can claim that a piecewise likelihood functions can be seen 
 as mixture models in which sub-functions $f^i_j$ are \emph{mixture components} and 
- $k_i$ provide binary \emph{mixture weights}. And from there is follows that:
+ $k_i$ provide binary \emph{mixture weights}. And from there:
 %$$pr(d_i | \boldsymbol\theta) = \sum_{k_1}pr(k_1 | \, \boldsymbol\theta) pr(d_1 | \, k_1, \boldsymbol\theta)$$
 %and
 %\[pr(k_i = k \,|\, \theta) := {\footnotesize
@@ -126,7 +126,7 @@ pr(\boldsymbol\theta | \boldsymbol\theta_{-i})\prod_{k_i} f^i_{k_i}(\theta_i | \
 Assuming that sub-functions are not piecewise themselves, 
 the amount  of partitions in $pr(\theta_i | \boldsymbol\theta_{-i},  k_1, \ldots, k_n)$ is bound by the amount of partitions in the prior.
 
-What is remained is to show that equation~\ref{e:aaaax} is valid:
+What is remained is to show that equation~(\ref{e:aaaax}) is valid:
 %\[
 %p(x_i |\, \bvec{x}_{i-1}, \bvec{k}) = 
  % f_{1, 2}(\bvec{x}) \ldots f_{n, 2}(\bvec{x})
