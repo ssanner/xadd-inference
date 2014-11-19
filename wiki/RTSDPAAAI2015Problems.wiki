@@ -8,13 +8,21 @@ Three domains were used in the paper:
 
 The problems are specified in the .cmdp format which contains:
 a list of continuous variables: cvariables ()
+
 The min and max values for each continuous: min-values (), max-values ()
+
 A list of boolean variables: bvariables ()
+
 Action variables: avariables()
+
 A complete description for each action: action act()
+
 containing:
+
 A decision tree transition for each continuous variable: X' ([X+1])
+
 A decision tree of probability of true for every boolean variable: B' ([B [0.8] [0.7])
+
 The reward another decision tree: (X>0 [10] [-10])
 
 = Details =
