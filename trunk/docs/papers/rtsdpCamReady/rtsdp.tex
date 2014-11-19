@@ -117,7 +117,7 @@ The amount of drained water is linear on the water level, and the amount of ener
 At every iteration, the top reservoir receives a constant spring replenishment plus a non-deterministic rain while the bottom reservoir has a part of its water used for city purposes. For example, the water level of the top reservoir, $L_1$, at the next iteration is:
 {\small
 \hspace{-2mm}
-\begin{align*}
+\begin{align}
 L_1' =
 \begin{cases}
   \text{if }  rain \wedge drain_1 &\hspace{-2mm}: L_1 + 1000 - 0.5L_1\\ 
@@ -125,7 +125,8 @@ L_1' =
   \text{if }  rain \wedge \neg drain_1 &\hspace{-2mm}: L_1 + 1000\\ 
   \text{if }  \neg rain \wedge \neg drain_1 &\hspace{-2mm}: L_1 + 500\\ 
 \end{cases}
-\end{align*}
+\label{eq:l1}
+\end{align}
 }
 A {\bf nonlinear} reward is obtained by generating energy and there is a strong penalty if any reservoir level is outside the nominal minimum and maximum levels.
 {\small
@@ -139,11 +140,11 @@ R_{drain_i} (L_i)=
 }
 }
 
-Unfortunately, SDP solutions for HMDPs suffers from two major drawbacks: (1) the overhead of computing a complete optimal policy even for problems where the initial state is known; and (2) it cannot maintain compact (pruned) XADD representations of functions containing nonlinear decisions because it cannot verify their feasibility and remove or ignore infeasible regions.
+Unfortunately, SDP solutions for HMDPs suffer from two major drawbacks: (1) the overhead of computing a complete optimal policy even for problems where the initial state is known; and (2) it cannot maintain compact (pruned) XADD representations of functions containing nonlinear decisions because it cannot verify their feasibility and remove or ignore infeasible regions.
 In this work, we address both of these problems simultaneously by proposing a new HMDP solver, named \emph{Real-Time Symbolic Dynamic Programming (RTSDP)}.
-RTSDP addresses (1) by restricting the solution to states relevant to a specified initial state and addresses (2) by only expanding regions containing visited states, thus ignoring infeasible branches of nonlinear decisions. RTSDP solution is focused on the initial state by using simulation trials as done in Real-Time Dynamic Programming (RTDP).
+RTSDP addresses (1) by restricting the solution to states relevant to a specified initial state and addresses (2) by only expanding regions containing visited states, thus ignoring infeasible branches of nonlinear decisions. The RTSDP solution is focused on the initial state by using simulation trials as done in Real-Time Dynamic Programming (RTDP).
 
-We use the Real-Time Dynamic Programming (RTDP) algorithm because it is considered a state-of-the-art solver for MDPs~(\cite{Barto95RTDP,kolobov12GOURMAND}) that combines initial state information and value function heuristics with asynchronous updates to generate an optimal partial policy for the relevant states, i.e., states reachable from the initial state following an optimal policy.
+We use the Real-Time Dynamic Programming (RTDP) algorithm because it is considered a state-of-the-art solver for MDPs~\cite{Barto95RTDP,kolobov12GOURMAND} that combines initial state information and value function heuristics with asynchronous updates to generate an optimal partial policy for the relevant states, i.e., states reachable from the initial state following an optimal policy.
 In order to be used in a hybrid state space, RTSDP modifies RTDP's single state update to a \emph{region based} symbolic update. The XADD representation naturally factors the state-space into regions with the same continuous expressions, and thus allows efficient \emph{region based updates} that improve the value function  \emph{on all states in the same region}. We claim that region updates promote better reusability of previous updates, improving the search efficiency. 
 RTSDP is empirically tested on three challenging domains: \Invent, with continuously parametrized actions; \Reservoir, with a nonlinear reward model; and \Traffic, with nonlinear dynamics.
 Our results show that, given an initial state, RTSDP can solve finite-horizon HMDP problems faster and using far less memory than SDP.
@@ -165,7 +166,7 @@ These assumptions allow us to write the probabilistic transition function $\math
 \end{equation*}
 }
 
-Assumption (ii) implies the conditional probabilities for continuous variables are Dirac Delta functions, which correspond to deterministic transitions: $\vec{x'} \gets \vec{T}_{a(\vec{y})}(\vec{b},\vec{x},\vec{b'})$. 
+Assumption (ii) implies the conditional probabilities for continuous variables are Dirac Delta functions, which correspond to conditional deterministic transitions: $x'_i \gets T^i_{a(\vec{y})}(\vec{b},\vec{x},\vec{b'})$. An example of conditional deterministic transition is given in Problem 1, the definition of $L'_1$ in Equation \ref{eq:l1}.
 Though this restricts stochasticity to boolean variables, continuous variables depend on their current values, allowing the representation of general finite distributions, a common restriction in exact HMDP solutions~\cite{feng04,meuleau09HAO,zamani12}.
 
 In this paper, we consider finite-horizon HMDPs with an initial state $s_0 \in \mathcal{S}$ and horizon $H \in \mathbb{N}$.
@@ -197,8 +198,8 @@ Q_{h,a(\vec{y})}(\vec{b},\vec{x}) =  R(\vec{b},\vec{x},a(\vec{y})) + \sum_{\vec{
 }
 Note that since we assume deterministic transitions for continuous variables the integral over the continuous probabilistic distribution is actually a substitution:
 $$
- \int_{\vec{x}'} \mathcal{P}(x' | \vec{b'}, a(\vec{y}),\vec{b},\vec{x}) \cdot f(x') =
-subst_{x' = T_{a(\vec{y})}(\vec{b},\vec{x},\vec{b'})} f(x') 
+ \int_{\vec{x_i}'} \mathcal{P}(x_i' | \vec{b'}, a(\vec{y}),\vec{b},\vec{x}) \cdot f(x_i') =
+subst_{x_i' = T^i_{a(\vec{y})}(\vec{b},\vec{x},\vec{b'})} f(x_i') 
 $$
 Given $Q_{h,a(\vec{y})}(\vec{b},\vec{x})$ for each $a(\vec{y}) \in A$, we can define the $h$ stages-to-go value function as the quality of the best (greedy) action in each state $(\vec{b},\vec{x})$ as follows (line 6):
 \begin{align}
@@ -458,8 +459,8 @@ Note that the current state is denoted by $(\vec{b_c}, \vec{x_c})$ to distinguis
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Empirical Evaluation}
 
-In this section, we evaluate the RTSDP algorithm for three domains: \Reservoir~(Problem 1), \Invent~(Problem 2) and \Traffic~(Problem 3). These domains show different challenges for planning: \Invent~contains continuously parametrized actions, \Reservoir~ has a nonlinear reward function, and \Traffic~ has nonlinear dynamics.
-For all of our experiments RTSDP value function was initialised with an admissible max cumulated reward heuristic, that is $V_h(s) = h \cdot \max_{s,a} \mathcal{R}(s,a) \forall s$. This is a very simple to compute and very little informative heuristic intended to show that RTSDP is an improvement to SDP even without relying on good heuristics.
+In this section, we evaluate the RTSDP algorithm for three domains: \Reservoir~(Problem 1), \Invent~(Problem 2) and \Traffic~(Problem 3). These domains show different challenges for planning: \Invent~contains continuously parametrized actions, \Reservoir~ has a nonlinear reward function, and \Traffic~ has nonlinear dynamics \footnote{A complete description of the problems used in this paper is available at the wiki page: https://code.google.com/p/xadd-inference/wiki/RTSDPAAAI2015Problems}.
+For all of our experiments RTSDP value function was initialised with an admissible max cumulative reward heuristic, that is $V_h(s) = h \cdot \max_{s,a} \mathcal{R}(s,a) \forall s$. This is a very simple to compute and minimally informative heuristic intended to show that RTSDP is an improvement to SDP even without relying on good heuristics.
 We show the efficiency of our algorithm by comparing it with synchronous SDP in solution time and value function size.
 %The space efficiency is measured by the number of nodes in the XADD solution.
 %The time efficiency is measured by the convergency of the value of the initial state $s_0$.
@@ -481,7 +482,7 @@ R_{i} (x_i, d_i, dx_i)= \hspace{-1mm}
 
 \paragraph{\bf Problem 3 - \emph{Nonlinear} \Traffic~\cite{daganzo1994cell}. \label{ex3}}
 \textit{This domain describes a ramp metering problem using a cell transmission model. Each segment $i$ before the merge is represented by a continuous car density $k_i$ and a probabilistic boolean $hi_i $ indicator of higher incoming car density. The segment $c$ after the merge is represented by its continuous car density $k_c$ and speed $v_c$.
-The actions correspond to traffic light cycles that give more time to each segment, so that the controller can give priority to segments with a greater density. The quantity of cars that pass the merge is given by:
+Each action correspond to a traffic light cycle that gives more time to one segment, so that the controller can give priority a segment with a greater density by choosing the action corresponding to it. The quantity of cars that pass the merge is given by:
 \begin{align*}
 q_{i,a_j} (k_i, v_c) = \alpha_{i,j} \cdot k_i \cdot v_c,
 \end{align*} 
@@ -498,7 +499,6 @@ v_c' =
 \end{align*}
 }
 The reward obtained is the amount of car density that escapes from the segment after the merge, which is bounded.
-\vspace{0.6mm}
 }
 
 In Figure~\ref{fig:performance} we show the convergence of RTSDP to the optimal initial state value $V_H(s_0)$ with each point corresponding to the current $V_H(s_0)$ estimate at the end of a trial.
@@ -534,58 +534,58 @@ Note that for \Invent~and \Traffic, RTSDP reaches the optimal value much earlier
 \end{figure}
 
 \begin{figure*}[!ht]
-\subfloat[RTSDP - $V^1$]{\includegraphics[width=0.26\linewidth, height=0.16\linewidth]{figures/\solutionExample/RTSDP-Value1.pdf}
+\subfloat[RTSDP - $V^1$]{\includegraphics[width=0.26\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-Value1.pdf}
 \label{invent2rtdp_plot1}}
-\subfloat[RTSDP - $DD^1$ - 7 Nodes]{\includegraphics[width=0.22\linewidth, height=0.16\linewidth]{figures/\solutionExample/RTSDP-DD1.pdf}
+\subfloat[RTSDP - $DD^1$ - 7 Nodes]{\includegraphics[width=0.22\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-DD1.pdf}
 \label{invent2rtdp_dd1}} 
 \hspace{0.1cm}
-\subfloat[SDP - $V^1$]{\includegraphics[width=0.26\linewidth, height=0.16\linewidth]{figures/\solutionExample/SDP-Value1.pdf}
+\subfloat[SDP - $V^1$]{\includegraphics[width=0.26\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-Value1.pdf}
 \label{invent2sdp_plot1}}
-\subfloat[SDP - $DD^1$ - 7 Nodes]{\includegraphics[width=0.22\linewidth, height=0.16\linewidth]{figures/\solutionExample/SDP-DD1.pdf}
+\subfloat[SDP - $DD^1$ - 7 Nodes]{\includegraphics[width=0.22\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-DD1.pdf}
 \label{invent2sdp_dd1}} 
 
-\subfloat[RTSDP - $V^2$]{\includegraphics[width=0.26\linewidth, height=0.16\linewidth]{figures/\solutionExample/RTSDP-Value2.pdf}
+\subfloat[RTSDP - $V^2$]{\includegraphics[width=0.26\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-Value2.pdf}
 \label{invent2rtdp_plot2}}
-\subfloat[RTSDP - $DD^2$ - 22 Nodes]{\includegraphics[width=0.22\linewidth, height=0.16\linewidth]{figures/\solutionExample/RTSDP-DD2.pdf}
+\subfloat[RTSDP - $DD^2$ - 22 Nodes]{\includegraphics[width=0.22\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-DD2.pdf}
 \label{invent2rtdp_dd2}} 
 \hspace{0.1cm}
-\subfloat[SDP - $V^2$]{\includegraphics[width=0.26\linewidth, height=0.16\linewidth]{figures/\solutionExample/SDP-Value2.pdf}
+\subfloat[SDP - $V^2$]{\includegraphics[width=0.26\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-Value2.pdf}
 \label{invent2sdp_plot2}}
-\subfloat[SDP - $DD^2$ - 50 Nodes]{\includegraphics[width=0.22\linewidth, height=0.16\linewidth]{figures/\solutionExample/SDP-DD2.pdf}
+\subfloat[SDP - $DD^2$ - 50 Nodes]{\includegraphics[width=0.22\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-DD2.pdf}
 \label{invent2sdp_dd2}} 
 
-\subfloat[RTSDP - $V^3$]{\includegraphics[width=0.26\linewidth, height=0.16\linewidth]{figures/\solutionExample/RTSDP-Value3.pdf}
+\subfloat[RTSDP - $V^3$]{\includegraphics[width=0.26\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-Value3.pdf}
 \label{invent2rtdp_plot3}}
-\subfloat[RTSDP - $DD^3$ - 39 Nodes]{\includegraphics[width=0.22\linewidth, height=0.16\linewidth]{figures/\solutionExample/RTSDP-DD3.pdf}
+\subfloat[RTSDP - $DD^3$ - 39 Nodes]{\includegraphics[width=0.22\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-DD3.pdf}
 \label{invent2rtdp_dd3}} 
 \hspace{0.1cm}
-\subfloat[SDP - $V^3$]{\includegraphics[width=0.26\linewidth, height=0.16\linewidth]{figures/\solutionExample/SDP-Value3.pdf}
+\subfloat[SDP - $V^3$]{\includegraphics[width=0.26\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-Value3.pdf}
 \label{invent2sdp_plot3}}
-\subfloat[SDP - $DD^3$ - 142 Nodes]{\includegraphics[width=0.22\linewidth, height=0.16\linewidth]{figures/\solutionExample/SDP-DD3.pdf}
+\subfloat[SDP - $DD^3$ - 142 Nodes]{\includegraphics[width=0.22\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-DD3.pdf}
 \label{invent2sdp_dd3}} 
 
-\subfloat[RTSDP - $V^4$]{\includegraphics[width=0.26\linewidth, height=0.16\linewidth]{figures/\solutionExample/RTSDP-Value4.pdf}
+\subfloat[RTSDP - $V^4$]{\includegraphics[width=0.26\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-Value4.pdf}
 \label{invent2rtdp_plot4}}
-\subfloat[RTSDP - $DD^4$ - 12 Nodes]{\includegraphics[width=0.22\linewidth, height=0.16\linewidth]{figures/\solutionExample/RTSDP-DD4.pdf}
+\subfloat[RTSDP - $DD^4$ - 12 Nodes]{\includegraphics[width=0.22\linewidth, height=0.14\linewidth]{figures/\solutionExample/RTSDP-DD4.pdf}
 \label{invent2rtdp_dd4}} 
 \hspace{0.1cm}
-\subfloat[SDP - $V^4$]{\includegraphics[width=0.26\linewidth, height=0.16\linewidth]{figures/\solutionExample/SDP-Value4.pdf}
+\subfloat[SDP - $V^4$]{\includegraphics[width=0.26\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-Value4.pdf}
 \label{invent2sdp_plot4}}
-\subfloat[SDP - $DD^4$ - 272 Nodes]{\includegraphics[width=0.22\linewidth, height=0.16\linewidth]{figures/\solutionExample/SDP-DD4.pdf}
+\subfloat[SDP - $DD^4$ - 272 Nodes]{\includegraphics[width=0.22\linewidth, height=0.14\linewidth]{figures/\solutionExample/SDP-DD4.pdf}
 
 \label{invent2sdp_dd4}} 
 \caption{Value functions generated by RTSDP and SDP on \Invent, with $H=4$.}
 \label{fig:solution}
 \end{figure*}
 
-Figure~\ref{fig:solution} shows the value functions for different stages-to-go generated by RTSDP \emph{(left)} and SDP \emph{(right)} when solving \Invent2, an instance with 2 continuous state variables and 2 continuous action parameters. The value functions are shown as 3D plots (continuous state variables vs state value) with their corresponding XADDs.
+Figure~\ref{fig:solution} shows the value functions for different stages-to-go generated by RTSDP \emph{(left)} and SDP \emph{(right)} when solving \Invent2, an instance with 2 continuous state variables and 2 continuous action parameters. The value functions are shown as 3D plots (value on the z axis as a function of continuous state variables on the x and y axes) with their corresponding XADDs. Note that the initial state is $(200,200)$ and that for this state the value found by RTSDP is the same as SDP. One observation is that the z-axis scale changes on every plot because both the reward and the upper bound heuristic increases with stages to-go.
 Since RTSDP runs all trials from the initial state, the value function for $H$ stages-to-go, $V_H$ {\it (bottom)} is always updated on the same region: \emph{the one containing the initial state}.
 The updates insert new decisions to the XADD, splitting the region containing $s_0$ into smaller regions, only the small region that still contains the initial state will keep being updated~(See Figure~\ref{invent2rtdp_plot4}).
 
 An interesting observation is how the solution (XADD) size %(number of XADD nodes) 
-changes for the different stages-to-go value functions. For SDP~(Figures \ref{invent2sdp_dd1}, \ref{invent2sdp_dd2}, \ref{invent2sdp_dd3} and \ref{invent2sdp_dd4}), the number of regions increases quickly with horizon (from top to bottom).
-However, RTSDP~(Figures \ref{invent2rtdp_dd1}, \ref{invent2rtdp_dd2}, \ref{invent2rtdp_dd3} and \ref{invent2rtdp_dd4}) shows a different pattern: with few stages-to-go, the number of regions increases slowly with horizon, and for the target horizon (\ref{invent2rtdp_dd4}), the solution size is very small. This is explained because the number of reachable regions from the initial state in a few steps is very small and therefore the number of terminal nodes and overall XADD size is not very large for greater horizons.
-Note that this important difference in solution size is also reflected in the 3D plots, regions that are no longer relevant in a certain horizon stop being updated and remain with theirs last heuristical value (e.g. the plateau with value 2250 at $V^3$).
+changes for the different stages-to-go value functions. For SDP~(Figures \ref{invent2sdp_dd1}, \ref{invent2sdp_dd2}, \ref{invent2sdp_dd3} and \ref{invent2sdp_dd4}), the number of regions increases quickly with the number of actions-to-go (from top to bottom).
+However, RTSDP~(Figures \ref{invent2rtdp_dd1}, \ref{invent2rtdp_dd2}, \ref{invent2rtdp_dd3} and \ref{invent2rtdp_dd4}) shows a different pattern: with few stages-to-go, the number of regions increases slowly with horizon, but for the target horizon (\ref{invent2rtdp_dd4}), the solution size is very small. This is explained because the number of reachable regions from the initial state in a few steps is small and therefore the number of terminal nodes and overall XADD size is not very large for greater stage-to-go, for instance, when the number of stages-to-go is the complete horizon the only reachable state (in 0 steps) is the initial state.
+Note that this important difference in solution size is also reflected in the 3D plots, regions that are no longer relevant in a certain horizon stop being updated and remain with their upper bound heuristic value (e.g. the plateau with value 2250 at $V^3$).
 
 \begin{table}[!ht]
 \centering
@@ -616,16 +616,10 @@ Note that this important difference in solution size is also reflected in the 3D
 Table \ref{tab:all} presents performance results of RTSDP and SDP in various instances of all domains. Note that the performance gap between SDP and RTSDP grows impressively with the number of continuous variables, because restricting the solution to relevant states becomes necessary. SDP is unable to solve most nonlinear problems since it cannot prune nonlinear regions, while RTSDP restricts expansions to visited states and has a much more compact value function.
 
 \section{Conclusion}
-
 We propose a new solution, the $RTSDP$ algorithm, for a general class of Hybrid MDP problems including linear dynamics with parametrized actions, as in \Invent, or nonlinear dynamics, as in \Traffic.
 RTSDP uses the initial state information efficiently to (1) visit only a small fraction of the state space and (2) avoid representing infeasible nonlinear regions. In this way, it overcomes the two major drawbacks of SDP and greatly surpasses its performance into a more scalable solution for linear and nonlinear problems that greatly expand the set of domains where SDP could be used.
 RTSDP can be further improved with better heuristics that may greatly reduce the  number of relevant regions in its solution. 
 Such heuristics might be obtained using bounded approximate HMDP solvers \cite{vianna13}.
-
-%Solution convergency gency can be and anytime solution quality are likely to be obtained with the labelling~\cite{Bonet03LRTDP} and online~\cite{kolobov12GOURMAND} modifications. Also, a very important factor to improve performance that should be explored is to use more informative heuristics that can greatly reduce the number of relevant regions. 
-
-%A peculiarity of this algorithm is that even though its solution is focused to obtain the initial state correct value, it provides useful information on many other states and stages-to-go, what makes it possible to be reused.
-% with a visited-state based pruning
 
 \section*{Acknowledgment}
 This work has been supported by the Brazilian agency FAPESP (under 
