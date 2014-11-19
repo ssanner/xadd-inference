@@ -21,9 +21,9 @@ containing:
 
 A decision tree transition for each continuous variable: X' ([X+1])
 
-A decision tree of probability of true for every boolean variable: B' ([B [0.8] [0.7])
+A decision tree of probability of true for every boolean variable: B' ( B: 0.8: 0.7)
 
-The reward another decision tree: (X>0 [10] [-10])
+The reward another decision tree: (X>0: 10: -10)
 
 = Details =
 Problem 1 - RESERVOIR MANAGEMENT (Yeh 1985; Mahootchi 2009). In this problem, the task is to manage a water supply reservoir chain made up of k reservoirs each with a continuous water level Li. For each reservoir there are actions for drain-i and no-drain-i actions determine whether water is drained from reservoir i to the next. The amount of drained water is linear on the water level, and the amount of energy produced is proportional to the product of drained water and water level. At every iteration, the top reservoir receives a constant spring replenishment plus a non-deterministic rain while the bottom reservoir has a part of its water used for city purposes. See file at: https://code.google.com/p/xadd-inference/source/browse/trunk/src/camdp/ex/initialstateNonlinear/reservoir3.cmdp
