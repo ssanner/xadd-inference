@@ -4,6 +4,7 @@ import hgm.poly.Fraction;
 import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.gm.JointToSampler;
+import hgm.poly.gm.JointWrapper;
 import hgm.poly.integral.OneDimFunction;
 import hgm.poly.integral.frac.Digester;
 import hgm.poly.pref.FatalSamplingException;
@@ -23,8 +24,9 @@ public class FractionalJointBaselineGibbsSampler implements SamplerInterface {
     public static JointToSampler makeJointToSampler() {
         return new JointToSampler() {
             @Override
-            public SamplerInterface makeSampler(PiecewiseExpression<Fraction> joint, double minLimitForAllVars, double maxLimitForAllVars) {
-                return FractionalJointBaselineGibbsSampler.makeSampler(joint, minLimitForAllVars, maxLimitForAllVars);
+//            public SamplerInterface makeSampler(PiecewiseExpression<Fraction> joint, double minLimitForAllVars, double maxLimitForAllVars) {
+            public SamplerInterface makeSampler(JointWrapper jwi) {
+                return FractionalJointBaselineGibbsSampler.makeSampler(jwi.getJoint(), jwi.getMinLimitForAllVars(), jwi.getMaxLimitForAllVars());
             }
 
             @Override
@@ -51,7 +53,7 @@ public class FractionalJointBaselineGibbsSampler implements SamplerInterface {
     protected static final Random random = new Random();
 //    public static final double SAMPLE_ACCURACY = 1E-6;
 //    public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 20;
-    public static final int MAX_INITIAL_SAMPLING_TRIAL = 10000000;    // if the function is not positive, (initial) sample cannot be
+//    public static final int MAX_INITIAL_SAMPLING_TRIAL = 10000000;    // if the function is not positive, (initial) sample cannot be
     int numScopeVars;
     PiecewiseExpression<Fraction> joint;
     Map<Integer, Double> varIndex2MinMap;
@@ -212,14 +214,17 @@ public class FractionalJointBaselineGibbsSampler implements SamplerInterface {
      * uniformly sample each variable in the interval between its min and max values and reject the produced sample if its probability is not positive...
      */
     protected void takeInitialSample(Double[] reusableSample) throws SamplingFailureException { //todo: maybe rejection based sampling should be used....
-        int failureCount = 0;
-
-//        Double[] initSample = new Double[numScopeVars];
+//        int failureCount = 0;
         Double targetValue;
+        long startTimeMillis = System.currentTimeMillis();
+
 
         do {
-            if (failureCount++ > MAX_INITIAL_SAMPLING_TRIAL)
-                throw new SamplingFailureException("Unable to take initial sample");
+            if (System.currentTimeMillis() - startTimeMillis > MAX_WAITING_MILLIS_TO_TAKE_INITIAL_SAMPLE) {
+                throw new SamplingFailureException("Unable to take initial sample after " + MAX_WAITING_MILLIS_TO_TAKE_INITIAL_SAMPLE / 1000 + " seconds");
+            }
+//            if (failureCount++ > MAX_INITIAL_SAMPLING_TRIAL)
+//                throw new SamplingFailureException("Unable to take initial sample");
 
             for (int i = 0; i < numScopeVars; i++) {
                 int scopeVarIndex = scopeVarIndexes[i];

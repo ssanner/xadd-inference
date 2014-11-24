@@ -4,6 +4,7 @@ import hgm.poly.Fraction;
 import hgm.poly.PiecewiseExpression;
 import hgm.poly.bayesian.AbstractGeneralBayesianGibbsSampler;
 import hgm.poly.gm.JointToSampler;
+import hgm.poly.gm.JointWrapper;
 import hgm.poly.sampling.SamplerInterface;
 
 import java.util.ArrayList;
@@ -21,8 +22,9 @@ public class FractionalJointSelfTunedMetropolisHastingSampler extends Fractional
                                                     final int numStepsInEachTrial){
         return new JointToSampler() {
             @Override
-            public SamplerInterface makeSampler(PiecewiseExpression<Fraction> joint, double minLimitForAllVars, double maxLimitForAllVars) {
-                return FractionalJointSelfTunedMetropolisHastingSampler.makeSampler(joint, minLimitForAllVars, maxLimitForAllVars,
+//            public SamplerInterface makeSampler(PiecewiseExpression<Fraction> joint, double minLimitForAllVars, double maxLimitForAllVars) {
+            public SamplerInterface makeSampler(JointWrapper jwi) {
+                return FractionalJointSelfTunedMetropolisHastingSampler.makeSampler(jwi.getJoint(), jwi.getMinLimitForAllVars(), jwi.getMaxLimitForAllVars(),
                         proposalVarianceUpperBound, numProposalVariancesToBeTried, numStepsInEachTrial);
             }
 

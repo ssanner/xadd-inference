@@ -72,6 +72,10 @@ public class Fraction implements Expression<Fraction>, Cloneable {
         return new Fraction(n, d);
     }
 
+    public Fraction returnReciprocal() {
+        return new Fraction(this.denominator.clone(), this.numerator.clone());
+    }
+
     public Fraction divide(Fraction other) {
         assetMatching(other);
 
@@ -176,7 +180,8 @@ public class Fraction implements Expression<Fraction>, Cloneable {
      */
     @Override
     public Set<String> getScopeVars() {
-        Set<String> scopeVars = numerator.getScopeVars();
+        Set<String> scopeVars = new TreeSet<String>();
+        scopeVars.addAll(numerator.getScopeVars());
         scopeVars.addAll(denominator.getScopeVars());
         return scopeVars;
     }

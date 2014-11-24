@@ -1,7 +1,5 @@
 package hgm.poly.gm;
 
-import hgm.poly.Fraction;
-import hgm.poly.PiecewiseExpression;
 import hgm.poly.sampling.SamplerInterface;
 
 /**
@@ -10,7 +8,8 @@ import hgm.poly.sampling.SamplerInterface;
  * Time: 10:34 PM
  */
 public interface JointToSampler {
-    SamplerInterface makeSampler(PiecewiseExpression<Fraction> joint, double minLimitForAllVars, double maxLimitForAllVars);
+//    SamplerInterface makeSampler(PiecewiseExpression<Fraction> joint, double minLimitForAllVars, double maxLimitForAllVars);
+    SamplerInterface makeSampler(JointWrapper jointWrapper);
 
     String getName();
 }
