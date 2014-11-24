@@ -8,6 +8,8 @@ import hgm.sampling.SamplingFailureException;
  * Time: 8:21 AM
  */
 public interface SamplerInterface {
+    public static final int MAX_WAITING_MILLIS_TO_TAKE_INITIAL_SAMPLE = 1000 * 30;
+
     /**
      *
      * @return  a (possibly and often) REUSABLE sample. For storing needs to be cloned.

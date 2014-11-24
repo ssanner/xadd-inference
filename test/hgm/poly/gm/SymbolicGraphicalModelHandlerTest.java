@@ -158,7 +158,7 @@ public class SymbolicGraphicalModelHandlerTest {
 
         System.out.println("----------------------------");
 
-        SamplerInterface sampler2 = handler.makeSampler(bn, "m_1 v_1 m_2 v_2".split(" "), evidence, -10, 10, FractionalJointSymbolicGibbsSampler.makeJointToSampler());
+        SamplerInterface sampler2 = handler.makeSampler(bn, Arrays.asList("m_1 v_1 m_2 v_2".split(" ")), evidence, -10, 10, FractionalJointSymbolicGibbsSampler.makeJointToSampler());
         for (int i = 0; i < 10; i++) {
             Double[] sample = sampler2.reusableSample();
             System.out.println("sample = " + Arrays.toString(sample));
@@ -203,7 +203,7 @@ public class SymbolicGraphicalModelHandlerTest {
         evidence.put("m_1", 2d);
 //        evidence.put("v_2", 0.2d);
 
-        SamplerInterface sampler = handler.makeSampler(bn, "v_1 v_2".split(" "), evidence, -10, 10,
+        SamplerInterface sampler = handler.makeSampler(bn, Arrays.asList("v_1 v_2".split(" ")), evidence, -10, 10,
                 FractionalJointBaselineGibbsSampler.makeJointToSampler()
 //                FractionalJointRejectionSampler.makeJointToSampler(1)
 //                SelfTunedFractionalJointMetropolisHastingSampler.makeJointToSampler(10, 30, 100)
@@ -265,7 +265,7 @@ public class SymbolicGraphicalModelHandlerTest {
         System.out.println("digester.getInters() = " + digester.getInters());*/
 
 
-        SamplerInterface sampler = handler.makeSampler(bn, "a d".split(" "), evidence, -20, 20, FractionalJointSymbolicGibbsSampler.makeJointToSampler());
+        SamplerInterface sampler = handler.makeSampler(bn, Arrays.asList("a d".split(" ")), evidence, -20, 20, FractionalJointSymbolicGibbsSampler.makeJointToSampler());
 
         int numSamples = 10000;
         for (int i = 0; i < numSamples; i++) {

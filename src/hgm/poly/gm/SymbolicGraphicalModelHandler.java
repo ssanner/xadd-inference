@@ -144,12 +144,20 @@ public class SymbolicGraphicalModelHandler {
         if (DEBUG) System.out.println(str);
     }
 
-    public SamplerInterface makeSampler(GraphicalModel gm, String[] varsToBeSampledJointly, Map<String, Double> evidence, double minVarLimit, double maxVarLimit, JointToSampler joint2sampler) {
+    public SamplerInterface makeSampler(GraphicalModel gm, List<String> varsToBeSampledJointly, Map<String, Double> evidence, double minVarLimit, double maxVarLimit, JointToSampler joint2sampler) {
         Pair<PiecewiseExpression<Fraction>, List<DeterministicFactor>> jointAndEliminatedStochasticVars =
-                makeJointAndEliminatedStochasticVars(gm, Arrays.asList(varsToBeSampledJointly), evidence);
+                makeJointAndEliminatedStochasticVars(gm, varsToBeSampledJointly, evidence);
         PiecewiseExpression<Fraction> joint = jointAndEliminatedStochasticVars.getFirstEntry();
-        PolynomialFactory factory = joint.getFactory();
+
         final List<DeterministicFactor> eliminatedStochasticVarFactors = jointAndEliminatedStochasticVars.getSecondEntry();
+
+        return makeSampler(joint, eliminatedStochasticVarFactors, varsToBeSampledJointly, minVarLimit, maxVarLimit, joint2sampler);
+    }
+
+    public SamplerInterface makeSampler(PiecewiseExpression<Fraction> joint, final List<DeterministicFactor> eliminatedStochasticVarFactors,
+                                        List<String> varsToBeSampledJointly, double minVarLimit, double maxVarLimit, JointToSampler joint2sampler) {
+
+        PolynomialFactory factory = joint.getFactory();
         final int[] eliminatedVarIndices = new int[eliminatedStochasticVarFactors.size()];
         for (int i = 0; i < eliminatedStochasticVarFactors.size(); i++) {
             DeterministicFactor eliminatedStochasticVarFactor = eliminatedStochasticVarFactors.get(i);
@@ -157,12 +165,12 @@ public class SymbolicGraphicalModelHandler {
         }
 
         //Sampler:
-        final SamplerInterface sampler = joint2sampler.makeSampler(joint, minVarLimit, maxVarLimit);
+        final SamplerInterface sampler = joint2sampler.makeSampler(new JointWrapper(joint, minVarLimit, maxVarLimit));
 
-        final Double[] querySample = new Double[varsToBeSampledJointly.length];
-        final int[] varsToBeSampledIndexes = new int[varsToBeSampledJointly.length];
-        for (int i = 0; i < varsToBeSampledJointly.length; i++) {
-            String varToBeSampled = varsToBeSampledJointly[i];
+        final Double[] querySample = new Double[varsToBeSampledJointly.size()];
+        final int[] varsToBeSampledIndexes = new int[varsToBeSampledJointly.size()];
+        for (int i = 0; i < varsToBeSampledJointly.size(); i++) {
+            String varToBeSampled = varsToBeSampledJointly.get(i);
             int varIndex = factory.getVarIndex(varToBeSampled);
             varsToBeSampledIndexes[i] = varIndex;
         }

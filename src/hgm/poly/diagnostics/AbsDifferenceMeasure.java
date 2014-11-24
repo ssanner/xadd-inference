@@ -1,5 +1,7 @@
 package hgm.poly.diagnostics;
 
+import java.util.Arrays;
+
 /**
  * Created by Hadi Afshar.
  * Date: 3/09/14
@@ -21,7 +23,7 @@ public class AbsDifferenceMeasure implements MeasureOnTheRun<Double[]> {
 
     @Override
     public void addNewValue(Double[] sample) {
-        if (sample.length != sampleLength) throw new RuntimeException("size mismatch");
+        if (sample.length != sampleLength) throw new RuntimeException("size mismatch. sample=" + Arrays.toString(sample) + " but groundTruth=" + Arrays.toString(groundTruthMeanVector));
 
         for (int i = 0; i < sampleLength; i++) {
             runningAccumulatedSample[i] = runningAccumulatedSample[i] + sample[i];

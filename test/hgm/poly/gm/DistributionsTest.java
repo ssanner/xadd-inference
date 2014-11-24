@@ -23,7 +23,32 @@ public class DistributionsTest {
     public static void main(String[] args) {
         DistributionsTest instance = new DistributionsTest();
         instance.testBowl();
+
+        instance.testBellShapedDistribution();
     }
+
+    @Test
+    private void testBellShapedDistribution() {
+        final String[] vars = PolynomialFactory.makeIndexedVars("v", 0, 0);
+        final PolynomialFactory factory = new PolynomialFactory(vars);
+        Distributions distBank = new Distributions(factory);
+        final PiecewiseExpression<Fraction> bell = distBank.createNonNormalizedBellShapedDistribution(vars[0], "-2", "3");
+        System.out.println("bell = " + bell);
+        FunctionVisualizer.visualize(new Function() {
+            Double[] values = new Double[factory.getAllVars().length];
+
+            @Override
+            public double evaluate(VarAssignment fullVarAssign) {
+                return bell.evaluate(fullVarAssign.getContinuousVarAssignAsArray("v"));
+            }
+
+            @Override
+            public String[] collectContinuousVars() {
+                return vars;
+            }
+        }, -4.1, 4.1, 0.05, "");
+    }
+
     @Test
     public void testCreateUniformDistribution() throws Exception {
         PolynomialFactory factory = new PolynomialFactory("x y z a_12 b c".split(" "));

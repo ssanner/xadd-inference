@@ -1,8 +1,8 @@
 package hgm.poly.reports.sg;
 
+import hgm.asve.Pair;
 import hgm.poly.Fraction;
 import hgm.poly.PiecewiseExpression;
-import hgm.poly.PolynomialFactory;
 import hgm.poly.gm.*;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.sampling.frac.*;
@@ -23,39 +23,114 @@ public class NewSymbolicGibbsAAAI2015Tester {
 
     public static final String REPORT_PATH_COLLISION_ANALYSIS = "E:/REPORT_PATH_AAAI15/collision/";
     public static final String REPORT_PATH_FERMENTATION_ANALYSIS = "E:/REPORT_PATH_AAAI15/fermentation/";
+    public static final String REPORT_PATH_CIRCUITS_ANALYSIS = "E:/REPORT_PATH_AAAI15/circuits/";
 
     public static void main(String[] args) throws IOException {
         NewSymbolicGibbsAAAI2015Tester instance = new NewSymbolicGibbsAAAI2015Tester();
 //        instance.collisionAAAI2015Test(true);
         instance.fermentationAAAI2015Test();
+//        instance.circuitAAAI2015Test();
+    }
+
+    public void circuitAAAI2015Test() throws IOException {
+        System.out.println("REPORT_PATH_CIRCUITS_ANALYSIS = " + REPORT_PATH_CIRCUITS_ANALYSIS);
+
+//        JointToSampler testerSampleMaker =
+//                FractionalJointRejectionSampler.makeJointToSampler(1.0);
+//                FractionalJointSymbolicGibbsSampler.makeJointToSampler();
+//        int numSamplesFromTesterToSimulateTrueDistribution = 170000;//100000;
+//        int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60*10;//1000 * 60 * 10;
+        List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
+                FractionalJointSymbolicGibbsSampler.makeJointToSampler()
+                , FractionalJointBaselineGibbsSampler.makeJointToSampler(),
+                FractionalJointRejectionSampler.makeJointToSampler(1.1)
+                ,FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0),
+                FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10)
+        );
+        int[] numParams = {8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 6, 10, 14, 18, 25, 30};//{2, 3};
+        int numMinDesiredSamples = 200;//1000; //100;
+        int maxWaitingTimeForTakingDesiredSamples = 1000*60*2;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
+        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 5;//1000*60;//1000 * 5;
+        int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
+        int numRuns = 15;//10;//20;//2;
+        int burnedSamples = 200;//50;
+        double goldenErrThreshold = 0.05;//0.02;////0.2;
+
+        final Double lowerBound = 9.5;
+        final Double upperBound = 10.5;
+
+        Param2JointWrapper collisionModelParam2Joint = new Param2JointWrapper() {
+
+            @Override
+            public JointWrapper makeJointWrapper(int param) {
+
+                double minVarLimit = lowerBound;//5;//lowerBound-0.1;
+                double maxVarLimit = upperBound;//15;//upperBound+0.1;
+
+                GraphicalModel bn =
+                        ExperimentalGraphicalModels.makeCircuitModel(param, lowerBound, upperBound);
+
+                SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
+                Map<String, Double> evidence = new HashMap<String, Double>();
+
+                evidence.put("R_t", (0.5*(upperBound + lowerBound))/(double)param);        //todo...    ???
+
+                List<String> query = Arrays.asList("R_1", "R_" + (param));
+                PiecewiseExpression<Fraction> joint = handler.makeJoint(bn, query, evidence);
+                JointWrapper jointWrapper = new JointWrapper(joint, minVarLimit, maxVarLimit);
+                return jointWrapper;
+            }
+        };
+
+
+        testSamplersPerformanceWrtParameterTimeAndSampleCount(collisionModelParam2Joint,
+                0.5*(upperBound + lowerBound),//10d,
+                null, //testerSampleMaker,
+                -1, //                numSamplesFromTesterToSimulateTrueDistribution,
+                -1, // maxWaitingTimeForTesterToSimulateMillis,
+                samplerMakersToBeTested, numParams, numMinDesiredSamples,
+                maxWaitingTimeForTakingDesiredSamples,
+                minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+                approxNumTimePointsForWhichErrIsPersisted, numRuns, burnedSamples, REPORT_PATH_CIRCUITS_ANALYSIS, goldenErrThreshold);
+
+        System.out.println(" That was all the folk for circuits problem. ");
+
     }
 
     public void fermentationAAAI2015Test() throws IOException {
         System.out.println("REPORT_PATH_FERMENTATION_ANALYSIS = " + REPORT_PATH_FERMENTATION_ANALYSIS);
 
-        JointToSampler testerSampleMaker =
-                //FractionalJointRejectionSampler.makeJointToSampler(1.0);
-//                SymbolicFractionalJointGibbsSampler.makeJointToSampler();
+//        JointToSampler testerSampleMaker =
+//                FractionalJointRejectionSampler.makeJointToSampler(1.0);
+//                new SelectedQuerySampler(FractionalJointSymbolicGibbsSampler.makeJointToSampler());
 //                FractionalJointMetropolisHastingSampler.makeJointToSampler(4.0);
-                FractionalJointBaselineGibbsSampler.makeJointToSampler();
+//                new SelectedQuerySampler(FractionalJointBaselineGibbsSampler.makeJointToSampler());
 
-        int numSamplesFromTesterToSimulateTrueDistribution = 1000000;//1000;
-        int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60 * 60 * 5;//1000 * 60 * 1;
-        List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
-                FractionalJointSymbolicGibbsSampler.makeJointToSampler(),
-                FractionalJointBaselineGibbsSampler.makeJointToSampler(),
-//                FractionalJointRejectionSampler.makeJointToSampler(1),
-                FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0),
-                FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10)
-        );
-        int[] numParams = {4, 5, 6, 7, 8, 9, 10};
-        int numMinDesiredSamples = 50000;//1000;
-        int maxWaitingTimeForTakingDesiredSamples = 1000 * 60 * 15;//1000 * 20;
-        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = maxWaitingTimeForTakingDesiredSamples / 2;//1000 * 5;
+//        int numSamplesFromTesterToSimulateTrueDistribution = 1000000;//1000;
+//        int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60 * 60 * 5;//1000 * 60 * 1;
+        List<JointToSampler> samplerMakersToBeTested = new ArrayList<JointToSampler>();
+        samplerMakersToBeTested.add(new DifferenceSampler(
+                new QuerySelecterSampler(FractionalJointSymbolicGibbsSampler.makeJointToSampler()),
+                new QuerySelecterSampler(FractionalJointSymbolicGibbsSampler.makeJointToSampler())));
+        samplerMakersToBeTested.add(new DifferenceSampler(
+                new QuerySelecterSampler(FractionalJointBaselineGibbsSampler.makeJointToSampler()),
+                new QuerySelecterSampler(FractionalJointBaselineGibbsSampler.makeJointToSampler())));
+//        samplerMakersToBeTested.add(new SelectedQuerySampler(FractionalJointRejectionSampler.makeJointToSampler(1)));
+        samplerMakersToBeTested.add(new DifferenceSampler(
+                new QuerySelecterSampler(FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0)),
+                new QuerySelecterSampler(FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0))));
+        samplerMakersToBeTested.add(new DifferenceSampler(
+                new QuerySelecterSampler(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10)),
+                new QuerySelecterSampler(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10))));
+
+        int[] numParams = {3,4, 5, 6, 7, 8, 9, 10, 11, 12 ,13, 14, 15, 16, 17, 18, 19, 20};
+        int numMinDesiredSamples = 200;//1000;
+        int maxWaitingTimeForTakingDesiredSamples = 1000 * 60 * 2;//1000 * 20;
+        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000*5;//1000 * 5;
         int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
-        int numRuns = 15;
-        int burnedSamples = 200;//10;
-        int goldenErrThreshold = 0;
+        int numRuns = 10;
+        int burnedSamples = 100;//10;
+        double goldenErrThreshold = 0.02;
 
 
         Param2JointWrapper fermentationModelParam2Joint = new Param2JointWrapper() {
@@ -66,32 +141,38 @@ public class NewSymbolicGibbsAAAI2015Tester {
 //                Double muBeta = 2.2;
 //                Double nuAlpha = -2.0;
 //                Double nuBeta = 2.0;
-                double minVarLimit = -5;
-                double maxVarLimit = 15;
+                double minVarLimit = 0d;
+                double maxVarLimit = 1d;
 
                 GraphicalModel bn =
 //                        makeFermentationModel(param, 1d, 0.1, 12d);
-                        makeSimplifiedFermentationModel(param, 0.1, 12d);
+                        ExperimentalGraphicalModels.makeSimplifiedFermentationModel(param, 0d, 1d);//0.1, 12d);
 
 
                 SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
                 Map<String, Double> evidence = new HashMap<String, Double>();
 
-                evidence.put("q", 3d);
+                evidence.put("q", 0.2);
 
-                List<String> query = Arrays.asList("l_1", "l_" + (param - 1));
-                PiecewiseExpression<Fraction> joint = handler.makeJoint(bn, query, evidence);
-                JointWrapper jointWrapper = new JointWrapper(joint, minVarLimit, maxVarLimit);
+                List<String> query = Arrays.asList("l_1", "l_" + (param));
+//                PiecewiseExpression<Fraction> joint = handler.makeJoint(bn, query, evidence);
+                Pair<PiecewiseExpression<Fraction>, List<DeterministicFactor>> jointAndEliminatedStochasticVars =
+                        handler.makeJointAndEliminatedStochasticVars(bn, query, evidence);
+                PiecewiseExpression<Fraction> joint = jointAndEliminatedStochasticVars.getFirstEntry();
+                List<DeterministicFactor> eliminatedStochasticVars = jointAndEliminatedStochasticVars.getSecondEntry();
+
+                JointWrapper jointWrapper = new RichJointWrapper(joint, eliminatedStochasticVars, query, minVarLimit, maxVarLimit);
+
                 return jointWrapper;
             }
         };
 
 
         testSamplersPerformanceWrtParameterTimeAndSampleCount(fermentationModelParam2Joint,
-                null,
-                testerSampleMaker,
-                numSamplesFromTesterToSimulateTrueDistribution,
-                maxWaitingTimeForTesterToSimulateMillis,
+                0d,//null,
+                null, //testerSampleMaker,
+                -1,//numSamplesFromTesterToSimulateTrueDistribution,
+                -1,//maxWaitingTimeForTesterToSimulateMillis,
                 samplerMakersToBeTested, numParams, numMinDesiredSamples,
                 maxWaitingTimeForTakingDesiredSamples,
                 minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
@@ -102,6 +183,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
     }
 
     //////////////////////////////////////////////////////////////////////////
+    @Deprecated
     public void nonSymmetricCollisionAAAI2015Test() throws IOException {
         System.out.println("REPORT_PATH_COLLISION_ANALYSIS = " + REPORT_PATH_COLLISION_ANALYSIS);
 
@@ -137,7 +219,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
                 double maxVarLimit = 2.3;
 
                 GraphicalModel bn =
-                        makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, false);//paramDataCount2DataGenerator.createJointGenerator(param);
+                        ExperimentalGraphicalModels.makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, false);//paramDataCount2DataGenerator.createJointGenerator(param);
 
                 SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
                 Map<String, Double> evidence = new HashMap<String, Double>();
@@ -207,7 +289,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
                 double maxVarLimit = 2.3;
 
                 GraphicalModel bn =
-                        makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric);//paramDataCount2DataGenerator.createJointGenerator(param);
+                        ExperimentalGraphicalModels.makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric);//paramDataCount2DataGenerator.createJointGenerator(param);
 
                 SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
                 Map<String, Double> evidence = new HashMap<String, Double>();
@@ -216,7 +298,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
 //                evidence.put("m_1", 2d);
 //        evidence.put("v_2", 0.2d);
 
-                List<String> query = Arrays.asList("v_1", "v_" + (param - 1));
+                List<String> query = Arrays.asList("v_1", "v_" + (param - 1));    //todo should it be param rather than param - 1 ????
                 PiecewiseExpression<Fraction> joint = handler.makeJoint(bn, query, evidence);
                 JointWrapper jointWrapper = new JointWrapper(joint, minVarLimit, maxVarLimit);
                 return jointWrapper;
@@ -271,7 +353,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
 
             double[] groundTruthMeans;
             if (knownGroundTruthMeansOfAllVariables != null) {
-                groundTruthMeans = new double[jointWrapper.joint.getScopeVars().size()];
+                groundTruthMeans = new double[jointWrapper.getAppropriateSampleVectorSize()];//[jointWrapper.getJoint().getScopeVars().size()];
                 Arrays.fill(groundTruthMeans, knownGroundTruthMeansOfAllVariables);
                 System.out.println("known groundTruthMeans = " + Arrays.toString(groundTruthMeans));
             } else { //ground truth mean is not given...
@@ -499,7 +581,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
         int numTakenSamples = 0;
 
         ///////////////////////////////////////////////////////////////////////
-        SamplerInterface sampler = samplerMaker.makeSampler(jointWrapper.joint, jointWrapper.minVarLimit, jointWrapper.maxVarLimit);
+        SamplerInterface sampler = samplerMaker.makeSampler(jointWrapper);//(jointWrapper.joint, jointWrapper.minVarLimit, jointWrapper.maxVarLimit);
         ///////////////////////////////////////////////////////////////////////
 
         long t1 = System.currentTimeMillis();
@@ -528,187 +610,6 @@ public class NewSymbolicGibbsAAAI2015Tester {
     }
 
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public GraphicalModel makeSimplifiedFermentationModel(int n /*num colliding objects*/,
-                                                          Double minLactoseAlpha, Double maxInitialLactoseBeta) {
-//                                                 double minVarLimit, double maxVarLimit,
-//                                                 JointToSampler jointToSampler) {
-        // l_1 --> l_2 --> ... --> l_n
-        //  |       |            |
-        //  \_______\____________\____q //average ph
-
-        String[] vars = new String[3 * n + 1];
-        for (int i = 0; i < n; i++) {
-            vars[3 * i] = "l_" + (i + 1);     // lactose at time step i
-            vars[3 * i + 1] = "k_" + (i + 1); // not used...
-            vars[3 * i + 2] = "p_" + (i + 1); // not used...
-        }
-        vars[3 * n] = "q";
-
-        PolynomialFactory factory = new PolynomialFactory(vars);
-        Distributions dBank = new Distributions(factory);
-
-        BayesNetGraphicalModel bn = new BayesNetGraphicalModel();
-
-        PiecewiseExpression<Fraction>[] lactoseFs = new PiecewiseExpression[n];
-//        PiecewiseExpression<Fraction>[] pHFs = new PiecewiseExpression[n];
-
-        String averagePH = "";
-        for (int i = 0; i < n; i++) {
-            lactoseFs[i] = i == 0 ?
-                    dBank.createUniformDistributionFraction("l_1", minLactoseAlpha.toString(), maxInitialLactoseBeta.toString())
-                    : dBank.createUniformDistributionFraction("l_" + (i + 1), minLactoseAlpha.toString(), "l_" + i + "^(1)");
-            averagePH += ("l_" + (i + 1) + "^(1) +");
-        }
-        averagePH = averagePH.substring(0, averagePH.length() - 1); //removing last "+"
-
-        Fraction averagePhF = factory.makeFraction(averagePH, "" + n); // m_1^(1)*v_1^(1) + m_2^(1)*v_2^(1) + ...
-
-        for (int i = 0; i < n; i++) {
-            bn.addFactor(new StochasticVAFactor("l_" + (i + 1), lactoseFs[i])); //mass
-        }
-
-        bn.addFactor(new DeterministicFactor("q", averagePhF)); //total momentum
-        return bn;
-    }
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public GraphicalModel makeFermentationModel(int n /*num colliding objects*/,
-                                                Double pDistributionParam,
-                                                Double minLactoseAlpha, Double maxInitialLactoseBeta) {
-//                                                 double minVarLimit, double maxVarLimit,
-//                                                 JointToSampler jointToSampler) {
-        // a_1 --> a_2 --> ... --> a_n
-        //  |       |            |
-        //  p_1     p_2          p_n
-        //   \______\____________\____q //average ph
-
-        String[] vars = new String[3 * n + 1];
-        for (int i = 0; i < n; i++) {
-            vars[3 * i] = "l_" + (i + 1);     //lactose at time step i
-            vars[3 * i + 1] = "k_" + (i + 1); //"K. Marxianus" at time step i      //todo not used...
-            vars[3 * i + 2] = "p_" + (i + 1); //observation (of pH) at time step i
-        }
-        vars[3 * n] = "q";
-
-        PolynomialFactory factory = new PolynomialFactory(vars);
-        Distributions dBank = new Distributions(factory);
-
-        BayesNetGraphicalModel bn = new BayesNetGraphicalModel();
-
-        PiecewiseExpression<Fraction>[] lactoseFs = new PiecewiseExpression[n];
-        PiecewiseExpression<Fraction>[] pHFs = new PiecewiseExpression[n];
-//        PiecewiseExpression<Fraction>[] kMarxianusFs = new PiecewiseExpression[n];
-
-//        Fraction[] momentaF = new Fraction[n];
-        String averagePH = "";
-//        String totalMassFormula = "";
-//        double c = 1; //just a bound
-        for (int i = 0; i < n; i++) {
-            lactoseFs[i] = i == 0 ?
-                    dBank.createUniformDistributionFraction("l_1", minLactoseAlpha.toString(), maxInitialLactoseBeta.toString())
-                    : dBank.createUniformDistributionFraction("l_" + (i + 1), minLactoseAlpha.toString(), "l_" + i + "^(1)");
-            pHFs[i] = dBank.createUniformDistributionFraction("p_" + (i + 1), "l_" + (i + 1) + "^(1) + " + (-pDistributionParam), "l_" + (i + 1) + "^(1) + " + pDistributionParam);//TruncatedNormalDistributionFraction("p_"  + (i + 1), )//todo test other things... E.g., TRIANGULAR
-//            momentaF[i] = factory.makeFraction("m_" + (i + 1) + "^(1) * v_" + (i + 1) + "^(1)");
-            averagePH += ("p_" + (i + 1) + "^(1) +");
-//            totalMassFormula += ("m_" + (i + 1) + "^(1) +");
-        }
-        averagePH = averagePH.substring(0, averagePH.length() - 1); //removing last "+"
-//        totalMassFormula = totalMassFormula.substring(0, totalMassFormula.length() - 1); //removing last "+"
-
-        Fraction averagePhF = factory.makeFraction(averagePH, "" + n); // m_1^(1)*v_1^(1) + m_2^(1)*v_2^(1) + ...
-//        Fraction mtF = factory.makeFraction(totalMassFormula);
-//        Fraction vtF = factory.makeFraction("[p_t^(1)]/[m_t^(1)]");
-
-        for (int i = 0; i < n; i++) {
-            bn.addFactor(new StochasticVAFactor("l_" + (i + 1), lactoseFs[i])); //mass
-            bn.addFactor(new StochasticVAFactor("p_" + (i + 1), pHFs[i]));
-//            bn.addFactor(new DeterministicFactor("p_" + (i + 1), momentaF[i])); //momentum
-        }
-
-        bn.addFactor(new DeterministicFactor("q", averagePhF)); //total momentum
-//        bn.addFactor(new DeterministicFactor("m_t", mtF)); //total mass (after collision)
-//        bn.addFactor(new DeterministicFactor("v_t", vtF)); //total velocity (after collision)
-        return bn;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public GraphicalModel makeCollisionModel(int n /*num colliding objects*/,
-                                             Double muAlpha, Double muBeta,
-                                             Double nuAlpha, Double nuBeta,
-                                             boolean symmetric) {
-//                                                 double minVarLimit, double maxVarLimit,
-//                       (?)                          JointToSampler jointToSampler) {
-        // m_1      v_1 ---->  v_n     m_2
-        //   \__p_1__/        \__p_n__/
-        //       \______p_t______/
-
-
-        String[] vars = new String[3 * n + 3];
-        for (int i = 0; i < n; i++) {
-            vars[3 * i] = "m_" + (i + 1);     //mass of i-th object
-            vars[3 * i + 1] = "v_" + (i + 1); //velocity of i-th object
-            vars[3 * i + 2] = "p_" + (i + 1); //momentum of i-th object
-        }
-        vars[3 * n] = "m_t"; //total mass
-        vars[3 * n + 1] = "v_t"; //total velocity
-        vars[3 * n + 2] = "p_t"; //total momentum
-
-
-        PolynomialFactory factory = new PolynomialFactory(vars);
-        Distributions dBank = new Distributions(factory);
-
-        BayesNetGraphicalModel bn = new BayesNetGraphicalModel();
-
-        PiecewiseExpression<Fraction>[] massesF = new PiecewiseExpression[n];
-        PiecewiseExpression<Fraction>[] velocitiesF = new PiecewiseExpression[n];
-        Fraction[] momentaF = new Fraction[n];
-        String totalMomentumFormula = "";
-        String totalMassFormula = "";
-        for (int i = 0; i < n; i++) {
-            massesF[i] = dBank.createUniformDistributionFraction("m_" + (i + 1), muAlpha.toString(), muBeta.toString());
-            if (symmetric) {
-                velocitiesF[i] = dBank.createUniformDistributionFraction("v_1", nuAlpha.toString(), nuBeta.toString());
-            } else {
-                velocitiesF[i] = i == 0 ? dBank.createUniformDistributionFraction("v_1", nuAlpha.toString(), nuBeta.toString())
-                        : dBank.createUniformDistributionFraction("v_" + (i + 1), nuAlpha.toString(), "v_" + i + "^(1)");
-            }
-            momentaF[i] = factory.makeFraction("m_" + (i + 1) + "^(1) * v_" + (i + 1) + "^(1)");
-            totalMomentumFormula += ("p_" + (i + 1) + "^(1) +");
-            totalMassFormula += ("m_" + (i + 1) + "^(1) +");
-        }
-        totalMomentumFormula = totalMomentumFormula.substring(0, totalMomentumFormula.length() - 1); //removing last "+"
-        totalMassFormula = totalMassFormula.substring(0, totalMassFormula.length() - 1); //removing last "+"
-
-        Fraction ptF = factory.makeFraction(totalMomentumFormula); // m_1^(1)*v_1^(1) + m_2^(1)*v_2^(1) + ...
-        Fraction mtF = factory.makeFraction(totalMassFormula);
-        Fraction vtF = factory.makeFraction("[p_t^(1)]/[m_t^(1)]");
-
-        for (int i = 0; i < n; i++) {
-            bn.addFactor(new StochasticVAFactor("m_" + (i + 1), massesF[i])); //mass
-            bn.addFactor(new StochasticVAFactor("v_" + (i + 1), velocitiesF[i])); //mass 2
-            bn.addFactor(new DeterministicFactor("p_" + (i + 1), momentaF[i])); //momentum
-        }
-
-        bn.addFactor(new DeterministicFactor("p_t", ptF)); //total momentum
-        bn.addFactor(new DeterministicFactor("m_t", mtF)); //total mass (after collision)
-        bn.addFactor(new DeterministicFactor("v_t", vtF)); //total velocity (after collision)
-        return bn;
-
-
-//        SamplerInterface sampler = handler.makeSampler(bn, ("v_1 v_" + (n-1)).split(" "), //todo what about this?
-//                evidence, minVarLimit, maxVarLimit, jointToSampler
-//                FractionalJointBaselineGibbsSampler.makeJointToSampler()
-//                FractionalJointRejectionSampler.makeJointToSampler(1)
-//                SelfTunedFractionalJointMetropolisHastingSampler.makeJointToSampler(10, 30, 100)
-//                FractionalJointMetropolisHastingSampler.makeJointToSampler(10)
-//                SymbolicFractionalJointGibbsSampler.makeJointToSampler()
-//        );
-
-    }
 
     private interface Param2JointWrapper {
         JointWrapper makeJointWrapper(int param);

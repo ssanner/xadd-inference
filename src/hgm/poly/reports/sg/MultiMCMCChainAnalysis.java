@@ -3,6 +3,7 @@ package hgm.poly.reports.sg;
 import hgm.poly.diagnostics.MultiArrayMultiStatFlexibleIndex;
 import hgm.poly.diagnostics.MultiArrayMultiStatistics;
 import hgm.poly.gm.JointToSampler;
+import hgm.poly.gm.JointWrapper;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

@@ -4,9 +4,9 @@ columns = size(data{1}, 2);
 index = -1;
 if columns == 3
     index = 0;
-end
-if columns == 4
+elseif columns == 4
     index = 1;
+else error('I think the data is not found. Check parameters...')
 end
 
 lines = {'-.' , ':', '--', '-', '-', '-', '-'};
@@ -50,7 +50,7 @@ for i=2:numAlgs
         'LineWidth',3);
 end
 
-leg = legend(alg_names);%(algs);
+leg = legend(alg_names); %, 'location', 'best');%(algs);
 xlabel(x_label);
 ylabel(y_label)
 
@@ -110,7 +110,8 @@ end
 
 figureHandle = gcf;
 %# make all text in the figure to size 14 and bold
-set(findall(figureHandle,'type','text'),'fontSize',15)
+set(findall(figureHandle,'type','text'),'fontSize',20)
+set(gca,'fontSize',20)
 
 hold off;
 

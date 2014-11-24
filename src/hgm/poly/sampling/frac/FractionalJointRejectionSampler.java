@@ -5,6 +5,7 @@ import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.bayesian.AbstractGeneralBayesianGibbsSampler;
 import hgm.poly.gm.JointToSampler;
+import hgm.poly.gm.JointWrapper;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.sampling.SamplingFailureException;
 
@@ -22,8 +23,9 @@ public class FractionalJointRejectionSampler implements SamplerInterface{
     public static JointToSampler makeJointToSampler(final double envelopeCoef){
         return new JointToSampler() {
             @Override
-            public SamplerInterface makeSampler(PiecewiseExpression<Fraction> joint, double minLimitForAllVars, double maxLimitForAllVars) {
-                return FractionalJointRejectionSampler.makeSampler(joint, minLimitForAllVars, maxLimitForAllVars, envelopeCoef);
+//            public SamplerInterface makeSampler(PiecewiseExpression<Fraction> joint, double minLimitForAllVars, double maxLimitForAllVars) {
+            public SamplerInterface makeSampler(JointWrapper jwi) {
+                return FractionalJointRejectionSampler.makeSampler(jwi.getJoint(), jwi.getMinLimitForAllVars(), jwi.getMaxLimitForAllVars(), envelopeCoef);
             }
 
             @Override
@@ -48,7 +50,7 @@ public class FractionalJointRejectionSampler implements SamplerInterface{
     //............................
     public static final boolean DEBUG = true;
 //    public static final int MAX_INITIAL_SAMPLING_TRIAL = 100000000;    // if the function is not positive, (initial) sample cannot be
-    public static final long MAX_WAITING_MILLI_SECONDS_TO_TAKE_A_SAMPLE = 1000 * 10;
+    public static final long MAX_WAITING_MILLI_SECONDS_TO_TAKE_A_SAMPLE = 1000 * 20;
     int numScopeVars;
     PiecewiseExpression<Fraction> joint;
     Map<Integer, Double> varIndex2MinMap;
@@ -100,6 +102,7 @@ public class FractionalJointRejectionSampler implements SamplerInterface{
     }
 
     public Double[] reusableSample() throws SamplingFailureException {
+
         long startTimeMillis = System.currentTimeMillis();
 
 //        int failureCount = 0;

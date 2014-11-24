@@ -5,6 +5,7 @@ import hgm.poly.diagnostics.AutoCorrelationHandler;
 import hgm.poly.diagnostics.CorrectedVarianceMeasure;
 import hgm.poly.diagnostics.MeanMeasure;
 import hgm.poly.gm.JointToSampler;
+import hgm.poly.gm.JointWrapper;
 import hgm.poly.sampling.SamplerInterface;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class SingleMCMCChainAnalysis {
     ////////////////////////////////////////////////////////////////////////////////////
     public SingleMCMCChainAnalysis (
             double[] groundTruthMeanVector, //of size #dims
-            JointWrapper db,
+            JointWrapper jointWrapper,
             JointToSampler samplerMaker,
             int burnedSamples,
             final int numMinDesiredSamples,
@@ -50,7 +51,7 @@ public class SingleMCMCChainAnalysis {
 //        Long timeToTakeFirstSamplesMillis = null; //not necessarily total time if the time analysis takes more time...
 //        samplerMaker.setReusableSample(groundTruthMeanVector);
         //burned samples:
-        SamplerInterface sampler = samplerMaker.makeSampler(db.joint, db.minVarLimit, db.maxVarLimit);
+        SamplerInterface sampler = samplerMaker.makeSampler(jointWrapper);
         for (int i = 0; i < burnedSamples; i++) {
             sampler.reusableSample(); //discard samples...
         }
