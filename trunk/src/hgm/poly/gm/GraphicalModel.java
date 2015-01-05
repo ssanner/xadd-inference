@@ -2,6 +2,8 @@ package hgm.poly.gm;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Hadi Afshar.
@@ -17,5 +19,4 @@ public interface GraphicalModel {
     List<Factor> allInferenceRelevantFactors(Collection<String> vars);
 
     List<String> allDeterministicVars();
-
 }

@@ -59,6 +59,12 @@ public class Fraction implements Expression<Fraction>, Cloneable {
         numerator.multiplyScalarInThis(c);
     }
 
+    private Fraction scalarMultiplication(double c) {
+        Fraction f = this.clone();
+        f.multiplyScalarInThis(c);
+        return f;
+    }
+
     @Override
     public Fraction returnMultiplication(Fraction other) {
         assetMatching(other);
@@ -196,6 +202,7 @@ public class Fraction implements Expression<Fraction>, Cloneable {
         return denominator;
     }
 
+
     public WeakExpression calcIndefIntegral(final int varIndex) {
         int denominatorRelDegree = denominator.degree(varIndex);
 
@@ -283,6 +290,82 @@ public class Fraction implements Expression<Fraction>, Cloneable {
         }
 
         throw new RuntimeException("Integral of this not implemented yet: " + this + "\n\t w.r.t. var " + numerator.getFactory().getAllVars()[varIndex]);
+    }
+
+    /**
+     *
+     * @param x variable w.r.t. which derivative is taken
+     * @return  derivative w.r.t. x
+     */
+    public Fraction derivativeWrt(String x) {
+        int xId = factory.getVarIndex(x);
+        Polynomial nPrime = this.numerator.returnDerivative(xId);
+        Polynomial dPrime = this.denominator.returnDerivative(xId);
+        Polynomial nPrimeInD = nPrime.returnMultiplication(this.denominator);
+        Polynomial dPrimeInN = dPrime.returnMultiplication(this.numerator);
+
+        Polynomial resultN = nPrimeInD.returnSubtraction(dPrimeInN);
+
+        Polynomial resultD = this.denominator.toPower(2);
+
+        return new Fraction(resultN, resultD);
+    }
+
+    /**
+     * If this is A/B
+     * @return   A/B     if  A>0 &  B>0
+     *           A/B     if -A>0 & -B>0
+     *          -A/B     if  A>0 & -B>0
+     *          -A/B     if -A>0 &  B>0
+     */
+    public PiecewiseExpression<Fraction> absoluteValue() {
+
+        List<ConstrainedExpression<Fraction>> cases = new ArrayList<ConstrainedExpression<Fraction>>(4);
+
+        boolean numeratorIsAlwaysPositive = this.numerator.isAlwaysPositive();
+        boolean numeratorIsAlwaysNegative = this.numerator.isAlwaysNegative();
+        boolean numeratorDoesNotChangeSign = numeratorIsAlwaysPositive || numeratorIsAlwaysNegative;
+
+        boolean denominatorIsAlwaysPositive = this.denominator.isAlwaysPositive();
+        boolean denominatorIsAlwaysNegative = this.denominator.isAlwaysNegative();
+        boolean denominatorDoesNotChangeSign = denominatorIsAlwaysPositive || denominatorIsAlwaysNegative;
+
+        Fraction aPos = this.numerator.cloneCastToFraction();
+        Fraction aNeg = this.numerator.scalarMultiplication(-1).cloneCastToFraction();
+
+        Fraction bPos = this.denominator.cloneCastToFraction();
+        Fraction bNeg = this.denominator.scalarMultiplication(-1).cloneCastToFraction();
+
+        double signIndicator = numeratorIsAlwaysNegative ? -1 : 1;
+        if (denominatorIsAlwaysNegative) {
+            signIndicator*= -1;
+        }
+
+        if (numeratorDoesNotChangeSign){
+            if (denominatorDoesNotChangeSign) {
+                cases.add(new ConstrainedExpression<Fraction>(this.clone().scalarMultiplication(signIndicator), Arrays.<Fraction>asList()));
+                return new PiecewiseExpression<Fraction>(true, cases);
+            } else {
+                // denominator (b) changes sign:
+                cases.add(new ConstrainedExpression<Fraction>(this.clone().scalarMultiplication(signIndicator), Arrays.<Fraction>asList(bPos.clone())));
+                cases.add(new ConstrainedExpression<Fraction>(this.clone().scalarMultiplication(-1*signIndicator), Arrays.<Fraction>asList(bNeg.clone())));
+                return new PiecewiseExpression<Fraction>(true, cases);
+            }
+        } else {
+            if (denominatorDoesNotChangeSign) {
+                cases.add(new ConstrainedExpression<Fraction>(this.clone().scalarMultiplication(signIndicator), Arrays.<Fraction>asList(aPos.clone())));
+                cases.add(new ConstrainedExpression<Fraction>(this.clone().scalarMultiplication(-1*signIndicator), Arrays.<Fraction>asList(aNeg.clone())));
+                return new PiecewiseExpression<Fraction>(true, cases);
+            }
+        }
+
+        //else: both numerator and denominator change sign:
+        cases.add(new ConstrainedExpression<Fraction>(this.clone(), Arrays.<Fraction>asList(aPos.clone(), bPos.clone())));
+        cases.add(new ConstrainedExpression<Fraction>(this.clone(), Arrays.<Fraction>asList(aNeg.clone(), bNeg.clone())));
+        cases.add(new ConstrainedExpression<Fraction>(this.clone().scalarMultiplication(-1.0), Arrays.<Fraction>asList(aPos.clone(), bNeg.clone())));
+        cases.add(new ConstrainedExpression<Fraction>(this.clone().scalarMultiplication(-1.0), Arrays.<Fraction>asList(aNeg.clone(), bPos.clone())));
+        return new PiecewiseExpression<Fraction>(true, cases);
+
     }
 }
 

@@ -2,9 +2,7 @@ package hgm.poly.gm;
 
 import hgm.poly.*;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Hadi Afshar.
@@ -63,8 +61,13 @@ public class DeterministicFactor extends VarAssociatedFactor {
         return result;
     }*/
 
-    //read only
-    public DeterministicFactor solve(Double value) {
+
+    public List<DeterministicFactor> solve(Double value) {
+        //at the moment only a single solution is computed...
+        return Arrays.<DeterministicFactor>asList(linearSolve(value));
+    }
+
+    public DeterministicFactor linearSolve(Double value) {
         // g = value
         String y = findSolutionVar();  //a var
 

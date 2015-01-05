@@ -4,6 +4,7 @@ import hgm.poly.diagnostics.MultiArrayMultiStatFlexibleIndex;
 import hgm.poly.diagnostics.MultiArrayMultiStatistics;
 import hgm.poly.gm.JointToSampler;
 import hgm.poly.gm.JointWrapper;
+import hgm.poly.gm.RichJointWrapper;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -15,23 +16,23 @@ import java.util.List;
 public class MultiMCMCChainAnalysis {
     //        int numF;
 //        double[] groundTruthMeans; //this is an array of size #F not persisted but kept in case ground truth is calculated for the first time.
-    MultiArrayMultiStatistics errs4FirstSamplesMultiStat;
-    MultiArrayMultiStatFlexibleIndex errs4timesMultiStat;
-    MultiArrayMultiStatFlexibleIndex sampleMeans4timesMultiStat;
-    MultiArrayMultiStatFlexibleIndex sampleVariances4timesMultiStat;
-    MultiArrayMultiStatFlexibleIndex sampleCount4timesMultiStat;
-    int numRunsPerAlgorithm;   //numIterationsForEachAlgorithm
+    private MultiArrayMultiStatistics errs4FirstSamplesMultiStat;
+    private MultiArrayMultiStatFlexibleIndex errs4timesMultiStat;
+    private MultiArrayMultiStatFlexibleIndex sampleMeans4timesMultiStat;
+    private MultiArrayMultiStatFlexibleIndex sampleVariances4timesMultiStat;
+    private MultiArrayMultiStatFlexibleIndex sampleCount4timesMultiStat;
+    private int numRunsPerAlgorithm;   //numIterationsForEachAlgorithm
     //        MultiArrayMultiStatistics effectiveSampleSizeStat;
     ////        Long totalProcessTimeMillis;
 
-    MultiArrayMultiStatistics timeToPassGoldenErrStat;  //Long averageTimeToAccomplishOrGolden;  //timeToTakeFirstSamplesOrGoldenTime
-    MultiArrayMultiStatistics timeToTakeGoldenSamplesStat;
+    private MultiArrayMultiStatistics timeToPassGoldenErrStat;  //Long averageTimeToAccomplishOrGolden;  //timeToTakeFirstSamplesOrGoldenTime
+    private MultiArrayMultiStatistics timeToTakeGoldenSamplesStat;
 
     /////////////////////////////////////////////////////////////////////////////////
     public MultiMCMCChainAnalysis(
             int numRunsPerAlgorithm,
             double[] groundTruthMeanVector,
-            JointWrapper joint,
+            RichJointWrapper joint,
             JointToSampler samplerMaker,
             int burnedSamples,
             //
@@ -237,5 +238,38 @@ public class MultiMCMCChainAnalysis {
         return errs4FirstSamplesMultiStat.numberOfSamples();
     }
 
+    // getters:
 
+
+    public MultiArrayMultiStatistics getErrs4FirstSamplesMultiStat() {
+        return errs4FirstSamplesMultiStat;
+    }
+
+    public MultiArrayMultiStatFlexibleIndex getErrs4timesMultiStat() {
+        return errs4timesMultiStat;
+    }
+
+    public MultiArrayMultiStatFlexibleIndex getSampleMeans4timesMultiStat() {
+        return sampleMeans4timesMultiStat;
+    }
+
+    public MultiArrayMultiStatFlexibleIndex getSampleVariances4timesMultiStat() {
+        return sampleVariances4timesMultiStat;
+    }
+
+    public MultiArrayMultiStatFlexibleIndex getSampleCount4timesMultiStat() {
+        return sampleCount4timesMultiStat;
+    }
+
+    public int getNumRunsPerAlgorithm() {
+        return numRunsPerAlgorithm;
+    }
+
+    public MultiArrayMultiStatistics getTimeToPassGoldenErrStat() {
+        return timeToPassGoldenErrStat;
+    }
+
+    public MultiArrayMultiStatistics getTimeToTakeGoldenSamplesStat() {
+        return timeToTakeGoldenSamplesStat;
+    }
 }//end class Stat info

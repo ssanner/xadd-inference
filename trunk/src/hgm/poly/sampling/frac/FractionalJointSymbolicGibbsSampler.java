@@ -53,7 +53,7 @@ public class FractionalJointSymbolicGibbsSampler implements SamplerInterface {
     protected static final Random random = new Random();
     public static final double SAMPLE_ACCURACY = 1E-9;//1E-6;
     public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 45;//30;
-//    public static final int MAX_INITIAL_SAMPLING_TRIAL = 100000000;    // if the function is not positive, (initial) sample cannot be
+    //    public static final int MAX_INITIAL_SAMPLING_TRIAL = 100000000;    // if the function is not positive, (initial) sample cannot be
     int numScopeVars;
     //    Double[] prevSample = null;
     PiecewiseExpression<Fraction> joint;
@@ -302,12 +302,12 @@ public class FractionalJointSymbolicGibbsSampler implements SamplerInterface {
         if (varCDF.eval(average) <= 0) {
 //            average = (high + low) / 2.0;
             throw new FatalSamplingException("sampling failure." +
-            "\nvarCDF.eval(average: " + average + ") = " + varCDF.eval(average) +
-            "\nMath.abs(approxS:"+approxS+"\t - s:" + s+ ") = " + Math.abs(approxS - s) + " should be < normalizedAccuracy = " + normalizedAccuracy +
-            "\ncounter = " + counter +
-            "\nvarCDF.eval(minVarValue: " + minVarValue + ") = " + varCDF.eval(minVarValue) +
-            "\nvarCDF.eval(maxVarValue: " + maxVarValue + ") = " + varCDF.eval(maxVarValue) +
-            "\nvarCDF.eval(maxVarValue+1000) = " + varCDF.eval(maxVarValue + 1000));
+                    "\nvarCDF.eval(average: " + average + ") = " + varCDF.eval(average) +
+                    "\nMath.abs(approxS:" + approxS + "\t - s:" + s + ") = " + Math.abs(approxS - s) + " should be < normalizedAccuracy = " + normalizedAccuracy +
+                    "\ncounter = " + counter +
+                    "\nvarCDF.eval(minVarValue: " + minVarValue + ") = " + varCDF.eval(minVarValue) +
+                    "\nvarCDF.eval(maxVarValue: " + maxVarValue + ") = " + varCDF.eval(maxVarValue) +
+                    "\nvarCDF.eval(maxVarValue+1000) = " + varCDF.eval(maxVarValue + 1000));
 //            System.out.println("Math.abs(approxS:"+approxS+"\t - s:" + s+ ") = " + Math.abs(approxS - s) + " should be < normalizedAccuracy = " + normalizedAccuracy);
 //            System.out.println("counter = " + counter);
 //            System.out.println("varCDF.eval(minVarValue: " + minVarValue + ") = " + varCDF.eval(minVarValue));

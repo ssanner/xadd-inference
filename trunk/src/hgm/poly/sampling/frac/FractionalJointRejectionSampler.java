@@ -19,6 +19,8 @@ import java.util.*;
 public class FractionalJointRejectionSampler implements SamplerInterface{
     public static boolean DO_NOT_PRODUCE_ERROR_FOR_VERY_SMALL_NEGATIVE_NUMBERS = true;
     public static double NEGLIGIBLE_NEGATIVE_VALUE_THRESHOLD = -10E-15; // for values less than this, error will be generated anyway...
+    public static boolean DO_NOT_PRODUCE_ERROR_FOR_VERY_SMALL_FLOW_OVER_ONE = false;
+    public static double NEGLIGIBLE_OVER_ONE_VALUE_THRESHOLD = 1 + 0.0001; // for values less than this, error will be generated anyway...
 
     public static JointToSampler makeJointToSampler(final double envelopeCoef){
         return new JointToSampler() {
@@ -129,8 +131,10 @@ public class FractionalJointRejectionSampler implements SamplerInterface{
             }
 
             double pr = v / envelope;
-            if (pr > 1)
+            if (pr > 1){
+                if (DO_NOT_PRODUCE_ERROR_FOR_VERY_SMALL_FLOW_OVER_ONE && v > NEGLIGIBLE_OVER_ONE_VALUE_THRESHOLD) v=1; else
                 throw new RuntimeException("sampled value: f" + Arrays.toString(sample) + " = " + v + "\t is greater than envelope " + envelope);
+            }
 
             if (pr >= AbstractGeneralBayesianGibbsSampler.randomDoubleUniformBetween(0, 1)) {
                 return sample;

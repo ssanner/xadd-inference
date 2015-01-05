@@ -8,6 +8,7 @@ import hgm.poly.PiecewiseExpression;
  * Date: 8/09/14
  * Time: 10:04 PM
  */
+@Deprecated // I just want to use rich joint wrapper
 public class JointWrapper {
     private PiecewiseExpression<Fraction> joint;
     private double minVarLimit;
@@ -30,7 +31,8 @@ public class JointWrapper {
         return maxVarLimit;
     }
 
-    public int getAppropriateSampleVectorSize() {
-        return joint.getScopeVars().size();
-    }
+//    @Deprecated
+//    public int getAppropriateSampleVectorSize() {
+//        return joint.getScopeVars().size();
+//    }
 }

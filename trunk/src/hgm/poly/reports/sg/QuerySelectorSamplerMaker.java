@@ -11,9 +11,9 @@ import hgm.poly.sampling.SamplerInterface;
  * Date: 8/09/14
  * Time: 11:21 PM
  */
-public class QuerySelecterSampler implements JointToSampler{
+public class QuerySelectorSamplerMaker implements JointToSampler{
     private JointToSampler innerJointToSampler;
-    public QuerySelecterSampler(JointToSampler innerJointToSampler) {
+    public QuerySelectorSamplerMaker(JointToSampler innerJointToSampler) {
         this.innerJointToSampler = innerJointToSampler;
     }
 
@@ -24,7 +24,7 @@ public class QuerySelecterSampler implements JointToSampler{
         }
         RichJointWrapper richJW = (RichJointWrapper) jointWrapper;
         SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
-        return handler.makeSampler(richJW.getJoint(), richJW.eliminatedStochasticVarFactors(), richJW.getQueryVars(),
+        return handler.makeQuerySampler(richJW.getJoint(), richJW.getEliminatedStochasticVarFactors(), richJW.getQueryVars(),
                 richJW.getMinLimitForAllVars(), richJW.getMaxLimitForAllVars(), innerJointToSampler);
     }
 

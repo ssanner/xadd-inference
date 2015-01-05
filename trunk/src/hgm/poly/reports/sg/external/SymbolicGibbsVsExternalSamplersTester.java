@@ -1,10 +1,13 @@
-package hgm.poly.reports.sg;
+package hgm.poly.reports.sg.external;
 
 import hgm.asve.Pair;
 import hgm.poly.Fraction;
 import hgm.poly.PiecewiseExpression;
 import hgm.poly.diagnostics.MultiArrayMultiStatistics;
 import hgm.poly.gm.*;
+import hgm.poly.reports.sg.*;
+import hgm.poly.reports.sg.external.Anglican.AnglicanCodeGenerator;
+import hgm.poly.reports.sg.external.Anglican.AnglicanJointToSampler;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.sampling.frac.*;
 import hgm.sampling.SamplingFailureException;
@@ -20,17 +23,16 @@ import java.util.*;
  * Date: 18/08/14
  * Time: 7:24 PM
  */
-@Deprecated //todo delete
-public class NewSymbolicGibbsAAAI2015Tester {
+public class SymbolicGibbsVsExternalSamplersTester {
 
-   /* public static final String REPORT_PATH_COLLISION_ANALYSIS = "E:/REPORT_PATH_AAAI15/collision/";
-    public static final String REPORT_PATH_FERMENTATION_ANALYSIS = "E:/REPORT_PATH_AAAI15/fermentation/";
-    public static final String REPORT_PATH_CIRCUITS_ANALYSIS = "E:/REPORT_PATH_AAAI15/circuits/";
+    public static final String REPORT_PATH_COLLISION_ANALYSIS = "E:/REPORT_PATH_ICML15/collision/";
+    public static final String REPORT_PATH_FERMENTATION_ANALYSIS = "E:/REPORT_PATH_ICML15/fermentation/";
+    public static final String REPORT_PATH_CIRCUITS_ANALYSIS = "E:/REPORT_PATH_ICML15/circuits/";
 
     public static void main(String[] args) throws IOException {
-        NewSymbolicGibbsAAAI2015Tester instance = new NewSymbolicGibbsAAAI2015Tester();
-//        instance.collisionAAAI2015Test(true);
-        instance.fermentationAAAI2015Test();
+        SymbolicGibbsVsExternalSamplersTester instance = new SymbolicGibbsVsExternalSamplersTester();
+        instance.collisionAAAI2015Test(true);
+//        instance.fermentationAAAI2015Test();
 //        instance.circuitAAAI2015Test();
     }
 
@@ -46,12 +48,12 @@ public class NewSymbolicGibbsAAAI2015Tester {
                 FractionalJointSymbolicGibbsSampler.makeJointToSampler()
                 , FractionalJointBaselineGibbsSampler.makeJointToSampler(),
                 FractionalJointRejectionSampler.makeJointToSampler(1.1)
-                ,FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0),
+                , FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0),
                 FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10)
         );
         int[] numParams = {8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 6, 10, 14, 18, 25, 30};//{2, 3};
         int numMinDesiredSamples = 200;//1000; //100;
-        int maxWaitingTimeForTakingDesiredSamples = 1000*60*2;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
+        int maxWaitingTimeForTakingDesiredSamples = 1000 * 60 * 2;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
         int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 5;//1000*60;//1000 * 5;
         int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
         int numRuns = 15;//10;//20;//2;
@@ -75,7 +77,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
                 SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
                 Map<String, Double> evidence = new HashMap<String, Double>();
 
-                evidence.put("R_t", (0.5*(upperBound + lowerBound))/(double)param);        //todo...    ???
+                evidence.put("R_t", (0.5 * (upperBound + lowerBound)) / (double) param);        //todo...    ???
 
                 List<String> query = Arrays.asList("R_1", "R_" + (param));
                 PiecewiseExpression<Fraction> joint = handler.makeJoint(bn, query, evidence);
@@ -86,7 +88,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
 
 
         testSamplersPerformanceWrtParameterTimeAndSampleCount(collisionModelParam2Joint,
-                0.5*(upperBound + lowerBound),//10d,
+                0.5 * (upperBound + lowerBound),//10d,
                 null, //testerSampleMaker,
                 -1, //                numSamplesFromTesterToSimulateTrueDistribution,
                 -1, // maxWaitingTimeForTesterToSimulateMillis,
@@ -125,10 +127,10 @@ public class NewSymbolicGibbsAAAI2015Tester {
                 new QuerySelectorSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10)),
                 new QuerySelectorSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10))));
 
-        int[] numParams = {3,4, 5, 6, 7, 8, 9, 10, 11, 12 ,13, 14, 15, 16, 17, 18, 19, 20};
+        int[] numParams = {3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
         int numMinDesiredSamples = 200;//1000;
         int maxWaitingTimeForTakingDesiredSamples = 1000 * 60 * 2;//1000 * 20;
-        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000*5;//1000 * 5;
+        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 5;//1000 * 5;
         int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
         int numRuns = 10;
         int burnedSamples = 100;//10;
@@ -185,13 +187,12 @@ public class NewSymbolicGibbsAAAI2015Tester {
     }
 
     //////////////////////////////////////////////////////////////////////////
-    @Deprecated
+   /* @Deprecated
     public void nonSymmetricCollisionAAAI2015Test() throws IOException {
         System.out.println("REPORT_PATH_COLLISION_ANALYSIS = " + REPORT_PATH_COLLISION_ANALYSIS);
 
         JointToSampler testerSampleMaker =
                 FractionalJointRejectionSampler.makeJointToSampler(1.0);
-//                FractionalJointSymbolicGibbsSampler.makeJointToSampler();
         int numSamplesFromTesterToSimulateTrueDistribution = 1000;//100000;
         int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60 * 1;//1000 * 60 * 10;
         List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
@@ -250,7 +251,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
 
         System.out.println(" That was all the folk. ");
 
-    }
+    }*/
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -258,23 +259,23 @@ public class NewSymbolicGibbsAAAI2015Tester {
         System.out.println("REPORT_PATH_COLLISION_ANALYSIS = " + REPORT_PATH_COLLISION_ANALYSIS);
 
         JointToSampler testerSampleMaker =
-                FractionalJointRejectionSampler.makeJointToSampler(1.0);
+                new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(1.0));
 //                FractionalJointSymbolicGibbsSampler.makeJointToSampler();
 //        int numSamplesFromTesterToSimulateTrueDistribution = 170000;//100000;
 //        int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60*10;//1000 * 60 * 10;
-        List<JointToSampler> samplerMakersToBeTested = Arrays.asList(
-                FractionalJointSymbolicGibbsSampler.makeJointToSampler(),
-                FractionalJointBaselineGibbsSampler.makeJointToSampler(),
-                FractionalJointRejectionSampler.makeJointToSampler(1),
-                FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0),
-                FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10)
-        );
-        int[] numParams = {3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
+        List<JointToSampler> samplerMakersToBeTested = new ArrayList<JointToSampler>();
+//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSymbolicGibbsSampler.makeJointToSampler()));
+//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointBaselineGibbsSampler.makeJointToSampler())); //...
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(40)));
+//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(5.0)));
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(10, 20, 10)));
+        samplerMakersToBeTested.add(new AnglicanJointToSampler(100000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb));
+        int[] numParams = {2};//, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
         int numMinDesiredSamples = 200;//1000; //100;
-        int maxWaitingTimeForTakingDesiredSamples = 1000 * 60 * 2;//1000*60*5;//1000 * 20;
-        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 5;//1000*60;//1000 * 5;
+        int maxWaitingTimeForTakingDesiredSamples = 2000;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
+        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 2000;//1000 * 5;//1000*60;//1000 * 5;
         int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
-        int numRuns = 10;//20;//2;
+        int numRuns = 2;//20;//2;
         int burnedSamples = 100;//50;
         double goldenErrThreshold = 0.2;
 
@@ -296,20 +297,48 @@ public class NewSymbolicGibbsAAAI2015Tester {
                 SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
                 Map<String, Double> evidence = new HashMap<String, Double>();
 
-                evidence.put("p_t", 3d);        //todo...    ???
+                evidence.put("p_t", 3d);
 //                evidence.put("m_1", 2d);
-//        evidence.put("v_2", 0.2d);
+//                evidence.put("v_2", 0.2d);
 
-                List<String> query = Arrays.asList("v_1", "v_" + (param - 1));    //todo should it be param rather than param - 1 ????
-                PiecewiseExpression<Fraction> joint = handler.makeJoint(bn, query, evidence);
-                JointWrapper jointWrapper = new JointWrapper(joint, minVarLimit, maxVarLimit);
+//                List<String> query = Arrays.asList("v_1", "v_" + (param - 1));
+                List<String> query = new ArrayList<String>();
+                for (int i = 0; i < param; i++) {
+                    if (!evidence.keySet().contains("v_" + (i+1)))query.add("v_" + (i + 1));
+                    if (!evidence.keySet().contains("m_" + (i + 1))) query.add("m_" + (i + 1));
+                }
+//                query.add("p_1");
+//                query.add("p_t");
+//                query.add("m_1");
+//                query.add("v_1");
+
+//                PiecewiseExpression<Fraction> joint = handler.makeJoint(bn, query, evidence);
+//                JointWrapper jointWrapper = new JointWrapper(joint, minVarLimit, maxVarLimit);
+//                System.out.println("jointWrapper.getJoint().getScopeVars() = " + jointWrapper.getJoint().getScopeVars());
+
+                Pair<PiecewiseExpression<Fraction>, List<DeterministicFactor>> jointAndEliminatedStochasticVars =
+                        handler.makeJointAndEliminatedStochasticVars(bn, query, evidence);
+                PiecewiseExpression<Fraction> joint = jointAndEliminatedStochasticVars.getFirstEntry();
+                List<DeterministicFactor> eliminatedStochasticVars = jointAndEliminatedStochasticVars.getSecondEntry();
+                RichJointWrapper jointWrapper =
+                        new RichJointWrapper(joint, eliminatedStochasticVars, query, minVarLimit, maxVarLimit, bn, evidence);
+                System.out.println("jointWrapper.getAppropriateSampleVectorSize() = " + jointWrapper.getAppropriateSampleVectorSize());
+//                System.out.println("jointWrapper.eliminatedStochasticVarFactors() = " + jointWrapper.eliminatedStochasticVarFactors());
+                System.out.println("jointWrapper.getJoint().getScopeVars() = " + jointWrapper.getJoint().getScopeVars());
+                System.out.println("jointWrapper.getJoint() = " + jointWrapper.getJoint());
+
+                //Anglican code:
+                String anglicanCode = AnglicanCodeGenerator.makeAnglicanCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric, evidence, null /*unknown noise*/, query);
+                jointWrapper.addExtraInfo(AnglicanCodeGenerator.ANGLICAN_CODE_KEY, anglicanCode);
+
                 return jointWrapper;
             }
         };
 
 
-        testSamplersPerformanceWrtParameterTimeAndSampleCount(collisionModelParam2Joint, 0d,
-                testerSampleMaker,
+        testSamplersPerformanceWrtParameterTimeAndSampleCount(collisionModelParam2Joint,
+                0d,
+                null, //testerSampleMaker,
                 -1, //                numSamplesFromTesterToSimulateTrueDistribution,
                 -1, // maxWaitingTimeForTesterToSimulateMillis,
                 samplerMakersToBeTested, numParams, numMinDesiredSamples,
@@ -350,7 +379,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
 
             //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-            JointWrapper jointWrapper = paramToJointWrapper.makeJointWrapper(param);
+            RichJointWrapper jointWrapper = (RichJointWrapper)paramToJointWrapper.makeJointWrapper(param);
             //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
             double[] groundTruthMeans;
@@ -412,8 +441,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
                     }
 
 
-
-//                    System.out.println(samplerMaker.getName() + ".timeN/GOLD = " + multiMCMCChainAnalysis.averageTimeToAccomplishOrGolden*//*totalProcessTimeMillis*//* + "\t\tsamples=" + multiMCMCChainAnalysis.numberOfFirstSamples());//.means4FirstSamples.size());
+//                    System.out.println(samplerMaker.getName() + ".timeN/GOLD = " + multiMCMCChainAnalysis.averageTimeToAccomplishOrGolden/*totalProcessTimeMillis*/ + "\t\tsamples=" + multiMCMCChainAnalysis.numberOfFirstSamples());//.means4FirstSamples.size());
 
 //                } else {
 //                    System.err.println(samplerMaker.getName() + " skipped...");
@@ -431,8 +459,8 @@ public class NewSymbolicGibbsAAAI2015Tester {
 
     private class GoldenTimesKeeper {
         String outputDirectoryPath;
-        Map<String *//*alg.*//*, Map<Integer *//*param*//*, Double *//*gold*//*>> alg2paramGoldMeanMap;
-        Map<String *//*alg.*//*, Map<Integer *//*param*//*, Double *//*gold*//*>> alg2paramGoldStdErrMap;
+        Map<String /*alg.*/, Map<Integer /*param*/, Double /*gold*/>> alg2paramGoldMeanMap;
+        Map<String /*alg.*/, Map<Integer /*param*/, Double /*gold*/>> alg2paramGoldStdErrMap;
 
         public GoldenTimesKeeper(List<JointToSampler> samplers, String outputDirectoryPath) {
             this.outputDirectoryPath = outputDirectoryPath;
@@ -450,8 +478,10 @@ public class NewSymbolicGibbsAAAI2015Tester {
             Map<Integer, Double> paramToMeanMap = alg2paramGoldMeanMap.get(samplerName);
             Map<Integer, Double> paramToStdErrMap = alg2paramGoldStdErrMap.get(samplerName);
 
-            if (paramToMeanMap.put(param, goldMean)!= null) throw new RuntimeException("double entry for param " + param);
-            if (paramToStdErrMap.put(param, goldStdErr)!= null) throw new RuntimeException("double entry for param " + param);
+            if (paramToMeanMap.put(param, goldMean) != null)
+                throw new RuntimeException("double entry for param " + param);
+            if (paramToStdErrMap.put(param, goldStdErr) != null)
+                throw new RuntimeException("double entry for param " + param);
 
             persistInner(samplerName, fileSuffix, paramToMeanMap, paramToStdErrMap);
         }
@@ -462,7 +492,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
             PrintStream ps = new PrintStream(new FileOutputStream(outputFileName));
 
             SortedSet<Integer> params = new TreeSet<Integer>(param2Means.keySet());
-            int i=1;
+            int i = 1;
             for (Integer param : params) {
                 ps.println((i++) + "\t" + param + "\t" + param2Means.get(param) + "\t" + param2StdErrs.get(param));
             }
@@ -472,10 +502,10 @@ public class NewSymbolicGibbsAAAI2015Tester {
 
     }
 
-  *//*  private class TotalTimeKeeper {
+  /*  private class TotalTimeKeeper {
         String outputDirectoryPath;
-        Map<String*//**//*algorithm*//**//*, SortedSet<Pair<Integer *//**//*dims*//**//*, Long *//**//*totalTime*//**//*>>> alg2dimsTime;
-//        Map<String*//**//*algorithm*//**//*, SortedSet<Pair<Integer *//**//*data*//**//*, Long *//**//*totalTime*//**//*>>> alg2dataTime;
+        Map<String*//*algorithm*//*, SortedSet<Pair<Integer *//*dims*//*, Long *//*totalTime*//*>>> alg2dimsTime;
+//        Map<String*//*algorithm*//*, SortedSet<Pair<Integer *//*data*//*, Long *//*totalTime*//*>>> alg2dataTime;
 
         public TotalTimeKeeper(JointToSampler[] samplers, String outputDirectoryPath) {
             this.outputDirectoryPath = outputDirectoryPath;
@@ -491,9 +521,9 @@ public class NewSymbolicGibbsAAAI2015Tester {
         int[] dimsArray;
         //        int[] dataArray;
         String[] samplerNames;
-        Map<String *//**//*alg*//**//*, Long*//**//*time*//**//*>[] dimIndexDataIndexAlgTime;
+        Map<String *//*alg*//*, Long*//*time*//*>[] dimIndexDataIndexAlgTime;
 
-        public TotalTimeKeeper(List<JointToSampler> samplers, int[] dimsArray*//**//*, int[] dataArray*//**//*, String outputDirectoryPath) {
+        public TotalTimeKeeper(List<JointToSampler> samplers, int[] dimsArray*//*, int[] dataArray*//*, String outputDirectoryPath) {
             this.outputDirectoryPath = outputDirectoryPath;
 
             this.dimsArray = new int[dimsArray.length];
@@ -526,7 +556,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
 //                System.out.println("dataArray = " + Arrays.toString(dataArray));
             }
 //            persistDimFix(samplerName, dimIndex);
-            persistDataFix(samplerName*//**//*, dataIndex*//**//*);
+            persistDataFix(samplerName*//*, dataIndex*//*);
         }
 
 //        private void persistDimFix(String samplerName, int dimIndex) throws FileNotFoundException {
@@ -544,7 +574,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
 //            persistOneEntryFixed(samplerName, "dim", dim, dataList, timeList);
 //        }
 
-        private void persistDataFix(String samplerName*//**//*, int dataIndex*//**//*) throws FileNotFoundException {
+        private void persistDataFix(String samplerName*//*, int dataIndex*//*) throws FileNotFoundException {
 //            int data = dataArray[dataIndex];
 
             List<Integer> dimList = new ArrayList<Integer>();
@@ -573,11 +603,11 @@ public class NewSymbolicGibbsAAAI2015Tester {
             ps.close();
         }
 
-    }*//*
+    }*/
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public double[] computeGroundTruthMean(
-            JointWrapper jointWrapper, JointToSampler samplerMaker,
+            RichJointWrapper jointWrapper, JointToSampler samplerMaker,
             final int numDesiredSamples,
             long maxWaitingTimeForTakingDesiredSamplesMillis //in ms
     ) {
@@ -591,7 +621,7 @@ public class NewSymbolicGibbsAAAI2015Tester {
         long t1 = System.currentTimeMillis();
         for (int sampleCount = 0; sampleCount < numDesiredSamples; sampleCount++) {
             Double[] sample = sampler.reusableSample();
-            sample = SingleMCMCChainAnalysis.pruneNulls(sample);
+            sample = jointWrapper.reusableQueriedVarValues(sample); //SingleMCMCChainAnalysis.pruneNulls(sample);
 
             if (mean == null) {
                 mean = new double[sample.length];
@@ -614,9 +644,23 @@ public class NewSymbolicGibbsAAAI2015Tester {
     }
 
 
-
     private interface Param2JointWrapper {
         JointWrapper makeJointWrapper(int param);
-    }*/
+    }
 }
 
+/*
+stan-reference-2.5.0.pdf:
+
+The other problem with clustering models is that their posteriors are highly multimodal.
+One form of multimodality is the non-identifiability leading to index swapping.
+But even without the index problems the posteriors are highly mulitmodal.
+Bayesian inference fails in cases of high multimodality because there is no way to
+visit all of the modes in the posterior in appropriate proportions and thus no way to
+evaluate integrals involved in posterior predictive inference.
+In light of these two problems, the advice often given in fitting clustering models
+is to try many different initializations and select the sample with the highest overall
+probability. It is also popular to use optimization-based point estimators such as
+expectation maximization or variational Bayes, which can be much more efficient than
+sampling-based approaches.
+ */

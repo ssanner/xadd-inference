@@ -176,6 +176,32 @@ public class Polynomial implements Expression<Polynomial>, Cloneable{
 
     }
 
+    public void replaceThisWithDerivative(int derivativeVarIndex) {
+
+        Map<List<Double>, Double> newEntries = new HashMap<List<Double>, Double>(powers2coefMap.size());
+
+        for (Iterator<Map.Entry<List<Double>, Double>> iterator = powers2coefMap.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<List<Double>, Double> term = iterator.next();
+
+//            iterator.remove();
+            List<Double> pow = term.getKey();
+
+            Double currentP = pow.get(derivativeVarIndex);
+            if (currentP != 0) {
+            pow.set(derivativeVarIndex, currentP - 1);
+            newEntries.put(pow, term.getValue() * currentP);
+            }
+        }
+
+        powers2coefMap = newEntries;
+    }
+
+    public Polynomial returnDerivative(int derivativeVarIndex) {
+        Polynomial cloned = this.clone();
+        cloned.replaceThisWithDerivative(derivativeVarIndex);
+        return cloned;
+    }
+
     @Deprecated
     public void replaceThisWithIndefiniteIntegral(String integrationVar) {
         int varIndex = factory.getVarIndex(integrationVar);
@@ -415,6 +441,37 @@ public class Polynomial implements Expression<Polynomial>, Cloneable{
 
     public boolean isZero() {
         return powers2coefMap.isEmpty();
+    }
+
+
+    public Fraction cloneCastToFraction() {
+        return new Fraction(this.clone(), factory.one());
+    }
+
+    //todo find more patterns...
+    public boolean isAlwaysPositive() {
+        if (this.isNumber() && this.getNumericalValue()>0) return true;
+
+        for (List<Double> powers : powers2coefMap.keySet()) {
+            for (Double power : powers) {
+                if ((power % 2) != 0) return false; //at the moment only if all powers are even and coefficients are positive, 'true' is returned.... clearly more patterns can be found...
+            }
+            if (powers2coefMap.get(powers) < 0) return false;
+        }
+        return true;
+    }
+
+    //todo find more patterns...
+    public boolean isAlwaysNegative() {
+        if (this.isNumber() && this.getNumericalValue()<0) return true;
+
+        for (List<Double> powers : powers2coefMap.keySet()) {
+            for (Double power : powers) {
+                if ((power % 2) != 0) return false; //at the moment only if all powers are even and coefficients are negative, 'true' is returned.... clearly more patterns can be found...
+            }
+            if (powers2coefMap.get(powers) > 0) return false;
+        }
+        return true;
     }
 }
 

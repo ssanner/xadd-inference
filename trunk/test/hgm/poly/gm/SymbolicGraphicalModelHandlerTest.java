@@ -2,10 +2,11 @@ package hgm.poly.gm;
 
 import hgm.poly.*;
 import hgm.poly.integral.frac.Digester;
+import hgm.poly.reports.sg.ExperimentalGraphicalModels;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.poly.sampling.SamplingUtils;
-import hgm.poly.sampling.frac.FractionalJointBaselineGibbsSampler;
-import hgm.poly.sampling.frac.FractionalJointSymbolicGibbsSampler;
+import hgm.poly.sampling.frac.*;
+
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -158,7 +159,7 @@ public class SymbolicGraphicalModelHandlerTest {
 
         System.out.println("----------------------------");
 
-        SamplerInterface sampler2 = handler.makeSampler(bn, Arrays.asList("m_1 v_1 m_2 v_2".split(" ")), evidence, -10, 10, FractionalJointSymbolicGibbsSampler.makeJointToSampler());
+        SamplerInterface sampler2 = handler.makeQuerySampler(bn, Arrays.asList("m_1 v_1 m_2 v_2".split(" ")), evidence, -10, 10, FractionalJointSymbolicGibbsSampler.makeJointToSampler());
         for (int i = 0; i < 10; i++) {
             Double[] sample = sampler2.reusableSample();
             System.out.println("sample = " + Arrays.toString(sample));
@@ -177,13 +178,20 @@ public class SymbolicGraphicalModelHandlerTest {
 
         BayesNetGraphicalModel bn = new BayesNetGraphicalModel();
 
+        Double mu1 = 0.1;
+        Double mu2 = 2.1;
+        Double nu1 = -2.0;
+        Double nu2 = 2.0;
+        boolean symmetric = false;
+
+
         // m_1      v_1   m_2     v_2
         //   \__p_1__/    \__p_2__/
         //       \_____p______/
-        PiecewiseExpression<Fraction> m1F = dBank.createUniformDistributionFraction("m_1", "0.1", "2.1");
-        PiecewiseExpression<Fraction> m2F = dBank.createUniformDistributionFraction("m_2", "0.1", "2.1");
-        PiecewiseExpression<Fraction> v_1F = dBank.createUniformDistributionFraction("v_1", "-2", "2");
-        PiecewiseExpression<Fraction> v_2F = dBank.createUniformDistributionFraction("v_2", "-2", "v_1^(1)");
+        PiecewiseExpression<Fraction> m1F = dBank.createUniformDistributionFraction("m_1", mu1.toString(), mu2.toString());
+        PiecewiseExpression<Fraction> m2F = dBank.createUniformDistributionFraction("m_2", mu1.toString(), mu2.toString());
+        PiecewiseExpression<Fraction> v_1F = dBank.createUniformDistributionFraction("v_1", nu1.toString(), nu2.toString());
+        PiecewiseExpression<Fraction> v_2F = dBank.createUniformDistributionFraction("v_2", nu1.toString(), symmetric? nu2.toString(): "v_1^(1)");
 //        Fraction mF = factory.makeFraction("1*m_1^(1) + 1*m_2^(1)");
         Fraction pF = factory.makeFraction("m_1^(1)*v_1^(1) + m_2^(1)*v_2^(1)");
 //        Fraction vF = factory.makeFraction("[p^(1)]/[m^(1)]");
@@ -200,12 +208,12 @@ public class SymbolicGraphicalModelHandlerTest {
         SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
         Map<String, Double> evidence = new HashMap<String, Double>();
         evidence.put("p", 3d);
-        evidence.put("m_1", 2d);
+//        evidence.put("m_1", 2d);
 //        evidence.put("v_2", 0.2d);
 
-        SamplerInterface sampler = handler.makeSampler(bn, Arrays.asList("v_1 v_2".split(" ")), evidence, -10, 10,
+        SamplerInterface sampler = handler.makeQuerySampler(bn, Arrays.asList("v_1 v_2".split(" ")), evidence, -10, 10,
                 FractionalJointBaselineGibbsSampler.makeJointToSampler()
-//                FractionalJointRejectionSampler.makeJointToSampler(1)
+//                FractionalJointRejectionSampler.makeJointToSampler(10)
 //                SelfTunedFractionalJointMetropolisHastingSampler.makeJointToSampler(10, 30, 100)
 //                FractionalJointMetropolisHastingSampler.makeJointToSampler(10)
 //                SymbolicFractionalJointGibbsSampler.makeJointToSampler()
@@ -221,15 +229,74 @@ public class SymbolicGraphicalModelHandlerTest {
 //            System.out.println("(m_1*v_1 + m_2*v_2) = " + (m_1 * v_1 + m_2 * v_2));
 
         int numSamples = 1000;
-        for (int i = 0; i < numSamples; i++) {
+       /* for (int i = 0; i < numSamples; i++) {
             Double[] s = sampler.reusableSample();
             System.out.println(i + ". sample = " + Arrays.toString(s));
             Assert.assertTrue(s[1]<s[0]);
-        }
+        }*/
         String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/gm/";
         SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
 
     }
+
+    @Test
+    public void testMomentum3(){
+        int param = 4;
+        Double muAlpha = 0.2;
+        Double muBeta = 2.2;
+        Double nuAlpha = muAlpha;
+        Double nuBeta = muBeta;
+        boolean symmetric = true;
+
+        GraphicalModel bn =
+                ExperimentalGraphicalModels.makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric);//paramDataCount2DataGenerator.createJointGenerator(param);
+
+
+        SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
+        Map<String, Double> evidence = new HashMap<String, Double>();
+        double p = 1.5 * param;
+        evidence.put("p_t", p);
+//        evidence.put("m_1", 2d);
+//        evidence.put("v_2", 0.2d);
+
+        String queryStr = "";
+        for (int i = 0; i < param; i++) {
+            queryStr += "v_" + (i+1) +" ";
+        }
+        SamplerInterface sampler = handler.makeQuerySampler(bn,
+                Arrays.asList(queryStr.trim().split(" ")),
+//                Arrays.asList("v_1 v_2".split(" ")),
+                evidence, -10, 10,
+//                FractionalJointBaselineGibbsSampler.makeJointToSampler()
+//                FractionalJointRejectionSampler.makeJointToSampler(10)
+//                FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(1, 50, 1000)
+                FractionalJointMetropolisHastingSampler.makeJointToSampler(0.1)
+//                SymbolicFractionalJointGibbsSampler.makeJointToSampler()
+        );
+
+        int numSamples = 10000;
+        double[] average = new double[param]; //Assuming the size of Query = num. params
+        for (int i = 0; i < numSamples; i++) {
+            Double[] s = sampler.reusableSample();
+
+            for (int j=0; j<average.length;j++) {
+                average[j]+= s[j];
+            }
+//            System.out.println(i + ". sample = " + Arrays.toString(s));
+
+        }
+
+        for (int j=0; j<average.length;j++) {
+            average[j]/= numSamples;
+        }
+
+        double m = Math.pow(p / param, 0.5);
+        System.out.println("m = " + m);
+        System.out.println("average = " + Arrays.toString(average));
+//        String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/gm/";
+//        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
+    }
+
 
     @Test
     public void vintnerPrelude2() throws FileNotFoundException {
@@ -265,7 +332,7 @@ public class SymbolicGraphicalModelHandlerTest {
         System.out.println("digester.getInters() = " + digester.getInters());*/
 
 
-        SamplerInterface sampler = handler.makeSampler(bn, Arrays.asList("a d".split(" ")), evidence, -20, 20, FractionalJointSymbolicGibbsSampler.makeJointToSampler());
+        SamplerInterface sampler = handler.makeQuerySampler(bn, Arrays.asList("a d".split(" ")), evidence, -20, 20, FractionalJointSymbolicGibbsSampler.makeJointToSampler());
 
         int numSamples = 10000;
         for (int i = 0; i < numSamples; i++) {
@@ -316,6 +383,74 @@ public class SymbolicGraphicalModelHandlerTest {
         }
     }
 
+    @Test
+    public void testCorrectness1() throws Exception {
+        PolynomialFactory factory = new PolynomialFactory("x y n p".split(" "));
+        Distributions dBank = new Distributions(factory);
+
+        BayesNetGraphicalModel bn = new BayesNetGraphicalModel();
+
+        PiecewiseExpression<Fraction> xF = dBank.createUniformDistributionFraction("x", "0", "1");
+        PiecewiseExpression<Fraction> yF = dBank.createUniformDistributionFraction("y", "0", "1");
+        Fraction pF = factory.makeFraction("y^(1) + -1*x^(4)");
+
+        bn.addFactor(new StochasticVAFactor("x", xF)); //mass 1
+        bn.addFactor(new StochasticVAFactor("y", yF)); //mass 2
+        bn.addFactor(new DeterministicFactor("p", pF)); //total momentum = p1 + p2 = m1*v1 + m2*v2 = (m1 + m2)*v
+
+        SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
+        Map<String, Double> evidence = new HashMap<String, Double>();
+        evidence.put("p", 0d);
+
+        SamplerInterface sampler = handler.makeQuerySampler(bn, Arrays.asList("x y".split(" ")), evidence, -2, 2,
+                FractionalJointRejectionSampler.makeJointToSampler(2)
+//                FractionalJointBaselineGibbsSampler.makeJointToSampler()
+        );
+
+        int numSamples = 100;
+       /* for (int i = 0; i < numSamples; i++) {
+            Double[] s = sampler.reusableSample();
+            System.out.println(i + ". sample = " + Arrays.toString(s));
+            Assert.assertTrue(s[1]<s[0]);
+        }*/
+        String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/gm/";
+        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
+    }
+
+    @Test
+    public void testCorrectnessWithNoise() throws Exception {
+        PolynomialFactory factory = new PolynomialFactory("a b c x y n p".split(" "));
+        Distributions dBank = new Distributions(factory);
+
+        BayesNetGraphicalModel bn = new BayesNetGraphicalModel();
+
+        PiecewiseExpression<Fraction> xF = dBank.createUniformDistributionFraction("x", "0", "1");
+        PiecewiseExpression<Fraction> yF = dBank.createUniformDistributionFraction("y", "0", "1");
+        Fraction pF = factory.makeFraction("y^(1) + -1*x^(4)");
+        PiecewiseExpression<Fraction> nF = dBank.createNonNormalizedBellShapedDistribution("n", "p^(1) + -0.01", "p^(1) + 0.01");
+
+        bn.addFactor(new StochasticVAFactor("x", xF)); //mass 1
+        bn.addFactor(new StochasticVAFactor("y", yF)); //mass 2
+        bn.addFactor(new DeterministicFactor("p", pF)); //total momentum = p1 + p2 = m1*v1 + m2*v2 = (m1 + m2)*v
+        bn.addFactor(new StochasticVAFactor("n", nF));
+
+        SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
+        Map<String, Double> evidence = new HashMap<String, Double>();
+        evidence.put("n", 0.0d);
+
+        SamplerInterface sampler = handler.makeQuerySampler(bn, Arrays.asList("x y".split(" ")), evidence, 0, 1,
+                FractionalJointRejectionSampler.makeJointToSampler(2)
+//                FractionalJointBaselineGibbsSampler.makeJointToSampler()
+        );
+
+        int numSamples = 1000;
+        for (int i = 0; i < numSamples; i++) {
+            Double[] s = sampler.reusableSample();
+            System.out.println(i + ". sample = " + Arrays.toString(s));
+        }
+        String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/gm/";
+        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
+    }
 
 
 }

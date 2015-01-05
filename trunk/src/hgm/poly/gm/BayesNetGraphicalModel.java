@@ -70,4 +70,32 @@ public class BayesNetGraphicalModel implements GraphicalModel {
     public List<String> allDeterministicVars() {
         return deterministicVars;
     }
+
+
+    //The first entry of the list should be the factor associated with the var itself
+    public List<Factor> fetchAssociatedFactorAndAncestorFactors(String var) {
+        Set<String> ancestors = fetchAncestors(var);
+        List<Factor> fs = new ArrayList<Factor>(ancestors.size() + 1);
+        fs.add(getAssociatedFactor(var)); //first self
+        for (String ancestor : ancestors) {
+            fs.add(getAssociatedFactor(ancestor));
+        }
+        return fs;
+    }
+
+    public Set<String> getParents(String var){
+        return varToParents.get(var);
+    }
+
+    //Note: the set of ancestors does not include the 'var' itself
+    private Set<String> fetchAncestors(String var) {
+        Set<String> ancestors = new HashSet<String>();
+        for (String par:getParents(var)){
+            ancestors.addAll(fetchAncestors(par));
+            ancestors.add(par);
+        }
+        return ancestors;
+    }
+
+
 }

@@ -26,7 +26,7 @@ public class PiecewiseExpression<E extends Expression>{
         this(isJointlyExhaustive, Arrays.asList(cases));
     }
 
-    private PiecewiseExpression(boolean isJointlyExhaustive, List<ConstrainedExpression<E>> cases) {
+    public PiecewiseExpression(boolean isJointlyExhaustive, List<ConstrainedExpression<E>> cases) {
         this.cases = new ArrayList<ConstrainedExpression<E>>(cases);
         this.isJointlyExhaustive = isJointlyExhaustive;
     }
