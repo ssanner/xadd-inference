@@ -23,7 +23,8 @@ public class AutoCorrelationHandler {
         this.n = n;
     }
 
-    public void addNewValue(Double[] sample) {
+    public void addNewValue(Double[] reusableSample) {
+        Double[] sample = reusableSample.clone();
         if (sample.length != groundTruth.length) throw new RuntimeException("size mismatch");
         if (samples.size() > n + maxWindowSize) return; //the result for the first n samples is independent of other samples
 

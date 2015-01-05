@@ -5,7 +5,7 @@ import hgm.poly.diagnostics.AutoCorrelationHandler;
 import hgm.poly.diagnostics.CorrectedVarianceMeasure;
 import hgm.poly.diagnostics.MeanMeasure;
 import hgm.poly.gm.JointToSampler;
-import hgm.poly.gm.JointWrapper;
+import hgm.poly.gm.RichJointWrapper;
 import hgm.poly.sampling.SamplerInterface;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class SingleMCMCChainAnalysis {
     ////////////////////////////////////////////////////////////////////////////////////
     public SingleMCMCChainAnalysis (
             double[] groundTruthMeanVector, //of size #dims
-            JointWrapper jointWrapper,
+            RichJointWrapper jointWrapper,
             JointToSampler samplerMaker,
             int burnedSamples,
             final int numMinDesiredSamples,
@@ -90,7 +90,7 @@ public class SingleMCMCChainAnalysis {
 
         for (; ; ) {
             Double[] sample = sampler.reusableSample();
-            sample = pruneNulls(sample);
+            sample = jointWrapper.reusableQueriedVarValues(sample); //pruneNulls(sample);
             takenSamples++;
 
             meanMeasure.addNewValue(sample);
@@ -170,7 +170,7 @@ public class SingleMCMCChainAnalysis {
 
     }
 
-    public static Double[] pruneNulls(Double[] sample) {
+    /*public static Double[] pruneNulls(Double[] sample) {
         int nonNullEntryCount = 0;
         for (Double s : sample) {
             if (s != null) nonNullEntryCount++;
@@ -183,6 +183,6 @@ public class SingleMCMCChainAnalysis {
             }
         }
         return nonNullEntries;
-    }
+    }*/
 
 }

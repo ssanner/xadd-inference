@@ -234,17 +234,12 @@ public class LinearTimeGibbsSamplingInPiecewiseGMsTester {
         //MM params:
         final double mm_epsilon_for_star_vars = BayesianPairwisePreferenceLearningModel.C / 4.0;
 
-        //----------------------------------------
-
         List<Db2Sampler> algorithmsBeingTested;
         ParamDataCount2DataGenerator paramDataCount2dataGenerator;
         Db2Sampler testerAlgorithm;
 
         testerAlgorithm = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(
                 SamplingAlgorithmBank.REJ_GENERAL_MMM).get(0);
-//                SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_MMM).get(0);
-//                        SamplingAlgorithmBank.TARGETED_GATED_GIBBS_GENERAL_MMM)[0];
-
 
         algorithmsBeingTested = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(TESTED_ALGORITHMS_FOR_FINAL_MMM_TESTS);
 
@@ -318,9 +313,6 @@ public class LinearTimeGibbsSamplingInPiecewiseGMsTester {
 
         testerAlgorithm = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(
                         SamplingAlgorithmBank.REJ_GENERAL_MMM).get(0);
-//                SamplingAlgorithmBank.REJ_ORIGINAL_MODEL_MMM).get(0);
-//                        SamplingAlgorithmBank.TARGETED_GATED_GIBBS_GENERAL_MMM)[0];
-
 
         algorithmsBeingTested = SamplingAlgorithmBank.makeDb2Samplers4MarketMakingModel(TESTED_ALGORITHMS_FOR_FINAL_MMM_TESTS);
 

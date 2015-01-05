@@ -5,6 +5,9 @@ import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.gm.*;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Created by Hadi Afshar.
  * Date: 8/09/14
@@ -12,12 +15,8 @@ import hgm.poly.gm.*;
  */
 public class ExperimentalGraphicalModels {
 
-    public static void main(String[] args) {
-        System.out.println("sumOfReciprocals() = " + reciprocalSumOfReciprocals("R_", 4));
-    }
-
     public static GraphicalModel makeCircuitModel(int n /*num. Resistances*/,
-                                                    Double lowBound, Double highBound) {
+                                                  Double lowBound, Double highBound) {
         // 1/R_t = 1/R_1 + 1/R_2 + ... + 1/R_n
 
         String[] vars = new String[n + 1];
@@ -49,22 +48,22 @@ public class ExperimentalGraphicalModels {
         return bn;
     }
 
-    private static String reciprocalSumOfReciprocals(String varPrefix, int n) {
-        StringBuilder[] ss = new StringBuilder[n+1];
+    static String reciprocalSumOfReciprocals(String varPrefix, int n) {
+        StringBuilder[] ss = new StringBuilder[n + 1];
         for (int i = 0; i < ss.length; i++) {
             ss[i] = new StringBuilder();
         }
 
-        for (int i=0; i<n;i++) {
-            for (int j=0; j<ss.length; j++) {
-                if (j!=i){
-                    ss[j].append(varPrefix + (i+1) + "^(1) *");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < ss.length; j++) {
+                if (j != i) {
+                    ss[j].append(varPrefix + (i + 1) + "^(1) *");
                 }
             }
         }
 
         StringBuilder numerator = new StringBuilder();
-        for (int i=0; i<n;i++) {
+        for (int i = 0; i < n; i++) {
             numerator.append(ss[i].substring(0, ss[i].length() - 1)).append(" +"); //to remove last '*'
         }
 
@@ -136,7 +135,7 @@ public class ExperimentalGraphicalModels {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public static GraphicalModel makeSimplifiedFermentationModel(int n /*num colliding objects*/,
-                                                          Double minLactoseAlpha, Double maxInitialLactoseBeta) {
+                                                                 Double minLactoseAlpha, Double maxInitialLactoseBeta) {
 //                                                 double minVarLimit, double maxVarLimit,
 //                                                 JointToSampler jointToSampler) {
         // l_1 --> l_2 --> ... --> l_n
@@ -179,13 +178,11 @@ public class ExperimentalGraphicalModels {
     }
 
 
-
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static GraphicalModel makeFermentationModel(int n /*num colliding objects*/,
-                                                Double pDistributionParam,
-                                                Double minLactoseAlpha, Double maxInitialLactoseBeta) {
+                                                       Double pDistributionParam,
+                                                       Double minLactoseAlpha, Double maxInitialLactoseBeta) {
 //                                                 double minVarLimit, double maxVarLimit,
 //                                                 JointToSampler jointToSampler) {
         // a_1 --> a_2 --> ... --> a_n
@@ -245,9 +242,9 @@ public class ExperimentalGraphicalModels {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static GraphicalModel makeCollisionModel(int n /*num colliding objects*/,
-                                             Double muAlpha, Double muBeta,
-                                             Double nuAlpha, Double nuBeta,
-                                             boolean symmetric) {
+                                                    Double muAlpha, Double muBeta,
+                                                    Double nuAlpha, Double nuBeta,
+                                                    boolean symmetric) {
 //                                                 double minVarLimit, double maxVarLimit,
 //                       (?)                          JointToSampler jointToSampler) {
         // m_1      v_1 ---->  v_n     m_2
@@ -279,7 +276,7 @@ public class ExperimentalGraphicalModels {
         for (int i = 0; i < n; i++) {
             massesF[i] = dBank.createUniformDistributionFraction("m_" + (i + 1), muAlpha.toString(), muBeta.toString());
             if (symmetric) {
-                velocitiesF[i] = dBank.createUniformDistributionFraction("v_1", nuAlpha.toString(), nuBeta.toString());
+                velocitiesF[i] = dBank.createUniformDistributionFraction("v_" + (i+1), nuAlpha.toString(), nuBeta.toString());
             } else {
                 velocitiesF[i] = i == 0 ? dBank.createUniformDistributionFraction("v_1", nuAlpha.toString(), nuBeta.toString())
                         : dBank.createUniformDistributionFraction("v_" + (i + 1), nuAlpha.toString(), "v_" + i + "^(1)");
@@ -317,5 +314,38 @@ public class ExperimentalGraphicalModels {
 //        );
 
     }
+
+    //////////////////////////////////////
+
+    public static GraphicalModel makeExponentialRelationshipModel(double n /*exponent*/,
+                                                                  Double xL, Double xH,
+                                                                  Double yL, Double yH){
+
+
+        String[] vars = new String[]{"x", "y", "z"};
+
+        PolynomialFactory factory = new PolynomialFactory(vars);
+        Distributions dBank = new Distributions(factory);
+
+        BayesNetGraphicalModel bn = new BayesNetGraphicalModel();
+
+//        PiecewiseExpression<Fraction>[] massesF = new PiecewiseExpression[n];
+//        PiecewiseExpression<Fraction>[] velocitiesF = new PiecewiseExpression[n];
+//        Fraction[] momentaF = new Fraction[n];
+//        String totalMomentumFormula = "";
+//        String totalMassFormula = "";
+
+        PiecewiseExpression<Fraction> fX = dBank.createUniformDistributionFraction("x", xL.toString(), xH.toString());
+        PiecewiseExpression<Fraction> fY = dBank.createUniformDistributionFraction("y", yL.toString(), yH.toString());
+        Fraction zF = factory.makeFraction("y^(1) + -1*x^(" + n + ")");  //y = x^n [potential constant]
+        bn.addFactor(new StochasticVAFactor("x", fX));
+        bn.addFactor(new StochasticVAFactor("y", fY));
+        bn.addFactor(new DeterministicFactor("z", zF));
+
+        return bn;
+
+    }
+
+
 
 }

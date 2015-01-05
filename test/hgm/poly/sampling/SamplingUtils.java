@@ -5,6 +5,7 @@ import hgm.sampling.SamplingFailureException;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 
 /**
  * Created by Hadi Afshar.
@@ -20,7 +21,7 @@ public class SamplingUtils {
         for (int i = 0; i < numSamples; i++) {
             try{
             Double[] sample = sampler.reusableSample();
-//            System.out.println("sample = " + Arrays.toString(sample));
+            System.out.println("sample = " + Arrays.toString(sample));
             ps.println(sample[0] + "\t" + sample[1]);
             }catch (SamplingFailureException e) {
                 e.printStackTrace();

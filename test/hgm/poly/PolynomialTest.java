@@ -86,7 +86,7 @@ public class PolynomialTest {
     }
 
     @Test
-    public void testSplit(){
+    public void testSplit() {
         PolynomialFactory factory = new PolynomialFactory("v", "w", "x", "y", "z");
         Polynomial p1 = factory.makePolynomial("x^(2)*y^(2) + 3*x^(2)*y^(1) + 5*y^(2)");
         Polynomial[] splits = p1.split();
@@ -122,6 +122,42 @@ public class PolynomialTest {
 
         Assert.assertEquals(Arrays.toString(f.makePositiveConstraint("1*y^(1)+-5<0").sortWithRespectTo("y")), "[5.0, -1.0]");
         Assert.assertEquals(Arrays.toString(f.makePositiveConstraint("2*x^(1) + 3*y^(1) + -7<0").sortWithRespectTo("y")), "[-2.0*x^(1.0)+7.0, -3.0]");
+    }
+
+    @Test
+    public void testDerivative() throws Exception {
+        PolynomialFactory factory = new PolynomialFactory("v", "w", "x", "y", "z");
+        Polynomial p1 = factory.makePolynomial("z^(2)*y^(2) + 3*y^(2)*x^(2.5)*w^(4) + 4*x^(2)");
+        Polynomial derivativeX = p1.returnDerivative(factory.getVarIndex("x"));
+        Assert.assertEquals("7.5*w^(4.0)*x^(1.5)*y^(2.0)+8.0*x^(1.0)", derivativeX.toString());
+    }
+
+    @Test
+    public void testIsAlwaysPositive() {
+        PolynomialFactory factory = new PolynomialFactory("v", "w", "x", "y", "z");
+        Polynomial p1 = factory.makePolynomial("z^(2)*y^(2) + 3*y^(2)*x^(2.4)*w^(4) + 4*x^(2)");
+        Assert.assertTrue(!p1.isAlwaysPositive());
+
+        Polynomial p2 = factory.makePolynomial("z^(2)*y^(4) + 3 + 4*x^(-6.0)");
+        Assert.assertTrue(p2.isAlwaysPositive());
+
+        Polynomial p3 = factory.makePolynomial("z^(2)*y^(4) + 3 + -4*x^(-6.0)");
+        Assert.assertTrue(!p3.isAlwaysPositive());
 
     }
+
+    @Test
+    public void testIsAlwaysNegative() {
+        PolynomialFactory factory = new PolynomialFactory("v", "w", "x", "y", "z");
+        Polynomial p1 = factory.makePolynomial("-63 + 20");
+        Assert.assertTrue(p1.isAlwaysNegative());
+
+        Polynomial p2 = factory.makePolynomial("-1*z^(2)*y^(4) + -3 + -4*x^(-6.0)");
+        Assert.assertTrue(p2.isAlwaysNegative());
+
+        Polynomial p3 = factory.makePolynomial("z^(2)*y^(4) + -3 + -4*x^(-6.0)");
+        Assert.assertTrue(!p3.isAlwaysNegative());
+
+    }
+
 }

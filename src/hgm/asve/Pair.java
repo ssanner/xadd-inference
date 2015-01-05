@@ -1,5 +1,7 @@
 package hgm.asve;
 
+import java.util.Arrays;
+
 /**
  * Created by Hadi Afshar.
  * Date: 23/10/13
@@ -25,6 +27,8 @@ public class Pair<K, V> {
 
     @Override
     public String toString() {
-        return "<" + entry1 + ", " + entry2 + ">";
+        String s1 = (entry1 instanceof Object[]) ? Arrays.toString((Object[])entry1) : entry1.toString();
+        String s2 = (entry2 instanceof Object[]) ? Arrays.toString((Object[])entry2) : entry2.toString();
+        return "<" + s1 + ", " + s2 + ">";
     }
 }
