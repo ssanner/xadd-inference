@@ -1,0 +1,55 @@
+\documentclass[a4paper,10pt,fleqn]{article} 
+\usepackage{tikz}
+
+\newcommand{\filename}{FILENAME}
+\newcommand\draw[2]{
+	\includegraphics[width=#2, height=#2, keepaspectratio]{#1}
+}
+
+\newif\ifdrawd
+\newif\ifdrawtwod
+\newif\ifdrawthreed
+
+\begin{document} 
+ 
+\section{Performance plots:}
+\draw{\filename-TotTime.pdf}{\textwidth}
+\draw{\filename-Nodes.pdf}{\textwidth}
+\draw{\filename-IniVal.pdf}{\textwidth}
+\draw{\filename-ValTime.pdf}{\textwidth}
+\draw{\filename-ValNodes.pdf}{\textwidth}
+
+
+\drawDISPLAYdtrue
+
+
+\ifdrawthreed
+\newpage
+\section{Value Function Plots:}
+\foreach \solver in {SDP, RTSDP}
+{
+	\subsection{\solver \hspace{0.2cm} Value Function Plots and Diagrams:}
+	\foreach \iter in {1,2,..., NITER}
+	{
+		\draw{\filename-\solver-Value\iter.pdf}{0.6\textwidth}
+		\draw{\filename-\solver-Value\iter-DD.pdf}{0.6\textwidth}\\
+	}
+}
+\fi
+
+\ifdrawtwod
+\newpage
+\section{Value Function 2D-Plots:}
+\foreach \solver in {SDP, RTSDP}
+{
+	\subsection{\solver \hspace{0.2cm} Value Function Plots and Diagrams:}
+	\foreach \iter in {1,2,..., NITER}
+	{
+		\draw{\filename-\solver-Value\iter.pdf}{0.6\textwidth}
+		\draw{\filename-\solver-Value\iter-DD.pdf}{0.6\textwidth}\\
+	}
+}
+\fi
+
+
+\end{document} 
