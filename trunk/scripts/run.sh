@@ -24,7 +24,7 @@ PARAMS=$2
 #printf "Parameters are $PARAMS"
 JLP=""
 MEMLIMIT="-Xmx1000M"
-# for LINUX: JLP="-Djava.library.path=/usr/local/lib"
+JLP="-Djava.library.path=/usr/local/lib"
 printf "Running: java $MEMLIMIT $MAINCLASS $PARAMS \n"
 java $MEMLIMIT -cp $BIN_DIR:$CLASSPATH $JLP $MAINCLASS $PARAMS
 printf "\n\n"

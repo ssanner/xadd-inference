@@ -4,10 +4,16 @@ import graph.Graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import logic.kb.fol.FOPC.Node;
 
 import camdp.HierarchicalParser;
 
@@ -20,7 +26,7 @@ import xadd.ExprLib.*;
 
 public class STPPD {
 
-	public final static boolean SHOW_GRAPHS = false;
+	public final static boolean SHOW_GRAPHS = true;
 	public final static boolean SHOW_PLOTS  = false;
 	
 	public final static boolean DISPLAY = true;
@@ -59,7 +65,7 @@ public class STPPD {
         for (Integer f : _alConsFactors)
         	obj = addInFactor(obj, f);
 
-        //if (DISPLAY) _context.getGraph(obj).launchViewer("Monolithic Objective");
+        if (DISPLAY) _context.getGraph(obj).launchViewer("Monolithic Objective");
         System.out.println("Monolithic XADD objective: " + _context.getNodeCount(obj) + " nodes");
         
         timer.ResetTimer();
@@ -107,31 +113,12 @@ public class STPPD {
 	        splitFactors(var, factors, factors_with_var, factors_without_var);
 	        System.out.println(" - with var: " + factors_with_var.size() + ", without var: "
 	                + factors_without_var.size());
-	
-	        // Multiply factors that contain variable and marginalize out variable,
-	        // adding this new factor and all without the variable to the factors list
-	        int factor_with_var = addFactors(factors_with_var);
-	        int projected_factor = minOutVar(factor_with_var, var);
-	        projected_factor = _context.reduceLP(projected_factor);
-	        System.out.println(" - pre-projection factor size: " + _context.getNodeCount(factor_with_var) + ", vars: " + _context.collectVars(factor_with_var).size() + " " + _context.collectVars(factor_with_var));
-	        if (SHOW_GRAPHS)
-	        	_context.getGraph(factor_with_var).launchViewer("Pre-projected factor " + _context.collectVars(factor_with_var)/* + factor_with_var*/);
-	        System.out.println(" - post-projection factor size: " + _context.getNodeCount(projected_factor) + ", vars: " + _context.collectVars(projected_factor).size() + " " + _context.collectVars(projected_factor));
-	        if (SHOW_GRAPHS)
-	        	_context.getGraph(projected_factor).launchViewer("Post-projected factor " + _context.collectVars(projected_factor)/* + projected_factor*/);
 
-	        // Show plots of functions
-	        if (SHOW_PLOTS && _context.collectVars(factor_with_var).size() == 2 && !_context.collectVars(factor_with_var).removeAll(_context._alBooleanVars)) {
-		        Iterator<String> vars = _context.collectVars(factor_with_var).iterator();
-		        String var1 = vars.next();
-		        String var2 = vars.next();
-		        XADDUtils.Plot3DSurfXADD(_context, factor_with_var, -50, 1, 50, -50, 1, 50, var1, var2, "Pre-projected factor " + _context.collectVars(factor_with_var));
-		        XADDUtils.Plot3DSurfXADD(_context, projected_factor, -50, 1, 50, -50, 1, 50, var1, var2, "Post-projected factor " + _context.collectVars(projected_factor));
-		        XADDUtils.PlotXADD(_context, projected_factor, -50, 1, 50, _context.collectVars(projected_factor).iterator().next(), "Post-projected factor " + _context.collectVars(projected_factor));
-	        }
-	        
 	        factors.clear();
-	        factors.addAll(factors_without_var);
+	        int projected_factor = createBucket(factors_with_var,var);
+       
+	        // adding this new factor and all without the variable to the factors list
+     	    factors.addAll(factors_without_var);
 	        factors.add(projected_factor);
 	        System.out.println(" - remaining factors: " + factors.size());
 	
@@ -153,7 +140,364 @@ public class STPPD {
 	
 	    return result_val;
 	}
+/**
+ * Sum factors that contain variable and marginalize out variable
+ * @param factors_with_var
+ * @param var
+ * @return
+ */
+    
+private int createBucket(ArrayList<Integer> factors_with_var, String var) {
+	int factor_with_var = addFactors(factors_with_var);
+    int projected_factor = minOutVar(factor_with_var, var);
+    projected_factor = _context.reduceLP(projected_factor);
+    System.out.println(" - pre-projection factor size: " + _context.getNodeCount(factor_with_var) + ", vars: " + _context.collectVars(factor_with_var).size() + " " + _context.collectVars(factor_with_var));
+    if (SHOW_GRAPHS)
+    	_context.getGraph(factor_with_var).launchViewer("Pre-projected factor " + _context.collectVars(factor_with_var)/* + factor_with_var*/);
+    System.out.println(" - post-projection factor size: " + _context.getNodeCount(projected_factor) + ", vars: " + _context.collectVars(projected_factor).size() + " " + _context.collectVars(projected_factor));
+    if (SHOW_GRAPHS)
+    	_context.getGraph(projected_factor).launchViewer("Post-projected factor " + _context.collectVars(projected_factor)/* + projected_factor*/);
+
+    // Show plots of functions
+    if (SHOW_PLOTS && _context.collectVars(factor_with_var).size() == 2 && !_context.collectVars(factor_with_var).removeAll(_context._alBooleanVars)) {
+        Iterator<String> vars = _context.collectVars(factor_with_var).iterator();
+        String var1 = vars.next();
+        String var2 = vars.next();
+        XADDUtils.Plot3DSurfXADD(_context, factor_with_var, -50, 1, 50, -50, 1, 50, var1, var2, "Pre-projected factor " + _context.collectVars(factor_with_var));
+        XADDUtils.Plot3DSurfXADD(_context, projected_factor, -50, 1, 50, -50, 1, 50, var1, var2, "Post-projected factor " + _context.collectVars(projected_factor));
+        XADDUtils.PlotXADD(_context, projected_factor, -50, 1, 50, _context.collectVars(projected_factor).iterator().next(), "Post-projected factor " + _context.collectVars(projected_factor));
+    }
+	return projected_factor;
+}
+
+public double solveMiniBucketElim(int maxVariables) {
+    	
+    	Timer timer = new Timer();
+    	ArrayList<String> var_order = getTWMinVarOrder();
+    		
+	    // Do bucket/variable elimination
+    	ArrayList<Integer> factors = (ArrayList<Integer>)_alAllFactors.clone();
+	    ArrayList<Integer> factors_with_var = new ArrayList<Integer>();
+	    ArrayList<Integer> factors_without_var = new ArrayList<Integer>();
+	    
+	    ArrayList<Integer> projected_factors= new ArrayList<Integer>();
+	    
+	    //ArrayList<ArrayList<Integer>> factorsByBucket=new ArrayList<ArrayList<Integer>>();
+	    ArrayList<ArrayList<Integer>> projected_factorsByBucket=new ArrayList<ArrayList<Integer>>(); //h^p_js
+	    ArrayList<ArrayList<Integer>> FFactorsByBucket=new ArrayList<ArrayList<Integer>>(); //F_{p_j}s
+	    ArrayList<ArrayList<Integer>> HFactorsByBucket=new ArrayList<ArrayList<Integer>>(); //h_{p_j}s
+	    
+	    
+	    timer.ResetTimer();
+	    for (String var : var_order) {
+	        System.out.println("Eliminating: " + var + ", " + factors.size() + " factors (max: " + largestFactorSize(factors) + " nodes)");
 	
+	        // Split factors into sets that contain and do not contain the variable
+	        splitFactors(var, factors, factors_with_var, factors_without_var);
+	
+	        System.out.println(" - with var: " + factors_with_var.size() + ", without var: " + factors_without_var.size());
+	
+	        
+	        //factorsByBucket.add((ArrayList<Integer>) factors_with_var.clone());
+	        
+	        ArrayList<Integer> FFactors=new ArrayList<Integer>();
+	        ArrayList<Integer> HFactors=new ArrayList<Integer>();
+	        
+	        splitFactorsFAndHInBucket(factors_with_var, FFactors, HFactors);        
+	        FFactorsByBucket.add(FFactors);
+	        HFactorsByBucket.add(HFactors);
+	          
+	        factors.clear();
+	        projected_factors=createMiniBuckets(maxVariables,factors_with_var,var,factors);
+	        
+    	     // adding new factors and all without the variable to the factors list
+
+	        factors.addAll(factors_without_var);
+	        factors.addAll(projected_factors);
+	        
+	        projected_factorsByBucket.add(projected_factors);
+	        
+	        System.out.println(" - remaining factors: " + factors.size());
+	
+	        // Flush caches
+	     //   _context.clearSpecialNodes();
+	     //   for (Integer xadd : _alAllFactors)
+	     //       _context.addSpecialNode(xadd);
+	     //   for (Integer f : factors)
+	     //       _context.addSpecialNode(f);
+	     //   _context.flushCaches();
+	    }
+	    //Include the h functions created without variables in the first bucket 
+	    ArrayList<Integer> lastHBucket= HFactorsByBucket.get(var_order.size()-1);
+	    lastHBucket.addAll(factors);
+	    
+	      
+	     
+	    
+	    // Done variable elimination, have a set of factors just over query vars,
+	    // need to compute normalizer
+	    Integer result = addFactors(factors);
+	       
+	    double result_val = ((DoubleExpr)((XADDTNode)_context.getNode(result))._expr)._dConstVal;
+	    System.out.println("solveBucketElim Done (" + timer.GetCurElapsedTime() + " ms): result value " + result_val + /*" [size: " + _context.getNodeCount(result) + ", vars: " + _context.collectVars(result) + "]"*/ "\n");
+	    //_context.getGraph(result).launchViewer("Final result " + result);
+	
+	    HashMap<String,Double> assignment=AStarWithMiniBucket(projected_factorsByBucket/**h^p_js**/,FFactorsByBucket/**F_{p_j}s**/,  HFactorsByBucket/**h_{p_j}s**/,var_order);
+        System.out.println("Assigment for variables: "+ assignment);
+	    
+	    
+	    return result_val;
+	}
+
+
+HashMap<String,Double> AStarWithMiniBucket(
+		ArrayList<ArrayList<Integer>> projected_factorsByBucket,
+		ArrayList<ArrayList<Integer>> FFactorsByBucket,
+		ArrayList<ArrayList<Integer>> HFactorsByBucket,ArrayList<String> var_order) {
+         
+	    PriorityQueue<NodeSearch> L=new PriorityQueue<NodeSearch>(50,new Comparator<NodeSearch>()
+		{
+        	public int compare(NodeSearch x, NodeSearch y)
+			{
+				if (x.getF_val() <= y.getF_val()) return -1;
+				else return 1;
+			}
+		});
+
+	    //insert a dummy node in the set L with f=0
+	    HashMap<String,Double> partialAssignment=new HashMap<String,Double>();
+	    NodeSearch node=new NodeSearch(partialAssignment, _context.getTermNode(new DoubleExpr(0d)),_context.getTermNode(new DoubleExpr(0d)),0);
+	    L.add(node);
+	    
+	    int n=var_order.size();
+	    
+	    //search
+	    while(true){
+	    	//select and remove a node with the largest f value from L
+	    	node= L.remove();
+	    	
+	    	//if n=p then we have an optimal solution
+	    	if(node.getPartialAssignment().size()==n){
+	    		return node.getPartialAssignment();
+	    	}
+	    	//expand node 
+	    	ArrayList<NodeSearch> succ=generateSuccessors(node, projected_factorsByBucket, FFactorsByBucket,HFactorsByBucket, var_order);
+	    	// add all nodes to L
+	    	L.addAll(succ);
+	    }
+	
+}
+
+
+
+
+
+private ArrayList<NodeSearch> generateSuccessors(NodeSearch node,
+		ArrayList<ArrayList<Integer>> projected_factorsByBucket,
+		ArrayList<ArrayList<Integer>> FFactorsByBucket,
+		ArrayList<ArrayList<Integer>> HFactorsByBucket,ArrayList<String> var_order) {
+	
+	
+	ArrayList<NodeSearch> succ=new ArrayList<NodeSearch>();
+	int numberBucket=var_order.size()-1-node.getPartialAssignment().size();
+	String var=var_order.get(numberBucket);
+	//compute newG, newH and newF
+	ArrayList<Integer> result=computeNewGHandF(node,projected_factorsByBucket, FFactorsByBucket, HFactorsByBucket, numberBucket);
+	Integer newG = result.get(0);
+	Integer newH = result.get(1);
+	Integer newF = result.get(2);
+	
+
+	
+	//for each value (boundary) in the domain of X_{p+1} create a new node
+	ArrayList values=new ArrayList();
+	if (_context._alBooleanVars.contains(var)) {
+		// Boolean variable
+		values.add(true);
+		values.add(false);
+		
+	} else {
+		 //Continuous variable
+		//collect all the boundaries in the constraints in newF 
+	    values=collectBoundaries(newF);
+	}
+
+	for(Object val:  values){
+		HashMap<String,Double> newPartialAssignment = (HashMap<String,Double>) node.getPartialAssignment().clone();
+
+		HashMap<String, Boolean> subsBoolean=new HashMap<String, Boolean>();
+		HashMap<String, ArithExpr> subsCont = new HashMap<String, ArithExpr>();
+		int newGWithValue;
+		int newHWithValue;
+		int newFWithValue;
+		if (_context._alBooleanVars.contains(var)) {
+			// Boolean variable
+					    				
+			if((Boolean)val){
+				newPartialAssignment.put(var,1.0);
+				subsBoolean.put(var,true);
+
+			}
+			else{
+				newPartialAssignment.put(var,0.0);
+				subsBoolean.put(var,false);
+
+			}
+			
+			newGWithValue=_context.substituteBoolVars(newG, subsBoolean);
+			newHWithValue=_context.substituteBoolVars(newH, subsBoolean);
+			newFWithValue=_context.substituteBoolVars(newF, subsBoolean);
+
+				
+		}
+		else{		
+			newPartialAssignment.put(var,(Double) val);
+			subsCont.put(var, new DoubleExpr((Double)val) );
+			newGWithValue=_context.substitute(newG, subsCont);
+			newHWithValue=_context.substitute(newH, subsCont);
+			newFWithValue=_context.substitute(newF, subsCont);
+			
+		}
+		if (SHOW_GRAPHS){
+		  	_context.getGraph(newGWithValue).launchViewer("new G with substitution: " + _context.collectVars(newGWithValue));
+		  	_context.getGraph(newHWithValue).launchViewer("new H with substitution: " + _context.collectVars(newHWithValue));
+		  	_context.getGraph(newFWithValue).launchViewer("new F with substitution: " + _context.collectVars(newFWithValue));
+		}		
+
+	    double f_val = ((DoubleExpr)((XADDTNode)_context.getNode(newFWithValue))._expr)._dConstVal; 
+	    NodeSearch nodeSucc=new NodeSearch(newPartialAssignment, newGWithValue, newHWithValue ,f_val);
+	    succ.add(nodeSucc);
+    }
+	return succ;
+}
+
+private ArrayList<Integer> computeNewGHandF(NodeSearch node,
+		ArrayList<ArrayList<Integer>> projected_factorsByBucket,
+		ArrayList<ArrayList<Integer>> FFactorsByBucket,
+		ArrayList<ArrayList<Integer>> HFactorsByBucket,
+		int numberBucket) {
+
+	
+	ArrayList<Integer> result=new ArrayList<Integer>();
+	int newG=computeG(node.getG(), FFactorsByBucket.get(numberBucket));
+	int newH=computeH(node.getH(), HFactorsByBucket.get(numberBucket),projected_factorsByBucket.get(numberBucket) );
+	if (SHOW_GRAPHS){
+    	_context.getGraph(newG).launchViewer("G: " + _context.collectVars(newG));
+    	_context.getGraph(newH).launchViewer("H: " + _context.collectVars(newH));
+   	}
+
+	//we need to consider all the values in the newPartialAssignment
+	Set<String> varAssignmSet= node.getPartialAssignment().keySet();
+	HashMap<String, Boolean> subsBoolean=new HashMap<String, Boolean>();
+	HashMap<String, ArithExpr> subsCont = new HashMap<String, ArithExpr>();
+	for(String varAssignment:varAssignmSet){
+    	if (_context._alBooleanVars.contains(varAssignment)) {
+    		// Boolean variable
+    		subsBoolean.put(varAssignment,node.getPartialAssignment().get(varAssignment).compareTo(1.0)==0?true:false);
+    	}
+    	else{
+    		subsCont.put(varAssignment, new DoubleExpr(node.getPartialAssignment().get(varAssignment)) );
+    	}
+    }
+    
+	newG=_context.substituteBoolVars(newG, subsBoolean); 
+	newG= _context.substitute(newG, subsCont); //XADD with only one variable
+	newH=_context.substituteBoolVars(newH, subsBoolean); 
+	newH= _context.substitute(newH, subsCont); //XADD with only one variable
+	
+  	
+	int newF=_context.applyInt(newG, newH,XADD.SUM);
+		
+	if (SHOW_GRAPHS){
+		  	_context.getGraph(newF).launchViewer("new f with substitution of x^{p-1}: " + _context.collectVars(newF));
+	}		
+	result.add(newG);
+	result.add(newH);
+	result.add(newF);
+	
+    return result;
+}
+
+private ArrayList<Double> collectBoundaries(int newF) {
+	// TODO Auto-generated method stub
+	ArrayList<Double> boundaries=new ArrayList<Double>();
+	boundaries.add(35.0);
+	boundaries.add(40.0);
+	boundaries.add(50.0);
+	boundaries.add(60.0);
+	return boundaries;
+}
+
+private int computeG(int gMinus1,ArrayList<Integer> FFactorsInBucket) {
+    int newG = addFactors(FFactorsInBucket);
+    newG = _context.applyInt(gMinus1,newG,  XADD.SUM);
+	return newG;
+}
+
+private int computeH(int hMinus1, ArrayList<Integer> HFactorsInBucket, ArrayList<Integer> HFactorsCreatedInBucket) {
+    int newH1 = addFactors(HFactorsInBucket);
+    int newH2 = addFactors(HFactorsCreatedInBucket);
+    int newH = _context.applyInt(hMinus1, newH1,XADD.SUM);
+    newH = _context.applyInt(newH, newH2,XADD.MINUS);
+	return newH;
+}
+
+
+
+/**
+ * Create minibuckets into a Bucket. In each minibucket sum factors that contain variable and marginalize out variable.
+ *  Then, add this new factor to the factors list
+ * @param maxVariables
+ * @param factors_with_var
+ * @param var
+ * @param factors
+ */
+
+	private ArrayList<Integer> createMiniBuckets(int maxVariables, ArrayList<Integer> factors_with_var, String var,ArrayList<Integer> factors) {
+
+		  ArrayList<Integer> factors_inMiniBucket=new ArrayList<Integer>();
+          ArrayList<Integer> factors_notinMiniBucket= new ArrayList<Integer>();
+          ArrayList<Integer> factors_to_split_with_var= new ArrayList<Integer>();
+          factors_to_split_with_var.addAll(factors_with_var);
+          ArrayList<Integer> projected_factors=new ArrayList<Integer>();
+	        
+          do{
+          	
+                splitBucket(maxVariables, factors_to_split_with_var, factors_inMiniBucket,factors_notinMiniBucket);
+
+		        int factor_inMiniBucket = addFactors(factors_inMiniBucket);
+		        int projected_factor = minOutVar(factor_inMiniBucket, var);
+		        projected_factor = _context.reduceLP(projected_factor);
+	
+		        System.out.println(" - pre-projection factor size: " + _context.getNodeCount(factor_inMiniBucket) + ", vars: " +
+		                            _context.collectVars(factor_inMiniBucket).size() + " " + _context.collectVars(factor_inMiniBucket));
+		        if (SHOW_GRAPHS)
+		        	_context.getGraph(factor_inMiniBucket).launchViewer("Pre-projected factor " + _context.collectVars(factor_inMiniBucket)/* + factor_with_var*/);
+		        System.out.println(" - post-projection factor size: " + _context.getNodeCount(projected_factor) + ", vars: " + _context.collectVars(projected_factor).size() + " " + _context.collectVars(projected_factor));
+		        if (SHOW_GRAPHS)
+		        	_context.getGraph(projected_factor).launchViewer("Post-projected factor " + _context.collectVars(projected_factor)/* + projected_factor*/);
+		        
+		        // Show plots of functions
+		        if (SHOW_PLOTS && _context.collectVars(factor_inMiniBucket).size() == 2 && !_context.collectVars(factor_inMiniBucket).removeAll(_context._alBooleanVars)) {
+			        Iterator<String> vars = _context.collectVars(factor_inMiniBucket).iterator();
+			        String var1 = vars.next();
+			        String var2 = vars.next();
+			        XADDUtils.Plot3DSurfXADD(_context, factor_inMiniBucket, -50, 1, 50, -50, 1, 50, var1, var2, "Pre-projected factor " + _context.collectVars(factor_inMiniBucket));
+			        XADDUtils.Plot3DSurfXADD(_context, projected_factor, -50, 1, 50, -50, 1, 50, var1, var2, "Post-projected factor " + _context.collectVars(projected_factor));
+			        XADDUtils.PlotXADD(_context, projected_factor, -50, 1, 50, _context.collectVars(projected_factor).iterator().next(), "Post-projected factor " + _context.collectVars(projected_factor));
+		        }
+		        //factors.add(projected_factor);
+		        projected_factors.add(projected_factor);
+		        factors_to_split_with_var.clear();
+		        factors_to_split_with_var.addAll(factors_notinMiniBucket);
+          }
+	        while(!factors_to_split_with_var.isEmpty());
+          return projected_factors;
+
+    }
+	
+	
+
 	private ArrayList<String> getTWMinVarOrder() {
 
 		Graph g = getVariableConnectivityGraph(_alAllFactors);
@@ -180,6 +524,69 @@ public class STPPD {
 	        else
 	            factors_without_var.add(f);
 	}
+	
+	
+	private void splitFactorsFAndHInBucket(ArrayList<Integer> factor_source, ArrayList<Integer> FFactors,ArrayList<Integer> HFactors) {
+
+            FFactors.clear();
+            HFactors.clear();
+            for (Integer f : factor_source){
+            	if (_alAllFactors.contains(f))
+            		FFactors.add(f);
+            	else
+            		HFactors.add(f);
+            }
+	}
+
+	
+/**
+ * Create a minibucket that includes the first factor of factor_source considering the maxVariables
+ * @param maxVariables
+ * @param factor_source: factors in a bucket
+ * @param factors_inMiniBucket
+ * @param factors_notinMiniBucket
+ */
+	
+	private void splitBucket(Integer maxVariables, ArrayList<Integer> factor_source, ArrayList<Integer> factors_inMiniBucket,
+            ArrayList<Integer> factors_notinMiniBucket) {
+
+		factors_inMiniBucket.clear();
+		factors_notinMiniBucket.clear();
+		
+		Integer f;
+		HashSet<String> varsBeforeUnion= new HashSet<String>();
+		HashSet<String> varsAfterUnion = new HashSet<String>();
+		boolean firstFactor=true;
+		Iterator<Integer> itFac=factor_source.iterator();
+		while (itFac.hasNext()){
+			f=itFac.next();
+			varsAfterUnion=(HashSet<String>) varsBeforeUnion.clone();
+			varsAfterUnion.addAll(_context.collectVars(f));
+				
+			if (varsAfterUnion.size()<=maxVariables){
+				factors_inMiniBucket.add(f);
+				varsBeforeUnion=(HashSet<String>) varsAfterUnion.clone();				
+			}
+			else{
+			    if(firstFactor){
+			       //create a minibucket with only this factor 
+			    	factors_inMiniBucket.add(f);
+					while (itFac.hasNext()){
+						f=itFac.next();
+						factors_notinMiniBucket.add(f);
+					
+					}
+					return;
+			    }
+			    else{
+			    	factors_notinMiniBucket.add(f);
+			    }
+			}
+			firstFactor=false;
+		}
+
+	}
+	
 	
 	private Integer addFactors(ArrayList<Integer> factors) {
 	    int add_xadd = _context.getTermNode(new DoubleExpr(0d));
@@ -381,12 +788,13 @@ public class STPPD {
     public static void main(String[] args) throws Exception {
     	
     	//STPPD stn = BuildSimpleSTPPD(false /* true = additive obj, false = makespan obj */);
-    	STPPD stn = BuildLinearSTPPD(true /* true = additive obj, false = makespan obj */, 10 /* size */);
+    	STPPD stn = BuildLinearSTPPD(true /* true = additive obj, false = makespan obj */, 3 /* size */);
     	
     	if (DISPLAY) stn.getConstraintGraph(stn._alAllFactors).launchViewer("Constraint factor graph");
 
     	//stn.testReduceLP();
         stn.solveBucketElim();
+        stn.solveMiniBucketElim(1/*max variables*/);
         stn.solveMonolithic();
     }
 
