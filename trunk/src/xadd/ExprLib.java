@@ -275,12 +275,12 @@ public abstract class ExprLib {
             CompExpr new_expr = new CompExpr(_type, _lhs, _rhs);
             switch (new_expr._type) {
                 case GT_EQ:
-                    new_expr._type = CompOperation.GT;
+                    //new_expr._type = CompOperation.GT;
                     // Do not swap lhs and rhs -- just collapsing >= to >
                     break;
                 case LT:
                 case LT_EQ:
-                    new_expr._type = CompOperation.GT;
+                    new_expr._type = CompOperation.GT_EQ;
                     // Swap lhs and rhs to counter the inequality switch
                     new_expr._lhs = _rhs;
                     new_expr._rhs = _lhs;
