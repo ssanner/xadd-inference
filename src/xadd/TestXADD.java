@@ -8,20 +8,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import xadd.ExprLib.ArithExpr;
-import xadd.ExprLib.ArithOperation;
-import xadd.ExprLib.OperExpr;
 import xadd.LinearXADDMethod.NamedOptimResult;
-import xadd.XADD.BoolDec;
-import xadd.ExprLib.CompExpr;
-import xadd.XADD.Decision;
-import xadd.XADD.DeltaFunctionSubstitution;
-import xadd.ExprLib.DoubleExpr;
-import xadd.XADD.ExprDec;
-import xadd.ExprLib.VarExpr;
-import xadd.XADD.XADDINode;
-import xadd.XADD.XADDLeafMinOrMax;
-import xadd.XADD.XADDTNode;
+import xadd.XADD.*;
+import xadd.ExprLib.*;
 import camdp.CAction;
 import camdp.HierarchicalParser;
 
@@ -32,7 +21,7 @@ public class TestXADD {
      */
 
     public static void main(String[] args) throws Exception {
-        testBVarSubs(args);
+        main5(args);
     }
 
     public static void main4(String[] args) throws Exception {
@@ -440,42 +429,16 @@ public class TestXADD {
         XADD context = new XADD();
 
         //Simple XADD with abs function
-        int abs_dd = context.buildCanonicalXADDFromFile("./src/xadd/ex/absx.xadd");
-        Graph g1 = context.getGraph(abs_dd);
-        g1.launchViewer();
-                
-        //Create Expr "y+ z -2" 
-        ArrayList<ArithExpr> al = new ArrayList<ArithExpr>();
-        al.add(new VarExpr("y"));
-        al.add(new VarExpr("z"));
-        al.add(new DoubleExpr(-2));
-        OperExpr rep = new OperExpr(ExprLib.ArithOperation.SUM, al);
+        int dd = context.buildCanonicalXADDFromFile("./src/xadd/ex/test8.xadd");
+        context.getGraph(dd).launchViewer();
+
+		HashMap<String,ArithExpr> replace = new HashMap<String, ArithExpr>();
+		replace.put("t1", new DoubleExpr(30.0));        
+		int sdd = context.substitute(dd,replace);
+
+		context.getGraph(sdd).launchViewer();
         
-        // Replace on abs_dd
-        HashMap<String,ArithExpr> replace = new HashMap<String, ArithExpr>();
-        replace.put("x", rep);
-        int sub_dd = context.substitute(abs_dd,replace);
-        Graph gsub = context.getGraph(sub_dd);
-        gsub.launchViewer();    
-        
-        
-        //Sum DDs 
-        int sum_dd = context.apply(abs_dd, sub_dd, XADD.SUM);
-        Graph gsum = context.getGraph(sum_dd);
-        gsum.launchViewer();
-        
-        //Maximize for Value
-        Double max = context.linMaxVal(sum_dd);
-        System.out.println("Lin Max Val is:"+max);
-        
-        //Maximize for Value and Assignment
-        NamedOptimResult nres = context.linMaxArg(sum_dd);
-        System.out.println("Lin Max Arg Val is:"+nres.sol_value);
-        System.out.println("Optimizing Args are:");
-        for (Map.Entry<String,Double> me : nres.assignment.entrySet()){
-            System.out.print(me.getKey() +" = "+me.getValue()+", ");
-        }
-    }
+}
    
     public static void testBVarSubs(String[] args) throws Exception {
 //        Test XADD substitution and max
