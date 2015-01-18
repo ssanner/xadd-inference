@@ -42,4 +42,6 @@ public class BayesNetGraphicalModelTest {
         System.out.println("factors rel. c = " + factors);
         Assert.assertEquals(3, factors.size());
     }
+
+
 }

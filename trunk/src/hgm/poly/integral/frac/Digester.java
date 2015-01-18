@@ -219,9 +219,19 @@ public class Digester {
         Polynomial g = aConstraintFraction.getDenominator();   //G
         if (g.isNumber()) {
             double d = g.getNumericalValue();
-            if (d > 0) {
+            if (d > 0) {   //F > 0 should be added
+                if (c1.unsolvedPolynomials.contains(f.scalarMultiplication(-1)))  {
+                    //inconsistency! F<0 is already a constraint
+                    inters.remove(c1);
+                    return;
+                }
                 c1.unsolvedPolynomials.add(f);   // F > 0
-            } else if (d < 0) {
+            } else if (d < 0) { //F<0 should be added:
+                if (c1.unsolvedPolynomials.contains(f)) {
+                    //inconsistency! F>0 is already a constraint
+                    inters.remove(c1);
+                    return;
+                }
                 c1.unsolvedPolynomials.add(f.scalarMultiplication(-1)); // F < 0
             } else {
                 throw new RuntimeException("What should I do with: " + aConstraintFraction);
@@ -234,6 +244,25 @@ public class Digester {
         //      |  .                   ==>     |-G>0,-F>0, X>0:  Y         (c2)
         //      |  .                           |  .
         //      |  .                           |  .
+
+        //NEW: Added 6/01/2015. some simple checks to reduce invalid cases:
+        if (c1.unsolvedPolynomials.contains(g)) {
+            c1.unsolvedPolynomials.add(f);  //since G>0 is an existing condition, F has to be >0 also.
+            return;
+        }
+        if (c1.unsolvedPolynomials.contains(f)) {
+            c1.unsolvedPolynomials.add(g);  //since F>0 is an existing condition, G has to be >0 also.
+            return;
+        }
+        if (c1.unsolvedPolynomials.contains(g.scalarMultiplication(-1))) {
+            c1.unsolvedPolynomials.add(f.scalarMultiplication(-1)); //-F>0
+            return;
+        }
+        if (c1.unsolvedPolynomials.contains(f.scalarMultiplication(-1))) {
+            c1.unsolvedPolynomials.add(g.scalarMultiplication(-1)); //-G>0
+            return;
+        }
+        //end new part.
 
         //forking:
         IntermediateConstraintExpression c2 = c1.clone();

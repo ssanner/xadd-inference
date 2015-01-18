@@ -1,4 +1,4 @@
-package hgm.poly.reports.sg.external.Anglican;
+package hgm.poly.reports.sg.external.anglican;
 
 import hgm.asve.Pair;
 import hgm.poly.gm.JointToSampler;
@@ -31,7 +31,7 @@ public class AnglicanJointToSampler implements JointToSampler{
         if (!(jointWrapper instanceof RichJointWrapper)) throw new RuntimeException();
         final RichJointWrapper richJW = (RichJointWrapper)jointWrapper;
         String anglicanCode = richJW.extraInfo(AnglicanCodeGenerator.ANGLICAN_CODE_KEY);
-        anglicanCode = anglicanCode.replaceAll(AnglicanCodeGenerator.ANGLICAN_NOISE_PARAM, Double.toString(observationNoiseParam));
+        anglicanCode = anglicanCode.replaceAll(AnglicanCodeGenerator.EXTERNAL_MODEL_NOISE_PARAM, Double.toString(observationNoiseParam));
         final ExternalMhSampleBank sampleBank;
         try {
             System.err.println("Anglican code running ...");

@@ -1,8 +1,7 @@
-package hgm.poly.reports.sg.external.Anglican;
+package hgm.poly.reports.sg.external.anglican;
 
 import hgm.asve.Pair;
 import hgm.poly.reports.sg.external.ExternalMhSampleBank;
-import hgm.poly.sampling.SamplerInterface;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
@@ -19,6 +18,49 @@ import java.util.Map;
  * Time: 12:01 AM
  */
 public class AnglicanCodeGeneratorTest {
+    @Test
+    public void testMakeAnglicanFermentationModel() throws Exception {
+        AnglicanCodeGenerator.DEBUG = true;
+        int n = 3;
+        Map<String, Double> evidence=new HashMap<String, Double>();
+        evidence.put("q", n* 0.1);        //todo...    ???
+//        evidence.put("v_2", 0.2d);
+        evidence.put("l_1", 2d);
+        String s = AnglicanCodeGenerator.makeAnglicanFermentationModel(n, 0, 5, evidence, 0.1, Arrays.asList("l_1", "l_2 q"));
+        System.out.println("s = \n" + s);
+
+        ExternalMhSampleBank bank = AnglicanCodeGenerator.runAnglicanCode(AnglicanCodeGenerator.ANGLICAN_DEFAULT_JAR_PATH, s, 2000, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb);//pgibbs, smc, rdb
+        System.out.println("bank = " + bank);
+        while (bank.hasNext()) {
+            Pair<Double[],Long> next = bank.next();
+            System.out.println("next = " + next);
+        }
+
+//        String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/gm/";
+//        persistBank(bank, SAMPLES_FILE_PATH + "scatter2D.txt");
+    }
+
+ @Test
+    public void testMakeAnglicanResistorModel() throws Exception {
+        AnglicanCodeGenerator.DEBUG = true;
+        int n = 3;
+        Map<String, Double> evidence=new HashMap<String, Double>();
+        evidence.put("g_t", n* 0.1);        //todo...    ???
+//        evidence.put("v_2", 0.2d);
+        evidence.put("r_1", 2d);
+        String s = AnglicanCodeGenerator.makeAnglicanResistorModel(n, 9.5, 10.5, evidence, 0.1, Arrays.asList("r_1", "r_2 r_t"));
+        System.out.println("s = \n" + s);
+
+        ExternalMhSampleBank bank = AnglicanCodeGenerator.runAnglicanCode(AnglicanCodeGenerator.ANGLICAN_DEFAULT_JAR_PATH, s, 2000, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb);//pgibbs, smc, rdb
+        System.out.println("bank = " + bank);
+        /*while (bank.hasNext()) {
+            Pair<Double[],Long> next = bank.next();
+            System.out.println("next = " + next);
+        }*/
+
+        String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/gm/";
+        persistBank(bank, SAMPLES_FILE_PATH + "scatter2D.txt");
+    }
 
     @Test
     public void testMakeAnglicanCollisionModel() throws Exception {

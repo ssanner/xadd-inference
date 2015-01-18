@@ -49,7 +49,7 @@ public class FractionalJointSymbolicGibbsSampler implements SamplerInterface {
 
     //..................
 
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = false;//false;
     protected static final Random random = new Random();
     public static final double SAMPLE_ACCURACY = 1E-9;//1E-6;
     public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 45;//30;

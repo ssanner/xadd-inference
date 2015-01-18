@@ -13,7 +13,7 @@ import hgm.poly.sampling.SamplerInterface;
  *
  * In the presence of deterministic evidence some vars are omitted that should be recovered...
  */
-public class EliminatedVarCompleterSamplerMaker implements JointToSampler{
+public class EliminatedVarCompleterSamplerMaker implements JointToSampler{ //todo when Joint Wrapper is replaced with Rich Joint wrapper you will not need this class any more..
     private JointToSampler innerJointToSampler;
     public EliminatedVarCompleterSamplerMaker(JointToSampler innerJointToSampler) {
         this.innerJointToSampler = innerJointToSampler;

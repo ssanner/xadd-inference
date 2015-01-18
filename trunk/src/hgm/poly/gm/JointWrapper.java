@@ -8,7 +8,7 @@ import hgm.poly.PiecewiseExpression;
  * Date: 8/09/14
  * Time: 10:04 PM
  */
-@Deprecated // I just want to use rich joint wrapper
+@Deprecated // I just want to use rich joint wrapper //todo replace this with RichJointWrapper everywhere...
 public class JointWrapper {
     private PiecewiseExpression<Fraction> joint;
     private double minVarLimit;
