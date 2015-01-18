@@ -15,61 +15,6 @@ import java.util.Map;
  */
 public class ExperimentalGraphicalModels {
 
-    public static GraphicalModel makeCircuitModel(int n /*num. Resistances*/,
-                                                  Double lowBound, Double highBound) {
-        // 1/R_t = 1/R_1 + 1/R_2 + ... + 1/R_n
-
-        String[] vars = new String[n + 1];
-        for (int i = 0; i < n; i++) {
-            vars[i] = "R_" + (i + 1);     //R_1, ..
-        }
-        vars[n] = "R_t"; //total R
-
-        PolynomialFactory factory = new PolynomialFactory(vars);
-        Distributions dBank = new Distributions(factory);
-
-        BayesNetGraphicalModel bn = new BayesNetGraphicalModel();
-
-        PiecewiseExpression<Fraction>[] rsF = new PiecewiseExpression[n];
-        for (int i = 0; i < n; i++) {
-
-            rsF[i] =
-//                    (i==0) ?
-                    dBank.createUniformDistributionFraction("R_" + (i + 1), lowBound.toString(), highBound.toString());
-//                   :
-//                    dBank.createNonNormalizedBellShapedDistribution("R_" + (i + 1), lowBound.toString(), highBound.toString());//createUniformDistributionFraction("R_" + (i + 1), lowBound.toString(), highBound.toString());
-            bn.addFactor(new StochasticVAFactor("R_" + (i + 1), rsF[i])); //mass
-
-        }
-
-        Fraction rtF = factory.makeFraction(reciprocalSumOfReciprocals("R_", n)); // 1/R_t = 1/R_1 + ... + 1/R_n
-
-        bn.addFactor(new DeterministicFactor("R_t", rtF)); //total momentum
-        return bn;
-    }
-
-    static String reciprocalSumOfReciprocals(String varPrefix, int n) {
-        StringBuilder[] ss = new StringBuilder[n + 1];
-        for (int i = 0; i < ss.length; i++) {
-            ss[i] = new StringBuilder();
-        }
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < ss.length; j++) {
-                if (j != i) {
-                    ss[j].append(varPrefix + (i + 1) + "^(1) *");
-                }
-            }
-        }
-
-        StringBuilder numerator = new StringBuilder();
-        for (int i = 0; i < n; i++) {
-            numerator.append(ss[i].substring(0, ss[i].length() - 1)).append(" +"); //to remove last '*'
-        }
-
-        return "[" + ss[n].substring(0, ss[n].length() - 1) + "] / [" + numerator.substring(0, numerator.length() - 1) + "]";
-    }
-
     /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public static GraphicalModel makeSimplifiedDoubleFermentationModel(int n *//*num colliding objects*//*,
                                                                  Double lowerBound, Double upperBound) {
@@ -131,13 +76,101 @@ public class ExperimentalGraphicalModels {
 
 
 */
+    public static GraphicalModel makeCircuitConductanceModel(int n /*num. resistors*/, Double rLB, Double rUB) {
+
+        // 1/R_t = 1/R_1 + 1/R_2 + ... + 1/R_n
+
+        String[] vars = new String[2 * n + 2];
+        for (int i = 0; i < n; i++) {
+            vars[i] = "r_" + (i + 1);  //resistance, ..
+            vars[i + n] = "g_" + (i + 1); //conductance...
+        }
+        vars[2 * n] = "r_t"; //total R
+        vars[2 * n + 1] = "g_t"; //total G
+
+        PolynomialFactory factory = new PolynomialFactory(vars);
+        Distributions dBank = new Distributions(factory);
+
+        BayesNetGraphicalModel bn = new BayesNetGraphicalModel();
+
+        PiecewiseExpression<Fraction>[] gsF = new PiecewiseExpression[n];
+        for (int i = 0; i < n; i++) {
+            gsF[i] = dBank.createInverseUniformDistributionFraction("g_" + (i + 1), rLB, rUB);
+            bn.addFactor(new StochasticVAFactor("g_" + (i + 1), gsF[i]));
+            bn.addFactor(new DeterministicFactor("r_" + (i+1), factory.makeFraction("[1] / [g_"+ (i+1) +"^(1)]")));
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<n; i++) {
+            sb.append("g_" + (i+1) + "^(1) + ");
+        }
+        String sumG = "[" + sb.substring(0, sb.length() - " + ".length()) + "] / [1.0]";
+        Fraction g_tF = factory.makeFraction(sumG);
+        bn.addFactor(new DeterministicFactor("g_t", g_tF));
+        bn.addFactor(new DeterministicFactor("r_t", factory.makeFraction("[1] / [g_t^(1)]")));
+
+        return bn;
+    }
+
+    public static GraphicalModel makeCircuitModel(int n /*num. Resistances*/,
+                                                  Double lowBound, Double highBound) {
+        // 1/R_t = 1/R_1 + 1/R_2 + ... + 1/R_n
+
+        String[] vars = new String[n + 1];
+        for (int i = 0; i < n; i++) {
+            vars[i] = "R_" + (i + 1);     //R_1, ..
+        }
+        vars[n] = "R_t"; //total R
+
+        PolynomialFactory factory = new PolynomialFactory(vars);
+        Distributions dBank = new Distributions(factory);
+
+        BayesNetGraphicalModel bn = new BayesNetGraphicalModel();
+
+        PiecewiseExpression<Fraction>[] rsF = new PiecewiseExpression[n];
+        for (int i = 0; i < n; i++) {
+
+            rsF[i] =
+//                    (i==0) ?
+                    dBank.createUniformDistributionFraction("R_" + (i + 1), lowBound.toString(), highBound.toString());
+//                   :
+//                    dBank.createNonNormalizedBellShapedDistribution("R_" + (i + 1), lowBound.toString(), highBound.toString());//createUniformDistributionFraction("R_" + (i + 1), lowBound.toString(), highBound.toString());
+            bn.addFactor(new StochasticVAFactor("R_" + (i + 1), rsF[i])); //mass
+
+        }
+
+        Fraction rtF = factory.makeFraction(reciprocalSumOfReciprocals("R_", n)); // 1/R_t = 1/R_1 + ... + 1/R_n
+
+        bn.addFactor(new DeterministicFactor("R_t", rtF)); //total momentum
+        return bn;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    static String reciprocalSumOfReciprocals(String varPrefix, int n) {
+        StringBuilder[] ss = new StringBuilder[n + 1];
+        for (int i = 0; i < ss.length; i++) {
+            ss[i] = new StringBuilder();
+        }
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < ss.length; j++) {
+                if (j != i) {
+                    ss[j].append(varPrefix + (i + 1) + "^(1) *");
+                }
+            }
+        }
+
+        StringBuilder numerator = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            numerator.append(ss[i].substring(0, ss[i].length() - 1)).append(" +"); //to remove last '*'
+        }
+
+        return "[" + ss[n].substring(0, ss[n].length() - 1) + "] / [" + numerator.substring(0, numerator.length() - 1) + "]";
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public static GraphicalModel makeSimplifiedFermentationModel(int n /*num colliding objects*/,
                                                                  Double minLactoseAlpha, Double maxInitialLactoseBeta) {
-//                                                 double minVarLimit, double maxVarLimit,
-//                                                 JointToSampler jointToSampler) {
         // l_1 --> l_2 --> ... --> l_n
         //  |       |            |
         //  \_______\____________\____q //average ph
@@ -145,8 +178,6 @@ public class ExperimentalGraphicalModels {
         String[] vars = new String[n + 1];
         for (int i = 0; i < n; i++) {
             vars[i] = "l_" + (i + 1);     // lactose at time step i
-//            vars[3 * i + 1] = "k_" + (i + 1); // not used...
-//            vars[3 * i + 2] = "p_" + (i + 1); // not used...
         }
         vars[n] = "q";
 
@@ -170,13 +201,12 @@ public class ExperimentalGraphicalModels {
         Fraction averagePhF = factory.makeFraction(averagePH, "" + n); // [l_1^(1) + ... + l_n^(1)]/[n]
 
         for (int i = 0; i < n; i++) {
-            bn.addFactor(new StochasticVAFactor("l_" + (i + 1), lactoseFs[i])); //mass
+            bn.addFactor(new StochasticVAFactor("l_" + (i + 1), lactoseFs[i]));
         }
 
-        bn.addFactor(new DeterministicFactor("q", averagePhF)); //total momentum
+        bn.addFactor(new DeterministicFactor("q", averagePhF));
         return bn;
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -276,7 +306,7 @@ public class ExperimentalGraphicalModels {
         for (int i = 0; i < n; i++) {
             massesF[i] = dBank.createUniformDistributionFraction("m_" + (i + 1), muAlpha.toString(), muBeta.toString());
             if (symmetric) {
-                velocitiesF[i] = dBank.createUniformDistributionFraction("v_" + (i+1), nuAlpha.toString(), nuBeta.toString());
+                velocitiesF[i] = dBank.createUniformDistributionFraction("v_" + (i + 1), nuAlpha.toString(), nuBeta.toString());
             } else {
                 velocitiesF[i] = i == 0 ? dBank.createUniformDistributionFraction("v_1", nuAlpha.toString(), nuBeta.toString())
                         : dBank.createUniformDistributionFraction("v_" + (i + 1), nuAlpha.toString(), "v_" + i + "^(1)");
@@ -317,9 +347,10 @@ public class ExperimentalGraphicalModels {
 
     //////////////////////////////////////
 
+
     public static GraphicalModel makeExponentialRelationshipModel(double n /*exponent*/,
                                                                   Double xL, Double xH,
-                                                                  Double yL, Double yH){
+                                                                  Double yL, Double yH) {
 
 
         String[] vars = new String[]{"x", "y", "z"};
@@ -345,7 +376,4 @@ public class ExperimentalGraphicalModels {
         return bn;
 
     }
-
-
-
 }

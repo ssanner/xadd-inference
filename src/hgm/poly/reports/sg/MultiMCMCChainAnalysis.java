@@ -1,5 +1,6 @@
 package hgm.poly.reports.sg;
 
+import hgm.poly.diagnostics.MeasureOnTheRun;
 import hgm.poly.diagnostics.MultiArrayMultiStatFlexibleIndex;
 import hgm.poly.diagnostics.MultiArrayMultiStatistics;
 import hgm.poly.gm.JointToSampler;
@@ -31,7 +32,8 @@ public class MultiMCMCChainAnalysis {
     /////////////////////////////////////////////////////////////////////////////////
     public MultiMCMCChainAnalysis(
             int numRunsPerAlgorithm,
-            double[] groundTruthMeanVector,
+            DifferenceFromGroundTruthMeasureGenerator differenceFromGroundTruthMeasureGenerator,
+            //double[] groundTruthMeanVector,
             RichJointWrapper joint,
             JointToSampler samplerMaker,
             int burnedSamples,
@@ -59,7 +61,9 @@ public class MultiMCMCChainAnalysis {
 
             SingleMCMCChainAnalysis singleMCMCChainAnalysis;
 
-            singleMCMCChainAnalysis = new SingleMCMCChainAnalysis(groundTruthMeanVector, joint, samplerMaker, burnedSamples,
+            singleMCMCChainAnalysis = new SingleMCMCChainAnalysis(
+                    differenceFromGroundTruthMeasureGenerator, //groundTruthMeanVector,
+                    joint, samplerMaker, burnedSamples,
                     numMinDesiredSamples, maxWaitingTimeForTakingDesiredSamplesMillis,
                     minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis, approxNumTimePointsForWhichErrIsPersisted, goldenErrThreshold);
 

@@ -209,14 +209,14 @@ public class SymbolicGraphicalModelHandlerTest {
         Map<String, Double> evidence = new HashMap<String, Double>();
         evidence.put("p", 3d);
 //        evidence.put("m_1", 2d);
-//        evidence.put("v_2", 0.2d);
+        evidence.put("v_2", 0.2d);
 
-        SamplerInterface sampler = handler.makeQuerySampler(bn, Arrays.asList("v_1 v_2".split(" ")), evidence, -10, 10,
-                FractionalJointBaselineGibbsSampler.makeJointToSampler()
-//                FractionalJointRejectionSampler.makeJointToSampler(10)
-//                SelfTunedFractionalJointMetropolisHastingSampler.makeJointToSampler(10, 30, 100)
+        SamplerInterface sampler = handler.makeQuerySampler(bn, Arrays.asList("m_1 v_1".split(" ")), evidence, -10, 10,
+//                FractionalJointBaselineGibbsSampler.makeJointToSampler()
+                FractionalJointRejectionSampler.makeJointToSampler(1)
+//                FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.2, 40, 100)
 //                FractionalJointMetropolisHastingSampler.makeJointToSampler(10)
-//                SymbolicFractionalJointGibbsSampler.makeJointToSampler()
+//                FractionalJointSymbolicGibbsSampler.makeJointToSampler()
         );
 //        for (int i = 0; i<10; i++) {
 //            Double[] sample = sampler.reusableSample();
@@ -235,21 +235,42 @@ public class SymbolicGraphicalModelHandlerTest {
             Assert.assertTrue(s[1]<s[0]);
         }*/
         String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/gm/";
-        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
+        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D_gibbs");
 
     }
 
     @Test
     public void testMomentum3(){
-        int param = 4;
-        Double muAlpha = 0.2;
+        int param = 2;
+        Double muAlpha = -2.9;   //todo why negative does not work?     IMPORTANT BUG to be solved
         Double muBeta = 2.2;
         Double nuAlpha = muAlpha;
         Double nuBeta = muBeta;
         boolean symmetric = true;
 
-        GraphicalModel bn =
-                ExperimentalGraphicalModels.makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric);//paramDataCount2DataGenerator.createJointGenerator(param);
+//        GraphicalModel bn = ExperimentalGraphicalModels.makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric);//paramDataCount2DataGenerator.createJointGenerator(param);
+
+        //*************************************************************************************************
+        // m_1      v_1   m_2     v_2
+        //   \__p_1__/    \__p_2__/
+        //       \_____p______/
+        PolynomialFactory factory = new PolynomialFactory("m_1 m_2 v_1 v_2 p_t".split(" "));
+        Distributions dBank = new Distributions(factory);
+
+        PiecewiseExpression<Fraction> m1F = dBank.createUniformDistributionFraction("m_1", muAlpha.toString(), muBeta.toString());
+        PiecewiseExpression<Fraction> m2F = dBank.createUniformDistributionFraction("m_2", muAlpha.toString(), muBeta.toString());
+        PiecewiseExpression<Fraction> v_1F = dBank.createUniformDistributionFraction("v_1", nuAlpha.toString(), nuBeta.toString());
+        PiecewiseExpression<Fraction> v_2F = dBank.createUniformDistributionFraction("v_2", nuAlpha.toString(), symmetric? nuBeta.toString(): "v_1^(1)");
+//        Fraction pF = factory.makeFraction("m_1^(1)*v_1^(1) + m_2^(1)*v_2^(1)");
+        Fraction pF = factory.makeFraction("m_1^(1)*v_1^(1) + m_2^(1)*v_2^(1)");
+
+        BayesNetGraphicalModel bn = new BayesNetGraphicalModel();
+        bn.addFactor(new StochasticVAFactor("m_1", m1F)); //mass 1
+        bn.addFactor(new StochasticVAFactor("m_2", m2F)); //mass 2
+        bn.addFactor(new StochasticVAFactor("v_1", v_1F)); //mass 2
+        bn.addFactor(new StochasticVAFactor("v_2", v_2F)); //mass 2
+        bn.addFactor(new DeterministicFactor("p_t", pF)); //total momentum = p1 + p2 = m1*v1 + m2*v2 = (m1 + m2)*v
+        //*************************************************************************************************
 
 
         SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
@@ -266,15 +287,15 @@ public class SymbolicGraphicalModelHandlerTest {
         SamplerInterface sampler = handler.makeQuerySampler(bn,
                 Arrays.asList(queryStr.trim().split(" ")),
 //                Arrays.asList("v_1 v_2".split(" ")),
-                evidence, -10, 10,
+                evidence, -5, 5,
 //                FractionalJointBaselineGibbsSampler.makeJointToSampler()
+                FractionalJointSymbolicGibbsSampler.makeJointToSampler()
 //                FractionalJointRejectionSampler.makeJointToSampler(10)
 //                FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(1, 50, 1000)
-                FractionalJointMetropolisHastingSampler.makeJointToSampler(0.1)
-//                SymbolicFractionalJointGibbsSampler.makeJointToSampler()
+//                FractionalJointMetropolisHastingSampler.makeJointToSampler(0.1)
         );
 
-        int numSamples = 10000;
+        int numSamples = 1000000;
         double[] average = new double[param]; //Assuming the size of Query = num. params
         for (int i = 0; i < numSamples; i++) {
             Double[] s = sampler.reusableSample();

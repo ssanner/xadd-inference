@@ -11,6 +11,7 @@ import hgm.poly.sampling.SamplerInterface;
  * Date: 8/09/14
  * Time: 11:21 PM
  */
+@Deprecated //instead use reusableQueriedVarValues() in RichJointWrapper
 public class QuerySelectorSamplerMaker implements JointToSampler{
     private JointToSampler innerJointToSampler;
     public QuerySelectorSamplerMaker(JointToSampler innerJointToSampler) {

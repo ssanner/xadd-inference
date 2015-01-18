@@ -117,4 +117,21 @@ public class Distributions {
         ConstrainedExpression<Fraction> singleCase = new ConstrainedExpression<Fraction>(fruitF, Arrays.asList(factory.makeFraction(hyperSphere)));
         return new PiecewiseExpression<Fraction>(false, singleCase);
     }
+
+    /**
+     *
+     * @param var var in the inverse uniform distribution
+     * @param a   lower bound of the UNIFORM distribution that we look for its inverse (lower bound of the inverse.distribution is 1/b assuming 0< a < b)
+     * @param b   upper bound of the UNIFORM distribution that we look for its inverse (upper bound of the inverse.distribution is 1/a assuming 0< a < b)
+     * @return    inverse uniform distribution
+     */
+    public PiecewiseExpression<Fraction> createInverseUniformDistributionFraction(String var, double a, double b) {
+        if (a <0 || b<0 || b<=a) throw new RuntimeException("at the moment only 0<a<b is allowed");
+        Fraction fruit = factory.makePolynomial("" + (1.0 / (b - a)) + " * " + var + "^(-2.0)").cloneCastToFraction();// 1/((b-a)*y^2)
+        // support: [1/b, 1/a]
+        Fraction lowSupport = factory.makePolynomial(var + "^(1) +-" + (1.0 / b)).cloneCastToFraction();// 1/b < v
+        Fraction highSupport = factory.makePolynomial("-1.0 * " + var + "^(1) +" + (1.0 / a)).cloneCastToFraction();// 1/a > v
+        ConstrainedExpression<Fraction> singleCase = new ConstrainedExpression<Fraction>(fruit, Arrays.asList(lowSupport, highSupport));
+        return new PiecewiseExpression<Fraction>(false, singleCase);
+    }
 }

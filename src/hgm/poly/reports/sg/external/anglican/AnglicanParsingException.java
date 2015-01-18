@@ -1,4 +1,4 @@
-package hgm.poly.reports.sg.external.Anglican;
+package hgm.poly.reports.sg.external.anglican;
 
 /**
  * Created by Hadi Afshar.

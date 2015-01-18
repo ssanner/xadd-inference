@@ -1,14 +1,12 @@
 package hgm.poly.reports.sg;
 
-import hgm.poly.diagnostics.AbsDifferenceMeasure;
-import hgm.poly.diagnostics.AutoCorrelationHandler;
-import hgm.poly.diagnostics.CorrectedVarianceMeasure;
-import hgm.poly.diagnostics.MeanMeasure;
+import hgm.poly.diagnostics.*;
 import hgm.poly.gm.JointToSampler;
 import hgm.poly.gm.RichJointWrapper;
 import hgm.poly.sampling.SamplerInterface;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SingleMCMCChainAnalysis {
@@ -33,7 +31,9 @@ public class SingleMCMCChainAnalysis {
 
     ////////////////////////////////////////////////////////////////////////////////////
     public SingleMCMCChainAnalysis (
-            double[] groundTruthMeanVector, //of size #dims
+            DifferenceFromGroundTruthMeasureGenerator differenceFromGroundTruthMeasureGenerator,
+//            MeasureOnTheRun<Double[]> errMeasure,
+            //double[] groundTruthMeanVector, //of size #dims
             RichJointWrapper jointWrapper,
             JointToSampler samplerMaker,
             int burnedSamples,
@@ -75,13 +75,16 @@ public class SingleMCMCChainAnalysis {
 
 //            boolean samplingPerformedInIntendedTimeSuccessfully;
 
-        AbsDifferenceMeasure errMeasure = new AbsDifferenceMeasure(groundTruthMeanVector);
+//        AbsDifferenceMeasure errMeasure = new AbsDifferenceMeasure(groundTruthMeanVector);
+        MeasureOnTheRun<Double[]> errMeasure = differenceFromGroundTruthMeasureGenerator.generateMeasure();
         MeanMeasure meanMeasure = new MeanMeasure();
         CorrectedVarianceMeasure correctedVarianceMeasure = new CorrectedVarianceMeasure();
 
-        this.autoCorr = computeAutoCorrelation ?
-                new AutoCorrelationHandler(groundTruthMeanVector, numMinDesiredSamples, numMinDesiredSamples)
-                :
+        //todo compute again auto correlation
+        this.autoCorr =
+//                computeAutoCorrelation ?
+//                new AutoCorrelationHandler(groundTruthMeanVector, numMinDesiredSamples, numMinDesiredSamples)
+//                :
                 null;
 
         boolean desiredNumSamplesTakenConditionA = false;
