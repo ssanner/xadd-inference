@@ -21,6 +21,8 @@ import util.DevNullPrintStream;
 import util.Timer;
 
 import xadd.*;
+import xadd.ExprLib.ArithExpr;
+import xadd.ExprLib.CompExpr;
 import xadd.XADD.*;
 import xadd.ExprLib.*;
 
@@ -319,7 +321,7 @@ private ArrayList<NodeSearch> generateSuccessors(NodeSearch node,
 	} else {
 		 //Continuous variable
 		//collect all the boundaries in the constraints in newF 
-	    values=collectBoundaries(newF);
+	    values.addAll( _context.getExistNode(newF).collectBoundaries(var));
 	}
 
 	for(Object val:  values){
@@ -377,15 +379,6 @@ private ArrayList<Integer> computeNewGHandF(NodeSearch node,
 		ArrayList<ArrayList<Integer>> HFactorsByBucket,
 		int numberBucket) {
 
-	
-	ArrayList<Integer> result=new ArrayList<Integer>();
-	int newG=computeG(node.getG(), FFactorsByBucket.get(numberBucket));
-	int newH=computeH(node.getH(), HFactorsByBucket.get(numberBucket),projected_factorsByBucket.get(numberBucket) );
-	if (SHOW_GRAPHS){
-    	_context.getGraph(newG).launchViewer("G: " + _context.collectVars(newG));
-    	_context.getGraph(newH).launchViewer("H: " + _context.collectVars(newH));
-   	}
-
 	//we need to consider all the values in the newPartialAssignment
 	Set<String> varAssignmSet= node.getPartialAssignment().keySet();
 	HashMap<String, Boolean> subsBoolean=new HashMap<String, Boolean>();
@@ -399,17 +392,24 @@ private ArrayList<Integer> computeNewGHandF(NodeSearch node,
     		subsCont.put(varAssignment, new DoubleExpr(node.getPartialAssignment().get(varAssignment)) );
     	}
     }
-    
-	newG=_context.substituteBoolVars(newG, subsBoolean); 
-	newG= _context.substitute(newG, subsCont); //XADD with only one variable
-	newH=_context.substituteBoolVars(newH, subsBoolean); 
-	newH= _context.substitute(newH, subsCont); //XADD with only one variable
+  //We need to substitute inside the computation of H. If not we have problems with -infinity
+	
+	
+	ArrayList<Integer> result=new ArrayList<Integer>();
+	int newG=computeG(node.getG(), FFactorsByBucket.get(numberBucket),subsBoolean, subsCont);
+	int newH=computeH(node.getH(), HFactorsByBucket.get(numberBucket),projected_factorsByBucket.get(numberBucket),subsBoolean, subsCont);
+	if (SHOW_GRAPHS){
+    	_context.getGraph(newG).launchViewer("G: " + _context.collectVars(newG));
+    	_context.getGraph(newH).launchViewer("H: " + _context.collectVars(newH));
+   	}
+
+
 	
   	
 	int newF=_context.applyInt(newG, newH,XADD.SUM);
-		
+	newF=_context.reduceLP(newF);	
 	if (SHOW_GRAPHS){
-		  	_context.getGraph(newF).launchViewer("new f with substitution of x^{p-1}: " + _context.collectVars(newF));
+	  	_context.getGraph(newF).launchViewer("new f with substitution of x^{p-1}: " + _context.collectVars(newF));
 	}		
 	result.add(newG);
 	result.add(newH);
@@ -418,27 +418,70 @@ private ArrayList<Integer> computeNewGHandF(NodeSearch node,
     return result;
 }
 
-private ArrayList<Double> collectBoundaries(int newF) {
+//private ArrayList<Double> collectBoundaries(int newF) {
 	// TODO Auto-generated method stub
-	ArrayList<Double> boundaries=new ArrayList<Double>();
-	boundaries.add(35.0);
-	boundaries.add(40.0);
-	boundaries.add(50.0);
-	boundaries.add(60.0);
-	return boundaries;
-}
+	//ArrayList<Double> boundaries=new ArrayList<Double>();
+	//boundaries.add(35.0);
+	//boundaries.add(40.0);
+	//boundaries.add(50.0);
+	//boundaries.add(60.0);
+	//return boundaries;
+//}
 
-private int computeG(int gMinus1,ArrayList<Integer> FFactorsInBucket) {
+private int computeG(int gMinus1,ArrayList<Integer> FFactorsInBucket, HashMap<String, Boolean> subsBoolean, HashMap<String, ArithExpr> subsCont) {
+	/*if (SHOW_GRAPHS){
+	    for (Integer i: FFactorsInBucket){        
+	  	_context.getGraph(i).launchViewer("new factors in bucket: " + _context.collectVars(i));
+	    }
+	}*/
+	
     int newG = addFactors(FFactorsInBucket);
+    /*if (SHOW_GRAPHS){
+	 	  	_context.getGraph(newG).launchViewer("sum new factors in bucket: " );
+	 	  	_context.getGraph(gMinus1).launchViewer("sum new factors in bucket: " );
+	 	  	
+	 }*/
+    
     newG = _context.applyInt(gMinus1,newG,  XADD.SUM);
+    /*if (SHOW_GRAPHS){
+ 	  	_context.getGraph(newG).launchViewer("sum new factors in bucket: " );
+ 	  	
+    }*/
+    
+	newG=_context.substituteBoolVars(newG, subsBoolean);
+	/*if (SHOW_GRAPHS){
+ 	  	_context.getGraph(newG).launchViewer("sum new factors in bucket: " );
+ 	  	
+    }*/
+	
+	newG= _context.substitute(newG, subsCont); //XADD with only one variable
+	/*if (SHOW_GRAPHS){
+ 	  	_context.getGraph(newG).launchViewer("sum new factors in bucket: " );
+ 	  	
+    }*/
+	
+	newG=_context.reduceLP(newG);
+    
 	return newG;
 }
 
-private int computeH(int hMinus1, ArrayList<Integer> HFactorsInBucket, ArrayList<Integer> HFactorsCreatedInBucket) {
+private int computeH(int hMinus1, ArrayList<Integer> HFactorsInBucket, ArrayList<Integer> HFactorsCreatedInBucket, HashMap<String, Boolean> subsBoolean, HashMap<String, ArithExpr> subsCont) {
     int newH1 = addFactors(HFactorsInBucket);
+    newH1=_context.substituteBoolVars(newH1, subsBoolean); 
+	newH1= _context.substitute(newH1, subsCont); //XADD with only one variable
+
+    
     int newH2 = addFactors(HFactorsCreatedInBucket);
+    newH2=_context.substituteBoolVars(newH2, subsBoolean); 
+	newH2= _context.substitute(newH2, subsCont); //XADD with only one variable
+
+    
     int newH = _context.applyInt(hMinus1, newH1,XADD.SUM);
     newH = _context.applyInt(newH, newH2,XADD.MINUS);
+    
+    
+	    
+    newH=_context.reduceLP(newH);
 	return newH;
 }
 
@@ -606,9 +649,9 @@ private int computeH(int hMinus1, ArrayList<Integer> HFactorsInBucket, ArrayList
     }
     
     public void postStartAfterGapCons(String j1, String j2, int gap) {
-    	int cons = ParseXADDString(_context, "([" + j2 + " > " + j1 + " + " + gap + "] ([0]) ([Infinity]))");
+    	int cons = ParseXADDString(_context, "([" + j2 + " >=" + j1 + " + " + gap + "] ([0]) ([Infinity]))");
     	cons = _context.reduceLP(cons);
-    	_hmFactor2Name.put(cons, "start after cons:\n" + j2 + " > " + j1 + " + " + gap);
+    	_hmFactor2Name.put(cons, "start after cons:\n" + j2 + " >= " + j1 + " + " + gap);
         _alConsFactors.add(cons);
     	_alAllFactors.add(cons);
         //_context.getGraph(cons).launchViewer("Start-after Gap Constraint");
@@ -619,8 +662,10 @@ private int computeH(int hMinus1, ArrayList<Integer> HFactorsInBucket, ArrayList
     	int cons2 = ParseXADDString(_context, "([" + j1 + " >= " + lb2 + "] ([" + j1 + " <= " + ub2 + "] ([0]) ([Infinity])) ([Infinity]))");
     	int bindex = _context.getVarIndex(_context.new BoolDec("b" + j1), true);
     	int dcons = _context.getINodeCanon(bindex, cons1, cons2);
+       //It is not necessary these boolean variables
+    	//dcons = minOutVar(dcons, "b" + j1);    	  
     	dcons = _context.reduceLP(dcons);
-    	
+    	           
     	_hmFactor2Name.put(dcons, "disj cons:\n" + j1 + " in [ " + lb1 + ", " +  ub1 + " ] OR [" + j1 + " in [ " + lb2 + ", " +  ub2 + " ]");
     	_alConsFactors.add(dcons);
     	_alAllFactors.add(dcons);
@@ -786,16 +831,49 @@ private int computeH(int hMinus1, ArrayList<Integer> HFactorsInBucket, ArrayList
     // ===============================================================================
     
     public static void main(String[] args) throws Exception {
+ 
+    	  /**  STPPD stn2= new STPPD();
+
+            stn2.postPrefCons("t" + 1, (2)*10, 1.0, 0.0);
+
+    		stn2.postStartAfterGapCons("t" + 1, "t" + 2, 10);
+        	
+        	            
+                       
+            stn2._context.getGraph(stn2._alAllFactors.get(0)).launchViewer("Test ");
+            stn2._context.getGraph(stn2._alAllFactors.get(1)).launchViewer("Test ");
+            
+            
+            Integer newF3 = stn2._context.applyInt(stn2._alAllFactors.get(0),stn2._alAllFactors.get(1),  XADD.SUM);
+            stn2._context.getGraph(newF3).launchViewer("Test ");
+            
+            HashMap<String, ArithExpr> subsCont = new HashMap<String, ArithExpr>();
+			subsCont.put("t2", new DoubleExpr(20.0) );
+
+        	newF3=stn2._context.substitute(newF3,subsCont);
+        	
+        	stn2._context.getGraph(newF3).launchViewer("Test ");
+
+        	newF3=stn2._context.reduceLP(newF3);
+            stn2._context.getGraph(newF3).launchViewer("Test ");
+**/
+
+    	
     	
     	//STPPD stn = BuildSimpleSTPPD(false /* true = additive obj, false = makespan obj */);
-    	STPPD stn = BuildLinearSTPPD(true /* true = additive obj, false = makespan obj */, 3 /* size */);
+    	STPPD stn = BuildLinearSTPPD(true /* true = additive obj, false = makespan obj */, 2 /* size */);
+ 
+
+     
+    
+    	
     	
     	if (DISPLAY) stn.getConstraintGraph(stn._alAllFactors).launchViewer("Constraint factor graph");
 
     	//stn.testReduceLP();
-        stn.solveBucketElim();
+        //stn.solveBucketElim();
         stn.solveMiniBucketElim(1/*max variables*/);
-        stn.solveMonolithic();
+        //stn.solveMonolithic();
     }
 
     public static STPPD BuildSimpleSTPPD(boolean additive_obj) throws Exception {
