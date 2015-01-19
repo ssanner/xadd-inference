@@ -1991,6 +1991,8 @@ public class XADD {
                     System.exit(1);
                 }
 
+                
+                
                 // Check that comparison expression is normalized
                 if (!comp._rhs.equals(ExprLib.ZERO)) {
                     _log.println("processXADDLeaf: Expected RHS = 0 for '" + comp + "'");
@@ -2596,6 +2598,14 @@ public class XADD {
             collectNodes(nodes);
             return nodes;
         }
+        
+        public HashSet<Double> collectBoundaries(String var) {
+            HashSet<Double> decisions = new HashSet<Double>();
+            
+            collectBoundaries(decisions,var);
+            return decisions;
+        }
+        
 
         public HashSet<String> collectVars() {
             HashSet<String> vars = new HashSet<String>();
@@ -2616,6 +2626,9 @@ public class XADD {
         public abstract void collectVars(HashSet<String> vars);
 
         public abstract void collectNodes(HashSet<XADDNode> nodes);
+        
+        public abstract void collectBoundaries(HashSet<Double> nodes, String var);
+
     }
 
     //Terminal Node = Leaf, contains only an expression
@@ -2668,6 +2681,10 @@ public class XADD {
 
         public void collectNodes(HashSet<XADDNode> nodes) {
             nodes.add(this);
+        }
+        
+        public void collectBoundaries(HashSet<Double> nodes,String var) {
+            return;
         }
 
         public void toGraph(Graph g, int id) {
@@ -2773,6 +2790,35 @@ public class XADD {
             nodes.add(this);
             getExistNode(_low).collectNodes(nodes);
             getExistNode(_high).collectNodes(nodes);
+        }
+
+        public void collectBoundaries(HashSet<Double> decisions, String var) {
+                        
+            if(this.getDecision() instanceof ExprDec){
+            	    CompExpr comp = ((ExprDec)this.getDecision())._expr;
+            	    
+            	    
+            	    // Takes ArithExpr expr1 linear in var, returns (coef,expr2) where expr1 = coef*x + expr2
+                    CoefExprPair p = comp._lhs.removeVarFromExpr(var);
+                    ArithExpr lhs_isolated = p._expr;
+                    
+                    double var_coef = p._coef;
+ 
+                    if (var_coef == 0d) {
+                        return;
+                    }
+
+                    ArithExpr new_rhs = (ArithExpr) new OperExpr(ArithOperation.MINUS, ExprLib.ZERO, new OperExpr(ArithOperation.PROD, new DoubleExpr(
+                            1d / var_coef), lhs_isolated)).makeCanonical();
+
+                    Double boundary=((DoubleExpr)new_rhs)._dConstVal;
+                    	    
+            	    if (!decisions.contains(boundary)){
+                           decisions.add(boundary);
+            	    }
+            }
+            getExistNode(_low).collectBoundaries(decisions,var);
+            getExistNode(_high).collectBoundaries(decisions,var);
         }
 
         @SuppressWarnings("unchecked")
