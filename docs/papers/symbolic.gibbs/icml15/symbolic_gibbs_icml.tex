@@ -204,7 +204,8 @@ As a matter of fact, we are unaware of any existing general inference framework 
 handles observed deterministic relationships between random variables!\footnote{
 In BUGS \emph{logical nodes} cannot be given data or initial values.
 in PyMC deterministic variables have no \emph{observed flag}. 
-Stan throws error: ``attempt to assign variable in wrong block'', Anglican//TODO}
+If you try to assign an observed value to Stan it throws error: ``attempt to assign variable in wrong block'', 
+Anglican produces ``invalid-observe" error, etc.}
 
 Let's take a look on the nature of the problem by manually carrying on the computations required for MCMC sampling:
 It can easily be seen that in the Collision example, the prior joint probability of masses and velocities is as follows:
@@ -838,6 +839,7 @@ prior/posterior joint distributions of pairs of random variables in the \emph{co
 (d) $\pr(V_1, V_2)$,
 (e) $\pr(V_1, V_2 \, | \, P_3 = 3)$,
 (f) $\pr(V_1, V_2 \, | \, M_1 =2, P_3 = 3)$
+using rejection sampling on the reduced dimension model.
 } 
 \label{fig:mom}
 %\vspace{-4mm}
@@ -847,53 +849,57 @@ prior/posterior joint distributions of pairs of random variables in the \emph{co
 \begin{center}
 %\vspace{-1mm}
 \begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_rej10000.png}
+                \includegraphics[width=1\textwidth]{Figs2/col_c_gibbs10000.png}
                 %\caption{}
                 %\label{fig:mom2}
         \end{minipage}%
 \begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_m1v1_p3v2_anglican1000.png}
+                \includegraphics[width=1\textwidth]{Figs2/col-c-mh-10000_08.png}
+                %\caption{}
+                %\label{fig:mom2}
+        \end{minipage}%
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs2/col_c_stan10000_02.png} % n 0.2
                 %\caption{}
                 %\label{fig:mom1}
         \end{minipage}%
-%
-%\hspace{20mm}
 \begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_rej1000.png}
+                \includegraphics[width=1\textwidth]{Figs2/col_c_stan_10000_000001.png} %n 0.00001
                 %\caption{}
                 %\label{fig:mom2}
         \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_m1v1_when_p_is_3_and_v2_is_0_dot_2.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-%\hspace{4mm}
-%\\
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_v1v2whenPis3.png}
-                %\caption{}
-                %\label{fig:mom2}
+	\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs2/col_c_ang10000_02_001.png}
         \end{minipage}%
 \begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/colV1V2givenPis3M1is2.png}
-                %\caption{}
-                %\label{fig:mom2}
+                \includegraphics[width=1\textwidth]{Figs2/col_c_ang_10000_01_001}
         \end{minipage}%
 \end{center}
 \vspace{-1mm}
 \caption{\footnotesize
-prior/posterior joint distributions of pairs of random variables in the \emph{collision} example. 
-(a) $\pr(M_1, V_1)$,
-(b) $\pr(M_1, V_1 \, | \, P_3 = 3)$,
-(c) $\pr(M_1, V_1 \, | \, P_3 = 3, V_2 = 0.2)$,
-(d) $\pr(V_1, V_2)$,
-(e) $\pr(V_1, V_2 \, | \, P_3 = 3)$,
-(f) $\pr(V_1, V_2 \, | \, M_1 =2, P_3 = 3)$
-} 
-\label{fig:mom}
+10000 samples taken from the distribution Fig.~(\ref{fig:mom}-c)
+using (a) Symbolic Gibbs sampler and(b) MH with \emph{proposal variance} 0.8 
+on the reduced-dimension model as well as  
+(c) Hamiltonian Monte Carlo (Stan) with a measurement error variance 0.2, 
+, (d) and 0.00001 as well as Anglican implementation of RDB alg. with 
+parameters (e)
+%$V_2$ and $P_3$ observation noise variance 
+$\sigma^2_{V_2} = 0.01$, $\sigma^2_{P_3} = 0.2$ and 
+(f) $\sigma^2_{V_2} = 0.01$, $\sigma^2_{P_3} = 0.1$
+without reducing the dimensionality.
+}
+\label{fig:mom2}
 %\vspace{-4mm}
 \end{figure*}
+
+-----\\
+\cite{wingate2011lightweight} and named RDB in \cite{wood2014new}
+\\----
+\begin{comment}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ANGLICAN rdb tested
+SMC BAD
+PGIBBS BAD
+\end{comment}
 
 \section{Piecewise Algebraic Graphical Models}
 In this section, we put things together and provide our complete model.
