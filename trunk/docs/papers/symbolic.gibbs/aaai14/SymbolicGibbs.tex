@@ -116,19 +116,19 @@
 
 \begin{abstract}
 \begin{quote}
-In many applications of probabilistic reasoning, deterministic relationships between
-continuous random variables exist. 
-Such deterministic conditionals create serious problems for exact/approximate inference.
-To avoid the complications, \emph{Bayesian inference using Gibbs sampling} (BUGS) totally disallow such dependencies.  
+In many applications of probabilistic reasoning, there are deterministic relationships between
+continuous random variables. These relationships create serious problems for approximate or exact inference.
+%Such deterministic conditionals create serious problems for exact or approximate inference.
+To avoid the complications, algorithms such as \emph{Bayesian inference using Gibbs sampling} (BUGS) simply disallow such dependencies.  
 %For example, in BUGS it is impossible to model observed data that is the sum of two random variables. 
-We are also unaware of any exact or Monte Carlo inference method that handles deterministic constraints beyond the limit of linear dependencies.
+There are no known exact or Monte Carlo inference methods that can handle deterministic constraints beyond the limit of linear dependencies.
 %Many classes of conjugate distributions %such as \emph{conditional linear Gaussians} 
 %can handle linear deterministic conditionals. 
 %General purpose full automated inference in the presence of non-linear deterministic constraints, however, is beyond the scope of the existing conjugate solutions and Monte Carlo algorithms.    
-In this paper we fill the gap by providing a framework 
-that for the first time, carries out inference in models with nonlinear algebraic deterministic constraints. % that are not discussed in the literature so far.
-Our second major contribution is to provide an effective MCMC inference technique called \emph{symbolic Gibbs}, based on the insight that in our model, most costly operations required for Gibbs sampling can be accomplished off line and prior to sampling. 
-We evaluate this algorithm on models in physics and engineering and show that it is an order of magnitude faster than the base-line Gibbs sampler and much better than other MCs.  
+In this paper we fill this gap by contributing a novel framework which,
+for the first time, carries out inference in models with nonlinear algebraic deterministic constraints. % that are not discussed in the literature so far.
+Our second contribution is to provide an effective MCMC inference technique called \emph{Symbolic Gibbs}, based on the insight that in our model, most costly operations required for Gibbs sampling can be accomplished offline and prior to sampling. 
+We evaluate this algorithm on models in physics and engineering and show that it is an order of magnitude faster than the baseline Gibbs sampler and a significant improvement over other Monte Carlo methods.  
 \end{quote}
 \end{abstract}
 
@@ -141,11 +141,11 @@ We evaluate this algorithm on models in physics and engineering and show that it
 
 \section{Introduction}
 \label{sec:intro}
-Graphical models (GMs) are lingua franca for probabilistic reasoning.
+Graphical models (GMs) are the lingua franca for probabilistic reasoning.
 They denote the conditional dependence structure between random variables by directed or undirected graphs \cite{koller2009probabilistic}. A (random) variable is deterministic if its conditional distributions have zero variances. 
 %Unobserved deterministic random variables that is, variables that cannot be given data or initial values (corresponding to \emph{logical nodes} in BUGS software) almost only provide notational convenience.
 Observed deterministic variables represent deterministic dependencies on other variables.
-Such constraints can appear in variety of real-world applications.
+Such constraints can appear in a variety of real-world applications.
 For instance, 
 such deterministic relationships between random variables might be governed by natural laws 
 (such as Kirchhoff's circuit laws or Newtonian mechanics).
@@ -185,8 +185,9 @@ Collision of masses $M_1$ and $M_2$ with velocities $V_1$ and $V_2$ and momenta 
 {\bf Example (Collision). }
 \emph{Masses $M_1$ and $M_2$ with velocities $V_1$ and $V_2$ (and consequently momenta $P_1 = M_1 V_1$ and $P_2 = M_2 V_2$) collide to form a single mass ($M_1 + M_2$) with momentum $P_3 = P_1 + P_2$ (assuming that there is no dissipation).
 Masses and velocities are unknown but 
-their prior distributions are given as follows (note that as Figure~\ref{fig:mom0} shows, collision only happens if $V_2 < V_1$):  
+their prior distributions are given as follows (note that as Figure~\ref{fig:mom0} shows, a collision only happens if $V_2 < V_1$):  
 }%end \emph
+{\footnotesize
 \begin{align*}
 &M_1 \sim \mathcal{U}(0.1, \, 2.1) 
 &&M_2 \sim \mathcal{U}(0.1, \, 2.1)
@@ -195,14 +196,15 @@ their prior distributions are given as follows (note that as Figure~\ref{fig:mom
 &&V_2 \sim \mathcal{U}(-2, \, V_1)
 \end{align*} 
 \emph{
-The conditional dependencies of these random variables is illustrated in 
+The conditional dependencies of these random variables are illustrated in 
 Figure~\ref{fig:mom00}.
 Conditioned on the observation $P_3 = 3$, the posterior joint distribution of $M_1$, $M_2$, $V_1$ and $V_2$ is desired. 
 } %\emph
-
+}
 
 
 In this example, the deterministic constraint is: 
+{\footnotesize
 \begin{equation}
 \label{eq:moment-constraint}
 P_3 = P_1 + P_2 = M_1 V_1 + M_2 V_2 = 3
@@ -211,31 +213,32 @@ and corresponds to the 0-variance conditional distribution:
 $$
 \pr(P_3 \,|\, M_1, V_1, M_2, V_2) = \delta[P_3 - (M_1 V_1 + M_2 V_2)] = 3
 $$
-
+}
 Unfortunately, 
 beyond the limit of linear relationships, such as $Z = X_1 + X_2$, 
-the state-of-the-art probabilistic inference systems cannot handle deterministic constraints.
-BUGS, the popular software for analysis of statistical models, 
-totally disallows deterministic relationships between continuous random variables \cite{lunn2009bugs}.
+current probabilistic inference systems cannot handle deterministic constraints.
+BUGS \cite{lunn2009bugs}, the popular software for analysis of statistical models, 
+totally disallows deterministic relationships between continuous random variables.
 
 Families of distributions such as \emph{conditional linear Gaussians (CLG)} \cite{lauritzen2001stable}
-allow linear deterministic constraints but as mentioned, inference in presence of nonlinear deterministic constraints on continuous random variables is an open problem so far.
+allow linear deterministic constraints but as mentioned, inference in the presence of nonlinear deterministic constraints on continuous random variables is still an open problem.
 
 In this paper we solve this problem for a large class of nonlinear multivariate algebraic deterministic constraints in the form of polynomial fractions. 
 Our main contributions are:
 \begin{itemize}
 \item Introducing  an expressive class of functions 
-(called PPFs for \emph{piecewise polynomial fractions}) that facilitates inference in the presence of  linear/nonlinear algebraic deterministic constraints.
-\item Presenting an efficient inference method (known as \emph{symbolic Gibbs}) that matches well with the provided model and handles deterministic constraints.  
+(called PPPFs for \emph{Polynomial-Piecewise Polynomial Fractions}) that facilitates inference in the presence of  linear/nonlinear algebraic deterministic constraints.
+\item Presenting an efficient inference method (called \emph{Symbolic Gibbs}) that matches well with the provided model and handles deterministic constraints.  
 \end{itemize}
 
 %The proposed class if expressive functions includes 
 %Our first contribution is to propose an extremely expressive class of functions for inference in graphical %models (such as Bayesian networks, Markov random fields, etc.).
-To be more precise, PPFs are piecewise polynomial fractions where the variable space is partitioned by polynomial inequalities.
-
+PPPFs are piecewise polynomial fractions where the variable space is partitioned by polynomial inequalities.
 %To show the importance of fractional functions we note that %and nonlinear partitions we note that 
+The key insight is that the algebraic constraints preserved PPPF form after collapsing which immediately extends the application of PPPFs to models with sophisticated deterministic algebraic constraints. 
 We note that 
-even in simple models such as \emph{collision example}, distributions can be piecewise fractional. E.g.:  
+even in simple models such as \emph{collision example}, distributions can be piecewise fractional. 
+For example:  
 \[
 \pr(V_2 \,|\, V_1) = \mathcal{U}(-2, V_1)
 =
@@ -269,15 +272,15 @@ our model is more expressive than all of them.
 The second contribution, as mentioned, is a new variation of Gibbs sampling.  
 Gibbs samplers are robust in the sense that they do not need any parameter tuning.
 However, they are computationally expensive since to take a single sample they require to compute many univariate integrals (to generate the CDFs of conditional distributions).
-We notice that a large subset of PPFs have closed form (symbolic) integrals. 
+We notice that a large subset of PPPFs have closed form (symbolic) integrals. 
 The idea of Symbolic Gibbs is to compute a single analytic integral for each variable by keeping the remaining variables uninstantiated. 
 The actual process of CDF computation per sample  
 simply involves instantiation of the already computed CDFs rather than computing them on the fly.
 This dramatically decreases the amount of necessary computations and as our experimental results show, it improves the performance significantly.
 
 In the following sections after a brief introduction to Graphical models, 
-we provide an algorithm for inference in the presence of deterministic constraints,
-We then explain the restrictions of PPFs, complete our model, compare our method with other samplers and conclude. 
+followed by an algorithm for inference in the presence of deterministic constraints.
+We then explain the restrictions of PPPFs, compare our method with other samplers and conclude. 
 
 \section{Graphical Models (GMs)}
 Let $\vec{X} = \{X_1, X_2, \ldots\}$ be a set of random variables with realizations in the form 
@@ -313,7 +316,7 @@ Provided with (non-normalized) $\pr_{\bvec{e}}(\cdot)$ with dimensionality reduc
 For example, 
 the \emph{posterior} probability of \emph{query} variables $\vec{Q} \subset \vec{X}$ 
 %given \emph{evidence} variables $\vec{e} \subset \vec{x}$ 
-is computed by marginalizing variables 
+is computed by marginalizing variables that are not in the query or evidence,
 $\{W_1, \ldots, W_k\} := \vec{X} \backslash (\vec{Q} \cup \vec{E})$:
 \begin{equation}
 \label{e:inference}
@@ -326,7 +329,7 @@ $\{W_1, \ldots, W_k\} := \vec{X} \backslash (\vec{Q} \cup \vec{E})$:
 %We will shortly show that unlike the conventional graphical models, in models with deterministic constraints, the creation of joint distribution of unobserved variables requires more computations. We first formalize such models. 
 \subsection{Inference in GMs}
 \textbf{Closed form inference.}
-The main challenge for closed inference is computation of multiple integrals required for marginalization (equation~\ref{e:inference}).
+The main challenge for closed inference is the computation of multiple integrals required for marginalization (equation~\ref{e:inference}).
 There are a few classes of functions which are closed under integration.
 However, none of these classes can handle deterministic constraints beyond the level of linear constraints.
 \\
@@ -338,15 +341,15 @@ provides an asymptotically unbiased tool that completely avoids the hassle of mu
 Three major such methods are as follows:
 
 \emph{Rejection sampling}: In this method, to draw a sample from 
-a distribution $p(\bvec{x})$, a sample is taken from another distribution $q(\bvec{x})$
-such that $p(\bvec{x})/q(\bvec{x})$ is bound by a known constant $c$
-and samples can be taken from $q(\bvec{x})$ efficiently.
-The produced sample is accepted with probability $p(\bvec{s}) / c q(\bvec{s})$, 
+a distribution $p(\bvec{X})$, a sample $\bvec{x}$ is taken from another distribution $q(\bvec{X})$
+such that $p(\bvec{X})/q(\bvec{X})$ is bound by a known constant $c$
+and samples can be taken from $q(\bvec{X})$ efficiently.
+The produced sample is accepted with probability $p(\bvec{x}) / c q(\bvec{x})$, 
 otherwise it is rejected and the process is repeated. 
 
 \emph{Metropolis-Hastings (MH)}:
-To draw a new sample $\bvec{x}^{(t)}$ from a distribution $p(\bvec{x})$, given a previously taken sample $\bvec{x}^{(t-1)}$, 
-MH takes a sample $\bvec{x}'$ from a symmetric \emph{proposal density} $q(\bvec{x} |\, \bvec{x}^{(t-1)})$. 
+To draw a new sample $\bvec{x}^{(t)}$ from a distribution $p(\bvec{X})$, given a previously taken sample $\bvec{x}^{(t-1)}$, 
+MH takes a sample $\bvec{x}'$ from a symmetric \emph{proposal density} $q(\bvec{X} |\, \bvec{x}^{(t-1)})$. 
 %from which samples can be taken efficiently 
 %(often an isotropic \emph{Gaussian} centered at $\bvec{x}^{(t-1)}$). 
 With probability $\min \big(1, p(\bvec{x}')/p(\bvec{x}^{(t-1)}) \big)$, 
@@ -357,18 +360,19 @@ Choosing a good \emph{proposal} is problem-dependent and requires tuning.
 \emph{Gibbs sampling}:
 Gibbs is a robust sampling tool in the sense that it does not require known bounds, tuned proposal densities or parameters.
 Drawing a sample for $\bvec{X} = (X_1, \ldots, X_N)$ takes place in $N$ steps.
-In the $i$-th step, variable $x_i$ is sampled conditioned on the last realization of the others:
+In the $i$-th step, $X_i$ is sampled conditioned on the last realization of the others:
 $x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$. 
-To perform this task, the following univariate \emph{cumulative distribution function} (CDF)
-is computed by (\ref{e:cdf}) and samples are taken by inverse transform sampling. 
+To perform this task, the following univariate \emph{Cumulative Distribution Function} (CDF)
+is computed by equation~(\ref{e:cdf}) and samples are taken by inverse transform sampling. 
+{\footnotesize
 \begin{equation}
 \label{e:cdf}
-F(X_i = x_i \,|\, \bvec{x}_{-i}) 
-%=\int_{X_i= -\infty}^{x_i} \!\!\!\!\!\!\!\!\!\! \pr(X_i \,|\, \bvec{x}_{-i}) \, d  X_i
+F(X_i  \,|\, \bvec{x}_{-i}) 
 \propto
-\int_{X_i= -\infty}^{x_i} \!\!\!\!\!\!\!\!\!\! \pr(X_i , \bvec{x}_{-i}) \, d  X_i
+\int_{-\infty}^{X_i} \!\!\!\! \pr(X_i = t, \bvec{x}_{-i}) \, d  t
 \end{equation} 
-%Computation of $N$ univariate integrals per sample is costly and this makes Gibbs sampling a relatively slow sampler. However, we will show that the family of PPF functions, the performance of Gibbs sampling can be improved significantly.
+}
+%Computation of $N$ univariate integrals per sample is costly and this makes Gibbs sampling a relatively slow sampler. However, we will show that the family of PPPF functions, the performance of Gibbs sampling can be improved significantly.
 
 In the next section, we formalize GMs with deterministic variables. 
 
@@ -389,7 +393,7 @@ where
 $\boldsymbol{\Psi^D} :=\{\Psi_Z \,|\, Z \in \bvec{Z}\}$ is the set of deterministic potentials
 and $\boldsymbol{\Psi^S}$ is the set of stochastic (i.e.\ conventional) potentials. 
 
-In the next sections, the inference procedure and its limitations are studied in graphical models with deterministic random variables.
+In the next sections, inference and its limitations in GMs with deterministic random variables are studied.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{0.5em}
 %\SetInd{0.5em}{1em}
@@ -451,20 +455,20 @@ $\boldsymbol{\Psi} = \boldsymbol{\Psi^D} \cup \boldsymbol{\Psi^S}$
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Inference in GMs with Deterministic Constraints}
-We allow both stochastic and deterministic variables be observed by evidence.  
+We allow both stochastic and deterministic variables to be observed by evidence.  
 We are interested in deterministic variables with associated logical values  
-created by plus, multiplication, minus, division operations and therefore 
+created by the plus, multiplication, minus, division operations and therefore 
 are in the form of fractions of polynomials.
 
 In order to conduct inference we should first compute 
-the posterior joint distribution conditioned on the evidence 
+the posterior joint distribution  
 (as in equation~\ref{e:posterior-joint}).
 To perform this task, we propose \emph{collapsing} (i.e.\ marginalizing over) all observed and non-observed deterministic variables. The details are presented in the next subsection. 
 
-Provided with the posterior, the main task of inference should be carried out by equation~(\ref{e:inference}).
-For this task we rely on Symbolic Gibbs sampling introduced in the second subsection.
+Provided with the posterior, the main task of inference is carried out by equation~(\ref{e:inference}).
+For this task we will rely on Symbolic Gibbs sampling.
 
-\subsection{Posterior Distributions in GMs with Deterministic Constraints}
+\subsection{Posteriors in GMs with Deterministic Constraints}
 
 The aim of this section is to find a posterior joint distribution over a subset $\bvec{X}'$ of $\bvec{X}$
 such that any other variable (either stochastic or deterministic)
@@ -477,10 +481,10 @@ The procedure, as formalized in Algorithm~\ref{alg:posterior-joint}, is as follo
 \item \emph{Isolating deterministic variables.} In all potentials, all deterministic variables $Z$, are 
 substituted with their associated logical value $G^Z$ (so, the potential $\delta[x - G^x]$ itself is replaced by 1). Note that by the definition of Dirac $\delta$, this simply means all deterministic variables are marginalized.
 %
-\item \emph{Joint factor formation.} the product of the remained potentials is computed (as in equation~\ref{e:posterior-joint}).   
+\item \emph{Joint factor formation.} the product of the remaining potentials is computed (as in equation~\ref{e:posterior-joint}).   
 %
 \item \emph{Collapsing determinism.} 
-What is remained is to condition on the deterministic constraints.
+What remains is to condition on the deterministic constraints.
 For each deterministic constraint $Z = c$ (where $c$ is a constant),
 $(G^Z = c)$ is solved w.r.t.\ some variable $Y \in \textsc{Scope}(G^Z)$ (assuming that it is solvable with a single solution w.r.t.\ at least one such variable).
 Subsequently, in all potentials, $Y$ is substituted by its solution (called $G^Y$).\footnote{For instance in the \emph{collision example}, 
@@ -495,35 +499,53 @@ For this family,
 the unique solution assumption (required in Step 4 of Algorithm~\ref{alg:posterior-joint})
 in general holds if $G^Z$, the logical values of deterministic variables, are linear w.r.t. some variables.
 That is, for some variable $Y$, $G^Z$ can be stated as: 
+{\footnotesize
 \begin{equation}
 \label{eq:evidence-form}
 G^Z = \frac{\mathcal{A} \cdot Y + \mathcal{B}}{\mathcal{C} \cdot Y + \mathcal{D}}
 \end{equation}
+}
 where $\mathcal{A}$ to $\mathcal{D}$ are constant or univariate/multivariate polynomials and $Y$ is not in their scopes.
 
 
 \subsection{Symbolic Gibbs Sampling}
 Our symbolic Gibbs sampling is based on a simple but significantly useful insight.
-If the multivariate function $\pr(X_1, \ldots, X_N)$
-has an analytic integral for all its variables $X_i$,
-then 
-as Algorithm~\ref{alg:analytic-cdf} shows, 
-we can create a map from variables $X_i$ to their corresponding closed-form CDFs.
-This map is passed to the main symbolic Gibbs sampling procedure in Algorithm~\ref{alg:symbolic-gibbs}.
+Namely, if the multivariate function $\pr(X_1, \ldots, X_N)$
+has an analytic (symbolic) integral for all its variables $X_i$,
+then, instead of using equation~\ref{e:cdf}, we map each variable $X_i$ to its corresponding symbolic CDF: 
+{\footnotesize
+\begin{equation}
+\label{e:cdf-symbolic}
+F(X_i  \,|\, \bvec{X}_{-i}) 
+\propto
+\int_{-\infty}^{X_i} \!\!\!\!\! \pr(X_i = t , \bvec{X}_{-i}) \, d  t
+\end{equation} 
+}
+Note that the difference between (\ref{e:cdf}) and (\ref{e:cdf-symbolic}) is that in the former, 
+all variables except $X_i$ are already instantiated therefore 
+$F(X_i  \,|\, \bvec{x}_{-i})$ is a univariate function but in  (\ref{e:cdf-symbolic}), 
+although variables $\bvec{X}_{-i}$ are treated as constants but they are kept uninstantiated and symbolic.
+As a result, $F(X_i \,|\, \bvec{X}_{-i})$ is a multivariate analytic function. 
+%as Algorithm~\ref{alg:analytic-cdf} shows, 
+%we can create a map from variables $X_i$ to their corresponding closed-form CDFs.
+
+The map (called {\sc VarToCDF}) from variables $X_i$ to their symbolic CDFs
+$F(X_i \,|\, \bvec{X}_{-i})$ is passed to the main symbolic Gibbs sampling procedure in Algorithm~\ref{alg:symbolic-gibbs}.
 During the sampling process, 
 to sample $x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$
-it is sufficient to get the (multivariate) closed-form CDF associated to $X_i$ from the map
-and instantiate it with $\bvec{x}_{-i}$ to obtain the appropriate CDF.
+it is sufficient to get the (multivariate) symbolic CDF associated to $X_i$ from the map
+and instantiate it with $\bvec{x}_{-i}$ to obtain the appropriate univariate CDF.
 
 By this method, instead of computing $N \times T$ integrals for $T$ samples, only $N$ integrals are computed and 
-$N \times T$ function instantiations are performed which leads to a major improvement of speed.
+$N \times T$ function instantiations are performed. But function instantiation is much faster than integration.
+Therefore, the algorithm leads to a major improvement in speed.
 
-What is remained is to show that a large subset of PPF functions indeed have closed-form integrals. 
+What remains is to show that a large subset of PPPF functions indeed have closed-form integrals. 
 
 %\begin{equation*}
 %\int_{X_i= -\infty}^{x_i} \!\!\!\!\!\!\!\!\!\! \pr(X_1, \ldots, X_N) \, d  X_i
 %\end{equation*} 
-
+\begin{comment}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{-0.3em}
 \SetInd{0.1em}{0.6em}
@@ -555,7 +577,7 @@ What is remained is to show that a large subset of PPF functions indeed have clo
 \end{algorithm}
 \decmargin{-0.3em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+\end{comment}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{-0.5em}
 \SetInd{0.1em}{0.7em}
@@ -641,7 +663,7 @@ $x_i^{(t)} \leftarrow \textsc{InverseTransformSample}(\frac{G(X_i)}{G(\infty)})$
 \end{center}
 \vspace{-1mm}
 \caption{\footnotesize
-prior/posterior joint distributions of couples of random variables in the \emph{collision} example. 
+prior/posterior joint distributions of pairs of random variables in the \emph{collision} example. 
 (a) $\pr(M_1, V_1)$,
 (b) $\pr(M_1, V_1 \, | \, P_3 = 3)$,
 (c) $\pr(M_1, V_1 \, | \, P_3 = 3, V_2 = 0.2)$,
@@ -661,12 +683,14 @@ The requirements for the class of potential functions (factor forms) are as foll
 \begin{itemize}
 \item Factor forms should be as expressive as possible to be able simulate different density forms.  
 \item Factor forms should be closed under multiplication and polynomial fractional substitutions such as 
-the r.h.s.\ of equation~(\ref{eq:evidence-form}) otherwise \emph{joint factor formation} and multiple substitutions in the \emph{collapsing determinism} phase of 
+the r.h.s.\ of equation~(\ref{eq:evidence-form}). Otherwise, \emph{joint factor formation} and multiple substitutions in the \emph{collapsing determinism} phase of 
 Algorithm~\ref{alg:posterior-joint} can be problematic.
-\item A single analytical integration of a factor (i.e.\ integrating over a single variable while treating the rest as parameters) should produce a closed-form structure (the requirement of Gibbs sampling).
+\item A single analytical integration 
+(i.e.\ integrating w.r.t.\ a single variable while keeping the rest of variables symbolic) should produce a closed-form structure (the requirement of Symbolic Gibbs).
 \end{itemize}   
 
-Our proposition is the class of \emph{polynomial-piecewise polynomial fractions} (PPFs); That is,   
+Our proposition is the use of 
+the class of \emph{Polynomial-Piecewise Polynomial Fractions} (PPPFs); That is,   
 functions in the form:
 
 \begin{equation}
@@ -685,17 +709,14 @@ f =
   \end{cases}
 \end{equation}
 where each \emph{sub-function} $f_i := \frac{N_i}{D_i}$ is a (multivariate) polynomial fraction and 
-Each \emph{case condition} $\phi_i$ is a conjunction of some inequalities ($\lessgtr$ stands for  
+each \emph{case condition} $\phi_i$ is a conjunction of some inequalities ($\lessgtr$ stands for  
 $>$ or $<$)\footnote{In piecewise distributions,  
 we are careless about equalities since they only matter for $\delta[\cdot]$s which are already treated separately.} 
-where each \emph{atom constraint} $\varphi_{i,j}$ is a (multivariate) polynomial.
+where each \emph{atomic constraint} $\varphi_{i,j}$ is a (multivariate) polynomial.
 
-Evidently, this class is very expressive. 
-Other distributions can also be approximated to this form either by being partitioned 
-followed by computation of \emph{Taylor series} in each piece or by utilizing existing methods 
-to approximate arbitrary functions by piecewise polynomials \cite{shenoy2011inference}.
+%Evidently, this class is very expressive. Other distributions can also be approximated by this form by being \emph{Taylor series} other existing approximation tools \cite{shenoy2011inference}.
 
-Closure of PPFs under multiplication is trivial, e.g.:
+Closure of PPPFs under multiplication is trivial, e.g.:
 \begin{equation*}
 \footnotesize
   \begin{cases}
@@ -735,14 +756,14 @@ fractional conditions can be restated as polynomials:
 }
 \end{align*}
 A large group of polynomial fractions have closed-form integrals. 
-We will show that this is also holds for a large group of PPFs.
+We will show that this is also holds for a large group of PPPFs.
 For brevity, we only focus on the following subset:
 
-\textbf{Restricted PPFs. }
-PPFs as in Definition~(\ref{e:ppf}) where 
+\textbf{Restricted PPPFs. }
+PPPFs as in Definition~(\ref{e:ppf}) where 
 each $\varphi_{i,j}$
-can be written as a product of some terms $t_{i,j,k}$ where the maximum degree of each variable $x \in \bvec{x}$ in each $t_{i,j,k}$ is less or equal to 4 ($\text{rel-degree}(t_{i,j,k}) \leq 4$)
-and the sub-function denominators, $D_{i}$, can be factorized into polynomials ${D}_{i,h}$ where the maximum degree of each variable $x \in \bvec{x}$ in each $D_{i,h}$ is less or equal to 2 ($\text{rel-degree}(D_{i, k}) \leq 2$).%, where function $\text{rel-degree}(\cdot)$, the relative degree, is defined as follows:
+can be written as a product of some terms $t_{i,j,k}$ where the maximum degree of each variable $X \in \bvec{X}$ in each $t_{i,j,k}$ is less or equal to 4 ($\text{rel-degree}(t_{i,j,k}) \leq 4$)
+and the sub-function denominators, $D_{i}$, can be factorized into polynomials ${D}_{i,h}$ where the maximum degree of each variable in each $D_{i,h}$ is less or equal to 2 ($\text{rel-degree}(D_{i, k}) \leq 2$).%, where function $\text{rel-degree}(\cdot)$, the relative degree, is defined as follows:
  %\begin{enumerate} 
 %\item Each constrain $\phi_i := \varphi_{i,1} \wedge \varphi_{i,2} \wedge \ldots$ is a conjunction of polynomial (in)equalities $\varphi_{i,j}$ such that $\text{rel-degree}(\varphi_{i,j}) \leq 4$.
 %\item Each sub-function $f_i  := \frac{{N}_{i}}{{D}_{i,1} \cdot {D}_{i,2} \cdots}$
@@ -752,20 +773,22 @@ and the sub-function denominators, $D_{i}$, can be factorized into polynomials $
 %\textbf{Relative degree of polynomials.} $x\text{-deg}(g)$, the degree of a polynomial $g$ w.r.t.\ a variable $x$, is the degree of $g$ if all scope variables except $x$ are considered constant. For example $x\text{-deg}(x y^2 + x^2 y z^3) = 2$. The \emph{relative degree} of $g$, $\text{rel-degree}(g)$, is:
 %\[\text{rel-degree}(g) = \max_{x \in \vec{x}}(x\text{-deg}(g))\]
 
-Here is an example of a restricted PPF case statement:
+Here is an example of a restricted PPPF case statement:
 \begin{equation*}
 {\footnotesize
 \singlecase{y^2-x\leq 0 \wedge x^3+2xy \geq 0}{\frac{x^2 y^3 + 7x + 10}{(5x.y^2 + 2)(y + x)^5}}
 }
 \end{equation*}
 
-The class of restricted PPFs is still quite expressive. Meanwhile PPFs have closed form (single) integrals that are not very hard to compute automatically. 
+The class of restricted PPPFs is still quite expressive. Meanwhile restricted PPPFs have closed form (single) integrals that are not very hard to compute automatically. 
 
-\subsection{Analytic integration of restricted PPFs}
-Space limitations does not allow us to explain the integration process in detail. 
-Instead, we only highlight the main issues.
+\subsection{Analytic integration of restricted PPPFs}
+The space limitations do not allow us to explain the integration process in detail. 
+Instead, we highlight the main issues.
 
-Firstly, note that definite integrals can be reduced to indefinite integrals:
+Firstly, note that the definite integrals can be reduced to indefinite integrals:
+{
+\footnotesize
 \begin{align*}
 \int_{\alpha}^{\beta} f dx  = 
 \int_{-\infty}^{\infty}
@@ -779,10 +802,10 @@ Firstly, note that definite integrals can be reduced to indefinite integrals:
 \right)
 dx
 \end{align*}
-
-Secondly, note that restricted PPFs can be restated into a form where
-the degree of each variable in each atom constraint is less or equal to 4.
-For example consider a single case statement with a single atom constraint 
+}
+Secondly, note that restricted PPPFs can be restated into a form where
+the degree of each variable in each atomic constraint is less or equal to 4.
+For example consider a single case statement with a single atomic constraint 
 $\varphi_{1,1} := t_{1,1,1} \cdot t_{1,1,2}$ (where rel-degree$(t_{1,1,k})\leq4$):
 \begin{align*}
 {\footnotesize
@@ -798,8 +821,8 @@ f_1 \quad \text{if } t_{1,1,1} \cdot t_{1,1,2} > 0
 \end{align*}
 
 Thirdly, note that for each variable $x$, 
-PPFs can be transformed into piecewise structures 
-in which each atom constraint is either in form $x>L_i$ or $x<U_i$ or $I_i>0$, 
+PPPFs can be transformed into piecewise structures 
+in which each atomic constraint is either in form $x>L_i$ or $x<U_i$ or $I_i>0$, 
 where $L_i$, $U_i$ and $I_i$ are 
 algebraic expressions (not necessarily polynomials) and $x$ is not in their scope. 
 %\footnote{Again, we are careless about equalities.} 
@@ -820,13 +843,15 @@ algebraic expressions (not necessarily polynomials) and $x$ is not in their scop
 %Note that in the case of quadratic constraints, these transformed cases are not necessarily polynomials.
 For instance for variable $x$, the case-statement in (\ref{e:single-example})
 can be replaced with three cases as in (\ref{e:quadratic-trans}).
+{
+\footnotesize
 \begin{equation}
 \label{e:single-example}
 \singlecase{(x^2 y + 7x^2 + x + y > 0)}{f_1}
 \end{equation}
 \begin{align}
 \label{e:quadratic-trans}
-{\footnotesize 
+{
 \begin{cases}
   \case{(y+7>0), \, (x> -0.5 + 0.5\sqrt{1 - 4y(y+7)}) }{f_1} \\ 
   \case{(y+7>0), \, (x> -0.5 - 0.5\sqrt{1 - 4y(y+7)}) }{f_1} \\ 
@@ -835,20 +860,15 @@ can be replaced with three cases as in (\ref{e:quadratic-trans}).
  \end{cases}
 }
 \end{align}
+}
 
-Obviously, integral of a piecewise function is the summation of the integrals of its case-statements.
-Therefore, we only consider the integration of a single case-statement.
-The infinite bound integral of (transformed) case-statement 
-associated expressions with $\{L_i\}$, $\{U_i\}$ and $\{I_i\}$ 
-%\begin{align*}
-%\singlecase{&(x> L_1) \wedge (x>L_2) \wedge \cdots \wedge\\
-%	&(x< L_1) \wedge (x<L_2) \wedge \cdots
-%(I_1>0) \wedge (I_2) \wedge \cdots}{f_1}
-%\end{align*}
-is itself a case-statement with same independent constraints,
+The infinite bound integral of a case-statement 
+associated with expressions with $\{L_i\}$, $\{U_i\}$ and $\{I_i\}$ 
+is itself a case-statement with the same independent constraints,
 a lower bound LB =$\max\{L_i\}$ and 
 an upper bound UB =$ \min\{U_i\}$.
-For example: 
+For example:
+{\footnotesize 
 \begin{align*}
 %\footnotesize
 &\int_{-\infty}^{\infty}\!\! \Big[
@@ -858,22 +878,23 @@ For example:
 &\singlecase{(-y/z > 1) \wedge (y^2>0)}
 {\Big[ \int_{\max\{3, \, y+1\}}^{y^2 - 7}x^3 + xy \Big]} 
 \end{align*}  
-What is remained is to compute the indefinite integrals of sub-functions. 
-The restrictions imposed on PPF sub-functions 
+}
+What remains is to compute the indefinite integrals of sub-functions. 
+The restrictions imposed on PPPF sub-functions 
 guarantee that they have closed form indefinite univariate integrals.
-For example, 
-by performing polynomial division,
-followed by partial fraction decomposition 
-and using a short list of indefinite integral rules, 
-integration of function~(\ref{eq:shangul}) w.r.t.\ $x$ leads to (\ref{eq:mangul}).
-For instance, to generate (\ref{eq:mangul}) by integrating the restricted PPF sub-, it suffices to:
+These integrals are computed by performing polynomial division (in case needed),
+followed by partial fraction decomposition and finally, using a short list of indefinite integration rules.
+\begin{comment}
+, integration of function~(\ref{eq:shangul}) w.r.t.\ $x$ leads to (\ref{eq:mangul}). For instance, to generate (\ref{eq:mangul}) by integrating the restricted PPPF sub-, it suffices to:
 \begin{equation}
 \label{eq:shangul}
+\footnotesize
 f_i := \frac{-x^2 y^3 + 2x y^2 -4 x y + x + y + 11}{(x+1)(x y^2 + 5)}
 \end{equation}
 %To compute $\int f_i \, dx$ it is sufficient consider all variables except $x$ as constants and:
 \begin{equation}
 \label{eq:mangul}
+\footnotesize
 \int f_i dx = 
 -x y  + (y+2) \log (x+1) + \frac{(y+1) \log (x y^2 + 5)}{y^2}
 \end{equation}
@@ -888,7 +909,7 @@ f_i := \frac{-x^2 y^3 + 2x y^2 -4 x y + x + y + 11}{(x+1)(x y^2 + 5)}
 %{\bf Sampling.}
 %\\
 %{\bf Our Contribution.}
-
+\end{comment}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{comment}
@@ -975,15 +996,15 @@ using different MCs. Note that in (b), rejection sampling has not been able to t
 plot the particles for different queries and evidence.\footnote{We have repeated the experiment for different 
 MCMC methods and have made sure they generate same patterns.}
 The results, as depicted in the telltale plots of Figure~\ref{fig:mom}, reveal the nature of the problem tackled in this paper.
-They shows that even in the presence of a single deterministic constraint, 
-a simple prior can transform into a complicated posterior hardly similar to any family of 
+They show that even in the presence of a single deterministic constraint, 
+a simple prior can transform into a complicated posterior which is unlike any family of 
 probability densities studied in the literature so far.
 
 In the second to fourth experiments, we study the role of the size of graphical model on the performance of MCMC methods.
 \\
 \textbf{Experiment 2.} The second experiment is the generalization of the collision example to a case where $n$ objects 
 collide. The difference is that we omit the dependency of velocities (all $V_i$ share a same uniform prior distribution) and the constraint is $\sum_i{M_i V_i} = P$. By this modification, the GM becomes symmetric and enables us to compute the true posterior mean value manually.\footnote{An alternative would be relying on \emph{MCMC convergence diagnostics} methods \cite{cowles1996markov}. The latter methods however, could produce misleading results in case MCMCs do not converge to the ground truth, a scenario that for highly complex posteriors is not improbable.} 
-The tested algorithms running on the posterior joint are: symbolic Gibbs (ours), baseline Gibbs (CDF computation per sample), 
+The tested algorithms running on the posterior are: symbolic Gibbs (ours), baseline Gibbs (CDF computation per sample), 
 MH (Metropolis-Hastings tuned manually), Tuned-MH 
 (automatically tuned to reach the acceptance rate of 0.234 after \cite{roberts1997weak}) and rejection sampling.
 For error measure, $\mathbb{E}[|\bvec{x} - \bvec{x}^*|]$ is computed in which 
@@ -1002,7 +1023,7 @@ versus number of colliding objects.
 %
 \\
 \textbf{Experiment 3.} Here, we repeat the former experiment for a 
-monotonically decreasing \emph{dynamic Bayesian network}. That is, a DBN with nodes $A_1$ to $A_n$
+monotonically decreasing \emph{Dynamic Bayesian Network}. That is, a DBN with nodes $A_1$ to $A_n$
 with priors: $A_1 \sim \mathcal{U}(0, b)$ and $A_t \sim \mathcal{U}(A_{t-1}, b)$ where 
 $t = 2, \ldots n$ and $b=10$ is the upper bound and the deterministic constraint is $\sum A_i = c$.
 This network models a power transmission line where energy loss takes place in components $A_t$.
@@ -1015,22 +1036,12 @@ the rejection sampling MC is missing since the joint is not log-concave and does
 \textbf{Experiment 4.} The last experiment, with results depicted in 
 Figure~\ref{fig:err-threshold-vs-size-circuit}, models an electrical circuit composed of $n$, $10\Omega\pm20\%$ paralleled resistors with bell-shaped tolerance distributions (truncated quadratics, positive in the range $[8, 12]$). The posterior tolerance distribution is computed when 
 the input current $I$ and the source voltage $V$ and observed and the deterministic constraint is $\frac{1}{R_1} + \ldots + \frac{1}{R_n} = \frac{I}{V}$.
-Note that this form of equation, called \emph{reduced mass}, encounters in many problems in electrical, thermal, hydraulic, or mechanical domains. 
+This form of equation, called \emph{reduced mass}, encounters in many problems in electrical, thermal, hydraulic, or mechanical domains. 
+
 \section{Conclusion}
-We introduced \emph{piecewise algebraic graphical models} (PAGM) 
-which for the first time could handle a large family of nonlinear deterministic restrictions
-in the form of multivariate polynomial fractions.
-The nonlinear nature of these data lead to a new genre of  posterior distributions 
-with possible discontinuities, 
-piecewise parts with nonlinear bordering hyperplanes, 
-rapid density changes and anomalies.
-Our experimental results show that Gibbs sampling performs well in presence of such
-unconventional densities while other Monte Carlo methods do not.
-We showed that in PAGMs, the univariate CDFs required for Gibbs sampling can be computed analytically and prior to the actual sampling process. 
-This \emph{Symbolic Gibbs} saves a massive amount of computations, 
-improving the performance by an order of magnitude or more.
-The combination of these new contributions should make probabilistic reasoning applicable to 
-variety of new applications that had remained unsolvable so far.      
+
+We introduced piecewise algebraic graphical models that for the first time handle a large family of nonlinear deterministic restrictions, such as the physical laws, in the form of multivariate polynomial fractions. The nonlinear nature of this data leads to a new genre of posterior distributions with possible discontinuities, 
+piecewise parts with nonlinear bordering hyperplanes, rapid density changes and anomalies. Our experimental results show that Gibbs sampling performs well in the presence of such unconventional densities while other Monte Carlo methods do not. We showed that in piecewise algebraic models, the univariate CDFs required for Gibbs sampling can be computed analytically and prior to the actual sampling process. Our novel sampling method, \emph{Symbolic Gibbs}, saves a significant amount of computation, improving the performance dramatically. The combination of these novel contributions should make probabilistic reasoning applicable to variety of new applications that have remained unsolvable so far.      
 
 
 
