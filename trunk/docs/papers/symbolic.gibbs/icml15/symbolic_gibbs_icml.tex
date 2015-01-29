@@ -87,7 +87,7 @@
 \newcommand{\otherwise}[1]{#1 &\text{ otherwise}}
 \newcommand{\pr}{p}
 \newcommand{\nn}{0.16}
-
+\newcommand{\dd}{\;\mathrm{d}} % d for integration variables e.g. dx
 
 \begin{document} 
 
@@ -638,13 +638,20 @@ $\pr(M_2, V_1, V_2 \,|\, P_3 = 3)$ is proportional to:
 
 \begin{theorem} 
 \label{theorem1}
-Let {\footnotesize $\pr(Z\!=\!z | x_1, \ldots, x_n) = \delta[f(x_1, \ldots, x_n)-z]$}.
-If {\footnotesize$\textsc{Solve}\big( f(x_1, \ldots, x_n) - z ; \, x_1 \big)$} denotes the set of solutions of 
-$f(x_1, \ldots, x_n)-z$ w.r.t.\ $x_1$:
+Let {\footnotesize $\pr(Z\!=\!z | x_1, \ldots, x_n) = \delta[f(x_1, \ldots, x_n)-z]$}, and
+%CW If {\footnotesize$\textsc{Solve}\big( f(x_1, \ldots, x_n) - z ; \, x_1 \big)$} denotes the set of solutions of 
+%CW $f(x_1, \ldots, x_n)-z$ w.r.t.\ $x_1$:
+let the set of all real and simple roots of the deterministic constraints with respect to $x_1$ be
+$ \mathcal{X}_1 = \{ x_1 \; | \; f(x_1, \ldots, x_n) - z = 0 \} $. Note that each element of $ \mathcal{X}_1 $
+is a function of the remaining variables $ x_2,\dots,x_n,z $.
+Then  
+
 \begin{multline}
 \label{e:theorem1}
-p_{\boldsymbol{X}\backslash X_1 | Z}(x_2, \ldots, x_n \,|\, Z=z) \propto \\
-\sum_{x_1^i \in \textsc{Solve}\big( f(\cdot) - z ; \, x_1 \big)} 
+%CW p_{\boldsymbol{X}\backslash X_1 | Z}(x_2, \ldots, x_n \,|\, Z=z) \propto \\
+p(x_2, \ldots, x_n \,|\, Z=z) \propto \\
+%CW \sum_{x_1^i \in \textsc{Solve}\big( f(\cdot) - z ; \, x_1 \big)} 
+\sum_{x_1^i \in \mathcal{X}_1} 
 \frac{p(X_1=x_1^i, x_2, \ldots, x_n)}
 {\Big|\big(\partial f(x_1, \ldots, x_n) / \partial x_1 \big)|_{x_1 \leftarrow x_1^i} \Big|}
 \end{multline}
@@ -658,40 +665,64 @@ $p(x_2, \ldots, x_n \,|\, Z=z)$ is proportional to
 %
 %&\int_{x_1=-\infty}^{\infty}p(x_1, \ldots, x_n, Z=z) dx_1 =\\
 %
-&\int_{x_1=-\infty}^{\infty}p(x_1, \ldots, x_n)p(Z=z \,|\, x_1, \ldots, x_n) dx_1 \notag\\
+%CW &\int_{x_1=-\infty}^{\infty}p(x_1, \ldots, x_n)p(Z=z \,|\, x_1, \ldots, x_n) dx_1 \notag\\
+&\int p(x_1, \ldots, x_n)p(Z=z \,|\, x_1, \ldots, x_n) \dd x_1 \notag\\
 %
-=&\int_{x_1=-\infty}^{\infty}p(x_1, \ldots, x_n)
-\delta[f(x_1, \ldots, x_n) - z] dx_1 
+%CW =&\int_{x_1=-\infty}^{\infty}p(x_1, \ldots, x_n)
+=&\int p(x_1, \ldots, x_n)
+\delta[f(x_1, \ldots, x_n) - z] \dd x_1 
 \label{e:fand}
 \end{align}
 According to \cite{gel1964generalized}
-there is a unique way to define the composition of Dirac delta with 
-arbitrary functions $h(x)$:
+there is a unique way to express the composition of the Dirac delta distribution with an
+arbitrary function $h(x)$:
 \begin{equation}
 \label{e:gelfand}
 \delta(h(x)) = \sum_{i} \frac{\delta[x - r_i]}{|\partial h(x)/\partial x|}
 \end{equation}
-where $r_i$ are all (real and simple) roots of $h(x)$ and $h(x)$ is continuous and differentiable in the the root points. By (\ref{e:gelfand}), (\ref{e:fand}) and 
-\emph{Tonelli's theorem}\footnote{Tonelli's theorem says that for non-negative functions, sum and integral are interchangeable.} 
+where $r_i$ are all (real and simple) roots of $h(x)$ and $h(x)$ is continuous and differentiable at the roots $r_i$. By (\ref{e:gelfand}), (\ref{e:fand}) and 
+\emph{Tonelli's theorem}\footnote{Tonelli's theorem states that for non-negative functions, sum and integral are interchangeable.} 
 $\pr(x_2, \ldots, x_n \,|\, Z = z) \propto$
 \begin{equation*}
-\sum_{x_1^i \in \textsc{Solve}\big( f(\cdot) - z ; \, x_1 \big)} \!\!\!\!\!\!\!\!
-\frac{\int_{x_1 = -\infty}^{\infty} p(x_1, x_2, \ldots, x_n)  \delta[x_1 - x_1^i] d x_1}
+% \sum_{x_1^i \in \textsc{Solve}\big( f(\cdot) - z ; \, x_1 \big)} \!\!\!\!\!\!\!\!
+\sum_{x_1^i \in \mathcal{X}_1}
+%CW \frac{\int_{x_1 = -\infty}^{\infty} p(x_1, x_2, \ldots, x_n)  \delta[x_1 - x_1^i] \dd x_1}
+\frac{\int p(x_1, x_2, \ldots, x_n)  \delta[x_1 - x_1^i] \dd x_1}
 {\Big|\big(\partial f(x_1, \ldots, x_n) / \partial x_1 \big)|_{x_1 \leftarrow x_1^i} \Big|}
 \end{equation*}
 which implies (\ref{e:theorem1}).
 \end{proof}
 
-Theorem~\ref{theorem1} can alternatively be proved via transformation of variables 
+Theorem~\ref{theorem1} can alternatively be proved via a transformation of variables 
 (to derive $\pr(z, x_2, \ldots. x_n)$ from $\pr(x_1, \ldots, x_n)$) and utilizing \emph{Inverse function theorem}.
 
-A subtle point in conditioning on determinism is that apparently equivalent deterministic observations may lead to different posteriors. For example evidence $(E_1 = 0)$ where $\pr(E_1)= \delta[E_1 - M V + 3]$ and 
-evidence $(E_2 = 0)$ where $\pr(E_2) = \delta[E_2 - M + \frac{3}{V}]$ lead to different posteriors. 
-The reason can be understood by considering Dirac deltas as the limit of normal distributions with $\sigma \rightarrow 0$.
-(Note that 
-$\mathcal{N}(x - MV + 3, \sigma) \neq \mathcal{N}(x -M + \frac{3}{V}, \sigma)$).
-Therefore, the canonical way to express a deterministic relationship is a form to which one would add noise if one had to approximate the determinism which is model-dependent. 
-  
+% CW ========
+%A subtle point in conditioning on determinism is that apparently equivalent deterministic observations may lead to different posteriors. For example evidence $(E_1 = 0)$ where $\pr(E_1)= \delta[E_1 - M V + 3]$ and 
+%evidence $(E_2 = 0)$ where $\pr(E_2) = \delta[E_2 - M + \frac{3}{V}]$ lead to different posteriors. 
+%The reason can be understood by considering Dirac deltas as the limit of normal distributions with $\sigma \rightarrow 0$.
+%(Note that 
+%$\mathcal{N}(x - MV + 3, \sigma) \neq \mathcal{N}(x -M + \frac{3}{V}, \sigma)$).
+%Therefore, the canonical way to express a deterministic relationship is a form to which one would add noise if one had to approximate the determinism which is model-dependent. 
+% ===== CW
+A subtle point in conditioning on determinism is that apparently equivalent deterministic observations seem
+to lead to different posteriors. For example evidence $(E_1 = 0)$ where $\pr(E_1)= \delta[E_1 - M V + 3]$ and 
+evidence $(E_2 = 0)$ where $\pr(E_2) = \delta[E_2 - M + \frac{3}{V}]$ lead to different posteriors.
+
+In order to resolve this difference, we recall that the measure used in the integration (represented by $ \dd x $
+and the scaling of the variable under the delta distribution are tightly coupled. This can for example be seen from
+the property
+% Needs better formulation.
+%\begin{equation}
+%  \int_{-\infty}^{\infty} \delta(\alpha x) \dd x =  \int_{-\infty}^{\infty} \delta(x) \frac{\dd x}{|\alpha|}.
+%\end{equation}
+%The correct measure to use is now defined by a \emph{consistency} principle which states that marginalisation
+%over the constraint variable $z$ must lead to the same density whichever form was chosen for the deterministic
+%relation. In the above example:
+%\begin{align}
+%   \int p(x_1,\dots,x_n) \delta(E_1 - M V + 3) \dd E_1 \equiv \\\int p(x_1,\dots,x_n) \delta(E_2 - M + \frac{3}{V}) \dd E_2
+%\end{align}
+
+
 
 %A subtle point in conditioning on deterministic relationships is that the resulting density is affected by the value of the prior in the limit of the ambient space surrounding the posterior hypersurface (or submanifold). Therefore, an observed deterministic relationship  (e.g.\ $M_1 V_1 = 3$) cannot be represented by equivalent forms (e.g.\ $M_1 - \frac{3}{V_1} = 0$) in the same way the noisy estimation of the former and latter produce different distribution (e.g.\ $N((M_1 V_1 - 3), \sigma)$ differs $N((M_1 - \frac{3}{V_1}), \sigma)$).
 
