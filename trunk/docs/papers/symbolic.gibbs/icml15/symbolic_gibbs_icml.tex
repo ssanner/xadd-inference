@@ -566,29 +566,29 @@ The end result $\Phi$ is proportional to
 $\pr(\bvec{Y}\backslash \bar{\bvec{Y}} \,|\, \bvec{E} = \bvec{e})$ in which 
 $\bar{\bvec{Y}}$ is the set of stochastic variables eliminated in
 step~4.
-As required, the eliminated variables $\bar{\bvec{Y}}$ and $\bvec{Z}$ are deterministically decided given  $\bvec{Y}\backslash \bar{\bvec{Y}}$. 
+%{\color{red}
+%As required, the eliminated variables $\bar{\bvec{Y}}$ and $\bvec{Z}$ are deterministically decided given  $\bvec{Y}\backslash \bar{\bvec{Y}}$.} 
 
-For instance in the Collision model 
+For instance in the Collision model, 
 the potentials can be indexed as follows: 
-$\Psi_1$ to $\Psi_4$ be as in (\ref{e:collision}),
+$\Psi_1$ to $\Psi_4$ as in (\ref{e:collision}),
 $\Psi_5 := \delta[P_1 - M_1V_1]$,
 $\Psi_6 := \delta[P_2 - M_2V_2]$ and
 $\Psi_7 := \delta[P_3 - (P_1 + P_2)]$.   
-For evidence $\bvec{E} = \{P_3 = 3.0\}$, the algorithm runs as follows:
+For evidence $\bvec{E} = \{(P_3 = 3.0)\}$, the algorithm runs as follows:
 In Step 1, $\Psi_{7}$ is converted to $\delta[3.0 - (P_1 + P_2)]$. %while the other potentials are not modified.
 In Step 2, $\Psi_5$ is converted to $\delta[M_1 V_1 - M_1 V_1]$
 (which is equal to $1$). For the similar reason $\Psi_6$ is converted to $1$ and $\Psi_7$ to $\delta[3.0 - (M_1 V_1 + M_2 V_2)]$.  
-In Step 3, $\Phi$, the product of $\Psi_1$ to $\Psi_4$ is computed which in absence of observed stochastic variables, is simply equal to the prior joint: 
+In Step 3, $\Phi$, the product of $\Psi_1$ to $\Psi_4$ is computed. In this absence of observed stochastic variables, this simply equals the prior joint: 
 $\Phi = \Pr(M_1, M_2, V_1, V_2)$ (equation~ \ref{e:col-prior}).
-In step 4, $(G_7 - 3.0)$, i.e.\ $((M_1 V_1 + M_2 V_2) - 3.0)$, is solved w.r.t.\
-a stochastic variable 
- $M_1$\footnote{It could alternatively be solved w.r.t. $V_1$, $M_2$ or $V_2$.}
+In step 4, $(G_7 - 3.0)$, i.e.\ $((M_1 V_1 + M_2 V_2) - 3.0)$, is solved w.r.t.\ 
+ $M_1$ (It could alternatively be solved w.r.t. $V_1$, $M_2$ or $V_2$)
 which leads to a singleton set of solutions:
 {\footnotesize
 $\textsc{Solve}(3.0 - M_1 V_1 - M_2 V_2; M_1) = \{\frac{3 - M_2 V_2}{V_1}\}$
 }.
 Finally, since  
-$\left| \frac{\partial M_1 V_1 + M_2 V_2}{\partial M_1} \right| = |V_1|$, by (\ref{e:core}),
+$\left| \frac{\partial (M_1 V_1 + M_2 V_2)}{\partial M_1} \right| = |V_1|$, by (\ref{e:core}),
 $\Phi$ is converted to:  
 %%
 {\footnotesize
@@ -654,236 +654,61 @@ $\pr(x_2, \ldots, x_n \,|\, Z = z) \propto$
 \end{equation*}
 which implies (\ref{e:theorem1}).
 \end{proof}
+%
+Note that elimination of Dirac deltas requires transformations 
+that often leads to formulas without known closed-form integrals.
+This makes closed form inference (by Eq.~\ref{e:inference}) impossible.
+Nonetheless, inference can still be done via sampling.
 
-Theorem~\ref{theorem1} can alternatively be proved via transformation of variables 
-(to derive $\pr(z, x_2, \ldots. x_n)$ from $\pr(x_1, \ldots, x_n)$) and utilizing \emph{Inverse function theorem}.
+We restrict the scope of the discussion to cases where  
+In step 4, \ $G_j(\cdot) - c$ is invertible w.r.t. at least one variable $Y$ 
+i.e.\ $\textsc{Solve}(G_j(\cdot)-c)$ is singleton (\emph{invertibility assumption}){\color{red}(unique solution assumption(?))}.
+The reason is that in this case, 
+ the samples of the eliminated variables $\bar{\bvec{Y}}$ and $\bvec{Z}$ 
+are deterministically decided given the samples of $\bvec{Y}\backslash \bar{\bvec{Y}}$ while in the general setting, more operations might be required.
+%Given the samples for $\bvec{Y} \backslash \bar{\bvec{Y}}$, samples of deterministic variables $\bvec{Z}$ can be su
+%
 
-A subtle point in conditioning on determinism is that apparently equivalent deterministic observations may lead to different posteriors. For example evidence $(E_1 = 0)$ where $\pr(E_1)= \delta[E_1 - M V + 3]$ and 
-evidence $(E_2 = 0)$ where $\pr(E_2) = \delta[E_2 - M + \frac{3}{V}]$ lead to different posteriors. 
-The reason can be understood by considering Dirac deltas as the limit of normal distributions with $\sigma \rightarrow 0$.
-(Note that 
-$\mathcal{N}(x - MV + 3, \sigma) \neq \mathcal{N}(x -M + \frac{3}{V}, \sigma)$).
-Therefore, the canonical way to express a deterministic relationship is a form to which one would add noise if one had to approximate the determinism which is model-dependent. 
-  
-%A subtle point in conditioning on deterministic relationships is that the resulting density is affected by the value of the prior in the limit of the ambient space surrounding the posterior hypersurface (or submanifold). Therefore, an observed deterministic relationship  (e.g.\ $M_1 V_1 = 3$) cannot be represented by equivalent forms (e.g.\ $M_1 - \frac{3}{V_1} = 0$) in the same way the noisy estimation of the former and latter produce different distribution (e.g.\ $N((M_1 V_1 - 3), \sigma)$ differs $N((M_1 - \frac{3}{V_1}), \sigma)$).
+It is worth mentioning that while Theorem~\ref{theorem1} tackles the core problem of delta elimination in the general setting,
+with the invertibility assumption restriction, the theorem can alternatively be proved via transformation of variables: 
+deriving $\pr(z, x_2, \ldots. x_n)$ from $\pr(x_1, \ldots, x_n)$ followed by utilizing the \emph{inverse function theorem}.  
 
-....
-
-We are interested in deterministic variables with associated logical values  
+We are interested in observed deterministic variables with logical values  
 created by elementary arithmetic operators ($+$, $-$, $\times$, $\div$) and therefore 
-are in the form of fractions of polynomials.
-
-
-
-
-\section{Polynomial Piecewise Fractional Functions (PPFs)}
-\label{sect:ppfs}
-
-\section{Symbolic Gibbs Sampling}
-\label{sect:symbolic.gibbs}
-++++++
-
-%The output of this algorithm is a non normalized joint distribution of  a subset of none-deterministic variables. Provided with this joint, the marginal distribution of all query variables (either probabilistic or deterministic) can be computed by means of sampling as will be discussed later.
-
-%Note that these operations alter the normalization constant and the resulting function is only proportional to the corresponding joint distribution. However, most inference algorithms do not require normalization.Some of these algorithms are provided in the next section. However, prior to that we discuss the limitations of Algorithm~\ref{alg:posterior-joint} 
-The family of deterministic constraints studied in this work includes polynomial fractions.
-For this family, 
-the unique solution assumption (required in Step 4 of Algorithm~\ref{alg:posterior-joint})
-in general holds if $G^Z$, the logical values of deterministic variables, are linear w.r.t. some variables.
-That is, for some variable $Y$, $G^Z$ can be stated as: 
+in the form of fractions of polynomials.
+For this family of observed determinism, the invertibility assumption holds
+if $G_j(\cdot)$, the logical values of deterministic variables $Z_j$, are linear w.r.t.\ some variables. 
+That is, for some variable $Y$, $G_j(\cdot)$ can be stated as: 
 {\footnotesize
 \begin{equation}
 \label{eq:evidence-form}
-G^Z = \frac{\mathcal{A} \cdot Y + \mathcal{B}}{\mathcal{C} \cdot Y + \mathcal{D}}
+Gj(\cdot) = \frac{\mathcal{A} \cdot Y + \mathcal{B}}{\mathcal{C} \cdot Y + \mathcal{D}}
 \end{equation}
 }
 where $\mathcal{A}$ to $\mathcal{D}$ are constant or univariate/multivariate polynomials and $Y$ is not in their scopes.
 
-+++++
-
-Our symbolic Gibbs sampling is based on a simple but significantly useful insight.
-Namely, if the multivariate function $\pr(X_1, \ldots, X_N)$
-has an analytic (symbolic) integral for all its variables $X_i$,
-then, instead of using equation~\ref{e:cdf}, we map each variable $X_i$ to its corresponding symbolic CDF: 
-{\footnotesize
-\begin{equation}
-\label{e:cdf-symbolic}
-F(X_i  \,|\, \bvec{X}_{-i}) 
-\propto
-\int_{-\infty}^{X_i} \!\!\!\!\! \pr(X_i = t , \bvec{X}_{-i}) \, d  t
-\end{equation} 
-}
-Note that the difference between (\ref{e:cdf}) and (\ref{e:cdf-symbolic}) is that in the former, 
-all variables except $X_i$ are already instantiated therefore 
-$F(X_i  \,|\, \bvec{x}_{-i})$ is a univariate function but in  (\ref{e:cdf-symbolic}), 
-although variables $\bvec{X}_{-i}$ are treated as constants but they are kept uninstantiated and symbolic.
-As a result, $F(X_i \,|\, \bvec{X}_{-i})$ is a multivariate analytic function. 
-%as Algorithm~\ref{alg:analytic-cdf} shows, 
-%we can create a map from variables $X_i$ to their corresponding closed-form CDFs.
-
-The map (called {\sc VarToCDF}) from variables $X_i$ to their symbolic CDFs
-$F(X_i \,|\, \bvec{X}_{-i})$ is passed to the main symbolic Gibbs sampling procedure in Algorithm~\ref{alg:symbolic-gibbs}.
-During the sampling process, 
-to sample $x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$
-it is sufficient to get the (multivariate) symbolic CDF associated to $X_i$ from the map
-and instantiate it with $\bvec{x}_{-i}$ to obtain the appropriate univariate CDF.
-
-By this method, instead of computing $N \times T$ integrals for $T$ samples, only $N$ integrals are computed and 
-$N \times T$ function instantiations are performed. But function instantiation is much faster than integration.
-Therefore, the algorithm leads to a major improvement in speed.
-
-What remains is to show that a large subset of PPPF functions indeed have closed-form integrals. 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{algorithm}[hb!]%[tb]
-\caption{{\sc SymbolicGibbs}  
-\label{alg:symbolic-gibbs}}
-\begin{algorithmic}
- \STATE {\bfseries Input:}
-{$\bvec{X} := \tuple{X_1, \ldots, X_N}$, 				\hspace*{\fill}// \emph{\small random variables} \\
- $\bvec{x}^{(0)} := \tuple{x_1^{(0)}, \ldots, x_N^{(0)}}$, 	\hspace*{\fill}// \emph{\small initial values} \\
-{\sc VarToCDF}, 								\hspace*{\fill}//\emph{\small variables to analytic CDFs map} \\
- $T$ 										\hspace*{\fill}// \emph{\small number of desired samples } }
-\STATE{\bf Output:}{ list of taken samples}
-//%\BlankLine
-{\small
-%{\bf Begin}//  
-\FOR{$t= 1, 2, \ldots T$}
-	 \STATE $\tuple{x_1^{(t)}, \ldots, x_N^{(t)}} \leftarrow \tuple{x_1^{(t-1)}, \ldots, x_N^{(t-1)}}$    
-	\FOR{ {\bf each} $X_i \in \bvec{X}$}
-		\STATE $F(\bvec{X}) \leftarrow \textsc{VarToCDF}.\text{get}(X_i)$ //\emph{analytic CDF w.r.t.\ $X_i$:}
-		\STATE //\emph{univariate CDF w.r.t.\ $X_i$:}
-		\STATE 	$G(X_i) \leftarrow F(x_1^{(t)}, \ldots, x_{i-1}^{(t)}, X_i, x_{i+1}^{(t)}, \ldots, x_N^{(t)})$ 
-		\STATE //\emph{$G(\infty)$ is the normalization constant}
-		\STATE $x_i^{(t)} \leftarrow \textsc{InverseTransformSample}(\frac{G(X_i)}{G(\infty)})$
-	\ENDFOR %end for each x_i
-\ENDFOR %end for t
-\STATE {\bf Return} {$\big\langle
-			\tuple{x_1^{(1)}, \ldots, x_N^{(1)}}, \ldots, 
-			\tuple{x_1^{(T)}, \ldots, x_N^{(T)}}
-		\big\rangle$}\;
-%	ForEach{}{
-%	
-%	}
-%	\textbf{end for}\\
- %  }
-   %\textbf{end for}\\   
-%}
-} %end small
-\end{algorithmic}
-\end{algorithm}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%..........................
-\begin{figure*}
-\begin{center}
-%\vspace{-1mm}
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_m1_v1.png}
-                %\caption{}
-                %\label{fig:mom1}
-        \end{minipage}%
-%
-%\hspace{20mm}
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_m1v1_p3.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_m1v1_when_p_is_3_and_v2_is_0_dot_2.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\hspace{4mm}
-%\\
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_v1v2.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_v1v2whenPis3.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/colV1V2givenPis3M1is2.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\end{center}
-\vspace{-1mm}
-\caption{\footnotesize
-prior/posterior joint distributions of pairs of random variables in the \emph{collision} example. 
-(a) $\pr(M_1, V_1)$,
-(b) $\pr(M_1, V_1 \, | \, P_3 = 3)$,
-(c) $\pr(M_1, V_1 \, | \, P_3 = 3, V_2 = 0.2)$,
-(d) $\pr(V_1, V_2)$,
-(e) $\pr(V_1, V_2 \, | \, P_3 = 3)$,
-(f) $\pr(V_1, V_2 \, | \, M_1 =2, P_3 = 3)$
-using rejection sampling on the reduced dimension model.
-} 
-\label{fig:mom}
-%\vspace{-4mm}
-\end{figure*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}
-\begin{center}
-%\vspace{-1mm}
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_gibbs10000.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col-c-mh-10000_08.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_stan10000_02.png} % n 0.2
-                %\caption{}
-                %\label{fig:mom1}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_stan_10000_000001.png} %n 0.00001
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-	\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_ang10000_02_001.png}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_ang_10000_01_001}
-        \end{minipage}%
-\end{center}
-\vspace{-1mm}
-\caption{\footnotesize
-10000 samples taken from the distribution Fig.~(\ref{fig:mom}-c)
-using (a) Symbolic Gibbs sampler and(b) MH with \emph{proposal variance} 0.8 
-on the reduced-dimension model as well as  
-(c) Hamiltonian Monte Carlo (Stan) with a measurement error variance 0.2, 
-, (d) and 0.00001 as well as Anglican implementation of RDB alg. with 
-parameters (e)
-%$V_2$ and $P_3$ observation noise variance 
-$\sigma^2_{V_2} = 0.01$, $\sigma^2_{P_3} = 0.2$ and 
-(f) $\sigma^2_{V_2} = 0.01$, $\sigma^2_{P_3} = 0.1$
-without reducing the dimensionality.
-}
-\label{fig:mom2}
-%\vspace{-4mm}
-\end{figure*}
 
 
-\begin{comment}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-ANGLICAN rdb tested
-SMC BAD
-PGIBBS BAD
-\end{comment}
 
-\section{Piecewise Algebraic Graphical Models}
+
+The last subtle point in conditioning on determinism is that apparently equivalent deterministic observations may lead to different posteriors. For example evidence $(E_1 = 0)$ where $\pr(E_1)= \delta[E_1 - M V + 3]$ and 
+evidence $(E_2 = 0)$ where $\pr(E_2) = \delta[E_2 - M + \frac{3}{V}]$ lead to different posteriors. 
+Although both may seem to formalize the same constraint $(MV = 3)$.
+
+It should be pointed out that the same issue arises when hard constraints are approximated by adding noise:
+$\mathcal{N}(E - MV + 3, \sigma) \neq \mathcal{N}(E -M + \frac{3}{V}, \sigma)$).
+The correct approximation form depends on the nature of observation.
+%The reason can be understood by considering 
+Dirac deltas can be understood as the limit of normal distributions with $\sigma \rightarrow 0$.
+Therefore, they inherit the same issue: 
+The canonical way to express a deterministic relationship is a form to which one would add noise if one had to approximate the determinism which is model-dependent. 
+  
+%A subtle point in conditioning on deterministic relationships is that the resulting density is affected by the value of the prior in the limit of the ambient space surrounding the posterior hypersurface (or submanifold). Therefore, an observed deterministic relationship  (e.g.\ $M_1 V_1 = 3$) cannot be represented by equivalent forms (e.g.\ $M_1 - \frac{3}{V_1} = 0$) in the same way the noisy estimation of the former and latter produce different distribution (e.g.\ $N((M_1 V_1 - 3), \sigma)$ differs $N((M_1 - \frac{3}{V_1}), \sigma)$).
+
+
+\section{Polynomial Piecewise Fractional Functions (PPFs)}
+\label{sect:ppfs}
+%\section{Piecewise Algebraic Graphical Models}
 In this section, we put things together and provide our complete model.
 The requirements for the class of potential functions (factor forms) are as follows:
 \begin{itemize}
@@ -1090,6 +915,194 @@ The restrictions imposed on PPPF sub-functions
 guarantee that they have closed form indefinite univariate integrals.
 These integrals are computed by performing polynomial division (in case needed),
 followed by partial fraction decomposition and finally, using a short list of indefinite integration rules.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+\section{Symbolic Gibbs Sampling}
+\label{sect:symbolic.gibbs}
+%The output of this algorithm is a non normalized joint distribution of  a subset of none-deterministic variables. Provided with this joint, the marginal distribution of all query variables (either probabilistic or deterministic) can be computed by means of sampling as will be discussed later.
+
+%Note that these operations alter the normalization constant and the resulting function is only proportional to the corresponding joint distribution. However, most inference algorithms do not require normalization.Some of these algorithms are provided in the next section. However, prior to that we discuss the limitations of Algorithm~\ref{alg:posterior-joint} 
+
+%The family of deterministic constraints studied in this work includes polynomial fractions. For this family, the unique solution assumption (required in Step 4 of Algorithm~\ref{alg:posterior-joint}) in general holds if $G^Z$, the logical values of deterministic variables, are linear w.r.t. some variables.
+
+Our symbolic Gibbs sampling is based on a simple but significantly useful insight.
+Namely, if the multivariate function $\pr(X_1, \ldots, X_N)$
+has an analytic (symbolic) integral for all its variables $X_i$,
+then, instead of using equation~\ref{e:cdf}, we map each variable $X_i$ to its corresponding symbolic CDF: 
+{\footnotesize
+\begin{equation}
+\label{e:cdf-symbolic}
+F(X_i  \,|\, \bvec{X}_{-i}) 
+\propto
+\int_{-\infty}^{X_i} \!\!\!\!\! \pr(X_i = t , \bvec{X}_{-i}) \, d  t
+\end{equation} 
+}
+Note that the difference between (\ref{e:cdf}) and (\ref{e:cdf-symbolic}) is that in the former, 
+all variables except $X_i$ are already instantiated therefore 
+$F(X_i  \,|\, \bvec{x}_{-i})$ is a univariate function but in  (\ref{e:cdf-symbolic}), 
+although variables $\bvec{X}_{-i}$ are treated as constants but they are kept uninstantiated and symbolic.
+As a result, $F(X_i \,|\, \bvec{X}_{-i})$ is a multivariate analytic function. 
+%as Algorithm~\ref{alg:analytic-cdf} shows, 
+%we can create a map from variables $X_i$ to their corresponding closed-form CDFs.
+
+The map (called {\sc VarToCDF}) from variables $X_i$ to their symbolic CDFs
+$F(X_i \,|\, \bvec{X}_{-i})$ is passed to the main symbolic Gibbs sampling procedure in Algorithm~\ref{alg:symbolic-gibbs}.
+During the sampling process, 
+to sample $x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$
+it is sufficient to get the (multivariate) symbolic CDF associated to $X_i$ from the map
+and instantiate it with $\bvec{x}_{-i}$ to obtain the appropriate univariate CDF.
+
+By this method, instead of computing $N \times T$ integrals for $T$ samples, only $N$ integrals are computed and 
+$N \times T$ function instantiations are performed. But function instantiation is much faster than integration.
+Therefore, the algorithm leads to a major improvement in speed.
+
+What remains is to show that a large subset of PPPF functions indeed have closed-form integrals. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{algorithm}[hb!]%[tb]
+\caption{{\sc SymbolicGibbs}  
+\label{alg:symbolic-gibbs}}
+\begin{algorithmic}
+ \STATE {\bfseries Input:}
+{$\bvec{X} := \tuple{X_1, \ldots, X_N}$, 				\hspace*{\fill}// \emph{\small random variables} \\
+ $\bvec{x}^{(0)} := \tuple{x_1^{(0)}, \ldots, x_N^{(0)}}$, 	\hspace*{\fill}// \emph{\small initial values} \\
+{\sc VarToCDF}, 								\hspace*{\fill}//\emph{\small variables to analytic CDFs map} \\
+ $T$ 										\hspace*{\fill}// \emph{\small number of desired samples } }
+\STATE{\bf Output:}{ list of taken samples}
+//%\BlankLine
+{\small
+%{\bf Begin}//  
+\FOR{$t= 1, 2, \ldots T$}
+	 \STATE $\tuple{x_1^{(t)}, \ldots, x_N^{(t)}} \leftarrow \tuple{x_1^{(t-1)}, \ldots, x_N^{(t-1)}}$    
+	\FOR{ {\bf each} $X_i \in \bvec{X}$}
+		\STATE $F(\bvec{X}) \leftarrow \textsc{VarToCDF}.\text{get}(X_i)$ //\emph{analytic CDF w.r.t.\ $X_i$:}
+		\STATE //\emph{univariate CDF w.r.t.\ $X_i$:}
+		\STATE 	$G(X_i) \leftarrow F(x_1^{(t)}, \ldots, x_{i-1}^{(t)}, X_i, x_{i+1}^{(t)}, \ldots, x_N^{(t)})$ 
+		\STATE //\emph{$G(\infty)$ is the normalization constant}
+		\STATE $x_i^{(t)} \leftarrow \textsc{InverseTransformSample}(\frac{G(X_i)}{G(\infty)})$
+	\ENDFOR %end for each x_i
+\ENDFOR %end for t
+\STATE {\bf Return} {$\big\langle
+			\tuple{x_1^{(1)}, \ldots, x_N^{(1)}}, \ldots, 
+			\tuple{x_1^{(T)}, \ldots, x_N^{(T)}}
+		\big\rangle$}\;
+%	ForEach{}{
+%	
+%	}
+%	\textbf{end for}\\
+ %  }
+   %\textbf{end for}\\   
+%}
+} %end small
+\end{algorithmic}
+\end{algorithm}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%..........................
+\begin{figure*}
+\begin{center}
+%\vspace{-1mm}
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs/col_m1_v1.png}
+                %\caption{}
+                %\label{fig:mom1}
+        \end{minipage}%
+%
+%\hspace{20mm}
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs/col_m1v1_p3.png}
+                %\caption{}
+                %\label{fig:mom2}
+        \end{minipage}%
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs/col_m1v1_when_p_is_3_and_v2_is_0_dot_2.png}
+                %\caption{}
+                %\label{fig:mom2}
+        \end{minipage}%
+\hspace{4mm}
+%\\
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs/col_v1v2.png}
+                %\caption{}
+                %\label{fig:mom2}
+        \end{minipage}%
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs/col_v1v2whenPis3.png}
+                %\caption{}
+                %\label{fig:mom2}
+        \end{minipage}%
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs/colV1V2givenPis3M1is2.png}
+                %\caption{}
+                %\label{fig:mom2}
+        \end{minipage}%
+\end{center}
+\vspace{-1mm}
+\caption{\footnotesize
+prior/posterior joint distributions of pairs of random variables in the \emph{collision} example. 
+(a) $\pr(M_1, V_1)$,
+(b) $\pr(M_1, V_1 \, | \, P_3 = 3)$,
+(c) $\pr(M_1, V_1 \, | \, P_3 = 3, V_2 = 0.2)$,
+(d) $\pr(V_1, V_2)$,
+(e) $\pr(V_1, V_2 \, | \, P_3 = 3)$,
+(f) $\pr(V_1, V_2 \, | \, M_1 =2, P_3 = 3)$
+using rejection sampling on the reduced dimension model.
+} 
+\label{fig:mom}
+%\vspace{-4mm}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}
+\begin{center}
+%\vspace{-1mm}
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs2/col_c_gibbs10000.png}
+                %\caption{}
+                %\label{fig:mom2}
+        \end{minipage}%
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs2/col-c-mh-10000_08.png}
+                %\caption{}
+                %\label{fig:mom2}
+        \end{minipage}%
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs2/col_c_stan10000_02.png} % n 0.2
+                %\caption{}
+                %\label{fig:mom1}
+        \end{minipage}%
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs2/col_c_stan_10000_000001.png} %n 0.00001
+                %\caption{}
+                %\label{fig:mom2}
+        \end{minipage}%
+	\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs2/col_c_ang10000_02_001.png}
+        \end{minipage}%
+\begin{minipage}[b]{\nn\textwidth}
+                \includegraphics[width=1\textwidth]{Figs2/col_c_ang_10000_01_001}
+        \end{minipage}%
+\end{center}
+\vspace{-1mm}
+\caption{\footnotesize
+10000 samples taken from the distribution Fig.~(\ref{fig:mom}-c)
+using (a) Symbolic Gibbs sampler and(b) MH with \emph{proposal variance} 0.8 
+on the reduced-dimension model as well as  
+(c) Hamiltonian Monte Carlo (Stan) with a measurement error variance 0.2, 
+, (d) and 0.00001 as well as Anglican implementation of RDB alg. with 
+parameters (e)
+%$V_2$ and $P_3$ observation noise variance 
+$\sigma^2_{V_2} = 0.01$, $\sigma^2_{P_3} = 0.2$ and 
+(f) $\sigma^2_{V_2} = 0.01$, $\sigma^2_{P_3} = 0.1$
+without reducing the dimensionality.
+}
+\label{fig:mom2}
+%\vspace{-4mm}
+\end{figure*}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}
