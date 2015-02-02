@@ -315,7 +315,7 @@ Presenting an efficient asymptotically unbiased inference method (called \emph{S
 %The second contribution, as mentioned, is a new variation of Gibbs sampling.  
 Gibbs samplers are robust in the sense that they do not need any parameter tuning.
 However, they are computationally expensive since to take a single sample they require to compute many univariate integrals (to generate the CDFs of conditional distributions).
-%We notice that a large subset of PPPFs have closed form (symbolic) integrals. 
+%We notice that a large subset of PPFs have closed form (symbolic) integrals. 
 The idea of Symbolic Gibbs is to compute a single analytic integral for each variable by keeping the remaining variables uninstantiated. 
 The actual process of CDF computation per sample  
 simply involves instantiation of the already computed CDFs rather than computing them on the fly.
@@ -323,7 +323,7 @@ This dramatically decreases the amount of necessary computations and as in Secti
 
 Literature review is postponed to Section~\ref{sect:literature.review} and Section~\ref{sect:conclusion} concludes. 
 
-%In the following sections after a brief introduction to Graphical models, followed by an algorithm for inference in the presence of deterministic constraints.We then explain the restrictions of PPPFs, compare our method with other samplers and conclude. 
+%In the following sections after a brief introduction to Graphical models, followed by an algorithm for inference in the presence of deterministic constraints.We then explain the restrictions of PPFs, compare our method with other samplers and conclude. 
 
 \section{Graphical Models (GMs)}
 \label{sect:background}
@@ -412,7 +412,7 @@ F(X_i  \,|\, \bvec{x}_{-i})
 \int_{-\infty}^{X_i} \!\!\!\! \pr(X_i = t, \bvec{x}_{-i}) \, d  t
 \end{equation} 
 }
-%Computation of $N$ univariate integrals per sample is costly and this makes Gibbs sampling a relatively slow sampler. However, we will show that the family of PPPF functions, the performance of Gibbs sampling can be improved significantly.
+%Computation of $N$ univariate integrals per sample is costly and this makes Gibbs sampling a relatively slow sampler. However, we will show that the family of PPF functions, the performance of Gibbs sampling can be improved significantly.
 In the next section, we formalize GMs with deterministic relations among random variables. 
 %%%%%%%%%
 \section{Stochastic-Deterministic Graphical Models (SD-GMs)}
@@ -642,7 +642,7 @@ there is a unique way to define the composition of Dirac delta with
 an arbitrary function $h(x)$:
 \begin{equation}
 \label{e:gelfand}
-\delta(h(x)) = \sum_{i} \frac{\delta[x - r_i]}{|\partial h(x)/\partial x|}
+\delta[h(x)] = \sum_{i} \frac{\delta[x - r_i]}{|\partial h(x)/\partial x|}
 \end{equation}
 where $r_i$ are all (real and simple) roots of $h(x)$ and $h(x)$ is continuous and differentiable in the the root points. By (\ref{e:gelfand}), (\ref{e:fand}) and 
 \emph{Tonelli's theorem}\footnote{Tonelli's theorem says that for non-negative functions, sum and integral are interchangeable.} 
@@ -708,23 +708,18 @@ The canonical way to express a deterministic relationship is a form to which one
 
 \section{Polynomial Piecewise Fractional Functions (PPFs)}
 \label{sect:ppfs}
-%\section{Piecewise Algebraic Graphical Models}
-In this section, we put things together and provide our complete model.
-The requirements for the class of potential functions (factor forms) are as follows:
-\begin{itemize}
-\item Factor forms should be as expressive as possible to be able simulate different density forms.  
-\item Factor forms should be closed under multiplication and polynomial fractional substitutions such as 
-the r.h.s.\ of equation~(\ref{eq:evidence-form}). Otherwise, \emph{joint factor formation} and multiple substitutions in the \emph{collapsing determinism} phase of 
-Algorithm~\ref{alg:posterior-joint} can be problematic.
-\item A single analytical integration 
-(i.e.\ integrating w.r.t.\ a single variable while keeping the rest of variables symbolic) should produce a closed-form structure (the requirement of Symbolic Gibbs).
-\end{itemize}   
-
-Our proposition is the use of 
-the class of \emph{Polynomial-Piecewise Polynomial Fractions} (PPPFs); That is,   
-functions in the form:
-
-\begin{equation}
+%In this section, we put things together and provide our complete model.
+%The requirements for the class of potential functions (factor forms) are as follows:
+%\begin{itemize}
+%\item Factor forms should be as expressive as possible to be able simulate different density forms.  
+%\item Factor forms should be closed under multiplication and polynomial fractional substitutions such as the r.h.s.\ of equation~(\ref{eq:evidence-form}). Otherwise, \emph{joint factor formation} and multiple substitutions in the \emph{collapsing determinism} phase of Algorithm~\ref{alg:posterior-joint} can be problematic.
+%\item A single analytical integration 
+%(i.e.\ integrating w.r.t.\ a single variable while keeping the rest of variables symbolic) should produce a closed-form structure (the requirement of Symbolic Gibbs).
+%\end{itemize}
+%Our proposition is the use of  the class of \emph{Polynomial-Piecewise Polynomial Fractions} (PPFs); That is, functions in the form:   
+We study piecewise fractional functions with polynomial partitioning conditions (PPFs) -- a highly expressive class of functions neglected in the literature so far.
+That is, functions in form:
+\begin{equation}\footnotesize
 \label{e:ppf}
 f = 
   \begin{cases}
@@ -739,15 +734,18 @@ f =
    \case{\varphi_{m,1} \lessgtr 0,\, \varphi_{m,2} \lessgtr 0,\, \ldots}{\frac{N_m}{D_m}}    
   \end{cases}
 \end{equation}
-where each \emph{sub-function} $f_i := \frac{N_i}{D_i}$ is a (multivariate) polynomial fraction and 
-each \emph{case condition} $\phi_i$ is a conjunction of some inequalities ($\lessgtr$ stands for  
+where each \emph{sub-function} $f_i := \frac{N_i}{D_i}$ is a (multivariate) polynomial fraction and
+\emph{conditions} $\phi_i$ partition the space of function variables. 
+Each \emph{case condition} $\phi_i$ is a conjunction of some inequalities ($\lessgtr$ stands for  
 $>$ or $<$)\footnote{In piecewise distributions,  
-we are careless about equalities since they only matter for $\delta[\cdot]$s which are already treated separately.} 
+we are careless about equalities since they only matter for $\delta[\cdot]$s which are treated separately.
+%We assume that no $\delta[h(\bvec{x})]$ has roots point on the partitioning hyperplanes.
+} 
 where each \emph{atomic constraint} $\varphi_{i,j}$ is a (multivariate) polynomial.
 
 %Evidently, this class is very expressive. Other distributions can also be approximated by this form by being \emph{Taylor series} other existing approximation tools \cite{shenoy2011inference}.
 
-Closure of PPPFs under multiplication is trivial, e.g.:
+PPFs are closed under elementary operations, e.g.:
 \begin{equation*}
 \footnotesize
   \begin{cases}
@@ -755,7 +753,7 @@ Closure of PPPFs under multiplication is trivial, e.g.:
   \case{\phi_2}{f_2}    
   \end{cases}
 \,
- \otimes
+ \times
 \,
   \begin{cases}
   \case{\psi_1}{g_1} \\
@@ -769,7 +767,7 @@ Closure of PPPFs under multiplication is trivial, e.g.:
   \case{\phi_2, \psi_2}{f_2 \times g_2}
   \end{cases}
 \end{equation*} 
-Closure under fractional substitution follows from the fact that 
+Their closure under fractional substitution follows from the fact that 
 fractional conditions can be restated as polynomials:
 \begin{align*}
 %\label{e:fractional2nlpa}
@@ -787,11 +785,11 @@ fractional conditions can be restated as polynomials:
 }
 \end{align*}
 A large group of polynomial fractions have closed-form integrals. 
-We will show that this is also holds for a large group of PPPFs.
+We will show that this is also holds for a large group of PPFs.
 For brevity, we only focus on the following subset:
 
-\textbf{Restricted PPPFs. }
-PPPFs as in Definition~(\ref{e:ppf}) where 
+\textbf{Restricted PPFs. }
+PPFs as in Definition~(\ref{e:ppf}) where 
 each $\varphi_{i,j}$
 can be written as a product of some terms $t_{i,j,k}$ where the maximum degree of each variable $X \in \bvec{X}$ in each $t_{i,j,k}$ is less or equal to 4 ($\text{rel-degree}(t_{i,j,k}) \leq 4$)
 and the sub-function denominators, $D_{i}$, can be factorized into polynomials ${D}_{i,h}$ where the maximum degree of each variable in each $D_{i,h}$ is less or equal to 2 ($\text{rel-degree}(D_{i, k}) \leq 2$).%, where function $\text{rel-degree}(\cdot)$, the relative degree, is defined as follows:
@@ -804,16 +802,16 @@ and the sub-function denominators, $D_{i}$, can be factorized into polynomials $
 %\textbf{Relative degree of polynomials.} $x\text{-deg}(g)$, the degree of a polynomial $g$ w.r.t.\ a variable $x$, is the degree of $g$ if all scope variables except $x$ are considered constant. For example $x\text{-deg}(x y^2 + x^2 y z^3) = 2$. The \emph{relative degree} of $g$, $\text{rel-degree}(g)$, is:
 %\[\text{rel-degree}(g) = \max_{x \in \vec{x}}(x\text{-deg}(g))\]
 
-Here is an example of a restricted PPPF case statement:
+Here is an example of a restricted PPF case statement:
 \begin{equation*}
 {\footnotesize
 \singlecase{y^2-x\leq 0 \wedge x^3+2xy \geq 0}{\frac{x^2 y^3 + 7x + 10}{(5x.y^2 + 2)(y + x)^5}}
 }
 \end{equation*}
 
-The class of restricted PPPFs is still quite expressive. Meanwhile restricted PPPFs have closed form (single) integrals that are not very hard to compute automatically. 
+The class of restricted PPFs is still quite expressive. Meanwhile restricted PPFs have closed form (single) integrals that are not very hard to compute automatically. 
 
-\subsection{Analytic integration of restricted PPPFs}
+\subsection{Analytic integration of restricted PPFs}
 The space limitations do not allow us to explain the integration process in detail. 
 Instead, we highlight the main issues.
 
@@ -834,7 +832,7 @@ Firstly, note that the definite integrals can be reduced to indefinite integrals
 dx
 \end{align*}
 }
-Secondly, note that restricted PPPFs can be restated into a form where
+Secondly, note that restricted PPFs can be restated into a form where
 the degree of each variable in each atomic constraint is less or equal to 4.
 For example consider a single case statement with a single atomic constraint 
 $\varphi_{1,1} := t_{1,1,1} \cdot t_{1,1,2}$ (where rel-degree$(t_{1,1,k})\leq4$):
@@ -852,7 +850,7 @@ f_1 \quad \text{if } t_{1,1,1} \cdot t_{1,1,2} > 0
 \end{align*}
 
 Thirdly, note that for each variable $x$, 
-PPPFs can be transformed into piecewise structures 
+PPFs can be transformed into piecewise structures 
 in which each atomic constraint is either in form $x>L_i$ or $x<U_i$ or $I_i>0$, 
 where $L_i$, $U_i$ and $I_i$ are 
 algebraic expressions (not necessarily polynomials) and $x$ is not in their scope. 
@@ -911,7 +909,7 @@ For example:
 \end{align*}  
 }
 What remains is to compute the indefinite integrals of sub-functions. 
-The restrictions imposed on PPPF sub-functions 
+The restrictions imposed on PPF sub-functions 
 guarantee that they have closed form indefinite univariate integrals.
 These integrals are computed by performing polynomial division (in case needed),
 followed by partial fraction decomposition and finally, using a short list of indefinite integration rules.
@@ -956,7 +954,7 @@ By this method, instead of computing $N \times T$ integrals for $T$ samples, onl
 $N \times T$ function instantiations are performed. But function instantiation is much faster than integration.
 Therefore, the algorithm leads to a major improvement in speed.
 
-What remains is to show that a large subset of PPPF functions indeed have closed-form integrals. 
+What remains is to show that a large subset of PPF functions indeed have closed-form integrals. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1388,13 +1386,13 @@ piecewise parts with nonlinear bordering hyperplanes, rapid density changes and 
 //-------------------------------//
 %\begin{itemize}
 %\item Introducing  an expressive class of functions 
-%(called PPPFs for \emph{Polynomial-Piecewise Polynomial Fractions}) that facilitates inference in the presence of  linear/nonlinear algebraic deterministic constraints.
+%(called PPFs for \emph{Polynomial-Piecewise Polynomial Fractions}) that facilitates inference in the presence of  linear/nonlinear algebraic deterministic constraints.
 %\item Presenting an efficient inference method (called \emph{Symbolic Gibbs}) that matches well with the provided model and handles deterministic constraints.  
 %\end{itemize}
 
 %for inference in graphical models (such as Bayesian networks, Markov random fields, etc.).
-%PPPFs are piecewise polynomial fractions where the variable space is partitioned by polynomial inequalities.
-%The key insight is that the algebraic constraints preserved PPPF form after collapsing which immediately extends the application of PPPFs to models with sophisticated deterministic algebraic constraints. 
+%PPFs are piecewise polynomial fractions where the variable space is partitioned by polynomial inequalities.
+%The key insight is that the algebraic constraints preserved PPF form after collapsing which immediately extends the application of PPFs to models with sophisticated deterministic algebraic constraints. 
 We note that even in simple models such as \emph{collision example}, distributions can be piecewise fractional. For example:  
 \[
 \pr(V_2 \,|\, V_1) = \mathcal{U}(-2, V_1)
