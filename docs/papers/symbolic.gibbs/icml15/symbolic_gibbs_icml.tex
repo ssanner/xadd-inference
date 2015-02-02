@@ -372,48 +372,9 @@ where $\bvec{W} = \{W_1, \ldots, W_m\} := \vec{X} \backslash (\vec{Q} \cup \vec{
 The main challenge for closed inference is the computation of multiple integrals required for \emph{marginalizing {\color{green}out}} $\bvec{W}$.
 There are a few classes of functions which are closed under integration.
 However, none of these classes can handle deterministic constraints beyond the level of linear constraints.
-\\
-\textbf{Monte Carlo methods}
-%An alternative to exact inference is to approximate the joint distribution by a set of samples drawn from it using Monte Carlo methods. By the law of large numbers, this approximation is asymptotically unbiased. Using samples, the costly marginalization operation is avoided since the conditional probability $\pr(\bvec{q} \,| \, \bvec{e})$ is simply approximated by the number of samples satisfying $\bvec{q} \cap \bvec{e}$ divided by the number of samples satisfying $\bvec{e}$.
-%Note that unlike other approximate methods, inference via sampling leads to asymptotically unbiased solutions i.e.\ by taking sufficient number of samples, the \emph{posterior} can be approximated by an arbitrary precision.
-Approximating the posterior distribution via drawing samples from it by Monte Carlo methods 
-provides an asymptotically unbiased tool that completely avoids the hassle of multiple integrations.% required in closed-form sampling.   
-Three major such methods are as follows:
 
-\emph{Rejection sampling}: In this method, to draw a sample from 
-a distribution $p(\bvec{X})$, a sample $\bvec{x}$ is taken from another distribution $q(\bvec{X})$
-such that $p(\bvec{X})/q(\bvec{X})$ is bound by a known constant $c$
-and samples can be taken from $q(\bvec{X})$ efficiently.
-The produced sample is accepted with probability $p(\bvec{x}) / c q(\bvec{x})$, 
-otherwise it is rejected and the process is repeated. 
-
-\emph{Metropolis-Hastings (MH)}:
-To draw a new sample $\bvec{x}^{(t)}$ from a distribution $p(\bvec{X})$, given a previously taken sample $\bvec{x}^{(t-1)}$, 
-MH takes a sample $\bvec{x}'$ from a symmetric \emph{proposal density} $q(\bvec{X} |\, \bvec{x}^{(t-1)})$. 
-%from which samples can be taken efficiently 
-%(often an isotropic \emph{Gaussian} centered at $\bvec{x}^{(t-1)}$). 
-With probability $\min \big(1, p(\bvec{x}')/p(\bvec{x}^{(t-1)}) \big)$, 
-$\bvec{x}'$ is accepted as the next sample ($\bvec{x}^{(t)} \leftarrow \bvec{x}'$), otherwise, $\bvec{x}^{(t)} \leftarrow \bvec{x}^{(t-1)}$. 
-Choosing a good \emph{proposal} is problem-dependent and requires tuning. 
-
-
-\emph{Gibbs sampling}:
-Gibbs is a robust sampling tool in the sense that it does not require known bounds, tuned proposal densities or parameters.
-Drawing a sample for $\bvec{X} = (X_1, \ldots, X_N)$ takes place in $N$ steps.
-In the $i$-th step, $X_i$ is sampled conditioned on the last realization of the others:
-$x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$. 
-To perform this task, the following univariate \emph{Cumulative Distribution Function} (CDF)
-is computed by equation~(\ref{e:cdf}) and samples are taken by inverse transform sampling. 
-{\footnotesize
-\begin{equation}
-\label{e:cdf}
-F(X_i  \,|\, \bvec{x}_{-i}) 
-\propto
-\int_{-\infty}^{X_i} \!\!\!\! \pr(X_i = t, \bvec{x}_{-i}) \, d  t
-\end{equation} 
-}
-%Computation of $N$ univariate integrals per sample is costly and this makes Gibbs sampling a relatively slow sampler. However, we will show that the family of PPF functions, the performance of Gibbs sampling can be improved significantly.
-In the next section, we formalize GMs with deterministic relations among random variables. 
+%%Computation of $N$ univariate integrals per sample is costly and this makes Gibbs sampling a relatively slow sampler. However, we will show that the family of PPF functions, the performance of Gibbs sampling can be improved significantly.
+%In the next section, we formalize GMs with deterministic relations among random variables. 
 %%%%%%%%%
 \section{Stochastic-Deterministic Graphical Models (SD-GMs)}
 \label{sect:contribution1}
@@ -679,12 +640,12 @@ in the form of fractions of polynomials.
 For this family of observed determinism, the invertibility assumption holds
 if $G_j(\cdot)$, the logical values of deterministic variables $Z_j$, are linear w.r.t.\ some variables. 
 That is, for some variable $Y$, $G_j(\cdot)$ can be stated as: 
-{\footnotesize
-\begin{equation}
+\begin{equation}\footnotesize
 \label{eq:evidence-form}
-Gj(\cdot) = \frac{\mathcal{A} \cdot Y + \mathcal{B}}{\mathcal{C} \cdot Y + \mathcal{D}}
+Gj(\cdot) = 
+%\frac{\mathcal{A} \cdot Y + \mathcal{B}}{\mathcal{C} \cdot Y + \mathcal{D}}
+{(\mathcal{A} \cdot Y + \mathcal{B})}/{(\mathcal{C} \cdot Y + \mathcal{D})}
 \end{equation}
-}
 where $\mathcal{A}$ to $\mathcal{D}$ are constant or univariate/multivariate polynomials and $Y$ is not in their scopes.
 
 
@@ -784,15 +745,29 @@ fractional conditions can be restated as polynomials:
  \end{cases} 
 }
 \end{align*}
-A large group of polynomial fractions have closed-form integrals. 
-We will show that this is also holds for a large group of PPFs.
-For brevity, we only focus on the following subset:
+It follows that PPFs are also closed under \emph{absolute value}.
+Therefore, if the solutions to $G_j(\cdot)$ are fractional (as it is always the case if the invertibility assumption holds),
+PPFs are closed under  observed algebraic fractional determinism 
+(since they are closed under  
+all operations required for conversion of SD-GMs to purely stochastic GMs).
+This is an important characteristic that other distribution families lack.  
 
-\textbf{Restricted PPFs. }
-PPFs as in Definition~(\ref{e:ppf}) where 
+Note that PPFs are not closed under integrations
+required for closed-form inference (see Equation~\ref{e:inference}).
+
+However, 
+a large group of polynomial fractions have closed-form single variable integrals.
+As it will be seen in the next section,
+this leads to an extremely efficient Gibbs sampling mechanism.   
+%We will show that this is also holds for a large group of PPFs.
+
+For brevity, we only focus on the following fairly expressive  subset of PPFs:
+
+\textbf{PPF*. }
+A PPF* is a PPF in which %s as in Definition~(\ref{e:ppf}) where 
 each $\varphi_{i,j}$
-can be written as a product of some terms $t_{i,j,k}$ where the maximum degree of each variable $X \in \bvec{X}$ in each $t_{i,j,k}$ is less or equal to 4 ($\text{rel-degree}(t_{i,j,k}) \leq 4$)
-and the sub-function denominators, $D_{i}$, can be factorized into polynomials ${D}_{i,h}$ where the maximum degree of each variable in each $D_{i,h}$ is less or equal to 2 ($\text{rel-degree}(D_{i, k}) \leq 2$).%, where function $\text{rel-degree}(\cdot)$, the relative degree, is defined as follows:
+can be written as a product of some terms $t_{i,j,k}$ where the maximum degree of each variable $X \in \bvec{X}$ in each $t_{i,j,k}$ is less or equal to 4 % (treating other variables as constants).%($\text{rel-degree}(t_{i,j,k}) \leq 4$)
+and the sub-function denominators, $D_{i}$, can be factorized into polynomials ${D}_{i,h}$ where the maximum degree of each variable in each $D_{i,h}$ is less or equal to 2.% ($\text{rel-degree}(D_{i, k}) \leq 2$).%, where function $\text{rel-degree}(\cdot)$, the relative degree, is defined as follows:
  %\begin{enumerate} 
 %\item Each constrain $\phi_i := \varphi_{i,1} \wedge \varphi_{i,2} \wedge \ldots$ is a conjunction of polynomial (in)equalities $\varphi_{i,j}$ such that $\text{rel-degree}(\varphi_{i,j}) \leq 4$.
 %\item Each sub-function $f_i  := \frac{{N}_{i}}{{D}_{i,1} \cdot {D}_{i,2} \cdots}$
@@ -802,16 +777,16 @@ and the sub-function denominators, $D_{i}$, can be factorized into polynomials $
 %\textbf{Relative degree of polynomials.} $x\text{-deg}(g)$, the degree of a polynomial $g$ w.r.t.\ a variable $x$, is the degree of $g$ if all scope variables except $x$ are considered constant. For example $x\text{-deg}(x y^2 + x^2 y z^3) = 2$. The \emph{relative degree} of $g$, $\text{rel-degree}(g)$, is:
 %\[\text{rel-degree}(g) = \max_{x \in \vec{x}}(x\text{-deg}(g))\]
 
-Here is an example of a restricted PPF case statement:
+Here is an example of a PPF* case statement:
 \begin{equation*}
 {\footnotesize
 \singlecase{y^2-x\leq 0 \wedge x^3+2xy \geq 0}{\frac{x^2 y^3 + 7x + 10}{(5x.y^2 + 2)(y + x)^5}}
 }
 \end{equation*}
 
-The class of restricted PPFs is still quite expressive. Meanwhile restricted PPFs have closed form (single) integrals that are not very hard to compute automatically. 
+%The class of PPF*'s is still quite expressive. Meanwhile PPF*'s have closed form (single) integrals that are not very hard to compute automatically. 
 
-\subsection{Analytic integration of restricted PPFs}
+\subsection{Analytic integration of PPF*s}
 The space limitations do not allow us to explain the integration process in detail. 
 Instead, we highlight the main issues.
 
@@ -832,10 +807,10 @@ Firstly, note that the definite integrals can be reduced to indefinite integrals
 dx
 \end{align*}
 }
-Secondly, note that restricted PPFs can be restated into a form where
+Secondly, note that a PPF* can be restated into a form where
 the degree of each variable in each atomic constraint is less or equal to 4.
-For example consider a single case statement with a single atomic constraint 
-$\varphi_{1,1} := t_{1,1,1} \cdot t_{1,1,2}$ (where rel-degree$(t_{1,1,k})\leq4$):
+E.g. consider a single case statement with a single atomic constraint 
+$\varphi_{1,1} := t_{1,1,1} \cdot t_{1,1,2}$:% (where the degree of each variable in either $(t_{1,1,k})\leq4$):
 \begin{align*}
 {\footnotesize
 \left(
@@ -848,7 +823,6 @@ f_1 \quad \text{if } t_{1,1,1} \cdot t_{1,1,2} > 0
  \end{cases} 
 }
 \end{align*}
-
 Thirdly, note that for each variable $x$, 
 PPFs can be transformed into piecewise structures 
 in which each atomic constraint is either in form $x>L_i$ or $x<U_i$ or $I_i>0$, 
@@ -890,7 +864,6 @@ can be replaced with three cases as in (\ref{e:quadratic-trans}).
 }
 \end{align}
 }
-
 The infinite bound integral of a case-statement 
 associated with expressions with $\{L_i\}$, $\{U_i\}$ and $\{I_i\}$ 
 is itself a case-statement with the same independent constraints,
@@ -909,7 +882,7 @@ For example:
 \end{align*}  
 }
 What remains is to compute the indefinite integrals of sub-functions. 
-The restrictions imposed on PPF sub-functions 
+The restrictions imposed on PPF* sub-functions 
 guarantee that they have closed form indefinite univariate integrals.
 These integrals are computed by performing polynomial division (in case needed),
 followed by partial fraction decomposition and finally, using a short list of indefinite integration rules.
@@ -1181,17 +1154,14 @@ using different MCs. Note that in (b), rejection sampling has not been able to t
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Literature review}
-\label{sect:literature.review}
 \section{Experimental Results}
 \label{sect:experimental.results}
-{\color{green}As mentioned, conditioning on deterministic constraints lead to posterior masses positioned  on submanifolds and transformations that are required for dimension reduction
-often end in distributions which are highly piecewise and multimodal.
-This class of distributions is intrinsically different from the smooth, bell-shaped distributions often studied in the literature. }
 By carrying on four experiments we are interested in addressing the following questions: 
-
+\\
 (a) Conditioned on hard constraints, how do posteriors look like? %(at least in lower dimensions where they can be effectively visualized)?
+\\
 (b) In terms of convergence to ground truth, how do MCMC methods perform on such models? 
+\\
 (c) How does approximation of observed determinism via adding noise to the observation affects the sampling convergence rate? 
 
 \textbf{Experiment 1.} In our first experiment, we generate the posterior associated with our running example (\emph{collision model})
@@ -1228,9 +1198,9 @@ Due to existence of multiple noisy observations, in terms of size and accuracy o
 we study the role of model size on the performance of MCMC methods by generalizing the collision example to a case where $n$ objects 
 collide. The difference is that we omit the sequential dependencies of velocities s.t.\ all $V_i$ and $M_i$ share a same uniform prior $U(0.2, 2.2)$ and the constraint is $\sum_{i=1}^n{M_i V_i} = P$. By this modification, the GM becomes symmetric and enables us to compute the posterior ground truth mean values manually\footnote{An alternative would be relying on \emph{MCMC convergence diagnostics} methods \cite{cowles1996markov}. The latter methods however, could produce misleading results in case MCMCs do not converge to the ground truth, a scenario that for highly complex posteriors is not improbable.}%end footnote
 :
-\begin{equation}
+\begin{equation}\footnotesize
 \label{e:col.GT}
-M^* = V^* = \left(\frac{P}{n}\right)^{0.5}
+M^* = V^* = \sqrt{P / n} %\left(\frac{P}{n}\right)^{0.5}
 \end{equation}
 conditioned on $P = 1.5 n$, all masses $M_i$ and velocities  $V_i$ are queried. 
 The tested algorithms running on the reduced-dim posterior are: 
@@ -1253,7 +1223,7 @@ The noise variance parameters are chosen manually trying to maximize the converg
 The other parameters are Stan and Anglican's default setting.
 
 By (\ref{e:col.GT}), $a_k$, the average  of $k$-th sample vector $\bvec{s}^{(k)}$,
-is expected to be $1.5^{0.5}$;   
+is expected to be $\sqrt{1.5}$;   
 therefore, as the overall sampling error measure, 
 %$\mathbb{E}[|{\xi} - {\xi}^*|]$ 
 $\mathbb{E}[|\bvec{a} - \bvec{a}^*|]$ is computed where
@@ -1325,6 +1295,9 @@ In the plotted results (Figure~\ref{fig:err-threshold-vs-size-alc}),
 the rejection sampling MC is missing since the joint is not log-concave and does not have a constant bound required for the algorithm's \emph{envelope} 
 (note that $\lim_{A_{i} \rightarrow b} \frac{1}{b - A_{i}} = 0$ ).
 \end{comment}
+
+\section{Literature review}
+\label{sect:literature.review}
 
 \section{Conclusion}
 \label{sect:conclusion}
@@ -1426,6 +1399,52 @@ our model is more expressive than all of them.
 
 ....
 
+
+\textbf{Monte Carlo methods}
+%An alternative to exact inference is to approximate the joint distribution by a set of samples drawn from it using Monte Carlo methods. By the law of large numbers, this approximation is asymptotically unbiased. Using samples, the costly marginalization operation is avoided since the conditional probability $\pr(\bvec{q} \,| \, \bvec{e})$ is simply approximated by the number of samples satisfying $\bvec{q} \cap \bvec{e}$ divided by the number of samples satisfying $\bvec{e}$.
+%Note that unlike other approximate methods, inference via sampling leads to asymptotically unbiased solutions i.e.\ by taking sufficient number of samples, the \emph{posterior} can be approximated by an arbitrary precision.
+Approximating the posterior distribution via drawing samples from it by Monte Carlo methods 
+provides an asymptotically unbiased tool that completely avoids the hassle of multiple integrations.% required in closed-form sampling.   
+Three major such methods are as follows:
+
+\emph{Rejection sampling}: In this method, to draw a sample from 
+a distribution $p(\bvec{X})$, a sample $\bvec{x}$ is taken from another distribution $q(\bvec{X})$
+such that $p(\bvec{X})/q(\bvec{X})$ is bound by a known constant $c$
+and samples can be taken from $q(\bvec{X})$ efficiently.
+The produced sample is accepted with probability $p(\bvec{x}) / c q(\bvec{x})$, 
+otherwise it is rejected and the process is repeated. 
+
+\emph{Metropolis-Hastings (MH)}:
+To draw a new sample $\bvec{x}^{(t)}$ from a distribution $p(\bvec{X})$, given a previously taken sample $\bvec{x}^{(t-1)}$, 
+MH takes a sample $\bvec{x}'$ from a symmetric \emph{proposal density} $q(\bvec{X} |\, \bvec{x}^{(t-1)})$. 
+%from which samples can be taken efficiently 
+%(often an isotropic \emph{Gaussian} centered at $\bvec{x}^{(t-1)}$). 
+With probability $\min \big(1, p(\bvec{x}')/p(\bvec{x}^{(t-1)}) \big)$, 
+$\bvec{x}'$ is accepted as the next sample ($\bvec{x}^{(t)} \leftarrow \bvec{x}'$), otherwise, $\bvec{x}^{(t)} \leftarrow \bvec{x}^{(t-1)}$. 
+Choosing a good \emph{proposal} is problem-dependent and requires tuning. 
+
+
+\emph{Gibbs sampling}:
+Gibbs is a robust sampling tool in the sense that it does not require known bounds, tuned proposal densities or parameters.
+Drawing a sample for $\bvec{X} = (X_1, \ldots, X_N)$ takes place in $N$ steps.
+In the $i$-th step, $X_i$ is sampled conditioned on the last realization of the others:
+$x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$. 
+To perform this task, the following univariate \emph{Cumulative Distribution Function} (CDF)
+is computed by equation~(\ref{e:cdf}) and samples are taken by inverse transform sampling. 
+{\footnotesize
+\begin{equation}
+\label{e:cdf}
+F(X_i  \,|\, \bvec{x}_{-i}) 
+\propto
+\int_{-\infty}^{X_i} \!\!\!\! \pr(X_i = t, \bvec{x}_{-i}) \, d  t
+\end{equation} 
+}
+
+.............
+
+{\color{green}As mentioned, conditioning on deterministic constraints lead to posterior masses positioned  on submanifolds and transformations that are required for dimension reduction
+often end in distributions which are highly piecewise and multimodal.
+This class of distributions is intrinsically different from the smooth, bell-shaped distributions often studied in the literature. }
 
 }%end blue
 \end{document} 
