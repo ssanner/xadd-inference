@@ -148,13 +148,12 @@ Such constraints can appear in a variety of real-world applications.
 For instance, instead of direct observation of random variables 
 $X_1, X_2, \ldots$, a function of them $f(X_1, X_2, \ldots)$ might be observed. 
 %such deterministic relationships between random variables might be governed by natural laws (such as Kirchhoff's circuit laws or Newtonian mechanics).
-
 To motivate the discussion consider a concrete example:  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[t!]
-\vspace{-0mm}
+\vspace{-3mm}
 \begin{center}
 \begin{tabular}{cc}
    \hspace{-0mm} \includegraphics[width=\linewidth/6]{Figs/little-momentum0.pdf} 
@@ -162,17 +161,17 @@ To motivate the discussion consider a concrete example:
 \vspace{-1.5mm}
 \\
 \hspace{-5mm} \footnotesize(a) 
-& \hspace{-4mm} \footnotesize(b)  \\
+& \hspace{-3mm} \footnotesize(b)  \\
 \multicolumn{2}{c}{}
 \end{tabular}
 \end{center}
-\vspace{-8mm}
+\vspace{-6mm}
 \caption{\footnotesize
 (a) Collision of masses $M_1$ and $M_2$ with velocities $V_1$ and $V_2$ and momenta $P_1$ and $P_2$. 
 %(a) Collision happens if and only if $V_1>V_2$. 
-(b) Corresponding Bayesian network. The non-filled and filled circles represent stochastic and deterministic random variables respectively.} 
+(b) Corresponding Bayesian network. The filled circles represent deterministic random variables.} 
 \label{fig:mom0}
-\vspace{-4mm}
+\vspace{-7mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -184,39 +183,29 @@ To motivate the discussion consider a concrete example:
 \emph{Masses $M_1$ and $M_2$ with velocities $V_1$ and $V_2$ (and consequently momenta $P_1 = M_1 V_1$ and $P_2 = M_2 V_2$) collide to form a single mass ($M_1 + M_2$) with momentum $P_3 = P_1 + P_2$ (assuming that there is no dissipation).
 Masses and velocities are unknown but 
 their prior distributions are given as follows\footnote{
-$Throughout, \mathcal{U}(a, \, b)$ denotes a uniform continuous distribution 
-with {\color{green} support interval} $[a, b]$.
+Throughout, $\mathcal{U}(a, \, b)$ denotes a uniform continuous distribution 
+with support interval $[a, b]$.
 } 
 (note that as Figure~\ref{fig:mom0}.a shows, a collision only happens if $V_2 < V_1$):  
 }%end \emph
-\begin{align}\footnotesize
+{\footnotesize \vspace{-0.5mm}
+\begin{align}
 &\pr(M_1) = \mathcal{U}(0.1, \, 2.1) 
-&&\pr(M_2) = \mathcal{U}(0.1, \, 2.1)
+&&\pr(M_2) \!=\! \mathcal{U}(0.1, \, 2.1)
 \nonumber
 \\
 &\pr(V_1) = \mathcal{U}(-2, \, 2)
 &&\pr(V_2 \, | \, V_1) = \mathcal{U}(-2, \, V_1)
 \label{e:collision}
 \end{align} 
+}
 \emph{
-The conditional dependencies of these random variables are illustrated in 
+\!\!\!The conditional dependencies of these random variables are illustrated in 
 Figure~\ref{fig:mom0}.b.
 Conditioned on the observation $P_3 = 3$, the posterior joint distribution of $M_1$, $M_2$, $V_1$ and $V_2$ is desired. 
 \hspace*{\fill} $\diamond$} %\emph
 
-Despite its humble appearance, the solutions that the existing probabilistic inference tools provide for this model are quite unsatisfactory. 
-As a matter of fact, we are unaware of any existing general inference framework that 
-handles observed deterministic relationships between random variables!\footnote{
-By imposing various (but functionally the same)
-\emph{syntactical restrictions} and excuses, 
-the state-of-the-art probabilistic programming languages (PPLs) %toolkits
-totally disallow deterministic relationships among continuous random variables be observed:
-In BUGS \cite{lunn2009bugs}, the popular software for analysis of statistical models, \emph{logical nodes} cannot be given data or initial values .
-In PyMC \cite{patil2010pymc} deterministic variables have no \emph{observed flag}. 
-If in Stan {\color{red}TODO cite} 
-you try to assign an observation value to a deterministic variable, you will encounter an error message: 
-``attempt to assign variable in wrong block'' while 
-Anglican{\color{red} TODO cite} throws error ``invalid-observe", etc.}
+Despite its humble appearance, we will show the solutions that the existing probabilistic inference tools provide for this model are quite unsatisfactory. 
 
 Let's take a closer look on the nature of the problem by manually carrying on the computations required for MCMC sampling:
 It can easily be seen that in the \emph{collision model}, 
@@ -236,7 +225,7 @@ the \emph{prior} joint probability of
 which is a 4 dimensional function from which samples can be taken fairly easily. 
 Since {\footnotesize $P_3 = M_1 V_1 + M_2 V_2$}, 
 the following \emph{likelihood} is a 0-variance conditional distribution:
-\begin{equation}\footnotesize
+\begin{equation}\footnotesize 
 \label{e:col-likelihood}
 \pr(P_3 = 3 \,|\, M_1, V_1, M_2, V_2) = \delta\big( 3 - (M_1 V_1 + M_2 V_2) \big)
 \end{equation}
@@ -244,15 +233,29 @@ where $\delta(\cdot)$ denotes \emph{Dirac delta}.
 By \emph{Bayes} rule, 
 the \emph{posterior} 
 {\footnotesize $\pr(M_1, M_2, V_1, V_2 \,|\, P_3 = 3)$}
-is proportional to the product of equations (\ref{e:col-prior}) and (\ref{e:col-likelihood}) 
-that despite being a 4-dimensional function, its mass is only non-zero on the 3 dimensional \emph{hypersurface}: {\footnotesize$M_1 V_1 + M_2 V_2 = 3$}. 
+is proportional to the product of equations (\ref{e:col-prior}) and (\ref{e:col-likelihood}).
+Note that despite being 4-dimensional, 
+the mass of this function is only non-zero on the 3 dimensional \emph{hypersurface}: {\footnotesize$M_1 V_1 + M_2 V_2 = 3$}. 
 
 
 In general, observation of an algebraic function of an $N$-dimensional prior often leads to a posterior mass positioned on an $N-1$-dimensional hyperspace and existence of more deterministic constraints/relationships between stochastic random variables increases the difference between the dimensionality of the original space and the \emph{manifold} on which the posterior is non-zero.  
-If this dimensionality mismatch is not taken into account, sampling from such posterior distributions via sampling is impossible.\footnote{As a more tangible example, note that taking sample from a 2D curve via random walk in a 3D continuous space is impossible.}  
+If this dimensionality mismatch is not taken into account, sampling from such posterior distributions via sampling is impossible (As a more tangible example, note that taking sample from a 2D curve via random walk in a 3D continuous space is impossible.)  
 
-The solution that the existing MCMC-based frameworks suggest is to approximate the observed deterministic relations among  stochastic random variables via adding noise to the observation 
-(hard to soft constraint conversion by introducing measurement error).
+%We are unaware of any off-the-shelf inference framework that handles conditioning on deterministic constraints among random variables.
+By imposing various %(but functionally the same)
+\emph{syntactical restrictions},% and excuses, 
+the state-of-the-art probabilistic programming languages (PPLs),
+totally disallow deterministic relationships among continuous random variables be observed.
+\footnote{
+In BUGS \cite{lunn2009bugs}, the popular software for analysis of statistical models, \emph{logical nodes} cannot be given data or initial values .
+In PyMC \cite{patil2010pymc} deterministic variables have no \emph{observed flag}. 
+If in Stan \cite{stan-manual:2014} 
+you try to assign an observation value to a deterministic variable, you will encounter an error message: 
+``attempt to assign variable in wrong block'' while 
+Anglican \cite{wood2014new} throws error ``invalid-observe", etc.}
+
+The solution that these off-the-shelf inference frameworks suggest is to approximate the observed deterministic relations among  stochastic random variables via adding noise to the observation 
+(hard to soft constraint conversion via introducing measurement error).
 
 For example the r.h.s of equation (\ref{e:col-likelihood}) would be 
 approximated with a normal distribution
@@ -267,61 +270,67 @@ and if the noise is small,
 the mixing rate may become extremely slow \cite{chin1987bayesian}. 
 The reason is that in the latter case, 
  the approximated posterior mass would be dense in tinny regions (surrounding the original manifold) on which random walk
-is notoriously inefficient (near deterministic problem).  
+is notoriously inefficient (near-deterministic problem).  
 
-In particular cases, the problem may be addressed via 
-\emph{variable transformations}.
+%If all stochastic distributions of the model belong to particular families of density functions, the problem may be addressed by means of  
+%\emph{variable transformations}.
+In particular settings, \emph{linear} deterministic conditionals of continuous random variables
+are addressed in the literature.  
 Most notably, 
 the family of \emph{conditional linear Gaussians (CLG)} \cite{lauritzen2001stable}
 is closed under linear transformations and consequently
-allow linear deterministic constraints.
-However, inference in the presence of nonlinear deterministic constraints on continuous random variables is still an open problem \cite{li2013dynamic}.
+allow linear deterministic constraints.\footnote{CLGs form constant-variance \emph{Gaussian} Bayesian networks where the mean of each stochastic random variable is a linear function of its parents. \cite{lauritzen2001stable}.
+}
+
+In \cite{li2013dynamic} the restriction is imposed on the network topology.
+They use \emph{sequential importance sampling} on a simple Bayesian network of i.i.d. data points with an observed summation.% in a minimalistic BN.
+%They conjecture that such an algorithm may be generalized to other settings. 
+The generalization of this technique does not seem straight-forward (if possible).
+%It is unknown if this technique can be generalized to other topologies and evidence. 
+
+Recently, piecewise polynomial distributions have attracted attention.
+So far, piecewise polynomials with hyperrectangular, hyper-rhombus and linear partitioning constraints have been used in Bayesian networks \cite{shenoy2011inference,shenoy2012two,Sanner:12}.
+Such families can handle linear deterministic conditionals.
+\cite{cobb2005nonlinear} approximate non-linear deterministic constraints with piecewise linear constraints via
+dividing the domain of the parent variables into hypercubes and creating an
+approximation of each function in each hypercube.
+This method is not scalable and rapidly loses its performance in high dimensions since to preserved approximation accuracy, the number of partitions grow exponentially in the variable space dimensionality. 
+
+In short, inference conditioned on nonlinear deterministic constraints on continuous random variables is still an open problem \cite{li2013dynamic} and as mentioned, even for linear constraints, the existing works are too restrictive.
  
-In this paper we solve this problem for a large class of nonlinear multivariate algebraic deterministic constraints in the form of polynomial fractions. 
+In this paper, we tackle this problem for a large class of linear and nonlinear multivariate algebraic deterministic constraints in the form of polynomial fractions on an expressive class of continuous distributions. 
 
 After a brief background for representation and inference in Graphical models (GMs) in Section~\ref{sect:background}, 
-our first main contributions is presented in Section~\ref{sect:contribution1}:
-{
-\bf
-We provide an automated algorithm (called \emph{collapsing determinism}) for Bayesian inference in 
-presence of observed deterministic algebraic relationships among random variables.
-}
-%\end{center}
+our first main contributions is presented in Section~\ref{sect:contribution1}
+where we provide the necessary theory and algorithm (called \emph{collapsing determinism}) 
+to convert GMs with deterministic and stochastic nodes into purely stochastic networks for a large set of (non)linear algebraic determinism. 
 
-The main idea is to reduce the posterior dimensionality by utilizing 
-the properties of Dirac delta distributions. 
-This algorithm relies on operations such as fractional substitutions. 
-It can easily be seen that under such operations, the typical classes of distributions that are studied in the literature so far do not remain closed.
-This should be the main reason why the problem of inference conditioned on determinism has remained {\color{green}untackled} so far. 
+%The main idea is to reduce the posterior dimensionality by utilizing the properties of Dirac delta distributions. This algorithm relies on operations such as fractional substitutions. It can easily be seen that under such operations, the typical classes of distributions that are studied in the literature so far do not remain closed. This should be the main reason why the problem of inference conditioned on determinism has remained {\color{green}untackled} so far. 
 
-Our second contribution is presented in Section~\ref{sect:ppfs} where we {\color{green}alleviate} this situation as follows:
-{\bf
-We introduce an extremely expressive class of distributions with properties that facilitate the inference conditioned on deterministic algebraic constraints.
-}
+It can be seen that the classes of distributions studied in the literature so far do not remain closed under operations (such as fractional substitutions) required for collapsing determinism.
 
-This class (called PPFs for \emph{polynomial piecewise fractions}) {\color{green}consists of} piecewise functions where the space of variables is partitioned by polynomial inequalities and the the function value in each partition is a fraction with a polynomial numerator and denominator.  
+Our second contribution is presented in Section~\ref{sect:ppfs} where we 
+%{\color{green}alleviate} this situation as follows:\bf We 
+introduce \emph{polynomial piecewise fractions}(PPFs), an extremely expressive class of functions, not studied in the literature so far, 
+with interesting properties that facilitate the inference conditioned on deterministic algebraic constraints.
+
+%This class (called PPFs for \emph{polynomial piecewise fractions}) {\color{green}consists of} piecewise functions where the space of variables is partitioned by polynomial inequalities and the the function value in each partition is a fraction with a polynomial numerator and denominator.  
 %Clearly, PPFs can approximate any function up to arbitrary precision by partitioning it into (relatively) {\color{green} homogeneous} pieces followed by utilizing \emph{Taylor} expansion or similar methods.
-The key insight is that PPFs are closed under derivation and polynomial fractional substitutions. This immediately extends their application to models with sophisticated algebraic constraints.
+%The key insight is that PPFs are closed under derivation and polynomial fractional substitutions. This immediately extends their application to models with sophisticated algebraic constraints.
 
-Unfortunately, PPFs are not closed under integration 
-(required for marginalization).
-Therefore, closed-form inference on PPF models is not in general possible. 
-Nonetheless, a large subset of PPFs have closed-form univariate symbolic integrals which lead to our third major contribution that is offered in Section~\ref{sect:symbolic.gibbs}:
-{
-\bf
-Presenting an efficient asymptotically unbiased inference method (called \emph{Symbolic Gibbs}) that matches well with PPF models and the provided algorithm for conditioning on determinism.
-}
+%Unfortunately, PPFs are not closed under integration (required for marginalization). Therefore, closed-form inference on PPF models is not in general possible.  Nonetheless, 
 
-%The second contribution, as mentioned, is a new variation of Gibbs sampling.  
-Gibbs samplers are robust in the sense that they do not need any parameter tuning.
-However, they are computationally expensive since to take a single sample they require to compute many univariate integrals (to generate the CDFs of conditional distributions).
+A large subset of PPFs have closed-form univariate symbolic integrals which lead to our third contribution:
+In Section~\ref{sect:symbolic.gibbs}, we propose performing the costly operation of univariate CDF computation, as required by Gibbs sampling, analytically and offline rather than per sample.     
+
+%Gibbs samplers are robust in the sense that they do not need any parameter tuning.However, they are computationally expensive since to take a single sample they require to compute many univariate integrals (to generate the CDFs of conditional distributions).
 %We notice that a large subset of PPFs have closed form (symbolic) integrals. 
-The idea of Symbolic Gibbs is to compute a single analytic integral for each variable by keeping the remaining variables uninstantiated. 
-The actual process of CDF computation per sample  
-simply involves instantiation of the already computed CDFs rather than computing them on the fly.
-This dramatically decreases the amount of necessary computations and as in Section~\ref{sect:experimental.results} the experimental results show, leads to a significant performance improvement. 
+%The idea of Symbolic Gibbs is to compute a single analytic integral for each variable by keeping the remaining variables uninstantiated. 
+%The actual process of CDF computation per sample  simply involves instantiation of the already computed CDFs rather than computing them on the fly.
+This dramatically decreases the amount of necessary computations and as in Section~\ref{sect:experimental.results} the experimental results show, leads to a significant speed improvement. 
+%Literature review is postponed to Section~\ref{sect:literature.review} and 
 
-Literature review is postponed to Section~\ref{sect:literature.review} and Section~\ref{sect:conclusion} concludes. 
+The summary and conclusion are offered in Section~\ref{sect:conclusion}. 
 
 %In the following sections after a brief introduction to Graphical models, followed by an algorithm for inference in the presence of deterministic constraints.We then explain the restrictions of PPFs, compare our method with other samplers and conclude. 
 
@@ -333,20 +342,20 @@ As a common abuse of notation, in case there is no ambiguity, we do not distingu
 $\vec{X}$ may contain discrete and continuous variables. 
 However, for the sake of notational consistency, %and since the problems tackled in this paper only hold for continuous variables, 
 we only consider continuous models throughout. 
-Note that inference in presence of discrete deterministic constraints is trivial.
+Note that inference in presence of discrete deterministic constraints is already addressed in the literature 
+(see e.g.\ \cite{li2013dynamic} for related work).
 Therefore, generalization of the presented framework to hybrid discrete/continuous models is straightforward.   
 
 To cover both directed and undirected graphical models we use
 \emph{factor graph} notation \cite{kschischang2001factor}
 and represent a joint probability distribution $\pr(\vec{X})$ in a factorized form as follows: 
-\begin{equation}
+\begin{equation} \footnotesize
 \label{e:factor-graph}
 \pr(\vec{X}) \propto \prod_{\Psi_k \in \boldsymbol\Psi} \Psi_k (\vec{X}_k)
 \end{equation}
 where 
-$\Psi(\vec{X}_k)$ are a non-negative, real-valued \emph{potential functions} (of a subsets $\bvec{X}_k$ of $\vec{X}$) and the normalization constant is not necessarily known.
-Throughout, we adopt the notation 
-$\textsc{Scope}(\Psi_k) := \bvec{X}_k$.
+$\Psi(\vec{X}_k)$ are non-negative, real-valued \emph{potential functions} (of subsets $\bvec{X}_k$ of $\vec{X}$) and the normalization constant is not necessarily known.
+%Throughout, we adopt the notation $\textsc{Scope}(\Psi_k) := \bvec{X}_k$.
 %$C$ is a (not necessarily known) normalization constant.
 %The inference procedure that will be presented does not require the normalization constant be known. 
 
@@ -355,23 +364,24 @@ The inference task studied in this paper is
 the computation of the \emph{posterior} joint distribution 
 $\pr(\bvec{Q} \,|\, \bvec{E}=\bvec{e})$
 of 
-a subset $\bvec{Q}$ of $\bvec{X}$ (\emph{query})
+a subset $\bvec{Q}$ (\emph{query}) of $\bvec{X}$ 
 conditioned on (realization $\bvec{e}$ of) 
 variables  
 $\bvec{E} \subset\bvec{X} \backslash \bvec{Q}$ (\emph{evidence}):
-\begin{equation}
+\begin{equation}\vspace{-0.5mm}\footnotesize
 \label{e:inference}
-\pr(\vec{Q} \,|\, E =\vec{e}) \propto 
-\int_{w_1 = -\infty}^{\infty} \!\!\!\!\!\! \cdots \int_{w_m = -\infty}^{\infty}
+\pr(\vec{Q} \,|\, \bvec{E} =\vec{e}) \propto 
+\int_{-\infty}^{\infty} \!\! \cdots \int_{-\infty}^{\infty}
 %\prod_{\Psi \in \boldsymbol\Psi} \Psi(\vec{x})
-\!\!\!\!\!\!\!\! \pr(\bvec{Q}, \bvec{W} = \bvec{w}, \bvec{E}=\bvec{e} )
-\, d \bvec{w}
+\!\!\! \pr(\bvec{Q}, \bvec{W} = \bvec{w}, \bvec{E}=\bvec{e} )
+ \dd \bvec{w}
 \end{equation}
-where $\bvec{W} = \{W_1, \ldots, W_m\} := \vec{X} \backslash (\vec{Q} \cup \vec{E})$ and its realization is in form $\bvec{w} = \{w_1, \ldots, w_m\}$.
+where $\bvec{W} = \{W_1, \ldots, W_m\} := \vec{X} \backslash (\vec{Q} \cup \vec{E})$.% and its realization is in form $\bvec{w} = \{w_1, \ldots, w_m\}$.
 
-The main challenge for closed inference is the computation of multiple integrals required for \emph{marginalizing {\color{green}out}} $\bvec{W}$.
-There are a few classes of functions which are closed under integration.
-However, none of these classes can handle deterministic constraints beyond the level of linear constraints.
+The main challenge for closed-form inference is the computation of multiple integrals required for \emph{marginalization} of $\bvec{W}$.
+There are a few classes of functions which are closed under integration {\color{red}TODO ref?}.
+Beyond these classes, for asymptotically unbiased reasoning MCMC sampling methods are often utilized {\color{red}TODO ref?}.  
+%However, none of these classes can handle deterministic constraints beyond the level of linear constraints.
 
 %%Computation of $N$ univariate integrals per sample is costly and this makes Gibbs sampling a relatively slow sampler. However, we will show that the family of PPF functions, the performance of Gibbs sampling can be improved significantly.
 %In the next section, we formalize GMs with deterministic relations among random variables. 
@@ -409,7 +419,7 @@ and circular/recursive definition of deterministic variables is not allowed. }
 %Note that models with DAG dependencies between deterministic nodes can be easily converted to the canonical form (\ref{e:infer.sd}).For instance in the collision model, potential $\delta[P_3 - (P_1 + P_2)]$ can be restated as $\delta[P_3 - (M_1 V_1 + M_2 V_2)]$ which is canonical.}).
 %For example, a standard form for the Collision model is: $\Phi := \pr(M_1, M_2, V_1, V_2)$ (as in equation (\ref{e:col-prior})), and $\boldsymbol{\Psi^D} := \{\Psi_{P_1}, \Psi_{P_2}, \Psi_{P_3}\}$  where $\Psi_{P_1} := \delta[P_1 - M_1 V_1]$, $\Psi_{P_2} := \delta[P_2 - M_2 V_2]$ and $\Psi_{P_3} := \delta[P_3 - M_1 V_1 - M_2 V_2]$.
 
-\textbf{Reduction of SD-GMs to purely stochastic GMs.}
+\textbf{Reduction of SD-GMs to purely stochastic GMs (Collapsing Determinism).}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{comment}
 \begin{algorithm}[tb]%[hb!]
@@ -483,21 +493,21 @@ can be expressed as a function of them:
 In all potentials (either deterministic or statistical), all observed stochastic and deterministic random variables are instantiated
 %\footnote{ A deterministic factor $\delta[Z_j- G_j(\cdot)]$ associated with an observed variable $Z_j = c$ is therefore substituted by $\delta[c- G_j(\cdot)]$.}
 :
-\begin{equation*}
+\begin{equation*}\footnotesize \vspace{-0.5mm}
 \forall \Psi \in \boldsymbol{\Psi} \qquad \Psi \leftarrow \Psi|_{\bvec{E} \leftarrow \bvec{e}}
 \end{equation*} 
 \item 
 \emph{Marginalizing determinism.} 
 In all potentials, all deterministic variables $Z_j$, are 
 substituted with their associated logical value $G_j(\cdot)$ (so, the potential $\delta ( Z_j - G_j(\cdot) )$ itself is replaced by 1.0). Note that by the definition of Dirac $\delta$, this simply means that  unobserved deterministic variables are marginalized out.
-\begin{equation*}
+\begin{equation*}\footnotesize \vspace{-0.5mm}
 \forall Z_j \in \bvec{Z},\,
 \forall \Psi \in \boldsymbol{\Psi} 
 \qquad
 \Psi \leftarrow \Psi|_{Z_j \leftarrow G_j (\cdot)}
 \end{equation*}
 \item \emph{Joint factor formation.} the product of all stochastic potentials is computed: 
-\begin{equation*}
+\begin{equation*}\footnotesize \vspace{-0.5mm}
 \Phi := \prod_{i} \Psi_i
 \end{equation*}
 %
@@ -506,7 +516,7 @@ substituted with their associated logical value $G_j(\cdot)$ (so, the potential 
 For each observed deterministic random variable $Z_j = c$ (where $c$ is a constant),
 $(G_j(\cdot) - c)$ is solved w.r.t.\ some variable 
 $Y  \in \bvec{Y}_j^d$ (assuming that it is solvable %with a single solution 
-w.r.t.\ at least one variable).
+w.r.t.\ at least one variable with simple and real roots).
 Let  
 $\textsc{Solve}(G_j(\cdot) - c; \, Y)$
 % := \{\Upsilon_{1}, \Upsilon_{2}, \ldots\}$ 
@@ -542,7 +552,7 @@ For evidence $\bvec{E} = \{(P_3 = 3.0)\}$, the algorithm runs as follows:
 In Step 1, $\Psi_{7}$ is converted to $\delta(3.0 - (P_1 + P_2))$. %while the other potentials are not modified.
 In Step 2, $\Psi_5$ is converted to $\delta(M_1 V_1 - M_1 V_1)$
 (which is equal to $1$). For the similar reason $\Psi_6$ is converted to $1$ and $\Psi_7$ to $\delta(3.0 - (M_1 V_1 + M_2 V_2))$.  
-In Step 3, $\Phi$, the product of $\Psi_1$ to $\Psi_4$ is computed. In this absence of observed stochastic variables, this simply equals the prior joint: 
+In Step 3, $\Phi$, the product of $\Psi_1$ to $\Psi_4$ is computed. In the absence of observed stochastic variables, this simply equals the prior joint: 
 $\Phi = \Pr(M_1, M_2, V_1, V_2)$ (equation~ \ref{e:col-prior}).
 In step 4, $(G_7 - 3.0)$, i.e.\ $((M_1 V_1 + M_2 V_2) - 3.0)$, is solved w.r.t.\ 
  $M_1$ (It could alternatively be solved w.r.t. $V_1$, $M_2$ or $V_2$)
@@ -624,42 +634,39 @@ $\pr(x_2, \ldots, x_n \,|\, Z = z) \propto$
 which implies (\ref{e:theorem1}).
 \end{proof}
 %
-Note that elimination of Dirac deltas requires transformations 
-that often leads to formulas without known closed-form integrals.
-This makes closed form inference (by Eq.~\ref{e:inference}) impossible.
-Nonetheless, inference can still be done via sampling.
+%Note that elimination of Dirac deltas requires transformations  that often leads to formulas without known closed-form integrals. This makes closed form inference (by Eq.~\ref{e:inference}) impossible. Nonetheless, inference can still be done via sampling.
+Given the end result ${\Phi}$, inference is carried out by means of sampling.
 
-We restrict the scope of the discussion to cases where  
+Theorem~\ref{theorem1} tackles the core problem of delta elimination in a general setting; however, 
+for simplicity, we restrict the scope of the discussion to cases where  
 In step 4, \ $G_j(\cdot) - c$ is invertible w.r.t. at least one variable $Y$ 
-i.e.\ $\textsc{Solve}(G_j(\cdot)-c)$ is singleton (\emph{invertibility assumption}){\color{red}(unique solution assumption(?))}.
-The reason is that in this case, 
- the samples of the eliminated variables $\bar{\bvec{Y}}$ and $\bvec{Z}$ 
-are deterministically decided given the samples of $\bvec{Y}\backslash \bar{\bvec{Y}}$ while in the general setting, more operations might be required.
+i.e.\ $\textsc{Solve}(G_j(\cdot)-c)$ is singleton (\emph{invertibility assumption}).{
+Invertibility assumption holds
+if $G_j(\cdot)$, the logical values of $Z_j$, are linear w.r.t.\ some variables. 
+That is, for some variable $Y$, $G_j(\cdot)$ can be stated as: 
+{\footnotesize
+$$
+%\label{eq:evidence-form}
+Gj(\cdot) = 
+{(\mathcal{A} \cdot Y + \mathcal{B})}/{(\mathcal{C} \cdot Y + \mathcal{D})}
+$$}
+\!\!where $\mathcal{A}$ to $\mathcal{D}$ are polynomials and $Y$ is not in their domain.
+
+%{\color{red}(unique solution assumption(?))}.
+%The reason is that in this case,  the samples of the eliminated variables $\bar{\bvec{Y}}$ and $\bvec{Z}$ are deterministically decided given the samples of $\bvec{Y}\backslash \bar{\bvec{Y}}$ while in the general setting, more operations may be required.
 %Given the samples for $\bvec{Y} \backslash \bar{\bvec{Y}}$, samples of deterministic variables $\bvec{Z}$ can be su
 %
 
-It is worth mentioning that while Theorem~\ref{theorem1} tackles the core problem of delta elimination in the general setting,
-with the invertibility assumption restriction, the theorem can alternatively be proved via transformation of variables: 
-deriving $\pr(z, x_2, \ldots. x_n)$ from $\pr(x_1, \ldots, x_n)$ followed by utilizing the \emph{inverse function theorem}.  
+%It is worth mentioning that while Theorem~\ref{theorem1} tackles the core problem of delta elimination in the general setting, with the invertibility assumption restriction, the theorem can alternatively be proved via transformation of variables: deriving $\pr(z, x_2, \ldots. x_n)$ from $\pr(x_1, \ldots, x_n)$ followed by utilizing the \emph{inverse function theorem}.  
 
-We are interested in observed deterministic variables with logical values  
-created by elementary arithmetic operators ($+$, $-$, $\times$, $\div$) and therefore 
-in the form of fractions of polynomials.
-For this family of observed determinism, the invertibility assumption holds
-if $G_j(\cdot)$, the logical values of deterministic variables $Z_j$, are linear w.r.t.\ some variables. 
-That is, for some variable $Y$, $G_j(\cdot)$ can be stated as: 
-\begin{equation}\footnotesize
-\label{eq:evidence-form}
-Gj(\cdot) = 
-%\frac{\mathcal{A} \cdot Y + \mathcal{B}}{\mathcal{C} \cdot Y + \mathcal{D}}
-{(\mathcal{A} \cdot Y + \mathcal{B})}/{(\mathcal{C} \cdot Y + \mathcal{D})}
-\end{equation}
-where $\mathcal{A}$ to $\mathcal{D}$ are constant or univariate/multivariate polynomials and $Y$ is not in their scopes.
+%We are interested in observed deterministic variables with logical values  
+%created by elementary arithmetic operators ($+$, $-$, $\times$, $\div$) and therefore 
+%in the form of fractions of polynomials.
 
 
 
 
-
+{\color{red}
 The last subtle point in conditioning on determinism is that apparently equivalent deterministic observations may lead to different posteriors. For example evidence $(E_1 = 0)$ where $\pr(E_1)= \delta(E_1 - M V + 3)$ and 
 evidence $(E_2 = 0)$ where $\pr(E_2) = \delta(E_2 - M + \frac{3}{V})$ lead to different posteriors. 
 Although both may seem to formalize the same constraint $(MV = 3)$.
@@ -673,7 +680,7 @@ Therefore, they inherit the same issue:
 The canonical way to express a deterministic relationship is a form to which one would add noise if one had to approximate the determinism which is model-dependent. 
   
 %A subtle point in conditioning on deterministic relationships is that the resulting density is affected by the value of the prior in the limit of the ambient space surrounding the posterior hypersurface (or submanifold). Therefore, an observed deterministic relationship  (e.g.\ $M_1 V_1 = 3$) cannot be represented by equivalent forms (e.g.\ $M_1 - \frac{3}{V_1} = 0$) in the same way the noisy estimation of the former and latter produce different distribution (e.g.\ $N((M_1 V_1 - 3), \sigma)$ differs $N((M_1 - \frac{3}{V_1}), \sigma)$).
-
+}
 
 \section{Polynomial Piecewise Fractional Functions (PPFs)}
 \label{sect:ppfs}
@@ -705,12 +712,12 @@ f =
 \end{equation}
 where each \emph{sub-function} $f_i := \frac{N_i}{D_i}$ is a (multivariate) polynomial fraction and
 \emph{conditions} $\phi_i$ partition the space of function variables. 
-Each \emph{case condition} $\phi_i$ is a conjunction of some inequalities ($\lessgtr$ stands for  
+\emph{conditions} $\phi_i$ are conjunction of some inequalities ($\lessgtr$ stands for  
 $>$ or $<$)\footnote{In piecewise distributions,  
 we are careless about equalities since they only matter for Dirac deltas which are treated separately.
 %We assume that no $\delta[h(\bvec{x})]$ has roots point on the partitioning hyperplanes.
 } 
-where each \emph{atomic constraint} $\varphi_{i,j}$ is a (multivariate) polynomial.
+where each \emph{atomic constraint} $\varphi_{i,j}$ is a polynomial.
 
 %Evidently, this class is very expressive. Other distributions can also be approximated by this form by being \emph{Taylor series} other existing approximation tools \cite{shenoy2011inference}.
 
@@ -754,17 +761,18 @@ fractional conditions can be restated as polynomials:
 }
 \end{align*}
 It follows that PPFs are also closed under \emph{absolute value}.
-Therefore, if the solutions to $G_j(\cdot)$ are fractional (as it is always the case if the invertibility assumption holds),
+Therefore, if the solutions to $G_j(\cdot)$ are fractional (as it is the case under invertibility assumption),
 PPFs are closed under  observed algebraic fractional determinism 
 (since they are closed under  
-all operations required for conversion of SD-GMs to purely stochastic GMs).
-This is an important characteristic that other distribution families lack.  
+all operations required for collapsing determinism).
+%This is an important characteristic that other distribution families lack.  
 
-Note that PPFs are not closed under integrations
-required for closed-form inference (see Equation~\ref{e:inference}).
+%Note that PPFs are not closed under integrations
+%required for closed-form inference (see Equation~\ref{e:inference}).
 
-However, 
-a large group of polynomial fractions have closed-form single variable integrals.
+%However, 
+In general, PPFs are not closed under integration; however, a large subset of them 
+ have closed-form single variable integrals.
 As it will be seen in the next section,
 this leads to an extremely efficient Gibbs sampling mechanism.   
 %We will show that this is also holds for a large group of PPFs.
@@ -786,7 +794,7 @@ and the sub-function denominators, $D_{i}$, can be factorized into polynomials $
 %\[\text{rel-degree}(g) = \max_{x \in \vec{x}}(x\text{-deg}(g))\]
 
 Here is an example of a PPF* case statement:
-\begin{equation*}
+\begin{equation*}\vspace{-0.5mm}
 {\footnotesize
 \singlecase{y^2-x\leq 0 \wedge x^3+2xy \geq 0}{\frac{x^2 y^3 + 7x + 10}{(5x.y^2 + 2)(y + x)^5}}
 }
@@ -800,7 +808,7 @@ Instead, we highlight the main issues.
 
 Firstly, note that the definite integrals can be reduced to indefinite integrals:
 {
-\footnotesize
+\footnotesize\vspace{-0.5mm}
 \begin{align*}
 \int_{\alpha}^{\beta} f dx  = 
 \int_{-\infty}^{\infty}
@@ -820,7 +828,7 @@ the degree of each variable in each atomic constraint is less or equal to 4.
 E.g. consider a single case statement with a single atomic constraint 
 $\varphi_{1,1} := t_{1,1,1} \cdot t_{1,1,2}$:% (where the degree of each variable in either $(t_{1,1,k})\leq4$):
 \begin{align*}
-{\footnotesize
+{\footnotesize\vspace{-0.5mm}
 \left(
 f_1 \quad \text{if } t_{1,1,1} \cdot t_{1,1,2} > 0
 \right)
@@ -909,7 +917,7 @@ Gibbs sampling is a robust MCMC tool in the sense that it does not require known
 In Gibbs, drawing a sample for $\bvec{X} := (X_1, \ldots, X_N)$ takes place in $N$ steps.
 In the $i$-th step, $X_i$ is sampled conditioned on the current realization of the others variables:
 $x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$
-{\color{red}TODO REF?}.
+\cite{bishop2006pattern}.
 To do so, the univariate (conditional) 
 \emph{cumulative distribution function} (CDF)
 is computed by (\ref{e:cdf.0}) and a sample is taken by \emph{inverse transform sampling}. 
@@ -917,7 +925,7 @@ is computed by (\ref{e:cdf.0}) and a sample is taken by \emph{inverse transform 
 \label{e:cdf.0}
 \text{CDF}(X_i  \,|\, \bvec{x}_{-i}) 
 \propto
-\int_{-\infty}^{X_i} \!\!\!\! \pr(X_i = t, \,\bvec{X}_{-i} = \bvec{x}_{-i}) \, d  t
+\int_{-\infty}^{X_i} \!\! \pr(X_i = t, \,\bvec{X}_{-i} = \bvec{x}_{-i})  \dd  t
 \end{equation} 
 %
 Our \emph{symbolic Gibbs sampling} is based on a simple but significantly useful insight:
@@ -1302,26 +1310,6 @@ the rejection sampling MC is missing since the joint is not log-concave and does
 (note that $\lim_{A_{i} \rightarrow b} \frac{1}{b - A_{i}} = 0$ ).
 \end{comment}
 
-\section{Literature review}
-\label{sect:literature.review}
-%(Cobb 2005) says:
-Linear deterministic conditionals can  be handled in BNs
-where each stochastic variable has a constant-variance \emph{Gaussian} distribution whose mean is a linear function of its parents (CLGs) \cite{lauritzen2001stable}.
-\cite{li2013dynamic} impose the restriction on the network topology.
-They use sequential importance sampling for i.i.d. data points with an observed summation.% in a minimalistic BN.
-%They conjecture that such an algorithm may be generalized to other settings. 
-In case the generalization of this technique is possible, at least it is not straight-forward.
-%It is unknown if this technique can be generalized to other topologies and evidence. 
-
-Recently, piecewise polynomial distributions have attracted attention.
-So far, piecewise polynomials with hyperrectangular, hyper-rhombus and linear partitioning constraints have been used in Bayesian networks \cite{shenoy2011inference,shenoy2012two,Sanner:12}.
-Such families can handle linear deterministic conditionals.
-{\color{red}[Cobb2005]} approximates non-linear deterministic constraints with piecewise linear constraints via
-dividing the domain of the parent variables into hypercubes and creating an
-approximation of each function in each hypercube.
-This method rapidly loses its performance in high dimensions since to preserved approximation accuracy, the number of partitions grow exponentially in the variable space dimensionality. 
-
-Up to our knowledge, nonlinear deterministic conditionals have not been tackled in the literature so far.  
 
  \section{Conclusion}
 \label{sect:conclusion}
