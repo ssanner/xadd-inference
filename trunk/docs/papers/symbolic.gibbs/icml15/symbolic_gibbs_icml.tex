@@ -89,6 +89,7 @@
 \newcommand{\nn}{0.16}
 \newcommand{\nnn}{0.33}
 \newcommand{\nnh}{0.23}
+\newcommand{\dd}{\;\mathrm{d}} % d for integration variables e.g. dx
 
 
 \begin{document} 
@@ -567,13 +568,19 @@ in fact consecutive applications of  Theorem~\ref{theorem1}.
 
 \begin{theorem} 
 \label{theorem1}
-Let {\footnotesize $\pr(Z\!=\!z | x_1, \ldots, x_n) = \delta\big(f(x_1, \ldots, x_n)-z \big)$}.
-If {\footnotesize$\textsc{Solve}\big( f(x_1, \ldots, x_n) - z ; \, x_1 \big)$} denotes the set of solutions of 
-$f(x_1, \ldots, x_n)-z$ w.r.t.\ $x_1$:
+Let {\footnotesize $\pr(Z\!=\!z | x_1, \ldots, x_n) = \delta[f(x_1, \ldots, x_n)-z]$}, 
+where $f(x_1, \ldots, x_n) = 0$ has real and simple roots for $x_1$ with a non-vanishing continuous derivative
+$\partial f(x_1, \ldots, x_n) / \partial x_1$ at all those roots.
+Denote the set of all roots by 
+ %let the set of all real and simple roots of the deterministic constraints with respect to $x_1$ be
+ $ \mathcal{X}_1 = \{ x_1 \; | \; f(x_1, \ldots, x_n) - z = 0 \} $. 
+(Note that each element of $ \mathcal{X}_1 $
+ is a function of the remaining variables $ x_2,\dots,x_n,z $.)
+ Then:
 \begin{multline}
 \label{e:theorem1}
-p_{\boldsymbol{X}\backslash X_1 | Z}(x_2, \ldots, x_n \,|\, Z=z) \propto \\
-\sum_{x_1^i \in \textsc{Solve}\big( f(\cdot) - z ; \, x_1 \big)} 
+p(x_2, \ldots, x_n \,|\, Z=z) \propto \\
+\sum_{x_1^i \in \mathcal{X}_1} 
 \frac{p(X_1=x_1^i, x_2, \ldots, x_n)}
 {\Big|\big(\partial f(x_1, \ldots, x_n) / \partial x_1 \big)|_{x_1 \leftarrow x_1^i} \Big|}
 \end{multline}
@@ -587,10 +594,10 @@ $p(x_2, \ldots, x_n \,|\, Z=z)$ is proportional to
 %
 %&\int_{x_1=-\infty}^{\infty}p(x_1, \ldots, x_n, Z=z) dx_1 =\\
 %
-&\int_{x_1=-\infty}^{\infty}p(x_1, \ldots, x_n)p(Z=z \,|\, x_1, \ldots, x_n) dx_1 \notag\\
+&\int_{-\infty}^{\infty}p(x_1, \ldots, x_n)p(Z=z \,|\, x_1, \ldots, x_n) \dd x_1 \notag\\
 %
-=&\int_{x_1=-\infty}^{\infty}p(x_1, \ldots, x_n)
-\delta \big( f(x_1, \ldots, x_n) - z \big) dx_1 
+=&\int_{-\infty}^{\infty}p(x_1, \ldots, x_n)
+\delta \big( f(x_1, \ldots, x_n) - z \big) \dd x_1 
 \label{e:fand}
 \end{align}
 According to \cite{gel1964generalized}
@@ -604,8 +611,8 @@ where $r_i$ are all (real and simple) roots of $h(x)$ and $h(x)$ is continuous a
 \emph{Tonelli's theorem}\footnote{Tonelli's theorem says that for non-negative functions, sum and integral are interchangeable.} 
 $\pr(x_2, \ldots, x_n \,|\, Z = z) \propto$
 \begin{equation*}
-\sum_{x_1^i \in \textsc{Solve}\big( f(\cdot) - z ; \, x_1 \big)} \!\!\!\!\!\!\!\!
-\frac{\int_{x_1 = -\infty}^{\infty} p(x_1, x_2, \ldots, x_n)  \delta(x_1 - x_1^i) d x_1}
+\sum_{x_1^i \in \mathcal{X}_1} 
+\frac{\int_{-\infty}^{\infty} p(x_1, x_2, \ldots, x_n)  \delta(x_1 - x_1^i) \dd x_1}
 {\Big|\big(\partial f(x_1, \ldots, x_n) / \partial x_1 \big)|_{x_1 \leftarrow x_1^i} \Big|}
 \end{equation*}
 which implies (\ref{e:theorem1}).
@@ -1071,26 +1078,13 @@ without reducing the dimensionality.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}
 \centering
-%\begin{minipage}[b]{0.33\textwidth}
      \includegraphics[width=0.8\linewidth, height=125pt]
-{Figs/plots/collision/err-vs-time__param4-shaded.pdf}
-   %  \caption{}
-%\label{fig:collision-err-vs-time4}
-%\end{minipage}
-%%%
-%\begin{minipage}[b]{0.33\textwidth}
- %    \includegraphics[width=1\linewidth, height=120pt]
-%{Figs/plots/collision/err-vs-time__param30-shaded.pdf}
- %    \caption{}
-%\label{fig:collision-err-vs-time30}
-%\end{minipage}
-%\begin{minipage}[b]{0.33\textwidth}
-      \caption{Error %(expected value of the difference between estimated mean vector and the ground truth vector) 
+{plotsx/vis-col/err-vs-time__param2-shaded.pdf}
+%{Figs/plots/collision/err-vs-time__param4-shaded.pdf}
+      \caption{Error
 as a function of wall clock time (ns) for the generalized collision problem () 
 (a) for 4 colliding objects (8 stochastic variables in total since each object has a distribution over its mass and its velocity) and (b) 30 colliding objects (60 stochastic variables)
 using different MCs. Note that in (b), rejection sampling has not been able to take any sample.}
-      %\label{fig:dummy}
- %   \end{minipage}
 \end{figure}
 
 
