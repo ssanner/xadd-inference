@@ -87,6 +87,8 @@
 \newcommand{\otherwise}[1]{#1 &\text{ otherwise}}
 \newcommand{\pr}{p}
 \newcommand{\nn}{0.16}
+\newcommand{\nnn}{0.33}
+\newcommand{\nnh}{0.23}
 
 
 \begin{document} 
@@ -143,38 +145,31 @@ $X_1, X_2, \ldots$, a function of them $f(X_1, X_2, \ldots)$ might be observed.
 To motivate the discussion consider a concrete example:  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[t!]
+\vspace{-0mm}
 \begin{center}
-\begin{minipage}{\linewidth/6}
-%\begin{center}
-%\vspace{-1mm}
-%\quad
-%\begin{subfigure}{0.19\linewidth}
-                \includegraphics[width=1\linewidth]{Figs/little-momentum0.pdf}
-               %\\		\begin{center}(b)\end{center}%\caption{}
-              %\label{fig:mom0}
-%    \end{subfigure}%
-\end{minipage}
-\hspace{7mm}
-\begin{minipage}{\linewidth/2}
-%\qquad
-%\begin{subfigure}{0.52\linewidth}
-                \includegraphics[width=0.80\linewidth]{Figs/little-momentum1.pdf}
-                %\\		\begin{center}(b)\end{center}%\caption{}
-                %\label{fig:mom00}
-    %   \end{subfigure}%
-%\end{center}
-\end{minipage}
-\vspace{3mm}\\
-(a) \hspace{30mm}(b)
-%\vspace{-1mm}
-\caption{\footnotesize 
-Collision of masses $M_1$ and $M_2$ with velocities $V_1$ and $V_2$ and momenta $P_1$ and $P_2$. 
-(a) Collision happens if and only if $V_1>V_2$. (b) Corresponding Bayesian network. The non-filled and filled Filled circles represent stochastic and deterministic random variables respectively.} 
+\begin{tabular}{cc}
+   \hspace{-0mm} \includegraphics[width=\linewidth/6]{Figs/little-momentum0.pdf} 
+& \hspace{6mm} \includegraphics[width=0.35\linewidth]{Figs/little-momentum1.pdf} 
+\vspace{-1.5mm}
+\\
+\hspace{-5mm} \footnotesize(a) 
+& \hspace{-4mm} \footnotesize(b)  \\
+\multicolumn{2}{c}{}
+\end{tabular}
+\end{center}
+\vspace{-8mm}
+\caption{\footnotesize
+(a) Collision of masses $M_1$ and $M_2$ with velocities $V_1$ and $V_2$ and momenta $P_1$ and $P_2$. 
+%(a) Collision happens if and only if $V_1>V_2$. 
+(b) Corresponding Bayesian network. The non-filled and filled circles represent stochastic and deterministic random variables respectively.} 
 \label{fig:mom0}
 \vspace{-4mm}
-\end{center}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 %%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%
 %\vspace{1mm}\\
@@ -187,7 +182,7 @@ with {\color{green} support interval} $[a, b]$.
 } 
 (note that as Figure~\ref{fig:mom0}.a shows, a collision only happens if $V_2 < V_1$):  
 }%end \emph
-\begin{align}
+\begin{align}\footnotesize
 &\pr(M_1) = \mathcal{U}(0.1, \, 2.1) 
 &&\pr(M_2) = \mathcal{U}(0.1, \, 2.1)
 \nonumber
@@ -221,8 +216,7 @@ It can easily be seen that in the \emph{collision model},
 the \emph{prior} joint probability of 
 {\footnotesize $M_i$} and 
 {\footnotesize $V_i$} is:
-{\footnotesize
-\begin{equation}  
+\begin{equation} \footnotesize  
 \label{e:col-prior}
 \pr(M_1, M_2, V_1, V_2)  
 =
@@ -232,15 +226,14 @@ the \emph{prior} joint probability of
  \otherwise{0}
  \end{cases}
 \end{equation}
-}
 which is a 4 dimensional function from which samples can be taken fairly easily. 
 Since {\footnotesize $P_3 = M_1 V_1 + M_2 V_2$}, 
 the following \emph{likelihood} is a 0-variance conditional distribution:
-\begin{equation}
+\begin{equation}\footnotesize
 \label{e:col-likelihood}
-\pr(P_3 = 3 \,|\, M_1, V_1, M_2, V_2) = \delta[3 - (M_1 V_1 + M_2 V_2)]
+\pr(P_3 = 3 \,|\, M_1, V_1, M_2, V_2) = \delta\big( 3 - (M_1 V_1 + M_2 V_2) \big)
 \end{equation}
-where $\delta[\cdot]$ denotes \emph{Dirac delta}. 
+where $\delta(\cdot)$ denotes \emph{Dirac delta}. 
 By \emph{Bayes} rule, 
 the \emph{posterior} 
 {\footnotesize $\pr(M_1, M_2, V_1, V_2 \,|\, P_3 = 3)$}
@@ -386,9 +379,9 @@ The total joint probability (\ref{e:inference}) is factorized as:
 \label{e:infer.sd}
 \pr(\bvec{Y}, \bvec{Z}) \propto 
 \prod_{i} \Psi_i (\bvec{Y}^s_i, \, \bvec{Z}^s_i)
-\prod_j \delta[
+\prod_j \delta \big(
 Z_j - G_j(\bvec{Y}^d_j, \bvec{Z}^d_j)
-]
+\big)
 \end{equation}
 where \emph{stochastic potentials} $\Psi_i$ are functions 
 of stochastic (and deterministic) variables 
@@ -398,8 +391,10 @@ $\bvec{Y}^s_i \subset \bvec{Y}$
 each deterministic random variable $Z_j$ 
 is associated with exactly one 
 \emph{deterministic potential} in form 
-$\delta[Z_j - G_j(\cdot)]$ 
- where $\delta[\cdot]$ denotes \emph{Dirac delta} and $G_j$, the \emph{logical value} of $Z_i$,  is a function of 
+$\delta\big( Z_j - G_j(\cdot) \big)$ 
+ where 
+%$\delta[\cdot]$ denotes \emph{Dirac delta} and 
+$G_j$, the \emph{logical value} of $Z_i$,  is a function of 
 stochastic variables $\bvec{Y}_j^d \subset \bvec{Y}$ and deterministic variables $\bvec{Z}_j^d \subset \bvec{Z}$. 
 \footnote{
 $Z_j \not \in \bvec{Z}_j^d$ 
@@ -487,7 +482,7 @@ In all potentials (either deterministic or statistical), all observed stochastic
 \item 
 \emph{Marginalizing determinism.} 
 In all potentials, all deterministic variables $Z_j$, are 
-substituted with their associated logical value $G_j(\cdot)$ (so, the potential $\delta[Z_j - G_j(\cdot)]$ itself is replaced by 1.0). Note that by the definition of Dirac $\delta$, this simply means that  unobserved deterministic variables are marginalized out.
+substituted with their associated logical value $G_j(\cdot)$ (so, the potential $\delta ( Z_j - G_j(\cdot) )$ itself is replaced by 1.0). Note that by the definition of Dirac $\delta$, this simply means that  unobserved deterministic variables are marginalized out.
 \begin{equation*}
 \forall Z_j \in \bvec{Z},\,
 \forall \Psi \in \boldsymbol{\Psi} 
@@ -533,13 +528,13 @@ step~4.
 For instance in the Collision model, 
 the potentials can be indexed as follows: 
 $\Psi_1$ to $\Psi_4$ as in (\ref{e:collision}),
-$\Psi_5 := \delta[P_1 - M_1V_1]$,
-$\Psi_6 := \delta[P_2 - M_2V_2]$ and
-$\Psi_7 := \delta[P_3 - (P_1 + P_2)]$.   
+$\Psi_5 := \delta(P_1 - M_1V_1)$,
+$\Psi_6 := \delta(P_2 - M_2V_2)$ and
+$\Psi_7 := \delta(P_3 - (P_1 + P_2))$.   
 For evidence $\bvec{E} = \{(P_3 = 3.0)\}$, the algorithm runs as follows:
-In Step 1, $\Psi_{7}$ is converted to $\delta[3.0 - (P_1 + P_2)]$. %while the other potentials are not modified.
-In Step 2, $\Psi_5$ is converted to $\delta[M_1 V_1 - M_1 V_1]$
-(which is equal to $1$). For the similar reason $\Psi_6$ is converted to $1$ and $\Psi_7$ to $\delta[3.0 - (M_1 V_1 + M_2 V_2)]$.  
+In Step 1, $\Psi_{7}$ is converted to $\delta(3.0 - (P_1 + P_2))$. %while the other potentials are not modified.
+In Step 2, $\Psi_5$ is converted to $\delta(M_1 V_1 - M_1 V_1)$
+(which is equal to $1$). For the similar reason $\Psi_6$ is converted to $1$ and $\Psi_7$ to $\delta(3.0 - (M_1 V_1 + M_2 V_2))$.  
 In Step 3, $\Phi$, the product of $\Psi_1$ to $\Psi_4$ is computed. In this absence of observed stochastic variables, this simply equals the prior joint: 
 $\Phi = \Pr(M_1, M_2, V_1, V_2)$ (equation~ \ref{e:col-prior}).
 In step 4, $(G_7 - 3.0)$, i.e.\ $((M_1 V_1 + M_2 V_2) - 3.0)$, is solved w.r.t.\ 
@@ -572,7 +567,7 @@ in fact consecutive applications of  Theorem~\ref{theorem1}.
 
 \begin{theorem} 
 \label{theorem1}
-Let {\footnotesize $\pr(Z\!=\!z | x_1, \ldots, x_n) = \delta[f(x_1, \ldots, x_n)-z]$}.
+Let {\footnotesize $\pr(Z\!=\!z | x_1, \ldots, x_n) = \delta\big(f(x_1, \ldots, x_n)-z \big)$}.
 If {\footnotesize$\textsc{Solve}\big( f(x_1, \ldots, x_n) - z ; \, x_1 \big)$} denotes the set of solutions of 
 $f(x_1, \ldots, x_n)-z$ w.r.t.\ $x_1$:
 \begin{multline}
@@ -595,7 +590,7 @@ $p(x_2, \ldots, x_n \,|\, Z=z)$ is proportional to
 &\int_{x_1=-\infty}^{\infty}p(x_1, \ldots, x_n)p(Z=z \,|\, x_1, \ldots, x_n) dx_1 \notag\\
 %
 =&\int_{x_1=-\infty}^{\infty}p(x_1, \ldots, x_n)
-\delta[f(x_1, \ldots, x_n) - z] dx_1 
+\delta \big( f(x_1, \ldots, x_n) - z \big) dx_1 
 \label{e:fand}
 \end{align}
 According to \cite{gel1964generalized}
@@ -603,14 +598,14 @@ there is a unique way to define the composition of Dirac delta with
 an arbitrary function $h(x)$:
 \begin{equation}
 \label{e:gelfand}
-\delta[h(x)] = \sum_{i} \frac{\delta[x - r_i]}{|\partial h(x)/\partial x|}
+\delta(h(x)) = \sum_{i} \frac{\delta(x - r_i)}{|\partial h(x)/\partial x|}
 \end{equation}
 where $r_i$ are all (real and simple) roots of $h(x)$ and $h(x)$ is continuous and differentiable in the the root points. By (\ref{e:gelfand}), (\ref{e:fand}) and 
 \emph{Tonelli's theorem}\footnote{Tonelli's theorem says that for non-negative functions, sum and integral are interchangeable.} 
 $\pr(x_2, \ldots, x_n \,|\, Z = z) \propto$
 \begin{equation*}
 \sum_{x_1^i \in \textsc{Solve}\big( f(\cdot) - z ; \, x_1 \big)} \!\!\!\!\!\!\!\!
-\frac{\int_{x_1 = -\infty}^{\infty} p(x_1, x_2, \ldots, x_n)  \delta[x_1 - x_1^i] d x_1}
+\frac{\int_{x_1 = -\infty}^{\infty} p(x_1, x_2, \ldots, x_n)  \delta(x_1 - x_1^i) d x_1}
 {\Big|\big(\partial f(x_1, \ldots, x_n) / \partial x_1 \big)|_{x_1 \leftarrow x_1^i} \Big|}
 \end{equation*}
 which implies (\ref{e:theorem1}).
@@ -652,8 +647,8 @@ where $\mathcal{A}$ to $\mathcal{D}$ are constant or univariate/multivariate pol
 
 
 
-The last subtle point in conditioning on determinism is that apparently equivalent deterministic observations may lead to different posteriors. For example evidence $(E_1 = 0)$ where $\pr(E_1)= \delta[E_1 - M V + 3]$ and 
-evidence $(E_2 = 0)$ where $\pr(E_2) = \delta[E_2 - M + \frac{3}{V}]$ lead to different posteriors. 
+The last subtle point in conditioning on determinism is that apparently equivalent deterministic observations may lead to different posteriors. For example evidence $(E_1 = 0)$ where $\pr(E_1)= \delta(E_1 - M V + 3)$ and 
+evidence $(E_2 = 0)$ where $\pr(E_2) = \delta(E_2 - M + \frac{3}{V})$ lead to different posteriors. 
 Although both may seem to formalize the same constraint $(MV = 3)$.
 
 It should be pointed out that the same issue arises when hard constraints are approximated by adding noise:
@@ -699,7 +694,7 @@ where each \emph{sub-function} $f_i := \frac{N_i}{D_i}$ is a (multivariate) poly
 \emph{conditions} $\phi_i$ partition the space of function variables. 
 Each \emph{case condition} $\phi_i$ is a conjunction of some inequalities ($\lessgtr$ stands for  
 $>$ or $<$)\footnote{In piecewise distributions,  
-we are careless about equalities since they only matter for $\delta[\cdot]$s which are treated separately.
+we are careless about equalities since they only matter for Dirac deltas which are treated separately.
 %We assume that no $\delta[h(\bvec{x})]$ has roots point on the partitioning hyperplanes.
 } 
 where each \emph{atomic constraint} $\varphi_{i,j}$ is a (multivariate) polynomial.
@@ -992,52 +987,32 @@ In our current implementation, CDF inversion is performed via \emph{binary searc
 \end{algorithm}
 
 
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%..........................
-\begin{figure*}
-\begin{center}
-%\vspace{-1mm}
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_m1_v1.png}
-                %\caption{}
-                %\label{fig:mom1}
-        \end{minipage}%
-%
-%\hspace{20mm}
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_m1v1_p3.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_m1v1_when_p_is_3_and_v2_is_0_dot_2.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\hspace{4mm}
-%\\
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_v1v2.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/col_v1v2whenPis3.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs/colV1V2givenPis3M1is2.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\end{center}
+%FIG BLUE1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[t!]
 \vspace{-1mm}
+\begin{center}
+\begin{tabular}{cccccc}
+   \hspace{-5mm} \includegraphics[width=\nn\textwidth]{Figs/col_m1_v1.png} 
+& \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs/col_m1v1_p3.png} 
+& \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs/col_m1v1_when_p_is_3_and_v2_is_0_dot_2.png}
+& \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs/col_v1v2.png}
+& \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs/col_v1v2whenPis3.png}
+& \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs/colV1V2givenPis3M1is2.png}
+\vspace{-1.5mm}
+\\
+   \hspace{-5mm} \footnotesize(a) 
+& \hspace{-4mm} \footnotesize(b) 
+& \hspace{-3mm} \footnotesize(c) 
+&\hspace{-1mm} \footnotesize(d) 
+&\hspace{-1mm} \footnotesize(e) 
+&\hspace{-1mm} \footnotesize(f)\\
+\multicolumn{6}{c}{}
+\end{tabular}
+\end{center}
+\vspace{-8mm}
 \caption{\footnotesize
-prior/posterior joint distributions of pairs of random variables in the \emph{collision} example. 
+Prior/posterior joint distributions of pairs of random variables in the \emph{collision} example. 
 (a) $\pr(M_1, V_1)$,
 (b) $\pr(M_1, V_1 \, | \, P_3 = 3)$,
 (c) $\pr(M_1, V_1 \, | \, P_3 = 3, V_2 = 0.2)$,
@@ -1047,46 +1022,40 @@ prior/posterior joint distributions of pairs of random variables in the \emph{co
 using rejection sampling on the reduced dimension model.
 } 
 \label{fig:mom}
-%\vspace{-4mm}
 \end{figure*}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}
-\begin{center}
-%\vspace{-1mm}
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_gibbs10000.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col-c-mh-10000_08.png}
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_stan10000_02.png} % n 0.2
-                %\caption{}
-                %\label{fig:mom1}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_stan_10000_000001.png} %n 0.00001
-                %\caption{}
-                %\label{fig:mom2}
-        \end{minipage}%
-	\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_ang10000_02_001.png}
-        \end{minipage}%
-\begin{minipage}[b]{\nn\textwidth}
-                \includegraphics[width=1\textwidth]{Figs2/col_c_ang_10000_01_001}
-        \end{minipage}%
-\end{center}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%FIG BLUE 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[t!]
 \vspace{-1mm}
+\begin{center}
+\begin{tabular}{cccccc}
+   \hspace{-5mm} \includegraphics[width=\nn\textwidth]{Figs2/col_c_gibbs10000.png} 
+& \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs2/col-c-mh-10000_08.png} 
+& \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs2/col_c_stan10000_02.png}
+& \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs2/col_c_stan_10000_000001.png}
+& \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs2/col_c_ang10000_02_001.png}
+& \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs2/col_c_ang_10000_01_001}
+\vspace{-1.5mm}
+\\
+   \hspace{-5mm} \footnotesize(a) 
+& \hspace{-4mm} \footnotesize(b) 
+& \hspace{-3mm} \footnotesize(c) 
+&\hspace{-1mm} \footnotesize(d) 
+&\hspace{-1mm} \footnotesize(e) 
+&\hspace{-1mm} \footnotesize(f)\\
+\multicolumn{6}{c}{}
+\end{tabular}
+\end{center}
+\vspace{-8mm}
 \caption{\footnotesize
 10000 samples taken from the distribution Fig.~(\ref{fig:mom}-c)
 using (a) Symbolic Gibbs sampler and(b) MH with \emph{proposal variance} 0.8 
 on the reduced-dimension model as well as  
 (c) Hamiltonian Monte Carlo (Stan) with a measurement error variance 0.2, 
-, (d) and 0.00001 as well as Anglican implementation of RDB alg. with 
+, (d) and 0.00001 as well as Anglican implementation of SMC alg. with %RDB alg. with 
 parameters (e)
 %$V_2$ and $P_3$ observation noise variance 
 $\sigma^2_{V_2} = 0.01$, $\sigma^2_{P_3} = 0.2$ and 
@@ -1094,9 +1063,11 @@ $\sigma^2_{V_2} = 0.01$, $\sigma^2_{P_3} = 0.2$ and
 without reducing the dimensionality.
 }
 \label{fig:mom2}
-%\vspace{-4mm}
+\vspace{-4mm}
 \end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%Fig todo
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}
 \centering
@@ -1122,59 +1093,61 @@ using different MCs. Note that in (b), rejection sampling has not been able to t
  %   \end{minipage}
 \end{figure}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}
-\label{fig:errVtimeSizeFixed}
+
+
+
+
+%Ex 2;  Fig 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[t!]
+\vspace{-0mm}
 \begin{center}
-%\vspace{-1mm}
-\begin{minipage}[b]{0.33\textwidth}
- \includegraphics[width=1\linewidth, height=120pt]{plots/collision/collisionErrVsTimeInSize10.png}
-\caption{generalized collision problem}
-\label{fig:err-threshold-vs-size-collision}
-\end{minipage}
-%
-\begin{minipage}[b]{0.33\textwidth}
-\includegraphics[width=1\linewidth, height=120pt]{Figs/plots/fermentation/time_vs_param-errorbar.pdf}
-\caption{power transmission line problem}
-\label{fig:err-threshold-vs-size-alc}
-\end{minipage}
-\begin{minipage}[b]{0.33\textwidth}
-\includegraphics[width=1\linewidth, height=120pt]{plots/conductance/con_err_vs_time_size10.png}
-\caption{reduced mass problem}
-\label{fig:err-threshold-vs-size-circuit}
-\end{minipage}
+\begin{tabular}{ccc}
+   \hspace{-5mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/collisionx/err-vs-time__param4-shaded.pdf} 
+& \hspace{-3mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/collisionx/err-vs-time__param20-shaded.pdf} 
+& \hspace{-3mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/collisionx/time_vs_param-errorbar.pdf}%collision/collisionTimeVsSize.png}
+\vspace{-1.5mm}
+\\
+\hspace{-5mm} \footnotesize(a) 
+& \hspace{-4mm} \footnotesize(b) 
+& \hspace{-3mm} \footnotesize(c) \\
+\multicolumn{3}{c}{}
+\end{tabular}
 \end{center}
-\caption{Wall-clock time (ns) to pass a fixed error threshold vs. the GM size, for experiments 2 to 4...TODO.}
+\vspace{-8mm}
+\caption{\footnotesize Wall-clock time (ns) to pass a fixed error threshold vs. the GM size, for experiments 2 to 4...TODO.}
+\label{fig:mom2}
+\vspace{-4mm}
 \end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}
+%Ex 2;  Fig 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[t!]
+\vspace{-0mm}
 \begin{center}
-%\vspace{-1mm}
-\begin{minipage}[b]{0.33\textwidth}
- \includegraphics[width=1\linewidth, height=120pt]{plots/collision/collisionTimeVsSize.png}
-\caption{generalized collision problem}
-\label{fig:err-threshold-vs-size-collision}
-\end{minipage}
-%
-\begin{minipage}[b]{0.33\textwidth}
-\includegraphics[width=1\linewidth, height=120pt]{Figs/plots/fermentation/time_vs_param-errorbar.pdf}
-\caption{power transmission line problem}
-\label{fig:err-threshold-vs-size-alc}
-\end{minipage}
-\begin{minipage}[b]{0.33\textwidth}
-\includegraphics[width=1\linewidth, height=120pt]{Figs/plots/circuits/time_vs_param-errorbar.pdf}
-\caption{reduced mass problem}
-\label{fig:err-threshold-vs-size-circuit}
-\end{minipage}
+\begin{tabular}{ccc}
+   \hspace{-5mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/conductancex/err-vs-time__param4-shaded.pdf} 
+& \hspace{-3mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/conductancex/err-vs-time__param30-shaded.pdf} 
+& \hspace{-3mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/conductancex/time_vs_param-errorbar.pdf}
+\vspace{-1.5mm}
+\\
+\hspace{-5mm} \footnotesize(a) 
+& \hspace{-4mm} \footnotesize(b) 
+& \hspace{-3mm} \footnotesize(c) \\
+\multicolumn{3}{c}{}
+\end{tabular}
 \end{center}
-\caption{Wall-clock time (ns) to pass a fixed error threshold vs. the GM size, for experiments 2 to 4.}
+\vspace{-8mm}
+\caption{\footnotesize Wall-clock time (ns) to pass a fixed error threshold vs. the GM size, for experiments 2 to 4...TODO....}
+\label{fig:resistor}
+\vspace{-4mm}
 \end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Experimental Results}
 \label{sect:experimental.results}
