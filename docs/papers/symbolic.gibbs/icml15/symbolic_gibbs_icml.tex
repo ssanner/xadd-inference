@@ -117,18 +117,24 @@
 ]
 
 \begin{abstract}
-In many applications of probabilistic reasoning, there are deterministic relationships between
-continuous random variables. These relationships create serious problems for approximate or exact inference.
-%Such deterministic conditionals create serious problems for exact or approximate inference.
-To avoid the complications, algorithms such as \emph{Bayesian inference using Gibbs sampling} (BUGS) simply disallow such dependencies.  
-%For example, in BUGS it is impossible to model observed data that is the sum of two random variables. 
-There are no known exact or Monte Carlo inference methods that can handle deterministic constraints beyond the limit of linear dependencies.
-%Many classes of conjugate distributions %such as \emph{conditional linear Gaussians} 
-%can handle linear deterministic conditionals. 
-%General purpose full automated inference in the presence of non-linear deterministic constraints, however, is beyond the scope of the existing conjugate solutions and Monte Carlo algorithms.    
-In this paper we fill this gap by contributing a novel framework which,
-for the first time, carries out inference in models with nonlinear algebraic deterministic constraints. % that are not discussed in the literature so far.
-Our second contribution is to provide an effective MCMC inference technique called \emph{Symbolic Gibbs}, based on the insight that in our model, most costly operations required for Gibbs sampling can be accomplished offline and prior to sampling. 
+In many applications of probabilistic reasoning, 
+instead of stochastic random variables, 
+functions i.e.\ deterministic relationships between them
+might be observed.
+%A few families of distributions are closed under linear transformations and therefore, can handle observed linear deterministic relationships among random variables. However, beyond this limit, conditioning on deterministic functions of continuous random variables has remained an open problem so far.
+Beyond some restricted settings, exact or approximate inference conditioned on such relationships has been remained an open problem so far.
+\\ 
+The most commonly suggested solution is to approximate (i.e.\ soften) the determinism by adding noise to the observed constraints.
+In practice, however, this strategy may not help much:
+If the added noise is small, the mixing rate of Monte Carlo algorithms notoriously deteriorates 
+while by adding large noise, the approximation bounds may become arbitrarily large.
+\\
+We fill this gap by contributing a novel framework which,
+for the first time, carries out inference conditioned on a large range of (non)linear deterministic constraints
+in a highly expressive class of distributions that is not studied in the literature so far.
+%Our experiments show that conditioned on determinism, the performance of Gibbs sampling surpasses other MCMC methods. 
+Our other contribution is to provide an effective MCMC inference technique  
+based on the insight that in our model, most costly operations required for Gibbs sampling can be accomplished analytically and offline, prior to sampling (\emph{symbolic Gibbs}).
 We evaluate this algorithm on models in physics and engineering and show that it is an order of magnitude faster than the baseline Gibbs sampler and a significant improvement over other Monte Carlo methods.  
 \end{abstract}
 
