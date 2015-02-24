@@ -32,6 +32,7 @@ public class SymbolicGibbsTesterICML2015 {
     public static final String REPORT_PATH_FERMENTATION_ANALYSIS = "E:/REPORT_PATH_ICML15/fermentation/";
     public static final String REPORT_PATH_CIRCUITS_ANALYSIS = "E:/REPORT_PATH_ICML15/circuits/";
     public static final String REPORT_PATH_CONDUCTANCE_ANALYSIS = "E:/REPORT_PATH_ICML15/conductance/";
+    public static final String REPORT_PATH_VISUAL_COLLISION_ANALYSIS = "E:/REPORT_PATH_ICML15/visual_collision/";
 
     public static void main(String[] args) throws IOException {
         SymbolicGibbsTesterICML2015 instance = new SymbolicGibbsTesterICML2015();
@@ -39,6 +40,7 @@ public class SymbolicGibbsTesterICML2015 {
 //        instance.fermentationICML2015Test(REPORT_PATH_FERMENTATION_ANALYSIS);
 //        instance.circuitAAAI2015Test();
 //        instance.conductanceICML2015Test(REPORT_PATH_CONDUCTANCE_ANALYSIS);
+//        instance.visualCollisionICML2015Test(true, REPORT_PATH_VISUAL_COLLISION_ANALYSIS);
     }
 
 
@@ -57,28 +59,42 @@ public class SymbolicGibbsTesterICML2015 {
         double w2 = 1.0;
         final Double rMean = (w1 * resistorUpperBound + w2 * resistorLowerBound) / (w1 + w2);
 
-        int[] numParams = {5};//{3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
+        int[] numParams = {2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34};//{3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
         int numMinDesiredSamples = 200;//1000; //100;
         int maxWaitingTimeForTakingDesiredSamples = 1000 * 2;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
         int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 2;//1000 * 5;//1000*60;//1000 * 5;
         int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
-        int numRuns = 1;//20;//2;
+        int numRuns = 10;//10;//20;//2;
         int burnedSamples = 200;//100;//50;
-        double goldenErrThreshold = 0.05;//0.02;////0.2;
+        double goldenErrThreshold = 0.045;//0.02;////0.2;
 
 
         List<JointToSampler> samplerMakersToBeTested = new ArrayList<JointToSampler>();
         samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSymbolicGibbsSampler.makeJointToSampler()));
         samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointBaselineGibbsSampler.makeJointToSampler())); //...
-        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(0.1)));
-        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.1, 200, 50)));
-        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(Math.pow(resistorUpperBound, 2.0 * max(numParams) + 1))));
-        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb));
-        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.smc));
-        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs));
+//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(0.1)));
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.1, 200, 100)));
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(
+                new JointToSampler() {
+                    @Override
+                    public SamplerInterface makeSampler(JointWrapper jointWrapper) {
+                        SortedSet<String> scopeVars = jointWrapper.getJoint().getScopeVars();
+//                        System.out.println("scopeVars = " + scopeVars);
+                        int param = scopeVars.size();
+                        return FractionalJointRejectionSampler.makeJointToSampler(Math.pow(resistorUpperBound, 2.0 * param + 2)).makeSampler(jointWrapper); //just because I need param to make envelop
+                    }
 
+                    @Override
+                    public String getName() {
+                        return "rej";
+                    }
+                }));
+//                FractionalJointRejectionSampler.makeJointToSampler(Math.pow(resistorUpperBound, 1.0 * max(numParams)))));
+//        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.1, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb));
+        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.1, AnglicanCodeGenerator.AnglicanSamplingMethod.smc));
+        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.1, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs));
+        samplerMakersToBeTested.add(new StanJointToSampler(0.02));
 
-//        final double mom = 1.5; //will be multiplied in the number of objects to generate the total momentum
         Param2JointWrapper conductanceModelParam2Joint = new Param2JointWrapper() {
 
             @Override
@@ -95,15 +111,11 @@ public class SymbolicGibbsTesterICML2015 {
 
                 double gMean = 1.0 / rMean;
                 evidence.put("g_t", gMean * param);
-//                evidence.put("m_1", 2d);
-//                evidence.put("v_2", 0.2d);
 
-//                List<String> query = Arrays.asList("v_1", "v_" + (param - 1));
                 List<String> query = new ArrayList<String>();
                 for (int i = 0; i < param; i++) {
                     if (!evidence.keySet().contains("r_" + (i + 1))) query.add("r_" + (i + 1));
                 }
-//                query.add("r_t");
 
                 Pair<PiecewiseExpression<Fraction>, List<DeterministicFactor>> jointAndEliminatedStochasticVars =
                         handler.makeJointAndEliminatedStochasticVars(bn, query, evidence);
@@ -119,6 +131,12 @@ public class SymbolicGibbsTesterICML2015 {
                 //Anglican code:
                 String anglicanCode = AnglicanCodeGenerator.makeAnglicanResistorModel(param, resistorLowerBound, resistorUpperBound, evidence, null /*unknown noise*/, query);
                 jointWrapper.addExtraInfo(AnglicanCodeGenerator.ANGLICAN_CODE_KEY, anglicanCode);
+
+                // Stan code:
+                String stanInput = StanInputDataGenerator.makeStanResistorInput(param, resistorLowerBound, resistorUpperBound, evidence);
+                jointWrapper.addExtraInfo(StanJointToSampler.STAN_INPUT_CONTENT_KEY, stanInput);
+                jointWrapper.addExtraInfo(StanJointToSampler.STAN_MODEL_FILE_KEY, StanJointToSampler.STAN_RESISTOR_MODEL);
+
 
                 return jointWrapper;
             }
@@ -148,7 +166,7 @@ public class SymbolicGibbsTesterICML2015 {
                 approxNumTimePointsForWhichErrIsPersisted, numRuns,
                 burnedSamples, reportPath, goldenErrThreshold);
 
-        System.out.println(" That was all the folk for conductance circuit problem. ");
+        System.out.println(" That was all the folk for conductance circuit problem with params " + Arrays.toString(numParams) + ".");
 
     }
 
@@ -162,76 +180,7 @@ public class SymbolicGibbsTesterICML2015 {
 
     //--------------------------------------------------------
 
-   /* @Deprecated
-    public void circuitAAAI2015Test() throws IOException {
-        System.out.println("REPORT_PATH_CIRCUITS_ANALYSIS = " + REPORT_PATH_CIRCUITS_ANALYSIS);
 
-//        JointToSampler testerSampleMaker =
-//                FractionalJointRejectionSampler.makeJointToSampler(1.0);
-//                FractionalJointSymbolicGibbsSampler.makeJointToSampler();
-//        int numSamplesFromTesterToSimulateTrueDistribution = 170000;//100000;
-//        int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60*10;//1000 * 60 * 10;
-
-        List<JointToSampler> samplerMakersToBeTested = new ArrayList<JointToSampler>();
-        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSymbolicGibbsSampler.makeJointToSampler()));
-        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointBaselineGibbsSampler.makeJointToSampler()));
-        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(2.0)));
-        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(2.0, 20, 10)));
-        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(10)));
-        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb));
-        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.smc));
-        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs));
-
-        int[] numParams = {10};//{8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 6, 10, 14, 18, 25, 30};//{2, 3};
-        int numMinDesiredSamples = 200;//1000; //100;
-        int maxWaitingTimeForTakingDesiredSamples = 1000 * 2;//1000 * 60 * 2;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
-        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 2;//1000 * 5;//1000*60;//1000 * 5;
-        int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
-        int numRuns = 10;//10;//20;//2;
-        int burnedSamples = 100;//50;
-        double goldenErrThreshold = 0.05;//0.02;////0.2;
-
-        final Double lowerBound = 9.5;
-        final Double upperBound = 10.5;
-
-        Param2JointWrapper circuitModelParam2Joint = new Param2JointWrapper() {
-
-            @Override
-            public JointWrapper makeJointWrapper(int param) {
-
-                double minVarLimit = lowerBound;//5;//lowerBound-0.1;
-                double maxVarLimit = upperBound;//15;//upperBound+0.1;
-
-                GraphicalModel bn =
-                        ExperimentalGraphicalModels.makeCircuitModel(param, lowerBound, upperBound);
-
-                SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
-                Map<String, Double> evidence = new HashMap<String, Double>();
-
-                evidence.put("R_t", (0.5 * (upperBound + lowerBound)) / (double) param);        //todo...    ???
-
-                List<String> query = Arrays.asList("R_1", "R_" + (param));
-                PiecewiseExpression<Fraction> joint = handler.makeJoint(bn, query, evidence);
-                JointWrapper jointWrapper = new JointWrapper(joint, minVarLimit, maxVarLimit);
-                return jointWrapper;
-            }
-        };
-
-
-        testSamplersPerformanceWrtParameterTimeAndSampleCount(circuitModelParam2Joint,
-                new DifferenceFromTrueMeanVectorMeasureGenerator(0.5 * (upperBound + lowerBound)),
-//                0.5 * (upperBound + lowerBound),//10d,
-//                null, //testerSampleMaker,
-//                -1, //                numSamplesFromTesterToSimulateTrueDistribution,
-//                -1, // maxWaitingTimeForTesterToSimulateMillis,
-                samplerMakersToBeTested, numParams, numMinDesiredSamples,
-                maxWaitingTimeForTakingDesiredSamples,
-                minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
-                approxNumTimePointsForWhichErrIsPersisted, numRuns, burnedSamples, REPORT_PATH_CIRCUITS_ANALYSIS, goldenErrThreshold);
-
-        System.out.println(" That was all the folk for circuits problem. ");
-
-    }*/
 
     public void collisionICML2015Test(final boolean symmetric, String path) throws IOException {
         System.out.println("REPORT PATH COLLISION ANALYSIS = " + path);
@@ -244,25 +193,28 @@ public class SymbolicGibbsTesterICML2015 {
         final int numSamplesFromTesterToSimulateTrueDistribution = 170000;//100000;
         final int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60 * 10;//1000 * 60 * 10;
 
+        double anglicanNoise = 0.1;
+        double stanNoise = 0.05;
+        int anglicanBankCapacity = 10000;
         List<JointToSampler> samplerMakersToBeTested = new ArrayList<JointToSampler>();
         samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSymbolicGibbsSampler.makeJointToSampler()));
         samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointBaselineGibbsSampler.makeJointToSampler())); //...
 //        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(2.0)));
-//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(2.0, 20, 10)));
-//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(10)));
-        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb));
-//        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.smc));
-//        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs));
-        samplerMakersToBeTested.add(new StanJointToSampler(0.2));
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.1, 200, 50)));
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(10)));
+//        samplerMakersToBeTested.add(new AnglicanJointToSampler(anglicanBankCapacity, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb));
+        samplerMakersToBeTested.add(new AnglicanJointToSampler(anglicanBankCapacity, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.smc));
+//        samplerMakersToBeTested.add(new AnglicanJointToSampler(anglicanBankCapacity, angloStanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs));
+        samplerMakersToBeTested.add(new StanJointToSampler(stanNoise));
 //produces errors...        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.ardb));
 //produces errors...        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.cascade));
 
-        int[] numParams = {5};//{3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
-        int numMinDesiredSamples = 200;//1000; //100;
+        int[] numParams = {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
+        int numMinDesiredSamples = 20;//1000; //100;
         int maxWaitingTimeForTakingDesiredSamples = 1000 * 2;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
         int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 2;//1000 * 5;//1000*60;//1000 * 5;
         int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
-        int numRuns = 2;//20;//2;
+        int numRuns = 15;//20;//2;
         int burnedSamples = 100;//50;
         double goldenErrThreshold = 0.3;
 
@@ -275,8 +227,8 @@ public class SymbolicGibbsTesterICML2015 {
                 Double muBeta = 2.2;
                 Double nuAlpha = muAlpha; //-2.0;
                 Double nuBeta = muBeta;// 2.0;
-                double minVarLimit = 0;
-                double maxVarLimit = 3;
+                double minVarLimit = 0.2;
+                double maxVarLimit = 2.2;
 
                 GraphicalModel bn =
                         ExperimentalGraphicalModels.makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric);//paramDataCount2DataGenerator.createJointGenerator(param);
@@ -325,7 +277,7 @@ public class SymbolicGibbsTesterICML2015 {
                 // Stan code:
                 String stanInput = StanInputDataGenerator.makeStanCollisionInput(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric, evidence);
                 jointWrapper.addExtraInfo(StanJointToSampler.STAN_INPUT_CONTENT_KEY, stanInput);
-                jointWrapper.addExtraInfo(StanJointToSampler.STAN_MODEL_KEY, StanJointToSampler.STAN_COLLISION_MODEL);
+                jointWrapper.addExtraInfo(StanJointToSampler.STAN_MODEL_FILE_KEY, StanJointToSampler.STAN_COLLISION_MODEL);
 
                 return jointWrapper;
             }
@@ -363,6 +315,160 @@ public class SymbolicGibbsTesterICML2015 {
         System.out.println(" That was all the folk for symmetric collision problem. ");
     }
 
+    /*************************************************************************************************************/
+    /*************************************************************************************************************/
+    /*************************************************************************************************************/
+    /*************************************************************************************************************/
+    /*************************************************************************************************************/
+
+
+
+    /*public void visualCollisionICML2015Test(String path) throws IOException {
+        System.out.println("REPORT PATH for VISUAL COLLISION ANALYSIS = " + path);
+
+        final boolean symmetric = false;
+
+        //tester is commented since symmetry is used.
+
+        //The following 3 values are used only used if the Ground truth values are not known:
+        final JointToSampler testerSampleMaker = new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(1.0));
+//                FractionalJointSymbolicGibbsSampler.makeJointToSampler();
+        final int numSamplesFromTesterToSimulateTrueDistribution = 170000;//100000;
+        final int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60 * 10;//1000 * 60 * 10;
+
+        double anglicanNoise = 0.1;
+        double stanNoise = 0.05;
+        int anglicanBankCapacity = 10000;
+        List<JointToSampler> samplerMakersToBeTested = new ArrayList<JointToSampler>();
+//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSymbolicGibbsSampler.makeJointToSampler()));
+//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointBaselineGibbsSampler.makeJointToSampler())); //...
+//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.1, 200, 50)));
+//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(10)));
+////        samplerMakersToBeTested.add(new AnglicanJointToSampler(anglicanBankCapacity, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb));
+//        samplerMakersToBeTested.add(new AnglicanJointToSampler(anglicanBankCapacity, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.smc));
+////        samplerMakersToBeTested.add(new AnglicanJointToSampler(anglicanBankCapacity, angloStanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs));
+////        samplerMakersToBeTested.add(new StanJointToSampler(stanNoise));
+        samplerMakersToBeTested.add(new JointToSampler() {
+            @Override
+            public SamplerInterface makeSampler(JointWrapper jointWrapper) { //a hack!
+                return StanJointToSampler.makeFactoryCompatibleSampler("collision_asymetric_model", "asymetric.data.R", "asym.out.csv", jointWrapper.getJoint().getFactory());
+            }
+
+            @Override
+            public String getName() {
+                return "stan.hmc";  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        });
+
+//produces errors...        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.ardb));
+//produces errors...        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.cascade));
+
+        int[] numParams = {2};
+        int numMinDesiredSamples = 20;//1000; //100;
+        int maxWaitingTimeForTakingDesiredSamples = 1000 * 2;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
+        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 2;//1000 * 5;//1000*60;//1000 * 5;
+        int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
+        int numRuns = 1;//10;//20;//2;
+        int burnedSamples = 100;//50;
+        double goldenErrThreshold = 0.3;
+
+        final double mom = 1.5; //will be multiplied in the number of objects to generate the total momentum
+        Param2JointWrapper collisionModelParam2Joint = new Param2JointWrapper() {
+
+            @Override
+            public JointWrapper makeJointWrapper(int param) {
+                Double muAlpha = 0.2;//-2.2;//0.2;
+                Double muBeta = 2.2;
+                Double nuAlpha = muAlpha; //-2.0;
+                Double nuBeta = muBeta;// 2.0;
+                double minVarLimit = 0.2;
+                double maxVarLimit = 2.2;
+
+                GraphicalModel bn =
+                        ExperimentalGraphicalModels.makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric);//paramDataCount2DataGenerator.createJointGenerator(param);
+
+                SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
+                Map<String, Double> evidence = new HashMap<String, Double>();
+
+
+                evidence.put("p_t", mom * param);
+//                evidence.put("m_1", 2d);
+//                evidence.put("v_2", 0.2d);
+
+//                List<String> query = Arrays.asList("v_1", "v_" + (param - 1));
+                List<String> query = new ArrayList<String>();
+                for (int i = 0; i < param; i++) {
+                    if (!evidence.keySet().contains("v_" + (i + 1))) query.add("v_" + (i + 1));
+                    if (!evidence.keySet().contains("m_" + (i + 1))) query.add("m_" + (i + 1)); //todo add again
+                }
+//                query.add("p_1");
+//                query.add("p_t");
+//                query.add("m_1");
+//                query.add("v_1");
+
+//                query.add("p_t");
+
+
+//                PiecewiseExpression<Fraction> joint = handler.makeJoint(bn, query, evidence);
+//                JointWrapper jointWrapper = new JointWrapper(joint, minVarLimit, maxVarLimit);
+//                System.out.println("jointWrapper.getJoint().getScopeVars() = " + jointWrapper.getJoint().getScopeVars());
+
+                Pair<PiecewiseExpression<Fraction>, List<DeterministicFactor>> jointAndEliminatedStochasticVars =
+                        handler.makeJointAndEliminatedStochasticVars(bn, query, evidence);
+                PiecewiseExpression<Fraction> joint = jointAndEliminatedStochasticVars.getFirstEntry();
+                List<DeterministicFactor> eliminatedStochasticVars = jointAndEliminatedStochasticVars.getSecondEntry();
+                RichJointWrapper jointWrapper =
+                        new RichJointWrapper(joint, eliminatedStochasticVars, query, minVarLimit, maxVarLimit, bn, evidence);
+                System.out.println("jointWrapper.getAppropriateSampleVectorSize() = " + jointWrapper.getAppropriateSampleVectorSize());
+//                System.out.println("jointWrapper.eliminatedStochasticVarFactors() = " + jointWrapper.eliminatedStochasticVarFactors());
+                System.out.println("jointWrapper.getJoint().getScopeVars() = " + jointWrapper.getJoint().getScopeVars());
+                System.out.println("jointWrapper.getJoint() = " + jointWrapper.getJoint());
+
+                // Anglican code:
+                String anglicanCode = AnglicanCodeGenerator.makeAnglicanCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric, evidence, null *//*unknown noise*//*, query);
+                jointWrapper.addExtraInfo(AnglicanCodeGenerator.ANGLICAN_CODE_KEY, anglicanCode);
+
+                // Stan code:
+//                String stanInput = StanInputDataGenerator.makeStanCollisionInput(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric, evidence);
+//                jointWrapper.addExtraInfo(StanJointToSampler.STAN_INPUT_CONTENT_KEY, stanInput);
+//                jointWrapper.addExtraInfo(StanJointToSampler.STAN_MODEL_FILE_KEY, StanJointToSampler.STAN_COLLISION_MODEL);
+
+                return jointWrapper;
+            }
+        };
+
+
+        testSamplersPerformanceWrtParameterTimeAndSampleCount(collisionModelParam2Joint,
+                new DifferenceFromTrueMeanVectorMeasureGenerator(Math.sqrt(mom)) {
+                    @Override //hack to allow Ground Truth p_t has its own value...
+                    public void initialize(RichJointWrapper jointWrapper) {
+                        super.initialize(jointWrapper);
+                        int p_tQueryIndex = jointWrapper.getQueryVars().indexOf("p_t");
+                        if (p_tQueryIndex == -1) {
+                            System.err.println("WARNING: p_t is not a query var. Ground truth not modified.... (we expected that p_t be a query var...QVs=" + jointWrapper.getQueryVars() + ")");
+
+                        } else {
+                            Double p_t = jointWrapper.getEvidence().get("p_t");
+                            if (groundTruthMeans.length != jointWrapper.getQueryVars().size())
+                                throw new RuntimeException("EliminatedVarCompleterSamplerMaker expected...");
+                            this.groundTruthMeans[p_tQueryIndex] = p_t; //NOTE only works if p_t is the last param
+                            System.out.println("Now known groundTruthMeans=" + Arrays.toString(groundTruthMeans));
+                        }
+                    }
+                },//(1.2d), //known true mean of all vars is 0!
+//                  new DifferenceFromTrueMeanVector(testerSampleMaker,
+//                          numSamplesFromTesterToSimulateTrueDistribution, maxWaitingTimeForTesterToSimulateMillis),
+//                new DifferenceFromSymmetricVector(),
+//                null), //testerSampleMaker,
+                samplerMakersToBeTested, numParams, numMinDesiredSamples,
+                maxWaitingTimeForTakingDesiredSamples,
+                minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+                approxNumTimePointsForWhichErrIsPersisted, numRuns,
+                burnedSamples, path, goldenErrThreshold);
+
+        System.out.println(" That was all the folk for visual collision problem. ");
+    }*/
+
     public void fermentationICML2015Test(String path) throws IOException {
         System.out.println("REPORT PATH FERMENTATION ANALYSIS = " + path);
 
@@ -375,30 +481,32 @@ public class SymbolicGibbsTesterICML2015 {
 //        int numSamplesFromTesterToSimulateTrueDistribution = 1000000;//1000;
 //        int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60 * 60 * 5;//1000 * 60 * 1;
         List<JointToSampler> samplerMakersToBeTested = new ArrayList<JointToSampler>();
+//        samplerMakersToBeTested.add(new DifferenceSampler(
+//                new EliminatedVarCompleterSamplerMaker(FractionalJointSymbolicGibbsSampler.makeJointToSampler()),
+//                new EliminatedVarCompleterSamplerMaker(FractionalJointSymbolicGibbsSampler.makeJointToSampler())));
+//        samplerMakersToBeTested.add(new DifferenceSampler(
+//                new EliminatedVarCompleterSamplerMaker(FractionalJointBaselineGibbsSampler.makeJointToSampler()),
+//                new EliminatedVarCompleterSamplerMaker(FractionalJointBaselineGibbsSampler.makeJointToSampler())));
+//        samplerMakersToBeTested.add(new DifferenceSampler(
+//                new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(0.1)),
+//                new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(0.1))));
+//        samplerMakersToBeTested.add(new DifferenceSampler(
+//                new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.5, 20, 10)),
+//                new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.5, 20, 10))));
+//        int maxAnglicanNumberOfTakenSamples = 10000;
+//        double anglicanNoise = 0.2;
+//        samplerMakersToBeTested.add(new DifferenceSampler(
+//                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb),
+//                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb)));
+//        samplerMakersToBeTested.add(new DifferenceSampler(
+//                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.smc),
+//                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.smc)));
+//        samplerMakersToBeTested.add(new DifferenceSampler(
+//                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs),
+//                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs)));
         samplerMakersToBeTested.add(new DifferenceSampler(
-                new EliminatedVarCompleterSamplerMaker(FractionalJointSymbolicGibbsSampler.makeJointToSampler()),
-                new EliminatedVarCompleterSamplerMaker(FractionalJointSymbolicGibbsSampler.makeJointToSampler())));
-        samplerMakersToBeTested.add(new DifferenceSampler(
-                new EliminatedVarCompleterSamplerMaker(FractionalJointBaselineGibbsSampler.makeJointToSampler()),
-                new EliminatedVarCompleterSamplerMaker(FractionalJointBaselineGibbsSampler.makeJointToSampler())));
-        samplerMakersToBeTested.add(new DifferenceSampler(
-                new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(0.1)),
-                new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(0.1))));
-        samplerMakersToBeTested.add(new DifferenceSampler(
-                new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.5, 20, 10)),
-                new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.5, 20, 10))));
-        int maxAnglicanNumberOfTakenSamples = 10000;
-        double anglicanNoise = 0.2;
-        samplerMakersToBeTested.add(new DifferenceSampler(
-                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb),
-                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb)));
-        samplerMakersToBeTested.add(new DifferenceSampler(
-                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.smc),
-                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.smc)));
-        samplerMakersToBeTested.add(new DifferenceSampler(
-                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs),
-                new AnglicanJointToSampler(maxAnglicanNumberOfTakenSamples, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs)));
-
+                new StanJointToSampler(0.2, "1"),
+                new StanJointToSampler(0.2, "2")));
         int[] numParams = {3, 4, 5, 6, 7, 8, 9, 10};//, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
         int numMinDesiredSamples = 200;//1000;
         int maxWaitingTimeForTakingDesiredSamples = 1000 * 5;//60 * 2;//1000 * 20;
@@ -446,6 +554,11 @@ public class SymbolicGibbsTesterICML2015 {
                 //Anglican code:
                 String anglicanCode = AnglicanCodeGenerator.makeAnglicanFermentationModel(param, alpha, beta, evidence, null /*unknown noise*/, query);
                 jointWrapper.addExtraInfo(AnglicanCodeGenerator.ANGLICAN_CODE_KEY, anglicanCode);
+
+                // Stan code:
+                String stanInput = StanInputDataGenerator.makeStanFermentationInput(param, alpha, beta, evidence);
+                jointWrapper.addExtraInfo(StanJointToSampler.STAN_INPUT_CONTENT_KEY, stanInput);
+                jointWrapper.addExtraInfo(StanJointToSampler.STAN_MODEL_FILE_KEY, StanJointToSampler.STAN_FERMENTATION_MODEL);
 
                 return jointWrapper;
             }
@@ -709,7 +822,191 @@ public class SymbolicGibbsTesterICML2015 {
     private interface Param2JointWrapper {
         JointWrapper makeJointWrapper(int param);
     }
-}
+
+
+    //.................................
+
+
+    public void visualCollisionICML2015Test(final boolean symmetric, String path) throws IOException {
+        System.out.println("REPORT PATH COLLISION ANALYSIS = " + path);
+
+        //tester is commented since symmetry is used.
+
+        //The following 3 values are used only used if the Ground truth values are not known:
+        final JointToSampler testerSampleMaker = new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(1.0));
+//                FractionalJointSymbolicGibbsSampler.makeJointToSampler();
+        final int numSamplesFromTesterToSimulateTrueDistribution = 200000;//100000;
+        final int maxWaitingTimeForTesterToSimulateMillis = 1000 * 60 * 10;//1000 * 60 * 10;
+
+//        double anglicanNoise = 0.1;
+//        double stanNoise = 0.05;
+        final int anglicanBankCapacity = 10000;
+        List<JointToSampler> samplerMakersToBeTested = new ArrayList<JointToSampler>();
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSymbolicGibbsSampler.makeJointToSampler()));
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointBaselineGibbsSampler.makeJointToSampler())); //...
+//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(2.0)));
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.1, 200, 50)));
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(1.0)));
+//        samplerMakersToBeTested.add(new AnglicanJointToSampler(anglicanBankCapacity, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb));
+        samplerMakersToBeTested.add(new JointToSampler() {
+            double n = 0.2;
+            @Override
+            public SamplerInterface makeSampler(JointWrapper jointWrapper) {
+                return new AnglicanJointToSampler(anglicanBankCapacity, n, AnglicanCodeGenerator.AnglicanSamplingMethod.smc).makeSampler(jointWrapper);
+            }
+
+            @Override
+            public String getName() {
+                return "smc1";
+            }
+        });
+        samplerMakersToBeTested.add(new JointToSampler() {
+            double n = 0.01;
+            @Override
+            public SamplerInterface makeSampler(JointWrapper jointWrapper) {
+                return new AnglicanJointToSampler(anglicanBankCapacity, n, AnglicanCodeGenerator.AnglicanSamplingMethod.smc).makeSampler(jointWrapper);
+            }
+
+            @Override
+            public String getName() {
+                return "smc2";
+            }
+        });
+//        samplerMakersToBeTested.add(new AnglicanJointToSampler(anglicanBankCapacity, angloStanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs));
+        samplerMakersToBeTested.add(new JointToSampler() {
+            double n = 0.005;
+            @Override
+            public SamplerInterface makeSampler(JointWrapper jointWrapper) {
+                 return new StanJointToSampler(n).makeSampler(jointWrapper);
+            }
+
+            @Override
+            public String getName() {
+                return "stan1";
+            }
+        });
+        samplerMakersToBeTested.add(new JointToSampler() {
+            double n = 0.1;
+            @Override
+            public SamplerInterface makeSampler(JointWrapper jointWrapper) {
+                 return new StanJointToSampler(n).makeSampler(jointWrapper);
+            }
+
+            @Override
+            public String getName() {
+                return "stan2";
+            }
+        });
+//produces errors...        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.ardb));
+//produces errors...        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.cascade));
+
+        int[] numParams = {2};
+        int numMinDesiredSamples = 20;//1000; //100;
+        int maxWaitingTimeForTakingDesiredSamples = 1000/3;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
+        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 2;//1000 * 5;//1000*60;//1000 * 5;
+        int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
+        int numRuns = 15;//10;//20;//2;
+        int burnedSamples = 100;//50;
+        double goldenErrThreshold = 0.3;
+
+        final double mom = 1.5; //will be multiplied in the number of objects to generate the total momentum
+        Param2JointWrapper collisionModelParam2Joint = new Param2JointWrapper() {
+
+            @Override
+            public JointWrapper makeJointWrapper(int param) {
+                Double muAlpha = 0.2;//-2.2;//0.2;
+                Double muBeta = 2.2;
+                Double nuAlpha = muAlpha; //-2.0;
+                Double nuBeta = muBeta;// 2.0;
+                double minVarLimit = 0.2;
+                double maxVarLimit = 2.2;
+
+                GraphicalModel bn =
+                        ExperimentalGraphicalModels.makeCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric);//paramDataCount2DataGenerator.createJointGenerator(param);
+
+                SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
+                Map<String, Double> evidence = new HashMap<String, Double>();
+
+
+                evidence.put("p_t", mom * param);
+//                evidence.put("m_1", 2d);
+//                evidence.put("v_2", 0.2d);
+
+//                List<String> query = Arrays.asList("v_1", "v_" + (param - 1));
+                List<String> query = new ArrayList<String>();
+                for (int i = 0; i < param; i++) {
+                    if (!evidence.keySet().contains("v_" + (i + 1))) query.add("v_" + (i + 1));
+                    if (!evidence.keySet().contains("m_" + (i + 1))) query.add("m_" + (i + 1)); //todo add again
+                }
+//                query.add("p_1");
+//                query.add("p_t");
+//                query.add("m_1");
+//                query.add("v_1");
+
+//                query.add("p_t");
+
+
+//                PiecewiseExpression<Fraction> joint = handler.makeJoint(bn, query, evidence);
+//                JointWrapper jointWrapper = new JointWrapper(joint, minVarLimit, maxVarLimit);
+//                System.out.println("jointWrapper.getJoint().getScopeVars() = " + jointWrapper.getJoint().getScopeVars());
+
+                Pair<PiecewiseExpression<Fraction>, List<DeterministicFactor>> jointAndEliminatedStochasticVars =
+                        handler.makeJointAndEliminatedStochasticVars(bn, query, evidence);
+                PiecewiseExpression<Fraction> joint = jointAndEliminatedStochasticVars.getFirstEntry();
+                List<DeterministicFactor> eliminatedStochasticVars = jointAndEliminatedStochasticVars.getSecondEntry();
+                RichJointWrapper jointWrapper =
+                        new RichJointWrapper(joint, eliminatedStochasticVars, query, minVarLimit, maxVarLimit, bn, evidence);
+                System.out.println("jointWrapper.getAppropriateSampleVectorSize() = " + jointWrapper.getAppropriateSampleVectorSize());
+//                System.out.println("jointWrapper.eliminatedStochasticVarFactors() = " + jointWrapper.eliminatedStochasticVarFactors());
+                System.out.println("jointWrapper.getJoint().getScopeVars() = " + jointWrapper.getJoint().getScopeVars());
+                System.out.println("jointWrapper.getJoint() = " + jointWrapper.getJoint());
+
+                // Anglican code:
+                String anglicanCode = AnglicanCodeGenerator.makeAnglicanCollisionModel(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric, evidence, null /*unknown noise*/, query);
+                jointWrapper.addExtraInfo(AnglicanCodeGenerator.ANGLICAN_CODE_KEY, anglicanCode);
+
+                // Stan code:
+                String stanInput = StanInputDataGenerator.makeStanCollisionInput(param, muAlpha, muBeta, nuAlpha, nuBeta, symmetric, evidence);
+                jointWrapper.addExtraInfo(StanJointToSampler.STAN_INPUT_CONTENT_KEY, stanInput);
+                jointWrapper.addExtraInfo(StanJointToSampler.STAN_MODEL_FILE_KEY, StanJointToSampler.STAN_COLLISION_MODEL);
+
+                return jointWrapper;
+            }
+        };
+
+
+        testSamplersPerformanceWrtParameterTimeAndSampleCount(collisionModelParam2Joint,
+                new DifferenceFromTrueMeanVectorMeasureGenerator(Math.sqrt(mom)) {
+                    @Override //hack to allow Ground Truth p_t has its own value...
+                    public void initialize(RichJointWrapper jointWrapper) {
+                        super.initialize(jointWrapper);
+                        int p_tQueryIndex = jointWrapper.getQueryVars().indexOf("p_t");
+                        if (p_tQueryIndex == -1) {
+                            System.err.println("WARNING: p_t is not a query var. Ground truth not modified.... (we expected that p_t be a query var...QVs=" + jointWrapper.getQueryVars() + ")");
+
+                        } else {
+                            Double p_t = jointWrapper.getEvidence().get("p_t");
+                            if (groundTruthMeans.length != jointWrapper.getQueryVars().size())
+                                throw new RuntimeException("EliminatedVarCompleterSamplerMaker expected...");
+                            this.groundTruthMeans[p_tQueryIndex] = p_t; //NOTE only works if p_t is the last param
+                            System.out.println("Now known groundTruthMeans=" + Arrays.toString(groundTruthMeans));
+                        }
+                    }
+                },//(1.2d), //known true mean of all vars is 0!
+//                  new DifferenceFromTrueMeanVector(testerSampleMaker,
+//                          numSamplesFromTesterToSimulateTrueDistribution, maxWaitingTimeForTesterToSimulateMillis),
+//                new DifferenceFromSymmetricVector(),
+//                null), //testerSampleMaker,
+                samplerMakersToBeTested, numParams, numMinDesiredSamples,
+                maxWaitingTimeForTakingDesiredSamples,
+                minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+                approxNumTimePointsForWhichErrIsPersisted, numRuns,
+                burnedSamples, path, goldenErrThreshold);
+
+        System.out.println(" That was all the folk for VISUAL collision problem. ");
+    }
+
+}     //end main class
 
 //If ground truth is not known, but we know that the measure is symmetric and all entries should have sample mean...
 @Deprecated
@@ -856,6 +1153,11 @@ class DifferenceFromTrueMeanVectorMeasureGenerator implements DifferenceFromGrou
 
         return mean;
     }
+
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 }
 /*

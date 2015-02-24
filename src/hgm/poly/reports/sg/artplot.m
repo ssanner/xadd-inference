@@ -10,7 +10,8 @@ else
     error('I think the data is not found. Check parameters...')
 end
 
-lines = {':' , ':', '--', '--', '.', '.', '-', '-', '-', '-', '-', '-'};
+%for little visualization:
+lines = {'-.', '-', '-.', '-', '--', ':', '-', ':', '-', '-', '-', '-', '-'};%{':' , ':', '--', '--', '.', '.', '-', '-', '-', '-', '-', '-'};
 
 numAlgs = size(data, 2);
 
@@ -23,19 +24,19 @@ figure('visible', vis);
 
 %just to create semi log axis:
 if strcmp(scaling_type,'loglog')
-loglog(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} '-'], ...
+loglog(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} lines{1}], ...
     'LineWidth',3);
 end
 if strcmp(scaling_type,'semilogx')
-semilogx(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} '-'], ...
+semilogx(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} lines{1}], ...
     'LineWidth',3);
 end
 if strcmp(scaling_type,'semilogy')
-semilogy(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} '-'], ...
+semilogy(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} lines{1}], ...
     'LineWidth',3);
 end
 if strcmp(scaling_type,'plot')
-plot(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} '-'], ...
+plot(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} lines{1}], ...
     'LineWidth',3);
 end
 
@@ -44,14 +45,14 @@ hold on;
 
 for i=2:numAlgs
     c = [colors{i} lines{i}];
-    if size(data{i}, 2) < 3
-        data{i} = [0, 0, 0, 0; 0, 0, 0, 0];
-    end
+%    if size(data{i}, 2) < 3
+%        data{i} = [0, 0, 0, 0; 0, 0, 0, 0];
+%    end
     plot(data{i}(:,1 + index),data{i}(:,2 + index),c, ...
         'LineWidth',3);
 end
 
-leg = legend(alg_names, 'location', 'southeast');%(algs);
+leg = legend(alg_names, 'location', 'northeast');%'southeast');%(algs);
 xlabel(x_label);
 ylabel(y_label)
 
@@ -77,14 +78,16 @@ if strcmp(plot_type, 'shaded')
     if ~strcmp(scaling_type, 'plot') 
         %error('only works with plot');
     end 
-for i=1:numAlgs    
+for i=1:numAlgs 
+   
     %if C is negative the logarithmic diagram becomes crazy....
     c = [colors{i} ':'];
     A = transpose(data{i}(:,1 + index));
     B = transpose(data{i}(:,2 + index));
     C = transpose(data{i}(:,3 + index));
     
-    C0 = 0.999*(B - max(B - C, 0));
+    C0 = 0.999*(B - max(B - C, 0));   
+     
     shadedErrorBar(A,B,C0*2.05,c, true);
 end
 end
@@ -112,9 +115,9 @@ end
 figureHandle = gcf;
 %# make all text in the figure to size 14 and bold
 font_size = 15;
-set(findall(figureHandle,'type','text'),'fontSize',font_size)
+set(findall(figureHandle,'type','text'),'fontSize',font_size+4)
 set(gca,'fontSize',font_size)
-
+%xlim([0 20]);
 hold off;
 
 %%%%%%%%%%%%%%%%%%

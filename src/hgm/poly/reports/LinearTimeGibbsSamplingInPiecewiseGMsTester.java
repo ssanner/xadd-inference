@@ -603,7 +603,7 @@ public class LinearTimeGibbsSamplingInPiecewiseGMsTester {
             //
             double goldenErrThreshold
     ) {
-        Long goldenErrTimeMillisOrNano = null;
+        Long goldenErrTimeNanoSec = null;
         boolean goldenErrRecorded = false;
 //        Long timeToTakeFirstSamplesMillis = null; //not necessarily total time if the time analysis takes more time...
 //        samplerMaker.setReusableSample(groundTruthMeanVector);
@@ -664,8 +664,8 @@ public class LinearTimeGibbsSamplingInPiecewiseGMsTester {
             //saving golden Err. time:
             if (!goldenErrRecorded && runErr < goldenErrThreshold) {
                 goldenErrRecorded = true;
-                goldenErrTimeMillisOrNano = System.nanoTime() - absoluteStartTimeNanos;//System.currentTimeMillis() - absoluteStartTimeMillis;
-                System.out.println("sampling successfully terminated due to reaching golden error rate: " + goldenErrRecorded + " -in " + goldenErrTimeMillisOrNano + "(ns) after taking " + takenSamples + " samples");
+                goldenErrTimeNanoSec = System.nanoTime() - absoluteStartTimeNanos;//System.currentTimeMillis() - absoluteStartTimeMillis;
+                System.out.println("sampling successfully terminated due to reaching golden error rate: " + goldenErrRecorded + " -in " + goldenErrTimeNanoSec + "(ns) after taking " + takenSamples + " samples");
                 samplingPerformedInIntendedTimeSuccessfully = true;
                 break;
             }
@@ -693,9 +693,9 @@ public class LinearTimeGibbsSamplingInPiecewiseGMsTester {
                 :
                 null;
 
-        System.out.println("goldenErrTimeMillis/nanos = " + goldenErrTimeMillisOrNano + "\n");
+        System.out.println("goldenErrTime nanos = " + goldenErrTimeNanoSec + "\n");
         return new Err4Samples_Err4times_Times(errVsFirstSamples, errVsTimes, recordedTimePointsInNano,
-                samplingPerformedInIntendedTimeSuccessfully, goldenErrTimeMillisOrNano/*timeToAccomplishTaskMillis*/);
+                samplingPerformedInIntendedTimeSuccessfully, goldenErrTimeNanoSec/*timeToAccomplishTaskMillis*/);
     }
 
     class Err4Samples_Err4times_Times {

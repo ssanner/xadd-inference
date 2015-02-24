@@ -32,21 +32,30 @@ public class AnglicanJointToSampler implements JointToSampler{
         final RichJointWrapper richJW = (RichJointWrapper)jointWrapper;
         String anglicanCode = richJW.extraInfo(AnglicanCodeGenerator.ANGLICAN_CODE_KEY);
         anglicanCode = anglicanCode.replaceAll(AnglicanCodeGenerator.EXTERNAL_MODEL_NOISE_PARAM, Double.toString(observationNoiseParam));
-        final ExternalMhSampleBank sampleBank;
-        try {
-            System.err.println("Anglican code running ...");
-            sampleBank = AnglicanCodeGenerator.runAnglicanCode(AnglicanCodeGenerator.ANGLICAN_DEFAULT_JAR_PATH, anglicanCode, maxNumberOfTakenSamples, samplingMethod);   //pgibbs, smc, rdb
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
 
-        final Double[] reusableFullFactoryLikeSample = new Double[richJW.getJoint().getFactory().getAllVars().length];
+        final String finalAnglicanCode = anglicanCode;
 
         return new SamplerInterface() {
+            boolean bankFunctions = false;
+            ExternalMhSampleBank sampleBank = null;
+            final Double[] reusableFullFactoryLikeSample = new Double[richJW.getJoint().getFactory().getAllVars().length];
+            void fullBank(){
+
+                try {
+                    System.err.println("Anglican code running ...");
+                    sampleBank = AnglicanCodeGenerator.runAnglicanCode(AnglicanCodeGenerator.ANGLICAN_DEFAULT_JAR_PATH, finalAnglicanCode, maxNumberOfTakenSamples, samplingMethod);   //pgibbs, smc, rdb
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
             long numTakenSamples = 0; //just for debugging
+            {
+                fullBank();
+            }
             @Override
             public Double[] reusableSample() throws SamplingFailureException {
                 if (sampleBank.hasNext()) {
+                    bankFunctions = true;
                     Pair<Double[],Long> sampleAndTime = sampleBank.next();
                     long delay = System.nanoTime() + sampleAndTime.getSecondEntry();
 
@@ -57,7 +66,14 @@ public class AnglicanJointToSampler implements JointToSampler{
                     Double[] reusableAdaptedSample = reusableMimicFactorySample(sampleAndTime.getFirstEntry());
                     return reusableAdaptedSample;
 
-                } else throw new RuntimeException("taken samples: " + numTakenSamples + " exceeds the bank capacity: " + maxNumberOfTakenSamples);
+                } else {
+                    if (!bankFunctions) throw new SamplingFailureException("taken samples: " + numTakenSamples + " exceeds the bank capacity: " + maxNumberOfTakenSamples);
+                    else bankFunctions = false;
+
+                    System.err.println("taken samples: " + numTakenSamples + " exceeds the bank capacity: " + maxNumberOfTakenSamples);
+                    fullBank();
+                    return reusableSample();
+                }
             }
 
             private Double[] reusableMimicFactorySample(Double[] queryValuation) {
