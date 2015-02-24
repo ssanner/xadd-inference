@@ -135,7 +135,7 @@ public class StanOutputFileParser {
             }
         }
 
-        throw new StanParsingException("parsing error");
+        throw new StanParsingException("parsing error in file " + file.toString());
     }
 
     private int fetchNumTotalSamples(File file) throws IOException {

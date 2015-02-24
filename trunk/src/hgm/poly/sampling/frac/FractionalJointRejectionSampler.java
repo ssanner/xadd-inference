@@ -52,7 +52,7 @@ public class FractionalJointRejectionSampler implements SamplerInterface{
     //............................
     public static final boolean DEBUG = true;
 //    public static final int MAX_INITIAL_SAMPLING_TRIAL = 100000000;    // if the function is not positive, (initial) sample cannot be
-    public static final long MAX_WAITING_MILLI_SECONDS_TO_TAKE_A_SAMPLE = 1000 * 20;
+    public static final long MAX_WAITING_MILLI_SECONDS_TO_TAKE_A_SAMPLE = 2000;//1000 / 2;
     int numScopeVars;
     PiecewiseExpression<Fraction> joint;
     Map<Integer, Double> varIndex2MinMap;
@@ -154,4 +154,8 @@ public class FractionalJointRejectionSampler implements SamplerInterface{
         return reusableSampleAssignment;
     }
 
+    //just for hack
+    public void setEnvelope(double envelope) {
+        this.envelope = envelope;
+    }
 }

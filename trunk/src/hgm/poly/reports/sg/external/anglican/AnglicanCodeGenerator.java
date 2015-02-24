@@ -17,7 +17,7 @@ public class AnglicanCodeGenerator {
 
     public static final String ANGLICAN_CODE_KEY = "anglican.code.key";
 
-    public static enum AnglicanSamplingMethod {smc, rdb, ardb, pgibbs, cascade;}
+    public static enum AnglicanSamplingMethod {smc, rdb, pgibbs, cascade, ardb} // ascade & ardb don't work
 
     public static boolean DEBUG = false;
 
@@ -29,14 +29,17 @@ public class AnglicanCodeGenerator {
 //    }
 
     public static ExternalMhSampleBank runAnglicanCode(String anglicanJarPath, String anglicanCode, final int numSamples, AnglicanSamplingMethod method) throws InterruptedException, IOException {
+        Random rand = new Random(System.currentTimeMillis());
         // 1. persist the given anglican code in a file:
         PrintStream ps = new PrintStream(new FileOutputStream(anglicanJarPath + "/model_code.txt"));
         ps.print(anglicanCode);
         ps.close();
 
         // 2. run the code:
+        String command = "java -jar " + anglicanJarPath + ANGLICAN_JAR_NAME + " -s " + anglicanJarPath + File.separator + "model_code.txt -n " + numSamples + " -m " + method + " -r " + rand.nextInt(); //r for random seed
+        System.out.println("command = " + command);
         final Process p = Runtime.getRuntime().exec(
-                "java -jar " + anglicanJarPath + ANGLICAN_JAR_NAME + " -s " + anglicanJarPath + File.separator + "model_code.txt -n " + numSamples + " -m " + method);
+                command);
 
         final ExternalMhSampleBank bank = new ExternalMhSampleBank();
 
@@ -121,8 +124,14 @@ public class AnglicanCodeGenerator {
         String observationNoiseStr = observationNoise == null ?
                 EXTERNAL_MODEL_NOISE_PARAM : observationNoise.toString();
         for (String observedVar : evidence.keySet()) {
+            // a stupid hack to find deterministic variables
+            if (observedVar.startsWith("p")) {
             sbAnglican.append("[observe (normal ").append(observedVar).append(" ").append(observationNoiseStr).append(") ").
                     append(evidence.get(observedVar)).append("]").append(end);
+            } else {
+//                sbAnglican.append("[observe ").append(observedVar).append(" ").append(evidence.get(observedVar)).append("]").append(end); //todo why it does not work???
+                sbAnglican.append("[observe (normal ").append(observedVar).append(" ").append("0.01").append(") ").append(evidence.get(observedVar)).append("]").append(end);     //todo if this is a must then noise parameter should be a parameter....
+            }
         }
 
         sbAnglican.append("[predict (list");
@@ -206,7 +215,7 @@ public class AnglicanCodeGenerator {
         //  \      /
         //    -------r_t
         StringBuilder sbAnglican = new StringBuilder();
-        StringBuilder sbSumG = new StringBuilder("g_1");
+        StringBuilder sbSumG = new StringBuilder("g_1"); //to be: g_1 + ... g_n
         String end = System.lineSeparator();
         for (int i = 0; i < n; i++) {
             sbAnglican.append("[assume r_").append(i + 1).append(" (uniform-continuous ").append(resistMinVarLimit).append(" ").append(resistMaxVarLimit).append(")]").append(end);
