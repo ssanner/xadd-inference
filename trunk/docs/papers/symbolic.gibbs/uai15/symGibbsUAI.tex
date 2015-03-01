@@ -335,15 +335,16 @@ and represent a joint probability density $\pr(\vec{X})$ in a factorized form as
 \pr(\vec{X}) \propto \prod_{\Psi_k \in \boldsymbol\Psi} \Psi_k (\vec{X}_k)
 \end{equation}
 where 
-$\Psi(\vec{X}_k)$ are non-negative, real-valued \emph{potential functions} (of subsets $\bvec{X}_k$ of $\vec{X}$) 
-a.k.a.\ \emph{factors} and the normalization constant is not necessarily known.
+$\Psi(\vec{X}_k)$ are non-negative, real-valued \emph{potential functions} 
+(a.k.a.\ \emph{factors}) of subsets $\bvec{X}_k$ of $\bvec{X}$ 
+ and the normalization constant is not necessarily known.
 %Throughout, we adopt the notation $\textsc{Scope}(\Psi_k) := \bvec{X}_k$.
 %$C$ is a (not necessarily known) normalization constant.
 %The inference procedure that will be presented does not require the normalization constant be known. 
 
 \subsection{Inference}
-The inference task studied in this paper is 
-the computation of the \emph{posterior} joint density 
+%A main inference task is to compute the \emph{posterior} joint density 
+The inference task studied in this paper is to compute the \emph{posterior} joint density 
 $\pr(\bvec{Q} \,|\, \bvec{E}=\bvec{e})$
 of 
 a subset $\bvec{Q}$ (\emph{query}) of $\bvec{X}$ 
@@ -354,14 +355,69 @@ $\bvec{E} \subset\bvec{X} \backslash \bvec{Q}$ (\emph{evidence}):
 \label{e:inference}
 \pr(\vec{Q} \,|\, \bvec{E} =\vec{e}) \propto 
 \int_{-\infty}^{\infty} \!\! \cdots \int_{-\infty}^{\infty}
-%\prod_{\Psi \in \boldsymbol\Psi} \Psi(\vec{x})
 \!\!\! \pr(\bvec{Q}, \bvec{W} = \bvec{w}, \bvec{E}=\bvec{e} )
  \dd \bvec{w}
 \end{equation}
-where $\bvec{W} = \{W_1, \ldots, W_m\} := \vec{X} \backslash (\vec{Q} \cup \vec{E})$. % and its realization is in form $\bvec{w} = \{w_1, \ldots, w_m\}$.
-Beyond the families of conjugate distributions, integrals required in (\ref{e:inference}) 
-%can hardly be computed in closed form and 
-are often intractable and therefore, approximated by (MC)MC sampling \citep{koller2009probabilistic}.  
+where $\bvec{W} = \{W_1, \ldots, W_m\} := \vec{X} \backslash (\vec{Q} \cup \vec{E})$. % 
+
+Beyond the families of conjugate distributions, the integrals required in 
+(\ref{e:inference}) 
+are often intractable. 
+
+%Provided with   
+%samples $\bvec{x}^{(1)}, \cdots, \bvec{x}^{(n)}$ from the a
+%density $\pi(\bvec{X})$ (perhaps a posterior),
+ %the \emph{expected value} of a measurable function $u(\bvec{X})$ can be approximated: 
+%\begin{equation*}
+%\label{e:expectation}
+%\mathbb{E}_{\pi}[u(\bvec{X})] := \int_{-\infty}^{\infty} \!\!\! \cdots \int_{-\infty}^{\infty} \!\!
+%\pi(\bvec{x})u(\bvec{x}) \dd \bvec{x} 
+%\,\approx\,
+%\frac{1}{n} \sum_{\iota = 1}^n u(\bvec{x}^{(\iota)})
+%\end{equation*}
+
+\subsection{Monte Carlo methods.}
+A popular alternative to exact inference is to approximate (possibly posterior) joint densities $\pr(\bvec{X})$ 
+by a sequence $\bvec{x}^{(1)}, \cdots, \bvec{x}^{(n)}$ of samples taken
+ via \emph{Markov chain Monte Carlo} MCMC methods \citep{koller2009probabilistic}.  
+
+%An alternative to exact inference is to approximate the joint distribution by a set of samples drawn from it using Monte Carlo methods. By the law of large numbers, this approximation is asymptotically unbiased. Using samples, the costly marginalization operation is avoided since the conditional probability $\pr(\bvec{q} \,| \, \bvec{e})$ is simply approximated by the number of samples satisfying $\bvec{q} \cap \bvec{e}$ divided by the number of samples satisfying $\bvec{e}$.
+%Note that unlike other approximate methods, inference via sampling leads to asymptotically unbiased solutions i.e.\ by taking sufficient number of samples, the \emph{posterior} can be approximated by an arbitrary precision.
+
+%Approximating the posterior distribution via drawing samples from it by Monte Carlo methods 
+MCMC sampling is an asymptotically unbiased tool that avoids the hassle of multiple integrations. % required in closed-form sampling.   
+Two major families of such methods are as follows:
+
+%{\bf Rejection sampling:} In this method \citep{hammersley1964monte}, to draw a sample from a distribution $p(\bvec{X})$, a sample $\bvec{x}$ is taken from another distribution $q(\bvec{X})$ such that $p(\bvec{X})/q(\bvec{X})$ is bound by a known constant $c$ and samples can be taken from $q(\bvec{X})$ efficiently. The produced sample is accepted with probability $p(\bvec{x}) / c q(\bvec{x})$, otherwise it is rejected and the process is repeated. 
+
+{\bf Metropolis-Hastings (MH):}
+MH \citep{metropolis1953equation} generates a random walk using a \emph{proposal density} and a method for rejecting some of the proposed moves.
+Variations of MH such as \emph{Hamiltonian Monte Calo} (HMC) \citep{neal2011mcmc}  
+and \emph{Sequential Monte Carlo} (SMC) \citep{del2006sequential} are popular. 
+
+
+%To draw a new sample $\bvec{x}^{(t)}$ from a distribution $p(\bvec{X})$, given a previously taken sample $\bvec{x}^{(t-1)}$,  MH \citep{metropolis1953equation} takes a sample $\bvec{x}'$ from a symmetric \emph{proposal density} $q(\bvec{X} |\, \bvec{x}^{(t-1)})$. With probability $\min \big(1, p(\bvec{x}')/p(\bvec{x}^{(t-1)}) \big)$, $\bvec{x}'$ is accepted as the next sample ($\bvec{x}^{(t)} \leftarrow \bvec{x}'$), otherwise, $\bvec{x}^{(t)} \leftarrow \bvec{x}^{(t-1)}$. Choosing a good \emph{proposal} is problem-dependent and requires tuning. 
+
+
+{\bf Gibbs sampling:}
+ In Gibbs  sampling \citep{geman1984stochastic} drawing a sample for $\bvec{X} = \{X_1, \ldots, X_N\}$ takes place in $N$ steps.
+In the $i$-th step, $X_i$ is sampled conditioned on the last realization of the others:
+$x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$. 
+To perform this task, the following univariate (conditional) \emph{cumulative distribution function} (CDF)
+is computed by (\ref{e:cdf}) and samples are taken via inverse transform sampling. 
+%{\footnotesize
+\begin{equation} \footnotesize
+\label{e:cdf}
+\text{CDF}(X_i  \,|\, \bvec{x}_{-i}) 
+\propto
+\int_{-\infty}^{X_i} \!\! \pr(X_i = t, \,\bvec{X}_{-i} = \bvec{x}_{-i})  \dd  t
+\end{equation} 
+Gibbs sampling does not require any 'tuning'. 
+However, computing $N$ integrals per sample is costly and often approximated 
+(e.g.\ %by \emph{adaptive rejection sampling} 
+as in \citep{gilks1992adaptive})
+since it is often not possible in closed form.  
+ 
 %However, none of these classes can handle deterministic constraints beyond the level of linear constraints.
 
 %%Computation of $N$ univariate integrals per sample is costly and this makes Gibbs sampling a relatively slow sampler. However, we will show that the family of PPF functions, the performance of Gibbs sampling can be improved significantly.
@@ -410,21 +466,21 @@ We leave it to the graphical model designer to specify a deterministic potential
 %\begin{comment}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{algorithm}%[tb]%[hb!]
-\caption{{\sc $\delta$-Collapsing} $(\mathbb{E}, \boldsymbol{\Psi})$  
+\caption{{\sc $\delta$-Collapsing} $(\mathcal{E}; \boldsymbol{\Psi})$  
 \label{alg:collapsing-mechanical}}
 \begin{algorithmic}
 %{\small
 %\small
 \STATE {\bf Input: }{\small
-$\mathbb{E} := \{\tuple{E_i, e_i}\}_i$: evidence variables and valuations.  
+$\mathcal{E} := \{\tuple{E_i, e_i}\}_i$: evidence variables and valuations.  
 $\boldsymbol{\Psi} := \boldsymbol{\Psi^S} \cup \boldsymbol{\Psi^D}$: potentials where
 $\boldsymbol{\Psi^S}$ are stochastic and $ \boldsymbol{\Psi^D} := \left\{\Psi_{Z_j} := \delta\big( G_j (\cdot) - Z_j \big) | Z_j \in \bvec{Z} \right\}$ are deterministic.}
-\STATE {\bf Output} {posterior joint distribution of a subset of variables from which, all other variables can be decided.}
+\STATE {\bf Output} {unnormalized posterior joint of a subset of variables from which, all other variables can be decided.}
  \vspace{1mm}
 %{
 %{\bf Begin}//{
 \STATE //\emph{{\bf \sc Step 1.} Observed variable instantiation:}
-\FOR{{\bf all} $\tuple{E, e} \in \mathbb{E}$}
+\FOR{{\bf all} $\tuple{E, e} \in \mathcal{E}$}
 \STATE \textbf{for all } $\Psi \in \boldsymbol{\Psi}$ \textbf{ do } $\Psi \leftarrow \Psi|_{E \leftarrow e}$	
 \ENDFOR %\textbf{end for}\\
 \vspace{1mm}
@@ -435,12 +491,12 @@ $\boldsymbol{\Psi^S}$ are stochastic and $ \boldsymbol{\Psi^D} := \left\{\Psi_{Z
 \ENDFOR
  \vspace{1mm}
 %\STATE //\emph{{\bf \sc Step 3.} Joint factor formation:}
-\STATE //\emph{{\bf \sc Step 3.} Collapsing determinism:}
+\STATE //\emph{{\bf \sc Step 3.} Dimension reduction:}
 \STATE $t := 0$ \hspace*{\fill} //\emph{\small counter}\\
 \STATE $\Phi_t := \prod_{\Psi \in \boldsymbol{\Psi^S}} \Psi$ \hspace*{\fill} //\emph{\small $\Phi_0$: product of  stochastic potentials}\\
 %\STATE //\emph{{\bf \sc Step 4.} Collapsing determinism:}
-%\FOR {{\bf all} $\tuple{E, e} \in \mathbb{E}$ \textbf{such that} $E \in \bvec{Z}$}
-\FOR {{\bf all} $\tuple{Z_j \in \bvec{Z}, c} \in \mathbb{E}$}
+%\FOR {{\bf all} $\tuple{E, e} \in \mathcal{E}$ \textbf{such that} $E \in \bvec{Z}$}
+\FOR {{\bf all} $\tuple{Z_j \in \bvec{Z}, c} \in \mathcal{E}$}
 	\STATE {\bf let} $Y$  be a variable involved in $G_j$ such that $\boldsymbol{\Upsilon} := \textsc{solve}(G_j(\cdot)-c ;\, Y) \neq \emptyset$  (assuming that at least one such variable exists.) \vspace{-2mm}	
 \begin{equation}\footnotesize
 \label{e:core}
@@ -456,21 +512,29 @@ $\boldsymbol{\Psi^S}$ are stochastic and $ \boldsymbol{\Psi^D} := \left\{\Psi_{Z
 \end{equation} \vspace{-4mm}
 	\STATE $t \leftarrow t + 1 $	
 \ENDFOR
-%	\textbf{end for}\\
 \STATE {\bf Return} $\Phi_t$
-%}
-%}%end small
-%}
-\vspace{2mm}\hrule\vspace{0.5mm}
-\STATE \hspace{-3mm} {\bf Algorithm }\textsc{Solve}$(G, X)$ 
-\vspace{0.5mm}\hrule\vspace{0.7mm}
+%\vspace{2mm}\hrule\vspace{0.5mm}
+%\STATE \hspace{-3mm} 
+%{\bf Algorithm }\textsc{Solve}$(G; X)$ 
+%\vspace{0.5mm}\hrule\vspace{0.7mm}
+\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}[tb]%[hb!]
+\caption{\textsc{Solve}$(G; X)$    
+\label{alg:solve}}
+\begin{algorithmic}
 \STATE {\bf Input:} $G$ is a polynomial fraction and $X$ is a variable involved in $G$ (i.e.\ $Y \in \textsc{Scope}(G)$).
 \STATE {\bf Output:} Solutions of $G$ w.r.t.\ $X$.
 \STATE {\bf Let} $\mathcal{A}$ be the set of fractional polynomial functions that do not involve $X$. 
-{\small
-\STATE {\bf if} $\exists A, B \in \mathcal{A}$. \;$G \equiv A X + B$ {\bf return} $\{-B/A\}$
-\STATE {\bf else if} $\exists A_1, B_1, A_2, B_2 \in \mathcal{A}$. \;$G \equiv (A_1 X + B_1)(A_2 X + B_2)  $ 
-\STATE \hspace{3mm} {\bf return} $\{-B_1/A_1, -B_2/A_2\}$ {\bf else if} ...
+{%\small
+\STATE {\bf if} $\exists A, B \in \mathcal{A}. \; (G=0) \Rightarrow (A X + B = 0)$ 
+\\\hspace{5mm}
+{\bf then return} $\{-B/A\}$
+\STATE {\bf elseIf } $\exists A_1, B_1, A_2, B_2 \neq B_1 \in \mathcal{A}.\; (G=0) \Rightarrow$
+\\\hspace{5mm} 
+$ [(A_1 X + B_1)(A_2 X + B_2)]=0$
+\\\hspace{5mm} 
+{\bf then return} $\{-B_1/A_1, -B_2/A_2\}$ {\bf elseIf} ...
 \STATE {\bf else return} $\emptyset$ \hspace*{\fill} //could not be factorized. }
 \end{algorithmic}
 \end{algorithm}
@@ -482,8 +546,7 @@ $\boldsymbol{\Psi^S}$ are stochastic and $ \boldsymbol{\Psi^D} := \left\{\Psi_{Z
 \label{sect:collapse}
 $\delta$-collapsing as presented in Algorithm~\ref{alg:collapsing-mechanical}
 is a mechanism to handle observed determinism via reducing the dimensionality. 
-That is, 
-we construct a posterior joint distribution over a subset of stochastic random variables such that given their realization, any other variable (either stochastic or deterministic)
+It constructs a posterior joint distribution over a subset of stochastic random variables such that given their realization, any other variable (either stochastic or deterministic)
 can be reconstructed.% expressed as a function of them:
 %and therefore, effectively be sampled:
 %The procedure
@@ -551,55 +614,69 @@ $\Phi$ is modified as follows: \vspace{-1mm}
 %\rule{\columnwidth}{1pt}
 \end{comment}
 
-To clarify the algorithm, we run it on the collision model: 
-\emph{Here, the evidence is the singleton {\footnotesize$\mathbb{E} := \{\tuple{P_\text{tot}, 3}\}$}, and 
-the potentials are indexed as follows: 
+To clarify the algorithm, we run it on the collision model (CM): 
+\emph{In CM, evidence is the singleton set {\footnotesize$\mathcal{E} := \{\tuple{P_\text{tot}, 3}\}$}, and 
+the potentials can be indexed as follows: 
 \begin{align*}
 & \Psi_1 \text{ to } \Psi_4 \text{ as in Eq.~(\ref{e:collision}) } &&\Psi_5 := \delta(M_1V_1 - P_1)\\
 &\Psi_6 := \delta(M_2V_2 - P_2)		&& \Psi_7 := \delta(P_1 + P_2 - P_\text{tot})   
 \end{align*}
 }
-{\bf 1.~Observed variable instantiation.} 
+{\bf \!\!Step 1. Observed variable instantiation.} 
 In all potentials (either deterministic or statistical), all observed stochastic/deterministic 
-variables are instantiated. Therefore,
+variables are instantiated. 
+
+\emph{Therefore, in CM, 
 %In Step 1, 
-
 {\footnotesize$\Psi_{7}$} is converted to 
-{\footnotesize$\delta(P_1 + P_2 - 3)$}. %while the other potentials are not modified.
+{\footnotesize$\delta(P_1 + P_2 - 3)$}.} %while the other potentials are not modified.
+%In Step 2, {\footnotesize$\Psi_5$} is converted to {\footnotesize$\delta(M_1 V_1 - M_1 V_1)$} (which is equal to $1$). For the similar reason {\footnotesize$\Psi_6$} is converted to $1$ and {\footnotesize$\Psi_7$} to {\footnotesize$\delta(M_1 V_1 + M_2 V_2 - 3)$}. In Step 3, {\footnotesize$\Phi$}, the product of {\footnotesize$\Psi_1$} to {\footnotesize$\Psi_4$} is computed. In the absence of observed stochastic variables, this simply equals the prior joint: {\footnotesize$\Phi = \pr(M_1, M_2, V_1, V_2)$} (Eq.~\ref{e:col-prior}).
 
-In Step 2, 
-{\footnotesize$\Psi_5$} is converted to 
-{\footnotesize$\delta(M_1 V_1 - M_1 V_1)$}
-(which is equal to $1$). 
-For the similar reason 
-{\footnotesize$\Psi_6$} is converted to $1$ and 
-{\footnotesize$\Psi_7$} to 
-{\footnotesize$\delta(M_1 V_1 + M_2 V_2 - 3)$}.  
+{\bf Step 2. Marginalizing determinism.}
+In all potentials, all deterministic variables $Z_j$, are 
+substituted by their 
+logical values $G_j(\cdot)$ (so, a potential $\delta ( G_j(\cdot) - Z_j)$ itself is replaced by 1.) By the definition of Dirac $\delta$, this simply means that  unobserved deterministic variables are marginalized out.
 
-In Step 3, 
-{\footnotesize$\Phi$}, the product of 
-{\footnotesize$\Psi_1$} to 
-{\footnotesize$\Psi_4$} is computed. In the absence of observed stochastic variables, this simply equals the prior joint: 
-{\footnotesize$\Phi = \pr(M_1, M_2, V_1, V_2)$} (Eq.~\ref{e:col-prior}).
+\emph{Therefore, in CM the following conversions take place:}
+\[
+\Psi_5 \leftarrow 1 \qquad 
+\Psi_6 \leftarrow 1
+\qquad \Psi_7 \leftarrow
+\delta(M_1 V_1 + M_2 V_2 - 3)
+\]  
+{\bf Step 3. Dimension reduction.}
+ %By (multiple) application(s) of Theorem~\ref{theorem1},  
+Beginning with the (unnormalized) joint density of all stochastic variables,
+for each observed deterministic random variable $Z_j = c$ (where $c$ is a constant),
+$(G_j(\cdot) - c)$ is solved w.r.t.\ some stochastic variable 
+$Y  \in \bvec{Y}_j^d$ (assuming that it is solvable  
+w.r.t.\ at least one variable with simple roots in the form of polynomial fractions).
+Subsequently. by applying Theorem~\ref{theorem1}, $Y$ is excluded from the space of variables for which joint density is computed.
 
-In step 4, 
+\emph{In CM,  
+{\footnotesize$\Phi_0 = \pr(M_1, M_2, V_1, V_2)$} (see Eq.~\ref{e:col-prior}).
+We solve  
 {\footnotesize$(G_7 - 3)$}, i.e.\ 
-{\footnotesize$(M_1 V_1 + M_2 V_2 - 3)$}, is solved w.r.t.\ 
-{\footnotesize$M_1$} (It could alternatively be solved w.r.t. 
+{\footnotesize$(M_1 V_1 + M_2 V_2 - 3)$}, w.r.t.\ 
+{\footnotesize $M_1$}  
+(It could alternatively be solved w.r.t. 
 {\footnotesize$V_1$}, 
 {\footnotesize$M_2$} or 
-{\footnotesize$V_2$})
-which leads to a singleton set of solutions:
-{\footnotesize
-$\textsc{Solve}(3.0 - M_1 V_1 - M_2 V_2; M_1) = \{\frac{3 - M_2 V_2}{V_1}\}$
-}.
+{\footnotesize$V_2$}):\\\vspace{-1mm}
+{\footnotesize 
+\begin{equation}
+\label{e:example.solve}
+\textsc{Solve}(M_1 V_1 + M_2 V_2 - 3; M_1) = \left\{\left(\frac{3 - M_2 V_2}{V_1}\right)\right\}
+\end{equation}
+}\\\vspace{-1mm}
 Finally, since  
-{\footnotesize$\left| \frac{\partial (M_1 V_1 + M_2 V_2)}{\partial M_1} \right| = |V_1|$}, by (\ref{e:core}),
-{\footnotesize$\Phi$} is converted to:  
+{\footnotesize$\left| \frac{\partial (M_1 V_1 + M_2 V_2)}{\partial M_1} \right| = |V_1|$}, by (\ref{e:core}):
+%{\footnotesize$\Phi$} is converted to:  
 %%
 {\footnotesize
 \begin{equation}  
 \label{e:col-prior2}
+\Phi_1 :=
 %\pr(M_2, V_1, V_2)  =
 \begin{cases}
 \frac{1}{V_1(16 V_1 + 32)} &{\text{if }\scriptstyle 0<V_1, \, 0.1<\frac{3-M_2 V_2}{V_1}<2.1, \, 0.1<M_2<2.1,}\\
@@ -611,50 +688,8 @@ Finally, since
 \end{equation}
 }
 which is proportional to $\pr(M_2, V_1, V_2 \,|\, P_\text{tot} = 3)$.
-
-\subsubsection*{Reconstructing eliminated variables}
-
-The end result $\Phi$ is proportional to 
-$\pr(\bvec{Y}\backslash \bar{\bvec{Y}} \,|\, \bvec{E} = \bvec{e})$ in which 
-$\bar{\bvec{Y}}$ is the set of stochastic variables eliminated in
-step~4.
-%{\color{red}
-%As required, the eliminated variables $\bar{\bvec{Y}}$ and $\bvec{Z}$ are deterministically decided given  $\bvec{Y}\backslash \bar{\bvec{Y}}$.} 
-
-Given the end result ${\Phi}$, inference is carried out via sampling.
-In case the eliminated variables $\bar{\bf Y}$ are queried they should be reconstructed in the reverse order they are eliminated:
-
-If in $t$-th execution of Step 4, 
-{\footnotesize$G_j(\cdot) - c$} is invertible w.r.t. a variable $Y$ 
-(i.e. if 
-{\footnotesize$\textsc{Solve}(G_j(\cdot)-c ;\, Y)$} 
-is singleton)
-the reconstructed sample value of $Y$ is simply 
-{\footnotesize$G_j(\bvec{s}) - c$} 
-in which $\bvec{s}$ denotes the realization of the subset of variables that are already sampled or reconstructed. 
-But if 
-{\footnotesize$\textsc{Solve}(G_j(\cdot)-c ;\, Y) =  \{\Upsilon_1, \ldots, \Upsilon_r \}$},
-% all solutions are instantiated by $\bvec{s}$
-the value of $Y$ can only be reconstructed if the trace of modifications of $\Phi$ is recorded.
-Let $\Phi_t$ and $\Phi_{t-1}$ be the values of $\Phi$ is $t$-th and $(t-1)$-th execution of Step 4 respectively. Also define:
-$$
-\phi_\iota := 
-\frac{\Phi_{t - 1}|_{Y \leftarrow \Upsilon_\iota}}{
-\big|(\partial G_j(\cdot) / \partial Y) |_{Y \leftarrow \Upsilon_\iota}
-\big|
-}
-\qquad \text{ for } \iota = 1, \ldots, r
-$$ 
-The constructed sample value of $Y$ is 
-$\Upsilon_\iota(\bvec{s})$ with a probability proportional to $\phi_\iota(\bvec{s})$ 
-since by (\ref{e:core}), $\Phi_t = \sum_{\iota=1}^{r} \phi_{\iota}$.
-
-
-
-\subsubsection{Proof of correctness}
-
-In the dimension reduction phase (step 4) of $\delta$-collapsing algorithm, Theorem~\ref{theorem1} is applied multiple times. 
-
+} %end emph
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 \begin{theorem} 
 \label{theorem1}
 Let {\footnotesize $\pr(Z\!=\!z | x_1, \ldots, x_n) = \delta[f(x_1, \ldots, x_n)-z]$}, 
@@ -707,8 +742,49 @@ $\pr(x_2, \ldots, x_n \,|\, Z = z) \propto$
 which implies (\ref{e:theorem1}).
 \end{proof}
 %
-%Note that elimination of Dirac deltas requires transformations  that often leads to formulas without known closed-form integrals. This makes closed form inference (by Eq.~\ref{e:inference}) impossible. Nonetheless, inference can still be done via sampling.
 
+\subsubsection{Reconstructing eliminated variables}
+In Algorithm~\ref{alg:collapsing-mechanical}, the end result $\Phi_{\#\bar{\bvec{Y}}}$ is proportional to 
+$\pr(\bvec{Y}\backslash \bar{\bvec{Y}} \,|\, \bvec{E} = \bvec{e})$ in which 
+$\bar{\bvec{Y}}$ is the set of stochastic variables eliminated in
+step~3 and $\#\bar{\bvec{Y}}$ is its cardinality.
+
+Given $\Phi_{\#\bar{\bvec{Y}}}$, inference is carried out via sampling.
+In case the eliminated variables $\bar{\bf Y}$ are queried they should be reconstructed in the reverse order they are eliminated:
+If in an execution of Step 3, 
+%{\footnotesize$G_j(\cdot) - c$} is invertible w.r.t. a variable $Y$ (i.e. if 
+{\footnotesize$\textsc{Solve}(G_j(\cdot)-c ;\, Y)$} is a singleton
+{\footnotesize$\{\Upsilon_1\}$},
+the reconstructed sample value of $Y$ is simply 
+{\footnotesize$\Upsilon_1(\bvec{s})$} 
+in which $\bvec{s}$ denotes the value of the variables that are already sampled or reconstructed. 
+
+\emph{E.g.\ in CM, let 
+{\footnotesize$\bvec{s} = [ m_2^{(0)}, \, v_1^{(0)}, \, v_2^{(0)} ]$} 
+be a sample vector from $\Phi_1$. 
+By (\ref{e:example.solve}),  
+the sample value constructed for $M_1$ is 
+{\footnotesize
+$$m_1^{(0)} := \frac{3 - m_2^{(0)}v_2^{(0)}}{v_1^{(0)}}$$ 
+}
+}%end emph
+In general, if in $t$-th execution of Step~4, 
+{\footnotesize$\textsc{Solve}(G_j(\cdot)-c ;\, Y) =  \{\Upsilon_1, \ldots, \Upsilon_r \}$},
+we define
+%the value of $Y$ can only be reconstructed if the trace of modifications of $\Phi$ is recorded.
+%Let $\Phi_t$ and $\Phi_{t-1}$ be the values of $\Phi$ is $t$-th and $(t-1)$-th execution of Step 4 respectively. Also define:
+$$
+\phi_\iota := 
+\frac{\Phi_{t - 1}|_{Y \leftarrow \Upsilon_\iota}}{
+\big|(\partial G_j(\cdot) / \partial Y) |_{Y \leftarrow \Upsilon_\iota}
+\big|
+}
+\qquad \text{ for } \iota = 1, \ldots, r
+$$ 
+The constructed sample value of $Y$ is 
+$\Upsilon_\iota(\bvec{s})$ with a probability proportional to $\phi_\iota(\bvec{s})$ 
+since by (\ref{e:core}), $\Phi_t = \sum_{\iota=1}^{r} \phi_{\iota}$.
+%
 \begin{comment} %invertibility assumption
 {\color{blue}
 Theorem~\ref{theorem1} tackles the core problem of delta elimination in a general setting; however, 
@@ -807,17 +883,26 @@ not associated with a canonical specification form,
 %(i.e.\ integrating w.r.t.\ a single variable while keeping the rest of variables symbolic) should produce a closed-form structure (the requirement of Symbolic Gibbs).
 %\end{itemize}
 %Our proposition is the use of  the class of \emph{Polynomial-Piecewise Polynomial Fractions} (PPFs); That is, functions in the form:   
-We study piecewise fractional functions with polynomial partitioning conditions (PPFs) -- a highly expressive class of functions neglected in the literature so far.
-That is, functions in form:
+A major drawback of the general use of 
+Algorithm~\ref{alg:collapsing-mechanical}
+is that it relies on operations that lead to highly complicated posteriors. 
+In this section, we address this issue by introducing a rich family of distributions (namely PPFs for \emph{polynomial piecewise fractional} functions)
+that remain closed under all operations required for $\delta$-collapsing. 
+We also show that, PPF*, an expressive subset of PPF family have analytical univariate integrals.
+This leads to an efficient variation of Gibbs sampling that will be introduced in Section~\ref{sect:symbolic.gibbs}.
+
+%We study piecewise fractional functions with polynomial partitioning conditions (PPFs) -- a highly expressive class of functions neglected in the literature so far.
+%That is, functions in form:
+{\bf PPF.\ } A PPF is a function in form:
 \begin{equation}\footnotesize
 \label{e:ppf}
-f = 
+f =
   \begin{cases}
   \case{\phi_1}{f_1}\\
 \vdots\\
   \case{\phi_m}{f_m}    
   \end{cases}
-\!\!\!=
+\!\!=
   \begin{cases}
   \case{\varphi_{1,1} \lessgtr 0,\, \varphi_{1,2} \lessgtr 0,\, \ldots}{\frac{N_1}{D_1}} \\
 \vdots\\
@@ -826,10 +911,9 @@ f =
 \end{equation}
 where each \emph{sub-function} $f_i := \frac{N_i}{D_i}$ is a (multivariate) polynomial fraction and
 \emph{conditions} $\phi_i$ partition the space of function variables. 
-\emph{conditions} $\phi_i$ are conjunctions of some inequalities ($\lessgtr$ stands for  
-$>$ or $<$)\footnote{In piecewise distributions,  
-we are careless about equalities since they only matter for Dirac deltas which are treated separately.
-%We assume that no $\delta[h(\bvec{x})]$ has roots point on the partitioning hyperplanes.
+Each $\phi_i$ is a conjunctions of some inequalities ($\lessgtr$ stands for  
+$>$ or $<$)\footnote{
+We do not define the value of piecewise density functions on their partitioning hyperplanes and do not allow $\delta(\cdot)$ potentials have roots on the partitions. 
 } 
 where each \emph{atomic constraint} $\varphi_{i,j}$ is a polynomial.
 
@@ -857,26 +941,64 @@ PPFs are closed under elementary operations, e.g.:
   \case{\phi_2, \psi_2}{f_2 \times g_2}
   \end{cases}
 \end{equation*} 
-Their closure under fractional substitution follows from the fact that 
-a \emph{case-statement} with a fractional condition can be restated as two case-statements with polynomial conditions:
-\begin{align*}
+%
+PPFs are closed under polynomial fractional substitution.% (such as (\ref{e:substitute})) 
+\begin{equation}
+\label{e:substitute}
+\footnotesize
+f|_{x \leftarrow \frac{F}{G}}
+=
+\begin{cases}
+  \case{{\phi_1}|_{x \leftarrow \frac{F}{G}}}{{f_1}|_{x \leftarrow \frac{F}{G}}}\\
+\vdots\\
+  \case{{\phi_m}|_{x \leftarrow \frac{F}{G}}}{{f_m}|_{x \leftarrow \frac{F}{G}}}    
+  \end{cases}
+\end{equation}
+The reason is that in the r.h.s\ of (\ref{e:substitute}), 
+sub-functions $f_i |_{x \leftarrow \frac{F}{G}}$ are polynomial fractions (PFs) 
+(since PFs are closed under PF-substitution).
+Conditions ${\phi_i}|_{x \leftarrow \frac{F}{G}}$ are not polynomial (they are PF) %rather than polynomial 
+but can be restated as (multiple) case-statements with polynomial conditions. E.g.:
+%Their closure under fractional substitution follows from the fact that a \emph{case-statement} with a fractional condition can be restated as two case-statements with polynomial conditions:
+\begin{equation*} \footnotesize
 %\label{e:fractional2nlpa}
 \left(
  \begin{cases}
-  \case{\frac{F}{G} > 0}{f_1} \\ 
+  \case{\frac{H_1}{H_2} > 0}{f_1} \\
+   \vdots
  \end{cases} 
 \right)
  =
 {\footnotesize
 \begin{cases}
-  \case{F > 0, G > 0 }{f_1} \\ 
-  \case{F \leq 0, G \leq 0}{f_1} \\ 
+  \case{H_1 > 0, H_2 > 0 }{f_1} \\ 
+  \case{H_1 < 0, H_2 < 0}{f_1} \\ 
+  ...
  \end{cases} 
 }
-\end{align*}
-It follows that PPFs are also closed under \emph{absolute value}.
-Therefore, assuming that the solutions to $G_j(\cdot) - c$ are fractional,
-PPFs are closed under all operations required for collapsing determinism. %algebraic fractional determinism 
+\end{equation*}
+PPFs are also closed under \emph{absolute value}, e.g.:
+\begin{equation*}\footnotesize
+\left|
+\left(
+  \begin{cases}
+  \case{\phi_1}{\frac{N_1}{D_1}}\\
+  \vdots
+  \end{cases}
+\right)
+\right|
+=
+  \begin{cases}
+  \case{N_1>0, D_1>0,\phi_1}{\frac{N_1}{D_1}} \\
+\case{N_1<0, D_1<0,\phi_1}{\frac{N_1}{D_1}} \\
+\case{N_1>0, D_1<0,\phi_1}{\frac{-N_1}{D_1}} \\
+\case{N_1<0, D_1>0,\phi_1}{\frac{-N_1}{D_1}} \\
+...
+ \end{cases}
+\end{equation*}
+Therefore, %assuming that the solutions to $G_j(\cdot) - c$ are fractional,
+PPFs are closed under %all operations required for 
+collapsing determinism. %algebraic fractional determinism 
 %(since they are closed under  all operations required for collapsing determinism).
 %This is an important characteristic that other distribution families lack.  
 
@@ -884,18 +1006,22 @@ PPFs are closed under all operations required for collapsing determinism. %algeb
 %required for closed-form inference (see Equation~\ref{e:inference}).
 
 %However, 
+\subsection{Analytic integration}
 In general, PPFs are not closed under integration; however, a large subset of them 
  have closed-form single variable integrals.
-As it will be seen in the next section,
-this leads to an extremely efficient Gibbs sampling mechanism.   
+%As it will be seen in the next section, this leads to an extremely efficient Gibbs sampling mechanism.   
 %We will show that this is also holds for a large group of PPFs.
 For brevity, we only focus on the following fairly expressive  subset of PPFs:
 
 \textbf{PPF*. }
-A PPF* is a PPF in which %s as in Definition~(\ref{e:ppf}) where 
-each $\varphi_{i,j}$
-can be written as a product of some terms $t_{i,j,k}$ where the maximum degree of each variable $X \in \bvec{X}$ in each $t_{i,j,k}$ is less or equal to 4 % (treating other variables as constants).%($\text{rel-degree}(t_{i,j,k}) \leq 4$)
-and the sub-function denominators, $D_{i}$, can be factorized into polynomials ${D}_{i,h}$ where the maximum degree of each variable in each $D_{i,h}$ is less or equal to 2.% ($\text{rel-degree}(D_{i, k}) \leq 2$).%, where function $\text{rel-degree}(\cdot)$, the relative degree, is defined as follows:
+A PPF* is a PPF in which:\\ %s as in Definition~(\ref{e:ppf}) where 
+%\begin{enumerate}[leftmargin=2.5ex]
+1. Each atomic constraint $\varphi_{i,j}$
+can be written as a product of some terms $t_{i,j,k}$ where the maximum degree of each variable $X \in \bvec{X}$ in each $t_{i,j,k}$ is less or equal to 2.\\ % (treating other variables as constants).%($\text{rel-degree}(t_{i,j,k}) \leq 4$)
+
+2. The sub-function denominators, $D_{i}$, can be factorized into (not necessarily distinct) polynomials ${D}_{i,l}$ where the maximum degree of each variable in each $D_{i,l}$ is less or equal to 2.
+%\end{enumerate}
+% ($\text{rel-degree}(D_{i, k}) \leq 2$).%, where function $\text{rel-degree}(\cdot)$, the relative degree, is defined as follows:
  %\begin{enumerate} 
 %\item Each constrain $\phi_i := \varphi_{i,1} \wedge \varphi_{i,2} \wedge \ldots$ is a conjunction of polynomial (in)equalities $\varphi_{i,j}$ such that $\text{rel-degree}(\varphi_{i,j}) \leq 4$.
 %\item Each sub-function $f_i  := \frac{{N}_{i}}{{D}_{i,1} \cdot {D}_{i,2} \cdots}$
@@ -906,56 +1032,51 @@ and the sub-function denominators, $D_{i}$, can be factorized into polynomials $
 %\[\text{rel-degree}(g) = \max_{x \in \vec{x}}(x\text{-deg}(g))\]
 
 Here is an example of a PPF* case-statement:
-\begin{equation*}\vspace{-0.5mm}
+\begin{equation}\vspace{-0.5mm}
 {\footnotesize
-\singlecase{y^2-x\leq 0 \wedge x^3+2xy \geq 0}{\frac{x^2 y^3 + 7x + 10}{(5x.y^2 + 2)(y + x)^5}}
+\label{e:ppf*example}
+\singlecase{(y^2+z^2 -1)(x^2+2xy) > 0}
+{\frac{x^2 y^3 + 7xz + 10}{(5x.y^2 + 2)(y + x)^3}}
 }
-\end{equation*}
+\end{equation}
 
 %The class of PPF*'s is still quite expressive. Meanwhile PPF*'s have closed form (single) integrals that are not very hard to compute automatically. 
 
-\subsection{Analytic integration of PPF*s}
-The space limitations do not allow us to explain the integration process in detail. 
-Instead, we highlight the main issues.
 
-Firstly, note that the definite integrals can be reduced to indefinite integrals:
-{
-\footnotesize\vspace{-0.5mm}
-\begin{align*}
-\int_{\alpha}^{\beta} f \dd x  = 
-\int_{-\infty}^{\infty}
-\left (
-  \begin{cases}
-  \case{x\!>\!\alpha,\, x\!<\!\beta,\, \alpha \!<\! \beta}{1}\\
- \otherwise{0}    
-  \end{cases}
-\otimes
-  f
-\right)
-\dd x
-\end{align*}
-}
-Secondly, note that a PPF* can be restated into a form where
-the degree of each variable in each atomic constraint is less or equal to 4.
-E.g. consider a single case-statement with a single atomic constraint 
-$\varphi_{1,1} := t_{1,1,1} \cdot t_{1,1,2}$:% (where the degree of each variable in either $(t_{1,1,k})\leq4$):
-\begin{align*}
-{\footnotesize\vspace{-0.5mm}
-\left(
-f_1 \quad \text{if } t_{1,1,1} \cdot t_{1,1,2} > 0
-\right)
- =
+{\bf Analytic univariate PPF* integration.} 
+
+Suppose $\int_{\alpha}^\beta f \dd x$ is intended where $f$ is a PPF*.
+
+%Firstly, note that the definite integrals can be reduced to indefinite integrals:
+%{
+%\footnotesize\vspace{-0.5mm}
+%\begin{align*}
+%\int_{\alpha}^{\beta} f \dd x  = 
+%\int_{-\infty}^{\infty}
+%\left (
+ % \begin{cases}
+ % \case{x\!>\!\alpha,\, x\!<\!\beta,\, \alpha \!<\! \beta}{1}\\
+% \otherwise{0}    
+ % \end{cases}
+%\otimes
+ % f
+%\right)
+%\dd x
+%\end{align*}
+%}
+\emph{1. (canonicalization).} $f$ is restated in a form where
+the degree of each variable in each atomic constraint $\varphi_{i,j}$ is at most 2.
+E.g. case statement (\ref{e:ppf*example}) is restated as:
+\begin{equation}
 \begin{cases}
-  \case{t_{1,1,1} \!>\! 0, \, t_{1,1,2} \!>\! 0 }{f_1} \\ 
-  \case{t_{1,1,1} \!\leq\! 0, \, t_{1,1,2} \!\leq\! 0 }{f_1} 
- \end{cases} 
-}
-\end{align*}
-Thirdly, note that for each variable $x$, 
-PPFs can be transformed into piecewise structures 
-in which each atomic constraint is either in form $x>L_i$ or $x<U_i$ or $I_i>0$, 
+\case{(y^2+z^2 -1)>0, (x^2+2xy)>0}{\frac{x^2 y^3 + 7xz + 10}{(5x.y^2 + 2)(y + x)^3}}\\
+\case{(y^2+z^2 -1)<0, (x^2+2xy)<0}{\frac{x^2 y^3 + 7xz + 10}{(5x.y^2 + 2)(y + x)^3}}\\
+\end{cases}
+\end{equation}
+\emph{2. (condition solution).} For the integration variable $x$, PPF* functions are transformed into piecewise structures 
+with atomic constraints in form $x>L_i$ or $x<U_i$ or $I_i>0$, 
 where $L_i$, $U_i$ and $I_i$ are 
-algebraic expressions (not necessarily polynomials) and $x$ is not in their scope. 
+algebraic expressions (not necessarily polynomials) that do not involve $x$. 
 %\footnote{Again, we are careless about equalities.} 
 %For instance a case-statement:
 %\begin{align*}
@@ -972,73 +1093,70 @@ algebraic expressions (not necessarily polynomials) and $x$ is not in their scop
 %}
 %\end{align*}
 %Note that in the case of quadratic constraints, these transformed cases are not necessarily polynomials.
-For instance for variable $x$, the case-statement (\ref{e:single-example})
-can be replaced with three cases as in (\ref{e:quadratic-trans}).
-{
-\footnotesize
-\begin{equation}
+
+For instance, if expressions $A$, $B$ and $C$ do not involve $x$,
+the case statement (\ref{e:single-example})
+%For instance for variable $x$, the case-statement (\ref{e:single-example})
+is replaced with 3 cases statements (\ref{e:quadratic-trans}).
+\begin{equation}\footnotesize
 \label{e:single-example}
-\singlecase{(x^2 y + 7x^2 + x + y > 0)}{f_1}
+\singlecase{(A \cdot x^2 + B \cdot x + C)>0}{f_1}
+%\singlecase{(x^2 y + 7x^2 + x + y > 0)}{f_1}
 \end{equation}
-\begin{align}
+\begin{align}\footnotesize
 \label{e:quadratic-trans}
 {
 \begin{cases}
-  \case{(y+7>0), \, (x> -0.5 + 0.5\sqrt{1 - 4y(y+7)}) }{f_1} \\ 
-  \case{(y+7>0), \, (x> -0.5 - 0.5\sqrt{1 - 4y(y+7)}) }{f_1} \\ 
-  \case{(y+7<0), \, (x > -0.5 + 0.5\sqrt{1 - 4y(y+7)}),\\
-& (x < -0.5 - 0.5\sqrt{1 - 4y(y+7)}) }{f_1} \\ 
+  \case{(A>0), \, (x> \frac{-B + \sqrt{B^2 - 4 A C}}{2 A}) }{f_1} \\ 
+  \case{(A>0), \, (x< \frac{-B - \sqrt{B^2 - 4 A C}}{2 A}) }{f_1} \\ 
+  \case{(A<0), \, (x> \frac{-B - \sqrt{B^2 - 4 A C}}{2 A}),
+                              (x< \frac{-B + \sqrt{B^2 - 4 A C}}{2 A})}{f_1}
  \end{cases}
 }
 \end{align}
-}
-The infinite bound integral of a case-statement 
+\emph{3. (bounding).} The bounded integral of a case statement 
 associated with expressions with $\{L_i\}$, $\{U_i\}$ and $\{I_i\}$ 
 is itself a case-statement with the same independent constraints,
-a lower bound LB =$\max\{L_i\}$ and 
-an upper bound UB =$ \min\{U_i\}$.
+ lower bound LB =$\max\{\alpha, L_i\}$ and 
+ upper bound UB =$ \min\{\beta, U_i\}$.
 For example:
-{\footnotesize 
-\begin{align*}
+\begin{align*}\footnotesize 
 %\footnotesize
-&\int_{-\infty}^{\infty}\!\! \Big[
-\singlecase{(x>3), (x>y+1), (x<y^2-7), \\ 
-&\hspace{28mm} (-y/z > 1) , (y^2>0)}
+&\int_{\alpha}^{\beta}\!\! \Big[
+\singlecase{(x>{\bf\color{blue}3}), (x>{\bf\color{blue}y+1}), (x<{\bf\color{green}y^2-7}), \\ 
+&\hspace{28mm} ({\bf\color{red}-y/z > 1}) , ({\bf\color{red}y^2>0})}
 {x^3 + xy} \Big] \dd x = \\
-&\singlecase{(-y/z > 1) \wedge (y^2>0)}
-{\Big[ \int_{\max\{3, \, y+1\}}^{y^2 - 7} (x^3 + xy) \dd x \Big]} 
+&\singlecase{({\bf\color{red}-y/z > 1}) \wedge ({\bf\color{red}y^2>0})}
+{\Big[ \int_{\max\{{\bf {\color{blue}3}, \, {\color{blue}y+1}}\}}^{{\bf\color{green} y^2 - 7}} (x^3 + xy) \dd x \Big]} 
 \end{align*}  
-}
-What remains is to compute the indefinite integrals of sub-functions. 
+\emph{4. (sub-function integration).} %What remains is to compute the indefinite integrals of sub-functions. 
 The restrictions imposed on PPF* sub-functions 
-guarantee that they have closed form indefinite univariate integrals.
-These integrals are computed by performing polynomial division (in case needed),
+guarantee that they have closed-form %indefinite 
+univariate integrals.
+These integrals are computed by performing polynomial division 
+(in case the degree of $x$ in the sub-function's numerator is more than its denominator),
 followed by partial fraction decomposition and finally, using a short list of indefinite integration rules.
 
-%The output of this algorithm is a non normalized joint distribution of  a subset of none-deterministic variables. Provided with this joint, the marginal distribution of all query variables (either probabilistic or deterministic) can be computed by means of sampling as will be discussed later.
+\emph{5. (aggregation).}
+The integral of the piecewise function $f$ is the summation of its case statement integrals:
+\begin{equation*}
+\int_\alpha^\beta \sum_{i=1}^m \indicator[\phi_i]\cdot f_i \dd x = 
+\sum_{i=1}^m \int_\alpha^\beta \indicator[\phi_i] \cdot f_i \dd x
+\end{equation*}
 
-%Note that these operations alter the normalization constant and the resulting function is only proportional to the corresponding joint distribution. However, most inference algorithms do not require normalization.Some of these algorithms are provided in the next section. However, prior to that we discuss the limitations of Algorithm~\ref{alg:posterior-joint} 
-
-%The family of deterministic constraints studied in this work includes polynomial fractions. For this family, the unique solution assumption (required in Step 4 of Algorithm~\ref{alg:posterior-joint}) in general holds if $G^Z$, the logical values of deterministic variables, are linear w.r.t. some variables.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 \section{Symbolic Gibbs Sampling}
 \label{sect:symbolic.gibbs}
 
-Gibbs sampling is an attractive MCMC tool in the sense that it does not require known bounds or any kind of tuning.
-In Gibbs, drawing a sample for $\bvec{X} := (X_1, \ldots, X_N)$ takes place in $N$ steps.
-In the $i$-th step, $X_i$ is sampled conditioned on the current realization of the others variables:
-$x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$
-\citep{bishop2006pattern}.
-To do so, the univariate (conditional) 
-\emph{cumulative distribution function} (CDF)
-is computed by (\ref{e:cdf.0}) and a sample is taken by \emph{inverse transform sampling}. 
-\begin{equation} \footnotesize
-\label{e:cdf.0}
-\text{CDF}(X_i  \,|\, \bvec{x}_{-i}) 
-\propto
-\int_{-\infty}^{X_i} \!\! \pr(X_i = t, \,\bvec{X}_{-i} = \bvec{x}_{-i})  \dd  t
-\end{equation} 
+%Gibbs sampling is an attractive MCMC tool in the sense that it does not require known bounds or any kind of tuning.In Gibbs, drawing a sample for $\bvec{X} := (X_1, \ldots, X_N)$ takes place in $N$ steps. In the $i$-th step, $X_i$ is sampled conditioned on the current realization of the others variables:
+%$x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$\citep{bishop2006pattern}.To do so, the univariate (conditional) \emph{cumulative distribution function} (CDF) is computed by (\ref{e:cdf.0}) and a sample is taken by \emph{inverse transform sampling}. 
+%\begin{equation} \footnotesize
+%\label{e:cdf.0}
+%\text{CDF}(X_i  \,|\, \bvec{x}_{-i}) 
+%\propto
+%\int_{-\infty}^{X_i} \!\! \pr(X_i = t, \,\bvec{X}_{-i} = \bvec{x}_{-i})  \dd  t
+%\end{equation} 
 %
 Our \emph{symbolic Gibbs sampling} is based on a simple but significantly useful insight:
 If $\pr(\bvec{X})$
@@ -1242,7 +1360,7 @@ i.e.\ where CDF is computed per sample,
 \emph{rejection sampling} (Rej) \citep{hammersley1964monte}, 
 \emph{tuned Metropolis-Hastings} (MH) \citep{roberts1997weak}, 
 \emph{Hamiltonian Monte Carlo} (HMC*) using Stan PPL \citep{stan-manual:2014}
-and \emph{Sequential Monte Carlo} (SMC*) \citep{del2006sequential} using Anglican PPL \citep{wood2014new}.\footnote{
+and \emph{Sequential Monte Carlo} (SMC*) using Anglican PPL \citep{wood2014new}.\footnote{
 We also tested the other algorithm implemented by Anglican, namely 
 \emph{Particle-Gibbs} (PGibbs) (a variation of Particle-MCMC\citep{andrieu2010particle}) \
 and \emph{random database} (RDB) (an MH-based algorithm introduced in \citep{wingate2011lightweight}) (see \cite{wood2014new}).
@@ -1308,7 +1426,7 @@ the ground truth (required in Equation~\ref{e:error.vs.time.measure})
 is approximated by taking sufficiently large number of samples by rejection sampling (as a completely unbiased sampler).
 However, in the experiments where the model size is parametric,
 we cannot rely on rejection sampling since its performance on the studied model deteriorates drastically in dimension. 
-We cannot rely on \emph{(MC)MC convergence diagnostics} methods \citep{cowles1996markov} because they can produce misleading results in case Markov chains do not converge to the ground truth; a scenario that as we will see, for highly complex posteriors is not improbable.
+We cannot rely on \emph{MCMC convergence diagnostics} methods \citep{cowles1996markov} because they can produce misleading results in case Markov chains do not converge to the ground truth; a scenario that as we will see, for highly complex posteriors is not improbable.
 Our solution is to conduct tests on symmetric models for which the posterior ground truth can be computed manually.
 
 
@@ -1699,11 +1817,14 @@ To perform this task, the following univariate \emph{Cumulative Distribution Fun
 is computed by equation~(\ref{e:cdf}) and samples are taken by inverse transform sampling. 
 {\footnotesize
 \begin{equation}
-\label{e:cdf}
+%\label{e:cdf}
 F(X_i  \,|\, \bvec{x}_{-i}) 
 \propto
 \int_{-\infty}^{X_i} \!\!\!\! \pr(X_i = t, \bvec{x}_{-i}) \, d  t
 \end{equation} 
+
+
+
 \begin{algorithm}[tb]%[hb!]
 \caption{{\sc $\delta$-Collapsing}  
 \label{alg:posterior-joint}}
@@ -1757,7 +1878,7 @@ $\textsc{Solve}(G_j(\cdot) - c; \, Y)$
 be the set of such solutions.
 $\Phi$ is modified as follows: \vspace{-1mm}
 \begin{equation}\footnotesize
-\label{e:core}
+\label{e:coreX}
 \Phi 
 \;
 \longleftarrow
