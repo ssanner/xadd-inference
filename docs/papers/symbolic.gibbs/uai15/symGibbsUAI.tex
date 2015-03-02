@@ -15,8 +15,8 @@
 \usepackage{algorithmic}
 \usepackage{amsmath,amsfonts,amssymb,amsthm}
 
-\title{Symbolic Gibbs Sampling in Piecewise Algebraic %Graphical 
-Models with Nonlinear Deterministic Relationships between Random Variables}
+\title{Full-Automated Symbolic Gibbs Sampling in Piecewise Algebraic %Graphical 
+Models with (Non)linear Determinism}
 
 \author{} % LEAVE BLANK FOR ORIGINAL SUBMISSION.
           % UAI  reviewing is double-blind.
@@ -87,232 +87,7 @@ Models with Nonlinear Deterministic Relationships between Random Variables}
 
 \maketitle
 
-\begin{abstract}
-In many applications of probabilistic reasoning, 
-instead of stochastic random variables, 
-functions i.e.\ deterministic relationships between them
-might be observed.
-Beyond some restricted settings, effective inference conditioned on such relationships has remained an open problem. % so far.
-%
-The most commonly suggested solution is to approximate (i.e.\ soften) the determinism by adding noise to the 
-evidence. %observed constraints.
-In practice, however, this strategy may 
-lead to extremely low mixing rates and/or arbitrarily large approximation bounds. 
-%not help much:
-%In the presence of small additive noise, the mixing rate of Monte Carlo algorithms notoriously deteriorates 
-%%If the added noise is small, the mixing rate of Monte Carlo algorithms notoriously deteriorates 
-%while by adding large noise, the approximation bounds may become arbitrarily large.
-%%while large noise leads to arbitrarily large approximation bounds.
-%
-We fill this gap by contributing a variation of Gibbs sampling, called \emph{symbolic Gibbs}, 
-that carries out effective and automatic inference conditioned on a large range of (non)linear
-deterministic relationships in a rich family of distributions not studied in the literature so far.
-%We fill this gap by contributing a novel framework which, for the first time, carries out inference conditioned on a large range of (non)linear deterministic constraints in a highly expressive class of distributions that is not studied in the literature so far.
-% Our other contribution is to provide an effective MCMC inference technique  based on the insight that in our model, most costly operations required for Gibbs sampling can be accomplished analytically and offline, prior to sampling (\emph{symbolic Gibbs}).
-We evaluate this algorithm on models in physics and engineering and show that it is an order of magnitude faster than the baseline Gibbs sampler and a significant improvement over other Monte Carlo methods.  
-\end{abstract}
-
-\section{INTRODUCTION}
-\label{sect:intro}
-Graphical models (GMs) are the lingua franca for probabilistic reasoning.
-They denote the conditional dependence structure between random variables by directed or undirected graphs \citep{koller2009probabilistic}. 
-A (random) variable is deterministic if its conditional distribution has zero variance. 
-%Unobserved deterministic random variables that is, variables that cannot be given data or initial values (corresponding to \emph{logical nodes} in BUGS software) almost only provide notational convenience.
-Observed deterministic variables (or \emph{observed determinism}, for short) represent deterministic dependencies on other variables.
-Such constraints can appear in a variety of real-world applications.
-For instance, instead of direct observation of random variables 
-$X_1, X_2, \ldots$, a function of them $f(X_1, X_2, \ldots)$ might be observed. 
-%such deterministic relationships between random variables might be governed by natural laws (such as Kirchhoff's circuit laws or Newtonian mechanics).
-To motivate the discussion consider a concrete example:  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure}[t!]
-\vspace{-3mm}
-\begin{center}
-%\begin{tabular}{cc}
- %  \hspace{-0mm} \includegraphics[width=0.17\linewidth]{Figs/little-momentum0.pdf} 
- \includegraphics[width=0.33\linewidth]{Figs/little-momentum1.pdf} 
-%\vspace{-0.05mm}
-%\\
-%\hspace{-5mm} \footnotesize(a) 
-%& \hspace{-3mm} \footnotesize(b)  \\
-%\multicolumn{2}{c}{}
-%\end{tabular}
-\end{center}
-\vspace{-6mm}
-\caption{\footnotesize
-Bayesian network corresponding the \emph{collision model}. The filled circles represent deterministic random variables.} 
-\label{fig:mom0}
-\vspace{-2mm}
-\end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%
-%\vspace{1mm}\\
-{\bf Example (Collision model). }
-\emph{Masses $M_1$ and $M_2$ with velocities $V_1$ and $V_2$ (and consequently momenta $P_1 = M_1 V_1$ and $P_2 = M_2 V_2$) collide to form a single mass ($M_1 + M_2$) with momentum $P_\text{tot} = P_1 + P_2$ (assuming that there is no dissipation).
-Masses and velocities are unknown but 
-their prior distributions are given as follows:\footnote{
-Throughout, $\mathcal{U}(a, \, b)$ denotes a uniform continuous distribution 
-with support interval $[a, b]$.
-} 
-%(note that as Figure~\ref{fig:mom0}.a shows, a collision only happens if $V_2 < V_1$):  
-}%end \emph
-{\footnotesize \vspace{-0.5mm}
-\begin{align}
-&\pr(M_1) = \mathcal{U}(0.1, \, 2.1) 
-&&\pr(M_2) \!=\! \mathcal{U}(0.1, \, 2.1)
-\nonumber
-\\
-&\pr(V_1) = \mathcal{U}(-2, \, 2)
-&&\pr(V_2 \, | \, V_1) = \mathcal{U}(-2, \, V_1)
-\label{e:collision}
-\end{align} 
-}
-\emph{
-\!\!\!The conditional dependencies of these random variables are illustrated in 
-Figure~\ref{fig:mom0}. %b.
-Conditioned on the observation $P_{\text{tot}} = 3$, the posterior joint distribution of $M_1$, $M_2$, $V_1$ and $V_2$ is desired. 
-\hspace*{\fill} $\diamond$} %\emph
-
-Despite its humble appearance, we will show the solutions that the existing probabilistic inference tools provide for this model are quite unsatisfactory. 
-
-Let's take a closer look on the nature of the problem by manually carrying on the computations required for 
-\emph{Markov chain Monte Carlo} (MCMC) sampling:
-It can easily be seen that in the \emph{collision model}, 
-the joint density of masses and velocities is
-\begin{equation} \footnotesize  
-\label{e:col-prior}
-\pr(M_1, M_2, V_1, V_2)  
-=
-\begin{cases}
-\frac{1}{16 V_1 + 32} &{\text{if }\scriptstyle 0.1<M_1<2.1, \, 0.1<M_2<2.1,}\\
-							 &{\;\;\, \scriptstyle -2<V_1<2, \, -2<V_2 < V_1}\\
- \otherwise{0}
- \end{cases}
-\end{equation}
-which is a 4 dimensional function from which samples can be taken fairly easily. 
-Since {\footnotesize $P_\text{tot} = M_1 V_1 + M_2 V_2$}, 
-the following \emph{likelihood} is a 0-variance conditional distribution:
-\begin{equation}\footnotesize 
-\label{e:col-likelihood}
-\pr(P_\text{tot} = 3 \,|\, M_1, V_1, M_2, V_2) = \delta( M_1 V_1 + M_2 V_2 - 3)
-\end{equation}
-where $\delta(\cdot)$ denotes \emph{Dirac delta}. 
-By \emph{Bayes} rule, 
-the \emph{posterior} 
-{\footnotesize $\pr(M_1, M_2, V_1, V_2 \,|\, P_\text{tot} = 3)$}
-is proportional to the product of equations (\ref{e:col-prior}) and (\ref{e:col-likelihood}).
-Note that despite being 4-dimensional, 
-the mass of this function is only non-zero on the 3 dimensional \emph{hypersurface}: {\footnotesize$M_1 V_1 + M_2 V_2 = 3$}. 
-
-
-In general, observation of an algebraic relationship between random variables of an {\footnotesize$N$}-dimensional prior space often corresponds a zero-probability event that leads to a posterior mass positioned on an {\footnotesize$(N\!-\!1)$}-dimensional hyperspace and conditioning on multiple such events increases the difference between the dimensionality of the original space and the \emph{submanifold} on which the posterior is non-zero.  
-If this dimensionality mismatch is not taken into account, sampling from such posterior distributions via sampling will be impossible (As a more tangible example, note that taking sample from a 2D curve via random walk in a 3D continuous space is impossible.)  
-
-%We are unaware of any off-the-shelf inference framework that handles conditioning on deterministic constraints among random variables.
-\subsection{Literature review}
-By imposing various %(but functionally the same)
-\emph{syntactical restrictions}, % and excuses, 
-the state-of-the-art probabilistic programming languages (PPLs),
-%totally 
-disallow deterministic relationships among continuous random variables 
-(a.k.a.\ deterministic constraints) be observed.\footnote{
-In BUGS \citep{lunn2009bugs}, the popular software for analysis of statistical models, \emph{logical nodes} cannot be given data or initial values .
-In PyMC \citep{patil2010pymc} deterministic variables have no \emph{observed flag}. 
-In Stan \citep{stan-manual:2014} 
-if you try to assign an observation value to a deterministic variable, you will encounter an error message: 
-``attempt to assign variable in wrong block'' while 
-Anglican \citep{wood2014new} throws error ``invalid-observe", etc.}
-
-The solution that these off-the-shelf inference frameworks suggest is to approximate the observed determinism via adding noise to the observation 
-(hard to soft constraint conversion via introducing measurement error).
-
-For example the r.h.s of equation (\ref{e:col-likelihood}) would be 
-approximated with a normal distribution
-{\footnotesize $\mathcal{N}( M_1 V_1 + M_2 V_2 - 3, \sigma_\eta^2)$}  
-where the variance $\sigma_\eta^2$ is the noise parameter.
-
-Using this trick, it is guaranteed that the posterior is equidimensional with the (space of) prior (i.e.\ its ambient space) and therefore in theory, conventional (MC)MC sampling is possible.
-Nonetheless, in practice such an strategy may not help much:
-If the added noise is large, 
-the approximation bounds may become arbitrarily large
-and if the noise is small, 
-the mixing rate may become extremely slow \citep{chin1987bayesian}. 
-The reason is that in the latter case, 
- the approximated posterior mass would be dense in tinny regions (surrounding the original submanifold) on which random walk
-is notoriously inefficient (near-deterministic problem).  
-
-%If all stochastic distributions of the model belong to particular families of density functions, the problem may be addressed by means of  
-%\emph{variable transformations}.
-In particular settings, \emph{linear} deterministic relationships between continuous random variables
-are addressed in the literature.  
-Most notably, 
-the family of \emph{conditional linear Gaussians (CLGs)} \citep{lauritzen2001stable}, 
-i.e\ constant-variance \emph{Gaussian} densities where the mean of each random variable is a linear function of its parents,
-is closed under linear transformations and consequently
-allow linear deterministic constraints.%\footnote{CLGs form constant-variance \emph{Gaussian} Bayesian networks where the mean of each stochastic random variable is a linear function of its parents. \citep{lauritzen2001stable}.}
-
-In \citep{li2013dynamic} the restriction is imposed on the network topology.
-They use \emph{sequential importance sampling} on a simple Bayesian network of i.i.d. data points with an observed summation. % in a minimalistic BN.
-%They conjecture that such an algorithm may be generalized to other settings. 
-The generalization of this technique does not seem straight-forward (if possible).
-%It is unknown if this technique can be generalized to other topologies and evidence. 
-
-Recently, piecewise polynomial distributions have attracted attention.
-So far, piecewise polynomials with hyperrectangular, hyper-rhombus and linear partitioning constraints have been used in Bayesian networks \citep{shenoy2011inference,shenoy2012two,Sanner:12}.
-Such families can handle linear deterministic conditionals.
-\cite{cobb2005nonlinear} approximate non-linear deterministic constraints with piecewise linear constraints via
-dividing the domain of the parent variables into hypercubes. % and creating an approximation of each function in each hypercube.
-This method is not scalable and rapidly loses its performance in high dimensions since 
-the number of partitions required to preserve approximation accuracy
-grows exponentially in the variable space dimensionality. 
-
-In short, inference conditioned on nonlinear deterministic relationships between continuous random variables is still an open problem \citep{li2013dynamic} and as mentioned, even for linear constraints, the existing works are too restrictive.
- 
-\subsection{Contribution and outline}
-In this paper, we provide an efficient automatic inference mechanism 
-on an expressive class of continuous distributions 
-that handles a large class of linear and nonlinear multivariate algebraic deterministic relationships between continuous random variables that are in the form of polynomial fractions. 
-
-After a brief background to %representation and inference in 
-graphical models (GMs) in Section~\ref{sect:background}, 
-%our first main contributions is presented in Section~\ref{sect:contribution1} where 
-in Section~\ref{sect:contribution1} we provide the necessary theory and algorithm (called \emph{collapsing determinism}) 
-to transform models with a large class of (observed) deterministic constraints to purely stochastic networks. % for a large set of (non)linear algebraic determinism. 
-%The main idea is to reduce the posterior dimensionality by utilizing the properties of Dirac delta distributions. This algorithm relies on operations such as fractional substitutions. It can easily be seen that under such operations, the typical classes of distributions that are studied in the literature so far do not remain closed. This should be the main reason why the problem of inference conditioned on determinism has remained {\color{green}untackled} so far. 
-It can be seen that the classes of distributions studied in the literature so far do not remain closed under operations (such as fractional substitutions) required for collapsing determinism.
-This is remedied in 
-%Our second contribution is presented in 
-Section~\ref{sect:ppfs} where we 
-%{\color{green}alleviate} this situation as follows:\bf We 
-introduce \emph{polynomial piecewise fractions} (PPFs), a highly expressive class of functions, not studied in the literature so far, 
-with interesting properties that facilitate the inference conditioned on deterministic algebraic constraints.
-
-%This class (called PPFs for \emph{polynomial piecewise fractions}) {\color{green}consists of} piecewise functions where the space of variables is partitioned by polynomial inequalities and the the function value in each partition is a fraction with a polynomial numerator and denominator.  
-%Clearly, PPFs can approximate any function up to arbitrary precision by partitioning it into (relatively) {\color{green} homogeneous} pieces followed by utilizing \emph{Taylor} expansion or similar methods.
-%The key insight is that PPFs are closed under derivation and polynomial fractional substitutions. This immediately extends their application to models with sophisticated algebraic constraints.
-
-%Unfortunately, PPFs are not closed under integration (required for marginalization). Therefore, closed-form inference on PPF models is not in general possible.  Nonetheless, 
-
-A large subset of PPFs have closed-form univariate symbolic integrals which leads to another contribution
-presented in Section~\ref{sect:symbolic.gibbs}: %our third contribution: In Section~\ref{sect:symbolic.gibbs}, we propose 
-performing 
-the costly operation of univariate CDF computation, as required by Gibbs sampling, analytically and offline rather than per sample.     
-%Gibbs samplers are robust in the sense that they do not need any parameter tuning.However, they are computationally expensive since to take a single sample they require to compute many univariate integrals (to generate the CDFs of conditional distributions).
-%We notice that a large subset of PPFs have closed form (symbolic) integrals. 
-%The idea of Symbolic Gibbs is to compute a single analytic integral for each variable by keeping the remaining variables uninstantiated. 
-%The actual process of CDF computation per sample  simply involves instantiation of the already computed CDFs rather than computing them on the fly.
-This dramatically decreases the amount of necessary computations and as our experimental results in Section~\ref{sect:experimental.results} show, 
-leads to a significant improvement in the convergence rates. 
-%Literature review is postponed to Section~\ref{sect:literature.review} and 
-The summary and conclusion are offered in Section~\ref{sect:conclusion}. 
-
-%In the following sections after a brief introduction to Graphical models, followed by an algorithm for inference in the presence of deterministic constraints.We then explain the restrictions of PPFs, compare our method with other samplers and conclude. 
-
+\input abs_intro   %for scott
 
 \section{Graphical Models (GMs)}
 \label{sect:background}
@@ -470,7 +245,7 @@ We leave it to the graphical model designer to specify a deterministic potential
 \label{alg:collapsing-mechanical}}
 \begin{algorithmic}
 %{\small
-%\small
+\small
 \STATE {\bf Input: }{\small
 $\mathcal{E} := \{\tuple{E_i, e_i}\}_i$: evidence variables and valuations.  
 $\boldsymbol{\Psi} := \boldsymbol{\Psi^S} \cup \boldsymbol{\Psi^D}$: potentials where
@@ -523,6 +298,7 @@ $\boldsymbol{\Psi^S}$ are stochastic and $ \boldsymbol{\Psi^D} := \left\{\Psi_{Z
 \caption{\textsc{Solve}$(G; X)$    
 \label{alg:solve}}
 \begin{algorithmic}
+\small
 \STATE {\bf Input:} $G$ is a polynomial fraction and $X$ is a variable involved in $G$ (i.e.\ $Y \in \textsc{Scope}(G)$).
 \STATE {\bf Output:} Solutions of $G$ w.r.t.\ $X$.
 \STATE {\bf Let} $\mathcal{A}$ be the set of fractional polynomial functions that do not involve $X$. 
@@ -1094,10 +870,10 @@ algebraic expressions (not necessarily polynomials) that do not involve $x$.
 %\end{align*}
 %Note that in the case of quadratic constraints, these transformed cases are not necessarily polynomials.
 
-For instance, if expressions $A$, $B$ and $C$ do not involve $x$,
+For instance, if expressions {\footnotesize$A$}, {\footnotesize$B$} and {\footnotesize$C$} do not involve $x$,
 the case statement (\ref{e:single-example})
 %For instance for variable $x$, the case-statement (\ref{e:single-example})
-is replaced with 3 cases statements (\ref{e:quadratic-trans}).
+is replaced by cases statements (\ref{e:quadratic-trans}).
 \begin{equation}\footnotesize
 \label{e:single-example}
 \singlecase{(A \cdot x^2 + B \cdot x + C)>0}{f_1}
@@ -1124,10 +900,10 @@ For example:
 %\footnotesize
 &\int_{\alpha}^{\beta}\!\! \Big[
 \singlecase{(x>{\bf\color{blue}3}), (x>{\bf\color{blue}y+1}), (x<{\bf\color{green}y^2-7}), \\ 
-&\hspace{28mm} ({\bf\color{red}-y/z > 1}) , ({\bf\color{red}y^2>0})}
+&\hspace{28mm} ({\bf\color{red}-y/z > 1}) , ({\bf\color{red}y>0})}
 {x^3 + xy} \Big] \dd x = \\
-&\singlecase{({\bf\color{red}-y/z > 1}) \wedge ({\bf\color{red}y^2>0})}
-{\Big[ \int_{\max\{{\bf {\color{blue}3}, \, {\color{blue}y+1}}\}}^{{\bf\color{green} y^2 - 7}} (x^3 + xy) \dd x \Big]} 
+&\singlecase{({\bf\color{red}-\frac{y}{z} > 1}) \wedge ({\bf\color{red}y>0})}
+{\Big[ \int_{\max\{\alpha, \,{\bf {\color{blue}3}, \, {\color{blue}y+1}}\}}^{\min\{\beta, \, {\bf\color{green} y^2 - 7}\}} \!\! x^3 + xy \dd x \Big]} 
 \end{align*}  
 \emph{4. (sub-function integration).} %What remains is to compute the indefinite integrals of sub-functions. 
 The restrictions imposed on PPF* sub-functions 
@@ -1140,8 +916,8 @@ followed by partial fraction decomposition and finally, using a short list of in
 \emph{5. (aggregation).}
 The integral of the piecewise function $f$ is the summation of its case statement integrals:
 \begin{equation*}
-\int_\alpha^\beta \sum_{i=1}^m \indicator[\phi_i]\cdot f_i \dd x = 
-\sum_{i=1}^m \int_\alpha^\beta \indicator[\phi_i] \cdot f_i \dd x
+\int \sum_{i=1}^m \indicator[\phi_i]\cdot f_i \dd x = 
+\sum_{i=1}^m \int \indicator[\phi_i] \cdot f_i \dd x
 \end{equation*}
 
 
@@ -1159,25 +935,27 @@ The integral of the piecewise function $f$ is the summation of its case statemen
 %\end{equation} 
 %
 Our \emph{symbolic Gibbs sampling} is based on a simple but significantly useful insight:
-If $\pr(\bvec{X})$
-has analytic integrals w.r.t.\ all variables $X_i$,
-then the costly CDF computations can be done prior to the sampling process rather than $N$ times per sample. 
-It is sufficient to construct a map (called $\textsc{VarToCDF}$) from variables $X_i$ to their corresponding (unnormalized conditional) analytical CDFs. 
+If $\pr(X_1, \ldots, X_N)$
+has analytic integrals w.r.t.\ all variables $X_i$ (as is the case with PPF* densities),
+then the costly CDF computations can be done prior to the sampling process rather than per sample. 
+It is sufficient to construct a mapping $\mathcal{F}$ from variables $X_i$ to their corresponding (unnormalized conditional) analytical CDFs. 
 %then, instead of computing $N$ univariate integrals (required in Eq.~\ref{e:cdf}) per sample, we can perform the costly computations prior to the actual sampling process by constructing a map from each variable $X_i$ to its corresponding univariate symbolic CDF: 
-\begin{equation} \footnotesize
+\begin{align} \footnotesize
+ \mathcal{F}\colon \{X_1, \ldots X_N\} &\to (\mathbb{R}^N \to \mathbb{R}^{+} \cup \{0\}) \notag\\
+ X_i &\mapsto \int_{-\infty}^{X_i} \! \pr(X_i = t , \bvec{X}_{-i}) \dd  t 
 \label{e:cdf-symbolic.0}	
+\end{align}
+%\begin{equation} \footnotesize
+%\label{e:cdf-symbolic.0}	
 %F(X_i  \,|\, \bvec{X}_{-i}) 
-\textsc{VarToCDF}\text{.put}
-\left(
-X_i, \, % \;\; \longrightarrow \;\;
-%\propto
-\int_{-\infty}^{X_i} \!\!\!\!\! \pr(X_i = t , \bvec{X}_{-i}) \dd  t
-\right)
-\end{equation} 
-Note that the difference between (\ref{e:cdf.0}) and (\ref{e:cdf-symbolic.0}) is that in the former, 
+%\mathcal{F}(X_i) := 
+%\int_{-\infty}^{X_i} \!\!\!\!\! \pr(X_i = t , \bvec{X}_{-i}) \dd  t
+%\qquad \text{ for } i = 1, \ldots, N
+%\end{equation} 
+Note that the difference between (\ref{e:cdf}) and (\ref{e:cdf-symbolic.0}) is that in the former, 
 all variables except $X_i$ are already instantiated therefore 
-$\text{CDF}(X_i  \,|\, \bvec{x}_{-i})$ is a univariate function but in  (\ref{e:cdf-symbolic.0}), 
-although variables $\bvec{X}_{-i}$ are treated as constants but they are kept uninstantiated and symbolic.
+$\text{CDF}(X_i  \,|\, \bvec{x}_{-i})$ is a univariate function but 
+$\mathcal{F}$ is $N$-variate since variables $\bvec{X}_{-i}$ are kept uninstantiated and symbolic.
 %As a result, $F(X_i \,|\, \bvec{X}_{-i})$ is a multivariate analytic function. 
 %as Algorithm~\ref{alg:analytic-cdf} shows, 
 %we can create a map from variables $X_i$ to their corresponding closed-form CDFs.
@@ -1187,11 +965,15 @@ to sample $x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$,
 it is sufficient to instantiate the analytical CDF associated to $X_i$ with  
 $\bvec{x}_{-i}$ to obtain the appropriate univariate conditional CDF
 (see Algorithm~\ref{alg:symbolic-gibbs}).
+This reduces the number of CDF computations from $N\cdot T$ to $N$ where 
+%$N$ is the dimensionality of the space of variables and 
+$T$ is the number of taken samples.
 
-Note that in theory, CDF inversion (required for inverse transform sampling)
-can also be computed analytically leading to a totally analytical Gibbs sampler.
-However, analytical CDF$^{-1}$ functions can be quite sophisticated and hard to compute. 
-In our current implementation, CDF inversion is performed via \emph{binary search}. This requires several function evaluations (i.e.\ instantiations) per sample. Nonetheless, (unlike integration,) function evaluation is a very fast operation. Therefore, further optimization may not be justified.    
+If CDF inversion (required for inverse transform sampling)
+is also computed analytically, the Gibbs sampling becomes totally analytical.
+However, this operation can be very complicated.
+In the current implementation, we approximate CDF$^{-1}$ via \emph{binary search}. This requires several function evaluations %(i.e.\ instantiations) 
+per sample. Nonetheless, (unlike integration,) function evaluation is a very fast operation. Therefore, further optimization may not be justified.    
 
 %By this method, instead of computing $N \times T$ integrals for $T$ samples, only $N$ integrals are computed and $N \times T$ function instantiations are performed. But function instantiation is much faster than integration. Therefore, the algorithm leads to a major improvement in speed.
 
@@ -1199,27 +981,29 @@ In our current implementation, CDF inversion is performed via \emph{binary searc
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{algorithm}[hb!]%[tb]
-\caption{{\sc SymbolicGibbs}  
+\begin{algorithm}[hb!]%[hb!]%[tb]
+\caption{{\sc SymbolicGibbs}$(\bvec{X}, \bvec{x}^{(0)}, \mathcal{F}, T)$  
 \label{alg:symbolic-gibbs}}
 \begin{algorithmic}
  \STATE {\bfseries Input:}
-{$\bvec{X} := \tuple{X_1, \ldots, X_N}$, 				\hspace*{\fill}// \emph{\small random variables} \\
- $\bvec{x}^{(0)} := \tuple{x_1^{(0)}, \ldots, x_N^{(0)}}$, 	\hspace*{\fill}// \emph{\small initial values} \\
-{\sc VarToCDF}, 								\hspace*{\fill}//\emph{\small variables to analytic CDFs map} \\
- $T$ 										\hspace*{\fill}// \emph{\small number of desired samples } }
-\STATE{\bf Output:}{ list of taken samples}
-//%\BlankLine
+{\small random variables $\bvec{X} := \tuple{X_1, \ldots, X_N}$;
+initialization 
+ $\bvec{x}^{(0)} := \tuple{x_1^{(0)}, \ldots, x_N^{(0)}}$; 
+a mapping $\mathcal{F}$ from $\bvec{X}$	to analytical conditional CDFs;
+desired number of output samples $T$.
+\STATE{\bf Output:}{ a sequence of samples.}}
 {\small
 %{\bf Begin}//  
 \FOR{$t= 1, 2, \ldots T$}
 	 \STATE $\tuple{x_1^{(t)}, \ldots, x_N^{(t)}} \leftarrow \tuple{x_1^{(t-1)}, \ldots, x_N^{(t-1)}}$    
 	\FOR{ {\bf each} $X_i \in \bvec{X}$}
-		\STATE $F(\bvec{X}) \leftarrow \textsc{VarToCDF}.\text{get}(X_i)$ //\emph{analytic CDF w.r.t.\ $X_i$:}
-		\STATE //\emph{univariate CDF w.r.t.\ $X_i$:}
-		\STATE 	$G(X_i) \leftarrow F(x_1^{(t)}, \ldots, x_{i-1}^{(t)}, X_i, x_{i+1}^{(t)}, \ldots, x_N^{(t)})$ 
-		\STATE //\emph{$G(\infty)$ is the normalization constant}
-		\STATE $x_i^{(t)} \leftarrow \textsc{InverseTransformSample}(\frac{G(X_i)}{G(\infty)})$
+		\STATE $F(\bvec{X}) \leftarrow \mathcal{F}(X_i)$ \emph{\hspace*{\fill}//analytic conditional CDF w.r.t.\ $X_i$}
+		%\STATE //\emph{univariate CDF w.r.t.\ $X_i$:}
+		\STATE 	$\textsc{Cdf}(X_i) \leftarrow F(x_1^{(t)}, \ldots, x_{i-1}^{(t)}, X_i, x_{i+1}^{(t)}, \ldots, x_N^{(t)})$ 
+        \vspace{1mm}
+		\STATE //Inverse transform sampling:%\emph{$G(\infty)$ is the normalization constant}
+		\STATE $u \sim \mathcal{U}(0, \text{Cdf}(\infty))$
+		\STATE $x_i^{(t)} \leftarrow \textsc{Cdf}^{-1}(u)$
 	\ENDFOR %end for each x_i
 \ENDFOR %end for t
 \STATE {\bf Return} {$\big\langle
@@ -1245,7 +1029,7 @@ In our current implementation, CDF inversion is performed via \emph{binary searc
 \centering
 \begin{tabular}{l l c l l r}
 \toprule
-\# &\multicolumn{1}{c}{Experiment}  &\multicolumn{1}{c}{$\tau$} &\multicolumn{1}{c}{HMC*} &\multicolumn{1}{c}{SMC*} &\multicolumn{1}{c}{Evidence}\\
+\# &\multicolumn{1}{c}{Experiment}  &\multicolumn{1}{c}{$\tau$} &\multicolumn{1}{c}{HMC} &\multicolumn{1}{c}{SMC} &\multicolumn{1}{c}{Evidence}\\
 \midrule
 1 & asymmetric collision		& -   & $\sigma^2_{P_t} = 0.2$         (in Fig.~\ref{fig:mom2}-c)         & $\sigma^2_{V_2} = 0.01, \, \sigma^2_{P_t} = 0.2$ (in Fig.~\ref{fig:mom2}-e) &$P_t = 3$ \& \\
    &			   & 	   & $\sigma^2_{P_t} = 0.00001$ (in Fig.~\ref{fig:mom2}-d)         & $\sigma^2_{V_2} = 0.01, \, \sigma^2_{P_t} = 0.1$ (in Fig.~\ref{fig:mom2}-f) & $V_2 = 0.2$\\
@@ -1343,86 +1127,107 @@ on the \emph{approximated-by-noise} model.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Experimental Results}
 \label{sect:experimental.results}
-In the following subsection, we introduce the algorithms that are to be compared 
-with out proposed algorithm using the measurements presented in Section~\ref{sect:experimental.results.measures}
-on three models presented and discussed in Section~\ref{sect:experimental.results.models}. 
 
-%Our experiments are to study
-%(a) the quality of the posterior joints, 
-%(b) the error and convergence rate of MCMC methods and %the mixing rate of MCMC methods and
-%(c) the effect of approximation of hard constraints in models with deterministic conditionals. 
+Our experiments are to study the 
+following aspects of conditioning on determinism:
+\vspace{-2mm}
+\begin{enumerate}[label=(\alph*)]
+\item The qualities of the posteriors generated by conditioning on determinism 
+(in terms of modality, continuity, shape of support, etc.).
+\item The performance of Symbolic Gibbs and other MCMC methods on such posteriors
+(in terms of convergence rate to the ground truth).
+\item the effect of approximating hard constraints with noisy observations. 
+\end{enumerate}
+\vspace{-2mm}
+The compared MCMC algorithms and the utilized measurements 
+are introduced in 
+Sections~\ref{sect:experimental.results.algorithms}
+and \ref{sect:experimental.results.measures} respectively.
+The experiments take place on three models presented and discussed in 
+Section~\ref{sect:experimental.results.models}.
+
+%In the following subsection, we introduce the algorithms that are to be compared with out proposed algorithm using the measurements presented in Section~\ref{sect:experimental.results.measures} on three models presented and discussed in Section~\ref{sect:experimental.results.models}. 
+
 
 \subsection{Algorithms} 
 \label{sect:experimental.results.algorithms}
 We compare the proposed \emph{symbolic Gibbs sampler} (SymGibbs) against
-\emph{baseline Gibbs} (BaseGibbs) \citep{pearl1987evidential}
-i.e.\ where CDF is computed per sample, 
+\emph{baseline Gibbs} (BaseGibbs) \citep{pearl1987evidential},
+%i.e.\ where CDF is computed per sample, 
 \emph{rejection sampling} (Rej) \citep{hammersley1964monte}, 
 \emph{tuned Metropolis-Hastings} (MH) \citep{roberts1997weak}, 
-\emph{Hamiltonian Monte Carlo} (HMC*) using Stan PPL \citep{stan-manual:2014}
-and \emph{Sequential Monte Carlo} (SMC*) using Anglican PPL \citep{wood2014new}.\footnote{
+\emph{Hamiltonian Monte Carlo} (HMC) using Stan PPL \citep{stan-manual:2014}
+and \emph{Sequential Monte Carlo} (SMC) using Anglican PPL \citep{wood2014new}.\footnote{
 We also tested the other algorithm implemented by Anglican, namely 
 \emph{Particle-Gibbs} (PGibbs) (a variation of Particle-MCMC\citep{andrieu2010particle}) \
 and \emph{random database} (RDB) (an MH-based algorithm introduced in \citep{wingate2011lightweight}) (see \cite{wood2014new}).
-In our experimental models, the performance of these algorithms is very similar to (SMC*).
+In our experimental models, the performance of these algorithms is very similar to (SMC).
 Therefore, for the readability of the plots, we did not depict them.
 }
 
-(SymGibbs), (BaseGibbs) and (MH) are run on \emph{$\delta$-collapsed} models while (HMC*) and (SMC*) are run on \emph{softened/noisy} models (as required by Stan and Anglican PPLs).
-
-(SymGibbs) and (BaseGibbs) do not require any tunings. 
-(MH) is automatically tuned after \citep{roberts1997weak} by testing 200 equidistant proposal variances in interval 
+SymGibbs, BaseGibbs and MH are run on \emph{$\delta$-collapsed} models while in the case of HMC and SMC, determinism is softened by observation noise. %(as required by Stan and Anglican PPLs).
+SymGibbs and BaseGibbs require no tunings. 
+MH is automatically tuned after \citep{roberts1997weak} by testing 200 equidistant proposal variances in interval 
 $(0, 0.1]$ and accepting a variance for which the acceptance rate closer to 0.24.
 
-To soften the determinism in (HMC*) and (SMC*), 
-instead of conditioning on a deterministic variable $X$, it is assumed that a newly introduced stochastic variable $X'$ is observed whose prior is a Gaussian centered at $X$ and with noise variance (parameter) $\sigma^2_{X}$.
-Anglican syntax promotes adding noise to all observed variables. Therefore, in the case of (SMC*), stochastic observations are also associated with noise parameters.
+To soften the determinism in HMC and SMC,
+observation of a deterministic variable $Z$ %with prior $\delta\big( G_j(\cdot) - Z_j \big)$ 
+is approximated by observation of a newly introduced variable 
+with a Gaussian prior centered at $Z$ and with noise variance (parameter) $\sigma^2_{Z}$. 
+%instead of conditioning on a deterministic variable $X$, it is assumed that a newly introduced stochastic variable $X'$ is observed whose prior is a Gaussian centered at $X$ and with noise variance (parameter) $\sigma^2_{X}$.
+Anglican syntax requires %promotes 
+adding noise to all observed variables. Therefore, in the case of SMC, stochastic observations are also associated with noise parameters.
 All used parameters are summarized in Table~\ref{t:parameters}. 
-(SymGibbs), (BaseGibbs), (Rej) and (MH) have single thread java implementations.
-Number of threads and other unspecified parameters of Stan and Anglican are their default settings.    
+SymGibbs, BaseGibbs, Rej and MH have single thread java implementations.
+Number of threads and other unspecified parameters of Stan and Anglican are their default settings.   
+All algorithms run on a 4 core, 3.40GHz PC.% and the model compilation time of Stan and Anglican is not taken into account. 
 
 \subsection{Measurements}
 \label{sect:experimental.results.measures}
-In each experiment, all non-observed stochastic random variables of the model  form the query vector $\bvec{Q} = [q_1, \ldots, q_\zeta]$.
-The number of samples taken by a Markov chain $\Gamma$ up to a time point $t$ is denoted by $\#_{\Gamma}^t$ and  
+In each experiment, all non-observed stochastic random variables of the model  form the query vector $\bvec{Q} = [Q_1, \ldots, Q_\zeta]$.
+The number of samples taken by a Markov chain $\Gamma$ up to a time $t$ is denoted by $n_{\Gamma}^t$ and  
 the samples are denoted by 
-$\bvec{q}_\Gamma^{(1)}, \ldots, \bvec{q}^{(\#_{\Gamma}^t)}_\Gamma$.
-The following measurements are carried out on a 4 core, 3.40GHz PC.
+$\bvec{q}_\Gamma^{(1)}, \ldots, \bvec{q}^{(n_{\Gamma}^t)}_\Gamma$
+where $\bvec{q}_\Gamma^{(i)} := 
+[q_{1, \Gamma}^{(i)} , \ldots, q_{\zeta, \Gamma}^{(i)}]$
 
-\subsubsection*{Mean absolute error vs time.}
+{\bf 1. Mean absolute error vs time.}
 The main measurement 
 %taken place for each Markov chain $\Gamma$ (associated with each sampling algorithm running on each experimental model) 
 is to compute the mean absolute error: 
 \begin{equation}
 \label{e:error.vs.time.measure}
-\mathcal{E}_{\Gamma}(t) := \frac{1}{\zeta \cdot \#_\Gamma^t} \sum_{i=1}^{}[|\bvec{a}_\Gamma(t) - \bvec{a}^*|]
+{e}_{\Gamma}(t) := \frac{1}{\zeta \cdot n_\Gamma^t} 
+\sum_{j=1}^{\zeta}
+\sum_{i=1}^{n_\Gamma^t}
+\left[\left|{q}^{(i)}_{j, \Gamma} - {q}_j^* \right|\right]
 \end{equation}
-vs wall-clock time $t$ where: 
-$$\bvec{a}_\Gamma(t) := \frac{1}{m_{t, \Gamma}} \sum_{i=1}^{m_{t,\Gamma}} \bvec{q}_\Gamma^{(i)}$$ 
-is the approximate expected query vector 
-and $\bvec{a}^*$ is the ground truth mean query vector.
+vs (wall-clock) time $t$ where 
+$\bvec{q}^* := [q_1^*, \ldots q_\zeta^*]$ 
+is the ground truth mean query vector (that will be discussed shortly).
 
-In each experiment, for each algorithm $\gamma = 15$ Markov chains are run,  and for each time point $t$,
-mean and standard error of the expected absolute errors 
-$\mathcal{E}_{1}(t)$ to $\mathcal{E}_{\gamma}(t)$
+In each experiment, for each algorithm, $\gamma = 15$ Markov chains are run,  and for each time point $t$,
+mean and standard error of the mean absolute errors 
+${e}_{1}(t)$ to ${e}_{\gamma}(t)$
 is plotted. 
 
-\subsubsection*{Time to reach error threshold ($\boldsymbol\tau$)}
-In experiments in which the size of the model is variable, 
-the space restrictions does not allow us to illustrate the absolute error vs time 
-for more than a couple of size configurations.
+{\bf 2. Time to reach error threshold ($\boldsymbol\tau$).}
+In experiments where the model size is variable,
+mean absolute error vs time is illustrated for a couple of size configurations only
+(due to paper space restrictions). 
+%the space restrictions does not allow us to illustrate 
 As an alternative, we provide a single plot that summarizes the overall behavior of each sampler algorithm w.r.t.\ the model size:
 We notice that after some error threshold, the comparative performance of the samplers remains fixed.
-Therefore, for each sampler the (wall-clock) time (s) to reach a fixed threshold $\tau$ is plotted vs the model size.
+Therefore, for each sampler the time to reach a fixed threshold $\tau$ is plotted vs the model size.
 
 If we pick the error threshold too low, many samplers will never reach it. 
 If it is too high, samplers pass it prior to be comparatively stable. 
 Per experiment, we manually choose  an error threshold that provides a fair compromise between these two requirements
 (see Table~\ref{t:parameters}).
 
-\subsubsection*{Ground truth}
+\subsubsection*{Ground truth $(\bvec{q}^*)$}
 In low dimensional models %(such as asymmetric collision),
-the ground truth (required in Equation~\ref{e:error.vs.time.measure})
+the ground truth (required in Eq.~(\ref{e:error.vs.time.measure}))
 is approximated by taking sufficiently large number of samples by rejection sampling (as a completely unbiased sampler).
 However, in the experiments where the model size is parametric,
 we cannot rely on rejection sampling since its performance on the studied model deteriorates drastically in dimension. 
@@ -1438,7 +1243,7 @@ Our solution is to conduct tests on symmetric models for which the posterior gro
 %(c) the effect of approximation of hard constraints in models with deterministic conditionals. 
 
 %The three experimental models are as follows:
-\subsubsection*{I. Asymmetric collision model} 
+\subsubsection{Asymmetric collision model.} 
 To study the quality of the posterior joints created by conditioning on deterministic constraints,
 we sample posteriors associated with our running example (\emph{collision model}) for different evidence configurations.
 In each setting, 10000 samples are generated by \emph{rejection sampling} (Rej).
@@ -1578,7 +1383,7 @@ Absolute error vs time for a model with (a) size 4 (i.e.\ 4 paralleled resistors
 
 
 
-\subsubsection*{II. Symmetric multi-object collision model} %In the second experiment,
+\subsubsection{Symmetric multi-object collision model} %In the second experiment,
 
 %We study the role of model size on the performance of MCMC methods. We cannot rely on \emph{MCMC convergence diagnostics} methods \citep{cowles1996markov} because they can produce misleading results in case MCMCs do not converge to the ground truth, a scenario that as we will see, for highly complex posteriors is not improbable. Meanwhile, we cannot rely on rejection sampling to approximate the Ground truth since its performance on the studied model deteriorates drastically in dimension. Our solution is to conduct tests on symmetric models for which the posterior ground truth can be computed manually.
 
@@ -1615,7 +1420,7 @@ Note that the dimensionality of the random variable space is twice the number of
 
 
 
-\subsubsection*{III. Building wiring model} 
+\subsubsection{Building wiring model} 
 We perform the convergence tests on a model with a more complicated observed determinism: 
 Consider an electrical circuit composed of $n$, $10\Omega\pm5\%$ paralleled resistor elements $R_i$
 (with priors $\pr(R_i) = U(9.5, \, 10.5)$).
@@ -1707,81 +1512,14 @@ piecewise parts with nonlinear bordering hyperplanes, rapid density changes and 
 }
 
 
+\end{document}
 
+======================================================
 
-----------------------------------------------------
-{\color{blue}
-//-------------------------------//
-%\begin{itemize}
-%\item Introducing  an expressive class of functions 
-%(called PPFs for \emph{Polynomial-Piecewise Polynomial Fractions}) that facilitates inference in the presence of  linear/nonlinear algebraic deterministic constraints.
-%\item Presenting an efficient inference method (called \emph{Symbolic Gibbs}) that matches well with the provided model and handles deterministic constraints.  
-%\end{itemize}
+{\color{green}As mentioned, conditioning on deterministic constraints lead to posterior masses positioned  on submanifolds and transformations that are required for dimension reduction often end in distributions which are highly piecewise and multimodal. This class of distributions is intrinsically different from the smooth, bell-shaped distributions often studied in the literature. }
 
-%for inference in graphical models (such as Bayesian networks, Markov random fields, etc.).
-%PPFs are piecewise polynomial fractions where the variable space is partitioned by polynomial inequalities.
-%The key insight is that the algebraic constraints preserved PPF form after collapsing which immediately extends the application of PPFs to models with sophisticated deterministic algebraic constraints. 
-We note that even in simple models such as \emph{collision example}, distributions can be piecewise fractional. For example:  
-\[
-\pr(V_2 \,|\, V_1) = \mathcal{U}(-2, V_1)
-=
-\begin{cases}
-  \case{\scriptstyle (V_2 > -2), \, (V_2 < V_1)}{\frac{1}{V_1 + 2}}\\
- \otherwise{0}
- \end{cases}
-\]
-
-To show the critical role of nonlinear partitioning conditions in handling the algebraic deterministic constraints, 
-let us solve equation~\ref{eq:moment-constraint} for a variable (e.g.\ $V_2$):
-$V_2 = \frac{3 - M_1 V_1}{M_2}$) and modify $\pr(V_2 \,|\, V_1)$ by substituting $V_2$ with its the solution.
-We will see that this substitution leads to $\pr(V_2 \,|\, V_1, P_\text{tot} = 3)$:
-\begin{equation}
-\label{e:fractional-constraint}
-\begin{cases}
-  \case{(\frac{3 - M_1 V_1}{M_2} > -2) , \, (\frac{3 - M_1 V_1}{M_2} < V_1)}{\frac{1}{V_1 +2}}\\
-  \otherwise{0}
-  \end{cases}
-\end{equation}
-Clearly, this transformation has created a piecewise function with non-linear partitioning conditions.
-
-Recently, piecewise polynomials have attracted attention.
-So far, piecewise polynomials with hyperrectangular, hyper-rhombus and linear partitioning constraints have been used in Bayesian networks \cite{shenoy2011inference,shenoy2012two,Sanner:12}.
-%hyperrectangular-piecewise polynomials \cite{shenoy2011inference,shenoy2012two,Sanner:12},
-%hyper-rhombus-piecewise polynomials \cite{shenoy2012two} and the most general so far, linear-piecewise polynomials \cite{Sanner:12} have been used for inference in Bayesian networks.\footnote{ By \emph{A-piecewise B} we refer to piecewise functions where the function value in each partition is in class \emph{B} and the conditions partitioning the space of variables are (conjunctions of functions) in class \emph{A}.}
-These models can only handle linear dependencies and 
-our model is more expressive than all of them. 
-%This, for the first time, enables probabilistic inference be carried on a large domain of interesting and new  applications.  
-
-....
-
-
-
-.............
-
-{\color{green}As mentioned, conditioning on deterministic constraints lead to posterior masses positioned  on submanifolds and transformations that are required for dimension reduction
-often end in distributions which are highly piecewise and multimodal.
-This class of distributions is intrinsically different from the smooth, bell-shaped distributions often studied in the literature. }
-
-............
-
-We tested the algorithms supported by Anglican:
- sequential
-Monte Carlo (SMC) \cite{wood2014new},
-Particle-Gibbs (PGibbs) (a variation of Particle-MCMC\cite{andrieu2010particle}) 
-and a variation of MH introduced in \cite{wingate2011lightweight} and named \emph{random database} (RDB) in \cite{wood2014new}.
-Due to existence of multiple noisy observations, in terms of size and accuracy of the effective samples, the performance of all three algorithms were low. The best performance was due to RDB which is plotted. 
+%We tested the algorithms supported by Anglican:  sequential Monte Carlo (SMC) \cite{wood2014new}, Particle-Gibbs (PGibbs) (a variation of Particle-MCMC\cite{andrieu2010particle})  and a variation of MH introduced in \cite{wingate2011lightweight} and named \emph{random database} (RDB) in \cite{wood2014new}. Due to existence of multiple noisy observations, in terms of size and accuracy of the effective samples, the performance of all three algorithms were low. The best performance was due to RDB which is plotted. 
  
-
-}%end blue
-{
-\color{red}
-[Cobb2005] B. R. Cobb and P. P. Shenoy. Nonlinear deterministic relationships in Bayesian networks.
-In L. Godo, editor, Symbolic and Quantitative Approaches to Reasoning with
-Uncertainty: 8th European Conference, ECSQARU 2005, Lecture Notes in Artificial
-Intelligence 3571, pages 27–38. Springer, Berlin, 2005.
-
-DETERMINISTIC CONDITIONALS?
-}
 
 \subsection{Monte Carlo methods.}
 %An alternative to exact inference is to approximate the joint distribution by a set of samples drawn from it using Monte Carlo methods. By the law of large numbers, this approximation is asymptotically unbiased. Using samples, the costly marginalization operation is avoided since the conditional probability $\pr(\bvec{q} \,| \, \bvec{e})$ is simply approximated by the number of samples satisfying $\bvec{q} \cap \bvec{e}$ divided by the number of samples satisfying $\bvec{e}$.
@@ -1894,12 +1632,4 @@ $\Phi$ is modified as follows: \vspace{-1mm}
 \end{algorithm}
 %\decmargin{0.5em}
 \footnotetext{Note that by the definition of Dirac $\delta$, this simply means that  unobserved deterministic variables are marginalized out.}
-
-\end{document}
-
-TODOs:
-1. Redo experiment 1. and do not forget Rejection sampling.
-2. Why Anglican and Stan generate same results all the time (have no error bars)?
-3. Where is the HMC* is experiment 2 size=20 ?
-4. Why rejection sampling is not the best for size 2 in fig 5.c?
 
