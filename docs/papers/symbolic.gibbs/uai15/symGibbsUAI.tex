@@ -1089,6 +1089,19 @@ using rejection sampling on the $\delta$-collapsed model.
 \vspace{-1mm}
 \begin{center}
 \begin{tabular}{cccccc}
+\hspace{-3mm}
+{\footnotesize SymGibbs} 
+&
+{\footnotesize MH}
+&
+{\footnotesize HMC (high noise)}
+&
+{\footnotesize HMC (low noise)}
+&
+{\footnotesize SMC (high noise)}
+&
+{\footnotesize SMC (low noise)}
+\\
    \hspace{-5mm} \includegraphics[width=\nn\textwidth]{Figs2/col_c_gibbs10000.png} 
 & \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs2/col-c-mh-10000_08.png} 
 & \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs2/col_c_stan10000_02.png}
@@ -1097,8 +1110,8 @@ using rejection sampling on the $\delta$-collapsed model.
 & \hspace{-3mm} \includegraphics[width=\nn\textwidth]{Figs2/col_c_ang_10000_01_001}
 \vspace{-1.5mm}
 \\
-   \hspace{-5mm} \footnotesize(a) 
-& \hspace{-4mm} \footnotesize(b) 
+   \hspace{-4mm} \footnotesize(a) 
+& \hspace{-2mm} \footnotesize(b) 
 & \hspace{-3mm} \footnotesize(c) 
 &\hspace{-1mm} \footnotesize(d) 
 &\hspace{-1mm} \footnotesize(e) 
@@ -1193,46 +1206,53 @@ where $\bvec{q}_\Gamma^{(i)} :=
 
 {\bf 1. Mean absolute error vs time.}
 The main measurement 
-%taken place for each Markov chain $\Gamma$ (associated with each sampling algorithm running on each experimental model) 
-is to compute the mean absolute error: 
-\begin{equation}
+is to compute the \emph{mean absolute error} (MAE) 
+\vspace{-1mm}
+\begin{equation}\footnotesize
 \label{e:error.vs.time.measure}
-{e}_{\Gamma}(t) := \frac{1}{\zeta \cdot n_\Gamma^t} 
+\textsc{MAE}_{\Gamma}(t) := \frac{1}{\zeta \cdot n_\Gamma^t} 
 \sum_{j=1}^{\zeta}
 \sum_{i=1}^{n_\Gamma^t}
-\left[\left|{q}^{(i)}_{j, \Gamma} - {q}_j^* \right|\right]
+\left|{q}^{(i)}_{j, \Gamma} - {q}_j^* \right|
 \end{equation}
+\vspace{0mm}
 vs (wall-clock) time $t$ where 
 $\bvec{q}^* := [q_1^*, \ldots q_\zeta^*]$ 
 is the ground truth mean query vector (that will be discussed shortly).
 
 In each experiment, for each algorithm, $\gamma = 15$ Markov chains are run,  and for each time point $t$,
-mean and standard error of the mean absolute errors 
-${e}_{1}(t)$ to ${e}_{\gamma}(t)$
-is plotted. 
+average and standard error of %mean absolute errors 
+$\textsc{MAE}_{1}(t)$ to $\textsc{MAE}_{\gamma}(t)$
+are plotted. 
 
 {\bf 2. Time to reach error threshold ($\boldsymbol\tau$).}
 In experiments where the model size is variable,
-mean absolute error vs time is illustrated for a couple of size configurations only
+MAE vs time is illustrated for a couple of size configurations only
 (due to paper space restrictions). 
 %the space restrictions does not allow us to illustrate 
 As an alternative, we provide a single plot that summarizes the overall behavior of each sampler algorithm w.r.t.\ the model size:
 We notice that after some error threshold, the comparative performance of the samplers remains fixed.
-Therefore, for each sampler the time to reach a fixed threshold $\tau$ is plotted vs the model size.
+Therefore, for each sampler, the time to reach a fixed threshold $\tau$ is plotted vs the model size.
 
 If we pick the error threshold too low, many samplers will never reach it. 
 If it is too high, samplers pass it prior to be comparatively stable. 
 Per experiment, we manually choose  an error threshold that provides a fair compromise between these two requirements
 (see Table~\ref{t:parameters}).
 
-\subsubsection*{Ground truth $(\bvec{q}^*)$}
-In low dimensional models %(such as asymmetric collision),
-the ground truth (required in Eq.~(\ref{e:error.vs.time.measure}))
-is approximated by taking sufficiently large number of samples by rejection sampling (as a completely unbiased sampler).
-However, in the experiments where the model size is parametric,
-we cannot rely on rejection sampling since its performance on the studied model deteriorates drastically in dimension. 
-We cannot rely on \emph{MCMC convergence diagnostics} methods \citep{cowles1996markov} because they can produce misleading results in case Markov chains do not converge to the ground truth; a scenario that as we will see, for highly complex posteriors is not improbable.
-Our solution is to conduct tests on symmetric models for which the posterior ground truth can be computed manually.
+\subsubsection*{Ground truth (of mean query vector) $(\bvec{q}^*)$}
+In the first experimental model (Section~\ref{sect:model1})
+the ground truth is approximated by taking 200,000 samples via \emph{rejection sampling} (Rej)
+(as a completely unbiased sampler).
+However, this approximation cannot be used in high-dimensional models
+since the the performance of Rej drastically deteriorates in dimensionality.
+%In low dimensional models 
+%the ground truth (required in Eq.~(\ref{e:error.vs.time.measure}))
+%is approximated by taking sufficiently large number of samples by rejection sampling (as a completely unbiased sampler).
+%However, in the experiments where the model size is parametric, we cannot rely on rejection sampling since its performance on the studied model deteriorates drastically in dimension. 
+%We cannot rely on \emph{MCMC convergence diagnostics} methods \citep{cowles1996markov} because they can produce misleading results in case Markov chains do not converge to the ground truth; a scenario that as we will see, for highly complex posteriors is not improbable.
+Our next two experimental models are intentionally chosen to be symmetric
+which enables us to compute the ground truth manually.% rather than relying on Rej.
+%Our solution is to conduct tests on symmetric models for which the posterior ground truth can be computed manually.
 
 
 \subsection{Experimental models}
@@ -1243,7 +1263,7 @@ Our solution is to conduct tests on symmetric models for which the posterior gro
 %(c) the effect of approximation of hard constraints in models with deterministic conditionals. 
 
 %The three experimental models are as follows:
-\subsubsection{Asymmetric collision model.} 
+\subsubsection{(Asymmetric) collision model.}\label{sect:model1} 
 To study the quality of the posterior joints created by conditioning on deterministic constraints,
 we sample posteriors associated with our running example (\emph{collision model}) for different evidence configurations.
 In each setting, 10000 samples are generated by \emph{rejection sampling} (Rej).
@@ -1288,8 +1308,7 @@ due to its low \emph{effective sample size} (repeated samples).
 
 
 Subsequently, we measure \emph{absolute error vs time} 
-(illustrated in Figure~\ref{fig:asymmetric})
-where the ground truth is approximated by 200,000 samples taken by (Rej).
+(illustrated in Figure~\ref{fig:asymmetric}).%where the ground truth is approximated by 200,000 samples taken by (Rej).
 
 In this simple experiment, the fastest convergence is due to (Rej) and (SymGibbs) which show almost indistinguishable performances.
 However, as it will be shown shortly, the performance of rejection sampling exponentially decreases in variable dimensionality.
