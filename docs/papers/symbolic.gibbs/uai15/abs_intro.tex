@@ -1,34 +1,23 @@
 \begin{abstract}
-
 Probabilistic inference in many real-world problems often requires
-graphical models with (1) nonlinear deterministic constraints between
-random variables (e.g., laws of physics) and (2) piecewise
+graphical models with (1)~nonlinear deterministic constraints between
+random variables (e.g., laws of physics) and (2)~piecewise
 distributions (e.g., priors enforcing bounded parameter values).
-Unfortunately, exact closed-form inference in such expressive
-graphical models is impossible in the general case and existing
-approximation techniques provide few guarantees on both approximation
-quality and efficiency.  While the Markov Chain Monte Carlo method of
-Gibbs sampling provides an attractive asymptotically unbiased
-approximation approach that does not require proposal design or
+While Gibbs sampling provides an attractive asymptotically unbiased
+MCMC approximation approach that does not require proposal design or
 tuning, it cannot be directly applied to models with determinism in
-the case of (1) and is difficult to automate in the case of (2) owing
-to the general lack of symbolic integration algorithms for general
-piecewise functions.  To address both of these limitations of Gibbs
-sampling, we introduce a restricted class of piecewise algebraic
-graphical models with nonlinear determinism, where we show that
-deterministic constraints can always be eliminated by collapsing (even
-when the constraints involve non-invertible functions) thus permitting
-the application of Gibbs sampling; furthermore, the collapsed model
-always permits at least one symbolic integration, which is sufficient
-to automatically derive the conditionals for Gibbs sampling.  We
-evaluate this algorithm on models motivated by physics and engineering
-and show that it is an order of magnitude faster than the baseline
-Gibbs sampler and a significant improvement over other Monte Carlo
-methods.
+the case of (1) and is difficult to automate in the case of (2).  To
+address both limitations, we introduce a rich class of piecewise
+algebraic graphical models with nonlinear determinism, where we show
+that deterministic constraints can always be eliminated thus permitting the
+application of Gibbs sampling; we further show the collapsed model always
+permits one symbolic integral --- sufficient to
+automatically derive conditionals for Gibbs sampling.  We evaluate
+this fully automated Symbolic Gibbs sampler on models motivated by physics and
+engineering and show it converges an order of magnitude faster than
+existing Monte Carlo samplers.
 
-We apply 
-
-
+\begin{comment}
 furthermore
 automatic derivation of conditional distributions required for 
 Gibbs samplers 
@@ -67,10 +56,38 @@ deterministic relationships in a rich family of distributions not studied in the
 %We fill this gap by contributing a novel framework which, for the first time, carries out inference conditioned on a large range of (non)linear deterministic constraints in a highly expressive class of distributions that is not studied in the literature so far.
 % Our other contribution is to provide an effective MCMC inference technique  based on the insight that in our model, most costly operations required for Gibbs sampling can be accomplished analytically and offline, prior to sampling (\emph{symbolic Gibbs}).
 We evaluate this algorithm on models in physics and engineering and show that it is an order of magnitude faster than the baseline Gibbs sampler and a significant improvement over other Monte Carlo methods.  
+\end{comment}
 \end{abstract}
 
 \section{INTRODUCTION}
 \label{sect:intro}
+
+Probabilistic inference in many real-world problems often requires
+graphical models with (1) nonlinear deterministic constraints between
+random variables (e.g., laws of physics) and (2) piecewise
+distributions (e.g., priors enforcing bounded parameter values).
+Unfortunately, exact closed-form inference in such expressive
+graphical models is impossible in the general case and existing
+approximation techniques provide few guarantees on both approximation
+quality and efficiency.  While the Markov Chain Monte Carlo method of
+Gibbs sampling provides an attractive asymptotically unbiased
+approximation approach that does not require proposal design or
+tuning, it cannot be directly applied to models with determinism in
+the case of (1) and is difficult to automate in the case of (2) owing
+to the general lack of symbolic integration algorithms for general
+piecewise functions.  To address both of these limitations of Gibbs
+sampling, we introduce a restricted class of piecewise algebraic
+graphical models with nonlinear determinism, where we show that
+deterministic constraints can always be eliminated by collapsing (even
+when the constraints involve non-invertible functions) thus permitting
+the application of Gibbs sampling; furthermore, the collapsed model
+always permits at least one symbolic integration, which is sufficient
+to automatically derive the conditionals for Gibbs sampling.  We
+evaluate this novel Symbolic Gibbs algorithm on models motivated by physics and engineering
+and show that it is an order of magnitude faster than alternative
+Monte Carlo samplers.
+
+
 Graphical models (GMs) are the lingua franca for probabilistic reasoning.
 They denote the conditional dependence structure between random variables by directed or undirected graphs \citep{koller2009probabilistic}. 
 A (random) variable is deterministic if its conditional distribution has zero variance. 
