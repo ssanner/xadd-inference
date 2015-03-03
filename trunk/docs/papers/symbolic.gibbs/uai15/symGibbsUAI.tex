@@ -96,7 +96,7 @@ $\vec{x} = \{x_1, x_2, \ldots\}$.\footnote{
 In case there is no ambiguity, we do not distinguish between random variables and their realizations; e.g., we abbreviate $\pr(X_i = x_i)$ by $\pr(x_i)$.}
 For the sake of notational consistency, 
 throughout we assume $\vec{X}$ only contain continuous variables. 
-(The generalization of the presented algorithms to hybrid discrete/continuous models is straightforward.)
+The generalization of the presented algorithms to hybrid discrete/continuous models is straightforward.
 %Note that inference in presence of discrete deterministic constraints is already addressed in the literature (see e.g.\ \citep{li2013dynamic} for related work).
 %Therefore, generalization of the presented framework to hybrid discrete/continuous models is straightforward.   
 
@@ -183,11 +183,11 @@ is computed by (\ref{e:cdf}) and samples are taken via inverse transform samplin
 \propto
 \int_{-\infty}^{X_i} \!\! \pr(X_i = t, \,\bvec{X}_{-i} = \bvec{x}_{-i})  \dd  t
 \end{equation} 
-Gibbs sampling does not require any 'tuning'. 
-However, computing $N$ integrals per sample is costly and often approximated 
-(e.g.\ %by \emph{adaptive rejection sampling} 
-as in \citep{gilks1992adaptive})
-since it is often not possible in closed form.  
+Gibbs sampling does not require any tuning
+and since it directly samples from the distribution (rather than indirectly and through proposals) it has high effective sample size. 
+However, in general closed-form computation of the CDF integrals is not possible and 
+approximations (such as \cite{gilks1992adaptive}) are costly.
+Considering that $N$ univariate integrals should be computed per sample, approximate Gibbs samplers are typically slow.
  
 %However, none of these classes can handle deterministic constraints beyond the level of linear constraints.
 
@@ -213,19 +213,14 @@ For instance, in the \emph{collision model}, $P_1$ is a deterministic variable a
 with deterministic potential $\delta(M_1V_1 - P_1)$ 
 and therefore, the logical value of $P_1$ is $M_1 V_1$.
 
-The sets of all deterministic potentials is denoted by $\boldsymbol{\Psi}^D$.
-The remaining potentials $\boldsymbol{\Psi}^S := \boldsymbol{\Psi} \backslash \boldsymbol{\Psi}^D$ are called stochastic and do not involve Dirac deltas. Therefore:
-%In model specification that we are concerned with,
-%the network random variables are $\bvec{X} := \bvec{Y} \cup \bvec{Z}$
-%where disjoint sets $\bvec{Y}$ and $\bvec{Z}$ are the sets of \emph{stochastic} and \emph{deterministic}  (random) variables respectively. 
-%The total joint 
- %(\ref{e:factor-graph}) is factorized as:
+The set of all deterministic potentials is denoted by $\boldsymbol{\Psi}^D$.
+The remaining potentials $\boldsymbol{\Psi}^S := \boldsymbol{\Psi} \backslash \boldsymbol{\Psi}^D$ are called stochastic and do not involve Dirac deltas. 
+Therefore:
 \begin{equation}\footnotesize
 \label{e:infer.sd}
 \pr(\bvec{Y}, \bvec{Z}) \propto 
 \prod_{\Psi \in \boldsymbol{\Psi}^S} \Psi_i (\cdot)
-\prod_j \delta \big(
-G_j(\cdot) - Z_j
+\prod_j \delta \big(G_j(\cdot) - Z_j
 \big)
 \end{equation}
 
@@ -290,19 +285,11 @@ $\boldsymbol{\Psi^S}$ are stochastic and $ \boldsymbol{\Psi^D} := \left\{\Psi_{Z
 \label{alg:solve}}
 \begin{algorithmic}
 \small
-\STATE {\bf Input:} $G$ is a polynomial fraction and $X$ is a variable involved in $G$ (i.e.\ $Y \in \textsc{Scope}(G)$).
-\STATE {\bf Output:} Solutions of $G$ w.r.t.\ $X$.
-\STATE {\bf Let} $\mathcal{A}$ be the set of fractional polynomial functions that do not involve $X$. 
-{%\small
-\STATE {\bf if} $\exists A, B \in \mathcal{A}. \; (G=0) \Rightarrow (A X + B = 0)$ 
-\\\hspace{5mm}
-{\bf then return} $\{-B/A\}$
-\STATE {\bf elseIf } $\exists A_1, B_1, A_2, B_2 \neq B_1 \in \mathcal{A}.\; (G=0) \Rightarrow$
-\\\hspace{5mm} 
-$ [(A_1 X + B_1)(A_2 X + B_2)]=0$
-\\\hspace{5mm} 
-{\bf then return} $\{-B_1/A_1, -B_2/A_2\}$ {\bf elseIf} ...
-\STATE {\bf else return} $\emptyset$ \hspace*{\fill} //could not be factorized. }
+\STATE {\bf Input:} $G$ is a polynomial fraction and $X$ is a variable involved in $G$.
+\STATE {\bf Output:} Set of all solutions (i.e. roots) of $G$ w.r.t.\ $X$ (i.e.\ by treating other variables as constants). 
+The roots must be simple and in the form of polynomial fractions. 
+
+In case factorization is impossible or some roots are \emph{multiple} (i.e.\ not distinct), $\emptyset$ is returned. 
 \end{algorithmic}
 \end{algorithm}
 %\decmargin{0.5em}kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk
@@ -313,10 +300,10 @@ $ [(A_1 X + B_1)(A_2 X + B_2)]=0$
 \label{sect:collapse}
 In this section we present an algorithm 
 (called $\delta$-collapsing, throughout) 
-to transform Stochastic-Deterministic GMs to pure stochastic GMs with lower dimensions
+to transform Stochastic-Deterministic GMs to pure stochastic GMs with fewer variables 
 (see Algorithm~\ref{alg:collapsing-mechanical}).
-Using MCMC methods, the variables of the latter GM can be sampled.
-Provided with these samples, (the values of) the collapsed variables are reconstructed. 
+Using MCMC methods, the variables of the latter GM can then be sampled.
+Provided with these samples, (the values of) the former GM can be reconstructed. 
 %as presented in Algorithm~\ref{alg:collapsing-mechanical} is a mechanism to handle observed determinism via reducing the dimensionality. It constructs a posterior joint distribution over a subset of stochastic random variables such that given their realization, any other variable (either stochastic or deterministic) can be reconstructed.
 To clarify the algorithm, we run it on the collision model (CM): 
 
@@ -358,8 +345,17 @@ $Y$ (assuming that it is solvable
 w.r.t.\ at least one variable with simple roots in the form of polynomial fractions).
 Subsequently. by applying Theorem~\ref{theorem1}, $Y$ is excluded from the joint. %space of variables for which joint density is computed.
 
-\emph{In CM,  
-{\footnotesize$\Phi_0 = \pr(M_1, M_2, V_1, V_2)$} (see Eq.~\ref{e:col-prior}).
+\emph{In CM:
+\begin{equation*} \footnotesize  
+%\label{e:col-prior}
+\Phi_0 \!=\! \pr(M_1, M_2, V_1, V_2)  
+\!=\!
+\begin{cases}
+\frac{1}{16 V_1 + 32} &{\text{if }\scriptstyle 0.1<M_1<2.1, \, 0.1<M_2<2.1,}\\
+							 &{\;\;\, \scriptstyle -2<V_1<2, \, -2<V_2 < V_1}\\
+ \otherwise{0}
+ \end{cases}
+\end{equation*}  
 We solve  
 {\footnotesize$(G_7 - 3)$}, i.e.\ 
 {\footnotesize$(M_1 V_1 + M_2 V_2 - 3)$}, w.r.t.\ 
@@ -394,7 +390,12 @@ Finally, since
 }
 which is proportional to $\pr(M_2, V_1, V_2 \,|\, P_\text{tot} = 3)$.
 } %end emph
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+To justify the correctness of correctness of Algorithm~\ref{alg:collapsing-mechanical},
+we prove that $\delta$'s can always be eliminated in the manner described above.
 \begin{theorem} 
 \label{theorem1}
 Let {\footnotesize $\pr(Z\!=\!z | x_1, \ldots, x_n) = \delta[f(x_1, \ldots, x_n)-z]$}, 
@@ -448,15 +449,16 @@ which implies (\ref{e:theorem1}).
 \end{proof}
 %
 
-\subsubsection{Reconstructing eliminated variables}
-In Algorithm~\ref{alg:collapsing-mechanical}, the end result $\Phi_{\#\bar{\bvec{Y}}}$ is proportional to 
-$\pr(\bvec{Y}\backslash \bar{\bvec{Y}} \,|\, \bvec{E} = \bvec{e})$ in which 
-$\bar{\bvec{Y}}$ is the set of stochastic variables eliminated in
-step~3 and $\#\bar{\bvec{Y}}$ is its cardinality.
+The end result of Algorithm~\ref{alg:collapsing-mechanical}, $\Phi_t$, is proportional to
+the posterior joint over a subset random variables.
+Inference can be carried out by sampling from this density.
 
-Given $\Phi_{\#\bar{\bvec{Y}}}$, inference is carried out via sampling.
-In case the eliminated variables $\bar{\bf Y}$ are queried they should be reconstructed in the reverse order they are eliminated:
-If in an execution of Step 3, 
+\subsubsection{Reconstructing eliminated variables}
+
+Even though we have eliminated variables, 
+we can still generate samples for them given the sample values of the non-eliminated variables. 
+To do this, the  eliminated variables are reconstructed in the reverse order they are eliminated:
+If in an execution of dimension reduction (Step 3), 
 %{\footnotesize$G_j(\cdot) - c$} is invertible w.r.t. a variable $Y$ (i.e. if 
 {\footnotesize$\textsc{Solve}(G_j(\cdot)-c ;\, Y)$} is a singleton
 {\footnotesize$\{\Upsilon_1\}$},
@@ -464,8 +466,8 @@ the reconstructed sample value of $Y$ is simply
 {\footnotesize$\Upsilon_1(\bvec{s})$} 
 in which $\bvec{s}$ denotes the value of the variables that are already sampled or reconstructed. 
 
-\emph{E.g.\ in CM, let 
-{\footnotesize$\bvec{s} = [ M_2 = m_2^{(0)}, \, V_1 = v_1^{(0)}, \, V_2 = v_2^{(0)} ]$} 
+\emph{For instance, in CM, let 
+{\footnotesize$$\bvec{s} = [ M_2 = m_2^{(0)}, \, V_1 = v_1^{(0)}, \, V_2 = v_2^{(0)} ]$$} 
 be a sample vector taken from $\Phi_1$. 
 By (\ref{e:example.solve}),  
 the sample value constructed for $M_1$ is 
@@ -473,9 +475,9 @@ the sample value constructed for $M_1$ is
 $$m_1^{(0)} := \frac{3 - m_2^{(0)}v_2^{(0)}}{v_1^{(0)}}$$ 
 }
 }%end emph
-In general, if in $t$-th execution of Step~4, 
-{\footnotesize$\textsc{Solve}(G_j(\cdot)-c ;\, Y) =  \{\Upsilon_1, \ldots, \Upsilon_r \}$},
-we define
+In the general case, if in $t$-th execution of dimension reduction 
+{\footnotesize$$\textsc{Solve}(G_j(\cdot)-c ;\, Y) =  \{\Upsilon_1, \ldots, \Upsilon_r \}$$}
+then we define
 %the value of $Y$ can only be reconstructed if the trace of modifications of $\Phi$ is recorded.
 %Let $\Phi_t$ and $\Phi_{t-1}$ be the values of $\Phi$ is $t$-th and $(t-1)$-th execution of Step 4 respectively. Also define:
 $$
@@ -520,85 +522,25 @@ $$}
 %in the form of fractions of polynomials.
 
 
-\begin{comment}
-\subsection{Subtleties and limitations of conditioning on determinism}
-To illustrate a problem that may arise when conditioning on deterministic random variables,
-firstly consider a scenario where the observation is actually softened by noise.
-For instance, conditioned on $X_1 + X_2 = c$:
 
-(a) The posterior joint of $X_1$ and $X_2$ can be approximated by 
-$\pr (X_1, X_2 \,|\, Z = c)$
-where $\pr(Z \,|\, X_1, X_2) := \mathcal{N}(X_1 + X_2, \sigma^2_\text{noise})$.
-
-Nonetheless, the observation ($X_1 + X_2 = c$) can be respecified in the form: $\frac{X_1 - c}{X_2} = -1$ (for $X_2 \neq 0$)
-and therefore: 
-
-(b) The posterior can be approximated by 
-{$\pr (X_1, X_2 \,|\, Z' = -1)$} where 
-{$\pr(Z' \,|\, X_1, X_2) := \mathcal{N}(\frac{X_1 - c}{X_2}, \sigma'^2_\text{noise})$}.
-
-It can be shown that regardless of the choice of noise variance parameters, 
-%$\sigma^2_\text{noise}$ and $\sigma'^2_\text{noise}$,
-the approximations (a) and (b) lead to different posteriors.
-This issue persists in the limit where the variances tend to 0.
-
-By definition, Dirac delta is the limit of a normal distribution.
-Therefore, $\delta$-collapsing algorithm is also affected by the specification form of the determinism.
-(This can simply be verified by plugging  (a) $x_1 + x_2 - c$ and (b) $\frac{x_1 - c}{x_2} + 1$ in $f(\cdot)$ in Theorem~\ref{theorem1}.)
-
-While, in the case of \emph{noise softening}, the dependency of the posterior to the area on which noise is defined seems obvious,
-the dependency of $\delta$ distributions to the specification of determinism can easily be forgotten.
-To avoid the problem, determinism should always be regarded as a limit. 
-That is, it should be remembered that $\delta$ indicates a distribution in the original space (even though its variance tends to zero) and therefore, affected by its neighboring regions.
-Different specifications of the determinism correspond (limits of) different neighborhoods and therefore produce different results.\footnote{
-This issue can be clearly linked to the Borel-Kolmogorov paradox (see e.g. \cite{kolmogorov1950foundations})
-that implies that the probability of a lower dimensional set is not unambiguously defined.
-}      
-%Subsequently, to carry out $\delta$-collapsing, one should specify a deterministic relationship in the form of the mean of a normal noise factor that one would use if one had to approximate the determinism by noise (which is model-dependent). 
-
-In this paper, we restrict the discussion to the case where 
-the \emph{canonical} specification of the conditional can be implied by the nature of observation.
-%This is that case where conditional determinism corresponds the observation of actual quantities.
-For instance, in the Collision example, 
-the actual quantity on which observation is taken place is the total momentum $P_\text{tot} = M_1 V_1 + M_2 V_2$.
-Therefore, it is reasonable to use a symmetric noise model with mean $M_1 V_1 + M_2 V_2 - c$
-when applying noise softening and for the same reason it is reasonable to specify 
-the determinism as $\delta(M_1 V_1 + M_2 V_2 - c)$ when relying on $\delta$-collapsing.
- 
-In cases where the conditional determinism is due to an abstract relation   
-not associated with a canonical specification form, 
-\emph{Hausdorff measure} can be used \citep{morgan2008geometric} which leads to probabilities that are invariant w.r.t.\ their specifications 
-\citep{kleibergen2004invariant}. The latter case is beyond the scope of this paper.
-%neither softening by noise noise nor $\delta$-collapsing are recommended to be used directly. 
-  
-
-%{\color{red} The last subtle point in conditioning on determinism is that apparently equivalent deterministic observations may lead to different posteriors. For example evidence $(E_1 = 0)$ where $\pr(E_1)= \delta(E_1 - M V + 3)$ and evidence $(E_2 = 0)$ where $\pr(E_2) = \delta(E_2 - M + \frac{3}{V})$ lead to different posteriors. Although both may seem to formalize the same constraint $(MV = 3)$. It should be pointed out that the same issue arises when hard constraints are approximated by adding noise: $\mathcal{N}(E - MV + 3, \sigma) \neq \mathcal{N}(E -M + \frac{3}{V}, \sigma)$). The correct approximation form depends on the nature of observation. Dirac deltas can be understood as the limit of normal distributions with $\sigma \rightarrow 0$. Therefore, they inherit the same issue: The canonical way to express a deterministic relationship is a form to which one would add noise if one had to approximate the determinism which is model-dependent.}
-\end{comment}
 
 \section{Polynomial Piecewise Fractionals 
 %Functions 
 (PPFs)}
 \label{sect:ppfs}
-%In this section, we put things together and provide our complete model.
-%The requirements for the class of potential functions (factor forms) are as follows:
-%\begin{itemize}
-%\item Factor forms should be as expressive as possible to be able simulate different density forms.  
-%\item Factor forms should be closed under multiplication and polynomial fractional substitutions such as the r.h.s.\ of equation~(\ref{eq:evidence-form}). Otherwise, \emph{joint factor formation} and multiple substitutions in the \emph{collapsing determinism} phase of Algorithm~\ref{alg:posterior-joint} can be problematic.
-%\item A single analytical integration 
-%(i.e.\ integrating w.r.t.\ a single variable while keeping the rest of variables symbolic) should produce a closed-form structure (the requirement of Symbolic Gibbs).
-%\end{itemize}
-%Our proposition is the use of  the class of \emph{Polynomial-Piecewise Polynomial Fractions} (PPFs); That is, functions in the form:   
-A major drawback of the general use of 
-Algorithm~\ref{alg:collapsing-mechanical}
-is that it relies on operations that lead to highly complicated posteriors. 
+Now that we have collapsed out determinism, we can apply Gibbs sampling.
+However, automated derivation of Gibbs sampling requires a univariate symbolic integral
+(required in (\ref{e:cdf})) and in general case this is not possible.
 In this section, we address this issue by introducing a rich family of distributions (namely PPFs for \emph{polynomial piecewise fractional} functions)
-that remain closed under all operations required for $\delta$-collapsing. 
+that remain closed under many algebraic operations including all operations required for $\delta$-collapsing! 
 We also show that PPF*, an expressive subset of the PPF family, have analytical univariate integrals.
 This leads to an efficient variation of Gibbs sampling that will be introduced in Section~\ref{sect:symbolic.gibbs}.
 
 %We study piecewise fractional functions with polynomial partitioning conditions (PPFs) -- a highly expressive class of functions neglected in the literature so far.
 %That is, functions in form:
-{\bf PPF.\ } A PPF is a function in form:
+{\bf PPF.\ } A PPF is a function in form
+$f = \sum_{i=1}^m \indicator[\phi_i]\cdot f_i $ where $\indicator[\cdot]$ denotes the indicator function.
+Using expanded notation, 
 \begin{equation}\footnotesize
 \label{e:ppf}
 f =
@@ -682,7 +624,7 @@ but can be restated as (multiple) case-statements with polynomial conditions. E.
  \end{cases} 
 }
 \end{equation*}
-PPFs are also closed under \emph{absolute value}, e.g.:
+PPFs are also closed under \emph{absolute value} and other similar piecewise functions, e.g.:
 \begin{equation*}\footnotesize
 \left|
 \left(
@@ -716,16 +658,17 @@ In general, PPFs are not closed under integration; however, a large subset of th
  have closed-form single variable integrals.
 %As it will be seen in the next section, this leads to an extremely efficient Gibbs sampling mechanism.   
 %We will show that this is also holds for a large group of PPFs.
-For brevity, we only focus on the following fairly expressive  subset of PPFs:
+We focus on the following fairly expressive  subset of PPFs:
 
 \textbf{PPF*. }
-A PPF* is a PPF in which:\\ %s as in Definition~(\ref{e:ppf}) where 
-%\begin{enumerate}[leftmargin=2.5ex]
-1. Each atomic constraint $\varphi_{i,j}$
-can be written as a product of some terms $t_{i,j,k}$ where the maximum degree of each variable $X \in \bvec{X}$ in each $t_{i,j,k}$ is less or equal to 2.\\ % (treating other variables as constants).%($\text{rel-degree}(t_{i,j,k}) \leq 4$)
-
-2. The sub-function denominators, $D_{i}$, can be factorized into (not necessarily distinct) polynomials ${D}_{i,l}$ where the maximum degree of each variable in each $D_{i,l}$ is less or equal to 2.
-%\end{enumerate}
+A PPF* is a PPF in which: %s as in Definition~(\ref{e:ppf}) where 
+\vspace{-2mm}
+\begin{enumerate}[leftmargin=2.6ex]
+\item Each atomic constraint $\varphi_{i,j}$
+can be written as a product of some terms $t_{i,j,k}$ where the maximum degree of each variable $X \in \bvec{X}$ in each $t_{i,j,k}$ is less or equal to 2. % (treating other variables as constants).%($\text{rel-degree}(t_{i,j,k}) \leq 4$)
+\item The sub-function denominators, $D_{i}$, can be factorized into (not necessarily distinct) polynomials ${D}_{i,l}$ where the maximum degree of each variable in each $D_{i,l}$ is less or equal to 2.
+\end{enumerate}
+\vspace{-2mm}
 % ($\text{rel-degree}(D_{i, k}) \leq 2$).%, where function $\text{rel-degree}(\cdot)$, the relative degree, is defined as follows:
  %\begin{enumerate} 
 %\item Each constrain $\phi_i := \varphi_{i,1} \wedge \varphi_{i,2} \wedge \ldots$ is a conjunction of polynomial (in)equalities $\varphi_{i,j}$ such that $\text{rel-degree}(\varphi_{i,j}) \leq 4$.
@@ -735,7 +678,6 @@ can be written as a product of some terms $t_{i,j,k}$ where the maximum degree o
 %\end{enumerate}
 %\textbf{Relative degree of polynomials.} $x\text{-deg}(g)$, the degree of a polynomial $g$ w.r.t.\ a variable $x$, is the degree of $g$ if all scope variables except $x$ are considered constant. For example $x\text{-deg}(x y^2 + x^2 y z^3) = 2$. The \emph{relative degree} of $g$, $\text{rel-degree}(g)$, is:
 %\[\text{rel-degree}(g) = \max_{x \in \vec{x}}(x\text{-deg}(g))\]
-
 Here is an example of a PPF* case-statement:
 \begin{equation}\vspace{-0.5mm}
 {\footnotesize
@@ -748,9 +690,30 @@ Here is an example of a PPF* case-statement:
 %The class of PPF*'s is still quite expressive. Meanwhile PPF*'s have closed form (single) integrals that are not very hard to compute automatically. 
 
 
-{\bf Analytic univariate PPF* integration.} 
+\subsubsection*{Analytic univariate PPF* integration.} 
+Now we provide a procedure to perform integration on PPF* functions.
+
+It can be shown that if in a PPF* all variables except one are instantiated, 
+the resulting univariate function has a closed form integral.  
+To perform exact Gibbs sampling, this is sufficient because in each step of Gibbs sampling only one variable is uninstantiated.
+
+However, we want to go a step further and compute univariate integral of multivariate piecewise functions  
+without instantiating the remaining variables.
+%This leads to an extremely efficient implementation of exact Gibbs sampling that will be introduced in Section~\ref{sect:symbolic.gibbs}.   
+
+This may look impossible since in the latter case, the integration bounds depend on the values of uninstantiated conditions. 
+But as the following procedure shows, it is possible: 
 
 Suppose $\int_{\alpha}^\beta f \dd x$ is intended where $f$ is a PPF*.
+
+\begin{enumerate}[leftmargin=2.6ex]
+\item \emph{(Partitioning).}
+The integral of the piecewise function $f$ is the summation of its case statement integrals:
+\begin{equation*}
+\int \sum_{i=1}^m \indicator[\phi_i]\cdot f_i \dd x = 
+\sum_{i=1}^m \int \indicator[\phi_i] \cdot f_i \dd x
+\end{equation*}
+Therefore we only need to show that a single PPF* case-statement is integrable.
 
 %Firstly, note that the definite integrals can be reduced to indefinite integrals:
 %{
@@ -769,16 +732,18 @@ Suppose $\int_{\alpha}^\beta f \dd x$ is intended where $f$ is a PPF*.
 %\dd x
 %\end{align*}
 %}
-\emph{1. (canonicalization).} $f$ is restated in a form where
-the degree of each variable in each atomic constraint $\varphi_{i,j}$ is at most 2.
-E.g. case statement (\ref{e:ppf*example}) is restated as:
+\item \emph{(Canonicalization).} A PPF* case statement can be restated in the form of multiple case statements in which 
+the degree of each variable in each atomic constraint is at most 2.
+For instance, (\ref{e:ppf*example}) can be restated as:
 \begin{equation}
 \begin{cases}
 \case{(y^2+z^2 -1)>0, (x^2+2xy)>0}{\frac{x^2 y^3 + 7xz + 10}{(5xy^2 + 2)(y + x)^3}}\\
 \case{(y^2+z^2 -1)<0, (x^2+2xy)<0}{\frac{x^2 y^3 + 7xz + 10}{(5xy^2 + 2)(y + x)^3}}\\
 \end{cases}
 \end{equation}
-\emph{2. (condition solution).} For the integration variable $x$, PPF* functions are transformed into piecewise structures 
+
+\item \emph{(Condition solution).} For the integration variable $x$, 
+a PPF* case statement can be transformed into a piecewise structure 
 with atomic constraints in form $x>L_i$ or $x<U_i$ or $I_i>0$, 
 where $L_i$, $U_i$ and $I_i$ are 
 algebraic expressions (not necessarily polynomials) that do not involve $x$. 
@@ -810,17 +775,15 @@ is replaced by cases statements (\ref{e:quadratic-trans}).
 \end{equation}
 \begin{align}\footnotesize
 \label{e:quadratic-trans}
-{
 \begin{cases}
   \case{(A>0), \, (x> \frac{-B + \sqrt{B^2 - 4 A C}}{2 A}) }{f_1} \\ 
   \case{(A>0), \, (x< \frac{-B - \sqrt{B^2 - 4 A C}}{2 A}) }{f_1} \\ 
   \case{(A<0), \, (x> \frac{-B - \sqrt{B^2 - 4 A C}}{2 A}),
                               (x< \frac{-B + \sqrt{B^2 - 4 A C}}{2 A})}{f_1}
  \end{cases}
-}
 \end{align}
-\emph{3. (bounding).} The bounded integral of a case statement 
-associated with expressions with $\{L_i\}$, $\{U_i\}$ and $\{I_i\}$ 
+\emph{3. (Bounding).} The bounded integral of a case statement 
+associated with $\{L_i\}_i$, $\{U_i\}_i$ and $\{I_i\}_i$ 
 is itself a case-statement with the same independent constraints,
  lower bound LB =$\max\{\alpha, L_i\}$ and 
  upper bound UB =$ \min\{\beta, U_i\}$.
@@ -835,6 +798,7 @@ For example:
 {\Big[ \int_{\max\{\alpha, \,{\bf {\color{blue}3}, \, {\color{blue}y+1}}\}}^{\min\{\beta, \, {\bf\color{green} y^2 - 7}\}} \!\! x^3 + xy \dd x \Big]} 
 \end{align*}  
 \emph{4. (sub-function integration).} %What remains is to compute the indefinite integrals of sub-functions. 
+What is remained is to compute infinite integral of sub-functions. 
 The restrictions imposed on PPF* sub-functions 
 guarantee that they have closed-form %indefinite 
 univariate integrals.
@@ -842,14 +806,14 @@ These integrals are computed by performing polynomial division
 (in case the degree of $x$ in the sub-function's numerator is more than its denominator),
 followed by partial fraction decomposition and finally, using a short list of indefinite integration rules.
 
-\emph{5. (aggregation).}
-The integral of the piecewise function $f$ is the summation of its case statement integrals:
-\begin{equation*}
-\int \sum_{i=1}^m \indicator[\phi_i]\cdot f_i \dd x = 
-\sum_{i=1}^m \int \indicator[\phi_i] \cdot f_i \dd x
-\end{equation*}
+%\emph{5. (aggregation).}
+%The integral of the piecewise function $f$ is the summation of its case statement integrals:
+%\begin{equation*}
+%\int \sum_{i=1}^m \indicator[\phi_i]\cdot f_i \dd x = 
+%\sum_{i=1}^m \int \indicator[\phi_i] \cdot f_i \dd x
+%\end{equation*}
 
-
+\end{enumerate}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 \section{Symbolic Gibbs Sampling}
 \label{sect:symbolic.gibbs}
@@ -888,7 +852,6 @@ $\mathcal{F}$ is $N$-variate since variables $\bvec{X}_{-i}$ are kept uninstanti
 %As a result, $F(X_i \,|\, \bvec{X}_{-i})$ is a multivariate analytic function. 
 %as Algorithm~\ref{alg:analytic-cdf} shows, 
 %we can create a map from variables $X_i$ to their corresponding closed-form CDFs.
-
 Provided with such a map, in the actual sampling process, 
 to sample $x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$,
 it is sufficient to instantiate the analytical CDF associated to $X_i$ with  
@@ -1071,13 +1034,13 @@ on the \emph{approximated-by-noise} model.
 \label{sect:experimental.results}
 
 Our experiments are to study the 
-following aspects of conditioning on determinism:
+following questions:
 \vspace{-2mm}
 \begin{enumerate}[label=(\alph*)]
-\item {\bf Posterior quality.} The modality, continuity, shape of support, etc. of the posteriors generated by conditioning on determinism.
-\item {\bf MCMC comparison.} The performance of Symbolic Gibbs vs.\ other MCMC methods on such posteriors
-(in terms of the convergence rate to the ground truth).
-\item {\bf Handling determinism.} Comparing $\delta$-collapsing to noisy relaxations of deterministic constraints used in previous work. 
+\item {\bf Posterior quality.} What are the qualities of the posteriors generated by conditioning on determinism in terms of their modality, continuity, shape of support, etc.?
+\item {\bf MCMC comparison.} How is the performance of Symbolic Gibbs vs.\ other MCMC methods on such posteriors
+(in terms of the convergence rate to the ground truth)?
+\item {\bf Handling determinism.} How is the sampling performance affected if instead of $\delta$-collapsing,  the deterministic constraints are relaxed by noise (as done in previous work)? 
 \end{enumerate}
 \vspace{-2mm}
 The compared MCMC algorithms, 
@@ -1111,6 +1074,13 @@ Therefore, for the readability of the plots, we did not depict them.
 }
 
 SymGibbs, BaseGibbs and MH are run on \emph{$\delta$-collapsed} models while in the case of HMC and SMC, determinism is softened by observation noise. %(as required by Stan and Anglican PPLs).
+Note that adding noise to the observation is the simplest and most commonly used method of dealing with determinism\citep{patil2010pymc}.\footnote{
+For example in the collision model, the observation $P_{\text{tot}} = 3$  would be 
+approximated with a normal distribution
+{\footnotesize $\mathcal{N}( M_1 V_1 + M_2 V_2 - 3, \sigma_\eta^2)$}  
+where the variance $\sigma_\eta^2$ is the noise parameter.
+}
+
 SymGibbs and BaseGibbs require no tunings. 
 MH is automatically tuned after \citep{roberts1997weak} by testing 200 equidistant proposal variances in interval 
 $(0, 0.1]$ and accepting a variance for which the acceptance rate closer to 0.24.
@@ -1139,7 +1109,6 @@ where $\bvec{q}_\Gamma^{(i)} :=
 {\bf 1. Mean absolute error vs time.}
 The main measurement 
 is to compute the \emph{mean absolute error} (MAE) 
-\vspace{-1mm}
 \begin{equation}\footnotesize
 \label{e:error.vs.time.measure}
 \textsc{MAE}_{\Gamma}(t) := \frac{1}{\zeta \cdot n_\Gamma^t} 
@@ -1147,7 +1116,6 @@ is to compute the \emph{mean absolute error} (MAE)
 \sum_{i=1}^{n_\Gamma^t}
 \left|{q}^{(i)}_{j, \Gamma} - {q}_j^* \right|
 \end{equation}
-\vspace{0mm}
 vs (wall-clock) time $t$ where 
 $\bvec{q}^* := [q_1^*, \ldots q_\zeta^*]$ 
 is the ground truth mean query vector (that will be discussed shortly).
@@ -1158,11 +1126,10 @@ $\textsc{MAE}_{1}(t)$ to $\textsc{MAE}_{\gamma}(t)$
 are plotted. 
 
 {\bf 2. Time to reach error threshold ($\boldsymbol\tau$).}
-In experiments where the model size is variable,
-MAE vs time is illustrated for a couple of size configurations only
-(due to paper space restrictions). 
+%In experiments where the model size is variable,
+%We illustrate MAE vs time for a couple of size configurations.
 %the space restrictions does not allow us to illustrate 
-As an alternative, we provide a single plot that summarizes the overall behavior of each sampler algorithm w.r.t.\ the model size:
+This is a single plot that summarizes the overall behavior of each sampler algorithm w.r.t.\ the model size:
 We notice that after some error threshold, the comparative performance of the samplers remains fixed.
 Therefore, for each sampler, the time to reach a fixed threshold $\tau$ is plotted vs the model size.
 
@@ -1182,7 +1149,7 @@ since the the performance of Rej drastically deteriorates with increasing dimens
 %is approximated by taking sufficiently large number of samples by rejection sampling (as a completely unbiased sampler).
 %However, in the experiments where the model size is parametric, we cannot rely on rejection sampling since its performance on the studied model deteriorates drastically in dimension. 
 %We cannot rely on \emph{MCMC convergence diagnostics} methods \citep{cowles1996markov} because they can produce misleading results in case Markov chains do not converge to the ground truth; a scenario that as we will see, for highly complex posteriors is not improbable.
-Our next two experimental models are intentionally chosen to be symmetric
+Our remaining experimental models are intentionally chosen to be symmetric
 as this enables us to compute the ground truth manually.% rather than relying on Rej.
 %Our solution is to conduct tests on symmetric models for which the posterior ground truth can be computed manually.
 
@@ -1226,7 +1193,7 @@ in the remaining experiments, comparisons take place w.r.t.\ the variable space 
 %{Figs/plots/collision/err-vs-time__param4-shaded.pdf}
       \caption{
 %Error as a function of wall clock time (s) for the (asymmetric) collision model using MCMCs with same configurations as in Figure~\ref{fig:mom2}. 
-Absolute error vs time in the \emph{asymmetric collision model}. (Most algorithms correspond sub-figures of Fig.~\ref{fig:mom2}.)
+Absolute error vs time in the \emph{asymmetric collision model}. (The algorithms correspond sub-figures of Fig.~\ref{fig:mom2}.)
  }
 \label{fig:asymmetric}
 \end{figure}
@@ -1358,37 +1325,62 @@ Figure~\ref{fig:resistor}.c.
 
 \subsection{Experimental evaluations}
 \label{sect:experimental.evaluations}
-The telltale plots of Figure~\ref{fig:mom}, reveal the nature of the problem tackled in this paper.
-They show that even in the presence of a single deterministic constraint, 
-a simple prior can be transformed into a complicated piecewise and multimodal posterior that does not resemble any family of 
+Given the experimental results, 
+the questions posed in the beginning of this section are replied as follows:
+
+{\bf Posterior quality.} 
+Plots of Figure~\ref{fig:mom} illustrate the
+the posterior quality of the models studied in this paper.
+They show that  
+even in the presence of a single deterministic constraint, 
+a simple prior can be transformed into a complicated piecewise and multi-modal posterior that does not resemble any family of 
 probability densities studied in the literature so far. 
 
+{\bf MCMC comparison}
 Plots of Figure~\ref{fig:mom2} shows that MH and SMC suffer from low \emph{effective sample size}. 
-(Note that the apparent sparsity of plots~\ref{fig:mom2}-b, \ref{fig:mom2}-e \& \ref{fig:mom2}-f is due to {\color{red}repeated samples}.)
+Note that the apparent sparsity of plots~\ref{fig:mom2}-b, \ref{fig:mom2}-e \& \ref{fig:mom2}-f is due to repeated samples (rejected proposals).
 
-They also suggest that  softening determinism by noise leads to a 
-{\color{red} discrepancy between the model and taken samples} 
-that may not be resolved by lowering the noise threshold 
-(i.e.\ decreasing HMC's observation noise variance from 0.2 
-(Fig.~\ref{fig:mom2}-c) 
-to 0.001 (Fig.~\ref{fig:mom2}-d) does not help much.)
-
-These results are confirmed by the quantitative measurements of 
-Figures~\ref{fig:asymmetric} to %,  \ref{fig:multi-object.mom} and 
-\ref{fig:resistor} indicating that in all experimental settings,
+The carried out quantitative measurements 
+(Figures~\ref{fig:asymmetric},  \ref{fig:multi-object.mom} and \ref{fig:resistor}) 
+indicate that in all experimental settings,
 Symbolic Gibbs constantly and significantly performs the best.
 
+
+
+{\bf Handling determinism}
+%Plots Fig.~\ref{fig:mom2}-c and Fig.~\ref{fig:mom2}-d suggest  that  softening determinism by noise leads to a  discrepancy between the model and taken samples that may not be resolved by lowering the noise threshold (i.e.\ decreasing HMC's observation noise variance from 0.2 to 0.001 (Fig.~\ref{fig:mom2}-d) does not help much.
+All quantitative measurements 
+(Figures~\ref{fig:asymmetric},  \ref{fig:multi-object.mom} and 
+\ref{fig:resistor})
+indicate that approximating the determinism by noise leads to poor results.
+It should be mentioned that 
+the state-of-the-art probabilistic programming languages (PPLs),
+disallow deterministic relationships among continuous random variables 
+be observed.\footnote{
+In BUGS \citep{lunn2009bugs}, the popular software for analysis of statistical models, \emph{logical nodes} cannot be given data or initial values .
+In PyMC \citep{patil2010pymc} deterministic variables have no \emph{observed flag}. 
+In Stan \citep{stan-manual:2014} 
+if you try to assign an observation value to a deterministic variable, you will encounter an error message: 
+``attempt to assign variable in wrong block'' while 
+Anglican \citep{wood2014new} throws error ``invalid-observe", etc.}
+The solution that these off-the-shelf inference frameworks suggest (or impose) is to approximate the observed determinism via adding noise to the observation 
+\citep{wood2014new}.
+%(hard to soft constraint conversion via introducing measurement error)
+
+
+% ................................................................................................ 
+
+
+
 An interesting result is that in the Building wiring model, even in a dimensionality as low as 10, 
-the Metropolis-Hasting based algorithms may not converge to the (manually computed) ground truth or their convergence rate is extremely low. 
+the Metropolis-Hasting based algorithms (i.e.\ HM, HMC and SMC) may not converge to the (manually computed) ground truth or their convergence rate is extremely low. 
 This happens regardless of the way determinism is handled. 
 A reason may be as follows:
 It is widely known that all Metropolis-Hasting-based algorithms are sensitive to parameter tunings.
 Tuning takes place internally and during the burn-in period according to some heuristics.
 Such heuristics may not be valid in the densities studied in this paper as they are very different from the bell-shaped unimodal distributions often studied in the literature so far.
 
-Manual computations verified that in the Building wiring model, 
-high degree terms occur in the denominator of the posterior fraction. 
-This may be another reason for the poor performance of the Metropolis-Hasting-based algorithms: Existence of multiple highly dense regions in the posterior can act as traps for such algorithms.
+%Manual computations verified that in the Building wiring model, high degree terms occur in the denominator of the posterior fraction. This may be another reason for the poor performance of the Metropolis-Hasting-based algorithms: Existence of multiple highly dense regions in the posterior can act as traps for such algorithms.
 
 Since Gibbs samplers directly sample from the original distributions (rather than proposal densities) they can cope well with anomalies and as our results show, always converge to the ground truth. 
 
@@ -1396,9 +1388,22 @@ Since Gibbs samplers directly sample from the original distributions (rather tha
 
  \section{Conclusion}
 \label{sect:conclusion}
+Recently, piecewise polynomial distributions have attracted attention.
+So far, piecewise polynomials with hyperrectangular, hyper-rhombus and linear partitioning constraints have been used in Bayesian networks \citep{shenoy2011inference,shenoy2012two,Sanner:12}.
 
-We introduced piecewise algebraic graphical models that for the first time handle a large family of nonlinear deterministic restrictions, such as the physical laws, in the form of multivariate polynomial fractions. The nonlinear nature of this data leads to a new genre of posterior distributions with possible discontinuities, 
-piecewise parts with nonlinear bordering hyperplanes, rapid density changes and anomalies. Our experimental results show that Gibbs sampling performs well in the presence of such unconventional densities while other Monte Carlo methods do not. We showed that in piecewise algebraic models, the univariate CDFs required for Gibbs sampling can be computed analytically and prior to the actual sampling process. Our novel sampling method, \emph{Symbolic Gibbs}, saves a significant amount of computation, improving the performance dramatically. The combination of these novel contributions should make probabilistic reasoning applicable to variety of new applications that have remained unsolvable so far.      
+In this paper we introduced polynomial piecewise fractional functions (PPFs).
+They are are polynomial fractions with polynomial partitioning constraints
+and up to our knowledge, are the richest class of piecewise functions studied in the literature of graphical models and probabilistic inference so far.
+We showed that this family is expressive enough to remain closed under operations required to 
+transform networks with (non)linear deterministic restrictions, to purely stochastic models.
+
+We also showed that a large subset of PPFs have symbolic univariate integrals.
+This led to the main contribution of this paper. 
+A full automated exact Gibbs sampler, called \emph{symbolic Gibbs}, 
+in which all univariate CDFs required for Gibbs sampling are computed analytically and prior to the actual sampling process.
+Our novel sampling method, \emph{symbolic Gibbs}, saves a significant amount of computation, and improving the performance dramatically. The combination of these novel contributions should make probabilistic reasoning applicable to variety of new applications that have remained unsolvable so far. 
+
+  
 
 
 %*********************************************************************************************
