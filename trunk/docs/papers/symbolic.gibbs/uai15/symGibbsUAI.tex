@@ -93,14 +93,12 @@
 \label{sect:background}
 Let $\vec{X} = \{X_1, X_2, \ldots\}$ be a set of random variables with realizations in the form 
 $\vec{x} = \{x_1, x_2, \ldots\}$.\footnote{
-%As a common abuse of notation, 
 In case there is no ambiguity, we do not distinguish between random variables and their realizations; e.g., we abbreviate $\pr(X_i = x_i)$ by $\pr(x_i)$.}
-$\vec{X}$ may contain discrete and continuous variables. 
-However, for the sake of notational consistency, %and since the problems tackled in this paper only hold for continuous variables, 
-we only consider continuous models throughout. 
-Note that inference in presence of discrete deterministic constraints is already addressed in the literature 
-(see e.g.\ \citep{li2013dynamic} for related work).
-Therefore, generalization of the presented framework to hybrid discrete/continuous models is straightforward.   
+For the sake of notational consistency, 
+throughout we assume $\vec{X}$ only contain continuous variables. 
+(The generalization of the presented algorithms to hybrid discrete/continuous models is straightforward.)
+%Note that inference in presence of discrete deterministic constraints is already addressed in the literature (see e.g.\ \citep{li2013dynamic} for related work).
+%Therefore, generalization of the presented framework to hybrid discrete/continuous models is straightforward.   
 
 To cover both directed and undirected graphical models we use
 \emph{factor graph} notation \citep{kschischang2001factor}
@@ -110,7 +108,7 @@ and represent a joint probability density $\pr(\vec{X})$ in a factorized form as
 \pr(\vec{X}) \propto \prod_{\Psi_k \in \boldsymbol\Psi} \Psi_k (\vec{X}_k)
 \end{equation}
 where 
-$\Psi(\vec{X}_k)$ are non-negative, real-valued \emph{potential functions} 
+$\Psi(\cdot)$ are non-negative, real-valued \emph{potential functions} 
 (a.k.a.\ \emph{factors}) of subsets $\bvec{X}_k$ of $\bvec{X}$ 
  and the normalization constant is not necessarily known.
 %Throughout, we adopt the notation $\textsc{Scope}(\Psi_k) := \bvec{X}_k$.
@@ -152,7 +150,7 @@ are often intractable.
 %\end{equation*}
 
 \subsection{Monte Carlo methods.}
-A popular alternative to exact inference is to approximate (possibly posterior) joint densities $\pr(\bvec{X})$ 
+A popular alternative to exact inference is to approximate joint densities $\pr(\bvec{X})$ 
 by a sequence $\bvec{x}^{(1)}, \cdots, \bvec{x}^{(n)}$ of samples taken
  via \emph{Markov chain Monte Carlo} (MCMC) methods \citep{koller2009probabilistic}.  
 %An alternative to exact inference is to approximate the joint distribution by a set of samples drawn from it using Monte Carlo methods. By the law of large numbers, this approximation is asymptotically unbiased. Using samples, the costly marginalization operation is avoided since the conditional probability $\pr(\bvec{q} \,| \, \bvec{e})$ is simply approximated by the number of samples satisfying $\bvec{q} \cap \bvec{e}$ divided by the number of samples satisfying $\bvec{e}$.
@@ -163,9 +161,9 @@ Two major families of such methods are as follows:
 
 %{\bf Rejection sampling:} In this method \citep{hammersley1964monte}, to draw a sample from a distribution $p(\bvec{X})$, a sample $\bvec{x}$ is taken from another distribution $q(\bvec{X})$ such that $p(\bvec{X})/q(\bvec{X})$ is bound by a known constant $c$ and samples can be taken from $q(\bvec{X})$ efficiently. The produced sample is accepted with probability $p(\bvec{x}) / c q(\bvec{x})$, otherwise it is rejected and the process is repeated. 
 
-{\bf Metropolis-Hastings (MH):}
-MH \citep{metropolis1953equation} generates a random walk using a \emph{proposal density} and a method for rejecting some of the proposed moves.
-Variations of MH such as \emph{Hamiltonian Monte Calo} (HMC) \citep{neal2011mcmc}  
+{\bf Metropolis-Hastings:}
+\citep{metropolis1953equation} generates a random walk using a \emph{proposal density} and a method for rejecting some of the proposed moves.
+Variations of this method such as \emph{Hamiltonian Monte Calo} (HMC) \citep{neal2011mcmc}  
 and \emph{Sequential Monte Carlo} (SMC) \citep{del2006sequential} are popular. 
 
 
@@ -200,41 +198,36 @@ since it is often not possible in closed form.
 %%%%%%%%%
 \section{Stochastic-Deterministic GMs}
 \label{sect:contribution1}
-In model specification that we are concerned with,
-the network random variables are $\bvec{X} := \bvec{Y} \cup \bvec{Z}$
-where disjoint sets $\bvec{Y}$ and $\bvec{Z}$ are the sets of \emph{stochastic} and \emph{deterministic}  (random) variables respectively. 
-The total joint 
-%density 
-(\ref{e:factor-graph}) is factorized as:
-\begin{equation}
+To deal with GMs where some variables are deterministic functions of others,
+we introduce some new notation and specification:
+We assume $\bvec{X} := \bvec{Y} \cup \bvec{Z}$
+where the disjoint sets $\bvec{Y}$ and $\bvec{Z}$ are called the sets of \emph{stochastic} and \emph{deterministic  (random) variables} respectively. 
+We assume for each deterministic (random) variable $Z_j \in  \bvec{Z}$ there exists 
+exactly one potential $\Psi$ (called a \emph{deterministic potential}) in the form
+$\delta(G_j (\cdot) - Z_j)$ where  $\delta$ denotes the Dirac delta and $G_j$ (which we call the \emph{logical value} associated with $Z_j$) is 
+an expression that does not involve $Z_j$.\footnote{Circular/recursive definition of deterministic variables are not allowed either.}$^{,}$\footnote{
+$\delta\big( G_j(\cdot) - Z_j \big)$ should be thought of as a limit of a normal distribution centered at $G_j(\cdot)$ and a variance that tends to zero.
+We leave it to the graphical model designer to specify a deterministic potential in a form where $G_j(\cdot)$ corresponds to an observed quantity.} 
+
+For instance, in the \emph{collision model}, $P_1$ is a deterministic variable associated
+with deterministic potential $\delta(M_1V_1 - P_1)$ 
+and therefore, the logical value of $P_1$ is $M_1 V_1$.
+
+The sets of all deterministic potentials is denoted by $\boldsymbol{\Psi}^D$.
+The remaining potentials $\boldsymbol{\Psi}^S := \boldsymbol{\Psi} \backslash \boldsymbol{\Psi}^D$ are called stochastic and do not involve Dirac deltas. Therefore:
+%In model specification that we are concerned with,
+%the network random variables are $\bvec{X} := \bvec{Y} \cup \bvec{Z}$
+%where disjoint sets $\bvec{Y}$ and $\bvec{Z}$ are the sets of \emph{stochastic} and \emph{deterministic}  (random) variables respectively. 
+%The total joint 
+ %(\ref{e:factor-graph}) is factorized as:
+\begin{equation}\footnotesize
 \label{e:infer.sd}
 \pr(\bvec{Y}, \bvec{Z}) \propto 
-\prod_{i} \Psi_i (\bvec{Y}^s_i, \, \bvec{Z}^s_i)
+\prod_{\Psi \in \boldsymbol{\Psi}^S} \Psi_i (\cdot)
 \prod_j \delta \big(
-G_j(\bvec{Y}^d_j, \bvec{Z}^d_j) - Z_j
+G_j(\cdot) - Z_j
 \big)
 \end{equation}
-where \emph{stochastic potentials} $\Psi_i$ are functions 
-of stochastic and deterministic variables 
-$\bvec{Y}^s_i \subset \bvec{Y}$ and $\bvec{Z}^s_i \subset \bvec{Z}$ 
-that do not involve 
-\emph{Dirac deltas} while 
-each deterministic random variable $Z_j$ 
-is associated with exactly one 
-\emph{deterministic potential} in form 
-$\delta\big( G_j(\cdot) - Z_j \big)$ 
- where 
-$G_j$ (which we call the \emph{logical value} of $Z_i$) 
- is a function of 
-stochastic variables $\bvec{Y}_j^d \subset \bvec{Y}$ and deterministic variables $\bvec{Z}_j^d \subset \bvec{Z}$. 
-\footnote{
-$Z_j \not \in \bvec{Z}_j^d$ 
-and circular/recursive definition of deterministic variables is not allowed. }$^{,}$\footnote{
-$\delta\big( G_j(\cdot) - Z_j \big)$ should be thought of as a limit of a normal distribution centered at $G_j(\cdot)$ and a variance that tends to zero.
-We leave it to the graphical model designer to specify a deterministic potential in a form where $G_j(\cdot)$ corresponds to an observed quantity.}
-%Note that models with DAG dependencies between deterministic nodes can be easily converted to the canonical form (\ref{e:infer.sd}).For instance in the collision model, potential $\delta[P_\text{tot} - (P_1 + P_2)]$ can be restated as $\delta[P_\text{tot} - (M_1 V_1 + M_2 V_2)]$ which is canonical.}).
-%For example, a standard form for the Collision model is: $\Phi := \pr(M_1, M_2, V_1, V_2)$ (as in equation (\ref{e:col-prior})), and $\boldsymbol{\Psi^D} := \{\Psi_{P_1}, \Psi_{P_2}, \Psi_{P_\text{tot}}\}$  where $\Psi_{P_1} := \delta[P_1 - M_1 V_1]$, $\Psi_{P_2} := \delta[P_2 - M_2 V_2]$ and $\Psi_{P_\text{tot}} := \delta[P_\text{tot} - M_1 V_1 - M_2 V_2]$.
-
 
 %\begin{comment}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -248,7 +241,7 @@ We leave it to the graphical model designer to specify a deterministic potential
 $\mathcal{E} := \{\tuple{E_i, e_i}\}_i$: evidence variables and valuations.  
 $\boldsymbol{\Psi} := \boldsymbol{\Psi^S} \cup \boldsymbol{\Psi^D}$: potentials where
 $\boldsymbol{\Psi^S}$ are stochastic and $ \boldsymbol{\Psi^D} := \left\{\Psi_{Z_j} := \delta\big( G_j (\cdot) - Z_j \big) | Z_j \in \bvec{Z} \right\}$ are deterministic.}
-\STATE {\bf Output} {unnormalized posterior joint of a subset of variables from which, all other variables can be decided.}
+\STATE {\bf Output} {unnormalized posterior joint of a subset of variables from which, all other variables can be reconstructed.}
  \vspace{1mm}
 %{
 %{\bf Begin}//{
@@ -318,80 +311,18 @@ $ [(A_1 X + B_1)(A_2 X + B_2)]=0$
 %%----------------------------------------------------------------------------
 \subsection{Collapsing determinism ($\delta$-collapsing)}%{Reduction of SD-GMs to purely stochastic GMs (Collapsing $\delta$)}
 \label{sect:collapse}
-$\delta$-collapsing as presented in Algorithm~\ref{alg:collapsing-mechanical}
-is a mechanism to handle observed determinism via reducing the dimensionality. 
-It constructs a posterior joint distribution over a subset of stochastic random variables such that given their realization, any other variable (either stochastic or deterministic)
-can be reconstructed.% expressed as a function of them:
-%and therefore, effectively be sampled:
-%The procedure
-%, as formalized in Algorithm~\ref{alg:posterior-joint}, 
-%is as follows: 
-%\subsection{Posteriors in GMs with Deterministic Constraints}
-%\label{sect:infer1}
-%\rule{\columnwidth}{1pt}
-\begin{comment}
-\vspace{4pt}
-\begin{mdframed}[backgroundcolor=light-gray, leftmargin = 1pt, skipabove = 0pt]
-\begin{enumerate} [topsep=0pt,itemsep=-1ex,partopsep=0ex,parsep=1ex, leftmargin=1.5ex] %[nolistsep]
-\item \emph{Observed variable instantiation.} 
-In all potentials (either deterministic or statistical), all observed stochastic/deterministic 
-variables are instantiated: \vspace{-1.0mm}
-%\footnote{ A deterministic factor $\delta[Z_j- G_j(\cdot)]$ associated with an observed variable $Z_j = c$ is therefore substituted by $\delta[c- G_j(\cdot)]$.}
-\begin{equation*}\footnotesize 
-\forall \Psi \in \boldsymbol{\Psi} \qquad \Psi \leftarrow \Psi|_{\bvec{E} \leftarrow \bvec{e}}
-\end{equation*} 
-%
-\item 
-\emph{Marginalizing determinism.} 
-In all potentials, all deterministic variables $Z_j$, are 
-substituted by their 
-%associated 
-logical values $G_j(\cdot)$ (so, the potential $\delta ( G_j(\cdot) - Z_j)$ itself is replaced by 1). Note that by the definition of Dirac $\delta$, this simply means that  unobserved deterministic variables are marginalized out. \vspace{-1mm}
-\begin{equation*}\footnotesize 
-\forall Z_j \in \bvec{Z},\,
-\forall \Psi \in \boldsymbol{\Psi} 
-\qquad
-\Psi \leftarrow \Psi|_{Z_j \leftarrow G_j (\cdot)}
-\end{equation*}
-%
-\item \emph{Joint factor formation.} the product of all stochastic potentials is computed: \vspace{-2.0mm}
-\begin{equation*}\footnotesize %\vspace{-3.7mm}
-\Phi := \prod_{i} \Psi_i
-\end{equation*}
-%
-\item \emph{Dimension reduction.} %collapsing determinism 
-%What remains is to condition on the deterministic constraints.
-For each observed deterministic random variable $Z_j = c$ (where $c$ is a constant),
-$(G_j(\cdot) - c)$ is solved w.r.t.\ some variable 
-$Y  \in \bvec{Y}_j^d$ (assuming that it is solvable %with a single solution 
-w.r.t.\ at least one variable with simple and real roots).
-Let  
-$\textsc{Solve}(G_j(\cdot) - c; \, Y)$
-% := \{\Upsilon_{1}, \Upsilon_{2}, \ldots\}$ 
-be the set of (real and simple) such solutions.
-$\Phi$ is modified as follows: \vspace{-1mm}
-\begin{equation}\footnotesize
-\label{e:core}
-\Phi 
-\;
-\longleftarrow
-\!\!\!\!\!\!\!
-\sum_{\Upsilon \in \textsc{Solve}(G_j(\cdot) - c;\, Y)}
-\frac{\Phi|_{Y \leftarrow \Upsilon}}{
-\big|(\partial G_j(\cdot) / \partial Y) |_{Y \leftarrow \Upsilon}
-\big|
-}
-\end{equation}
-\end{enumerate}
-\vspace{-3mm}
-\end{mdframed}
-%\rule{\columnwidth}{1pt}
-\end{comment}
-
+In this section we present an algorithm 
+(called $\delta$-collapsing, throughout) 
+to transform Stochastic-Deterministic GMs to pure stochastic GMs with lower dimensions
+(see Algorithm~\ref{alg:collapsing-mechanical}).
+Using MCMC methods, the variables of the latter GM can be sampled.
+Provided with these samples, (the values of) the collapsed variables are reconstructed. 
+%as presented in Algorithm~\ref{alg:collapsing-mechanical} is a mechanism to handle observed determinism via reducing the dimensionality. It constructs a posterior joint distribution over a subset of stochastic random variables such that given their realization, any other variable (either stochastic or deterministic) can be reconstructed.
 To clarify the algorithm, we run it on the collision model (CM): 
-\emph{In CM, evidence is the singleton set {\footnotesize$\mathcal{E} := \{\tuple{P_\text{tot}, 3}\}$}, and 
+
+\emph{In CM, the evidence is the singleton set {\footnotesize$\mathcal{E} := \{\tuple{P_\text{tot}, 3}\}$}, and 
 the potentials can be indexed as follows: 
-\begin{align*}
+\begin{align*}\footnotesize
 & \Psi_1 \text{ to } \Psi_4 \text{ as in Eq.~(\ref{e:collision}) } &&\Psi_5 := \delta(M_1V_1 - P_1)\\
 &\Psi_6 := \delta(M_2V_2 - P_2)		&& \Psi_7 := \delta(P_1 + P_2 - P_\text{tot})   
 \end{align*}
@@ -423,9 +354,9 @@ logical values $G_j(\cdot)$ (so, a potential $\delta ( G_j(\cdot) - Z_j)$ itself
 Beginning with the (unnormalized) joint density of all stochastic variables,
 for each observed deterministic random variable $Z_j = c$ (where $c$ is a constant),
 $(G_j(\cdot) - c)$ is solved w.r.t.\ some stochastic variable 
-$Y  \in \bvec{Y}_j^d$ (assuming that it is solvable  
+$Y$ (assuming that it is solvable  
 w.r.t.\ at least one variable with simple roots in the form of polynomial fractions).
-Subsequently. by applying Theorem~\ref{theorem1}, $Y$ is excluded from the space of variables for which joint density is computed.
+Subsequently. by applying Theorem~\ref{theorem1}, $Y$ is excluded from the joint. %space of variables for which joint density is computed.
 
 \emph{In CM,  
 {\footnotesize$\Phi_0 = \pr(M_1, M_2, V_1, V_2)$} (see Eq.~\ref{e:col-prior}).
@@ -475,7 +406,7 @@ Denote the set of all roots by
 (Note that each element of $ \mathcal{X}_1 $
  is a function of the remaining variables $ x_2,\dots,x_n,z $.)
  Then:
-\begin{multline}
+\begin{multline}\footnotesize
 \label{e:theorem1}
 p(x_2, \ldots, x_n \,|\, Z=z) \propto \\
 \sum_{x_1^i \in \mathcal{X}_1} 
@@ -508,7 +439,7 @@ an arbitrary function $h(x)$:
 where $r_i$ are all (real and simple) roots of $h(x)$ and $h(x)$ is continuous and differentiable in the the root points. By (\ref{e:gelfand}), (\ref{e:fand}) and 
 \emph{Tonelli's theorem}\footnote{Tonelli's theorem says that for non-negative functions, sum and integral are interchangeable.} 
 $\pr(x_2, \ldots, x_n \,|\, Z = z) \propto$
-\begin{equation*}
+\begin{equation*}\footnotesize
 \sum_{x_1^i \in \mathcal{X}_1} 
 \frac{\int_{-\infty}^{\infty} p(x_1, x_2, \ldots, x_n)  \delta(x_1 - x_1^i) \dd x_1}
 {\Big|\big(\partial f(x_1, \ldots, x_n) / \partial x_1 \big)|_{x_1 \leftarrow x_1^i} \Big|}
@@ -534,8 +465,8 @@ the reconstructed sample value of $Y$ is simply
 in which $\bvec{s}$ denotes the value of the variables that are already sampled or reconstructed. 
 
 \emph{E.g.\ in CM, let 
-{\footnotesize$\bvec{s} = [ m_2^{(0)}, \, v_1^{(0)}, \, v_2^{(0)} ]$} 
-be a sample vector from $\Phi_1$. 
+{\footnotesize$\bvec{s} = [ M_2 = m_2^{(0)}, \, V_1 = v_1^{(0)}, \, V_2 = v_2^{(0)} ]$} 
+be a sample vector taken from $\Phi_1$. 
 By (\ref{e:example.solve}),  
 the sample value constructed for $M_1$ is 
 {\footnotesize
