@@ -1,4 +1,50 @@
 \begin{abstract}
+
+Probabilistic inference in many real-world problems often requires
+graphical models with (1) nonlinear deterministic constraints between
+random variables (e.g., laws of physics) and (2) piecewise
+distributions (e.g., priors enforcing bounded parameter values).
+Unfortunately, exact closed-form inference in such expressive
+graphical models is impossible in the general case and existing
+approximation techniques provide few guarantees on both approximation
+quality and efficiency.  While the Markov Chain Monte Carlo method of
+Gibbs sampling provides an attractive asymptotically unbiased
+approximation approach that does not require proposal design or
+tuning, it cannot be directly applied to models with determinism in
+the case of (1) and is difficult to automate in the case of (2) owing
+to the general lack of symbolic integration algorithms for general
+piecewise functions.  To address both of these limitations of Gibbs
+sampling, we introduce a restricted class of piecewise algebraic
+graphical models with nonlinear determinism, where we show that
+deterministic constraints can always be eliminated by collapsing (even
+when the constraints involve non-invertible functions) thus permitting
+the application of Gibbs sampling; furthermore, the collapsed model
+always permits at least one symbolic integration, which is sufficient
+to automatically derive the conditionals for Gibbs sampling.  We
+evaluate this algorithm on models motivated by physics and engineering
+and show that it is an order of magnitude faster than the baseline
+Gibbs sampler and a significant improvement over other Monte Carlo
+methods.
+
+We apply 
+
+
+furthermore
+automatic derivation of conditional distributions required for 
+Gibbs samplers 
+
+for arbitrary piecewise
+distributions
+
+, rejection sampling is often inefficient in practice
+and Metropolis-Hastings often requires manual tuning of a  both prove inefficient in practice, and
+analytical derivation of Gibbs samplers
+
+To date, the inference tools in such models have largely focused on Markov Chain
+Monte Carlo methods due to their guarantees of asymptotically unbiased inference
+
+
+
 In many applications of probabilistic reasoning, 
 instead of stochastic random variables, 
 functions i.e.\ deterministic relationships between them
