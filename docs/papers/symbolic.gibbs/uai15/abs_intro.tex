@@ -9,7 +9,7 @@ tuning, it cannot be directly applied to models with determinism in
 the case of (1) and is difficult to automate in the case of (2).  To
 address both limitations, we introduce a rich class of piecewise
 algebraic graphical models with nonlinear determinism, where we show
-that deterministic constraints can always be eliminated thus permitting the
+that deterministic constraints can always be eliminated, thus permitting the
 application of Gibbs sampling; we further show the collapsed model always
 permits one symbolic integral --- sufficient to
 automatically derive conditionals for Gibbs sampling.  We evaluate
@@ -59,35 +59,16 @@ We evaluate this algorithm on models in physics and engineering and show that it
 \end{comment}
 \end{abstract}
 
-\section{INTRODUCTION}
+\section{Introduction}
 \label{sect:intro}
 
 Probabilistic inference in many real-world problems often requires
-graphical models with (1) nonlinear deterministic constraints between
-random variables (e.g., laws of physics) and (2) piecewise
+graphical models with nonlinear deterministic constraints between
+random variables (e.g., laws of physics) and piecewise
 distributions (e.g., priors enforcing bounded parameter values).
-Unfortunately, exact closed-form inference in such expressive
-graphical models is impossible in the general case and existing
-approximation techniques provide few guarantees on both approximation
-quality and efficiency.  While the Markov Chain Monte Carlo method of
-Gibbs sampling provides an attractive asymptotically unbiased
-approximation approach that does not require proposal design or
-tuning, it cannot be directly applied to models with determinism in
-the case of (1) and is difficult to automate in the case of (2) owing
-to the general lack of symbolic integration algorithms for general
-piecewise functions.  To address both of these limitations of Gibbs
-sampling, we introduce a restricted class of piecewise algebraic
-graphical models with nonlinear determinism, where we show that
-deterministic constraints can always be eliminated by collapsing (even
-when the constraints involve non-invertible functions) thus permitting
-the application of Gibbs sampling; furthermore, the collapsed model
-always permits at least one symbolic integration, which is sufficient
-to automatically derive the conditionals for Gibbs sampling.  We
-evaluate this novel Symbolic Gibbs algorithm on models motivated by physics and engineering
-and show that it is an order of magnitude faster than alternative
-Monte Carlo samplers.
+To illustrate this, let us consider the following example:
 
-
+\begin{comment}
 Graphical models (GMs) are the lingua franca for probabilistic reasoning.
 They denote the conditional dependence structure between random variables by directed or undirected graphs \citep{koller2009probabilistic}. 
 A (random) variable is deterministic if its conditional distribution has zero variance. 
@@ -98,6 +79,8 @@ For instance, instead of direct observation of random variables
 $X_1, X_2, \ldots$, a function of them $f(X_1, X_2, \ldots)$ might be observed. 
 %such deterministic relationships between random variables might be governed by natural laws (such as Kirchhoff's circuit laws or Newtonian mechanics).
 To motivate the discussion consider a concrete example:  
+\end{comment}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,9 +97,10 @@ To motivate the discussion consider a concrete example:
 %\multicolumn{2}{c}{}
 %\end{tabular}
 \end{center}
-\vspace{-6mm}
+\vspace{-4mm}
 \caption{\footnotesize
-Bayesian network corresponding the \emph{collision model}. The filled circles represent deterministic random variables.} 
+Bayesian network for the \emph{collision model}. 
+Shaded circles indicate variables that are a result of deterministic functions.} 
 \label{fig:mom0}
 \vspace{-2mm}
 \end{figure}
@@ -130,12 +114,12 @@ Bayesian network corresponding the \emph{collision model}. The filled circles re
 \emph{Masses $M_1$ and $M_2$ with velocities $V_1$ and $V_2$ (and consequently momenta $P_1 = M_1 V_1$ and $P_2 = M_2 V_2$) collide to form a single mass ($M_1 + M_2$) with momentum $P_\text{tot} = P_1 + P_2$ (assuming that there is no dissipation).
 The masses and velocities are unknown but 
 their prior distributions are given as follows:\footnote{
-Throughout, $\mathcal{U}(a, \, b)$ denotes a uniform continuous distribution 
-with support interval $[a, b]$.
+$\mathcal{U}(a, \, b)$ denotes a uniform distribution on interval $[a,b]$.
+%with support interval $[a, b]$.
 } 
 %(note that as Figure~\ref{fig:mom0}.a shows, a collision only happens if $V_2 < V_1$):  
 }%end \emph
-{\footnotesize \vspace{-0.5mm}
+{\footnotesize %\vspace{-0.5mm}
 \begin{align}
 &\pr(M_1) = \mathcal{U}(0.1, \, 2.1) 
 &&\pr(M_2) \!=\! \mathcal{U}(0.1, \, 2.1)
@@ -147,17 +131,32 @@ with support interval $[a, b]$.
 \end{align} 
 }
 \emph{
-\!\!\!The conditional dependencies of these random variables are illustrated in 
-Figure~\ref{fig:mom0}. %b.
-Conditioned on the observation $P_{\text{tot}} = 3$, the posterior joint distribution of $M_1$, $M_2$, $V_1$ and $V_2$ is desired. 
+\!\!\!Conditional dependencies are illustrated in Figure~\ref{fig:mom0}. %b.
+We wish to infer $\pr(M_1, M_2, V_1, V_2 | P_{\text{tot}} = 3)$.
+%Conditioned on the observation $P_{\text{tot}} = 3$, the posterior joint distribution of $M_1$, $M_2$, $V_1$ and $V_2$ is desired. 
 \hspace*{\fill} $\diamond$} %\emph
+%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 
+We note this model involves both deterministic nonlinear constraints
+(e.g., $P_1 = M_1 V_1$) as well as piecewise distributions (e.g.,
+$\pr(M_1) = \mathcal{U}(0.1, \, 2.1)$).  Unfortunately, exact
+closed-form inference in models such as these is impossible in the
+general case.  While the Markov Chain Monte Carlo method of Gibbs
+sampling provides an attractive asymptotically unbiased inference
+approach that does not require proposal design or tuning, it cannot be
+directly applied to models with determinism nor can the integrals
+required for deriving conditional distributions be symbolically
+computed for general piecewise functions.
+
+\begin{comment}
+%% No room for discussion in this work...
 Despite its humble appearance, we will show the solutions that the existing probabilistic inference tools provide for this model are quite unsatisfactory. 
 
-Let's take a closer look on the nature of the problem by manually carrying on the computations required for 
-\emph{Markov chain Monte Carlo} (MCMC) sampling:
-It can easily be seen that in the \emph{collision model}, 
-the joint density of masses and velocities is
+Let's take a closer look on the nature of the problem by manually
+carrying on the computations required for \emph{Markov chain Monte
+  Carlo} (MCMC) sampling: It can easily be seen that in the
+\emph{collision model}, the joint density of masses and velocities is
 \begin{equation} \footnotesize  
 \label{e:col-prior}
 \pr(M_1, M_2, V_1, V_2)  
@@ -186,6 +185,23 @@ the mass of this function is only non-zero on the 3 dimensional \emph{hypersurfa
 
 In general, observation of an algebraic relationship between random variables of an {\footnotesize$N$}-dimensional prior space often corresponds to a zero-probability event that leads to a posterior mass positioned on an {\footnotesize$(N\!-\!1)$}-dimensional hyperspace and conditioning on multiple such events increases the difference between the dimensionality of the original space and the \emph{submanifold} on which the posterior is non-zero.  
 If this dimensionality mismatch is not taken into account, sampling from such posterior distributions will be impossible. (As a more tangible example, note that taking samples from a 2D curve via random walk in a 3D continuous space is impossible.)  
+\end{comment}
+
+To address both of these limitations of Gibbs sampling, we introduce a
+rich class of piecewise algebraic graphical models with nonlinear
+determinism, including models like the \emph{collision} example.  We
+show that deterministic constraints can always be eliminated by
+collapsing out one variable involved in the constraint (even when this
+variable is involved in non-invertible functions) thus permitting the
+application of Gibbs sampling; furthermore, the collapsed model always
+permits at least one symbolic integration, which is sufficient to
+automatically derive the conditionals necessary for Gibbs sampling.
+We evaluate this fully automated Symbolic Gibbs sampler on scalable
+domains motivated by physics and engineering, showing that it
+converges an order of magnitude faster than existing Monte Carlo
+samplers.
+
+\begin{comment}
 
 %We are unaware of any off-the-shelf inference framework that handles conditioning on deterministic constraints among random variables.
 \subsection{Literature review}
@@ -286,3 +302,4 @@ leads to a significant improvement in the convergence rates.
 The summary and conclusion are offered in Section~\ref{sect:conclusion}. 
 
 %In the following sections after a brief introduction to Graphical models, followed by an algorithm for inference in the presence of deterministic constraints.We then explain the restrictions of PPFs, compare our method with other samplers and conclude. 
+\end{comment}
