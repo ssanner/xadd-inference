@@ -65,7 +65,7 @@ Bayesian network corresponding the \emph{collision model}. The filled circles re
 %\vspace{1mm}\\
 {\bf Example (Collision model). }
 \emph{Masses $M_1$ and $M_2$ with velocities $V_1$ and $V_2$ (and consequently momenta $P_1 = M_1 V_1$ and $P_2 = M_2 V_2$) collide to form a single mass ($M_1 + M_2$) with momentum $P_\text{tot} = P_1 + P_2$ (assuming that there is no dissipation).
-Masses and velocities are unknown but 
+The masses and velocities are unknown but 
 their prior distributions are given as follows:\footnote{
 Throughout, $\mathcal{U}(a, \, b)$ denotes a uniform continuous distribution 
 with support interval $[a, b]$.
@@ -112,7 +112,7 @@ the following \emph{likelihood} is a 0-variance conditional distribution:
 \label{e:col-likelihood}
 \pr(P_\text{tot} = 3 \,|\, M_1, V_1, M_2, V_2) = \delta( M_1 V_1 + M_2 V_2 - 3)
 \end{equation}
-where $\delta(\cdot)$ denotes \emph{Dirac delta}. 
+where $\delta(\cdot)$ denotes the \emph{Dirac delta}. 
 By \emph{Bayes} rule, 
 the \emph{posterior} 
 {\footnotesize $\pr(M_1, M_2, V_1, V_2 \,|\, P_\text{tot} = 3)$}
@@ -121,8 +121,8 @@ Note that despite being 4-dimensional,
 the mass of this function is only non-zero on the 3 dimensional \emph{hypersurface}: {\footnotesize$M_1 V_1 + M_2 V_2 = 3$}. 
 
 
-In general, observation of an algebraic relationship between random variables of an {\footnotesize$N$}-dimensional prior space often corresponds a zero-probability event that leads to a posterior mass positioned on an {\footnotesize$(N\!-\!1)$}-dimensional hyperspace and conditioning on multiple such events increases the difference between the dimensionality of the original space and the \emph{submanifold} on which the posterior is non-zero.  
-If this dimensionality mismatch is not taken into account, sampling from such posterior distributions via sampling will be impossible (As a more tangible example, note that taking sample from a 2D curve via random walk in a 3D continuous space is impossible.)  
+In general, observation of an algebraic relationship between random variables of an {\footnotesize$N$}-dimensional prior space often corresponds to a zero-probability event that leads to a posterior mass positioned on an {\footnotesize$(N\!-\!1)$}-dimensional hyperspace and conditioning on multiple such events increases the difference between the dimensionality of the original space and the \emph{submanifold} on which the posterior is non-zero.  
+If this dimensionality mismatch is not taken into account, sampling from such posterior distributions will be impossible. (As a more tangible example, note that taking samples from a 2D curve via random walk in a 3D continuous space is impossible.)  
 
 %We are unaware of any off-the-shelf inference framework that handles conditioning on deterministic constraints among random variables.
 \subsection{Literature review}

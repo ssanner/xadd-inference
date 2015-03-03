@@ -154,13 +154,11 @@ are often intractable.
 \subsection{Monte Carlo methods.}
 A popular alternative to exact inference is to approximate (possibly posterior) joint densities $\pr(\bvec{X})$ 
 by a sequence $\bvec{x}^{(1)}, \cdots, \bvec{x}^{(n)}$ of samples taken
- via \emph{Markov chain Monte Carlo} MCMC methods \citep{koller2009probabilistic}.  
-
+ via \emph{Markov chain Monte Carlo} (MCMC) methods \citep{koller2009probabilistic}.  
 %An alternative to exact inference is to approximate the joint distribution by a set of samples drawn from it using Monte Carlo methods. By the law of large numbers, this approximation is asymptotically unbiased. Using samples, the costly marginalization operation is avoided since the conditional probability $\pr(\bvec{q} \,| \, \bvec{e})$ is simply approximated by the number of samples satisfying $\bvec{q} \cap \bvec{e}$ divided by the number of samples satisfying $\bvec{e}$.
 %Note that unlike other approximate methods, inference via sampling leads to asymptotically unbiased solutions i.e.\ by taking sufficient number of samples, the \emph{posterior} can be approximated by an arbitrary precision.
-
 %Approximating the posterior distribution via drawing samples from it by Monte Carlo methods 
-MCMC sampling is an asymptotically unbiased tool that avoids the hassle of multiple integrations. % required in closed-form sampling.   
+MCMC sampling is an asymptotically unbiased tool that avoids the complexity of multiple integrations. % required in closed-form sampling.   
 Two major families of such methods are as follows:
 
 %{\bf Rejection sampling:} In this method \citep{hammersley1964monte}, to draw a sample from a distribution $p(\bvec{X})$, a sample $\bvec{x}$ is taken from another distribution $q(\bvec{X})$ such that $p(\bvec{X})/q(\bvec{X})$ is bound by a known constant $c$ and samples can be taken from $q(\bvec{X})$ efficiently. The produced sample is accepted with probability $p(\bvec{x}) / c q(\bvec{x})$, otherwise it is rejected and the process is repeated. 
@@ -232,8 +230,8 @@ stochastic variables $\bvec{Y}_j^d \subset \bvec{Y}$ and deterministic variables
 \footnote{
 $Z_j \not \in \bvec{Z}_j^d$ 
 and circular/recursive definition of deterministic variables is not allowed. }$^{,}$\footnote{
-$\delta\big( G_j(\cdot) - Z_j \big)$ should be though of as a limit of a normal distribution centered at $G_j(\cdot)$ and a variance that tends to zero.
-We leave it to the graphical model designer to specify a deterministic potential in a form where $G_j(\cdot)$ corresponds an observed quantity.}
+$\delta\big( G_j(\cdot) - Z_j \big)$ should be thought of as a limit of a normal distribution centered at $G_j(\cdot)$ and a variance that tends to zero.
+We leave it to the graphical model designer to specify a deterministic potential in a form where $G_j(\cdot)$ corresponds to an observed quantity.}
 %Note that models with DAG dependencies between deterministic nodes can be easily converted to the canonical form (\ref{e:infer.sd}).For instance in the collision model, potential $\delta[P_\text{tot} - (P_1 + P_2)]$ can be restated as $\delta[P_\text{tot} - (M_1 V_1 + M_2 V_2)]$ which is canonical.}).
 %For example, a standard form for the Collision model is: $\Phi := \pr(M_1, M_2, V_1, V_2)$ (as in equation (\ref{e:col-prior})), and $\boldsymbol{\Psi^D} := \{\Psi_{P_1}, \Psi_{P_2}, \Psi_{P_\text{tot}}\}$  where $\Psi_{P_1} := \delta[P_1 - M_1 V_1]$, $\Psi_{P_2} := \delta[P_2 - M_2 V_2]$ and $\Psi_{P_\text{tot}} := \delta[P_\text{tot} - M_1 V_1 - M_2 V_2]$.
 
@@ -664,7 +662,7 @@ Algorithm~\ref{alg:collapsing-mechanical}
 is that it relies on operations that lead to highly complicated posteriors. 
 In this section, we address this issue by introducing a rich family of distributions (namely PPFs for \emph{polynomial piecewise fractional} functions)
 that remain closed under all operations required for $\delta$-collapsing. 
-We also show that, PPF*, an expressive subset of PPF family have analytical univariate integrals.
+We also show that PPF*, an expressive subset of the PPF family, have analytical univariate integrals.
 This leads to an efficient variation of Gibbs sampling that will be introduced in Section~\ref{sect:symbolic.gibbs}.
 
 %We study piecewise fractional functions with polynomial partitioning conditions (PPFs) -- a highly expressive class of functions neglected in the literature so far.
@@ -812,7 +810,7 @@ Here is an example of a PPF* case-statement:
 {\footnotesize
 \label{e:ppf*example}
 \singlecase{(y^2+z^2 -1)(x^2+2xy) > 0}
-{\frac{x^2 y^3 + 7xz + 10}{(5x.y^2 + 2)(y + x)^3}}
+{\frac{x^2 y^3 + 7xz + 10}{(5xy^2 + 2)(y + x)^3}}
 }
 \end{equation}
 
@@ -845,8 +843,8 @@ the degree of each variable in each atomic constraint $\varphi_{i,j}$ is at most
 E.g. case statement (\ref{e:ppf*example}) is restated as:
 \begin{equation}
 \begin{cases}
-\case{(y^2+z^2 -1)>0, (x^2+2xy)>0}{\frac{x^2 y^3 + 7xz + 10}{(5x.y^2 + 2)(y + x)^3}}\\
-\case{(y^2+z^2 -1)<0, (x^2+2xy)<0}{\frac{x^2 y^3 + 7xz + 10}{(5x.y^2 + 2)(y + x)^3}}\\
+\case{(y^2+z^2 -1)>0, (x^2+2xy)>0}{\frac{x^2 y^3 + 7xz + 10}{(5xy^2 + 2)(y + x)^3}}\\
+\case{(y^2+z^2 -1)<0, (x^2+2xy)<0}{\frac{x^2 y^3 + 7xz + 10}{(5xy^2 + 2)(y + x)^3}}\\
 \end{cases}
 \end{equation}
 \emph{2. (condition solution).} For the integration variable $x$, PPF* functions are transformed into piecewise structures 
@@ -1145,26 +1143,29 @@ Our experiments are to study the
 following aspects of conditioning on determinism:
 \vspace{-2mm}
 \begin{enumerate}[label=(\alph*)]
-\item The qualities of the posteriors generated by conditioning on determinism 
-(in terms of modality, continuity, shape of support, etc.).
-\item The performance of Symbolic Gibbs and other MCMC methods on such posteriors
-(in terms of convergence rate to the ground truth).
-\item the effect of approximating hard constraints with noisy observations. 
+\item {\bf Posterior quality.} The modality, continuity, shape of support, etc. of the posteriors generated by conditioning on determinism.
+\item {\bf MCMC comparison.} The performance of Symbolic Gibbs vs.\ other MCMC methods on such posteriors
+(in terms of the convergence rate to the ground truth).
+\item {\bf Handling determinism.} Comparing $\delta$-collapsing to noisy relaxations of deterministic constraints used in previous work. 
 \end{enumerate}
 \vspace{-2mm}
-The compared MCMC algorithms and the utilized measurements 
+The compared MCMC algorithms, 
+the utilized measurements
+and the experimental models  
 are introduced in 
-Sections~\ref{sect:experimental.results.algorithms}
-and \ref{sect:experimental.results.measures} respectively.
-The experiments take place on three models presented and discussed in 
-Section~\ref{sect:experimental.results.models}.
+Sections~\ref{sect:experimental.results.algorithms},
+\ref{sect:experimental.results.measures} 
+and \ref{sect:experimental.results.models}
+respectively.
+The experiments evaluations are discussed in in 
+Section~\ref{sect:experimental.evaluations}.
 
 %In the following subsection, we introduce the algorithms that are to be compared with out proposed algorithm using the measurements presented in Section~\ref{sect:experimental.results.measures} on three models presented and discussed in Section~\ref{sect:experimental.results.models}. 
 
 
 \subsection{Algorithms} 
 \label{sect:experimental.results.algorithms}
-We compare the proposed \emph{symbolic Gibbs sampler} (SymGibbs) against
+We compare the proposed \emph{symbolic Gibbs sampler} (SymGibbs) to
 \emph{baseline Gibbs} (BaseGibbs) \citep{pearl1987evidential},
 %i.e.\ where CDF is computed per sample, 
 \emph{rejection sampling} (Rej) \citep{hammersley1964monte}, 
@@ -1184,15 +1185,15 @@ MH is automatically tuned after \citep{roberts1997weak} by testing 200 equidista
 $(0, 0.1]$ and accepting a variance for which the acceptance rate closer to 0.24.
 
 To soften the determinism in HMC and SMC,
-observation of a deterministic variable $Z$ %with prior $\delta\big( G_j(\cdot) - Z_j \big)$ 
+the observation of a deterministic variable $Z$ %with prior $\delta\big( G_j(\cdot) - Z_j \big)$ 
 is approximated by observation of a newly introduced variable 
 with a Gaussian prior centered at $Z$ and with noise variance (parameter) $\sigma^2_{Z}$. 
 %instead of conditioning on a deterministic variable $X$, it is assumed that a newly introduced stochastic variable $X'$ is observed whose prior is a Gaussian centered at $X$ and with noise variance (parameter) $\sigma^2_{X}$.
-Anglican syntax requires %promotes 
+Anglican's syntax requires %promotes 
 adding noise to all observed variables. Therefore, in the case of SMC, stochastic observations are also associated with noise parameters.
 All used parameters are summarized in Table~\ref{t:parameters}. 
 SymGibbs, BaseGibbs, Rej and MH have single thread java implementations.
-Number of threads and other unspecified parameters of Stan and Anglican are their default settings.   
+The number of threads and other unspecified parameters of Stan and Anglican are their default settings.   
 All algorithms run on a 4 core, 3.40GHz PC.% and the model compilation time of Stan and Anglican is not taken into account. 
 
 \subsection{Measurements}
@@ -1220,7 +1221,7 @@ vs (wall-clock) time $t$ where
 $\bvec{q}^* := [q_1^*, \ldots q_\zeta^*]$ 
 is the ground truth mean query vector (that will be discussed shortly).
 
-In each experiment, for each algorithm, $\gamma = 15$ Markov chains are run,  and for each time point $t$,
+In each experiment and for each algorithm, $\gamma = 15$ Markov chains are run,  and for each time point $t$,
 average and standard error of %mean absolute errors 
 $\textsc{MAE}_{1}(t)$ to $\textsc{MAE}_{\gamma}(t)$
 are plotted. 
@@ -1240,29 +1241,404 @@ Per experiment, we manually choose  an error threshold that provides a fair comp
 (see Table~\ref{t:parameters}).
 
 \subsubsection*{Ground truth (of mean query vector) $(\bvec{q}^*)$}
-In the first experimental model (Section~\ref{sect:model1})
+In the first experimental model (asymmetric collision model)
 the ground truth is approximated by taking 200,000 samples via \emph{rejection sampling} (Rej)
 (as a completely unbiased sampler).
 However, this approximation cannot be used in high-dimensional models
-since the the performance of Rej drastically deteriorates in dimensionality.
+since the the performance of Rej drastically deteriorates with increasing dimension.
 %In low dimensional models 
 %the ground truth (required in Eq.~(\ref{e:error.vs.time.measure}))
 %is approximated by taking sufficiently large number of samples by rejection sampling (as a completely unbiased sampler).
 %However, in the experiments where the model size is parametric, we cannot rely on rejection sampling since its performance on the studied model deteriorates drastically in dimension. 
 %We cannot rely on \emph{MCMC convergence diagnostics} methods \citep{cowles1996markov} because they can produce misleading results in case Markov chains do not converge to the ground truth; a scenario that as we will see, for highly complex posteriors is not improbable.
 Our next two experimental models are intentionally chosen to be symmetric
-which enables us to compute the ground truth manually.% rather than relying on Rej.
+as this enables us to compute the ground truth manually.% rather than relying on Rej.
 %Our solution is to conduct tests on symmetric models for which the posterior ground truth can be computed manually.
 
 
 \subsection{Experimental models}
 \label{sect:experimental.results.models}
+
 %Our experiments are to study
 %(a) the quality of the posterior joints, 
 %(b) the error and convergence rate of MCMC methods and %the mixing rate of MCMC methods and
 %(c) the effect of approximation of hard constraints in models with deterministic conditionals. 
 
 %The three experimental models are as follows:
+%\subsubsection{(Asymmetric) collision model.}\label{sect:model1} 
+{\bf(Asymmetric) collision model.}  
+The first model is our running example introduced in 
+Section~\ref{sect:intro} (the \emph{collision model}) using which: 
+\vspace{-2mm}
+\begin{enumerate}
+\item To study the posterior quality, for different evidence and queries, joint posteriors are approximated by 10000 samples taken via rejection sampling
+and plotted in Figure~\ref{fig:mom}.
+\item    
+To  compare sampling methods (qualitatively), 
+in Figure~\ref{fig:mom2}, the experiment is repeated on the posterior of 
+Figure~\ref{fig:mom}-c using the sampling algorithms described in Section~\ref{sect:experimental.results.algorithms}
+\item
+For qualitative MCMC comparison, \emph{absolute error vs time}
+is plotted in Figure~\ref{fig:asymmetric}).
+\end{enumerate}
+
+With increasing the number of space variables, the performance of different sampling algorithms significantly varies.
+Therefore,
+in the remaining experiments, comparisons take place w.r.t.\ the variable space dimensionality.
+ 
+%Fig todo
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}
+\centering
+     \includegraphics[width=0.8\linewidth, height=125pt]
+{plotsx/vis-col/err-vs-time__param2-shaded.pdf}
+%{Figs/plots/collision/err-vs-time__param4-shaded.pdf}
+      \caption{
+%Error as a function of wall clock time (s) for the (asymmetric) collision model using MCMCs with same configurations as in Figure~\ref{fig:mom2}. 
+Absolute error vs time in the \emph{asymmetric collision model}. (Most algorithms correspond sub-figures of Fig.~\ref{fig:mom2}.)
+ }
+\label{fig:asymmetric}
+\end{figure}
+
+
+
+
+
+%Ex 2;  Fig 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[t!]
+\vspace{-0mm}
+\begin{center}
+\begin{tabular}{ccc}
+   \hspace{-5mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/collisionx/err-vs-time__param5-shaded.pdf} 
+& \hspace{-3mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/collisionx/err-vs-time__param15-shaded.pdf} 
+& \hspace{-3mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/collisionx/time_vs_param-errorbar.pdf}%collision/collisionTimeVsSize.png}
+\vspace{-1.5mm}
+\\
+\hspace{-5mm} \footnotesize(a) 
+& \hspace{-4mm} \footnotesize(b) 
+& \hspace{-3mm} \footnotesize(c) \\
+\multicolumn{3}{c}{}
+\end{tabular}
+\end{center}
+\vspace{-8mm}
+\caption{\footnotesize 
+MCMC Convergence measurements in the symmetric multi-object collision model: 
+Absolute error vs time for collision of (a) 4 and (b) 20 objects; (c) Time to reach error threshold $\tau=0.3$.}
+\label{fig:multi-object.mom}
+\vspace{-4mm}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%Ex 2;  Fig 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[t!]
+\vspace{-0mm}
+\begin{center}
+\begin{tabular}{ccc}
+   \hspace{-5mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/conductancex/err-vs-time__param10-shaded.pdf} 
+& \hspace{-3mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/conductancex/err-vs-time__param30-shaded.pdf} 
+& \hspace{-3mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{plotsx/conductancex/time_vs_param-errorbar.pdf}
+\vspace{-1.5mm}
+\\
+\hspace{-5mm} \footnotesize(a) 
+& \hspace{-4mm} \footnotesize(b) 
+& \hspace{-3mm} \footnotesize(c) \\
+\multicolumn{3}{c}{}
+\end{tabular}
+\end{center}
+\vspace{-8mm}
+\caption{\footnotesize 
+MCMC Convergence measurements in the building wiring model: 
+Absolute error vs time for a model with (a) size 4 (i.e.\ 4 paralleled resistors) and (b) size 30; (c) Time to reach error threshold $\tau=0.045$.}
+\label{fig:resistor}
+\vspace{-4mm}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+%\subsubsection{Symmetric multi-object collision model} %In the second experiment,
+{\bf Symmetric multi-object collision model.} %In the second experiment,
+%We study the role of model size on the performance of MCMC methods. We cannot rely on \emph{MCMC convergence diagnostics} methods \citep{cowles1996markov} because they can produce misleading results in case MCMCs do not converge to the ground truth, a scenario that as we will see, for highly complex posteriors is not improbable. Meanwhile, we cannot rely on rejection sampling to approximate the Ground truth since its performance on the studied model deteriorates drastically in dimension. Our solution is to conduct tests on symmetric models for which the posterior ground truth can be computed manually.
+Consider a variation of the collision model in which $n$ objects collide.  
+%by assuming that %collide. But we omit the sequential dependencies of velocities s.t.\ 
+Let all $V_i$ and $M_i$ share a same uniform prior $U(0.2, 2.2)$ and the constraint be $\sum_{i=1}^n{M_i V_i} = P_{\text{tot}}$. 
+The symmetry enables us to compute the posterior ground truth means  values  manually:
+\begin{equation}\footnotesize
+\label{e:col.GT}
+M^* = V^* = \sqrt{P_{\text{tot}} / n} %\left(\frac{P}{n}\right)^{0.5}
+\end{equation}
+Conditioned on $P_{\text{tot}} = 1.5 n$, all masses $M_i$ and velocities  $V_i$ are queried. 
+%The tested algorithms running on the reduced-dim posterior are: symbolic Gibbs (see Section~\ref{sect:symbolic.gibbs}), 
+%baseline Gibbs (CDF computation per sample), 
+%MH (Metropolis-Hastings tuned manually), 
+%MH automatically tuned %to reach the acceptance rate of 0.234 
+%after \citep{roberts1997weak})\footnote{\label{foot:tuning} Among 200 equidistant proposal variances in %interval $(0, 0.1]$ 
+%the one is chosen for which the acceptance rate is closer to 0.24. } and rejection sampling. Among the samplers that add noise to determinism, Stan's Hamiltonian MCMC with noise (variance) parameter $\sigma_P = 0.05$ and Anglican's SMC with noise parameter $0.1$ are plotted. The noise parameters are chosen manually trying to maximize the convergence rate. Other parameters are Stan and Anglican's default setting.
+%By (\ref{e:col.GT}), $a_k$, the average  of $k$-th sample vector $\bvec{s}^{(k)}$, is expected to be $\sqrt{1.5}$; therefore, as the overall sampling error measure, 
+%$\mathbb{E}[|{\xi} - {\xi}^*|]$ 
+%$\mathbb{E}[|\bvec{a} - \bvec{a}^*|]$ is computed where $\bvec{a}$ is the vector of $a_k$ (for $k$ ranges be the number of taken samples) and all entries of vector $\bvec{a}^*$ are 1.5.
+By (\ref{e:col.GT}), all elements of the ground truth vector $\bvec{q}^*$ are $\sqrt{1.5}$.
+
+%For each algorithm 15 Markov chains are run and at consecutive time slots, their corresponding point-to-point means and standard errors are computed. 
+MAE vs. time is depicted in Figures~\ref{fig:multi-object.mom}.a \& b for a 10-D and a 30-D model, respectively.
+%\footnote{Note that the dimensionality of the random variable space is twice the number of objects because each object is associated with a mass and a velocity node. %Conditioned on the total momentum, reduced-dim space is 19D and algorithms that add noise to the observation, deal with  a 21D space.} 
+Time to reach error threshold $\tau = 0.3$ is plotted in 
+Figure~\ref{fig:multi-object.mom}.c.
+
+%We repeated the experiment for different model sizes but for the sake of space restrictions, we do not depict each plot individually. Instead we provide a single plot that summarizes the overall behavior of each sampler w.r.t.\ the model size. We notice that after a particular threshold, the comparative performance of the samplers remains fixed. Therefore, in Figure ???, for each sampler the (wall-clock) time (s) to reach a sampling error threshold (average) equal to 0.3 is plotted vs the model size.\footnote{ If we pick the error threshold to be too low, many samplers would never reach it. If it is too high, samplers pass it prior to be comparatively stable. On collision model, the manual error threshold choice (around) 0.3 happens to provide a fair compromise between these two requirements.  }%end footnote
+
+  
+%In the latter high-dimensional space, the rejection sampling has not been able to generate a particle. MH algorithms convergence rate is very low while the baseline Gibbs still perform well and the symbolic Gibbs performance is at least an order of magnitude better. Finally, Figure~\ref{fig:err-threshold-vs-size-collision} depicts the time to reach a fixed error threshold $T=0.2$ versus number of colliding objects. \\
+%
+
+The next model deals with a more complicated observed determinism.
+
+{\bf Building wiring model. } 
+An electrical circuit composed of $n$, $10\Omega\pm5\%$ parallel resistor elements $R_i$
+(with priors $\pr(R_i) = U(9.5, \, 10.5)$).
+% with bell-shaped tolerance distributions (truncated quadratics, positive in the range $[8, 12]$). The posterior tolerance distribution is computed when 
+The resistors are inaccessible i.e.\ the voltage drop and the current associated with them cannot be measured directly.
+Given the source voltage $V$ and the total input current $I$, the posterior distribution of the element resistances are required.
+Here the deterministic constraint is:
+%Here, the observation can be stated as the following deterministic constraint:
+\begin{equation} \footnotesize 
+\label{e:reduced.mass}
+ \frac{1}{R_1} + \ldots + \frac{1}{R_n} = c
+\end{equation}
+where $c = \frac{I}{V}$.
+Equations if the form (\ref{e:reduced.mass}) are generally referred to as \emph{reduced mass} relationships and 
+have applications in the electrical, thermal, hydraulic and mechanical engineering domains.
+
+Let the observation be $c = {3n}/{(2*10.5 + 9.5)}$.
+Due to the symmetry of the problem, the posterior ground truth mean is known:
+\begin{equation*}
+R_i^* = \frac{n}{c} = 10.166667\qquad \text{ for } i = 1, \ldots, n
+\end{equation*}
+MAE vs. time for networks of 10 and 30 resistors are depicted in 
+Figures~\ref{fig:resistor}.a \& b respectively.
+Time to reach error threshold $\tau = 0.045$ is plotted in 
+Figure~\ref{fig:resistor}.c.
+
+%Stan and Anglican observation noise divergences are 0.02 and 0.07 respectively. Other settings are as before.
+
+\subsection{Experimental evaluations}
+\label{sect:experimental.evaluations}
+The telltale plots of Figure~\ref{fig:mom}, reveal the nature of the problem tackled in this paper.
+They show that even in the presence of a single deterministic constraint, 
+a simple prior can be transformed into a complicated piecewise and multimodal posterior that does not resemble any family of 
+probability densities studied in the literature so far. 
+
+Plots of Figure~\ref{fig:mom2} shows that MH and SMC suffer from low \emph{effective sample size}. 
+(Note that the apparent sparsity of plots~\ref{fig:mom2}-b, \ref{fig:mom2}-e \& \ref{fig:mom2}-f is due to {\color{red}repeated samples}.)
+
+They also suggest that  softening determinism by noise leads to a 
+{\color{red} discrepancy between the model and taken samples} 
+that may not be resolved by lowering the noise threshold 
+(i.e.\ decreasing HMC's observation noise variance from 0.2 
+(Fig.~\ref{fig:mom2}-c) 
+to 0.001 (Fig.~\ref{fig:mom2}-d) does not help much.)
+
+These results are confirmed by the quantitative measurements of 
+Figures~\ref{fig:asymmetric} to %,  \ref{fig:multi-object.mom} and 
+\ref{fig:resistor} indicating that in all experimental settings,
+Symbolic Gibbs constantly and significantly performs the best.
+
+An interesting result is that in the Building wiring model, even in a dimensionality as low as 10, 
+the Metropolis-Hasting based algorithms may not converge to the (manually computed) ground truth or their convergence rate is extremely low. 
+This happens regardless of the way determinism is handled. 
+A reason may be as follows:
+It is widely known that all Metropolis-Hasting-based algorithms are sensitive to parameter tunings.
+Tuning takes place internally and during the burn-in period according to some heuristics.
+Such heuristics may not be valid in the densities studied in this paper as they are very different from the bell-shaped unimodal distributions often studied in the literature so far.
+
+Manual computations verified that in the Building wiring model, 
+high degree terms occur in the denominator of the posterior fraction. 
+This may be another reason for the poor performance of the Metropolis-Hasting-based algorithms: Existence of multiple highly dense regions in the posterior can act as traps for such algorithms.
+
+Since Gibbs samplers directly sample from the original distributions (rather than proposal densities) they can cope well with anomalies and as our results show, always converge to the ground truth. 
+
+%Here and in the quantitative experiments that will follow, regardless to the parameter tuning, the performance of algorithms where determinism is softened by noise is much lower than the algorithms with $\delta$-collapsed models.
+
+ \section{Conclusion}
+\label{sect:conclusion}
+
+We introduced piecewise algebraic graphical models that for the first time handle a large family of nonlinear deterministic restrictions, such as the physical laws, in the form of multivariate polynomial fractions. The nonlinear nature of this data leads to a new genre of posterior distributions with possible discontinuities, 
+piecewise parts with nonlinear bordering hyperplanes, rapid density changes and anomalies. Our experimental results show that Gibbs sampling performs well in the presence of such unconventional densities while other Monte Carlo methods do not. We showed that in piecewise algebraic models, the univariate CDFs required for Gibbs sampling can be computed analytically and prior to the actual sampling process. Our novel sampling method, \emph{Symbolic Gibbs}, saves a significant amount of computation, improving the performance dramatically. The combination of these novel contributions should make probabilistic reasoning applicable to variety of new applications that have remained unsolvable so far.      
+
+
+%*********************************************************************************************
+%*********************************************************************************************
+%*********************************************************************************************
+
+% Note use of \abovespace and \belowspace to get reasonable spacing 
+% above and below tabular lines. 
+
+%\begin{table}[t]
+%\caption{Classification accuracies for naive Bayes and flexible 
+%Bayes on various data sets.}
+%\label{sample-table}
+%\vskip 0.15in
+%\begin{center}
+%\begin{small}
+%\begin{sc}
+%\begin{tabular}{lcccr}
+%\hline
+%\abovespace\belowspace
+%Data set & Naive & Flexible & Better? \\
+%\hline
+%\abovespace
+%Breast    & 95.9$\pm$ 0.2& 96.7$\pm$ 0.2& $\surd$ \\
+%Cleveland & 83.3$\pm$ 0.6& 80.0$\pm$ 0.6& $\times$\\
+%Glass2    & 61.9$\pm$ 1.4& 83.8$\pm$ 0.7& $\surd$ \\
+%Credit    & 74.8$\pm$ 0.5& 78.3$\pm$ 0.6&         \\
+%Horse     & 73.3$\pm$ 0.9& 69.7$\pm$ 1.0& $\times$\\
+%Meta      & 67.1$\pm$ 0.6& 76.5$\pm$ 0.5& $\surd$ \\
+%Pima      & 75.1$\pm$ 0.6& 73.9$\pm$ 0.5&         \\
+%\belowspace
+%Vehicle   & 44.9$\pm$ 0.6& 61.5$\pm$ 0.4& $\surd$ \\
+%\hline
+%\end{tabular}
+%\end{sc}
+%\end{small}
+%\end{center}
+%\vskip -0.1in
+%\end{table}
+
+%\subsubsection*{References}
+{%\footnotesize
+\bibliographystyle{plainnat}
+\bibliography{symGibbsUAI}
+%\bibliographystyle{icml2015}
+}
+
+
+\end{document}
+
+======================================================
+
+{\color{green}As mentioned, conditioning on deterministic constraints lead to posterior masses positioned  on submanifolds and transformations that are required for dimension reduction often end in distributions which are highly piecewise and multimodal. This class of distributions is intrinsically different from the smooth, bell-shaped distributions often studied in the literature. }
+
+%We tested the algorithms supported by Anglican:  sequential Monte Carlo (SMC) \cite{wood2014new}, Particle-Gibbs (PGibbs) (a variation of Particle-MCMC\cite{andrieu2010particle})  and a variation of MH introduced in \cite{wingate2011lightweight} and named \emph{random database} (RDB) in \cite{wood2014new}. Due to existence of multiple noisy observations, in terms of size and accuracy of the effective samples, the performance of all three algorithms were low. The best performance was due to RDB which is plotted. 
+ 
+
+\subsection{Monte Carlo methods.}
+%An alternative to exact inference is to approximate the joint distribution by a set of samples drawn from it using Monte Carlo methods. By the law of large numbers, this approximation is asymptotically unbiased. Using samples, the costly marginalization operation is avoided since the conditional probability $\pr(\bvec{q} \,| \, \bvec{e})$ is simply approximated by the number of samples satisfying $\bvec{q} \cap \bvec{e}$ divided by the number of samples satisfying $\bvec{e}$.
+%Note that unlike other approximate methods, inference via sampling leads to asymptotically unbiased solutions i.e.\ by taking sufficient number of samples, the \emph{posterior} can be approximated by an arbitrary precision.
+Approximating the posterior distribution via drawing samples from it by Monte Carlo methods 
+provides an asymptotically unbiased tool that completely avoids the hassle of multiple integrations.% required in closed-form sampling.   
+Three major such methods are as follows:
+
+{\bf Rejection sampling:} 
+In this method \citep{hammersley1964monte}, to draw a sample from 
+a distribution $p(\bvec{X})$, a sample $\bvec{x}$ is taken from another distribution $q(\bvec{X})$
+such that $p(\bvec{X})/q(\bvec{X})$ is bound by a known constant $c$
+and samples can be taken from $q(\bvec{X})$ efficiently.
+The produced sample is accepted with probability $p(\bvec{x}) / c q(\bvec{x})$, 
+otherwise it is rejected and the process is repeated. 
+
+{\bf Metropolis-Hastings (MH):}
+To draw a new sample $\bvec{x}^{(t)}$ from a distribution $p(\bvec{X})$, given a previously taken sample $\bvec{x}^{(t-1)}$, 
+MH \citep{metropolis1953equation} takes a sample $\bvec{x}'$ from a symmetric \emph{proposal density} $q(\bvec{X} |\, \bvec{x}^{(t-1)})$. 
+%from which samples can be taken efficiently 
+%(often an isotropic \emph{Gaussian} centered at $\bvec{x}^{(t-1)}$). 
+With probability $\min \big(1, p(\bvec{x}')/p(\bvec{x}^{(t-1)}) \big)$, 
+$\bvec{x}'$ is accepted as the next sample ($\bvec{x}^{(t)} \leftarrow \bvec{x}'$), otherwise, $\bvec{x}^{(t)} \leftarrow \bvec{x}^{(t-1)}$. 
+Choosing a good \emph{proposal} is problem-dependent and requires tuning. 
+
+
+{\bf Gibbs sampling:}
+Gibbs  \citep{geman1984stochastic} is a robust sampling tool in the sense that it does not require known bounds, tuned proposal densities or parameters.
+Drawing a sample for $\bvec{X} = (X_1, \ldots, X_N)$ takes place in $N$ steps.
+In the $i$-th step, $X_i$ is sampled conditioned on the last realization of the others:
+$x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$. 
+To perform this task, the following univariate \emph{Cumulative Distribution Function} (CDF)
+is computed by equation~(\ref{e:cdf}) and samples are taken by inverse transform sampling. 
+{\footnotesize
+\begin{equation}
+%\label{e:cdf}
+F(X_i  \,|\, \bvec{x}_{-i}) 
+\propto
+\int_{-\infty}^{X_i} \!\!\!\! \pr(X_i = t, \bvec{x}_{-i}) \, d  t
+\end{equation} 
+
+
+
+\begin{algorithm}[tb]%[hb!]
+\caption{{\sc $\delta$-Collapsing}  
+\label{alg:posterior-joint}}
+\begin{algorithmic}
+\STATE {\bf Input: }{\small
+$\tuple{\bvec{E}, \bvec{e}}$ 
+// \emph{\small evidence (variables \bvec{E} and values \bvec{e})}\\
+%$\bvec{Z} = \{Z\}$, deterministic variables\\
+\hspace{11mm} 
+$\small \boldsymbol{\Psi}$ % := \boldsymbol{\Psi^S} \cup \boldsymbol{\Psi^D}$ 
+// \emph{\small union of stochastic potentials (in the form $\Psi_i$) and deterministic potentials (in the form $\delta\big( G_j (\cdot) - Z_j \big)$.}
+ }
+\STATE {\bf Output} {posterior joint distribution of a subset of variables from which, all other variables can be decided.}
+ \vspace{2mm}
+\hrule
+ \vspace{2mm}
+%----
+\STATE{\bf 1.~Observed variable instantiation.} 
+In all potentials (either deterministic or statistical), all observed stochastic/deterministic 
+variables are instantiated: \vspace{-1.0mm}
+%\footnote{ A deterministic factor $\delta[Z_j- G_j(\cdot)]$ associated with an observed variable $Z_j = c$ is therefore substituted by $\delta[c- G_j(\cdot)]$.}
+\begin{equation*}\footnotesize 
+\forall \Psi \in \boldsymbol{\Psi} \qquad \Psi \leftarrow \Psi|_{\bvec{E} \leftarrow \bvec{e}}
+\end{equation*} 
+%----
+\STATE{\bf 2. Marginalizing determinism.} 
+In all potentials, all deterministic variables $Z_j$, are 
+substituted by their 
+logical values $G_j(\cdot)$ (so, the potential $\delta ( G_j(\cdot) - Z_j)$ itself is replaced by 1.)\footnotemark \vspace{-1mm}
+\begin{equation*}\footnotesize 
+\forall Z_j \in \bvec{Z},\,
+\forall \Psi \in \boldsymbol{\Psi} 
+\qquad
+\Psi \leftarrow \Psi|_{Z_j \leftarrow G_j (\cdot)}
+\end{equation*}
+%----
+\STATE{\bf 3. Joint factor formation.} the product of all stochastic potentials is computed: \vspace{-2.0mm}
+\begin{equation*}\footnotesize %\vspace{-3.7mm}
+\Phi := \prod_{i} \Psi_i
+\end{equation*}
+%
+\STATE{\bf 4. Dimension reduction.} %collapsing determinism 
+%What remains is to condition on the deterministic constraints.
+For each observed deterministic random variable $Z_j = c$ (where $c$ is a constant),
+$(G_j(\cdot) - c)$ is solved w.r.t.\ some variable 
+$Y  \in \bvec{Y}_j^d$ (assuming that it is solvable %with a single solution 
+w.r.t.\ at least one variable with simple roots in the form of polynomial fractions).
+Let  
+$\textsc{Solve}(G_j(\cdot) - c; \, Y)$
+% := \{\Upsilon_{1}, \Upsilon_{2}, \ldots\}$ 
+be the set of such solutions.
+$\Phi$ is modified as follows: \vspace{-1mm}
+\begin{equation}\footnotesize
+\label{e:coreX}
+\Phi 
+\;
+\longleftarrow
+\!\!\!\!\!\!\!
+\sum_{\Upsilon \in \textsc{Solve}(G_j(\cdot) - c;\, Y)}
+\frac{\Phi|_{Y \leftarrow \Upsilon}}{
+\big|(\partial G_j(\cdot) / \partial Y) |_{Y \leftarrow \Upsilon}
+\big|
+}
+\end{equation}
+\STATE {\bf 5. Return} $\Phi$
+\end{algorithmic}
+\end{algorithm}
+%\decmargin{0.5em}
+\footnotetext{Note that by the definition of Dirac $\delta$, this simply means that  unobserved deterministic variables are marginalized out.}
+
+//////////////////////////////////////////////////////////////////////////////
+
 \subsubsection{(Asymmetric) collision model.}\label{sect:model1} 
 To study the quality of the posterior joints created by conditioning on deterministic constraints,
 we sample posteriors associated with our running example (\emph{collision model}) for different evidence configurations.
@@ -1477,178 +1853,3 @@ This might be a reason for the poor performance of the MH-based algorithms:
 There exists highly dense regions in the posterior that act as traps for MH based algorithms.
 
 %Here and in the quantitative experiments that will follow, regardless to the parameter tuning, the performance of algorithms where determinism is softened by noise is much lower than the algorithms with $\delta$-collapsed models.
-
- \section{Conclusion}
-\label{sect:conclusion}
-
-We introduced piecewise algebraic graphical models that for the first time handle a large family of nonlinear deterministic restrictions, such as the physical laws, in the form of multivariate polynomial fractions. The nonlinear nature of this data leads to a new genre of posterior distributions with possible discontinuities, 
-piecewise parts with nonlinear bordering hyperplanes, rapid density changes and anomalies. Our experimental results show that Gibbs sampling performs well in the presence of such unconventional densities while other Monte Carlo methods do not. We showed that in piecewise algebraic models, the univariate CDFs required for Gibbs sampling can be computed analytically and prior to the actual sampling process. Our novel sampling method, \emph{Symbolic Gibbs}, saves a significant amount of computation, improving the performance dramatically. The combination of these novel contributions should make probabilistic reasoning applicable to variety of new applications that have remained unsolvable so far.      
-
-
-%*********************************************************************************************
-%*********************************************************************************************
-%*********************************************************************************************
-
-% Note use of \abovespace and \belowspace to get reasonable spacing 
-% above and below tabular lines. 
-
-%\begin{table}[t]
-%\caption{Classification accuracies for naive Bayes and flexible 
-%Bayes on various data sets.}
-%\label{sample-table}
-%\vskip 0.15in
-%\begin{center}
-%\begin{small}
-%\begin{sc}
-%\begin{tabular}{lcccr}
-%\hline
-%\abovespace\belowspace
-%Data set & Naive & Flexible & Better? \\
-%\hline
-%\abovespace
-%Breast    & 95.9$\pm$ 0.2& 96.7$\pm$ 0.2& $\surd$ \\
-%Cleveland & 83.3$\pm$ 0.6& 80.0$\pm$ 0.6& $\times$\\
-%Glass2    & 61.9$\pm$ 1.4& 83.8$\pm$ 0.7& $\surd$ \\
-%Credit    & 74.8$\pm$ 0.5& 78.3$\pm$ 0.6&         \\
-%Horse     & 73.3$\pm$ 0.9& 69.7$\pm$ 1.0& $\times$\\
-%Meta      & 67.1$\pm$ 0.6& 76.5$\pm$ 0.5& $\surd$ \\
-%Pima      & 75.1$\pm$ 0.6& 73.9$\pm$ 0.5&         \\
-%\belowspace
-%Vehicle   & 44.9$\pm$ 0.6& 61.5$\pm$ 0.4& $\surd$ \\
-%\hline
-%\end{tabular}
-%\end{sc}
-%\end{small}
-%\end{center}
-%\vskip -0.1in
-%\end{table}
-
-%\subsubsection*{References}
-{%\footnotesize
-\bibliographystyle{plainnat}
-\bibliography{symGibbsUAI}
-%\bibliographystyle{icml2015}
-}
-
-
-\end{document}
-
-======================================================
-
-{\color{green}As mentioned, conditioning on deterministic constraints lead to posterior masses positioned  on submanifolds and transformations that are required for dimension reduction often end in distributions which are highly piecewise and multimodal. This class of distributions is intrinsically different from the smooth, bell-shaped distributions often studied in the literature. }
-
-%We tested the algorithms supported by Anglican:  sequential Monte Carlo (SMC) \cite{wood2014new}, Particle-Gibbs (PGibbs) (a variation of Particle-MCMC\cite{andrieu2010particle})  and a variation of MH introduced in \cite{wingate2011lightweight} and named \emph{random database} (RDB) in \cite{wood2014new}. Due to existence of multiple noisy observations, in terms of size and accuracy of the effective samples, the performance of all three algorithms were low. The best performance was due to RDB which is plotted. 
- 
-
-\subsection{Monte Carlo methods.}
-%An alternative to exact inference is to approximate the joint distribution by a set of samples drawn from it using Monte Carlo methods. By the law of large numbers, this approximation is asymptotically unbiased. Using samples, the costly marginalization operation is avoided since the conditional probability $\pr(\bvec{q} \,| \, \bvec{e})$ is simply approximated by the number of samples satisfying $\bvec{q} \cap \bvec{e}$ divided by the number of samples satisfying $\bvec{e}$.
-%Note that unlike other approximate methods, inference via sampling leads to asymptotically unbiased solutions i.e.\ by taking sufficient number of samples, the \emph{posterior} can be approximated by an arbitrary precision.
-Approximating the posterior distribution via drawing samples from it by Monte Carlo methods 
-provides an asymptotically unbiased tool that completely avoids the hassle of multiple integrations.% required in closed-form sampling.   
-Three major such methods are as follows:
-
-{\bf Rejection sampling:} 
-In this method \citep{hammersley1964monte}, to draw a sample from 
-a distribution $p(\bvec{X})$, a sample $\bvec{x}$ is taken from another distribution $q(\bvec{X})$
-such that $p(\bvec{X})/q(\bvec{X})$ is bound by a known constant $c$
-and samples can be taken from $q(\bvec{X})$ efficiently.
-The produced sample is accepted with probability $p(\bvec{x}) / c q(\bvec{x})$, 
-otherwise it is rejected and the process is repeated. 
-
-{\bf Metropolis-Hastings (MH):}
-To draw a new sample $\bvec{x}^{(t)}$ from a distribution $p(\bvec{X})$, given a previously taken sample $\bvec{x}^{(t-1)}$, 
-MH \citep{metropolis1953equation} takes a sample $\bvec{x}'$ from a symmetric \emph{proposal density} $q(\bvec{X} |\, \bvec{x}^{(t-1)})$. 
-%from which samples can be taken efficiently 
-%(often an isotropic \emph{Gaussian} centered at $\bvec{x}^{(t-1)}$). 
-With probability $\min \big(1, p(\bvec{x}')/p(\bvec{x}^{(t-1)}) \big)$, 
-$\bvec{x}'$ is accepted as the next sample ($\bvec{x}^{(t)} \leftarrow \bvec{x}'$), otherwise, $\bvec{x}^{(t)} \leftarrow \bvec{x}^{(t-1)}$. 
-Choosing a good \emph{proposal} is problem-dependent and requires tuning. 
-
-
-{\bf Gibbs sampling:}
-Gibbs  \citep{geman1984stochastic} is a robust sampling tool in the sense that it does not require known bounds, tuned proposal densities or parameters.
-Drawing a sample for $\bvec{X} = (X_1, \ldots, X_N)$ takes place in $N$ steps.
-In the $i$-th step, $X_i$ is sampled conditioned on the last realization of the others:
-$x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$. 
-To perform this task, the following univariate \emph{Cumulative Distribution Function} (CDF)
-is computed by equation~(\ref{e:cdf}) and samples are taken by inverse transform sampling. 
-{\footnotesize
-\begin{equation}
-%\label{e:cdf}
-F(X_i  \,|\, \bvec{x}_{-i}) 
-\propto
-\int_{-\infty}^{X_i} \!\!\!\! \pr(X_i = t, \bvec{x}_{-i}) \, d  t
-\end{equation} 
-
-
-
-\begin{algorithm}[tb]%[hb!]
-\caption{{\sc $\delta$-Collapsing}  
-\label{alg:posterior-joint}}
-\begin{algorithmic}
-\STATE {\bf Input: }{\small
-$\tuple{\bvec{E}, \bvec{e}}$ 
-// \emph{\small evidence (variables \bvec{E} and values \bvec{e})}\\
-%$\bvec{Z} = \{Z\}$, deterministic variables\\
-\hspace{11mm} 
-$\small \boldsymbol{\Psi}$ % := \boldsymbol{\Psi^S} \cup \boldsymbol{\Psi^D}$ 
-// \emph{\small union of stochastic potentials (in the form $\Psi_i$) and deterministic potentials (in the form $\delta\big( G_j (\cdot) - Z_j \big)$.}
- }
-\STATE {\bf Output} {posterior joint distribution of a subset of variables from which, all other variables can be decided.}
- \vspace{2mm}
-\hrule
- \vspace{2mm}
-%----
-\STATE{\bf 1.~Observed variable instantiation.} 
-In all potentials (either deterministic or statistical), all observed stochastic/deterministic 
-variables are instantiated: \vspace{-1.0mm}
-%\footnote{ A deterministic factor $\delta[Z_j- G_j(\cdot)]$ associated with an observed variable $Z_j = c$ is therefore substituted by $\delta[c- G_j(\cdot)]$.}
-\begin{equation*}\footnotesize 
-\forall \Psi \in \boldsymbol{\Psi} \qquad \Psi \leftarrow \Psi|_{\bvec{E} \leftarrow \bvec{e}}
-\end{equation*} 
-%----
-\STATE{\bf 2. Marginalizing determinism.} 
-In all potentials, all deterministic variables $Z_j$, are 
-substituted by their 
-logical values $G_j(\cdot)$ (so, the potential $\delta ( G_j(\cdot) - Z_j)$ itself is replaced by 1.)\footnotemark \vspace{-1mm}
-\begin{equation*}\footnotesize 
-\forall Z_j \in \bvec{Z},\,
-\forall \Psi \in \boldsymbol{\Psi} 
-\qquad
-\Psi \leftarrow \Psi|_{Z_j \leftarrow G_j (\cdot)}
-\end{equation*}
-%----
-\STATE{\bf 3. Joint factor formation.} the product of all stochastic potentials is computed: \vspace{-2.0mm}
-\begin{equation*}\footnotesize %\vspace{-3.7mm}
-\Phi := \prod_{i} \Psi_i
-\end{equation*}
-%
-\STATE{\bf 4. Dimension reduction.} %collapsing determinism 
-%What remains is to condition on the deterministic constraints.
-For each observed deterministic random variable $Z_j = c$ (where $c$ is a constant),
-$(G_j(\cdot) - c)$ is solved w.r.t.\ some variable 
-$Y  \in \bvec{Y}_j^d$ (assuming that it is solvable %with a single solution 
-w.r.t.\ at least one variable with simple roots in the form of polynomial fractions).
-Let  
-$\textsc{Solve}(G_j(\cdot) - c; \, Y)$
-% := \{\Upsilon_{1}, \Upsilon_{2}, \ldots\}$ 
-be the set of such solutions.
-$\Phi$ is modified as follows: \vspace{-1mm}
-\begin{equation}\footnotesize
-\label{e:coreX}
-\Phi 
-\;
-\longleftarrow
-\!\!\!\!\!\!\!
-\sum_{\Upsilon \in \textsc{Solve}(G_j(\cdot) - c;\, Y)}
-\frac{\Phi|_{Y \leftarrow \Upsilon}}{
-\big|(\partial G_j(\cdot) / \partial Y) |_{Y \leftarrow \Upsilon}
-\big|
-}
-\end{equation}
-\STATE {\bf 5. Return} $\Phi$
-\end{algorithmic}
-\end{algorithm}
-%\decmargin{0.5em}
-\footnotetext{Note that by the definition of Dirac $\delta$, this simply means that  unobserved deterministic variables are marginalized out.}
-
