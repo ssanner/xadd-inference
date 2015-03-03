@@ -185,9 +185,9 @@ is computed by (\ref{e:cdf}) and samples are taken via inverse transform samplin
 \end{equation} 
 Gibbs sampling does not require any tuning
 and since it directly samples from the distribution (rather than indirectly and through proposals) it has high effective sample size. 
-However, in general closed-form computation of the CDF integrals is not possible and 
+However, in general, closed-form computation of the CDF integrals is not possible and 
 approximations (such as \cite{gilks1992adaptive}) are costly.
-Considering that $N$ univariate integrals should be computed per sample, approximate Gibbs samplers are typically slow.
+Considering that $N$ univariate integrals should be computed per sample, such approximate Gibbs samplers are typically slow.
  
 %However, none of these classes can handle deterministic constraints beyond the level of linear constraints.
 
@@ -289,7 +289,7 @@ $\boldsymbol{\Psi^S}$ are stochastic and $ \boldsymbol{\Psi^D} := \left\{\Psi_{Z
 \STATE {\bf Output:} Set of all solutions (i.e. roots) of $G$ w.r.t.\ $X$ (i.e.\ by treating other variables as constants). 
 The roots must be simple and in the form of polynomial fractions. 
 
-In case factorization is impossible or some roots are \emph{multiple} (i.e.\ not distinct), $\emptyset$ is returned. 
+(Note: In case factorization is impossible or some roots are \emph{multiple}, i.e. not distinct, $\emptyset$ is returned.)
 \end{algorithmic}
 \end{algorithm}
 %\decmargin{0.5em}kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk
@@ -530,11 +530,11 @@ $$}
 \label{sect:ppfs}
 Now that we have collapsed out determinism, we can apply Gibbs sampling.
 However, automated derivation of Gibbs sampling requires a univariate symbolic integral
-(required in (\ref{e:cdf})) and in general case this is not possible.
+(required in (\ref{e:cdf})) and in the general case, this is not always possible.
 In this section, we address this issue by introducing a rich family of distributions (namely PPFs for \emph{polynomial piecewise fractional} functions)
-that remain closed under many algebraic operations including all operations required for $\delta$-collapsing! 
-We also show that PPF*, an expressive subset of the PPF family, have analytical univariate integrals.
-This leads to an efficient variation of Gibbs sampling that will be introduced in Section~\ref{sect:symbolic.gibbs}.
+that remain closed under many algebraic operations including all operations required for $\delta$-collapsing. 
+We also show that PPF*, an expressive subset of the PPF family, \emph{have analytical univariate integrals}.
+This enables an efficient variation of Gibbs sampling that will be introduced in Section~\ref{sect:symbolic.gibbs}.
 
 %We study piecewise fractional functions with polynomial partitioning conditions (PPFs) -- a highly expressive class of functions neglected in the literature so far.
 %That is, functions in form:
