@@ -695,7 +695,7 @@ Now we provide a procedure to perform integration on PPF* functions.
 
 It can be shown that if in a PPF* all variables except one are instantiated, 
 the resulting univariate function has a closed form integral.  
-To perform exact Gibbs sampling, this is sufficient because in each step of Gibbs sampling only one variable is uninstantiated.
+To perform exact Gibbs sampling, this is sufficient because in each step of Gibbs sampling only one variable is kept uninstantiated.
 
 However, we want to go a step further and compute univariate integral of multivariate piecewise functions  
 without instantiating the remaining variables.
@@ -704,7 +704,7 @@ without instantiating the remaining variables.
 This may look impossible since in the latter case, the integration bounds depend on the values of uninstantiated conditions. 
 But as the following procedure shows, it is possible: 
 
-Suppose $\int_{\alpha}^\beta f \dd x$ is intended where $f$ is a PPF*.
+Suppose $\int_{\alpha}^\beta f \dd x$ is intended where $f$ is a PPF* and $\alpha$ and $\beta$ are expressions (or numbers).
 
 \begin{enumerate}[leftmargin=2.6ex]
 \item \emph{(Partitioning).}
@@ -1329,8 +1329,7 @@ Given the experimental results,
 the questions posed in the beginning of this section are replied as follows:
 
 {\bf Posterior quality.} 
-Plots of Figure~\ref{fig:mom} illustrate the
-the posterior quality of the models studied in this paper.
+Plots of Figure~\ref{fig:mom} illustrate the posterior quality of the models studied in this paper.
 They show that  
 even in the presence of a single deterministic constraint, 
 a simple prior can be transformed into a complicated piecewise and multi-modal posterior that does not resemble any family of 
