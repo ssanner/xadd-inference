@@ -1220,12 +1220,12 @@ Absolute error vs time in the \emph{asymmetric collision model}. (The algorithms
 \multicolumn{3}{c}{}
 \end{tabular}
 \end{center}
-\vspace{-8mm}
+\vspace{-6mm}
 \caption{\footnotesize 
 MCMC Convergence measurements in the symmetric multi-object collision model: 
 Absolute error vs time for collision of (a) 4 and (b) 20 objects; (c) Time to reach error threshold $\tau=0.3$.}
 \label{fig:multi-object.mom}
-\vspace{-4mm}
+\vspace{-2mm}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1247,12 +1247,12 @@ Absolute error vs time for collision of (a) 4 and (b) 20 objects; (c) Time to re
 \multicolumn{3}{c}{}
 \end{tabular}
 \end{center}
-\vspace{-8mm}
+\vspace{-6mm}
 \caption{\footnotesize 
 MCMC Convergence measurements in the building wiring model: 
 Absolute error vs time for a model with (a) size 4 (i.e.\ 4 paralleled resistors) and (b) size 30; (c) Time to reach error threshold $\tau=0.045$.}
 \label{fig:resistor}
-\vspace{-4mm}
+\vspace{-2mm}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1387,24 +1387,39 @@ Since Gibbs samplers directly sample from the original distributions (rather tha
 
 %Here and in the quantitative experiments that will follow, regardless to the parameter tuning, the performance of algorithms where determinism is softened by noise is much lower than the algorithms with $\delta$-collapsed models.
 
- \section{Conclusion}
+ \section{Related Work and Conclusions}
 \label{sect:conclusion}
-Recently, piecewise polynomial distributions have attracted attention.
-So far, piecewise polynomials with hyperrectangular, hyper-rhombus and linear partitioning constraints have been used in Bayesian networks \citep{shenoy2011inference,shenoy2012two,Sanner:12}.
 
-In this paper we introduced polynomial piecewise fractional functions (PPFs).
-They are polynomial fractions with polynomial partitioning constraints
-and up to our knowledge, are the richest class of piecewise functions studied in the literature of graphical models and probabilistic inference so far.
-We showed that this family is expressive enough to remain closed under operations required to 
-transform networks with (non)linear deterministic restrictions, to purely stochastic models.
+Recently, piecewise polynomial representations of distributions in graphical
+models have attracted attention for their closed-form analytical properties.
+However, to date, such forms have been quite restricted as evidenced by
+the piecewise polynomials with hyperrectangular, hyper-rhombus and
+linear partitioning constraints that have been used in existing work 
+\citep{shenoy2011inference,shenoy2012two,Sanner:12}.
 
-We also showed that a large subset of PPFs have symbolic univariate integrals.
-This led to the main contribution of this paper. 
-A full automated exact Gibbs sampler, called \emph{symbolic Gibbs}, 
-in which all univariate CDFs required for Gibbs sampling are computed analytically and prior to the actual sampling process.
-Our novel sampling method, \emph{symbolic Gibbs}, saves a significant amount of computation, and improves the performance dramatically. The combination of these novel contributions should make probabilistic reasoning applicable to variety of new applications that have remained unsolvable so far. 
+In this paper we introduced a rich class of polynomial piecewise
+fractional functions (PPFs) using polynomial partitioning constraints.
+To the best of our knowledge, this is the richest class of piecewise
+functions studied in the literature of graphical models and
+probabilistic inference so far.  We showed that this family is
+expressive enough to remain closed under operations required to
+transform networks with nonlinear deterministic constraints to purely
+stochastic PPF models amenable to Gibbs sampling.
 
-  
+We showed that a large subset of PPFs have symbolic univariate
+integrals, which together with determinism elimination, enabled the
+main contribution of this paper: a fully-automated exact Gibbs sampler
+called \emph{symbolic Gibbs}.  In \emph{symbolic Gibbs}, all
+univariate CDFs required for Gibbs sampling are computed analytically
+and prior to the actual sampling process.  In this way, \emph{symbolic
+  Gibbs} saves a significant amount of computation by avoiding
+per-sample computations, and shows dramatically improved performance
+compared to existing samplers on complex models motivated by physics
+and engineering. The combination of these novel contributions should
+make probabilistic reasoning applicable to variety of new applications
+that, to date, have remained beyond the tractability and accuracy
+boundaries of existing inference methods.
+
 
 
 %*********************************************************************************************
