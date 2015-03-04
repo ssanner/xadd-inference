@@ -207,7 +207,10 @@ exactly one potential $\Psi$ (called a \emph{deterministic potential}) in the fo
 $\delta(G_j (\cdot) - Z_j)$ where  $\delta$ denotes the Dirac delta and $G_j$ (which we call the \emph{logical value} associated with $Z_j$) is 
 an expression that does not involve $Z_j$.\footnote{Circular/recursive definition of deterministic variables are not allowed either.}$^{,}$\footnote{
 $\delta\big( G_j(\cdot) - Z_j \big)$ should be thought of as a limit of a normal distribution centered at $G_j(\cdot)$ and a variance that tends to zero.
-We leave it to the graphical model designer to specify a deterministic potential in a form where $G_j(\cdot)$ corresponds to an observed quantity.} 
+We leave it to the graphical model designer to specify a deterministic potential 
+according to the limiting process that produces the intended distribution. 
+See the literature on the Borel-Kolmogorov paradox \citep{kolmogorov1950foundations} for more details.}
+%in a form where $G_j(\cdot)$ corresponds to an observed quantity.} 
 
 For instance, in the \emph{collision model}, $P_1$ is a deterministic variable associated
 with deterministic potential $\delta(M_1V_1 - P_1)$ 
@@ -1065,8 +1068,8 @@ We compare the proposed \emph{symbolic Gibbs sampler} (SymGibbs) to
 %i.e.\ where CDF is computed per sample, 
 \emph{rejection sampling} (Rej) \citep{hammersley1964monte}, 
 \emph{tuned Metropolis-Hastings} (MH) \citep{roberts1997weak}, 
-\emph{Hamiltonian Monte Carlo} (HMC) using Stan PPL \citep{stan-manual:2014}
-and \emph{Sequential Monte Carlo} (SMC) using Anglican PPL \citep{wood2014new}.\footnote{
+\emph{Hamiltonian Monte Carlo} (HMC) using Stan probabilistic programming language  \citep{stan-manual:2014}
+and \emph{Sequential Monte Carlo} (SMC) using Anglican probabilistic programming language \citep{wood2014new}.\footnote{
 We also tested the other algorithm implemented by Anglican, namely 
 \emph{Particle-Gibbs} (PGibbs) (a variation of Particle-MCMC\citep{andrieu2010particle}) \
 and \emph{random database} (RDB) (an MH-based algorithm introduced in \citep{wingate2011lightweight}) (see \cite{wood2014new}).
@@ -1075,10 +1078,21 @@ Therefore, for the readability of the plots, we did not depict them.
 }
 
 SymGibbs, BaseGibbs and MH are run on \emph{$\delta$-collapsed} models while in the case of HMC and SMC, determinism is softened by observation noise. %(as required by Stan and Anglican PPLs).
-Note that adding noise to the observation is the simplest and most commonly used method of dealing with determinism\citep{patil2010pymc}.\footnote{
+It should be mentioned that 
+the state-of-the-art probabilistic programming languages,
+disallow deterministic relationships among continuous random variables 
+be observed.\footnote{
+In BUGS \citep{lunn2009bugs}, \emph{logical nodes} cannot be given data or initial values .
+In PyMC \citep{patil2010pymc} deterministic variables have no \emph{observed flag}. 
+In Stan \citep{stan-manual:2014} 
+if you try to assign an observation value to a deterministic variable, you will encounter an error message: 
+``attempt to assign variable in wrong block'' while 
+Anglican \citep{wood2014new} throws error ``invalid-observe", etc.}
+The solution that these off-the-shelf inference frameworks often suggest (or impose) is to approximate the observed determinism via adding noise to the observation 
+\citep{patil2010pymc}.\footnote{
 For example in the collision model, the observation $P_{\text{tot}} = 3$  would be 
 approximated with a normal distribution
-{\footnotesize $\mathcal{N}( M_1 V_1 + M_2 V_2 - 3, \sigma_\eta^2)$}  
+{\footnotesize $\mathcal{N}( P_{\text{tot}} - 3, \sigma_\eta^2)$}  
 where the variance $\sigma_\eta^2$ is the noise parameter.
 }
 
@@ -1334,10 +1348,9 @@ Plots of Figure~\ref{fig:mom} illustrate
 the posterior quality of the models studied in this paper.
 They show that  
 even in the presence of a single deterministic constraint, 
-a simple prior can be transformed into a complicated piecewise and multi-modal posterior that does not resemble any family of 
-probability densities studied in the literature so far. 
+a simple prior can be transformed into a highly piecewise and multi-modal posterior.
 
-{\bf MCMC comparison}
+{\bf MCMC comparison.}
 Plots of Figure~\ref{fig:mom2} shows that MH and SMC suffer from low \emph{effective sample size}. 
 Note that the apparent sparsity of plots~\ref{fig:mom2}-b, \ref{fig:mom2}-e \& \ref{fig:mom2}-f is due to repeated samples (rejected proposals).
 
@@ -1348,24 +1361,13 @@ symbolic Gibbs constantly and significantly performs the best.
 
 
 
-{\bf Handling determinism}
+{\bf Handling determinism.}
 %Plots Fig.~\ref{fig:mom2}-c and Fig.~\ref{fig:mom2}-d suggest  that  softening determinism by noise leads to a  discrepancy between the model and taken samples that may not be resolved by lowering the noise threshold (i.e.\ decreasing HMC's observation noise variance from 0.2 to 0.001 (Fig.~\ref{fig:mom2}-d) does not help much.
 All quantitative measurements 
 (Figures~\ref{fig:asymmetric},  \ref{fig:multi-object.mom} and 
 \ref{fig:resistor})
 indicate that approximating the determinism by noise leads to poor results.
-It should be mentioned that 
-the state-of-the-art probabilistic programming languages (PPLs),
-disallow deterministic relationships among continuous random variables 
-be observed.\footnote{
-In BUGS \citep{lunn2009bugs}, the popular software for analysis of statistical models, \emph{logical nodes} cannot be given data or initial values .
-In PyMC \citep{patil2010pymc} deterministic variables have no \emph{observed flag}. 
-In Stan \citep{stan-manual:2014} 
-if you try to assign an observation value to a deterministic variable, you will encounter an error message: 
-``attempt to assign variable in wrong block'' while 
-Anglican \citep{wood2014new} throws error ``invalid-observe", etc.}
-The solution that these off-the-shelf inference frameworks suggest (or impose) is to approximate the observed determinism via adding noise to the observation 
-\citep{wood2014new}.
+
 %(hard to soft constraint conversion via introducing measurement error)
 
 
