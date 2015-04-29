@@ -213,9 +213,9 @@ public class SymbolicGraphicalModelHandlerTest {
 
         SamplerInterface sampler = handler.makeQuerySampler(bn, Arrays.asList("m_1 v_1".split(" ")), evidence, -10, 10,
 //                FractionalJointBaselineGibbsSampler.makeJointToSampler()
-                FractionalJointRejectionSampler.makeJointToSampler(1)
+//                FractionalJointRejectionSampler.makeJointToSampler(10)
 //                FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.2, 40, 100)
-//                FractionalJointMetropolisHastingSampler.makeJointToSampler(10)
+                FractionalJointMetropolisHastingSampler.makeJointToSampler(0.8)
 //                FractionalJointSymbolicGibbsSampler.makeJointToSampler()
         );
 //        for (int i = 0; i<10; i++) {
@@ -228,14 +228,14 @@ public class SymbolicGraphicalModelHandlerTest {
 //            double v_2 = sample[3];
 //            System.out.println("(m_1*v_1 + m_2*v_2) = " + (m_1 * v_1 + m_2 * v_2));
 
-        int numSamples = 1000;
+        int numSamples = 10000;
        /* for (int i = 0; i < numSamples; i++) {
             Double[] s = sampler.reusableSample();
             System.out.println(i + ". sample = " + Arrays.toString(s));
             Assert.assertTrue(s[1]<s[0]);
         }*/
         String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/gm/";
-        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D_gibbs");
+        SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D_mh" + numSamples);
 
     }
 

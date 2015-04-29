@@ -10,8 +10,15 @@ else
     error('I think the data is not found. Check parameters...')
 end
 
-%for little visualization:
-lines = {'-.', '-', '-.', '-', '--', ':', '-', ':', '-', '-', '-', '-', '-'};%{':' , ':', '--', '--', '.', '.', '-', '-', '-', '-', '-', '-'};
+%for little collision visualization:
+%lines = {'-.', '-', '-.', '-', '--', ':', '-', ':', '-', '-', '-', '-', '-'};%{':' , ':', '--', '--', '.', '.', '-', '-', '-', '-', '-', '-'};
+
+%for symmetric collision:
+%lines = {'-', '--', '-.', ':', '-', '-', '-', ':', '-', '-', '-', '-', '-'};%{':' , ':', '--', '--', '.', '.', '-', '-', '-', '-', '-', '-'};
+
+%for conductance:
+lines = {':', '-.', '-', '--', '-', '-', ':', '-', '-', '-', '-', '-'};%{':' , ':', '--', '--', '.', '.', '-', '-', '-', '-', '-', '-'};
+
 
 numAlgs = size(data, 2);
 
@@ -39,7 +46,7 @@ if strcmp(scaling_type,'plot')
 plot(data{1}(:,1 + index),data{1}(:,2 + index),[colors{1} lines{1}], ...
     'LineWidth',3);
 end
-
+%xlim([0 35]);
 
 hold on;
 
@@ -52,7 +59,10 @@ for i=2:numAlgs
         'LineWidth',3);
 end
 
+%for visual little collapse
 leg = legend(alg_names, 'location', 'northeast');%'southeast');%(algs);
+%leg = legend(alg_names, 'location', 'southeast');%'southeast');%(algs);
+
 xlabel(x_label);
 ylabel(y_label)
 
