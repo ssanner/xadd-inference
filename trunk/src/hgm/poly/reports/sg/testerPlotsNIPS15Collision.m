@@ -1,12 +1,9 @@
+obj2size = 1; %2 for collision 1 otherwis.
 %current_path = 'E:\REPORT_PATH_ICML15\collision\arcGood3\';%'E:\REPORT_PATH_ICML15\conductance\arc_good\'; %'E:\REPORT_PATH_ICML15\collision\arcGood3\'; 
 %current_path = 'E:\REPORT_PATH_ICML15\conductance\arc_good\'; %'E:\REPORT_PATH_ICML15\collision\arcGood3\'; 
-current_path = 'E:\REPORT_PATH_ICML15\visual_collision\';%'E:\REPORT_PATH_ICML15\conductance\arc_good\'; %'E:\REPORT_PATH_ICML15\collision\arcGood3\'; 
+current_path = 'E:\REPORT_PATH_ICML15\conductance\';%arc_good\';%'E:\REPORT_PATH_ICML15\collision\arc4\';%'E:\REPORT_PATH_ICML15\conductance\arc_good\'; %'E:\REPORT_PATH_ICML15\collision\arcGood3\'; 
 
-%%numParams = [3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20]; %[3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
-%numParams = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24];%, 26, 28, 30, 32, 34];%[2, 4, 6, 8, 10, 12, 15, 20, 25, 30];%[3, 4, 5, 7];%, 9, 12, 15, 18, 22, 26, 30]; %[3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
-numParams = [2];%[2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34];
-%numParams = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
-%param = 18;
+numParams = [30 ];%[2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34];%[5];%[2, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
 samples = 200;%1000;%1000;
 itr = 15;%10;
 %%%%%%%%%
@@ -20,33 +17,37 @@ itr = 15;%10;
 %algs =       {'anglican.rdb', 'anglican.smc',  'stan.hmc','tuned.mh', 'baseline.gibbs', 'rej', 'symbolic.gibbs'};%, 'stan.hmc', 'rej'};
 %alg_titles = {'RDB*',          'SMC*',         'HMC*',    'MH',      'Gibbs',          'Rej',  'SymGibbs'};%,       'HMC', 'Rej'};
 
-algs =       {'anglican.smc',  'stan.hmc','tuned.mh', 'rej', 'baseline.gibbs', 'symbolic.gibbs'};%, 'stan.hmc', 'rej'};
-alg_titles = {'SMC*',         'HMC*',     'MH',       'Rej', 'Gibbs'         , 'SymGibbs'};%,       'HMC', 'Rej'};
-colors =     {'b',            'r',        'm',        'c', 'g', 'k', 'g', 'c', 'm', 'y', 'b'};
+algs =       {'baseline.gibbs',  'anglican.smc','tuned.mh',  'stan.hmc', 'rej',  'symbolic.gibbs'};%, 'stan.hmc', 'rej'};
+alg_titles = {'BaseGibbs'     ,  'SMC',         'MH',      'HMC',       'Rej',  'SymGibbs'};%,       'HMC', 'Rej'};
+colors =     {'g',               'b',           'm',       'r',              'c',  'k', 'g', 'c', 'm', 'y', 'b'};
 
-%without HMC and REj:
-%algs =       {'anglican.smc',  'tuned.mh', 'baseline.gibbs', 'symbolic.gibbs'};%, 'stan.hmc', 'rej'};
-%alg_titles = {'SMC*',          'MH',       'Gibbs'         , 'SymGibbs'};%,       'HMC', 'Rej'};
-%colors = {'b','m', 'g', 'k', 'g', 'c', 'm', 'y', 'b'};
+%conductance err vs size
+%algs =       {'tuned.mh',  'rej', 'baseline.gibbs',  'symbolic.gibbs'};%, 'stan.hmc', 'rej'};
+%alg_titles = {'MH',        'Rej', 'BaseGibbs'     ,  'SymGibbs'};%,       'HMC', 'Rej'};
+%colors =     {'m',         'c',   'g',               'k', 'g', 'c', 'm', 'y', 'b'};
+algs =       {'tuned.mh', 'anglican.smc', 'stan.hmc', 'baseline.gibbs', 'symbolic.gibbs'};%, 'stan.hmc', 'rej'};
+alg_titles = {'MH',       'SMC',          'HMC',      'BaseGibbs'    , 'SymGibbs'};%,       'HMC', 'Rej'};
+colors =     {'m',        'b',            'r',        'g', 'k', 'g', 'c', 'm', 'y', 'b'};
+
 
 %without Rej:
-%algs =       {'anglican.smc',  'stan.hmc','tuned.mh', 'baseline.gibbs', 'symbolic.gibbs'};%, 'stan.hmc', 'rej'};
-%alg_titles = {'SMC*',         'HMC*',     'MH',       'Gibbs'         , 'SymGibbs'};%,       'HMC', 'Rej'};
-%colors = {'b','r','m', 'g', 'k', 'g', 'c', 'm', 'y', 'b'};
+%algs =       {'baseline.gibbs',  'anglican.smc','tuned.mh',  'stan.hmc', 'symbolic.gibbs'};%, 'stan.hmc', 'rej'};
+%alg_titles = {'BaseGibbs'     ,  'SMC',         'MH',      'HMC',        'SymGibbs'};%,       'HMC', 'Rej'};
+%colors =     {'g',               'b',           'm',       'r',          'k', 'g', 'c', 'm', 'y', 'b'};
 
 %for little visual collisoin..
-algs =       {'smc1' ,   'smc2' ,   'stan1',   'stan2',   'baseline.gibbs',  'tuned.mh',  'symbolic.gibbs',     'rej'};%, 'stan.hmc', 'rej'};
-alg_titles = {'SMC (e)', 'SMC (f)', 'HMC (c)', 'HMC (d)', 'BaseGibbs',    'MH (b)',                'SymGibbs (a)',    'Rej'};%,       'HMC', 'Rej'};
-colors = {    'b',       'b',       'r',       'r',       'g',                'm',                   'k',          'c', 'm', 'y', 'b'};
+%algs =       {'smc1' ,   'smc2' ,   'stan1',   'stan2',   'baseline.gibbs',  'tuned.mh',  'symbolic.gibbs',     'rej'};%, 'stan.hmc', 'rej'};
+%alg_titles = {'SMC (e)', 'SMC (f)', 'HMC (c)', 'HMC (d)', 'BaseGibbs',    'MH (b)',                'SymGibbs (a)',    'Rej'};%,       'HMC', 'Rej'};
+%colors = {    'b',       'b',       'r',       'r',       'g',                'm',                   'k',          'y', 'c', 'y', 'b'};
 
 
 numAlgs = size(algs, 2);
 %%%%%%%%%
 doTestErr_vs_samples = false;
-doTestErr_vs_times = true;%false; %true;
+doTestErr_vs_times = true;
 doTestSampleCount_vs_times = false;
 doTestSampleEffectiveCount_vs_numSamples = false;%always false
-doTestTimeToPassGoldenErrThreshold_vs_param = false;%true;
+doTestTimeToPassGoldenErrThreshold_vs_param = true;
 doTestTimeToTake100Samples = false;
 
 for param = numParams
@@ -83,7 +84,7 @@ for i=1:numAlgs
         end
 end %for
 %artplot(info2, alg_titles, colors, strcat('Wall-clock time (s) (size=', num2str(param), ')'), 'Error', 'plot', 'shaded', current_path, strcat('err-vs-time__param', num2str(param)));%'shaded'); %;'halo'); %'errorbar');
-artplot(info2, alg_titles, colors, 'wall-clock time (s)' , 'absolute error', 'plot', 'shaded', current_path, strcat('err-vs-time__param', num2str(param)));%'shaded'); %;'halo'); %'errorbar');
+artplot(info2, alg_titles, colors, strcat('wall-clock time (s) (size=', num2str(param*obj2size), ')'), 'absolute error', 'plot', 'shaded', current_path, strcat('err-vs-time__param', num2str(param)));%'shaded'); %;'halo'); %'errorbar');
 
 end %do test 2
 
@@ -128,6 +129,7 @@ for i=1:numAlgs
         if exist(d{1}, 'file')
             good_ald_counter = good_ald_counter+1;
             infoo = load(d{1});
+            infoo(:,2) = infoo(:,2) * obj2size;
             infoo(:,3) = infoo(:,3) * 1.0e-9;
             infoo(:,4) = infoo(:,4) * 1.0e-9;
             info4{good_ald_counter} = infoo;            
@@ -139,8 +141,8 @@ for i=1:numAlgs
         end
 end %for
 
-%artplot(info4, good_alg_titles, good_colors, 'size', 'time(s) to pass threshold \tau=0.045', 'semilogy', 'errorbar', current_path, 'time_vs_param');%'shaded'); %;'halo'); %'errorbar');
-artplot(info4, good_alg_titles, good_colors, 'size', 'time(s) to pass threshold \tau=0.3', 'semilogy', 'errorbar', current_path, 'time_vs_param');%'shaded'); %;'halo'); %'errorbar');
+artplot(info4, good_alg_titles, good_colors, 'size', 'time(s) to pass threshold \tau=0.045', 'semilogy', 'errorbar', current_path, 'time_vs_param');%'shaded'); %;'halo'); %'errorbar');
+%artplot(info4, good_alg_titles, good_colors, 'size', 'time (s) to pass threshold \tau=0.3', 'semilogy', 'errorbar', current_path, 'time_vs_param');%'shaded'); %;'halo'); %'errorbar');
 end %do test4
 
 %%%%%%%%%%%%

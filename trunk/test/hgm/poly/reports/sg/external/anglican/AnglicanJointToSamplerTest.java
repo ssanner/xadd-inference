@@ -32,7 +32,7 @@ public class AnglicanJointToSamplerTest {
         Double nu1 = -2.0;
         Double nu2 = 2.0;
         boolean symmetric = false;
-        int numSamples = 1000;
+        int numSamples = 10000;
 
         GraphicalModel bn = ExperimentalGraphicalModels.makeCollisionModel(2, mu1, mu2, nu1, nu2, symmetric);
 
@@ -50,12 +50,13 @@ public class AnglicanJointToSamplerTest {
         final RichJointWrapper jointWrapper =
                 new RichJointWrapper(joint, eliminatedStochasticVars, query, -10, 10, bn, evidence);
         //Anglican code:
+        AnglicanCodeGenerator.DEBUG = true;
         String anglicanCode = AnglicanCodeGenerator.makeAnglicanCollisionModel(2, mu1, mu2, nu1, nu2, symmetric, evidence, null /*unknown noise*/, query);
         jointWrapper.addExtraInfo(AnglicanCodeGenerator.ANGLICAN_CODE_KEY, anglicanCode);
 
 
         final SamplerInterface innerSampler =
-                new AnglicanJointToSampler(numSamples + 50, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb).makeSampler(jointWrapper);
+                new AnglicanJointToSampler(numSamples + 50, 0.1, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb).makeSampler(jointWrapper);
 
 
         SamplerInterface queriedVarsSampler = new SamplerInterface() {
@@ -92,7 +93,7 @@ public class AnglicanJointToSamplerTest {
             Assert.assertTrue(s[1]<s[0]);
         }*/
         String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/gm/";
-        SamplingUtils.save2DSamples(queriedVarsSampler, numSamples, SAMPLES_FILE_PATH + "scatter2D_anglican");
+        SamplingUtils.save2DSamples(queriedVarsSampler, numSamples, SAMPLES_FILE_PATH + "scatter2D_anglican" + numSamples);
 
     }
 

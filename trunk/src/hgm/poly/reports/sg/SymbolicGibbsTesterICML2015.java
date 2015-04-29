@@ -36,10 +36,10 @@ public class SymbolicGibbsTesterICML2015 {
 
     public static void main(String[] args) throws IOException {
         SymbolicGibbsTesterICML2015 instance = new SymbolicGibbsTesterICML2015();
-        instance.collisionICML2015Test(true, REPORT_PATH_COLLISION_ANALYSIS);
+//        instance.collisionICML2015Test(true, REPORT_PATH_COLLISION_ANALYSIS);
 //        instance.fermentationICML2015Test(REPORT_PATH_FERMENTATION_ANALYSIS);
 //        instance.circuitAAAI2015Test();
-//        instance.conductanceICML2015Test(REPORT_PATH_CONDUCTANCE_ANALYSIS);
+        instance.conductanceICML2015Test(REPORT_PATH_CONDUCTANCE_ANALYSIS);
 //        instance.visualCollisionICML2015Test(true, REPORT_PATH_VISUAL_COLLISION_ANALYSIS);
     }
 
@@ -64,7 +64,7 @@ public class SymbolicGibbsTesterICML2015 {
         int maxWaitingTimeForTakingDesiredSamples = 1000 * 2;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
         int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 2;//1000 * 5;//1000*60;//1000 * 5;
         int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
-        int numRuns = 10;//10;//20;//2;
+        int numRuns = 15;//10;//20;//2;
         int burnedSamples = 200;//100;//50;
         double goldenErrThreshold = 0.045;//0.02;////0.2;
 
@@ -197,19 +197,23 @@ public class SymbolicGibbsTesterICML2015 {
         double stanNoise = 0.05;
         int anglicanBankCapacity = 10000;
         List<JointToSampler> samplerMakersToBeTested = new ArrayList<JointToSampler>();
+
         samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSymbolicGibbsSampler.makeJointToSampler()));
         samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointBaselineGibbsSampler.makeJointToSampler())); //...
 //        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(2.0)));
         samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.1, 200, 50)));
-        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(10)));
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointRejectionSampler.makeJointToSampler(1)));
 //        samplerMakersToBeTested.add(new AnglicanJointToSampler(anglicanBankCapacity, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb));
         samplerMakersToBeTested.add(new AnglicanJointToSampler(anglicanBankCapacity, anglicanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.smc));
 //        samplerMakersToBeTested.add(new AnglicanJointToSampler(anglicanBankCapacity, angloStanNoise, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs));
         samplerMakersToBeTested.add(new StanJointToSampler(stanNoise));
+
 //produces errors...        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.ardb));
 //produces errors...        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.2, AnglicanCodeGenerator.AnglicanSamplingMethod.cascade));
 
-        int[] numParams = {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
+
+
+        int[] numParams = {2, 4, 5, 6, 8, 10, 12, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
         int numMinDesiredSamples = 20;//1000; //100;
         int maxWaitingTimeForTakingDesiredSamples = 1000 * 2;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
         int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 2;//1000 * 5;//1000*60;//1000 * 5;
