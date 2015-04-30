@@ -40,13 +40,15 @@ public class CRTDPFH extends CAMDPsolver {
     private static final boolean REVERSE_TRIAL = true;
     private static final boolean SECOND_MASK = true;
     private static final boolean IMMEDIATEREWARD = true;
+    boolean APPROXIMATION = false;
+    private static final int TRIAL_PER_APPROX = 3;
     
     /* Debugging Flags */    
     //Local Debug flags    
     private static final boolean GREEDY_ACTION_DEBUG = false;
     private static final boolean COMPLETE_RESULTS = false;
     private static final boolean DEBUG_RETRIEVE_MASK = false;
-    
+    private static final boolean WARN_BACKUP_FAIL = false;
 
     
     //Result Keeping
@@ -55,23 +57,21 @@ public class CRTDPFH extends CAMDPsolver {
     public double[][] updateIniVals = null;
     public PrintStream _resultStreamUp = null;
     //////////////////Methods /////////////////////////////////
-    
-    public CRTDPFH(CAMDP camdp, int iter){
-        initCRTDP(camdp, DEFAULT_NTRIALS, iter);
-    }
-    
+        
     public CRTDPFH(CAMDP camdp, int nTrials, int iter){
-        initCRTDP(camdp, nTrials, iter);
+        this(camdp, nTrials, iter,0d);
     }
     
-    private void initCRTDP(CAMDP camdp, int nt, int ni){
+    public CRTDPFH(CAMDP camdp, int nt, int ni, double approx){
         mdp = camdp;
         context = camdp._context;
         nTrials = nt;
         nIter = ni; 
+        dApproxError = approx;
+        if (approx > 0) APPROXIMATION = true;
         valueDDList = new Integer[nIter+1];
         _logStream = camdp._logStream;
-        solveMethod = "RTSDP";
+        solveMethod = APPROXIMATION? "ARTSDP": "RTSDP";
         makeResultStream();
         setupResults();
     }
@@ -250,6 +250,7 @@ public class CRTDPFH extends CAMDPsolver {
                 }
             }
         }
+        checkLinearApprox();
     }
 
     private Double getStateVal(State currentS, int remainHorizon) {
@@ -298,7 +299,7 @@ public class CRTDPFH extends CAMDPsolver {
                     currSValue =value; 
                 }
                 if ( Math.abs(currSValue - mdp.evaluateState(maxDD, currS) ) > STATE_PRECISION){
-                    System.err.println("Maxim fail, greedy value "+ currSValue+" different from value "+mdp.evaluateState(maxDD, currS)+" for "+currS);
+                    System.err.println("Maxim fail, greedy value "+currSValue+" different from value "+mdp.evaluateState(maxDD, currS)+" for "+currS);
                     if (!CAMDP.SILENCE_ERRORS_PLOTS) {
                         mdp.displayGraph(regr, makeXADDLabel("Regr"+me.getValue()._sName+" DD", curTrial, curDepth));
                         mdp.displayGraph(maxDD, makeXADDLabel("BB Max_DD", curTrial, curDepth));
@@ -314,7 +315,8 @@ public class CRTDPFH extends CAMDPsolver {
         //Min out Ilegal +Inf values, these will be non update regions
         valueDDList[curDepth] = context.apply(maxDD, valueDDList[curDepth], XADD.MIN);        
         valueDDList[curDepth] = mdp.standardizeDD(valueDDList[curDepth]); 
-        if ( Math.abs(currSValue - mdp.evaluateState(valueDDList[curDepth], currS)) > STATE_PRECISION){
+        if ( Math.abs(currSValue - mdp.evaluateState(valueDDList[curDepth], currS)) > STATE_PRECISION
+        		&& WARN_BACKUP_FAIL){
             System.err.println("Backup fail, greedy value "+ currSValue+" different from value "+mdp.evaluateState(valueDDList[curDepth], currS)+" for "+currS);
             System.err.println("Max DD Current State value is " + mdp.evaluateState(maxDD, currS));
             if (!CAMDP.SILENCE_ERRORS_PLOTS) mdp.displayDifError(maxDD, valueDDList[curDepth]);
@@ -733,12 +735,34 @@ public class CRTDPFH extends CAMDPsolver {
     //Plotting
     public String makeXADDLabel(String xadd, int trial, int remH)
     {
-        return  xadd+" Trial"+trial+" remainH "+remH+(APPROX_ERROR > 0? "-approx"+String.format("%03d",Math.round(1000*APPROX_ERROR)): "");
+        return  xadd+" Trial"+trial+" remainH "+remH+(dApproxError > 0? "-approx"+String.format("%03d",Math.round(1000*dApproxError)): "");
     }
 
     public String makeXADDLabel(String xadd, int trial)
     {
-        return  xadd+" Trial"+trial+(APPROX_ERROR > 0? "-approx"+String.format("%03d",Math.round(1000*APPROX_ERROR)): "");
+        return  xadd+" Trial"+trial+(dApproxError > 0? "-approx"+String.format("%03d",Math.round(1000*dApproxError)): "");
+    }
+    
+    private void checkLinearApprox() {
+        int RUN_DEPTH=2;
+        if (mdp.LINEAR_PROBLEM && APPROXIMATION) {
+            for(int i=0; i <nIter;i++) {
+            	CAMDP.resetTimer(RUN_DEPTH);
+            	int VDD = 0, AppVDD = 0;
+            	if (DEBUG_DEPTH >= RUN_DEPTH){
+            		VDD = context.getNodeCount(valueDDList[i]);
+            		debugShow(valueDDList[i],"Value Before Approx T"+curTrial+" I"+i,true);
+            	}
+            	valueDDList[i] = context.linUpperPruneRel(valueDDList[i], dApproxError);
+            	if (DEBUG_DEPTH >= RUN_DEPTH){
+                	AppVDD = context.getNodeCount(valueDDList[i]);
+                	debugOutput.println("Approx Trial"+ curTrial+ "iter "+i+" pruning time = " + 
+                			CAMDP.getElapsedTime(RUN_DEPTH)	+ " Size reduction = " +
+                			(1 - AppVDD*1.0/VDD) + " ( "+VDD+" -> "+AppVDD+" )");
+                	debugShow(valueDDList[i],"Value After Approx T"+curTrial+" I"+i,true);
+                }
+            }
+        }
     }
     
     //Results

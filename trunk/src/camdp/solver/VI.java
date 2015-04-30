@@ -32,22 +32,28 @@ public class VI extends CAMDPsolver {
     //////////////////Methods /////////////////////////////////
     
     public VI(CAMDP camdp, int iter){
+    	this(camdp,iter, 0d);
+    }
+
+    public VI(CAMDP camdp, int iter, double approxError){
         mdp = camdp;
         context = camdp._context;
         valueDD = context.NEG_INF;
         _logStream = camdp._logStream;
-        solveMethod = "SDP";
+        if (approxError == 0d)
+        	APPROXIMATION = false;
+        solveMethod = APPROXIMATION? "BASDP":"SDP";
         makeResultStream();
         nIter = iter;
+        dApproxError = approxError;
         setupResults();
-    }
-    
+    }   
     
     
     ////////Main Solver Class ///////////////
     public int solve(){       
         int RUN_DEPTH = 1;
-        if (DEBUG_DEPTH > RUN_DEPTH) debugOutput.println("Starting VI solution, Max #Iterations = " + nIter+"\n");
+        if (DEBUG_DEPTH > RUN_DEPTH) debugOutput.println("Starting "+solveMethod+ " solution, Max #Iterations = " + nIter+"\n");
         Integer _prevDD = null;
         //Iteration counter
         curIter = 0;        
@@ -77,7 +83,7 @@ public class VI extends CAMDPsolver {
                 debugOutput.println("Value DD:"+valueDD+" Nodes= "+solutionNodeList[curIter]+" Time ="+solutionTimeList[curIter]);
                 if (CALCULATE_GREEDY_ACTION) debugOutput.println("Greedy Action ="+getGreedyAction(valueDD, mdp._initialS));
                 if( mdp._initialS != null) debugOutput.println("Initial State Value = "+solutionInitialSValueList[curIter]);
-                debugShow(valueDD, makeXADDLabel("V",curIter, APPROX_ERROR), true);
+                debugShow(valueDD, makeXADDLabel("V",curIter, dApproxError), true);
                 debugOutput.println();
             }
             
@@ -85,7 +91,6 @@ public class VI extends CAMDPsolver {
                 if (DEBUG_DEPTH > RUN_DEPTH) debugOutput.println("\nVI: Converged to solution early,  at iteration "+curIter);
                 break;
             }
-
         }
         flushCaches();    
         finalIter = curIter;
@@ -136,10 +141,21 @@ public class VI extends CAMDPsolver {
     
     private void checkLinearApprox() {
         int RUN_DEPTH=2;
-        if (mdp.LINEAR_PROBLEM && APPROX_PRUNING) {
+        if (mdp.LINEAR_PROBLEM && APPROXIMATION) {
             CAMDP.resetTimer(RUN_DEPTH);
-            valueDD = context.linPruneRel(valueDD, APPROX_ERROR);
-            debugOutput.println("Approx Finish"+ curIter+ " pruning time = "+CAMDP.getElapsedTime(RUN_DEPTH));
+            int VDD = 0, AppVDD = 0;
+            if (DEBUG_DEPTH >= RUN_DEPTH){
+            	 VDD = context.getNodeCount(valueDD);
+            	 debugShow(valueDD,"Value Before Approx Iter "+curIter,true);
+            }
+            valueDD = context.linPruneRel(valueDD, dApproxError);
+            if (DEBUG_DEPTH >= RUN_DEPTH){
+            	AppVDD = context.getNodeCount(valueDD);
+            	debugOutput.println("Approx Finish"+ curIter+ " pruning time = " + 
+            			CAMDP.getElapsedTime(RUN_DEPTH)	+ " Size reduction = " +
+            			(1 - AppVDD*1.0/VDD) + " ( "+VDD+" -> "+AppVDD+" )");
+            	debugShow(valueDD,"Value After Approx Iter "+curIter, true);
+            }
             //displayGraph(_valueDD, "valPruned-" + _nCurIter+" e"+APPROX_ERROR);
         }
     }
