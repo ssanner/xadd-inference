@@ -1502,6 +1502,13 @@ public class XADD {
         return reduceLP(node_id);
     }
 
+    // Linear XADD Prunning
+    public int linUpperPruneRel(int node_id, double error) {
+        LinearApproximationMethod linPrune = new LinearApproximationMethod(node_id, this);
+        node_id = linPrune.linUpperPruneRel(node_id, error);
+        return reduceLP(node_id);
+    }
+    
     // Linear Maximization
     public double linMaxVal(int node_id) {
         LinearXADDMethod linMax = new LinearXADDMethod(node_id, this);

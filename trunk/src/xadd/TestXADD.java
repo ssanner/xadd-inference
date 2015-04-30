@@ -21,7 +21,7 @@ public class TestXADD {
      */
 
     public static void main(String[] args) throws Exception {
-        main5(args);
+    	testMinOut(args);
     }
 
     public static void main4(String[] args) throws Exception {
@@ -39,7 +39,6 @@ public class TestXADD {
 
         // Reducing with LP constraint checking
         //XADDUtils.PlotXADD(xadd_context, reduced_e1, -5, 0.1, 5, "x", "Reduced expression");
-
         int expr2 = TestBuild(xadd_context, "./src/xadd/ex/xadd_sq_test.xadd");
         xadd_context.getGraph(expr2).launchViewer("XADD Sq");
 
@@ -424,7 +423,7 @@ public class TestXADD {
         xadd_context.getGraph(xaddr4).launchViewer("4 POWER!");
     }
 
-    public static void main5(String[] args) throws Exception {
+    public static void testVarSubstitute(String[] args) throws Exception {
          // Test XADD substitution and max
         XADD context = new XADD();
 
@@ -439,7 +438,41 @@ public class TestXADD {
 		context.getGraph(sdd).launchViewer();
         
 }
-   
+
+    public static void testLinApprox(String[] args) throws Exception {
+        // Test XADD substitution and max
+       XADD context = new XADD();
+
+       //Simple XADD with abs function
+       int dd = context.buildCanonicalXADDFromFile("./src/xadd/ex/testApprox2.xadd");
+       double allow_error = 0.2;
+       context.getGraph(dd).launchViewer("Original");
+
+		int approxDD = context.linPruneRel(dd, allow_error);
+		context.getGraph(approxDD).launchViewer("approximated");
+
+		int upperApproxDD = context.linUpperPruneRel(dd, allow_error);
+		context.getGraph(upperApproxDD).launchViewer("UpperBoundApproximated");
+    
+    }
+
+    public static void testMinOut(String[] args) throws Exception {
+        // Test XADD substitution and max
+       XADD context = new XADD();
+
+       //Simple XADD with abs function
+       int dd = context.buildCanonicalXADDFromFile("./src/xadd/ex/testMinOut.xadd");
+       context.getGraph(dd).launchViewer("Original");
+
+       XADDLeafMinOrMax max = context.new XADDLeafMinOrMax("t4", -100, 100, false/* is_max */, System.out);
+       context.reduceProcessXADDLeaf(dd, max, false);
+       int minDD = max._runningResult;
+    		   
+       context.getGraph(minDD).launchViewer("minOutDD");
+    
+    }
+    
+    
     public static void testBVarSubs(String[] args) throws Exception {
 //        Test XADD substitution and max
         System.out.println("TestXADD: Testing Boolean Vars Substitution");
