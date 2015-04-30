@@ -31,6 +31,7 @@ public abstract class CAMDPsolver {
     public int nIter;
     public Integer curIter;
     public String solveMethod = null;
+    public double dApproxError = 0.0d;
     
     /*General Solution Parameter*/
     public final boolean ENABLE_EARLY_CONVERGENCE = false;
@@ -38,11 +39,9 @@ public abstract class CAMDPsolver {
     public final double STATE_PRECISION = 1e-12;
     
     /* Approximation Parameters */
-    public static boolean APPROXIMATION = false;
-    public static double APPROX_ERROR = 0.0d;
-    public static boolean APPROX_ALWAYS = false;
-    public static boolean APPROX_PRUNING = false;
-    public static boolean COMPARE_OPTIMAL = false;
+    public boolean APPROXIMATION = true;
+    public boolean APPROX_ALWAYS = false;
+    public boolean COMPARE_OPTIMAL = false;
     
     /* DEBUG PARAMETER */
     protected static int DEBUG_DEPTH = 0;
@@ -75,7 +74,7 @@ public abstract class CAMDPsolver {
     
     /* *********************** Methods *********************** */
     public void setApproxTest(double eps, PrintStream log, boolean always) {
-        APPROX_ERROR = eps;
+        dApproxError = eps;
         _resultStream = log;
         APPROX_ALWAYS = always;
         COMPARE_OPTIMAL = true;
@@ -239,11 +238,11 @@ public abstract class CAMDPsolver {
         return min._runningResult;
     }
 
-    protected Integer checkLinearAndApprox(Integer dd) {
-        if ( mdp.LINEAR_PROBLEM && APPROX_ALWAYS)
-            dd = context.linPruneRel(dd, APPROX_ERROR);
-        return dd;
-    }
+//    protected Integer checkLinearAndApprox(Integer dd) {
+//        if ( mdp.LINEAR_PROBLEM && APPROX_ALWAYS)
+//            dd = context.linPruneRel(dd, dApproxError);
+//        return dd;
+//    }
 
     ////////// Space Management ///////////////////////////
     public void flushCaches(){
@@ -285,12 +284,6 @@ public abstract class CAMDPsolver {
         }
     }
     public String makeResultFile(int iter){
-        String fullFile = mdp._problemFile;
-        String[] filenameList = fullFile.split("/");
-        int nwords = filenameList.length;
-        String problemName = filenameList[nwords-1].substring(0,(filenameList[nwords-1]).length() -5);
-        String className = filenameList[nwords-2];
-        OUTPUT_DIR = RESULTS_DIR +"/"+ className +"/"+problemName;
         return OUTPUT_DIR+"/"+solveMethod+iter+".xadd";
     }
 
