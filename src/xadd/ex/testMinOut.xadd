@@ -1,0 +1,19 @@
+([t4 >= 40]
+    ([t4 <= 50]
+        ([Infinity])
+        ([t4 >= 60]
+            ([t4 <= 70]
+                ([t5 > 35]
+                    ([t4 >= t1 +40]
+                        ([20+t4])
+                        ([Infinity])
+                    )
+                    ([Infinity])
+                )
+                ([Infinity])
+            )
+            ([Infinity])
+        )
+    )
+    ([Infinity])
+)

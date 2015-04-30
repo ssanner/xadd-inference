@@ -36,7 +36,7 @@ public class LinearApproximationMethod extends LinearXADDMethod {
     private static final double SINGLE_MERGE_PART = 0.2; //Error difference allowed for underconstrained solution
 
     //Prunning Flags
-    private static final boolean UNDERCONSTRAINED_REFINEMENT = true; //solve underconstrained problem in linear approx
+    private static final boolean UNDERCONSTRAINED_REFINEMENT = false;//true; //solve underconstrained problem in linear approx
 
     //Debug Flags
     private final static boolean PRUNE_PATH_DBG = false;
@@ -44,7 +44,8 @@ public class LinearApproximationMethod extends LinearXADDMethod {
     private final static boolean PRUNE_UNION_DBG = false;
     private final static boolean PRUNE_REMAP_DBG = false;
     private final static boolean UNDERCONSTRAINED_DBG = false;
-
+    private final static boolean REPORT_UNBOUNDED = false;
+    
     //Pruning Caches
     public HashMap<Integer, Integer> _hmRemap = new HashMap<Integer, Integer>();
     public HashMap<Integer, ArrayList<HashSet<Integer>>> _hmDecList = new HashMap<Integer, ArrayList<HashSet<Integer>>>();
@@ -55,6 +56,8 @@ public class LinearApproximationMethod extends LinearXADDMethod {
         super(localRoot, global);
     }
 
+    
+    
     ///////////////////
     //Linear Pruning//
     //////////////////
@@ -98,6 +101,13 @@ public class LinearApproximationMethod extends LinearXADDMethod {
         return linPrune(id, allowErr);
     }
 
+    public int linUpperPruneRel(int id, double relError) {
+        if (relError <= XADD.PRECISION) return id;
+        double allowErr = relError * linMaxVal(id);
+        return linUpperPrune(id, allowErr);
+    }
+
+    
     @SuppressWarnings("unused")
     public int linPrune(int id, double allowError) {
         if (allowError < XADD.PRECISION) return id;
@@ -113,6 +123,21 @@ public class LinearApproximationMethod extends LinearXADDMethod {
         return pruned;
     }
 
+    public int linUpperPrune(int id, double allowError) {
+        if (allowError < XADD.PRECISION) return id;
+        while (id != context.reduceLP(id)) {
+            //System.err.println("linPrune WARNING: " + id + " different from reduceLP");
+            id = context.reduceLP(id);
+        }
+        if (PRUNE_MERGE_DBG || UNDERCONSTRAINED_DBG)
+            System.out.println("Pruning " + id + " with allowError = " + allowError);
+        pruneClear();
+        upperPruneUnionPath(id, allowError);
+        int pruned = remap(id);
+        return pruned;
+    }
+
+    
     //prune cache flush
     public void pruneClear() {
         _hmRemap.clear();
@@ -186,15 +211,19 @@ public class LinearApproximationMethod extends LinearXADDMethod {
         //function can do is make them equal, halving the greatest.
         // this is a relaxation, an error better than the best possible, because ignores the constant difference  
         // (e.g. it is always 0 for lines with the same direction.)
-        double maxRange = Double.NEGATIVE_INFINITY;
+        
+        //Using MaxRange may lead to wrong conclusions about the maximal Error, because the avg is not  
+        // guaranteed to minimize the gaps, however, the smallest range is a valid lower bound on the 
+        // approximation error.
+        double minRange = Double.POSITIVE_INFINITY;
         for (int i = 0; i < pathCont; i++) {
             double range = Math.abs((maxErrs[i].sol_value + minErrs[i].sol_value) / 2d);
-            maxRange = Math.max(maxRange, range);
+            minRange = Math.min(minRange, range);
         }
         if (PRUNE_UNION_DBG) {
-            System.out.println("Simple Error: MaxRange = " + maxRange);
+            System.out.println("Simple Error: MinRange = " + minRange);
         }
-        return maxRange;
+        return minRange;
     }
 
     //searches for points of greatest error when using fstar to approximate f1 and f2
@@ -234,8 +263,8 @@ public class LinearApproximationMethod extends LinearXADDMethod {
         }
         return mergeError;
     }
-
-    //Return function that minimizes error in a finite set of points
+    
+    //Return function that minimizes absolute error in a finite set of points
     private OptimResult bestLinApprox(double coefs1[], double _dCoef1, ArrayList<HashSet<Integer>> paths1,
                                       double coefs2[], double _dCoef2, ArrayList<HashSet<Integer>> paths2,
                                       ArrayList<HashSet<PointKey>> points) {
@@ -300,7 +329,9 @@ public class LinearApproximationMethod extends LinearXADDMethod {
             System.out.println("Optimization BestLin Error: Infeasible Min!");
         }
         if (lp._status == LpSolve.UNBOUNDED) {
-            System.out.println("Optimization BestLin Error: Unbounded Min!");
+        	if (REPORT_UNBOUNDED){
+        		System.out.println("Optimization BestLin Error: Unbounded Min!");
+        	}
             opt_val = Double.POSITIVE_INFINITY;
         }
         if (PRUNE_UNION_DBG) {
@@ -310,6 +341,84 @@ public class LinearApproximationMethod extends LinearXADDMethod {
         return new OptimResult(opt_val, soln);
     }
 
+    //Return function that minimizes upper bound error in a finite set of points
+    private OptimResult bestUpperLinApprox(double coefs1[], double _dCoef1, ArrayList<HashSet<Integer>> paths1,
+                                      double coefs2[], double _dCoef2, ArrayList<HashSet<Integer>> paths2,
+                                      ArrayList<HashSet<PointKey>> points) {
+        int linVars = nLocalCVars + 2; //the constant of f and one extra minimization var
+        double[] obj_coef = new double[linVars]; // objective function min e
+        obj_coef[0] = 1;
+        for (int i = 1; i < linVars; i++) {
+            obj_coef[i] = 0;
+        }
+        double[] upBound = new double[linVars]; // objective function min e
+        double[] loBound = new double[linVars]; // objective function min e
+        for (int i = 0; i < linVars; i++) {
+            upBound[i] = XADD.DEFAULT_UPPER_BOUND;
+            loBound[i] = XADD.DEFAULT_LOWER_BOUND;
+        }
+        LP lp = new LP(linVars, loBound, upBound, obj_coef, LP.MINIMIZE);
+
+        //add all points as constraints
+        double coefConj[][] = new double[2][];
+        double dCoefConj[] = new double[2];
+        coefConj[0] = coefs1;
+        coefConj[1] = coefs2;
+        dCoefConj[0] = _dCoef1;
+        dCoefConj[1] = _dCoef2;
+        double[] constr_coef = new double[linVars];
+        int nPaths = paths1.size() + paths2.size();
+        for (int j = 0; j < nPaths; j++) {
+            //see to which leaf function this path corresponds
+            int leafFun = (j < paths1.size()) ? 0 : 1;
+            
+            // Upper Bound constraint => f* > fi constraint  
+            for (PointKey pk : (points.get(j))) {
+                constr_coef[0] = 0;
+                constr_coef[1] = 1;
+                double rhs = dCoefConj[leafFun];
+                double _dCoords[] = pk.getCoords();
+                for (int i = 0; i < nLocalCVars; i++) {
+                    double p_i = _dCoords[i];
+                    constr_coef[i + 2] = p_i;
+                    rhs += coefConj[leafFun][i] * p_i;
+                }
+                lp.addGeqConstraint(constr_coef, rhs);
+            }
+            //min => (e > (f* - fi) => e - f* > -fi constraint
+            for (PointKey pk : (points.get(j + nPaths))) {
+                constr_coef[0] = 1;
+                constr_coef[1] = -1;
+                double rhs = -dCoefConj[leafFun];
+                double _dCoords[] = pk.getCoords();
+                for (int i = 0; i < nLocalCVars; i++) {
+                    double p_i = _dCoords[i];
+                    constr_coef[i + 2] = -p_i;
+                    rhs += -1 * (coefConj[leafFun][i] * p_i);
+                }
+                lp.addGeqConstraint(constr_coef, rhs);
+            }
+        }
+
+        double[] soln = silentSolvelp(lp);
+        double opt_val = lp._dObjValue;
+
+        if (lp._status == LpSolve.INFEASIBLE) {
+            System.out.println("Optimization UpperLin Error: Infeasible Min!");
+        }
+        if (lp._status == LpSolve.UNBOUNDED) {
+        	if (REPORT_UNBOUNDED){
+        		System.out.println("Optimization UpperLin Error: Unbounded Min!");
+        		opt_val = Double.POSITIVE_INFINITY;
+        	}
+        }
+        if (PRUNE_UNION_DBG) {
+            System.out.println("Minimizing optimal Error: " + (opt_val) + " with function " + LP.PrintVector(lp._x));
+        }
+        lp.free();
+        return new OptimResult(opt_val, soln);
+    }
+    
     //Return function that minimizes error in a finite set of points
     private OptimResult minimizeSumError(double coefs1[], double _dCoef1, ArrayList<HashSet<Integer>> paths1,
                                          double coefs2[], double _dCoef2, ArrayList<HashSet<Integer>> paths2,
@@ -566,6 +675,119 @@ public class LinearApproximationMethod extends LinearXADDMethod {
         return null;
     }
 
+    //attempts to finds a upper bound on linearly approximate leafs
+    private PruneResult tryUpperMergeLin(int id1, int id2, double error) {
+        //id1 and id2 must be terminal nodes!
+        XADDTNode l1 = (XADDTNode) context.getExistNode(id1);
+        XADDTNode l2 = (XADDTNode) context.getExistNode(id2);
+        ArrayList<HashSet<Integer>> paths1 = _hmDecList.get(id1);
+        ArrayList<HashSet<Integer>> paths2 = _hmDecList.get(id2);
+
+        int nvars = nLocalCVars;
+        double coefs1[] = new double[nvars];
+        double coefs2[] = new double[nvars];
+        double mrgCoefs[] = new double[nvars];
+        double _dCoef1;
+        double _dCoef2;
+        double _dMrgCoef;
+        try {
+            _dCoef1 = setCoefficientsLocal(l1._expr, coefs1);
+            _dCoef2 = setCoefficientsLocal(l2._expr, coefs2);
+            //Initial coefficients can be arbitrary, so no need for an upper bound start
+            for (int i = 0; i < nvars; i++) {
+                mrgCoefs[i] = (coefs1[i] + coefs2[i]) / 2d;
+            }
+            _dMrgCoef = (_dCoef1 + _dCoef2) / 2d;
+        } catch (Exception e2) {
+            System.err.println("Could not get Coefficient: " + e2
+                    + "\n... hash to #");
+            return null;
+        }
+
+        // If simple Error is too much don't even find optimal solution 
+        if (simpleError(coefs1, paths1, coefs2, paths2) > error) {
+            return null;
+        }
+        if (PRUNE_UNION_DBG) {
+            System.out.println("Possible Upper Merge!");
+        }
+        ArrayList<HashSet<PointKey>> points = new ArrayList<HashSet<PointKey>>();
+        for (int i = 0; i < 2 * (paths1.size() + paths2.size()); i++) {
+            points.add(new HashSet<PointKey>());
+        }
+
+        double oldMaxError, oldMinError;
+        double maxError = Double.POSITIVE_INFINITY;
+        double minError = Double.POSITIVE_INFINITY;
+
+        int iterCont = 0;
+        //Maximize all possible errors (f - f*) restricted each path.
+        do {
+            if (PRUNE_UNION_DBG) {
+                iterCont++;
+                System.out.println("Iter Start n= " + iterCont + " MaximizErr = " + maxError + " MinimizError = " + minError);
+                System.out.println("Mrg = " + Arrays.toString(mrgCoefs) + " + " + _dMrgCoef);
+            }
+            oldMaxError = maxError;
+            maxError = greatestError(mrgCoefs, _dMrgCoef,
+                    coefs1, _dCoef1, paths1,
+                    coefs2, _dCoef2, paths2, points);
+            OptimResult res = bestUpperLinApprox(coefs1, _dCoef1, paths1, coefs2, _dCoef2, paths2, points);
+            oldMinError = minError;
+            minError = res.sol_value;
+            _dMrgCoef = res.solution[1];
+            for (int i = 0; i < nvars; i++) {
+                mrgCoefs[i] = res.solution[i + 2];
+            }
+            if (PRUNE_UNION_DBG) {
+                System.out.println("Iter End n= " + iterCont + " MaxErrChange = " + Math.abs(oldMaxError - maxError) + " MinErrorChange = " + Math.abs(oldMinError - minError));
+            }
+        } while (Math.abs(oldMinError - minError) > PRUNE_MIN_ITER_IMP
+                || Math.abs(oldMaxError - maxError) > PRUNE_MIN_ITER_IMP);
+
+        if (maxError < error) {
+
+            if (UNDERCONSTRAINED_REFINEMENT) {
+                if (UNDERCONSTRAINED_DBG) {
+                    System.out.format("Minimize Sum Err, nlinVars = %d, error lim = %f\n",
+                            nvars, maxError);
+                    System.out.println("Functions: 1st -Merge = (" + _dMrgCoef + ", " + Arrays.toString(mrgCoefs));
+                }
+                OptimResult res = minimizeSumError(coefs1, _dCoef1, paths1,
+                        coefs2, _dCoef2, paths2, points, maxError * (1 + 0.5 * UNDERCONSTRAINED_ALLOW_REL_ERROR));
+
+                if (res != null) {
+                    double underMaxError = XADD.DEFAULT_LOWER_BOUND;
+
+                    _dMrgCoef = res.solution[0];
+                    int i = 0;
+                    for (; i < nvars; i++) {
+                        mrgCoefs[i] = res.solution[i + 1];
+                    }
+                    //other positions contain error in each point
+                    for (i++; i < res.solution.length; i++) {
+                        underMaxError = Math.max(underMaxError, res.solution[i]);
+                    }
+
+                    if (UNDERCONSTRAINED_DBG) {
+                        System.out.format("Minimize Sum Err, nlinVars = %d, undeErrpr = %f, error lim = %f\n",
+                                res.solution.length, underMaxError, maxError);
+                        System.out.println("Functions: 2nd -Merge = (" + _dMrgCoef + ", " + Arrays.toString(mrgCoefs));
+                    }
+
+                    if (underMaxError > maxError * (1 + UNDERCONSTRAINED_ALLOW_REL_ERROR)) {
+                        System.out.println("Unconstrained solution violates error:" + underMaxError + " > " + maxError);
+                    }
+                }
+            }
+            int new_node = context.getTermNode(
+                    getExprFromCoefficientsLocal(_dMrgCoef, mrgCoefs));
+            mergeDec(new_node, id1, id2);
+            return new PruneResult(new_node, minError);
+        }
+        return null;
+    }
+    
     //performs approximation and pruning of unnecessary decision in a XADD, assumes prune memory is clear
     public int pruneUnionPath(int root_id, double allowError) {
 
@@ -596,7 +818,7 @@ public class LinearApproximationMethod extends LinearXADDMethod {
             XADDNode n = context.getExistNode(node_id);
 
             //Possibly mergeable TNode, for now, all except the Infinites
-            if (n instanceof XADDTNode && (node_id != context.POS_INF) && (node_id != context.NEG_INF)) {
+            if (n instanceof XADDTNode && isMergeable(node_id) ) {
                 Iterator<IntPair> qIt = _pqOpenNodes.iterator();
                 HashSet<IntPair> solved = new HashSet<IntPair>();
                 double allMergeError = allowError;
@@ -669,7 +891,117 @@ public class LinearApproximationMethod extends LinearXADDMethod {
         return root_id;
     }
 
+    //performs approximation and pruning of unnecessary decision in a XADD, assumes prune memory is clear
+    public int upperPruneUnionPath(int root_id, double allowError) {
 
+        XADDNode r = context.getExistNode(root_id);
+        if (r instanceof XADDTNode) return root_id; //nothing to prune on single leaf
+
+        //create the initial path, all other will extend from this (adding decisions)
+        ArrayList<HashSet<Integer>> rootPathList = new ArrayList<HashSet<Integer>>();
+        rootPathList.add(new HashSet<Integer>());
+        _hmDecList.put(root_id, rootPathList);
+        XADDINode root = (XADDINode) r;
+        IntPair current = new IntPair(root._var, root_id);
+        while (current != null) {
+            int node_dec = current._i1;//only used for ordering (can ignore)
+            int node_id = current._i2;
+            if (PRUNE_UNION_DBG) {
+                if (node_dec == context._alOrder.size()) {
+                    System.out.println("Leaf Node: " + node_id
+                            + " expr = " + ((XADDTNode) context.getExistNode(node_id))._expr
+                            + " DecSet = " + _hmDecList.get(node_id));
+                } else {
+                    System.out.println("Node: " + node_id
+                            + " dec = " + context._alOrder.get(node_dec) + " " + node_dec
+                            + " DecSet = " + _hmDecList.get(node_id));
+                }
+            }
+
+            XADDNode n = context.getExistNode(node_id);
+
+            //Possibly mergeable TNode, for now, all except the Infinites
+            if (n instanceof XADDTNode && isMergeable(node_id)) {
+                Iterator<IntPair> qIt = _pqOpenNodes.iterator();
+                HashSet<IntPair> solved = new HashSet<IntPair>();
+                double allMergeError = allowError;
+                double singleMergeError = allowError * SINGLE_MERGE_PART;
+
+                while (qIt.hasNext()) {
+                    //tryMerge(n,leaf.leaf.next())
+                    IntPair leaf = qIt.next();
+                    if (leaf._i1 != context._alOrder.size()) System.out.println("Invalid ordering!");
+                    if (PRUNE_UNION_DBG) {
+                        System.out.println("n =" + node_id + " comp " + leaf._i2
+                                + " " + ((XADDTNode) context.getExistNode(leaf._i2))._expr
+                                + " DecSet = " + _hmDecList.get(leaf._i2));
+                    }
+
+                    PruneResult res = tryUpperMergeLin(node_id, leaf._i2, Math.min(allMergeError, singleMergeError));
+
+
+                    if (res != null) {
+                        //Merge succesful
+                        allMergeError -= res.mergeError;
+                        solved.add(leaf);
+                        _hmRemap.put(node_id, res.new_id);
+                        _hmRemap.put(leaf._i2, res.new_id);
+                        int old_id = node_id;
+                        node_id = res.new_id; //continue merging from the new node!
+ 
+                        if (PRUNE_UNION_DBG) {
+                            System.out.println("Merge!\nJoin: " + leaf._i2
+                                    + "expr = " + ((XADDTNode) context.getExistNode(leaf._i2))._expr
+                                    + "DecSet = " + _hmDecList.get(leaf._i2));
+                            System.out.println("With: " + old_id
+                                    + "expr = " + ((XADDTNode) context.getExistNode(old_id))._expr
+                                    + "DecSet = " + _hmDecList.get(old_id));
+                            System.out.println("Merged (rem.error=" + allMergeError + " single=" + singleMergeError + ") \nNode: " + node_id
+                                    + "expr = " + ((XADDTNode) context.getExistNode(node_id))._expr
+                                    + "DecSet = " + _hmDecList.get(node_id));
+                        }
+                    }
+                }
+                _pqOpenNodes.removeAll(solved);
+                _hmRemap.put(node_id, node_id);
+            } else if (n instanceof XADDINode) { // if not TNode must be a INode
+                XADDINode node = (XADDINode) n;
+
+                addParDec(node._low, -1 * node._var, node_id);
+                addParDec(node._high, node._var, node_id);
+
+                XADDNode low_child = context.getExistNode(node._low);
+                IntPair entry;
+                if (low_child instanceof XADDTNode) {
+                    entry = new IntPair(context._alOrder.size(), node._low);
+                } else {
+                    entry = new IntPair(((XADDINode) low_child)._var, node._low);
+                }
+                if (!_pqOpenNodes.contains(entry)) _pqOpenNodes.offer(entry);
+                XADDNode high_child = context.getExistNode(node._high);
+                if (high_child instanceof XADDTNode) {
+                    entry = new IntPair(context._alOrder.size(), node._high);
+                } else {
+                    entry = new IntPair(((XADDINode) high_child)._var, node._high);
+                }
+                if (!_pqOpenNodes.contains(entry)) _pqOpenNodes.offer(entry);
+
+            }
+            current = _pqOpenNodes.poll();
+        }
+
+        return root_id;
+    }
+
+    
+    public boolean isMergeable(int node_id){
+    	boolean mergeable = (node_id != context.POS_INF);
+    	mergeable = mergeable && (node_id != context.NEG_INF);
+    	mergeable = mergeable && (node_id != context.NAN);
+    	return 	mergeable;
+    }
+    
+    
     //Data Storage Helper Classes
     public class PruneResult {
         int new_id;
