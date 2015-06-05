@@ -173,11 +173,11 @@ lead to extremely low mixing rates and/or arbitrarily large approximation bounds
 %while by adding large noise, the approximation bounds may become arbitrarily large.
 %%while large noise leads to arbitrarily large approximation bounds.
 %
-We fill this gap by contributing a variation of Gibbs sampling, called \emph{symbolic Gibbs}, 
+We fill this gap by contributing a variation of Gibbs sampling, called \emph{Symbolic Gibbs}, 
 that carries out effective and automatic inference conditioned on a large range of (non)linear
 deterministic relationships in a rich family of distributions not studied in the literature so far.
 %We fill this gap by contributing a novel framework which, for the first time, carries out inference conditioned on a large range of (non)linear deterministic constraints in a highly expressive class of distributions that is not studied in the literature so far.
-% Our other contribution is to provide an effective MCMC inference technique  based on the insight that in our model, most costly operations required for Gibbs sampling can be accomplished analytically and offline, prior to sampling (\emph{symbolic Gibbs}).
+% Our other contribution is to provide an effective MCMC inference technique  based on the insight that in our model, most costly operations required for Gibbs sampling can be accomplished analytically and offline, prior to sampling (\emph{Symbolic Gibbs}).
 We evaluate this algorithm on models in physics and engineering and show that it is an order of magnitude faster than the baseline Gibbs sampler and a significant improvement over other Monte Carlo methods.  
 \end{comment}
 \end{abstract}
@@ -197,7 +197,7 @@ hyperrectangular, hyper-rhombus or linear partitioning
 constraints~\cite{shenoy2011inference,shenoy2012two,Sanner:12} and
 has altogether ignored the complications of (nonlinear) determinism.
 
-Observed determinism, can appear in applications such as failure detection \cite{huseby2004system} where random variables $X_1, \ldots X_k$ are not directly observable but a function $f(X_1, \ldots, X_k)$ of them may be observed (indirect measurement). 
+Observed determinism can appear in applications such as failure detection \cite{huseby2004system} where random variables $X_1, \ldots X_k$ are not directly observable but a function $f(X_1, \ldots, X_k)$ of them may be observed (indirect measurement). 
 Some families of distributions such as \emph{conditional linear Gaussians} (CLGs) 
 \cite{lauritzen2001stable}
 are closed under linear transformations and consequently allow \emph{linear determinism}.
@@ -234,12 +234,12 @@ that deterministic constraints in these models can always be
 eliminated through collapsing.  We further show that the form of the
 collapsed model always permits one \emph{symbolic} integral ---
 sufficient to \emph{automatically} derive conditionals for Gibbs
-sampling.  We evaluate this fully automated Symbolic Gibbs sampler for
+sampling.  We evaluate this fully automated \emph{Symbolic Gibbs} sampler for
 nonlinear piecewise graphical models on examples motivated by physics
 and engineering and show it converges an order of magnitude faster
 than existing Monte Carlo samplers, thus enabling probabilistic reasoning in a
 variety of applications that, to date, have remained beyond the
-tractability and accuracy boundaries of existing inference methods.
+tractability and accuracy purview of existing inference methods.
 
 % Somewhat incoherent!  -Scott
 \begin{comment}
@@ -458,20 +458,30 @@ $\pr(M_2, V_1, V_2)  =$
  \end{cases}
 \end{equation}
 }
-By sampling from the polynomial piecewise fractional (PPF) function (\ref{e:big}), 
-different inference tasks can be carried out.
-Several such tasks are depicted in Figure ~\ref{fig:mom}.
+Using the joint distribution defined in 
+the piecewise polynomial fractional (PPF) function
+of (\ref{e:big}), we can evaluate various queries
+as depicted in Figure~\ref{fig:mom}.
 \hspace*{\fill} $\diamond$ 
 
-Figure ~\ref{fig:mom} illustrates that even in this simple and low-dimension example, 
-variable transformation can lead to complicated PPF patterns that do not resemble the bell-shaped densities often studied in the literature.  
-Reasoning on the family of PPFs does provide a automated solution 
-for inference 
-in presence of a large set of (non)linear deterministic relationships between random variables.
-Despite the importance of the latter problem,
-it is clearly only an application of the former.
-Nonetheless, the family of PPFs and inference on them is not studied in the literature so far.
-In the rest of the paper, we will fill this gap.
+Figure~\ref{fig:mom} illustrates that even in this simple and
+low-dimensional example, collapsing of nonlinear determinism can lead
+to complicated (posterior) distributions that do not resemble the
+smooth densities often studied in the literature.  However, the use of
+PPFs as a building block for piecewise graphical models with nonlinear
+determinism does ensure that a large set of (non)linear deterministic
+relationships between random variables yield $\delta$-collapsed models
+with factors still in the PPF family.  The only task that remains then
+is to provide an automated sampling method for piecewise graphical
+models composed of an expressive class of PPFs, which we do in the
+next section.
+%Reasoning on the
+%family of PPFs does provide a automated solution for inference in
+%presence of .  Despite the importance of the latter
+%problem, it is clearly only an application of the former.
+%Nonetheless, the family of PPFs and inference on them is not studied
+%in the literature so far.  In the rest of the paper, we will fill this
+%gap.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -830,7 +840,7 @@ followed by partial fraction decomposition and finally, using a short list of in
 %\int_{-\infty}^{X_i} \!\! \pr(X_i = t, \,\bvec{X}_{-i} = \bvec{x}_{-i})  \dd  t
 %\end{equation} 
 %
-Our \emph{symbolic Gibbs sampling} is based on a simple but significantly useful insight:
+Our \emph{Symbolic Gibbs} sampling is based on a simple but significantly useful insight:
 If $\pr(X_1, \ldots, X_N)$
 has analytic integrals w.r.t.\ all variables $X_i$ (as is the case with PPF* densities),
 then the costly CDF computations can be done \emph{prior to the sampling process rather than per sample}. 
@@ -986,7 +996,7 @@ desired number of output samples $T$.
 \vspace{-8mm}
 \caption{\footnotesize
 10000 samples taken from the distribution Fig.~(\ref{fig:mom}-c)
-using (a) Symbolic Gibbs sampler and(b) MH with \emph{proposal variance} 0.8 
+using (a) \emph{Symbolic Gibbs} sampler and(b) MH with \emph{proposal variance} 0.8 
 on the reduced-dimension model as well as  
 (c) Hamiltonian Monte Carlo (HMC) with a measurement error variance 0.2, 
 , (d) and 0.01 as well as Anglican implementation of SMC alg. with %RDB alg. with 
@@ -1004,7 +1014,7 @@ on the \emph{approximated-by-noise} model.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Experimental Results}
 \label{sect:experimental.results}
-In this section, we are interested in (a) comparing the efficiency and accuracy of our proposed Symbolic Gibbs against other MCMC methods on graphical models with piecewise factors and observed determinism, as well as 
+In this section, we are interested in (a) comparing the efficiency and accuracy of our proposed \emph{Symbolic Gibbs} against other MCMC methods on graphical models with piecewise factors and observed determinism, as well as 
 (b) studying the performance of collapsing determinism (as we propose) vs. the practice of relaxing such constraints with noise
 (as often required in probabilistic programming toolkits). 
 %
@@ -1012,7 +1022,7 @@ In this section, we are interested in (a) comparing the efficiency and accuracy 
 
 {\bf Algorithms compared.} 
 %\label{sect:experimental.results.algorithms}
-We compare the proposed \emph{symbolic Gibbs sampler} (SymGibbs) to
+We compare the proposed \emph{Symbolic Gibbs} (SymGibbs) sampler to
 \emph{baseline Gibbs} (BaseGibbs) \cite{pearl1987evidential},
 %i.e.\ where CDF is computed per sample, 
 \emph{rejection sampling} (Rej) \cite{hammersley1964monte}, 
@@ -1159,7 +1169,7 @@ The symmetry enables us to compute the posterior ground truth means  values  man
 M^* = V^* = \sqrt{P_{\text{tot}} / n} %\left(\frac{P}{n}\right)^{0.5}
 \end{equation}
 Conditioned on $P_{\text{tot}} = 1.5 n$, all masses $M_i$ and velocities  $V_i$ are queried. 
-%The tested algorithms running on the reduced-dim posterior are: symbolic Gibbs (see Section~\ref{sect:symbolic.gibbs}), 
+%The tested algorithms running on the reduced-dim posterior are: Symbolic Gibbs (see Section~\ref{sect:symbolic.gibbs}), 
 %baseline Gibbs (CDF computation per sample), 
 %MH (Metropolis-Hastings tuned manually), 
 %MH automatically tuned %to reach the acceptance rate of 0.234 
@@ -1208,7 +1218,7 @@ Note that the apparent sparsity of plots~\ref{fig:mom2}-b, \ref{fig:mom2}-e \& \
 The carried out quantitative measurements 
 (Figures~\ref{fig:multi-object.mom} and \ref{fig:resistor}) 
 indicate that in all experimental settings,
-symbolic Gibbs constantly and significantly performs the best.
+\emph{Symbolic Gibbs} constantly and significantly performs the best.
 
 
 All quantitative measurements 
@@ -1221,13 +1231,13 @@ This happens regardless of the way determinism is handled.
 %A reason may be as follows: It is widely known that all Metropolis-Hasting-based algorithms are sensitive to parameter tunings.Tuning takes place internally and during the burn-in period according to some heuristics.Such heuristics may not be valid in the densities studied in this paper as they are very different from the bell-shaped unimodal distributions often studied in the literature so far.
 %Since Gibbs samplers directly sample from the original distributions (rather than proposal densities) they can cope well with anomalies and as our results show, always converge to the ground truth. 
 
-\section{Conclusions}
+\section{Conclusion}
 \label{sect:conclusion}
 
-In this paper we introduced an expressive class of graphical
-models with nonlinear determinism where piecewise factors 
-based on a rich class of polynomial piecewise
-fractional functions (PPFs) using polynomial partitioning constraints.
+In this paper, we introduced an expressive class of piecewise
+algebraic graphical models with nonlinear determinism using factors
+specified in a rich class of polynomial piecewise fractional functions
+(PPFs) using polynomial partitioning constraints.
 %
 %To the best of our knowledge, this is the richest class of piecewise
 %functions studied in the literature of graphical models and
@@ -1239,16 +1249,16 @@ fractional functions (PPFs) using polynomial partitioning constraints.
 We showed that a large subset of PPFs have symbolic univariate
 integrals, which together with collapsing of nonlinear determinism, enabled the
 main contribution of this paper: a fully-automated exact Gibbs sampler
-called \emph{symbolic Gibbs}.  In \emph{symbolic Gibbs}, all
+called \emph{Symbolic Gibbs}.  In \emph{Symbolic Gibbs}, all
 univariate CDFs required for Gibbs sampling are computed analytically
-and offline.  Hence, \emph{symbolic
+and offline.  Hence, \emph{Symbolic
   Gibbs} saves a significant amount of computation by avoiding
 per-sample computations, and shows dramatically improved performance
 compared to existing samplers on complex models motivated by physics
 and engineering. The combination of these novel contributions should
 make probabilistic reasoning applicable to variety of new applications
 that, to date, have remained beyond the tractability and accuracy
-boundaries of existing inference methods.
+purview of existing inference methods.
 
 \small
 
