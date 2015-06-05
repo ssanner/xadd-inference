@@ -201,7 +201,6 @@ Observed determinism, can appear in applications such as failure detection \cite
 Some families of distributions such as \emph{conditional linear Gaussians} (CLGs) 
 \cite{lauritzen2001stable}
 are closed under linear transformations and consequently allow \emph{linear determinism}.
-
 % TODO: The following makes no sense and is not written in a precise
 %       academic style with clear conclusions.  It also breaks the
 %       flow of discussion from linear to nonlinear.  I am dropping
@@ -330,17 +329,7 @@ is computed by (\ref{e:cdf}) and samples are taken via inverse transform samplin
 
 \section{Observed Deterministic Constraints (Determinism)}\label{sect:determinism}
 
-% TODO: The following needs to be argued for more clearly above before
-%       it can be included here.  -Scott
-%
-% and even for linear constraints, the existing works are too restrictive.
-
-% TODO: What happened to a general introduction to graphical model
-%       notation and a description of deterministic constraints in
-%       graphical models before you dive into details of collapsing???
-%       -Scott
-
-\subsection{Collapsing Determinism}
+%\subsection{Collapsing Determinism}
 To express a deterministic constraint $f(x_1, \ldots, x_n) = c$, we assume that
 in the variable set over which the probability measure is defined, there exists 
 a random variable $Z$ such that $\pr(Z=z | x_1, \ldots, x_n) = \delta[f(x_1, \ldots, x_n) - z]$.\footnote{
@@ -533,10 +522,8 @@ using rejection sampling on the $\delta$-collapsed model.
 %Functions 
 (PPFs)}
 \label{sect:ppfs}
-%Now that we have collapsed out determinism, we can apply Gibbs sampling. However, automated derivation of Gibbs sampling requires a univariate symbolic integral (required in (\ref{e:cdf})) and in the general case, this is not always possible. In this section, we address this issue by introducing a rich family of distributions (namely PPFs for \emph{polynomial piecewise fractional} functions) that remain closed under many algebraic operations including all operations required for $\delta$-collapsing.  We also show that PPF*, an expressive subset of the PPF family, \emph{have analytical univariate integrals}. This enables an efficient variation of Gibbs sampling that will be introduced in Section~\ref{sect:symbolic.gibbs}.
+Now that we have collapsed out determinism, we can apply Gibbs sampling. However, automated derivation of Gibbs sampling requires a univariate symbolic integral (required in (\ref{e:cdf})) and in the general case, this is not always possible. In this section, we address this issue by introducing a rich family of distributions (namely PPFs for \emph{polynomial piecewise fractional} functions) that remain closed under many algebraic operations including all operations required for $\delta$-collapsing.  
 
-%We study piecewise fractional functions with polynomial partitioning conditions (PPFs) -- a highly expressive class of functions neglected in the literature so far.
-%That is, functions in form:
 A PPF is a function in form
 $f = \sum_{i=1}^m \indicator[\phi_i]\cdot f_i $ where $\indicator[\cdot]$ denotes the indicator function.
 Using expanded notation, 
@@ -1292,32 +1279,6 @@ boundaries of existing inference methods.
 %\vskip -0.1in
 %\end{table}
 
-\newpage
-
-
-{\bf Gibbs sampling:}
- In Gibbs  sampling \cite{geman1984stochastic} drawing a sample for $\bvec{X} = \{X_1, \ldots, X_N\}$ takes place in $N$ steps.
-In the $i$-th step, $X_i$ is sampled conditioned on the last realization of the others:
-$x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$. 
-To perform this task, the following univariate (conditional) \emph{cumulative distribution function} (CDF)
-is computed by (\ref{e:cdf}) and samples are taken via inverse transform sampling. 
-%{\footnotesize
-\begin{equation} \footnotesize
-\label{e:cdf}
-\text{CDF}(X_i  \,|\, \bvec{x}_{-i}) 
-\propto
-\int_{-\infty}^{X_i} \!\! \pr(X_i = t, \,\bvec{X}_{-i} = \bvec{x}_{-i})  \dd  t
-\end{equation} 
-Gibbs sampling does not require any tuning
-and since it directly samples from the distribution (rather than indirectly and through proposals) it has high effective sample size. 
-However, in general, closed-form computation of the CDF integrals is not possible and 
-approximations (such as \cite{gilks1992adaptive}) are costly.
-Considering that $N$ univariate integrals should be computed per sample, such approximate Gibbs samplers are typically slow.
- 
-%However, none of these classes can handle deterministic constraints beyond the level of linear constraints.
-
-%%Computation of $N$ univariate integrals per sample is costly and this makes Gibbs sampling a relatively slow sampler. However, we will show that the family of PPF functions, the performance of Gibbs sampling can be improved significantly.
-%In the next section, we formalize GMs with deterministic relations among random variables. 
 
 
 
