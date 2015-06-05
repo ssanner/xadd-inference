@@ -118,7 +118,6 @@ Address \\
 \maketitle
 
 \begin{abstract}
-{\color{red}
 Probabilistic inference in many real-world problems often requires
 graphical models with (1)~nonlinear deterministic constraints between
 random variables (e.g., laws of physics) and (2)~piecewise
@@ -126,16 +125,18 @@ distributions (e.g., priors enforcing bounded parameter values).
 While Gibbs sampling provides an attractive asymptotically unbiased
 MCMC approximation approach that does not require proposal design or
 tuning, it cannot be directly applied to models with determinism in
-the case of (1) and is difficult to automate in the case of (2).  To
-address both limitations, we introduce a rich class of piecewise
-algebraic graphical models with nonlinear determinism, where we show
-that deterministic constraints can always be eliminated, thus permitting the
-application of Gibbs sampling; we further show the collapsed model always
-permits one symbolic integral --- sufficient to
-automatically derive conditionals for Gibbs sampling.  We evaluate
-this fully automated Symbolic Gibbs sampler on models motivated by physics and
-engineering and show it converges an order of magnitude faster than
-existing Monte Carlo samplers.}
+the case of (1) and often requires manual derivation of complex
+piecewise conditional distributions in the case of (2).  To address
+both limitations, we introduce a rich class of piecewise algebraic
+graphical models with nonlinear determinism, where we show that
+deterministic constraints can always be eliminated through collapsing.
+We further show that the form of the collapsed model always permits
+one \emph{symbolic} integral --- sufficient to \emph{automatically}
+derive conditionals for Gibbs sampling.  We evaluate this fully
+automated Symbolic Gibbs sampler for nonlinear piecewise graphical
+models on examples motivated by physics and engineering and show it
+converges an order of magnitude faster than existing Monte Carlo
+samplers.
 
 
 
@@ -183,20 +184,35 @@ We evaluate this algorithm on models in physics and engineering and show that it
 
 \section{Introduction}
 \label{sect:intro}
-Recently, representations of distributions by some forms of piecewise functions have attracted attention for their
-(1) closed-form analytical properties and
-(2) ability to approximate arbitrary distributions up to arbitrary precision.
-To date, such forms have been restricted to
-the piecewise polynomials/exponential with hyperrectangular, hyper-rhombus and
-linear partitioning constraints %that have been used in existing work 
-\cite{shenoy2011inference,shenoy2012two,Sanner:12}.
 
-In this paper we introduced a rich class of \emph{polynomial piecewise
-fractional functions} (PPFs), that is, the mixture of fractional algebraic functions with polynomial partitioning constraints.
-To the best of our knowledge, this is the richest class of piecewise
-functions studied in the literature of graphical models and
-probabilistic inference so far.  
+% Keep this short and sweet... NIPS reviewers want to get to the
+% technical contributions as fast as possible.  -Scott
+Probabilistic inference in many real-world problems often requires
+graphical models with nonlinear deterministic constraints between
+random variables (e.g., laws of physics) and piecewise distributions
+(e.g., priors enforcing bounded parameter values).  To date, exact
+inference in such graphical models has been restricted to piecewise
+polynomial/exponential factors with hyperrectangular, hyper-rhombus
+or linear partitioning 
+constraints~\cite{shenoy2011inference,shenoy2012two,Sanner:12} and
+existing work has altogether ignored issues of nonlinear determinism.
 
+In this paper, we introduce a rich class of \emph{polynomial piecewise
+  fractional functions} (PPFs) as a building block for piecewise
+graphical models with nonlinear deterministic constraints.  We show
+that deterministic constraints in these models can always be
+eliminated through collapsing.  We further show that the form of the
+collapsed model always permits one \emph{symbolic} integral ---
+sufficient to \emph{automatically} derive conditionals for Gibbs
+sampling.  We evaluate this fully automated Symbolic Gibbs sampler for
+nonlinear piecewise graphical models on examples motivated by physics
+and engineering and show it converges an order of magnitude faster
+than existing Monte Carlo samplers, thus enabling probabilistic reasoning in a
+variety of applications that, to date, have remained beyond the
+tractability and accuracy boundaries of existing inference methods.
+
+% Somewhat incoherent!  -Scott
+\begin{comment}
 As we will show, a large subset of this family 
 (1) remain closed under operations such as algebraic fractional substitutions.
 (2) have closed-form univariate integrals.
@@ -208,22 +224,49 @@ In the sense that the univariate CDF computations required in each step of Gibbs
   Gibbs} algorithm that saves a significant amount of computation by avoiding
 per-sample computations, and shows dramatically improved performance
 compared to existing samplers on complex models motivated by physics
-and engineering. The combination of these novel contributions should
-make probabilistic reasoning applicable to variety of new applications
-that, to date, have remained beyond the tractability and accuracy
-boundaries of existing inference methods.
+and engineering. 
+\end{comment}
 
 \section{Observed Deterministic Constraints (Determinism)}\label{sect:determinism}
 Observed determinism, can appear in applications such as failure detection \cite{huseby2004system} where random variables $X_1, \ldots X_k$ are not directly observable but a function $f(X_1, \ldots, X_k)$ of them may be observed (indirect measurement). 
 Some families of distributions such as \emph{conditional linear Gaussians} (CLGs) 
 \cite{lauritzen2001stable}
-are closed under linear transformations and consequently allow linear determinism.
-In \cite{li2013dynamic} the restriction is imposed on the network topology rather than the densities. They can only handle the observed summation of variables on a very simple Bayesian network. The generalization of this technique does not seem straight-forward (if possible).
+are closed under linear transformations and consequently allow \emph{linear determinism}.
 
-Handling nonlinear determinism is much trickier. Methods based on Hamiltonian MC are used for sampling under particular constraints \cite{hartmann2008ergodic} but they perform poorly in piecewise models (due to poor approximation of Hamiltonian dynamism in discontinuities)\cite{neal2011mcmc}. 
-\cite{cobb2005nonlinear} approximate non-linear determinism with piecewise linear constraints via dividing the space into hypercubes. This method can hardly be used in dimensions more than 2 or 3 since the number of partitions required to preserve approximation accuracy is exponential in dimensionality.
-The solution often suggested by probabilistic programming languages is to approximate the observed determinism via adding noise to the observation (hard to soft constraint conversion via measurement error). But in practice if the added noise is large, the approximation bounds may become arbitrarily large and if the noise is small, the mixing rate may become extremely slow (near-deterministic problem) \cite{chin1987bayesian}. 
-In short, inference conditioned on nonlinear determinism is still an open problem \cite{li2013dynamic} and even for linear constraints, the existing works are too restrictive.
+% TODO: The following makes no sense and is not written in a precise
+%       academic style with clear conclusions.  It also breaks the
+%       flow of discussion from linear to nonlinear.  I am dropping
+%       the explanation and simply adding a \nocite to ensure the ref
+%       shows up in the bib.  -Scott
+\nocite{li2013dynamic}
+%In \cite{li2013dynamic} the restriction is imposed on the network topology rather than the densities. They can only handle the observed summation of variables on a very simple Bayesian network. The generalization of this technique does not seem straight-forward (if possible).
+
+Handling nonlinear determinism is much more difficult. Methods based on
+Hamiltonian MC are used for sampling under particular constraints
+\cite{hartmann2008ergodic} but they perform poorly in piecewise models
+(due to poor approximation of Hamiltonian dynamism in
+discontinuities)~\cite{neal2011mcmc}.  \cite{cobb2005nonlinear}
+approximate nonlinear determinism with piecewise linear constraints
+by dividing the space into hypercubes. This method cannot be used beyond
+three dimensions since the number of partitions required
+to preserve approximation accuracy is exponential in dimensionality.
+The solution often suggested by probabilistic programming languages is
+to approximate the observed determinism by adding noise to the
+observation (i.e., a hard to soft constraint relaxation).
+However, in practice if the added noise is large, the approximation
+bounds may become arbitrarily large and if the noise is small, the
+mixing rate may become extremely slow (near-deterministic problem)
+\cite{chin1987bayesian}.  In short, inference conditioning on nonlinear
+determinism is still an open problem \cite{li2013dynamic}.
+% TODO: The following needs to be argued for more clearly above before
+%       it can be included here.  -Scott
+%
+% and even for linear constraints, the existing works are too restrictive.
+
+% TODO: What happened to a general introduction to graphical model
+%       notation and a description of deterministic constraints in
+%       graphical models before you dive into details of collapsing???
+%       -Scott
 
 \subsection{Collapsing Determinism}
 To express a deterministic constraint $f(x_1, \ldots, x_n) = c$, we assume that
