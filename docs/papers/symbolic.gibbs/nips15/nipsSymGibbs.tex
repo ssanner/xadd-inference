@@ -522,9 +522,10 @@ using rejection sampling on the $\delta$-collapsed model.
 %Functions 
 (PPFs)}
 \label{sect:ppfs}
-Now that we have collapsed out determinism, we can apply Gibbs sampling. However, automated derivation of Gibbs sampling requires a univariate symbolic integral (required in (\ref{e:cdf})) and in the general case, this is not always possible. In this section, we address this issue by introducing a rich family of distributions (namely PPFs for \emph{polynomial piecewise fractional} functions) that remain closed under many algebraic operations including all operations required for $\delta$-collapsing.  
+Now that we have collapsed out determinism, we can apply Gibbs sampling. However, automated derivation of Gibbs sampling requires a univariate symbolic integral (required in (\ref{e:cdf})) which is not possible in the general case.
+We address this issue by introducing a rich family of distributions (namely PPFs for \emph{polynomial piecewise fractional} functions) that remain closed under $\delta$-collapsing and one symbolic integration --- sufficient to automatically derive all conditional distributions required by Gibbs sampling in expressive piecewise graphical modelswith nonlinear determinism.  
 
-A PPF is a function in form
+A PPF is a function of the form
 $f = \sum_{i=1}^m \indicator[\phi_i]\cdot f_i $ where $\indicator[\cdot]$ denotes the indicator function.
 Using expanded notation, 
 {\footnotesize
@@ -546,7 +547,7 @@ f =
 }
 where each \emph{sub-function} $f_i := \frac{N_i}{D_i}$ is a (multivariate) polynomial fraction and
 \emph{conditions} $\phi_i$ partition the space of function variables. 
-Each $\phi_i$ is a conjunctions of some inequalities ($\lessgtr$ stands for  
+Each $\phi_i$ is a conjunction of some inequalities ($\lessgtr$ stands for  
 $>$ or $<$)\footnote{
 We do not define the value of piecewise density functions on their partitioning hyperplanes and do not allow $\delta(\cdot)$ potentials have roots on the partitions. 
 } 
@@ -688,19 +689,17 @@ Here is an example of a PPF* case-statement:
 
 {\bf Analytic univariate PPF* integration.} 
 Now we provide a procedure to perform integration on PPF* functions.
-
 It can be shown that if in a PPF* all variables except one are instantiated, 
 the resulting univariate function has a closed form integral.  
-To perform exact Gibbs sampling, this is sufficient because in each step of Gibbs sampling only one variable is uninstantiated.
-
+This is sufficient for Gibbs sampling since in each step, only one variable is uninstantiated.
 However, we want to go a step further and compute univariate integrals of multivariate piecewise functions  
-\emph{without} instantiating the remaining variables.
+\emph{without} instantiating the remaining variables to avoid the need
+for an integration per sample.
 %This leads to an extremely efficient implementation of exact Gibbs sampling that will be introduced in Section~\ref{sect:symbolic.gibbs}.   
-
 This may look impossible since in the latter case, the integration bounds depend on the values of uninstantiated conditions. 
-But as the following procedure shows, it is indeed possible for the PPF* class: 
+But as the following procedure shows, it is indeed possible for the PPF* class.
 
-Suppose $\int_{\alpha}^\beta f \dd x$ is intended where $f$ is a PPF*.
+The following procedure computes $\int_{\alpha}^\beta f \dd x$ where $f$ is a PPF*:
 
 \begin{enumerate}[leftmargin=2.6ex]
 \item \emph{(Partitioning).}
@@ -859,22 +858,30 @@ $\mathcal{F}$ is $N$-variate since variables $\bvec{X}_{-i}$ are kept uninstanti
 Provided with such a map, in the actual sampling process, 
 to sample $x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$,
 it is sufficient to instantiate the analytical CDF associated to $X_i$ with  
-$\bvec{x}_{-i}$ to obtain the appropriate univariate conditional CDF
-(see Algorithm~\ref{alg:symbolic-gibbs}).
+$\bvec{x}_{-i}$ to obtain the appropriate univariate conditional CDF.
+% Algorithm commented out.  -Scott
+%(see Algorithm~\ref{alg:symbolic-gibbs}).
 This reduces the number of CDF computations from $N\cdot T$ to $N$ where 
 %$N$ is the dimensionality of the space of variables and 
 $T$ is the number of taken samples.
 
-If CDF inversion (required for inverse transform sampling)
-is also computed analytically, then Gibbs sampling may be done fully analytically.
-However, analytical inversion of PPF*s can be very complicated and instead 
-in the current implementation, we approximate the CDF$^{-1}$ computation via \emph{binary search}. This requires several function evaluations %(i.e.\ instantiations) 
-per sample. Nonetheless, (unlike integration), function evaluation is a very fast operation. Therefore, this suffices for highly efficient Gibbs sampling as will show experimentally in the next section.
+If CDF inversion (required for inverse transform sampling) is also
+computed analytically, then Gibbs sampling may be done fully
+analytically.  However, analytical inversion of PPF*s can be very
+complicated and instead in the current implementation, we approximate
+the CDF$^{-1}$ computation via \emph{binary search}. This requires
+several function evaluations per sample. Nonetheless, unlike
+integration, function evaluation is a very fast operation. Therefore,
+this suffices for highly efficient Gibbs sampling as we show
+experimentally in the next section.
 
 %By this method, instead of computing $N \times T$ integrals for $T$ samples, only $N$ integrals are computed and $N \times T$ function instantiations are performed. But function instantiation is much faster than integration. Therefore, the algorithm leads to a major improvement in speed.
 
 %What remains is to show that a large subset of PPF functions indeed have closed-form integrals. 
 
+% This algorithm is obvious and takes up space that we need. -Scott
+%
+\begin{comment}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{algorithm}[hb!]%[hb!]%[tb]
@@ -916,6 +923,7 @@ desired number of output samples $T$.
 } %end small
 \end{algorithmic}
 \end{algorithm}
+\end{comment}
 
 %**************************************************************************
 \begin{table*}[t]
@@ -996,12 +1004,13 @@ on the \emph{approximated-by-noise} model.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Experimental Results}
 \label{sect:experimental.results}
-We (a) compare the performance of the proposed symbolic Gibbs against other MCMC methods on models with observed determinism.
-Moreover, we are interested in (b) studying the performance of sampling if instead of collapsing determinism, constraints are relaxed by noise (as often done in probabilistic programming toolkits). 
+In this section, we are interested in (a) comparing the efficiency and accuracy of our proposed Symbolic Gibbs against other MCMC methods on graphical models with piecewise factors and observed determinism, as well as 
+(b) studying the performance of collapsing determinism (as we propose) vs. the practice of relaxing such constraints with noise
+(as often required in probabilistic programming toolkits). 
 %
 %The compared MCMC algorithms, the utilized measurements and the experimental models  are introduced in Sections~\ref{sect:experimental.results.algorithms}, \ref{sect:experimental.results.measures}  and \ref{sect:experimental.results.models} respectively. The experimental evaluations are discussed in  Section~\ref{sect:experimental.evaluations}.
 
-{\bf Compared algorithms.} 
+{\bf Algorithms compared.} 
 %\label{sect:experimental.results.algorithms}
 We compare the proposed \emph{symbolic Gibbs sampler} (SymGibbs) to
 \emph{baseline Gibbs} (BaseGibbs) \cite{pearl1987evidential},
@@ -1215,21 +1224,24 @@ This happens regardless of the way determinism is handled.
 \section{Conclusions}
 \label{sect:conclusion}
 
-In this paper we introduced a rich class of polynomial piecewise
+In this paper we introduced an expressive class of graphical
+models with nonlinear determinism where piecewise factors 
+based on a rich class of polynomial piecewise
 fractional functions (PPFs) using polynomial partitioning constraints.
-To the best of our knowledge, this is the richest class of piecewise
-functions studied in the literature of graphical models and
-probabilistic inference so far.  We showed that this family is
-expressive enough to remain closed under operations required to
-transform networks with nonlinear deterministic constraints to purely
-stochastic PPF models amenable to Gibbs sampling.
-
+%
+%To the best of our knowledge, this is the richest class of piecewise
+%functions studied in the literature of graphical models and
+%probabilistic inference so far.  We showed that this family is
+%expressive enough to remain closed under operations required to
+%transform networks with nonlinear deterministic constraints to purely
+%stochastic PPF models amenable to Gibbs sampling.
+%
 We showed that a large subset of PPFs have symbolic univariate
-integrals, which together with determinism elimination, enabled the
+integrals, which together with collapsing of nonlinear determinism, enabled the
 main contribution of this paper: a fully-automated exact Gibbs sampler
 called \emph{symbolic Gibbs}.  In \emph{symbolic Gibbs}, all
 univariate CDFs required for Gibbs sampling are computed analytically
-and prior to the actual sampling process.  In this way, \emph{symbolic
+and offline.  Hence, \emph{symbolic
   Gibbs} saves a significant amount of computation by avoiding
 per-sample computations, and shows dramatically improved performance
 compared to existing samplers on complex models motivated by physics
@@ -1237,6 +1249,8 @@ and engineering. The combination of these novel contributions should
 make probabilistic reasoning applicable to variety of new applications
 that, to date, have remained beyond the tractability and accuracy
 boundaries of existing inference methods.
+
+\small
 
 \bibliographystyle{alpha}
 \bibliography{symGibbsUAI}
