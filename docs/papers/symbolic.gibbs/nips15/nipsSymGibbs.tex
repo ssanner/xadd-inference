@@ -191,11 +191,42 @@ Probabilistic inference in many real-world problems often requires
 graphical models with nonlinear deterministic constraints between
 random variables (e.g., laws of physics) and piecewise distributions
 (e.g., priors enforcing bounded parameter values).  To date, exact
-inference in such graphical models has been restricted to piecewise
-polynomial/exponential factors with hyperrectangular, hyper-rhombus
-or linear partitioning 
+inference in graphical models with piecewise factors has been
+restricted to piecewise polynomial/exponential factors with
+hyperrectangular, hyper-rhombus or linear partitioning
 constraints~\cite{shenoy2011inference,shenoy2012two,Sanner:12} and
-existing work has altogether ignored issues of nonlinear determinism.
+has altogether ignored the complications of (nonlinear) determinism.
+
+Observed determinism, can appear in applications such as failure detection \cite{huseby2004system} where random variables $X_1, \ldots X_k$ are not directly observable but a function $f(X_1, \ldots, X_k)$ of them may be observed (indirect measurement). 
+Some families of distributions such as \emph{conditional linear Gaussians} (CLGs) 
+\cite{lauritzen2001stable}
+are closed under linear transformations and consequently allow \emph{linear determinism}.
+
+% TODO: The following makes no sense and is not written in a precise
+%       academic style with clear conclusions.  It also breaks the
+%       flow of discussion from linear to nonlinear.  I am dropping
+%       the explanation and simply adding a \nocite to ensure the ref
+%       shows up in the bib.  -Scott
+\nocite{li2013dynamic}
+%In \cite{li2013dynamic} the restriction is imposed on the network topology rather than the densities. They can only handle the observed summation of variables on a very simple Bayesian network. The generalization of this technique does not seem straight-forward (if possible).
+
+Handling nonlinear determinism is much more difficult. Methods based on
+Hamiltonian MC are used for sampling under particular constraints
+\cite{hartmann2008ergodic} but they perform poorly in piecewise models
+(due to poor approximation of Hamiltonian dynamism in
+discontinuities)~\cite{neal2011mcmc}.  \cite{cobb2005nonlinear}
+approximate nonlinear determinism with piecewise linear constraints
+by dividing the space into hypercubes. This method cannot be used beyond
+three dimensions since the number of partitions required
+to preserve approximation accuracy is exponential in dimensionality.
+The solution often suggested by probabilistic programming languages is
+to approximate the observed determinism by adding noise to the
+observation (i.e., a hard to soft constraint relaxation).
+However, in practice if the added noise is large, the approximation
+bounds may become arbitrarily large and if the noise is small, the
+mixing rate may become extremely slow (near-deterministic problem)
+\cite{chin1987bayesian}.  In short, inference conditioning on nonlinear
+determinism is still an open problem \cite{li2013dynamic}.
 
 In this paper, we introduce a rich class of \emph{polynomial piecewise
   fractional functions} (PPFs) as a building block for piecewise
@@ -227,37 +258,78 @@ compared to existing samplers on complex models motivated by physics
 and engineering. 
 \end{comment}
 
+\section{Graphical Models (GMs)}
+\label{sect:background}
+Let $\vec{X} = \{X_1, X_2, \ldots\}$ be a set of random variables with realizations in the form 
+$\vec{x} = \{x_1, x_2, \ldots\}$.\footnote{
+In case there is no ambiguity, we do not distinguish between random variables and their realizations; e.g., we abbreviate $\pr(X_i = x_i)$ by $\pr(x_i)$.}
+For the sake of notational consistency, 
+throughout we assume $\vec{X}$ only contain continuous variables. 
+%The generalization of the presented algorithms to hybrid discrete/continuous models is straightforward.
+%Note that inference in presence of discrete deterministic constraints is already addressed in the literature (see e.g.\ \cite{li2013dynamic} for related work).
+%Therefore, generalization of the presented framework to hybrid discrete/continuous models is straightforward.   
+To cover both directed and undirected graphical models we use
+\emph{factor graph} notation \cite{kschischang2001factor}
+and represent a joint probability density $\pr(\vec{X})$ in a factorized form as follows: 
+\begin{equation} \footnotesize
+\label{e:factor-graph}
+\pr(\vec{X}) \propto \prod_{\Psi_k \in \boldsymbol\Psi} \Psi_k (\vec{X}_k)
+\end{equation}
+where 
+$\Psi(\cdot)$ are non-negative, real-valued \emph{potential functions} 
+(a.k.a.\ \emph{factors}) of subsets $\bvec{X}_k$ of $\bvec{X}$ 
+ and the normalization constant is not necessarily known.
+%Throughout, we adopt the notation $\textsc{Scope}(\Psi_k) := \bvec{X}_k$.
+%$C$ is a (not necessarily known) normalization constant.
+%The inference procedure that will be presented does not require the normalization constant be known. 
+
+%\subsection{Inference}
+%A main inference task is to compute the \emph{posterior} joint density 
+The inference task studied in this paper is to compute the \emph{posterior} joint density 
+$\pr(\bvec{Q} \,|\, \bvec{E}=\bvec{e})$
+of 
+a subset $\bvec{Q}$ (\emph{query}) of $\bvec{X}$ 
+conditioned on (realization $\bvec{e}$ of) 
+variables  
+$\bvec{E} \subset\bvec{X} \backslash \bvec{Q}$ (\emph{evidence}):
+\begin{equation}\vspace{-0.5mm}\footnotesize
+\label{e:inference}
+\pr(\vec{Q} \,|\, \bvec{E} =\vec{e}) \propto 
+\int_{-\infty}^{\infty} \!\! \cdots \int_{-\infty}^{\infty}
+\!\!\! \pr(\bvec{Q}, \bvec{W} = \bvec{w}, \bvec{E}=\bvec{e} )
+ \dd \bvec{w}
+\end{equation}
+where $\bvec{W} = \{W_1, \ldots, W_m\} := \vec{X} \backslash (\vec{Q} \cup \vec{E})$. % 
+
+Beyond the families of conjugate distributions, the integrals required in 
+(\ref{e:inference}) 
+are often intractable and hence we must often resort to MCMC methods
+such as Gibbs sampling --- the focus of this work.
+
+{\bf Gibbs sampling:}
+ In Gibbs  sampling \cite{geman1984stochastic} drawing a sample for $\bvec{X} = \{X_1, \ldots, X_N\}$ takes place in $N$ steps.
+In the $i$-th step, $X_i$ is sampled conditioned on the last realization of the others:
+$x_i \sim \pr(X_i \,|\, \bvec{x}_{-i})$. 
+To perform this task, the following univariate (conditional) \emph{cumulative distribution function} (CDF)
+is computed by (\ref{e:cdf}) and samples are taken via inverse transform sampling. 
+%{\footnotesize
+\begin{equation} \footnotesize
+\label{e:cdf}
+\text{CDF}(X_i  \,|\, \bvec{x}_{-i}) 
+\propto
+\int_{-\infty}^{X_i} \!\! \pr(X_i = t, \,\bvec{X}_{-i} = \bvec{x}_{-i})  \dd  t
+\end{equation} 
+%Gibbs sampling does not require any tuning
+%and since it directly samples from the distribution.
+% (rather than indirectly and through proposals).
+% it has high effective sample size. <- provide citation if you say this
+%However, in general, closed-form computation of the CDF integrals is not possible and approximations (such as \cite{gilks1992adaptive}) are costly.
+%Considering that $N$ univariate integrals should be computed per sample, such approximate Gibbs samplers are typically slow.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Observed Deterministic Constraints (Determinism)}\label{sect:determinism}
-Observed determinism, can appear in applications such as failure detection \cite{huseby2004system} where random variables $X_1, \ldots X_k$ are not directly observable but a function $f(X_1, \ldots, X_k)$ of them may be observed (indirect measurement). 
-Some families of distributions such as \emph{conditional linear Gaussians} (CLGs) 
-\cite{lauritzen2001stable}
-are closed under linear transformations and consequently allow \emph{linear determinism}.
 
-% TODO: The following makes no sense and is not written in a precise
-%       academic style with clear conclusions.  It also breaks the
-%       flow of discussion from linear to nonlinear.  I am dropping
-%       the explanation and simply adding a \nocite to ensure the ref
-%       shows up in the bib.  -Scott
-\nocite{li2013dynamic}
-%In \cite{li2013dynamic} the restriction is imposed on the network topology rather than the densities. They can only handle the observed summation of variables on a very simple Bayesian network. The generalization of this technique does not seem straight-forward (if possible).
-
-Handling nonlinear determinism is much more difficult. Methods based on
-Hamiltonian MC are used for sampling under particular constraints
-\cite{hartmann2008ergodic} but they perform poorly in piecewise models
-(due to poor approximation of Hamiltonian dynamism in
-discontinuities)~\cite{neal2011mcmc}.  \cite{cobb2005nonlinear}
-approximate nonlinear determinism with piecewise linear constraints
-by dividing the space into hypercubes. This method cannot be used beyond
-three dimensions since the number of partitions required
-to preserve approximation accuracy is exponential in dimensionality.
-The solution often suggested by probabilistic programming languages is
-to approximate the observed determinism by adding noise to the
-observation (i.e., a hard to soft constraint relaxation).
-However, in practice if the added noise is large, the approximation
-bounds may become arbitrarily large and if the noise is small, the
-mixing rate may become extremely slow (near-deterministic problem)
-\cite{chin1987bayesian}.  In short, inference conditioning on nonlinear
-determinism is still an open problem \cite{li2013dynamic}.
 % TODO: The following needs to be argued for more clearly above before
 %       it can be included here.  -Scott
 %
@@ -270,7 +342,7 @@ determinism is still an open problem \cite{li2013dynamic}.
 
 \subsection{Collapsing Determinism}
 To express a deterministic constraint $f(x_1, \ldots, x_n) = c$, we assume that
-in the variable set over which the probability measure is defined, there exist 
+in the variable set over which the probability measure is defined, there exists 
 a random variable $Z$ such that $\pr(Z=z | x_1, \ldots, x_n) = \delta[f(x_1, \ldots, x_n) - z]$.\footnote{
 This is to prevent Borel-Kolmogorov paradox \cite{kolmogorov1950foundations}
 that arises when conditioning is on an event of zero probability
@@ -280,7 +352,7 @@ $\delta\big( f(\cdot) - z\big)$ should be thought of as a limit of a normal dist
 } 
 Therefore, the constraint corresponds the event $Z=c$.
 
-In the following theorem, we use the calculus of Dirac delta and generalize the concept of change of random variables to (not necessarily) reversible functions $f(x_1, \cdot)$.
+In the following theorem, we use the calculus of Dirac deltas and generalize the concept of change of random variables to (not necessarily) reversible functions $f(x_1, \cdot)$.
 Since in formula~\ref{e:theorem1} one variable is collapsed i.e.\ marginalized out of from the conditional joint, we refer to it as \emph{dimension reduction}. 
 
 \begin{theorem}[Dimension reduction] 
@@ -330,6 +402,7 @@ which implies (\ref{e:theorem1}).
 \end{proof}
 %
 
+\begin{comment} % Important but no space.  -Scott
 {\bf Reconstructing collapsed variables.}
 %Even though we have eliminated variables, we can still generate samples for them given the sample values of the non-eliminated variables. 
 If $f(x_1, \cdot)$ is reversible (w.r.t.\ $x_1$),
@@ -342,12 +415,9 @@ $\big(
 $.
 If more than one deterministic relationship exists, 
 theorem~\ref{theorem1} can be used multiple times and the collapsed variables are reconstructed in the reverse order they are eliminated.
-
-
+\end{comment}
 
 To clarify the theorem and motivate the next section we provide an example:
-
-
 
 %\vspace{1mm}\\
 {\bf Example (Collision model). }
