@@ -1,0 +1,1 @@
+Implementation of Extended ADDs (XADDs) and XADD-based inference algorithms.
