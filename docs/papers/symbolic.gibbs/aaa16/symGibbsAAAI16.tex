@@ -1051,24 +1051,14 @@ This happens regardless of the way determinism is handled.
 \section{Conclusion}
 \label{sect:conclusion}
 
-In this paper, we introduced an expressive class of piecewise
-algebraic graphical models with nonlinear determinism using factors
-specified in a rich class of polynomial piecewise fractional functions
-(PPFs) using polynomial partitioning constraints.
-%
-%To the best of our knowledge, this is the richest class of piecewise
-%functions studied in the literature of graphical models and
-%probabilistic inference so far.  We showed that this family is
-%expressive enough to remain closed under operations required to
-%transform networks with nonlinear deterministic constraints to purely
-%stochastic PPF models amenable to Gibbs sampling.
-%
-We showed that a large subset of PPFs have symbolic univariate
-integrals, which together with collapsing of nonlinear determinism, enabled the
+In this paper, we introduced a general method for handling observed (non)linear algebraic constraints in graphical models via dimension reduction.
+We also provided an expressive class of models (namely, PPFs) closed under dimension reduction. 
+We showed that a large subset of PPFs have closed-form univariate
+integrals, which together with reducing the dimensionality, enabled the
 main contribution of this paper: a fully-automated exact Gibbs sampler
-called \emph{Symbolic Gibbs}.  In \emph{Symbolic Gibbs}, all
+called \emph{closed-form Gibbs} that can sample from models with algebraic constraints.  In \emph{closed-form Gibbs}, all
 univariate CDFs required for Gibbs sampling are computed analytically
-and offline.  Hence, \emph{Symbolic
+and offline.  Hence, \emph{closed-form
   Gibbs} saves a significant amount of computation by avoiding
 per-sample computations, and shows dramatically improved performance
 compared to existing samplers on complex models motivated by physics
