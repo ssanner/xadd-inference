@@ -844,63 +844,49 @@ on the \emph{approximated-by-noise} model.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Experimental Results}
 \label{sect:experimental.results}
-In this section, we are interested in (a) comparing the efficiency and accuracy of our proposed \emph{Symbolic Gibbs} against other MCMC methods on graphical models with piecewise factors and observed determinism, as well as 
-(b) studying the performance of collapsing determinism (as we propose) vs. the practice of relaxing such constraints with noise
+In this section, we are interested in (a) comparing the efficiency and accuracy of our proposed \emph{closed-form Gibbs} against other MCMC methods on  models with observed constraints as well as 
+(b) studying the performance of \emph{dimension reduction} (as we propose) vs. the practice of relaxing such constraints with noise
 (as often required in probabilistic programming toolkits). 
 %
 %The compared MCMC algorithms, the utilized measurements and the experimental models  are introduced in Sections~\ref{sect:experimental.results.algorithms}, \ref{sect:experimental.results.measures}  and \ref{sect:experimental.results.models} respectively. The experimental evaluations are discussed in  Section~\ref{sect:experimental.evaluations}.
 
+\noindent
 {\bf Algorithms compared.} 
 %\label{sect:experimental.results.algorithms}
-We compare the proposed \emph{Symbolic Gibbs} (SymGibbs) sampler to
+We compare the proposed \emph{closed-form symbolic Gibbs} (SymGibbs) sampler to
 \emph{baseline Gibbs} (BaseGibbs) \cite{pearl1987evidential},
 %i.e.\ where CDF is computed per sample, 
 \emph{rejection sampling} (Rej) \cite{hammersley1964monte}, 
 \emph{tuned Metropolis-Hastings} (MH) \cite{roberts1997weak}, 
 \emph{Hamiltonian Monte Carlo} (HMC) using Stan probabilistic programming language  \cite{stan-manual:2014}
-and \emph{Sequential Monte Carlo} (SMC) using Anglican probabilistic programming language \cite{wood2014new}.\footnote{
-We also tested the other algorithm implemented by Anglican, namely 
-\emph{Particle-Gibbs} (PGibbs) (a variation of Particle-MCMC\cite{andrieu2010particle}) \
-and \emph{random database} (RDB) (an MH-based algorithm introduced in \cite{wingate2011lightweight}) (see \cite{wood2014new}).
-In our experimental models, the performance of these algorithms is very similar to (SMC).
-Therefore, for the readability of the plots, we did not depict them.
-}
+and \emph{Sequential Monte Carlo} (SMC) using Anglican probabilistic programming language \cite{wood2014new}.
 SymGibbs and BaseGibbs require no tunings. 
 MH is automatically tuned after \cite{roberts1997weak} by testing 200 equidistant proposal variances in interval 
 $(0, 0.1]$ and accepting a variance for which the acceptance rate closer to 0.24.
 
-SymGibbs, BaseGibbs and MH are run on \emph{collapsed-determinism} models while in the case of HMC and SMC, determinism is softened by observation noise. %(as required by Stan and Anglican PPLs).
-It should be mentioned that 
-the state-of-the-art probabilistic programming languages,
-disallow deterministic relationships among continuous random variables 
-be observed.\footnote{
-In BUGS \cite{lunn2009bugs}, \emph{logical nodes} cannot be given data or initial values .
-In PyMC \cite{patil2010pymc} deterministic variables have no \emph{observed flag}. 
-In Stan \cite{stan-manual:2014} 
-if you try to assign an observation value to a deterministic variable, you will encounter an error message: 
-``attempt to assign variable in wrong block'' while 
-Anglican \cite{wood2014new} throws error ``invalid-observe", etc.}
-The solution that these off-the-shelf inference frameworks often suggest (or impose) is to approximate the observed determinism via adding noise to the observation 
-\cite{patil2010pymc}.\footnote{
+SymGibbs, BaseGibbs and MH are run on \emph{dimension reduced} models. 
+HMC on dimension reduced models produces results close to MH (not depicted for the readability of the plots). HMC and SMC with noise added to the observation are plotted. We also tested \emph{Particle-Gibbs} (PGibbs) (a variation of Particle-MCMC\cite{andrieu2010particle}) \
+and \emph{random database} (RDB) (an MH-based algorithm introduced in \cite{wingate2011lightweight}) (see \cite{wood2014new}).
+In our experimental models, the performance of these algorithms is very similar to (SMC) (therefore, fore readability of plots, they are not depicted). 
+It should be mentioned that the state-of-the-art probabilistic programming languages, disallow deterministic relationships among continuous random variables be observed.\footnote{In BUGS \cite{lunn2009bugs}, \emph{logical nodes} cannot be given data or initial values. In PyMC \cite{patil2010pymc} deterministic variables have no \emph{observed flag}. In Stan \cite{stan-manual:2014} if you try to assign an observation value to a deterministic variable, you will encounter an error message: ``attempt to assign variable in wrong block'' while Anglican \cite{wood2014new} throws error ``invalid-observe", etc.} The solution that these off-the-shelf inference frameworks often suggest (or impose) is to approximate the observed determinism via adding noise to the observation \cite{patil2010pymc}.\footnote{
 For example in the collision model, the observation $P_{\text{tot}} = 3$  would be 
 approximated with a normal distribution
 {\footnotesize $\mathcal{N}( P_{\text{tot}} - 3, \sigma_\eta^2)$}  
 where the variance $\sigma_\eta^2$ is the noise parameter.
 }
 %
-To soften the determinism in HMC and SMC,
+To soften the determinism% in HMC and SMC,
 the observation of a deterministic variable $Z$ %with prior $\delta\big( G_j(\cdot) - Z_j \big)$ 
 is approximated by observation of a newly introduced variable 
 with a Gaussian prior centered at $Z$ and with noise variance (parameter) $\sigma^2_{Z}$. 
 %instead of conditioning on a deterministic variable $X$, it is assumed that a newly introduced stochastic variable $X'$ is observed whose prior is a Gaussian centered at $X$ and with noise variance (parameter) $\sigma^2_{X}$.
 Anglican's syntax requires %promotes 
 adding noise to all observed variables. Therefore, in the case of SMC, stochastic observations are also associated with noise parameters.
-All used parameters are summarized in Table~\ref{t:parameters}. 
-SymGibbs, BaseGibbs, Rej and MH have single thread java implementations.
-The number of threads and other unspecified parameters of Stan and Anglican are their default settings.   
+Used parameters are summarized in Table~\ref{t:parameters}. 
+SymGibbs, BaseGibbs, Rej and MH have single thread java implementations. The number of threads and other unspecified parameters of Stan and Anglican are their default settings.   
 All algorithms run on a 4 core, 3.40GHz PC.% and the model compilation time of Stan and Anglican is not taken into account. 
 
-
+\noindent
 {\bf Measurements.}
 %\label{sect:experimental.results.measures}
 To have an intuitive sense of the performance of the different MCMCs,
@@ -918,7 +904,7 @@ where $\bvec{q}_\Gamma^{(i)} :=
 %{\bf 1. Mean absolute error vs time.}
 %The main measurement 
 %is to compute the \emph{mean absolute error} (MAE) 
-We measure mean absolute error (MAE) (\ref{e:error.vs.time.measure}) vs (wall-clock) time $t$ where 
+We measure mean absolute error (MAE) (equation~\ref{e:error.vs.time.measure}) vs (wall-clock) time $t$ where 
 $\bvec{q}^* := [q_1^*, \ldots q_\zeta^*]$ 
 is the ground truth mean query vector (that is computed manually due to the symmetry of the chosen models).
 \begin{equation}\footnotesize
@@ -1013,7 +999,7 @@ By (\ref{e:col.GT}), all elements of the ground truth vector $\bvec{q}^*$ are $\
 MAE vs. time is depicted in Figures~\ref{fig:multi-object.mom}.a \& b for a 10-D and a 30-D model, respectively.
 %Time to reach error threshold $\tau = 0.3$ is plotted in Figure~\ref{fig:multi-object.mom}.c.
 
-
+\noindent
 {\bf Building wiring model. } 
 %The next model deals with a more complicated observed determinism.
 An electrical circuit composed of $n$, $10\Omega\pm5\%$ parallel resistor elements $R_i$
@@ -1040,6 +1026,7 @@ MAE vs. time for networks of 10 and 30 resistors are depicted in
 Figures~\ref{fig:resistor}.a \& b respectively.
 %Time to reach error threshold $\tau = 0.045$ is plotted in Figure~\ref{fig:resistor}.c.
 
+\noindent
 {\bf Experimental evaluations.}
 %\label{sect:experimental.evaluations}
 Plots of Figure~\ref{fig:mom2} shows that MH and SMC suffer from low \emph{effective sample size}. 
@@ -1048,7 +1035,7 @@ Note that the apparent sparsity of plots~\ref{fig:mom2}-b, \ref{fig:mom2}-e \& \
 The carried out quantitative measurements 
 (Figures~\ref{fig:multi-object.mom} and \ref{fig:resistor}) 
 indicate that in all experimental settings,
-\emph{Symbolic Gibbs} constantly and significantly performs the best.
+\emph{Closed-form Gibbs} constantly and significantly performs the best.
 
 
 All quantitative measurements 
@@ -1089,8 +1076,6 @@ and engineering. The combination of these novel contributions should
 make probabilistic reasoning applicable to variety of new applications
 that, to date, have remained beyond the tractability and accuracy
 purview of existing inference methods.
-
-\newpage
 
 \small
 
