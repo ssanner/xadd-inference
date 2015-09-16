@@ -1,10 +1,17 @@
 \section{Introduction}
 \label{sect:intro}
 
-\noindent 
-Probabilistic inference in many real-world problems often requires graphical models with (non)linear constraints between random variables. 
-Such constraints appear in case instead of direct observation of random variables, deterministic functions of them are observed. 
-To illustrate this, consider the following running example (with the graphical model of Figure~\ref{fig:collision.bn}):
+\noindent
+Probabilistic inference in many real-world problems requires graphical
+models with deterministic algebraic constraints between random
+variables.
+%Probabilistic inference in many real-world problems often requires
+%graphical models with (non)linear constraints between random
+%variables.  Such constraints appear in case instead of direct
+%observation of random variables, deterministic functions of them are
+%observed.
+Consider the following running example from physics and the
+associated graphical model of Figure~\ref{fig:collision.bn}:
 
 \noindent{\bf Collision model. }
 \emph{
@@ -39,8 +46,8 @@ P_{tot} = M_1 V_1 + M_2 V_2 = 3.0
  
 %In applications of probabilistic inference, instead of direct observation of random variables (e.g., $X$ and $Y$), functions of them may be observed (e.g., $X\cdot Y = c$).
 
-In such problems, the support of posterior densities are (non)linear sub-manifolds of the parameter space (e.g.\ hyperplane~(\ref{fig:collision.bn}) in the collision model). 
-Carrying out inference on such models is by no means trivial \cite{pennec2006intrinsic}. 
+In such problems, the posterior densities only have support on (non)linear sub-manifolds of the parameter space (e.g.\ a hyperplane in the collision model). 
+Efficient inference on such models is extremely challenging \cite{pennec2006intrinsic}. 
 
 To evade the complications, state-of-the-art MCMC based probabilistic inference tools suggest adding noise to the observation (hard to soft constraint conversion) \cite{wood2014new}. 
 Nonetheless, this strategy does not help much: If the added noise is large then the approximation bounds can be arbitrarily large and if it is small, the sampling mixing rate can be arbitrarily slow \cite{li2013dynamic,chin1987bayesian}. 
