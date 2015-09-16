@@ -365,21 +365,16 @@ using rejection sampling on the $\delta$-collapsed model.
 %Functions 
 (PPFs)}
 \label{sect:ppfs}
-In the introduction, it was mentioned that Gibbs sampling is the most suitable inference tool for piecewise models.
-However, Gibbs requires multiple integration per sample (required in \ref{e:cdf})
- which in general cannot be performed in closed form and in any case, is costly..
+%In the introduction, it was mentioned that Gibbs sampling is the most suitable inference tool for piecewise models.
+%However, Gibbs requires multiple integration per sample (see \ref{e:cdf})
+% which in general cannot be performed in closed-form and in any case, is costly.
+%Here, we present a class of functions that (1)~is rich enough to approximate any density, (2)~remains closed under operations required for dimension and therefore allows 
 
+%Now that we have collapsed out determinism, we can apply Gibbs sampling. However, automated derivation of Gibbs sampling requires a univariate symbolic integral (required in (\ref{e:cdf})) which is not possible in the general case.
 
-//TODO
-
-Here  
-
-Now that we have collapsed out determinism, we can apply Gibbs sampling. However, automated derivation of Gibbs sampling requires a univariate symbolic integral (required in (\ref{e:cdf})) which is not possible in the general case.
-We address this issue by introducing a rich family of distributions (namely PPFs for \emph{polynomial piecewise fractional} functions) that remain closed under $\delta$-collapsing and one symbolic integration --- sufficient to automatically derive all conditional distributions required by Gibbs sampling in expressive piecewise graphical modelswith nonlinear determinism.  
-
-A PPF is a function of the form
-$f = \sum_{i=1}^m \indicator[\phi_i]\cdot f_i $ where $\indicator[\cdot]$ denotes the indicator function.
-Using expanded notation, 
+We introduce an expressive family of functions that is rich enough to simulate arbitrary density functions up to arbitrary precision. 
+This family is the class of \emph{polynomial piecewise fractional} functions (PPFs). More formally, a PPF is a function of the form
+%$f = \sum_{i=1}^m \indicator[\phi_i]\cdot f_i $ where $\indicator[\cdot]$ denotes the indicator function. Using expanded notation, 
 {\footnotesize
 \begin{equation}
 \label{e:ppf}
@@ -401,12 +396,15 @@ where each \emph{sub-function} $f_i := \frac{N_i}{D_i}$ is a (multivariate) poly
 \emph{conditions} $\phi_i$ partition the space of function variables. 
 Each $\phi_i$ is a conjunction of some inequalities ($\lessgtr$ stands for  
 $>$ or $<$)\footnote{
-We do not define the value of piecewise density functions on their partitioning hyperplanes and do not allow $\delta(\cdot)$ potentials have roots on the partitions. 
+We assume the total measure on the border of partitions is 0. 
 } 
 where each \emph{atomic constraint} $\varphi_{i,j}$ is a polynomial.
 %Evidently, this class is very expressive. Other distributions can also be approximated by this form by being \emph{Taylor series} other existing approximation tools \cite{shenoy2011inference}.
-(\ref{e:mult}) shows, PPFs are closed under elementary operations. 
-\\
+
+An important property of the class of PPFs is that it remains closed under operations required in (\ref{e:theorem1}). 
+This paves the way for automated (and potentially multiple) implementation of Theorem~\ref{theorem1}.
+
+By (\ref{e:mult}), PPFs are closed under elementary operations. 
 {\footnotesize
 \begin{align}\label{e:mult}
 \begin{cases}
@@ -414,7 +412,7 @@ where each \emph{atomic constraint} $\varphi_{i,j}$ is a polynomial.
   \case{\phi_2}{f_2}    
   \end{cases}
 \,
- \times
+ \otimes
 \,
   \begin{cases}
   \case{\psi_1}{g_1} \\
@@ -441,16 +439,14 @@ f|_{x \leftarrow \frac{F}{G}}
 %
 They are also closed under polynomial fractional substitution (\ref{e:substitute}). 
 The reason is that in the r.h.s\ of (\ref{e:substitute}), 
-sub-functions $f_i |_{x \leftarrow \frac{F}{G}}$ are polynomial fractions (PFs) 
-(which are closed under substitution).
-Conditions ${\phi_i}|_{x \leftarrow \frac{F}{G}}$ are fractional but as
+(1)~sub-functions $f_i |_{x \leftarrow \frac{F}{G}}$ are polynomial fractions. 
+%(which are closed under substitution).
+(2)~Conditions ${\phi_i}|_{x \leftarrow \frac{F}{G}}$ are fractional but as
 (\ref{e:fractional2nlpa}) shows, 
 they can be restated as (multiple) case-statements with polynomial conditions. 
-\\
 {\scriptsize
 %\begin{tabular}{p{7cm}p{6.4cm}}
 %{
-\vspace{3mm}
 \begin{equation} 
 \label{e:fractional2nlpa}
 \left(
@@ -470,6 +466,7 @@ they can be restated as (multiple) case-statements with polynomial conditions.
 \end{equation}
 %}
 %&{
+\begin{comment}
 \begin{equation}\label{e:abs}
 \left|
 \left(
@@ -488,29 +485,31 @@ they can be restated as (multiple) case-statements with polynomial conditions.
 ...
  \end{cases}
 \end{equation}
+\end{comment}
 %}
 %\end{tabular}
 }
-Finally, their closure under \emph{absolute value}, as seen in  (\ref{e:abs}), 
-means PPFs are closed under all operations utilized in Theorem~\ref{theorem1}.
+Similarly, PPFs are closed under \emph{absolute value}.%, as seen in  (\ref{e:abs}), 
+
 
 \subsection{Analytic integration}
-In general, PPFs are not closed under integration; however, a large subset of them 
- have closed-form single variable integrals.
+%In general, PPFs are not closed under integration; however, a 
+Large subsets of PPF have closed-form single integrals. 
+In the next section, we propose a sampling method that performs significantly well on such subsets. 
 %As it will be seen in the next section, this leads to an extremely efficient Gibbs sampling mechanism.   
 %We will show that this is also holds for a large group of PPFs.
-We focus on the following fairly expressive  subset of PPFs:
+For simplicity we only focus on the following form:
 
-\textbf{PPF*. }
+\noindent\textbf{PPF*. }
 A PPF* is a PPF in which: %s as in Definition~(\ref{e:ppf}) where 
-\vspace{-2mm}
+\vspace{-1mm}
 \begin{enumerate}[leftmargin=2.6ex]
-\item Each atomic constraint $\varphi_{i,j}$
-can be factorized into a product of some terms in which the maximum degree of each variable is less or equal to 2. 
+\item Atomic constraints $\varphi_{i,j}$
+can be factorized into terms where the maximum degree of each variable is less or equal to 2. 
 \item The denominator of each sub-function can be factorized into %(not necessarily distinct) 
 polynomials in which the maximum degree of each variable s less or equal to 2.
 \end{enumerate}
-\vspace{-2mm}
+\vspace{-1mm}
 % ($\text{rel-degree}(D_{i, k}) \leq 2$).%, where function $\text{rel-degree}(\cdot)$, the relative degree, is defined as follows:
  %\begin{enumerate} 
 %\item Each constrain $\phi_i := \varphi_{i,1} \wedge \varphi_{i,2} \wedge \ldots$ is a conjunction of polynomial (in)equalities $\varphi_{i,j}$ such that $\text{rel-degree}(\varphi_{i,j}) \leq 4$.
@@ -530,11 +529,12 @@ Here is an example of a PPF* case-statement:
 }
 \end{equation}
 }
+Note that by~\ref{e:factor-graph}, graphical models are often designed in factorized forms, therefore, the verification of PPF* conditions is often not hard. 
 %The class of PPF*'s is still quite expressive. Meanwhile PPF*'s have closed form (single) integrals that are not very hard to compute automatically. 
 
-
+\noindent
 {\bf Analytic univariate PPF* integration.} 
-Now we provide a procedure to perform integration on PPF* functions.
+Now we provide a procedure to perform analytic integration on PPF* functions.
 It can be shown that if in a PPF* all variables except one are instantiated, 
 the resulting univariate function has a closed form integral.  
 This is sufficient for Gibbs sampling since in each step, only one variable is uninstantiated.
