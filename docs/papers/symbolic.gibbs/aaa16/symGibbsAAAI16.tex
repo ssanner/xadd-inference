@@ -366,8 +366,10 @@ using rejection sampling on the $\delta$-collapsed model.
 (PPFs)}
 \label{sect:ppfs}
 In the introduction, it was mentioned that Gibbs sampling is the most suitable inference tool for piecewise models.
+However, Gibbs requires multiple integration per sample (required in \ref{e:cdf})
+ which in general cannot be performed in closed form and in any case, is costly.
 
-
+Here  
 
 Now that we have collapsed out determinism, we can apply Gibbs sampling. However, automated derivation of Gibbs sampling requires a univariate symbolic integral (required in (\ref{e:cdf})) which is not possible in the general case.
 We address this issue by introducing a rich family of distributions (namely PPFs for \emph{polynomial piecewise fractional} functions) that remain closed under $\delta$-collapsing and one symbolic integration --- sufficient to automatically derive all conditional distributions required by Gibbs sampling in expressive piecewise graphical modelswith nonlinear determinism.  
