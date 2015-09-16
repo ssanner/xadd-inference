@@ -46,16 +46,16 @@ P_{tot} = M_1 V_1 + M_2 V_2 = 3.0
  
 %In applications of probabilistic inference, instead of direct observation of random variables (e.g., $X$ and $Y$), functions of them may be observed (e.g., $X\cdot Y = c$).
 
-In such problems, the posterior densities only have support on (non)linear sub-manifolds of the parameter space (e.g.\ a hyperplane in the collision model). 
-Efficient inference on such models is extremely challenging \cite{pennec2006intrinsic}. 
+In such problems, the posterior densities only have support on (non)linear sub-manifolds of the parameter space (e.g.\ the manifold induced by~\eqref{f:p_tot} in the collision model). 
+Efficient inference on such models is challenging \cite{pennec2006intrinsic}. 
 
-To evade the complications, state-of-the-art MCMC based probabilistic inference tools suggest adding noise to the observation (hard to soft constraint conversion) \cite{wood2014new}. 
-Nonetheless, this strategy does not help much: If the added noise is large then the approximation bounds can be arbitrarily large and if it is small, the sampling mixing rate can be arbitrarily slow \cite{li2013dynamic,chin1987bayesian}. 
+To evade these complications, state-of-the-art MCMC based probabilistic inference tools suggest adding noise to the deterministic constraints~\cite{wood2014new}. 
+Unfortunately, this strategy can be problematic: if the added noise is large then the approximation bounds can be arbitrarily large and if it is small, the sampling mixing rate can be arbitrarily slow \cite{li2013dynamic,chin1987bayesian}. 
  
-The other potential solution is to reduce the dimensionality of the posterior distribution via Jacobian-based random variable transformations. Measure theoretic subtleties aside, such transformations are only applicable when the observed function is invertible with respect to at least one random variable. Using the properties of the Dirac delta, our first contribution is to propose a dimension reduction method that is more general in the sense that the observed function is not required to be invertible but should be solvable with one or several distinct roots. Up to our knowledge, this is the first time that Dirac delta is used in this context.
-Nonetheless, dimension reduction (either carried out via Jacobian-based or Dirac delta-based mechanism) does not completely eliminate the problem since as it will be shown shortly, the produced low dimensional distributions are highly piecewise and multimodal. 
+The other potential solution is to reduce the dimensionality of the posterior distribution via Jacobian-based random variable transformations. Measure theoretic subtleties aside, such transformations are only applicable when the deterministic constraint is invertible with respect to at least one random variable. Using the properties of the Dirac delta, our first contribution is to propose a dimension reduction method that is more general in the sense that the constraint is not required to be invertible but should be solvable with one or several distinct roots. Up to our knowledge, this is the first time that Dirac delta is used in this context.
+Nonetheless, dimension reduction (either carried out via Jacobian-based or Dirac delta-based mechanism) does not completely eliminate the problem since as it will be shown shortly, the produced low-dimensional distributions are highly piecewise and multimodal. 
 
-Exact inference on such models is almost never possible and the convergence rate of the approximate alternatives can be extremely low.
+Exact inference on such piecewise models is almost never possible and the convergence rate of the approximate alternatives can be extremely low.
 For instance,
 the leapfrog mechanism by which Hamiltonian Monte Carlo (HMC) simulates the Hamiltonian dynamics relies on the assumption of smoothness \cite{neal2011mcmc}.
 This assumption does not hold 
