@@ -1,0 +1,23 @@
+\begin{abstract}
+\begin{quote}
+Probabilistic inference in many real-world problems often requires
+graphical models with (1)~nonlinear deterministic constraints between
+random variables (e.g., laws of physics) and (2)~piecewise
+distributions (e.g., priors enforcing bounded parameter values).
+While Gibbs sampling provides an attractive asymptotically unbiased
+MCMC approximation approach that does not require proposal design or
+tuning, it cannot be directly applied to models with determinism in
+the case of (1) and often requires manual derivation of complex
+piecewise conditional distributions in the case of (2).  To address
+both limitations, we introduce a rich class of piecewise algebraic
+graphical models with nonlinear determinism, where we show that
+deterministic constraints can always be eliminated through collapsing.
+We further show that the form of the collapsed model always permits
+one \emph{symbolic} integral --- sufficient to \emph{automatically}
+derive conditionals for Gibbs sampling.  We evaluate this fully
+automated Symbolic Gibbs sampler for nonlinear piecewise graphical
+models on examples motivated by physics and engineering and show it
+converges an order of magnitude faster than existing Monte Carlo
+samplers.
+\end{quote}
+\end{abstract}
