@@ -55,14 +55,28 @@ Unfortunately, this strategy can be problematic: if the added noise is large the
 The other potential solution is to reduce the dimensionality of the posterior distribution via Jacobian-based random variable transformations. Measure theoretic subtleties aside, such transformations are only applicable when the deterministic constraint is invertible with respect to at least one random variable. Using the properties of the Dirac delta, our first contribution is to propose a dimension reduction method that is more general in the sense that the constraint is not required to be invertible but should be solvable with one or several distinct roots. Up to our knowledge, this is the first time that Dirac delta is used in this context.
 Nonetheless, dimension reduction (either carried out via Jacobian-based or Dirac delta-based mechanism) does not completely eliminate the problem since as it will be shown shortly, the produced low-dimensional distributions are highly piecewise and multimodal. 
 
-Exact inference on such piecewise models is almost never possible and the convergence rate of the approximate alternatives can be extremely low.
-For instance,
-the leapfrog mechanism by which Hamiltonian Monte Carlo (HMC) simulates the Hamiltonian dynamics relies on the assumption of smoothness \cite{neal2011mcmc}.
-This assumption does not hold 
- in the adjacency of discontinuities (borders of pieces) leading to low proposal acceptance rates and poor performance. 
-Slice sampling suffers from the multimodal nature of the distributions that are in the focus of  the present work. Similarly, near the borders of partitions, the acceptance rate of Metropolis-Hastings(MH) is typically low since in such areas the difference (e.g.\ KL-divergence) between MH’s \emph{proposal distribution} and the suddenly varying target distribution is often significant.
-The exception is Gibbs sampling. The latter method can be regarded as a particular variation of MH where the proposals are directly chosen from the target distribution and therefore follow the target distribution changes and multimodalities.
-Nonetheless, Gibbs samplers can be quite slow since the per sample computation conditionals that Gibbs relies on are costly and in general cannot be performed in closed form.    
+% Are we assuming the alternatives are all MCMC?  This line of argumentation
+% is a bit loose -- it seems to pick and choose specific algorithms that
+% will not work... but it is hard to say nothing out there will work.
+Exact inference on such piecewise models is almost never possible and
+the convergence rate of the approximate alternatives can be extremely
+low.  For instance, the leapfrog mechanism by which Hamiltonian Monte
+Carlo (HMC) simulates the Hamiltonian dynamics relies on the
+assumption of smoothness \cite{neal2011mcmc}.  This assumption does
+not hold in the adjacency of discontinuities (borders of pieces)
+leading to low proposal acceptance rates and poor performance.  Slice
+sampling suffers from the multimodal nature of the distributions that
+are in the focus of the present work. Similarly, near the borders of
+partitions, the acceptance rate of Metropolis-Hastings(MH) is
+typically low since in such areas the difference (e.g.\ KL-divergence)
+between MH’s \emph{proposal distribution} and the suddenly varying
+target distribution is often significant.  The exception is Gibbs
+sampling. The latter method can be regarded as a particular variation
+of MH where the proposals are directly chosen from the target
+distribution and therefore follow the target distribution changes and
+multimodalities.  Nonetheless, Gibbs samplers can be quite slow since
+the per sample computation conditionals that Gibbs relies on are
+costly and in general cannot be performed in closed form.
 
 As such, in the second part of the paper we address the problem of sampling from highly piecewise distributions. %by proposing a variation of Gibbs sampling that saves a tremendous amount of redundan 
 We firstly introduce a reach class of \emph{piecewise fractional functions} as a building block for piecewise graphical models.% with (non)linear observed constraints.  
