@@ -12,13 +12,13 @@ Masses $M_1$ and $M_2$ with velocities $V_1$ and $V_2$ collide to form a single 
 $P_\text{tot} = M_1 V_1 + M_2 V_2$ (assuming that there is no dissipation).
 The prior density of masses and velocities are:\footnote{
 $\mathcal{U}(a, \, b)$ denotes a uniform density with support $[a,b]$.}
-\begin{align*}
+\begin{align}
 &\pr(M_1) = \mathcal{U}(0.1, \, 2.1), \quad 
-&&\pr(M_2) \!=\! \mathcal{U}(0.1, \, 2.1)\\
+&&\pr(M_2) \!=\! \mathcal{U}(0.1, \, 2.1) \label{sym:u12}\\
 &\pr(V_1) = \mathcal{U}(-2, \, 2), \quad
-&&\pr(V_2 \, | \, V_1) = \mathcal{U}(-2, \, V_1)
+&&\pr(V_2 \, | \, V_1) = \mathcal{U}(-2, \, V_1) \label{sym:u34}
 %\label{e:collision}
-\end{align*}
+\end{align}
 The total momentum is observed to be $3.0$.
 \begin{align}\label{f:p_tot}
 P_{tot} = M_1 V_1 + M_2 V_2 = 3.0

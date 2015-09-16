@@ -119,7 +119,7 @@ and represent a joint probability density $\pr(\vec{X})$ in a factorized form as
 \pr(\vec{X}) \propto \prod_{\Psi_k \in \boldsymbol\Psi} \Psi_k (\vec{X}_k)
 \end{equation}
 where 
-$\Psi(\cdot)$ are non-negative \emph{potential functions} 
+$\Psi_k$ are non-negative \emph{potential functions} 
 of subsets $\bvec{X}_k$ of $\bvec{X}$. 
 % and the normalization constant is not necessarily known.
 
@@ -255,13 +255,11 @@ If more than one deterministic relationship exists,
 theorem~\ref{theorem1} can be used multiple times and the collapsed variables are reconstructed in the reverse order they are eliminated.
 \end{comment}
 
-To clarify the theorem and motivate the next section we provide an example:
+To clarify the theorem, it is used to compute the collision model posterior $\pr(M_2, V_1, V_2 \,|\, P_\text{tot} = 3)$ as follows:
 
-%\vspace{1mm}\\
-...............................
-
-Therefore,
-$\footnotesize{\pr(M_1, M_2, V_1, V_2)}$ is equal to 
+\emph{
+\noindent
+In this model the prior joint density ${\pr(M_1, M_2, V_1, V_2)}$ is the product of potentials in equations~(\ref{sym:u12}) and (\ref{sym:u34}) which is,
 $$
 \begin{cases}
 \frac{1}{16 V_1 + 32} &{\text{if }\scriptstyle 0.1<M_1<2.1, \, 0.1<M_2<2.1,}
@@ -269,8 +267,6 @@ $$
  \otherwise{0}
  \end{cases}
 $$  
-...................................
-
 To apply Theorem 1, we solve {\footnotesize$(M_1 V_1 + M_2 V_2 - 3)$}
 w.r.t.\ a variable (say $M_1$ with the unique solution {\footnotesize$(3 - M_2 V_2)/V_1$}).
 Since,  
@@ -280,7 +276,6 @@ $$
 }
 by (\ref{e:theorem1}),
 $\pr(M_2, V_1, V_2 \,|\, P_\text{tot} = 3)$ is proportional to
-%{\footnotesize$\Phi$} is converted to:  
 {\footnotesize
 \begin{equation}\label{e:big}  
 \begin{cases}
@@ -300,23 +295,19 @@ $\pr(M_2, V_1, V_2 \,|\, P_\text{tot} = 3)$ is proportional to
  %\end{cases}
 \end{equation}
 }
-Using the joint distribution defined in 
-the piecewise polynomial fractional (PPF) function
-of (\ref{e:big}), we can evaluate various queries
-as depicted in Figure~\ref{fig:mom}.
-\hspace*{\fill} $\diamond$ 
-
-Figure~\ref{fig:mom} illustrates that even in this simple and
+}%end emph
+Using (\ref{e:big}), various queries are evaluated and depicted in Figure~\ref{fig:mom}.
+These plots clearly illustrate that even in this 
 low-dimensional example, collapsing of nonlinear determinism can lead
-to complicated (posterior) distributions that do not resemble the
-smooth densities often studied in the literature.  However, the use of
-PPFs as a building block for piecewise graphical models with nonlinear
-determinism does ensure that a large set of (non)linear deterministic
-relationships between random variables yield $\delta$-collapsed models
-with factors still in the PPF family.  The only task that remains then
-is to provide an automated sampling method for piecewise graphical
-models composed of an expressive class of PPFs, which we do in the
-next section.
+to multimodal and piecewise posteriors that do not resemble the
+smooth densities often studied in the literature.  
+
+In the next section, we introduce a class of functions which is closed under dimension reduction and consequently suitable for constraint models. 
+%However, the use of PPFs as a building block for piecewise graphical models with nonlinear determinism does ensure that a large set of (non)linear deterministic relationships between random variables yield $\delta$-collapsed models
+%with factors still in the PPF family.  
+The only task that remains then
+is to provide an automated sampling method for such models which will be presented subsequently. %in Section~\ref{sect:symbolic.gibbs}
+%composed of an expressive class of PPFs, which we do in the next section.
 %Reasoning on the
 %family of PPFs does provide a automated solution for inference in
 %presence of .  Despite the importance of the latter
@@ -331,7 +322,7 @@ next section.
 
 %FIG BLUE1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure*}[t!]
+\begin{figure*}%[t!]
 \vspace{-1mm}
 \begin{center}
 \begin{tabular}{cccccc}
@@ -374,6 +365,10 @@ using rejection sampling on the $\delta$-collapsed model.
 %Functions 
 (PPFs)}
 \label{sect:ppfs}
+In the introduction, it was mentioned that Gibbs sampling is the most suitable inference tool for piecewise models.
+
+
+
 Now that we have collapsed out determinism, we can apply Gibbs sampling. However, automated derivation of Gibbs sampling requires a univariate symbolic integral (required in (\ref{e:cdf})) which is not possible in the general case.
 We address this issue by introducing a rich family of distributions (namely PPFs for \emph{polynomial piecewise fractional} functions) that remain closed under $\delta$-collapsing and one symbolic integration --- sufficient to automatically derive all conditional distributions required by Gibbs sampling in expressive piecewise graphical modelswith nonlinear determinism.  
 
@@ -1096,6 +1091,8 @@ and engineering. The combination of these novel contributions should
 make probabilistic reasoning applicable to variety of new applications
 that, to date, have remained beyond the tractability and accuracy
 purview of existing inference methods.
+
+\newpage
 
 \small
 
