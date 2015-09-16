@@ -86,7 +86,7 @@
 % The file aaai.sty is the style file for AAAI Press 
 % proceedings, working notes, and technical reports.
 %
-\title{Closed-form Gibbs Sampling for Graphical Models with (Non)Linear Constraints}
+\title{Closed-form Gibbs Sampling for Graphical Models with Algebraic Constraints}
 %\author{AAAI Press\\
 %Association for the Advancement of Artificial Intelligence\\
 %2275 East Bayshore Road, Suite 160\\
@@ -373,8 +373,8 @@ using rejection sampling on the $\delta$-collapsed model.
 %Now that we have collapsed out determinism, we can apply Gibbs sampling. However, automated derivation of Gibbs sampling requires a univariate symbolic integral (required in (\ref{e:cdf})) which is not possible in the general case.
 
 We introduce an expressive family of functions that is rich enough to simulate arbitrary density functions up to arbitrary precision. 
-This family is the class of \emph{polynomial piecewise fractional} functions (PPFs). More formally, a PPF is a function of the form
-%$f = \sum_{i=1}^m \indicator[\phi_i]\cdot f_i $ where $\indicator[\cdot]$ denotes the indicator function. Using expanded notation, 
+This family is the class of \emph{polynomial piecewise fractional} functions (PPFs). More formally, a PPF is a function of the form,
+$f = \sum_{i=1}^m \indicator[\phi_i]\cdot f_i $ where $\indicator[\cdot]$ denotes the indicator function. Using expanded notation, 
 {\footnotesize
 \begin{equation}
 \label{e:ppf}
@@ -534,7 +534,7 @@ Note that by~\ref{e:factor-graph}, graphical models are often designed in factor
 
 \noindent
 {\bf Analytic univariate PPF* integration.} 
-Now we provide a procedure to perform analytic integration on PPF* functions.
+Now we provide a procedure for analytic integration on PPF* functions.
 It can be shown that if in a PPF* all variables except one are instantiated, 
 the resulting univariate function has a closed form integral.  
 This is sufficient for Gibbs sampling since in each step, only one variable is uninstantiated.
@@ -650,9 +650,9 @@ What is remained is to compute infinite integral of sub-functions.
 The restrictions imposed on PPF* sub-functions 
 guarantee that they have closed-form %indefinite 
 univariate integrals.
-These integrals are computed by performing polynomial division 
+These integrals are computed via polynomial division 
 (in case the degree of $x$ in the sub-function's numerator is more than its denominator),
-followed by partial fraction decomposition and finally, using a short list of indefinite integration rules.
+followed by partial fraction decomposition.% and finally, using a short list of indefinite integration rules.
 
 %% TODO: This barely counts as a proof... need to improve and make more complete. -Scott
 
@@ -665,7 +665,7 @@ followed by partial fraction decomposition and finally, using a short list of in
 
 \end{enumerate}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-\section{Symbolic Gibbs Sampling}
+\section{Closed-form Gibbs Sampling}
 \label{sect:symbolic.gibbs}
 
 %Gibbs sampling is an attractive MCMC tool in the sense that it does not require known bounds or any kind of tuning.In Gibbs, drawing a sample for $\bvec{X} := (X_1, \ldots, X_N)$ takes place in $N$ steps. In the $i$-th step, $X_i$ is sampled conditioned on the current realization of the others variables:
@@ -677,9 +677,9 @@ followed by partial fraction decomposition and finally, using a short list of in
 %\int_{-\infty}^{X_i} \!\! \pr(X_i = t, \,\bvec{X}_{-i} = \bvec{x}_{-i})  \dd  t
 %\end{equation} 
 %
-Our \emph{Symbolic Gibbs} sampling is based on a simple but significantly useful insight:
-If $\pr(X_1, \ldots, X_N)$
-has analytic integrals w.r.t.\ all variables $X_i$ (as is the case with PPF* densities),
+\emph{Closed-form Gibbs} sampling is based on a simple but significantly useful insight:
+If $\pr(\bvec{X})$
+has analytic integrals w.r.t.\ any variables $X_i$ (as is the case with PPF* densities),
 then the costly CDF computations can be done \emph{prior to the sampling process rather than per sample}. 
 It is sufficient to construct a mapping $\mathcal{F}$ from variables $X_i$ to their corresponding (unnormalized conditional) analytical CDFs. 
 %then, instead of computing $N$ univariate integrals (required in Eq.~\ref{e:cdf}) per sample, we can perform the costly computations prior to the actual sampling process by constructing a map from each variable $X_i$ to its corresponding univariate symbolic CDF: 
@@ -716,15 +716,8 @@ If CDF inversion (required for inverse transform sampling) is also
 computed analytically, then Gibbs sampling may be done fully
 analytically.  However, analytical inversion of PPF*s can be very
 complicated and instead in the current implementation, we approximate
-the CDF$^{-1}$ computation via \emph{binary search}. This requires
-several function evaluations per sample. Nonetheless, unlike
-integration, function evaluation is a very fast operation. Therefore,
-this suffices for highly efficient Gibbs sampling as we show
-experimentally in the next section.
-
-%By this method, instead of computing $N \times T$ integrals for $T$ samples, only $N$ integrals are computed and $N \times T$ function instantiations are performed. But function instantiation is much faster than integration. Therefore, the algorithm leads to a major improvement in speed.
-
-%What remains is to show that a large subset of PPF functions indeed have closed-form integrals. 
+the CDF$^{-1}$ computation via \emph{binary search}. 
+%This requires several function evaluations per sample. Nonetheless, unlike integration, function evaluation is a very fast operation. Therefore, this suffices for highly efficient Gibbs sampling as we show experimentally in the next section.
 
 % This algorithm is obvious and takes up space that we need. -Scott
 %
