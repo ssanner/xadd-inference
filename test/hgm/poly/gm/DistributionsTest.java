@@ -22,9 +22,124 @@ import java.util.Map;
 public class DistributionsTest {
     public static void main(String[] args) {
         DistributionsTest instance = new DistributionsTest();
-        instance.testBowl();
 
-        instance.testBellShapedDistribution();
+//        instance.testIrwinHall();
+        instance.testTriangular();
+
+        instance.testNormal();
+//        instance.testBowl();
+//        instance.testBellShapedDistribution();
+    }
+
+    private void testTriangular() {
+        final Double left= 4.0;
+        final Double right = 3.0;
+        final Double mu =  5.0;
+        final String[] vars = PolynomialFactory.makeIndexedVars("v", 0, 0);
+        final PolynomialFactory factory = new PolynomialFactory(vars);
+        Distributions distBank = new Distributions(factory);
+        final PiecewiseExpression<Fraction> triangle = distBank.createExhaustiveTriangular(vars[0], mu.toString(), left.toString(), right.toString()).returnAdd(factory.makeFraction("1"));
+
+        FunctionVisualizer.visualize(new Function() {
+            Double[] values = new Double[factory.getAllVars().length];
+
+            @Override
+            public double evaluate(VarAssignment fullVarAssign) {
+                return triangle.evaluate(fullVarAssign.getContinuousVarAssignAsArray("v"));
+            }
+
+            @Override
+            public String[] collectContinuousVars() {
+                return vars;
+            }
+        }, -10, 10, 0.05, "triangle");
+
+
+
+    }
+
+    private void testNormal() {
+        final Double mean = -4.0;
+        final Double sigma = 3.0;
+        final String[] vars = PolynomialFactory.makeIndexedVars("v", 0, 0);
+        final PolynomialFactory factory = new PolynomialFactory(vars);
+        Distributions distBank = new Distributions(factory);
+        final PiecewiseExpression<Fraction> approxNormal = distBank.createNormalDistributionIrwinHallApprox(vars[0], mean.toString(), sigma.toString());
+        System.out.println("Normal = " + approxNormal);
+        FunctionVisualizer.visualize(new Function() {
+            Double[] values = new Double[factory.getAllVars().length];
+
+            @Override
+            public double evaluate(VarAssignment fullVarAssign) {
+                return approxNormal.evaluate(fullVarAssign.getContinuousVarAssignAsArray("v"));
+            }
+
+            @Override
+            public String[] collectContinuousVars() {
+                return vars;
+            }
+        }, -10, 10, 0.05, "approx normal");
+
+        FunctionVisualizer.visualize(new Function() {
+            Double[] values = new Double[factory.getAllVars().length];
+
+            @Override
+            public double evaluate(VarAssignment fullVarAssign) {
+                Double x = fullVarAssign.getContinuousVarAssignAsArray("v")[0];
+
+               return (1.0/(sigma * Math.sqrt(2*Math.PI))) * Math.exp(-(x-mean)*(x-mean)/(2*sigma*sigma));
+            }
+
+            @Override
+            public String[] collectContinuousVars() {
+                return vars;
+            }
+        }, -10, 10, 0.05, "real normal");
+
+    }
+
+    private void testIrwinHall() {
+        final String[] vars = PolynomialFactory.makeIndexedVars("v", 0, 0);
+        final PolynomialFactory factory = new PolynomialFactory(vars);
+        Distributions distBank = new Distributions(factory);
+        final PiecewiseExpression<Fraction> irwin = distBank.irwinHall(vars[0]);
+        System.out.println("IrwinHall = " + irwin);
+        FunctionVisualizer.visualize(new Function() {
+            Double[] values = new Double[factory.getAllVars().length];
+
+            @Override
+            public double evaluate(VarAssignment fullVarAssign) {
+                return irwin.evaluate(fullVarAssign.getContinuousVarAssignAsArray("v"));
+            }
+
+            @Override
+            public String[] collectContinuousVars() {
+                return vars;
+            }
+        }, -10, 10, 0.05, "Our Irwin");
+
+        FunctionVisualizer.visualize(new Function() {
+            Double[] values = new Double[factory.getAllVars().length];
+
+            @Override
+            public double evaluate(VarAssignment fullVarAssign) {
+                Double x = fullVarAssign.getContinuousVarAssignAsArray("v")[0];
+
+                if (x>=0 && x<1) return 0.5*x*x;
+                if (x>=1 && x<2) return 0.5*(-2.0*x*x + 6.0*x - 3.0);
+                if (x>=2 && x<=3) return 0.5*(x*x - 6.0*x + 9);
+                return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            public String[] collectContinuousVars() {
+                return vars;
+            }
+        }, -10, 10, 0.05, "real Irwin");
+
+
+
+
     }
 
     @Test
@@ -107,6 +222,7 @@ public class DistributionsTest {
         String SAMPLES_FILE_PATH = "D:/JAVA/IdeaProjects/proj2/test/hgm/poly/gm/";
         SamplingUtils.save2DSamples(sampler, numSamples, SAMPLES_FILE_PATH + "scatter2D");
     }
+
 
 
 }

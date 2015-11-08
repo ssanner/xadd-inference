@@ -1,8 +1,7 @@
-package hgm.poly.reports.sg.external.Anglican;
+package hgm.poly.reports.sg.external.anglican;
 
 import hgm.asve.Pair;
 import hgm.poly.reports.sg.external.ExternalMhSampleBank;
-import hgm.poly.sampling.SamplerInterface;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;

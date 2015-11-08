@@ -1,10 +1,7 @@
 package hgm.poly.gm;
 
 import hgm.asve.Pair;
-import hgm.poly.ConstrainedExpression;
-import hgm.poly.Fraction;
-import hgm.poly.PiecewiseExpression;
-import hgm.poly.PolynomialFactory;
+import hgm.poly.*;
 import hgm.poly.sampling.SamplerInterface;
 import hgm.sampling.SamplingFailureException;
 
@@ -294,7 +291,8 @@ public class SymbolicGraphicalModelHandler {
     // this compensates the effect of dimension reduction
     public SamplerInterface makeCompletedSampler(final RichJointWrapper richJW, JointToSampler joint2sampler) {
 
-        final PiecewiseExpression<Fraction> joint = richJW.getJoint();
+//        final PiecewiseExpression<Fraction> joint = richJW.getJoint();
+        final FactorizedPiecewiseStructure<Fraction> joint = richJW.getJoint();
         final List<DeterministicFactor> eliminatedStochasticVarFactors = richJW.getEliminatedStochasticVarFactors(); //eliminated stochastic vars have been in the joint but eliminated via dimension reduction
         final List<String> queryVars = richJW.getQueryVars();
         final double minVarLimit = richJW.getMinLimitForAllVars();
@@ -383,7 +381,10 @@ public class SymbolicGraphicalModelHandler {
     // the sample s = [(3 - 1.11*3.33)/2.22, 2.22, 1.11]
     // Note: due to the variable reordering, the produced sample cannot be fed to the factory....
     @Deprecated
-    public SamplerInterface makeQuerySampler(final PiecewiseExpression<Fraction> joint, final List<DeterministicFactor> eliminatedStochasticVarFactors,
+    public SamplerInterface makeQuerySampler(
+//            final PiecewiseExpression<Fraction> joint,
+            final FactorizedPiecewiseStructure<Fraction> joint,
+            final List<DeterministicFactor> eliminatedStochasticVarFactors,
                                              List<String> varsToBeSampledJointly /*query*/, double minVarLimit, double maxVarLimit, JointToSampler joint2sampler) {
 
         final PolynomialFactory factory = joint.getFactory();

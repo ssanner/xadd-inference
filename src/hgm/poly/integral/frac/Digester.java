@@ -16,12 +16,47 @@ public class Digester {
     private Set<IntermediateConstraintExpression> inters = new HashSet<IntermediateConstraintExpression>();
     private int varIndex;
 
-    public Digester(PiecewiseExpression<Fraction> pf, String var) {
+    private List<PiecewiseExpression<Fraction>> factorsNotInvolvingIntegrand;
+
+    public boolean normalizationRequired = false;
+
+
+    public Digester(
+//            PiecewiseExpression<Fraction> pf,
+            FactorizedPiecewiseStructure<Fraction> pf,
+            String var) {
         this(pf, pf.getFactory().getVarIndex(var));
     }
 
-    public Digester(PiecewiseExpression<Fraction> pf, int varIndex) {
+    public Digester(
+//            PiecewiseExpression<Fraction> pf,
+            FactorizedPiecewiseStructure<Fraction> fpf,
+            int varIndex) {
         this.varIndex = varIndex;
+        String var = fpf.getFactory().getAllVars()[varIndex]; //stupid move between varIndex and var names
+
+        //0.1 keep the factors not involving var:
+        if (normalizationRequired) {
+            factorsNotInvolvingIntegrand = fpf.getFactorsNotInvolving(var);
+        } else {
+            factorsNotInvolvingIntegrand = new ArrayList<PiecewiseExpression<Fraction>>();//if normalization is not required, then I do not need to take care of other factors so pass an empty list
+        }
+
+        //0.2 make a single piecewise expression for the factors involving the var:
+        List<PiecewiseExpression<Fraction>> factorsWithVar = fpf.getFactorsInvolving(var);
+        PiecewiseExpression<Fraction> pf;
+        if (factorsWithVar.size()==0){
+            PolynomialFactory factory = fpf.getFactory();
+            ConstrainedExpression<Fraction> case1 = new ConstrainedExpression<Fraction>(factory.makeFraction("1.0"), new ArrayList<Fraction>());
+            pf = new PiecewiseExpression<Fraction>(true, case1); //one
+        } else if (factorsWithVar.size()==1){
+            pf = factorsWithVar.get(0);
+        } else {
+            pf = factorsWithVar.get(0);
+            for (int i=1; i<factorsWithVar.size(); i++) {
+                pf = pf.multiply(factorsWithVar.get(i));
+            }
+        }
 
         //1.
         for (ConstrainedExpression<Fraction> fractionConstrainedExpression : pf.getCases()) {
@@ -64,7 +99,7 @@ public class Digester {
         for (IntermediateConstraintExpression inter : inters) {
              varCdfGenerators[i++] = inter.integrate(varIndex);
         }
-        return new SymbolicCdfArrayHandler(varCdfGenerators);
+        return new SymbolicCdfArrayHandler(varCdfGenerators, factorsNotInvolvingIntegrand);
     }
 
     private void simplify(Set<IntermediateConstraintExpression> inters) {
@@ -80,6 +115,7 @@ public class Digester {
                     }
                     if (cNum < 0) {
                         interIterator.remove(); //this constraint is unsatisfiable
+                        break;//this line added 27/10/2015
                     }
                 }
 

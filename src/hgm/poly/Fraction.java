@@ -55,6 +55,11 @@ public class Fraction implements Expression<Fraction>, Cloneable {
 
     }
 
+    public Fraction returnScalarMultiplication(double c) {
+        Fraction newFraction = this.clone();
+        newFraction.multiplyScalarInThis(c);
+        return newFraction;
+    }
     public void multiplyScalarInThis(double c) {
         numerator.multiplyScalarInThis(c);
     }
@@ -175,7 +180,7 @@ public class Fraction implements Expression<Fraction>, Cloneable {
         return factory;
     }
 
-    public Fraction subtract(Fraction m) {
+    public Fraction returnSubtraction(Fraction m) {
         Fraction mNeg = m.clone();
         mNeg.multiplyScalarInThis(-1.0);
         return returnAddition(mNeg);
@@ -366,6 +371,11 @@ public class Fraction implements Expression<Fraction>, Cloneable {
         cases.add(new ConstrainedExpression<Fraction>(this.clone().scalarMultiplication(-1.0), Arrays.<Fraction>asList(aNeg.clone(), bPos.clone())));
         return new PiecewiseExpression<Fraction>(true, cases);
 
+    }
+
+    @Override
+    public boolean isZero() {
+        return this.getNumerator().isZero();
     }
 }
 

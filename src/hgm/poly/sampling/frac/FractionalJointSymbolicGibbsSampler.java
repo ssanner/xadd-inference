@@ -36,7 +36,9 @@ public class FractionalJointSymbolicGibbsSampler implements SamplerInterface {
 
     }
 
-    public static FractionalJointSymbolicGibbsSampler makeSampler(PiecewiseExpression<Fraction> joint,
+    public static FractionalJointSymbolicGibbsSampler makeSampler(
+//            PiecewiseExpression<Fraction> joint,
+            FactorizedPiecewiseStructure<Fraction> joint,
                                                                   double minForAllVars, double maxForAllVars/*, Double[] reusableInitialSample*/) {
         List<String> jointScopeVars = new ArrayList<String>(joint.getScopeVars());
         int numScopeVars = jointScopeVars.size(); // note: these are not all vars in the factory.
@@ -55,8 +57,9 @@ public class FractionalJointSymbolicGibbsSampler implements SamplerInterface {
     public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 45;//30;
     //    public static final int MAX_INITIAL_SAMPLING_TRIAL = 100000000;    // if the function is not positive, (initial) sample cannot be
     int numScopeVars;
-    //    Double[] prevSample = null;
-    PiecewiseExpression<Fraction> joint;
+
+//    PiecewiseExpression<Fraction> joint;
+    FactorizedPiecewiseStructure<Fraction> joint;
     Map<Integer/*var Index*/, SymbolicCdfArrayHandler> varToSymbolicIntegralMap;
     Map<Integer, Double> varIndex2MinMap;
     Map<Integer, Double> varIndex2MaxMap;
@@ -67,7 +70,9 @@ public class FractionalJointSymbolicGibbsSampler implements SamplerInterface {
     private Map<String, Double> reusableSampleAssignment;
 
 
-    public FractionalJointSymbolicGibbsSampler(PiecewiseExpression<Fraction> joint,
+    public FractionalJointSymbolicGibbsSampler(
+//            PiecewiseExpression<Fraction> joint,
+            FactorizedPiecewiseStructure<Fraction> joint,
                                                List<String> scopeVars,
                                                double[] cVarMins, double[] cVarMaxes/*, Double[] reusableInitialSample*/) {
         this.joint = joint;

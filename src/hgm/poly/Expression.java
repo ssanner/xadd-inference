@@ -21,9 +21,11 @@ public interface Expression<E extends Expression> extends Cloneable, WeakExpress
 
     E returnAddition(E otherExpression);
 
-//    @Override
-//    @SuppressWarnings("CloneDoesntCallSuperClone, CloneDoesntDeclareCloneNotSupportedException")
-//    E clone();
+    void multiplyScalarInThis(double c);
+
+    boolean isZero();
+
+    E clone();
 
 //    void replaceThisWithIndefiniteIntegral(int integrationVarIndex);
 }

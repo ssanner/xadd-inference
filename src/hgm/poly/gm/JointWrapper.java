@@ -1,7 +1,7 @@
 package hgm.poly.gm;
 
+import hgm.poly.FactorizedPiecewiseStructure;
 import hgm.poly.Fraction;
-import hgm.poly.PiecewiseExpression;
 
 /**
  * Created by Hadi Afshar.
@@ -10,17 +10,22 @@ import hgm.poly.PiecewiseExpression;
  */
 @Deprecated // I just want to use rich joint wrapper //todo replace this with RichJointWrapper everywhere...
 public class JointWrapper {
-    private PiecewiseExpression<Fraction> joint;
+//    private PiecewiseExpression<Fraction> joint;
+    private FactorizedPiecewiseStructure<Fraction> joint;
     private double minVarLimit;
     private double maxVarLimit;
 
-    public JointWrapper(PiecewiseExpression<Fraction> joint, double minVarLimit, double maxVarLimit) {
+    public JointWrapper(
+//            PiecewiseExpression<Fraction> joint,
+            FactorizedPiecewiseStructure<Fraction> joint,
+            double minVarLimit, double maxVarLimit) {
         this.joint = joint;
         this.minVarLimit = minVarLimit;
         this.maxVarLimit = maxVarLimit;
     }
 
-    public PiecewiseExpression<Fraction> getJoint() {
+//    public PiecewiseExpression<Fraction> getJoint() {
+    public FactorizedPiecewiseStructure<Fraction> getJoint() {
         return joint;
     }
 

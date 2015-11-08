@@ -1,5 +1,6 @@
 package hgm.poly.sampling.frac;
 
+import hgm.poly.FactorizedPiecewiseStructure;
 import hgm.poly.Fraction;
 import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
@@ -36,7 +37,9 @@ public class FractionalJointBaselineGibbsSampler implements SamplerInterface {
         };
     }
 
-    public static FractionalJointBaselineGibbsSampler makeSampler(PiecewiseExpression<Fraction> joint,
+    public static FractionalJointBaselineGibbsSampler makeSampler(
+//            PiecewiseExpression<Fraction> joint,
+            FactorizedPiecewiseStructure<Fraction> joint,
                                                                   double minForAllVars, double maxForAllVars/*, Double[] reusableInitialSample*/) {
         List<String> jointScopeVars = new ArrayList<String>(joint.getScopeVars());
         int numScopeVars = jointScopeVars.size(); // note: these are not all vars in the factory.
@@ -55,7 +58,8 @@ public class FractionalJointBaselineGibbsSampler implements SamplerInterface {
 //    public static final int MAX_ITERATIONS_TO_APPROX_F_INVERSE = 20;
 //    public static final int MAX_INITIAL_SAMPLING_TRIAL = 10000000;    // if the function is not positive, (initial) sample cannot be
     int numScopeVars;
-    PiecewiseExpression<Fraction> joint;
+//    PiecewiseExpression<Fraction> joint;
+    FactorizedPiecewiseStructure<Fraction> joint;
     Map<Integer, Double> varIndex2MinMap;
     Map<Integer, Double> varIndex2MaxMap;
     Double[] reusableSample;
@@ -65,7 +69,9 @@ public class FractionalJointBaselineGibbsSampler implements SamplerInterface {
     private Map<String, Double> reusableSampleAssignment;
 
 
-    public FractionalJointBaselineGibbsSampler(PiecewiseExpression<Fraction> joint,
+    public FractionalJointBaselineGibbsSampler(
+//            PiecewiseExpression<Fraction> joint,
+            FactorizedPiecewiseStructure<Fraction> joint,
                                                List<String> scopeVars,
                                                double[] cVarMins, double[] cVarMaxes/*, Double[] reusableInitialSample*/) {
         this.joint = joint;
@@ -148,7 +154,9 @@ public class FractionalJointBaselineGibbsSampler implements SamplerInterface {
 //        varToSymbolicIntegralMap.put(scopeVarIndex, d.calcSymbolicIntegral());
 
         reusableVarAssign[varIndexToBeSampled] = null;
-        PiecewiseExpression<Fraction> univarJoint = joint.substitute(reusableVarAssign);
+//        PiecewiseExpression<Fraction> univarJoint
+        FactorizedPiecewiseStructure<Fraction> univarJoint
+                = joint.substitute(reusableVarAssign);
         //debug:
         if (univarJoint.getScopeVars().size()!=1) throw new SamplingFailureException("at this stage joint should be univariate but it is not! Joint = " + joint);
         Digester d = new Digester(joint, varIndexToBeSampled);

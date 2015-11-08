@@ -439,6 +439,7 @@ public class Polynomial implements Expression<Polynomial>, Cloneable{
         return getCoefficient(allZeroPow);
     }
 
+    @Override
     public boolean isZero() {
         return powers2coefMap.isEmpty();
     }

@@ -1,7 +1,7 @@
 package hgm.poly.sampling.frac;
 
+import hgm.poly.FactorizedPiecewiseStructure;
 import hgm.poly.Fraction;
-import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.bayesian.AbstractGeneralBayesianGibbsSampler;
 import hgm.poly.gm.JointToSampler;
@@ -37,7 +37,9 @@ public class FractionalJointRejectionSampler implements SamplerInterface{
         };
     }
 
-    public static FractionalJointRejectionSampler makeSampler(PiecewiseExpression<Fraction> joint,
+    public static FractionalJointRejectionSampler makeSampler(
+//            PiecewiseExpression<Fraction> joint,
+            FactorizedPiecewiseStructure<Fraction> joint,
                                                                   double minForAllVars, double maxForAllVars,
                                                                   double envelopeCoef) {
         List<String> jointScopeVars = new ArrayList<String>(joint.getScopeVars());
@@ -52,9 +54,10 @@ public class FractionalJointRejectionSampler implements SamplerInterface{
     //............................
     public static final boolean DEBUG = true;
 //    public static final int MAX_INITIAL_SAMPLING_TRIAL = 100000000;    // if the function is not positive, (initial) sample cannot be
-    public static final long MAX_WAITING_MILLI_SECONDS_TO_TAKE_A_SAMPLE = 2000;//1000 / 2;
+    public static final long MAX_WAITING_MILLI_SECONDS_TO_TAKE_A_SAMPLE = 100000;//1000 / 2;
     int numScopeVars;
-    PiecewiseExpression<Fraction> joint;
+//    PiecewiseExpression<Fraction> joint;
+    FactorizedPiecewiseStructure<Fraction> joint;
     Map<Integer, Double> varIndex2MinMap;
     Map<Integer, Double> varIndex2MaxMap;
     int[] scopeVarIndexes;
@@ -66,7 +69,9 @@ public class FractionalJointRejectionSampler implements SamplerInterface{
     private int sampleArraySize;
 
 
-    public FractionalJointRejectionSampler(PiecewiseExpression<Fraction> joint,
+    public FractionalJointRejectionSampler(
+//            PiecewiseExpression<Fraction> joint,
+            FactorizedPiecewiseStructure<Fraction> joint,
                                            List<String> scopeVars,
                                            double[] cVarMins, double[] cVarMaxes,
                                            double envelope) {

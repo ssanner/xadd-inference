@@ -51,4 +51,17 @@ public class CaseStatementConstraints<E extends Expression> extends HashSet<E> {
         }
         return true;
     }
+
+    public CaseStatementConstraints<E> deepClone() {
+        CaseStatementConstraints<E> out = new CaseStatementConstraints<E>(this.size());
+        for (E constraint : this) {
+            E newConstraint;
+//            if (constraint instanceof Polynomial) newConstraint = (E)(((Polynomial)(constraint)).clone());
+//            else if (constraint instanceof Fraction) newConstraint = (E)(((Fraction)(constraint)).clone());
+//            else throw new RuntimeException("not implemented");
+//            out.add(newConstraint);
+            out.add((E)constraint.clone());
+        }
+        return out;
+    }
 }

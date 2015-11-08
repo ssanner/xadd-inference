@@ -9,7 +9,7 @@ import java.util.*;
  * Date: 26/02/14
  * Time: 8:07 PM
  */
-public class PiecewiseExpression<E extends Expression>{
+public class PiecewiseExpression<E extends Expression> implements FactorizedPiecewiseStructure<E> {    //factorized but only has a single factor...
     /**
      * It is assumed that (the constraints of) different cases are mutually exclusive and jointly exhaustive.
      * However, if this parameter is unset, it is assumed that a case exists with constraint = 'negation of constraints of other cases' and value = 0.
@@ -74,7 +74,7 @@ public class PiecewiseExpression<E extends Expression>{
         ConstrainedExpression activeCase;
         try {
             Integer activatedCaseId = getActivatedCaseId(assign);
-            if (activatedCaseId==-1) return 0.0;
+            if (activatedCaseId == -1) return 0.0;
 
             activeCase = cases.get(activatedCaseId);
             return activeCase.getFruit().evaluate(assign);
@@ -118,7 +118,7 @@ public class PiecewiseExpression<E extends Expression>{
     /**
      * @return adds the new constraints to all statements and multiplies all sub-functions in the new polynomial
      */
-    public PiecewiseExpression multiply(List<? extends Expression> newConstraints, Expression newPolynomial){
+    public PiecewiseExpression multiply(List<? extends Expression> newConstraints, Expression newPolynomial) {
         ConstrainedExpression[] augmentedCases = new ConstrainedExpression[cases.size()];
         for (int i = 0; i < cases.size(); i++) {
             ConstrainedExpression aCase = cases.get(i);
@@ -133,8 +133,23 @@ public class PiecewiseExpression<E extends Expression>{
         return new PiecewiseExpression(false, augmentedCases);
     }
 
+    //adds to to the fruit of all cases
+    public PiecewiseExpression<E> returnAdd(E expr) {
+        if (!this.isJointlyExhaustive) throw new RuntimeException("not sure how to implement it in this case");
+
+        List<ConstrainedExpression<E>> newCases = new ArrayList<ConstrainedExpression<E>>(this.cases.size());
+        for (ConstrainedExpression<E> aCase : cases) {
+            E newFruit = (E)(aCase.getFruit().returnAddition(expr));
+            ConstrainedExpression<E> newCase = new ConstrainedExpression<E>(newFruit, aCase.getConstraints().deepClone());
+            newCases.add(newCase);
+        }
+        return new PiecewiseExpression<E>(this.isJointlyExhaustive, newCases);
+    }
+
+
     public PiecewiseExpression add(PiecewiseExpression other) {
-        if (!this.isJointlyExhaustive || !other.isJointlyExhaustive) throw new RuntimeException("ADDITION is not implemented for nonExhaustive piecewise expressions");
+        if (!this.isJointlyExhaustive || !other.isJointlyExhaustive)
+            throw new RuntimeException("ADDITION is not implemented for nonExhaustive piecewise expressions");
         return addCrossProdOp.run(this, other);
     }
 
@@ -150,28 +165,28 @@ public class PiecewiseExpression<E extends Expression>{
 
     /**
      * this: e.g.  <br>
-     *      A1.A2:  f1    <br>
-     *      A1.A3:  f2   <br>
-     *      B1:     f3    <br>
-     *      C:      f4
+     * A1.A2:  f1    <br>
+     * A1.A3:  f2   <br>
+     * B1:     f3    <br>
+     * C:      f4
+     *
      * @param other e.g.    <br>
      *              A1:     g1      <br>
      *              B1.B2:  g2      <br>
      *              D:      g3      <br>
-     * @return
-     *      A1.A2:  f1.g1   <br>
-     *      A1.A3:  f2.g1   <br>
-     *      B1.A1:  f3.g1   <br>
-     *      B1.B2:  f3:g2
-     *      B1.D:   f3.g3   <br>
-     *      C.A1:   f4.g1   <br>
-     *      C.D:    f4.g3   <br>
-     *
-     *     i.e. 7 cases instead of 12 ones.
+     * @return A1.A2:  f1.g1   <br>
+     *         A1.A3:  f2.g1   <br>
+     *         B1.A1:  f3.g1   <br>
+     *         B1.B2:  f3:g2
+     *         B1.D:   f3.g3   <br>
+     *         C.A1:   f4.g1   <br>
+     *         C.D:    f4.g3   <br>
+     *         <p/>
+     *         i.e. 7 cases instead of 12 ones.
      */
     public PiecewiseExpression multiply(PiecewiseExpression other) {
         return multCrossProdOp.run(this, other);
-        }
+    }
 
     SegmentCrossProdOperation multCrossProdOp = new SegmentCrossProdOperation() {
         @Override
@@ -180,8 +195,29 @@ public class PiecewiseExpression<E extends Expression>{
         }
     };
 
-    abstract class SegmentCrossProdOperation{
-        PiecewiseExpression run(PiecewiseExpression<E> thisPP, PiecewiseExpression<E> otherPP){
+    public void multiplyScalarInThis(double c) {
+        for (ConstrainedExpression<E> aCase : cases) {
+            aCase.multiplyScalarInThis(c);
+        }
+    }
+
+    public PiecewiseExpression<E> multiplyExpression(E expression) {
+        PiecewiseExpression result = multiply(new ArrayList<E>(), expression);
+        result.isJointlyExhaustive = this.isJointlyExhaustive; //kind of a hack (for this special case where no new condition is added...
+        return result;
+    }
+
+    public void addConstraintsToAllCasesInThis(List<E> newConstraints, boolean makeNoneJointlyExhaustive) {
+        for (ConstrainedExpression<E> aCase : cases) {
+            aCase.getConstraints().addAll(newConstraints);
+        }
+
+        if (makeNoneJointlyExhaustive) this.isJointlyExhaustive = false;   //I can hardly imagine a case where this is not wanted...
+    }
+
+
+    abstract class SegmentCrossProdOperation {
+        PiecewiseExpression run(PiecewiseExpression<E> thisPP, PiecewiseExpression<E> otherPP) {
             boolean prodIsJointlyExclusive = thisPP.isJointlyExhaustive && otherPP.isJointlyExhaustive;
             List<ConstrainedExpression> prodCases = new ArrayList<ConstrainedExpression>();
 
@@ -198,7 +234,7 @@ public class PiecewiseExpression<E extends Expression>{
                             operate(cp1.getFruit(), otherPP.getCorrespondingPolynomial(superSetOfCn1)), //cp1.getPolynomial().multiply(otherPP.getCorrespondingPolynomial(superSetOfCn1)),
                             cn1));
                 } else {
-                    for (ConstrainedExpression<E> cp2: otherPP.getCases()) {
+                    for (ConstrainedExpression<E> cp2 : otherPP.getCases()) {
                         CaseStatementConstraints cn2 = cp2.getConstraints();
                         CaseStatementConstraints superSetOfCn2 = subset2superSet.get(cn2);
                         if (superSetOfCn2 == null) {
@@ -228,11 +264,12 @@ public class PiecewiseExpression<E extends Expression>{
 //        Set<CaseStatementConstraints> remainedCnsThis = new HashSet<CaseStatementConstraints>();
             for (ConstrainedExpression cp1 : thisPP.getCases()) {
                 CaseStatementConstraints cn1 = cp1.getConstraints();
-                for (ConstrainedExpression cp2: otherPP.getCases()) {
+                for (ConstrainedExpression cp2 : otherPP.getCases()) {
                     CaseStatementConstraints cn2 = cp2.getConstraints();
                     if (cn1.isEntailedBy(cn2)) {
-                        if (subset2superSet.put(cn1, cn2) != null) { //subset in the sense that it is associated with a smaller partition which is a subset of the other one, i.e. (A1.A2) and (A1) are two subsets of (A1).
-                            throw new RuntimeException("already a subset!");
+                        CaseStatementConstraints already = subset2superSet.put(cn1, cn2);
+                        if (already != null) { //subset in the sense that it is associated with a smaller partition which is a subset of the other one, i.e. (A1.A2) and (A1) are two subsets of (A1).
+                            throw new RuntimeException("already a subset! \n cn1=" + cn1 + "\n is entailed by cn2=\n" + cn2 +"\n ... but already entailed by other constraint: \n" + already);
                         }
                     } else if (cn2.isEntailedBy(cn1)) {
                         if (subset2superSet.put(cn2, cn1) != null) {
@@ -277,7 +314,6 @@ public class PiecewiseExpression<E extends Expression>{
 
         return new PiecewisePolynomial(prodIsJointlyExclusive, prodCases);
     }*/
-
 
 
     private Expression getCorrespondingPolynomial(CaseStatementConstraints caseConstraints) {
@@ -326,14 +362,51 @@ public class PiecewiseExpression<E extends Expression>{
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        int i=0;
         for (ConstrainedExpression aCase : cases) {
-            sb.append("\t").append(aCase).append("\n");
+            sb.append(++i).append(".\t").append(aCase).append("\n");
         }
         if (!isJointlyExhaustive) {
             sb.append("0 \t\t\t OTHERWISE:\n");
         }
 
         return sb.toString();
+    }
+
+    public void makeNonExclusive() { // make a (potentially exclusive) factor non-exclusive by removing the zero case statements. This is typically used when factors are made by SUMMATION of exclusive factors
+        for (Iterator<ConstrainedExpression<E>> caseIterator = cases.iterator(); caseIterator.hasNext(); ) {
+            ConstrainedExpression<E> aCase = caseIterator.next();
+            E fruit = aCase.getFruit();
+            if (fruit.isZero()) {
+                caseIterator.remove();
+            }
+        }
+
+        this.isJointlyExhaustive = false;
+    }
+
+
+    ////////////////////
+
+
+    @Override
+    public List<PiecewiseExpression<E>> getFactorsNotInvolving(String var) {
+        //this is only a single factor structure, so a list containing itself is returned or an empty list in returned
+        List<PiecewiseExpression<E>> factors = new ArrayList<PiecewiseExpression<E>>(1);
+        if (!getScopeVars().contains(var)) {
+            factors.add(this);
+        }
+        return factors;
+    }
+
+    @Override
+    public List<PiecewiseExpression<E>> getFactorsInvolving(String var) {
+        //this is only a single factor structure, so a list containing itself is returned or an empty list in returned
+        List<PiecewiseExpression<E>> factors = new ArrayList<PiecewiseExpression<E>>(1);
+        if (getScopeVars().contains(var)) {
+            factors.add(this);
+        }
+        return factors;
     }
 }
 

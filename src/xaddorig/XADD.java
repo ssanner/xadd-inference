@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import hgm.poly.Fraction;
+import hgm.poly.PiecewiseExpression;
 import logic.kb.fol.FOPC;
 import lpsolve.LP;
 import lpsolve.LpSolve;
@@ -3030,7 +3032,81 @@ public class XADD {
 				int dd = context.buildCanonicalXADD((ArrayList) l.get(0));
 				return dd;
 
-			} else if (t._sFunName.equals("U") && t._nArity == 4) { // Triangular 
+			} else if (t._sFunName.equals("I") && t._nArity == 3) { // Added By Hadi. Normal approximation via IrwinHall
+                System.out.println("Noraml approximated by Irwin Hall...");
+                ArithExpr expr  = ArithExpr.Convert2ArithExpr(t.getBinding(0));
+                ArithExpr mu    = ArithExpr.Convert2ArithExpr(t.getBinding(1));
+                ArithExpr stdDev   = ArithExpr.Convert2ArithExpr(t.getBinding(2));
+
+                if (!(stdDev instanceof DoubleExpr)) {
+                    System.out.println("Currently cannot handle non-constant standard deviation: " + stdDev.toString());
+                    System.exit(1);
+                }
+                double sigma = ((DoubleExpr)stdDev)._dConstVal;
+
+                //______________________________________________
+
+//                String irwinHall = "([x < 0] ([0.0]) ([1.0]))";
+                /*String irwinHall = "([x < 0] ([0.0]) ([x<1]([((0.5*x)*x)])([x<2]([((-1.0*x)*x)+(3.0*x)-1.5])([x<3.0]([(((0.5*x)*x)+(-3.0*x))+4.5])([0.0])" +
+                        ")" +
+                        ")" +
+                        ")" +
+                        ")";
+                */
+                String irwinHall = "([x < 0] ([0.0]) ([x<1]([(c*((0.5*x)*x))])([x<2]([c*(((-1.0*x)*x)+(3.0*x)-1.5)])([x<3.0]([c*((((0.5*x)*x)+(-3.0*x))+4.5)])([0.0])" +
+                        ")" +
+                        ")" +
+                        ")" +
+                        ")";
+
+                //irwinHall = irwinHall.replaceAll("x", expr.toString());
+
+                Double innerSigma = 0.5;
+                Double innerMean = 1.5;
+
+                Double oldToNewStdDev = innerSigma/sigma;
+
+                // ((oldToNewStdDev * (v - normalMean)) + innerMean)
+                StringBuilder sb = new StringBuilder("((").append(oldToNewStdDev).append("* (").append(expr).append("-").append(mu).append("))+").append(1.5).append(")");
+
+                sb = new StringBuilder("((").append(oldToNewStdDev).append("* (").append(expr).append("+").append("(-1 * (").append(mu).append("))").append("))+").append(1.5).append(")");
+
+//                sb = new StringBuilder("((").append(oldToNewStdDev).append("* ").append(expr).append(")-").append(0).append(")");
+                System.out.println("sb = " + sb);
+                String s = irwinHall.replaceAll("x", sb.toString()).replaceAll("c", oldToNewStdDev.toString());
+
+                System.out.println("s = " + s);
+
+                // oldToNewStdDev * irwinHall(oldToNewStdDev * (v - normalMean) + innerMean):
+               /* Fraction f = factory.makeFraction(x + "^(1)"); //v
+                f = f.subtract(mean); // v - normalMean
+                f = oldToNewStdDev.returnMultiplication(f); // oldToNewStdDev * (v - normalMean)
+                f = f.returnAddition(factory.makeFraction(innerMean.toString())); // oldToNewStdDev * (v - normalMean) + innerMean
+
+                PiecewiseExpression<Fraction> result = irwinHall.substitute(auxiliaryVar, f);
+                return result.multiplyExpression(oldToNewStdDev);     //todo normalization multiplication is remained
+*/
+                //_______________________________________________
+
+
+
+
+
+
+
+                /*String s = "([" + expr + " >= " + mu + " - " + dwidth + "] "
+                        + "([" + expr + " <= " + mu + " + " + dwidth + "] "
+                        + "( [" + _df.format(Z) + " * " + "(-((" + expr + " - " + mu + ") * (" + expr + " - " + mu + ")) + " + DW2 + ")] )"
+                        + "( [0.0] ) ) ( [0.0] ) )";
+*/
+                //System.out.println("Produced: " + s);
+
+                ArrayList l = HierarchicalParser.ParseString(s);
+                //System.out.println("Parsed: " + l);
+                int dd = context.buildCanonicalXADD((ArrayList) l.get(0));
+                return dd;
+
+            } else if (t._sFunName.equals("U") && t._nArity == 4) { // Triangular
 
 				ArithExpr expr  = ArithExpr.Convert2ArithExpr(t.getBinding(0));
 				ArithExpr mu    = ArithExpr.Convert2ArithExpr(t.getBinding(1));

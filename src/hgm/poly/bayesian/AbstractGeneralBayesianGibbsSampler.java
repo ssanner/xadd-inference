@@ -245,8 +245,11 @@ public abstract class AbstractGeneralBayesianGibbsSampler implements SamplerInte
         return mean + random.nextGaussian() * variance;
     }
 
+    public static Random getRandom() {
+        return random;
+    }
 
-/*
+    /*
     @Deprecated
     Double[] clvAlternativeInitSample() {
         Double[] bestTakenSample = new Double[numVars];

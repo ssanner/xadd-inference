@@ -1,5 +1,6 @@
 package hgm.poly.gm;
 
+import hgm.poly.FactorizedPiecewiseStructure;
 import hgm.poly.Fraction;
 import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
@@ -26,7 +27,9 @@ public class RichJointWrapper extends JointWrapper{
     private int qSize;
 
 
-    public RichJointWrapper(PiecewiseExpression<Fraction> joint,
+    public RichJointWrapper(
+//            PiecewiseExpression<Fraction> joint,
+            FactorizedPiecewiseStructure<Fraction> joint,
                             List<DeterministicFactor> eliminatedStochasticVarFactors,
                             List<String> queryVars, double minVarLimit, double maxVarLimit,
                             GraphicalModel graphicalModel, //model is only given so that in the generated samples, the deterministic variables can be instantiated, given the stochastic ones

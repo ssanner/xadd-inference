@@ -1,7 +1,7 @@
 package hgm.poly.sampling.frac;
 
+import hgm.poly.FactorizedPiecewiseStructure;
 import hgm.poly.Fraction;
-import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
 import hgm.poly.bayesian.AbstractGeneralBayesianGibbsSampler;
 import hgm.poly.gm.JointToSampler;
@@ -33,8 +33,10 @@ public class FractionalJointMetropolisHastingSampler implements SamplerInterface
         };
     }
 
-    public static FractionalJointMetropolisHastingSampler makeSampler(PiecewiseExpression<Fraction> joint,
-                                                                      double minForAllVars, double maxForAllVars, double proposalVariance) {
+    public static FractionalJointMetropolisHastingSampler makeSampler(
+//            PiecewiseExpression<Fraction> joint,
+            FactorizedPiecewiseStructure<Fraction> joint,
+            double minForAllVars, double maxForAllVars, double proposalVariance) {
         List<String> jointScopeVars = new ArrayList<String>(joint.getScopeVars());
         int numScopeVars = jointScopeVars.size(); // note: these are not all vars in the factory.
         double[] cVarMins = new double[numScopeVars];
@@ -52,9 +54,10 @@ public class FractionalJointMetropolisHastingSampler implements SamplerInterface
 //    public static final int MAX_INITIAL_SAMPLING_TRIAL = 1000000000;    // if the function is not positive, (initial) sample cannot be
 
     int numScopeVars;
-    //    Double[] prevSample = null;
-    PiecewiseExpression<Fraction> joint;
-    //    Map<Integer/*var Index*/, SymbolicCdfArrayHandler> varToSymbolicIntegralMap;
+
+    //    PiecewiseExpression<Fraction> joint;
+    FactorizedPiecewiseStructure<Fraction> joint;
+
     Map<Integer, Double> varIndex2MinMap;
     Map<Integer, Double> varIndex2MaxMap;
     Double[] lastSample;
@@ -67,10 +70,12 @@ public class FractionalJointMetropolisHastingSampler implements SamplerInterface
 //    protected Double[] lastSample;
 
 
-    public FractionalJointMetropolisHastingSampler(PiecewiseExpression<Fraction> joint,
-                                                   List<String> scopeVars,
-                                                   double[] cVarMins, double[] cVarMaxes,
-                                                   double proposalVariance) {
+    public FractionalJointMetropolisHastingSampler(
+//            PiecewiseExpression<Fraction> joint,
+            FactorizedPiecewiseStructure<Fraction> joint,
+            List<String> scopeVars,
+            double[] cVarMins, double[] cVarMaxes,
+            double proposalVariance) {
         this.joint = joint;
 
         numScopeVars = scopeVars.size();

@@ -8,7 +8,7 @@ import hgm.sampling.SamplingFailureException;
  * Time: 8:21 AM
  */
 public interface SamplerInterface {
-    public static final int MAX_WAITING_MILLIS_TO_TAKE_INITIAL_SAMPLE = 1000 * 30;
+    public static final int MAX_WAITING_MILLIS_TO_TAKE_INITIAL_SAMPLE = 1000 * 60;
 
     /**
      *

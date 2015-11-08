@@ -377,8 +377,8 @@ public class SVE {
         // Factor result = sve.infer(q);
 
 //        TestLocalization();
-		TestRadar();
-//      TestTracking();
+//		TestRadar();
+      TestTracking();
     }
 
     public static void TestLocalization() {
@@ -441,10 +441,10 @@ public class SVE {
 
     public static void TestTracking() {
 
-        GraphicalModel gm = new GraphicalModel("./src/sve/tracking.gm");
+        GraphicalModel gm = new GraphicalModel("./src/sve/tracking_hadi.gm");
         SVE sve = new SVE(gm);
 
-        Query q1 = new Query("./src/sve/tracking.query.1");
+        Query q1 = new Query("./src/sve/tracking.query.100");
         Factor result1 = sve.infer(q1, new ArrayList<String>(Arrays.asList("d", "x_1", "x_2")));
 //        XADDUtils.PlotXADD(_context, factor.getNodeId(), min_val, 0.1d, max_val, var.getName(), title);
         Visualize1DFactor(result1, "tracking");

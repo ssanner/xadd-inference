@@ -126,4 +126,7 @@ public class ConstrainedExpression<E extends Expression> implements Function {
                 '}';
     }
 
+    public void multiplyScalarInThis(double c) {
+        this.fruit.multiplyScalarInThis(c);
+    }
 }
