@@ -38,6 +38,7 @@ public class SymbolicGibbsandSymbolicVarElimJournalTester2016 {
 
     public static final String REPORT_PATH_ROBOT = "C:/REPORTS/robot/";
     public static final String REPORT_PATH_CRF = "C:/REPORTS/crf/";
+    public static final String REPORT_PATH_DBN = "C:/REPORTS/dbn/";
 
     public static void main(String[] args) throws IOException {
         SymbolicGibbsandSymbolicVarElimJournalTester2016 instance = new SymbolicGibbsandSymbolicVarElimJournalTester2016();
@@ -46,12 +47,140 @@ public class SymbolicGibbsandSymbolicVarElimJournalTester2016 {
 //        instance.circuitAAAI2015Test();
 //        instance.conductanceICML2015Test(REPORT_PATH_CONDUCTANCE_ANALYSIS);
 //        instance.robotLocalizationJournalTest(REPORT_PATH_ROBOT); //never worked more than size 3!
-        instance.crfJournalTest(REPORT_PATH_CRF);
 //        instance.visualCollisionICML2015Test(true, REPORT_PATH_VISUAL_COLLISION_ANALYSIS);
+//        instance.crfJournalTest(REPORT_PATH_CRF);
+        instance.dbnJournalTest(REPORT_PATH_DBN);
     }
 
     //___________________________________________________________________________
 
+
+    public void dbnJournalTest(String reportPath) throws IOException {
+        System.out.println("REPORT_PATH_DBN_ANALYSIS = " + reportPath);
+
+        final Double locationLowerBound = 0.0;
+        final Double locationUpperBound = 10.0;
+
+        int[] numParams = {3};//{3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
+        int numMinDesiredSamples = 100;//1000; //100;
+        int maxWaitingTimeForTakingDesiredSamples = 1000 * 60 * 3;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
+        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 60*1 * 3;//1000 * 5;//1000*60;//1000 * 5;
+        int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
+        int numRuns = 1;//10;//20;//2;
+        int burnedSamples = 10;//100;//50;
+        double goldenErrThreshold = 0.1;//0.045;//0.02;////0.2;
+
+
+        List<JointToSampler> samplerMakersToBeTested = new ArrayList<JointToSampler>();
+//        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(0.1)));
+        samplerMakersToBeTested.add(new DifferenceSampler(
+                FractionalJointSymbolicGibbsSampler.makeJointToSampler(),
+                FractionalJointSymbolicGibbsSampler.makeJointToSampler()
+                ));
+        samplerMakersToBeTested.add(new DifferenceSampler(
+                FractionalJointBaselineGibbsSampler.makeJointToSampler(),
+                FractionalJointBaselineGibbsSampler.makeJointToSampler()
+                )); //...
+        samplerMakersToBeTested.add(new DifferenceSampler(
+                FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.1, 200, 100),
+                FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.1, 200, 100)
+                ));
+        samplerMakersToBeTested.add(new DifferenceSampler(
+                FractionalJointHMC.makeJointToSampler(0.1, 20),
+                FractionalJointHMC.makeJointToSampler(0.1, 20)
+                ));
+        /*JointToSampler cleverPramDependentRejectionSampler = new JointToSampler() {
+            @Override
+            public SamplerInterface makeSampler(JointWrapper jointWrapper) {
+                SortedSet<String> scopeVars = jointWrapper.getJoint().getScopeVars();
+                int param = scopeVars.size();
+                return FractionalJointRejectionSampler.makeJointToSampler(Math.pow(0.9, param*param)*//*Math.pow(0.45, param) * 0.1*//*).makeSampler(jointWrapper); //just because I need param to make envelop
+            }
+
+            @Override
+            public String getName() {
+                return "rej";
+            }
+        };
+        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(cleverPramDependentRejectionSampler));
+*/
+
+//                FractionalJointRejectionSampler.makeJointToSampler(Math.pow(locationUpperBound, 1.0 * max(numParams)))));
+//        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.1, AnglicanCodeGenerator.AnglicanSamplingMethod.rdb));
+//        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.1, AnglicanCodeGenerator.AnglicanSamplingMethod.smc));
+//        samplerMakersToBeTested.add(new AnglicanJointToSampler(10000, 0.1, AnglicanCodeGenerator.AnglicanSamplingMethod.pgibbs));
+//        samplerMakersToBeTested.add(new StanJointToSampler(0.02));
+
+        Param2JointWrapper modelParam2Joint = new Param2JointWrapper() {
+
+            @Override
+            public JointWrapper makeJointWrapper(int param) {
+
+                //square lattice
+                System.out.println("param = " + param);
+                TrackingDynamicBayesianNetwork model = new TrackingDynamicBayesianNetwork(param);
+
+
+                // 1. some evidence and some query....
+//                SymbolicGraphicalModelHandler handler = new SymbolicGraphicalModelHandler();
+
+                //NOTE: var indexes starts from 1 here:
+                Map<String, Double> evidence = new HashMap<String, Double>();
+                evidence.put("o_"+param, 3.0); //todo what should be the evidence?
+
+                //todo all opposite nodes that are different (not repeated) and not evidence...
+                //because evidence is symmetric, so the expected value fo the symmetric queries should converge to a same value.
+                List<String> query = new ArrayList<String>();
+                for (int i=0; i<param; i++){
+                    query.add("x_"+ (i+1));
+                }
+
+                System.out.println("evidence = " + evidence);
+                System.out.println("query = " + query);
+
+
+                //------------  M A K E   J O I N T  ---------------
+                MultiFactorJoint joint = model.makeJoint(query, evidence);
+                //---------------------------------------------------------------------------------------
+
+                double envelopeSafeZone = 0;//0.001;
+                RichJointWrapper jointWrapper =
+                        new RichJointWrapper(joint, new ArrayList<DeterministicFactor>(),
+                                query, locationLowerBound - envelopeSafeZone, locationUpperBound + envelopeSafeZone,
+                                model, evidence);
+                System.out.println("jointWrapper.getAppropriateSampleVectorSize() = " + jointWrapper.getAppropriateSampleVectorSize());
+                System.out.println("jointWrapper.getJoint().getScopeVars() = " + jointWrapper.getJoint().getScopeVars());
+//                System.out.println("jointWrapper.getJoint() = " + jointWrapper.getJoint());
+
+                //Anglican code:
+//                String anglicanCode = AnglicanCodeGenerator.makeAnglicanResistorModel(param, locationLowerBound, locationUpperBound, evidence, null , query);
+//                jointWrapper.addExtraInfo(AnglicanCodeGenerator.ANGLICAN_CODE_KEY, anglicanCode);
+                // Stan code:
+//                String stanInput = StanInputDataGenerator.makeStanResistorInput(param, locationLowerBound, locationUpperBound, evidence);
+//                jointWrapper.addExtraInfo(StanJointToSampler.STAN_INPUT_CONTENT_KEY, stanInput);
+//                jointWrapper.addExtraInfo(StanJointToSampler.STAN_MODEL_FILE_KEY, StanJointToSampler.STAN_RESISTOR_MODEL);
+
+
+                return jointWrapper;
+            }
+        };
+
+
+        testSamplersPerformanceWrtParameterTimeAndSampleCount(modelParam2Joint,
+                new DifferenceFromTrueMeanVectorMeasureGenerator(0.0),
+                samplerMakersToBeTested, numParams, numMinDesiredSamples,
+                maxWaitingTimeForTakingDesiredSamples,
+                minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis,
+                approxNumTimePointsForWhichErrIsPersisted, numRuns,
+                burnedSamples, reportPath, goldenErrThreshold);
+
+        System.out.println(" That was all the folk for DBN problem with params " + Arrays.toString(numParams) + ".");
+
+
+    }
+
+
+    //___________________________________________________________________________
 
     public void crfJournalTest(String reportPath) throws IOException {
         System.out.println("REPORT_PATH_ROBOT_CRF_ANALYSIS = " + reportPath);
@@ -68,10 +197,10 @@ public class SymbolicGibbsandSymbolicVarElimJournalTester2016 {
         final Double locationUpperBound = 10.0;
 //        final Double rMean = ???(w1 * locationUpperBound + w2 * locationLowerBound) / (w1 + w2);
 
-        int[] numParams = {3004};//{3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
-        int numMinDesiredSamples = 5000;//1000; //100;
-        int maxWaitingTimeForTakingDesiredSamples = 1000 * 60;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
-        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 60*1;//1000 * 5;//1000*60;//1000 * 5;
+        int[] numParams = {3003};//{3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};//{2, 3};
+        int numMinDesiredSamples = 100;//1000; //100;
+        int maxWaitingTimeForTakingDesiredSamples = 1000 * 60 * 3;//1000 * 60 * 2;//1000*60*5;//1000 * 20;
+        int minDesiredSamplingTimeRegardlessOfNumTakenSamplesMillis = 1000 * 60*1 * 3;//1000 * 5;//1000*60;//1000 * 5;
         int approxNumTimePointsForWhichErrIsPersisted = 100;//33;
         int numRuns = 1;//10;//20;//2;
         int burnedSamples = 10;//100;//50;
@@ -81,9 +210,9 @@ public class SymbolicGibbsandSymbolicVarElimJournalTester2016 {
         List<JointToSampler> samplerMakersToBeTested = new ArrayList<JointToSampler>();
 //        samplerMakersToBeTested.add(new EliminatedVarCompleterSamplerMaker(FractionalJointMetropolisHastingSampler.makeJointToSampler(0.1)));
         samplerMakersToBeTested.add((FractionalJointSymbolicGibbsSampler.makeJointToSampler()));
-//        samplerMakersToBeTested.add((FractionalJointBaselineGibbsSampler.makeJointToSampler())); //...
+        samplerMakersToBeTested.add((FractionalJointBaselineGibbsSampler.makeJointToSampler())); //...
         samplerMakersToBeTested.add((FractionalJointSelfTunedMetropolisHastingSampler.makeJointToSampler(0.1, 200, 100)));
-//        samplerMakersToBeTested.add((FractionalJointHMC.makeJointToSampler(0.1, 20)));
+        samplerMakersToBeTested.add((FractionalJointHMC.makeJointToSampler(0.1, 20)));
         /*JointToSampler cleverPramDependentRejectionSampler = new JointToSampler() {
             @Override
             public SamplerInterface makeSampler(JointWrapper jointWrapper) {
@@ -147,8 +276,30 @@ public class SymbolicGibbsandSymbolicVarElimJournalTester2016 {
                 //todo all opposite nodes that are different (not repeated) and not evidence...
                 //because evidence is symmetric, so the expected value fo the symmetric queries should converge to a same value.
                 List<String> query = new ArrayList<String>();
-                query.add("x_0");
-                query.add("x_" + model.oppositeNodeId(0));
+
+                remainedNodeIds = new ArrayList<Integer>();//empty/refill
+                for (int i = 0; i < numAllNodes; i++) {
+                    remainedNodeIds.add(i);
+                }
+                Set<Integer> alreadyProcessedIds = new HashSet<Integer>(); //already sorted out..
+                for (Integer id : remainedNodeIds) {
+                    if (!alreadyProcessedIds.contains(id)) {
+                        Integer oppositeId = model.oppositeNodeId(id);
+
+                        alreadyProcessedIds.add(id);
+                        alreadyProcessedIds.add(oppositeId);
+
+                        if (!id.equals(oppositeId)){
+                            query.add(model.varName(id));
+                            query.add(model.varName(oppositeId));
+                        }
+                    }
+                }
+
+
+
+//                query.add("x_0");
+//                query.add("x_" + model.oppositeNodeId(0));
 
 //                evidence = new HashMap<String, Double>();  System.err.println("EVIDENCE removed for DEBUG!!!");
                 System.out.println("evidence = " + evidence);
@@ -197,9 +348,8 @@ public class SymbolicGibbsandSymbolicVarElimJournalTester2016 {
 
     }
 
-
-    //___________________________________________________________________________
 //___________________________________________________________________________
+
 
 
     public void robotLocalizationJournalTest(String reportPath) throws IOException {
@@ -1470,15 +1620,20 @@ class QueryPairsEqualMeasureGenerator implements DifferenceFromGroundTruthMeasur
 
 
             @Override
-            public double computeMeasure() { //sum_i (absolute difference of (average of taken_sample_i and ground_truth_i)):
-                double runErr = 0;  //running error
+            public double computeMeasure() { //worst absolute difference of (consecutive expected values)
+                Double runWorstErr = null;  //running worst error
                 for (int i = 0; i < sampleLength / 2; i++) {
                     double oneExpectedQ = runningAccumulatedSample[2 * i] / (double) takenSamples;
                     double otherExpectedQ = runningAccumulatedSample[2 * i + 1] / (double) takenSamples;
-                    runErr += Math.abs(oneExpectedQ - otherExpectedQ);
+                    double thisErr = Math.abs(oneExpectedQ - otherExpectedQ);
+                    if (runWorstErr == null) {
+                        runWorstErr = thisErr;       //for first entry
+                    }else if (thisErr > runWorstErr){
+                        runWorstErr = thisErr;
+                    }
                 }
-                runErr /= (double) (sampleLength / 2);
-                return runErr;
+                runWorstErr /= (double) (sampleLength / 2);
+                return runWorstErr;
             }
         };//end measure
     }

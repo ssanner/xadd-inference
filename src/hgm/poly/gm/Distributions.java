@@ -160,11 +160,11 @@ public class Distributions {
         return new PiecewiseExpression<Fraction>(true, case1, case2, case3, case4, case5);
     }
 
-    public PiecewiseExpression<Fraction> createNormalDistributionIrwinHallApprox(String x, String mean, String standardDeviation /*note: it is sigma not sigma^2*/) {
-        return createIrwinHallApproxNormalDistribution(x, factory.makeFraction(mean), factory.makeFraction(standardDeviation));
+    public PiecewiseExpression<Fraction> createNormalDistributionViaIrwinHallApprox(String x, String mean, String standardDeviation /*note: it is sigma not sigma^2*/) {
+        return createNormalDistributionViaIrwinHallApprox(x, factory.makeFraction(mean), factory.makeFraction(standardDeviation));
     }
 
-    public PiecewiseExpression<Fraction> createIrwinHallApproxNormalDistribution(String x, Fraction mean, Fraction standardDeviation /*note: it is sigma not sigma^2*/) {
+    public PiecewiseExpression<Fraction> createNormalDistributionViaIrwinHallApprox(String x, Fraction mean, Fraction standardDeviation /*note: it is sigma not sigma^2*/) {
 
         Double innerSigma = 0.5;
         Double innerMean = 1.5;

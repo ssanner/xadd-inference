@@ -64,7 +64,7 @@ public class DistributionsTest {
         final String[] vars = PolynomialFactory.makeIndexedVars("v", 0, 0);
         final PolynomialFactory factory = new PolynomialFactory(vars);
         Distributions distBank = new Distributions(factory);
-        final PiecewiseExpression<Fraction> approxNormal = distBank.createNormalDistributionIrwinHallApprox(vars[0], mean.toString(), sigma.toString());
+        final PiecewiseExpression<Fraction> approxNormal = distBank.createNormalDistributionViaIrwinHallApprox(vars[0], mean.toString(), sigma.toString());
         System.out.println("Normal = " + approxNormal);
         FunctionVisualizer.visualize(new Function() {
             Double[] values = new Double[factory.getAllVars().length];

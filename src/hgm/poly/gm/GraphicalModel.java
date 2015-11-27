@@ -19,4 +19,6 @@ public interface GraphicalModel {
     List<Factor> allInferenceRelevantFactors(Collection<String> vars);
 
     List<String> allDeterministicVars();
+
+    List<String> allBinaryVars();
 }

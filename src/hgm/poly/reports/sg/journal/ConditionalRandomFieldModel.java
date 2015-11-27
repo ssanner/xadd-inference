@@ -1,7 +1,6 @@
 package hgm.poly.reports.sg.journal;
 
 import hgm.asve.Pair;
-import hgm.poly.Expression;
 import hgm.poly.Fraction;
 import hgm.poly.PiecewiseExpression;
 import hgm.poly.PolynomialFactory;
@@ -105,7 +104,7 @@ public class ConditionalRandomFieldModel implements GraphicalModel {
         double w = 0.5;
 //        PiecewiseExpression<Fraction> normal = dBank.createNormalDistributionIrwinHallApprox(variable, neighbourVar +"^(1)", normalStdDev.toString());
         //what I want is a normal N(x-y; mean = 0; variance = whatever...)
-        PiecewiseExpression<Fraction> normal = dBank.createNormalDistributionIrwinHallApprox(variable, "0", normalStdDev.toString());
+        PiecewiseExpression<Fraction> normal = dBank.createNormalDistributionViaIrwinHallApprox(variable, "0", normalStdDev.toString());
         normal = normal.substitute(variable, factory.makeFraction(variable + "^(1) + -1*" +neighbourVar + "^(1)"));
 
         normal.multiplyScalarInThis(w);
@@ -206,6 +205,11 @@ public class ConditionalRandomFieldModel implements GraphicalModel {
 //        System.err.println("TRIANGUKAR here TODO...");
 //        return dBank.createUniformDistributionFraction(x, "" + (value - 0.3), "" + (value + 0.3));//todo TRIANGUKAR HERE
         return dBank.createExhaustiveTriangular(x, value.toString(), "2.0", "4.0").returnAdd(factory.makeFraction("1.0"));
+    }
+
+    @Override
+    public List<String> allBinaryVars() {
+        return Collections.emptyList();
     }
 }
 

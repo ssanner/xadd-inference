@@ -97,5 +97,8 @@ public class BayesNetGraphicalModel implements GraphicalModel {
         return ancestors;
     }
 
-
+    @Override
+    public List<String> allBinaryVars() {
+        return Collections.emptyList();
+    }
 }

@@ -53,8 +53,11 @@ public class Digester {
             pf = factorsWithVar.get(0);
         } else {
             pf = factorsWithVar.get(0);
+//            System.out.println("\nfactorsWithVar " + var +" .size() = " + factorsWithVar.size());
+//            System.out.println("pf.numCases() = " + pf.numCases());
             for (int i=1; i<factorsWithVar.size(); i++) {
                 pf = pf.multiply(factorsWithVar.get(i));
+//                System.out.println("pf.numCases() = " + pf.numCases());
             }
         }
 

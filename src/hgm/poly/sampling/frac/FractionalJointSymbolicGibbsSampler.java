@@ -108,6 +108,7 @@ public class FractionalJointSymbolicGibbsSampler implements SamplerInterface {
 
         varToSymbolicIntegralMap = new HashMap<Integer, SymbolicCdfArrayHandler>(scopeVars.size());
         for (int scopeVarIndex : scopeVarIndexes) {
+//            System.out.println("F O R    scopeVarIndex = " + scopeVarIndex);
             Digester d = new Digester(joint, scopeVarIndex);
             varToSymbolicIntegralMap.put(scopeVarIndex, d.calcSymbolicIntegral());
         }

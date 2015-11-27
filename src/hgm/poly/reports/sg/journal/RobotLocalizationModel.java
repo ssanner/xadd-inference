@@ -65,7 +65,7 @@ public class RobotLocalizationModel extends BayesNetGraphicalModel {
         PiecewiseExpression<Fraction> uniform = dBank.createExhaustiveUniformDistributionFraction(variable, "0", "10");
         uniform.multiplyScalarInThis(0.05);
 
-        PiecewiseExpression<Fraction> normal = dBank.createNormalDistributionIrwinHallApprox(variable, "d^(1)", normalStdDev.toString());
+        PiecewiseExpression<Fraction> normal = dBank.createNormalDistributionViaIrwinHallApprox(variable, "d^(1)", normalStdDev.toString());
         normal.multiplyScalarInThis(0.85);
 
         PiecewiseExpression<Fraction> triangular = dBank.createExhaustiveTriangular(variable, "10", "1", "0");
