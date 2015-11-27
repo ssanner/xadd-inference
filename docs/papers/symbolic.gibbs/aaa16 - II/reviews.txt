@@ -1,0 +1,103 @@
+----------------------- REVIEW 1 ---------------------
+PAPER: 2607
+TITLE: Closed-form Gibbs Sampling for Graphical Models with algebraic constraints
+AUTHORS: Hadi Mohasel Afshar, Scott Sanner and Christfried Webers
+
+Significance: 3 (substantial, novel contribution)
+Soundness: 2 (minor inconsistencies or small fixable errors)
+Scholarship: 1 (important related work missing or mischaracterizes prior research)
+Clarity: 2 (more or less readable)
+Breadth of Interest: 2 (interest limited to specialty area)
+SUMMARY RATING: 3 (+++)
+CONFIDENCE: 1 (educated guess)
+
+----------- SUMMARIZE THE MAIN CONTRIBUTION OF THE PAPER -----------
+The paper studies the problem of sampling from continuous variable graphical models
+with deterministic constraints.
+To this end two ideas are presented:
+1) accommodating the deterministic relations using properties of dirac delta function;
+2) introducing a class of functions with a procedure to obtain analytical expressions for
+the CDF of Gibbs sampling conditional, which is then used to produce samples using
+inverse transform sampling.
+
+----------- COMMENTS FOR THE AUTHORS -----------
+As someone who is not specialized in this area, the paper was relatively easy to follow,
+it is mathematically sound and the experimental results are very promising.
+However, there are some concerns:
+
+There is no overview of the related works on sampling (and inference in general)
+with deterministic constraints.
+A simple google search returns a few hits for inference in graphical models
+with piecewise deterministic constraints.
+
+There is no overview of and comparison with Jacobian based change of variables.
+
+To apply theorem 1, from the given example, it seems that one still needs to
+invert the constraint wrt some variable, to obtain the new conditions for PPF.
+This was previously mentioned as an issue with the Jacobian based method. Am I correct?
+
+
+Minor
+==================
+Theorem 1: f(x_1,...,x_n) = 0  ⇒ f(x_1,...,x_n) - z = 0 ?
+A handful of typos in the section Algorithms compared.
+In Experimental evaluations: (i.e. HM, HMC and SMC) ⇒ (i.e. MH, HMC and SMC)
+
+
+----------------------- REVIEW 2 ---------------------
+PAPER: 2607
+TITLE: Closed-form Gibbs Sampling for Graphical Models with algebraic constraints
+AUTHORS: Hadi Mohasel Afshar, Scott Sanner and Christfried Webers
+
+Significance: 3 (substantial, novel contribution)
+Soundness: 3 (correct)
+Scholarship: 2 (relevant literature cited but could expand)
+Clarity: 3 (crystal clear)
+Breadth of Interest: 3 (some interest beyond specialty area)
+SUMMARY RATING: 3 (+++)
+CONFIDENCE: 2 (reasonably confident)
+
+----------- SUMMARIZE THE MAIN CONTRIBUTION OF THE PAPER -----------
+This paper addresses the problem of do sampling for graphical models with algebraic constraints. It shows a broad class of algebraic constraints that can be collapsed by leveraging the properties of a Dirac delta model. It also proposes to describe the joint distribution of a graphical model with a family of polynomial piecewise fractionals on which efficient close-form Gibbs sampling can be applied. This paper makes a novel contribution to sampling with deterministic constraints and is useful for the community of probabilistic programming.
+
+----------- COMMENTS FOR THE AUTHORS -----------
+Dealing with deterministic constraints is a common and difficult problem for sampling a graphical model. The usual approach is to add an observation noise which does not solve the issue nicely. This paper shows that a broader class of algebraic constraints than invertible constraints can be collapsed by leveraging the Dirac delta model. To deal with the resulting piecewise distribution, it further proposes to describe the model distribution with a wide family of polynomial piecewise fractionals. The proposed novel approach can be applied to a general graphical model and therefore should be very useful for the area of probabilistic programming.
+
+A downside of the proposed algorithm is that it limits all possible distribution components to describe a graphical model wo the PPFs. The PPF distribution is not differentiable, so gradient-based algorithms such as HMC can not be applied directly. Gibbs sampling, even with closed-form, is known not efficient for high dimensional problem with high correlations. So for a large graphical model with a just single deterministic constraint, the user has to limit himself to the Gibbs sampling, which is not desirable. Also, PPFs may have an issue to approximate the tail of distribution. When the tail behavior is important for a problem, PPF may requires a large number of pieces to give a good approximation.
+
+Another problem I hope the authors to clarify is the computational complexity with using PPFs. Would the number of pieces of the joint/conditional distribution increase exponentially with the number of constraints or with the number of variables? In that case, the computation overhead may offset of the benefit of closed-form Gibbs.
+
+
+----------------------- REVIEW 3 ---------------------
+PAPER: 2607
+TITLE: Closed-form Gibbs Sampling for Graphical Models with algebraic constraints
+AUTHORS: Hadi Mohasel Afshar, Scott Sanner and Christfried Webers
+
+Significance: 3 (substantial, novel contribution)
+Soundness: 3 (correct)
+Scholarship: 3 (excellent coverage of related work)
+Clarity: 3 (crystal clear)
+Breadth of Interest: 3 (some interest beyond specialty area)
+SUMMARY RATING: 3 (+++)
+CONFIDENCE: 3 (certain)
+
+----------- SUMMARIZE THE MAIN CONTRIBUTION OF THE PAPER -----------
+The paper addresses the key problem of handling determinism in sampling based inference methods.
+This is a well known problem (which the authors have pointed out through relevant citations of both publications and available toolboxes), and the authors' proposed solution seems very capable in addressing it.
+
+----------- COMMENTS FOR THE AUTHORS -----------
+Overall, I really liked the paper. The writing is very good, and most portions are very easy to read. There is a fair bit of dense formulations, but it is well-written. The experiments are also thorough in comparing with several existing methods and show that the closed-form gibbs sampler is significantly better.
+
+Some high-level comments/questions, which can be further elaborated in the paper to make it even stronger:
+1. In the experiments section, it would be nice to have some plots on how the coverage of posterior modes increase over time for the different methods. This might also better explain the improvement in the MAE which is reported.
+
+2. Can the solution proposed in this paper also be used to improve error rates for near-deterministic systems? Maybe there could be a solution which approximates the near-deterministic functions as deterministic, uses the closed-form gibbs sampling to navigate between modes, and then adds back the noise/uncertainty to more accurately explore around each mode.
+
+3. It might strengthen the paper further if the work built around PPFs can be explicitly used in the experiments.
+
+
+-------------------------  METAREVIEW  ------------------------
+PAPER: 2607
+TITLE: Closed-form Gibbs Sampling for Graphical Models with algebraic constraints
+
+The authors have presented a number of ideas that enhance Gibbs sampling in the presence of algebraic constraints. The writing is clear, even though the subject is difficult; the ideas are clever, and the evaluation is excellent. A serious contribution that deserves to be published; however, the reviewers have identified a few problems and have a number of suggestions that should be taken into account when preparing the final version.
