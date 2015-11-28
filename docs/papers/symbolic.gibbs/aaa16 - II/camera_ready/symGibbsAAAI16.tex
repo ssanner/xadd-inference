@@ -59,7 +59,7 @@
 \newcommand{\otherwise}[1]{#1 &\text{ otherwise}}
 \newcommand{\pr}{p}
 \newcommand{\nn}{0.16}
-\newcommand{\nnn}{0.33}
+\newcommand{\nnn}{0.35}
 \newcommand{\nnh}{0.23}
 \newcommand{\dd}{\;\mathrm{d}} % d for integration variables e.g. dx
 
@@ -88,7 +88,7 @@
 \setlength{\pdfpageheight}{11in}
 \pdfinfo{
 /Title (Closed-form Gibbs Sampling for Graphical Models with Algebraic Constraints)
-/Author (Put All Your Authors Here, Separated by Commas)}
+/Author (Hadi Mohasel Afshar, Scott Sanner, Christfried Webers)}
 \setcounter{secnumdepth}{0}  
  \begin{document}
 % The file aaai.sty is the style file for AAAI Press 
@@ -97,7 +97,7 @@
 \title{Closed-form Gibbs Sampling for Graphical Models with Algebraic Constraints}
 \author{Hadi Mohasel Afshar 
 \\
-Dept. Engineering \& Computer Science \\
+Research School of Computer Science \\
 Australian National University\\
 Canberra, ACT 0200, Australia\\
 \texttt{hadi.afshar@anu.edu.au} \\
@@ -106,9 +106,9 @@ Scott Sanner\\
 School of EE \& Computer Science\\
 Oregon State University\\
 Corvallis, OR 973331, USA\\
-\texttt{scott.sanner@oreonstate.edu}
+\texttt{scott.sanner@oregonstate.edu}
 \And
-Chrisfried Webers\\
+Christfried Webers\\
 National ICT Australia (NICTA)\\
 Canberra, ACT 2601, Australia\\
 \texttt{christfried.webers}\\
@@ -117,11 +117,167 @@ Canberra, ACT 2601, Australia\\
 \maketitle
 
 
-\input abstract
+%\input abstract
+
+\begin{abstract}
+\begin{quote}
+Probabilistic inference in many real-world problems requires graphical models with deterministic algebraic constraints between random variables (e.g., Newtonian mechanics, Pascal's law, Ohm's law) that are known to be problematic for many inference methods such as 
+Monte Carlo sampling. Fortunately, when such constraints are invertible, the model can be collapsed and the constraints eliminated through the well-known Jacobian-based change of variables. As our first contribution in this work, we show that a much broader class of algebraic constraints can be collapsed by leveraging the properties of a Dirac delta model of deterministic constraints. Unfortunately, the collapsing process can lead to highly piecewise densities that pose challenges for existing probabilistic inference tools. Thus, our second contribution to address these challenges is to present a variation of Gibbs sampling that efficiently samples from these piecewise densities. The key insight to achieve this is to introduce a class of functions that 
+(1) is sufficiently rich to approximate arbitrary models up to arbitrary precision, 
+(2) is closed under dimension reduction (collapsing) for models with (non)linear algebraic constraints and 
+(3) always permits one analytical integral — sufficient to automatically derive closed-form conditionals for Gibbs sampling.  Experiments demonstrate the proposed sampler converges at least an order of magnitude faster than existing Monte Carlo samplers.
+\end{quote}
+\end{abstract}
 
 %%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%
 
-\input intro
+%\input intro
+
+\section{Introduction}
+\label{sect:intro}
+
+\noindent
+Probabilistic inference in many real-world problems requires
+graphical models with deterministic algebraic constraints
+between random variables. Consider the following
+running example from physics and the associated graphical
+model of Figure~\ref{fig:collision.bn}:
+
+\noindent{\bf Collision model. }
+\emph{
+Masses $M_1$ and $M_2$ with velocities $V_1$ and $V_2$ collide to form a single mass $(M_1 + M_2)$ with total momentum 
+$P_\text{tot} = M_1 V_1 + M_2 V_2$ (assuming that there is no dissipation).
+Letting
+$\mathcal{U}(a, \, b)$ denote a uniform density with support $[a,b]$,
+the prior density of masses and velocities are:
+%\footnote{
+%$\mathcal{U}(a, \, b)$ denotes a uniform density with support $[a,b]$.}
+\begin{align}
+&\pr(M_1) = \mathcal{U}(0.1, \, 2.1), \quad 
+&&\pr(M_2) \!=\! \mathcal{U}(0.1, \, 2.1) \label{sym:u12}\\
+&\pr(V_1) = \mathcal{U}(-2, \, 2), \quad
+&&\pr(V_2 \, | \, V_1) = \mathcal{U}(-2, \, V_1) \label{sym:u34}
+%\label{e:collision}
+\end{align}
+Total momentum is observed to be $3.0$ yielding constraints:
+\begin{align}\label{f:p_tot}
+P_1 = M_1 V_1, \;\;\; P_2 = M_2 V_2, \;\;\; P_{tot} = P_1 + P_2 = 3.0
+%P_{tot} = \underbrace{M_1 V_1}_{P_1} + \underbrace{M_2 V_2}_{P_2} = 3.0
+\end{align}
+}%end emph
+
+\begin{figure}
+\center
+\includegraphics[width=0.15\textwidth]{../Figs/little-momentum1.pdf} 
+\vspace{-2mm}
+\caption{\footnotesize Bayes net for the \emph{collision model}. Shaded circles correspond to random variables that are functions of other variables.}
+\label{fig:collision.bn}
+\vspace{-5mm}
+\end{figure}
+
+
+
+ 
+%In applications of probabilistic inference, instead of direct observation of random variables (e.g., $X$ and $Y$), functions of them may be observed (e.g., $X\cdot Y = c$).
+
+In such problems, the posterior densities only have support on (non)linear sub-manifolds of the parameter space (e.g.\ the manifold induced by~\eqref{f:p_tot} in the collision model). 
+Efficient inference on such models is challenging \cite{pennec2006intrinsic}. 
+To evade these complications, state-of-the-art MCMC based probabilistic inference tools suggest adding noise to the deterministic constraints.\footnote{
+%
+The state-of-the-art probabilistic programming languages, disallow deterministic continuous random variables be observed. For instance, in BUGS \cite{lunn2009bugs}, \emph{logical nodes} cannot be given data or initial values. 
+In PyMC \cite{patil2010pymc} deterministic variables have no \emph{observed flag}. 
+In Stan \cite{stan-manual:2014} if you try to assign an observation value to a deterministic variable, you will encounter an error message: ``attempt to assign variable in wrong block'' while Anglican \cite{wood2014new} throws error ``invalid-observe", etc.
+Therefore, they cannot handle observed constraints natively except by adding noise to the observation.
+E.g.\  (in collision model) approximating $P_{\text{tot}} = 3$ with a normal distribution {\footnotesize $\mathcal{N}( P_{\text{tot}} - 3, \sigma_\eta^2)$} where the variance $\sigma_\eta^2$ is the noise parameter.}
+%
+Unfortunately, this strategy can be problematic: if the added noise is large then the approximation bounds can be arbitrarily large and if it is small, the sampling mixing rate can be arbitrarily slow \cite{li2013dynamic,chin1987bayesian}. 
+ 
+The other potential solution is to reduce the dimensionality of the posterior via Jacobian-based variable transformations. Measure theoretic subtleties aside, such transformations are only applicable when the deterministic constraint is invertible with respect to at least one variable. Using the properties of the Dirac delta, our first contribution is to propose a \emph{dimension reduction} (or \emph{collapsing}) method that is more general in the sense that the constraint is not required to be invertible but should be solvable with one or several distinct roots. To our knowledge, this is the first time that Dirac delta constraints for non-invertible functions have been shown to yield collapsible graphical models w.r.t.\ these constraints.
+Nonetheless, dimension reduction (either carried out via Jacobian-based or Dirac delta-based mechanism) does not fully eliminate inferential difficulties since as it will be shown shortly, the produced low-dimensional densities are highly piecewise and multimodal. 
+Inference for such \emph{collapsed models} can be extremely challenging. 
+
+To date, applicable exact inference tools for piecewise distributions are restricted to piecewise polynomial models where the partitioning boundaries are  
+respectively hyperrectangular, hyper-rhombus or linear~\cite{shenoy2011inference,shenoy2012two,Sanner:12}
+and the (collapsed) observed constraints are restricted to linear equations.
+To handle a nonlinear observed constraint,  
+\cite{cobb2005nonlinear} approximate it by several piecewise linear constraints by dividing the space into hypercubes. This cannot be used in high-dimensional approximations since the number of partitions required to preserve reasonable accuracy is exponential in dimensionality.
+Furthermore, constraints aside, exact inference in models with piecewise distributions can easily be intractable since the number of posterior partitions may grow exponentially in the number of marginalizations (required in the forthcoming~\eqref{e:inference}). 
+
+As an alternative to exact inference, asymptotically unbiased
+approximate inference methods like Monte Carlo sampling can be used.
+Nonetheless, convergence of most of these algorithms do not hold for
+the aforementioned piecewise collapsed models, hence resulting in poor
+convergence rates as our experiments will show.
+%In practice are closed under linear transformations. Therefore, , in theory, they can handle linear observed constraints.  However, in practice the number of pieces in the posterior can grow exponential in the number of \emph{marginalizations} i.e.\ the integrals required in equation~(\ref{e:inference}). and has altogether ignored the complications of (nonlinear) determinism.
+For instance, the leapfrog mechanism by which Hamiltonian Monte Carlo
+(HMC) simulates the Hamiltonian dynamics relies on the assumption of
+smoothness \cite{neal2011mcmc}.  This assumption does not hold in the
+adjacency of discontinuities (borders of pieces) leading to low
+proposal acceptance rates and poor performance.  Slice
+sampling~\cite{Neal2003} suffers from the multimodal nature of the
+distributions that arise in this work. Similarly, near the
+borders of partitions, the acceptance rate of Metropolis-Hastings (MH)
+is typically low since in such areas the difference
+(e.g.\ KL-divergence) between MH’s \emph{proposal density} and the
+suddenly varying target density is often significant.  The exception
+is Gibbs sampling. The latter method can be regarded as a particular
+variation of MH where the proposals are directly chosen from the
+target density and therefore follow the target changes and
+multimodalities.  Nonetheless, Gibbs samplers can be quite slow since
+the per sample computation of conditional CDFs that Gibbs relies on
+are costly and in general the required integral
+cannot be performed in closed-form.
+
+After presenting collapsing of (nonlinear) algebraic constraints in the first part of this paper, in the second part we address the problem of sampling from the resulting highly piecewise densities.
+%by proposing a variation of Gibbs sampling that saves a tremendous amount of redundan 
+To do this, we introduce a rich class of \emph{piecewise fractional functions} as a building block for piecewise graphical models.
+% with (non)linear observed constraints.  
+We show that this class is closed under the operations required for dimension reduction of constraints expressed as Dirac deltas. 
+This class is rich enough to approximate arbitrary density functions up to arbitrary precision. 
+We further show that the form of the resulting collapsed model always permits one closed-form integral -- sufficient to analytically derive conditionals for Gibbs sampling \emph{prior to the sampling process} which saves a tremendous amount of online sampling computation.
+We evaluate this fully-automated sampler for models motivated by physics and engineering and show it converges at least an order of magnitude faster than existing MCMC samplers, thus enabling probabilistic reasoning in a variety of applications that, to date, have remained beyond the tractability and accuracy purview of existing inference methods.  
+
+%We firstly introduce a highly expressive family of piecewise models (called PPF* for \emph{polynomial piecewise fractionals}) that consists of real-space piecewise distributions where the partitioning hyperplanes are made of polynomials where the degree of each variable is at most 2 and the function value in each partition has a fractional form where the denominator is factorized into terms where the degree of each variable is at most 2. We show that univariate integrals (w.r.t.\ any variable) of such piecewise functions can always be computed analytically. Symbolic Gibbs works on such models. Its basic idea is to  construct a mapping from variables to their associated univariate analytic CDFs that are computed prior to the sampling process. By this trick, the actual CDF computations per sample is reduced the instantiation of the symbolic CDFs that are associated with each variable. This saves a tremendous amount of redundant computations and leads to a sampler that is at least an order of magnitude faster than the baseline.
+
+%Note that the reference family of models, PPF*, is rich enough to approximate arbitrary distributions up to arbitrary precision. It should also be pointed out that handling observed deterministic constraints is only one application of symbolic Gibbs since the latter algorithm is applicable to any piecewise or non-piecewise PPF* model.  Nonetheless, due to the importance of inference in presence of determinism and the fact that this problem is not tackled in a systematic and automated way so far, we only focus on this specific throughout.
+
+
+%...............
+
+%Probabilistic inference in many real-world problems often requires graphical models with nonlinear deterministic constraints between random variables (e.g., laws of physics) and piecewise distributions (e.g., priors enforcing bounded parameter values).  To date, exact inference in graphical models with piecewise factors has been restricted to piecewise polynomial/exponential factors with hyperrectangular, hyper-rhombus or linear partitioning constraints~\cite{shenoy2011inference,shenoy2012two,Sanner:12} and has altogether ignored the complications of (nonlinear) determinism. Observed determinism can appear in applications such as failure detection \cite{huseby2004system} where random variables $X_1, \ldots X_k$ are not directly observable but a function $f(X_1, \ldots, X_k)$ of them may be observed (indirect measurement). Some families of distributions such as \emph{conditional linear Gaussians} (CLGs) \cite{lauritzen2001stable} are closed under linear transformations and consequently allow \emph{linear determinism}.
+% TODO: The following makes no sense and is not written in a precise
+%       academic style with clear conclusions.  It also breaks the
+%       flow of discussion from linear to nonlinear.  I am dropping
+%       the explanation and simply adding a \nocite to ensure the ref
+%       shows up in the bib.  -Scott \nocite{li2013dynamic}
+%In \cite{li2013dynamic} the restriction is imposed on the network topology rather than the densities. They can only handle the observed summation of variables on a very simple Bayesian network. The generalization of this technique does not seem straight-forward (if possible).
+
+%Handling nonlinear determinism is much more difficult. Methods based on Hamiltonian Monte Carlo are used for sampling under particular constraints \cite{hartmann2008ergodic} but they perform poorly in piecewise models (due to poor approximation of Hamiltonian dynamism in discontinuities)~\cite{neal2011mcmc}.  \cite{cobb2005nonlinear} approximate nonlinear determinism with piecewise linear constraints by dividing the space into hypercubes. This method cannot be used beyond three dimensions since the number of partitions required to preserve approximation accuracy is exponential in dimensionality. The solution often suggested by probabilistic programming languages is to approximate the observed determinism by adding noise to the observation (i.e., a hard to soft constraint relaxation). However, in practice if the added noise is large, the approximation bounds may become arbitrarily large and if the noise is small, the mixing rate may become extremely slow (near-deterministic problem) \cite{chin1987bayesian}.  In short, inference conditioning on nonlineardeterminism is still an open problem \cite{li2013dynamic}. 
+
+%In this paper, we introduce a rich class of \emph{polynomial piecewise  fractional functions} (PPFs) as a building block for piecewise graphical models with nonlinear deterministic constraints.  We show that deterministic constraints in these models can always be eliminated through collapsing.  We further show that the form of the collapsed model always permits one \emph{symbolic} integral --- sufficient to \emph{automatically} derive conditionals for Gibbssampling.  We evaluate this fully automated \emph{Symbolic Gibbs} sampler for nonlinear piecewise graphical models on examples motivated by physics and engineering and show it converges an order of magnitude faster than existing Monte Carlo samplers, thus enabling probabilistic reasoning in a variety of applications that, to date, have remained beyond the tractability and accuracy purview of existing inference methods.
+
+% Somewhat incoherent!  -Scott
+\begin{comment}
+As we will show, a large subset of this family 
+(1) remain closed under operations such as algebraic fractional substitutions.
+(2) have closed-form univariate integrals.
+The former property makes PPFs an important tool 
+in fully-automated reasoning conditioned on (non)linear deterministic constraints between model random variables (see Section\ref{sect:determinism})
+and the latter property makes them an appropriate application of \emph{exact} Gibbs sampling. 
+In the sense that the univariate CDF computations required in each step of Gibbs sampling can be computed in closed-form and prior to the sampling process. 
+ In this way, we create a \emph{symbolic
+  Gibbs} algorithm that saves a significant amount of computation by avoiding
+per-sample computations, and shows dramatically improved performance
+compared to existing samplers on complex models motivated by physics
+and engineering. 
+\end{comment}
+
+%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%
+
 
 \section{Preliminaries}
 \label{sect:background}
@@ -195,21 +351,21 @@ is computed by (\ref{e:cdf}) and samples are taken via inverse transform samplin
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Observed Constraints}\label{sect:determinism}
+\section{Collapsing Observed Constraints}\label{sect:determinism}
 
 %\subsection{Collapsing Determinism}
 To express an observed constraint $f(x_1, \ldots, x_n) = z$, we assume that
 in the variable set over which the probability measure is defined, there exists 
 a random variable $Z$ such that $\pr(Z=z | x_1, \ldots, x_n) = \delta[f(x_1, \ldots, x_n) - z]$.\footnote{
-This is to prevent Borel-Kolmogorov paradox \cite{kolmogorov1950foundations}
-that arises when conditioning is on an event with a probability that tends to zero 
+This is to prevent the Borel-Kolmogorov paradox \cite{kolmogorov1950foundations}
+that arises when conditioning on an event with a probability that tends to zero 
 without specifying the random variable it is drawn from. %(since such conditioning is not well defined.)
 $\delta\big( f(\cdot) - z\big)$ should be thought of as a limit of a normal distribution centered at $f(\cdot)$ and a variance that tends to zero.
 } 
 %Therefore, the constraint corresponds the event $Z=c$.
 
 In the following theorem, we use the calculus of Dirac deltas and generalize the concept of change of random variables to (not necessarily) invertible functions $f(x_1, \cdot)$.
-Since in formula~(\ref{e:theorem1}) one variable is collapsed i.e.\ marginalized out we refer to it as \emph{dimension reduction}. 
+Since in formula~(\ref{e:theorem1}) one variable is collapsed (i.e., marginalized out), we refer to it as \emph{dimension reduction}. 
 
 \begin{theorem}[Dimension reduction] 
 \label{theorem1}
@@ -293,7 +449,8 @@ $$
  \end{cases}
 $$  
 To apply Theorem 1, we solve {\footnotesize$(M_1 V_1 + M_2 V_2 - 3)$}
-w.r.t.\ a variable (say $M_1$ with the unique solution {\footnotesize$(3 - M_2 V_2)/V_1$}).
+w.r.t.\ a variable (say $M_1$ with the unique solution {\footnotesize$(3 - M_2 V_2)/V_1$}).\footnote{
+In this example, the constraint has a single root (therefore invertible) but if it had several roots, the theorem could still be applied in a straightforward way.  As an alternate example, consider $\delta(z - f(x_1,x_2))$ with $z=0$ and $f(x_1,x_2) = (x_1-x_2)(x_1+x_2)$, which yields two roots where the Jacobian cannot be applied, but Theorem~\ref{theorem1} can be applied.}
 Since,  
 {\footnotesize
 $$\left| \frac{\partial (M_1 V_1 + M_2 V_2)}{\partial M_1} \right| = |V_1|
@@ -327,7 +484,7 @@ low-dimensional example, reducing the dimensionality can lead
 to multimodal and piecewise posteriors that do not resemble the
 smooth densities often studied in the literature.  
 
-In the next section, we introduce a class of functions which is closed under dimension reduction and consequently suitable for constraint models. 
+In the next section, we introduce a class of piecewise polynomial functions which is closed under dimension reduction for \emph{algebraic constraints} (e.g., polynomials) and consequently suitable for use with algebraically constrained models. 
 %However, the use of PPFs as a building block for piecewise graphical models with nonlinear determinism does ensure that a large set of (non)linear deterministic relationships between random variables yield $\delta$-collapsed models
 %with factors still in the PPF family.  
 The only task that remains then
@@ -562,7 +719,7 @@ Note that by~(\ref{e:factor-graph}), GMs are often designed in factorized forms,
 {\bf Analytic univariate PPF* integration.} 
 Now we provide a procedure for analytic integration on PPF* functions.
 It can be shown that if in a PPF* all variables except one are instantiated, 
-the resulting univariate function has a closed form integral.  
+the resulting univariate function has a closed-form integral.  
 This is sufficient for \emph{exact} Gibbs sampling since in each step, only one variable is uninstantiated.
 However, we want to go a step further and compute univariate integrals of multivariate piecewise functions  
 \emph{without} instantiating the remaining variables to avoid the need
@@ -605,12 +762,12 @@ the degree of each variable in each atomic constraint is at most 2.
 For instance, (\ref{e:ppf*example}) can be restated as:
 \begin{equation}
 \begin{cases}
-\case{(y^2+z^2 -1)>0, (x^2+2xy)>0}{\frac{x^2 y^3 + 7xz + 10}{(5xy^2 + 2)(y + x)^3}}\\
-\case{(y^2+z^2 -1)<0, (x^2+2xy)<0}{\frac{x^2 y^3 + 7xz + 10}{(5xy^2 + 2)(y + x)^3}}\\
+\case{(y^2\!+\!z^2\!-\!1)>0, (x^2+2xy)>0}{\frac{x^2 y^3 + 7xz + 10}{(5xy^2 + 2)(y + x)^3}}\\
+\case{(y^2\!+\!z^2\!-\!1)<0, (x^2+2xy)<0}{\frac{x^2 y^3 + 7xz + 10}{(5xy^2 + 2)(y + x)^3}}\\
 \end{cases}
 \end{equation}
 
-\item \emph{(Condition solution).} For the integration variable $x$, 
+\item \emph{(Isolation of integrand).} For the integration variable $x$, 
 a PPF* case statement can be transformed into a piecewise structure 
 with atomic constraints in form $x>L_i$ or $x<U_i$ or $I_i>0$, 
 where $L_i$, $U_i$ and $I_i$ are 
@@ -645,10 +802,10 @@ is replaced by (\ref{e:quadratic-trans}).
 \begin{align}
 \label{e:quadratic-trans}
 \begin{cases}
-  \case{(A>0), \, (x> \frac{-B + \sqrt{B^2 - 4 A C}}{2 A}) }{f_1} \\ 
-  \case{(A>0), \, (x< \frac{-B - \sqrt{B^2 - 4 A C}}{2 A}) }{f_1} \\ 
-  \case{(A<0), \, (x> \frac{-B - \sqrt{B^2 - 4 A C}}{2 A}),
-                              (x< \frac{-B + \sqrt{B^2 - 4 A C}}{2 A})}{f_1}
+  \case{(A\!>\!0), (x\!>\!\frac{-B + \sqrt{B^2 - 4 A C}}{2 A}) }{f_1\!} \\ 
+  \case{(A\!>\!0), (x\!<\!\frac{-B - \sqrt{B^2 - 4 A C}}{2 A}) }{f_1\!} \\ 
+  \case{(A\!<\!0), (x\!>\!\frac{-B - \sqrt{B^2 - 4 A C}}{2 A}),
+                              (x\!<\!\frac{-B + \sqrt{B^2 - 4 A C}}{2 A})}{f_1\!}
  \end{cases}
 \end{align}
 }
@@ -664,13 +821,13 @@ For example:
 &\int_{\alpha}^{\beta}\!\! \Big[
 \singlecase{(x>{\bf\color{blue}3}), (x>{\bf\color{blue}y}), 
 (x<{\bf\color{green}y^2\!-\!7}),  ({\bf\color{red}y>0})}
-{x^3 + xy} \Big] \dd x \\
+{x^3\!+\!xy\!\!} \Big] \!\! \dd x \\
 %
 &=\singlecase{({\bf\color{red}y>0})}
 {\Big[ \int_{\max\{\alpha, \,{\bf {\color{blue}3}, \, {\color{blue}y}}\}}^{\min\{\beta, \, {\bf\color{green} y^2 - 7}\}} \!\! x^3 + xy \dd x \Big]} 
 \end{align*}  
 }
-\emph{4. (sub-function integration).} %What remains is to compute the indefinite integrals of sub-functions. 
+\emph{4. (Sub-function integration).} %What remains is to compute the indefinite integrals of sub-functions. 
 What is remained is to compute infinite integral of sub-functions. 
 The restrictions imposed on PPF* sub-functions 
 guarantee that they have closed-form %indefinite 
@@ -883,18 +1040,18 @@ In this section, we are interested in (a) comparing the efficiency and accuracy 
 %\emph{baseline Gibbs} (BaseGibbs) \cite{pearl1987evidential},
 %\emph{rejection sampling} (Rej) \cite{hammersley1964monte}, 
 %\emph{tuned Metropolis-Hastings} (MH) \cite{roberts1997weak}, 
-%\emph{Hamiltonian Monte Carlo} (HMC) %using Stan probabilistic programming language  \cite{stan-manual:2014}
-%and Anglican implementation of \emph{Sequential Monte Carlo} (SMC) %using Anglican probabilistic programming language \cite{wood2014new}.
-%SymGibbs and BaseGibbs require no tunings. MH is automatically tuned after \cite{roberts1997weak} by testing 200 equidistant proposal variances in interval $(0, 0.1]$ and accepting a variance for which the acceptance rate closer to 0.24.
+%\emph{Hamiltonian Monte Carlo} (HMC) 
 
 To address item (a), 
-We compare the proposed \emph{closed-form Gibbs} sampler (SymGibbs) to
+we compare the proposed \emph{closed-form Gibbs} sampler (SymGibbs) to
 \emph{baseline Gibbs} (BaseGibbs) \cite{pearl1987evidential},
 \emph{rejection sampling} (Rej) \cite{hammersley1964monte}, 
 \emph{tuned Metropolis-Hastings} (MH)\footnote{MH is automatically tuned after \cite{roberts1997weak} by testing 200 equidistant proposal variances in interval $(0, 0.1]$ and accepting a variance for which the acceptance rate closer to 0.24.} %end footnote
 % \cite{roberts1997weak} 
 and  
-\emph{Hamiltonian Monte Carlo} (HMC) on the collapsed models.
+\emph{Hamiltonian Monte Carlo} (HMC)~\cite{neal2011mcmc} on the collapsed models using the Stan probabilistic programming language~\cite{stan-manual:2014}
+and the Anglican implementation of \emph{Sequential Monte Carlo} (SMC) using the Anglican probabilistic programming language~\cite{wood2014new}.
+SymGibbs and BaseGibbs require no tuning. MH is automatically tuned after \cite{roberts1997weak} by testing 200 equidistant proposal variances in interval $(0, 0.1]$ and accepting a variance for which the acceptance rate closer to 0.24.
 %SymGibbs and BaseGibbs require no tunings. 
 %SymGibbs, BaseGibbs and MH are run on \emph{collapsed} models. 
 HMC on collapsed models produces results similar to MH (in high dimensional piecewise models, both methods reject almost every proposal). Therefore, the results of the former algorithm are not depicted for the readability of the plots. 
@@ -913,7 +1070,7 @@ The used parameters are summarized in Table~\ref{t:parameters}.
 
 We also tested \emph{Particle-Gibbs} (PGibbs) (a variation of Particle-MCMC \cite{andrieu2010particle}) 
 and \emph{random database} (RDB) (an MH-based algorithm introduced in \cite{wingate2011lightweight}).
-In our experimental models, the performance of these algorithms is very similar to (SMC). Therefore, fore readability of the plots, they are not depicted. 
+In our experimental models, the performance of these algorithms is very similar to (SMC). Therefore, for readability of the plots, they are not depicted. 
 %It should be mentioned that the state-of-the-art probabilistic programming languages, disallow observed deterministic continuous random variables be observed.\footnote{In BUGS \cite{lunn2009bugs}, \emph{logical nodes} cannot be given data or initial values. In PyMC \cite{patil2010pymc} deterministic variables have no \emph{observed flag}. In Stan \cite{stan-manual:2014} if you try to assign an observation value to a deterministic variable, you will encounter an error message: ``attempt to assign variable in wrong block'' while Anglican \cite{wood2014new} throws error ``invalid-observe", etc.} The solution that these off-the-shelf inference frameworks often suggest (or impose) is to approximate the observed determinism via adding noise to the observation \cite{patil2010pymc}.\footnote{
 %For example in the collision model, the observation $P_{\text{tot}} = 3$  would be approximated with a normal distribution {\footnotesize $\mathcal{N}( P_{\text{tot}} - 3, \sigma_\eta^2)$} where the variance $\sigma_\eta^2$ is the noise parameter.}
 % 
@@ -967,8 +1124,8 @@ As a result we choose experimental models that are already in such algebraic for
 \vspace{-0mm}
 \begin{center}
 \begin{tabular}{cc}
-   \hspace{-5mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{../plotsx/collisionx/err-vs-time__param5-shaded.pdf} 
-& \hspace{-3mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{../plotsx/collisionx/err-vs-time__param15-shaded.pdf} 
+   \hspace{-5mm} \includegraphics[width=\nnn\textwidth]{../plotsx/collisionx/err-vs-time__param5-shaded.pdf} 
+& \hspace{-3mm} \includegraphics[width=\nnn\textwidth]{../plotsx/collisionx/err-vs-time__param15-shaded.pdf} 
 \vspace{-1.5mm}
 \\
 \hspace{-5mm} \footnotesize(a) 
@@ -977,7 +1134,7 @@ As a result we choose experimental models that are already in such algebraic for
 \multicolumn{2}{c}{}
 \end{tabular}
 \end{center}
-\vspace{-6mm}
+\vspace{-7mm}
 \caption{\footnotesize 
 Mean absolute error vs time in the multi-object collision model with (a) 4 and (b) 20 objects.}
 \label{fig:multi-object.mom}
@@ -992,8 +1149,8 @@ Mean absolute error vs time in the multi-object collision model with (a) 4 and (
 \vspace{-0mm}
 \begin{center}
 \begin{tabular}{cc}
-   \hspace{-5mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{../plotsx/conductancex/err-vs-time__param10-shaded.pdf} 
-& \hspace{-3mm} \includegraphics[width=\nnn\textwidth, height=\nnh\textwidth]{../plotsx/conductancex/err-vs-time__param30-shaded.pdf} 
+   \hspace{-5mm} \includegraphics[width=\nnn\textwidth]{../plotsx/conductancex/err-vs-time__param10-shaded.pdf} 
+& \hspace{-3mm} \includegraphics[width=\nnn\textwidth]{../plotsx/conductancex/err-vs-time__param30-shaded.pdf} 
 \vspace{-1.5mm}
 \\
 \hspace{-5mm} \footnotesize(a) 
@@ -1002,7 +1159,7 @@ Mean absolute error vs time in the multi-object collision model with (a) 4 and (
 \multicolumn{2}{c}{}
 \end{tabular}
 \end{center}
-\vspace{-6mm}
+\vspace{-7mm}
 \caption{\footnotesize 
 Mean absolute error vs time in the building wiring model with (a) size 4 (i.e.\ 4 paralleled resistors) and (b) size 30.}
 \label{fig:resistor}
@@ -1040,9 +1197,9 @@ MAE vs. time is depicted in Figures~\ref{fig:multi-object.mom}.a \& b for a 10-D
 An electrical circuit composed of $n$, $10\Omega\pm5\%$ parallel resistor elements $R_i$
 (with priors $\pr(R_i) = U(9.5, \, 10.5)$).
 % with bell-shaped tolerance distributions (truncated quadratics, positive in the range $[8, 12]$). The posterior tolerance distribution is computed when 
-The resistors are inaccessible i.e.\ the voltage drop and the current associated with them cannot be measured directly.
+The resistors are inaccessible, i.e., the voltage drop and the current associated with them cannot be measured directly.
 Given the source voltage $V$ and the total input current $I$, the posterior distribution of the element resistances are required.
-Here the deterministic constraint is:
+Here the deterministic constraint is 
 %Here, the observation can be stated as the following deterministic constraint:
 \begin{equation} \footnotesize 
 \label{e:reduced.mass}
@@ -1067,12 +1224,12 @@ Figures~\ref{fig:resistor}.a \& b respectively.
 \subsection{Experimental evaluations}
 %\label{sect:experimental.evaluations}
 Plots of Figure~\ref{fig:mom2} shows that MH and SMC suffer from low \emph{effective sample size}. 
-Note that the apparent sparsity of plots~\ref{fig:mom2}.b, \ref{fig:mom2}.e \& \ref{fig:mom2}.f is due to repeated samples (rejected proposals).
+Note that the apparent sparsity of plots~\ref{fig:mom2}-b, \ref{fig:mom2}-e \& \ref{fig:mom2}-f is due to repeated samples (rejected proposals).
 %
 The carried out quantitative measurements 
 (Figures~\ref{fig:multi-object.mom} and \ref{fig:resistor}) 
 indicate that in all experimental settings,
-\emph{closed-form Gibbs} constantly performs the best while its superiority in high dimensions is significant.
+\emph{closed-form Gibbs} consistently performs the best while its superiority in high dimensions is significant.
 
 
 Particularly in the Building wiring model (which is more complicated and highly piecewise), the quantitative measurements 
@@ -1080,7 +1237,7 @@ Particularly in the Building wiring model (which is more complicated and highly 
 %\ref{fig:resistor})
 indicate that hard to soft constraint conversion (via introducing noise for measurement error) ends in poor results (Figure~\ref{fig:resistor}).
 Interestingly, in this model, even in a dimensionality as low as 10, 
-the Metropolis-Hasting based algorithms (i.e.\ MH, HMC and SMC) may not converge to the (manually computed) ground truth or their convergence rate is extremely low. 
+the Metropolis-Hasting based algorithms (i.e., MH, HMC and SMC) may not converge to the (manually computed) ground truth or their convergence rate is extremely low. 
 This happens regardless of the way determinism is handled. 
 %A reason may be as follows: It is widely known that all Metropolis-Hasting-based algorithms are sensitive to parameter tunings.Tuning takes place internally and during the burn-in period according to some heuristics.Such heuristics may not be valid in the densities studied in this paper as they are very different from the bell-shaped unimodal distributions often studied in the literature so far.
 %Since Gibbs samplers directly sample from the original distributions (rather than proposal densities) they can cope well with anomalies and as our results show, always converge to the ground truth. 
@@ -1088,27 +1245,42 @@ This happens regardless of the way determinism is handled.
 \section{Conclusion}
 \label{sect:conclusion}
 
-In this paper we presented a mechanism to carry out probabilistic inference conditioned on observed algebraic constraints, i.e.\ algebraic functions of continuous random variables, via a \emph{collapsing mechanism} to reduce the dimensionality of the variable space.
-The proposed method is based on the properties of the Dirac delta and is more general than Jacob-based change of variable in the sense that it does not require that the observed functions be invertible w.r.t.\ any variable.  
+In this paper we presented a mechanism to carry out probabilistic
+inference conditioned on observed algebraic constraints, i.e., 
+algebraic functions of continuous random variables, via
+a \emph{collapsing mechanism} to reduce the dimensionality of the
+variable space.  The proposed method is based on the properties of the
+Dirac delta and is more general than Jacobian-based change of variables in
+the sense that it does not require the observed functions to be
+invertible w.r.t.\ any variable.
 
-Nonetheless, dimension reduction often leads to highly piecewise and multimodal posteriors.
-This is a bridge to the second part of the paper where we show that on an expressive family of models, the costly operations required for Gibbs sampling can be performed analytically and prior to the sampling process.
-This leads to an automated and closed-form sampler that is significantly faster than the baseline.
-The studied family of models is rich enough to expressive algebraic constraints as well as being able to approximate arbitrary density functions up to arbitrary precisions.
-Our experimental results show that (1) the alternative to dimension reduction i.e.\ adding noise to the observations lead to unsatisfactory results. 
-(2) %Particularly in high dimensional models, 
-On the piecewise posteriors generated via the collapsing mechanism, the performance of the proposed closed-form Gibbs sampler can be overwhelmingly superior to the other samplers executed on the same model.   
+Nonetheless, dimension reduction often leads to highly piecewise and
+multimodal posteriors.  This is a bridge to the second part of the
+paper where we show that on an expressive family of models, the costly
+operations required for Gibbs sampling can be performed analytically
+and prior to the sampling process.  This leads to an automated and
+closed-form sampler that is significantly faster than the baseline.
+The studied family of models is rich enough to express algebraic
+constraints as well as being able to approximate arbitrary density
+functions up to arbitrary precisions.  Our experimental results show
+that (1) the alternative to dimension reduction, i.e., adding noise to
+the observations leads to unsatisfactory results; and 
+(2) on the piecewise posteriors generated via the
+collapsing mechanism, the performance of the proposed closed-form
+Gibbs sampler can be overwhelmingly superior to the other samplers
+executed on the same model.
 
- The combination of these novel contributions 
-makes probabilistic reasoning applicable to variety of new applications
-that, to date, have remained beyond the tractability and accuracy
-purview of existing inference methods.
+The combination of these novel contributions makes probabilistic
+reasoning applicable to variety of new applications that, to date,
+have remained beyond the tractability and accuracy purview of existing
+inference methods.
 
 \section{Acknowledgments}
 NICTA is funded by the Australian Government as represented by
 the Department of Broadband, Communications and the Digital
 Economy and the Australian Research Council through the ICT
-Centre of Excellence program.
+Centre of Excellence program.  We thank anonymous reviewers
+for comments that have helped improve the presentation.
 
 \small
 
