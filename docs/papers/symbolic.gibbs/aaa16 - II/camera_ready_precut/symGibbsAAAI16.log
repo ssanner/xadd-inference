@@ -1,0 +1,940 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Cygwin) (preloaded format=pdflatex 2015.6.30)  27 NOV 2015 21:15
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**symGibbsAAAI16.tex
+(./symGibbsAAAI16.tex
+LaTeX2e <2014/05/01>
+Babel <3.9k> and hyphenation patterns for 78 languages loaded.
+(/usr/share/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/share/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (./aaai16.sty
+Conference Style for AAAI for LaTeX 2e -- version of 1 January 2016
+\titlebox=\skip43
+) (/usr/share/texmf-dist/tex/latex/psnfss/times.sty
+Package: times 2005/04/12 PSNFSS-v9.2a (SPQR) 
+)
+(/usr/share/texmf-dist/tex/latex/psnfss/helvet.sty
+Package: helvet 2005/04/12 PSNFSS-v9.2a (WaS) 
+
+(/usr/share/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/05/08 v1.15 key=value parser (DPC)
+\KV@toks@=\toks14
+))
+(/usr/share/texmf-dist/tex/latex/psnfss/courier.sty
+Package: courier 2005/04/12 PSNFSS-v9.2a (WaS) 
+)
+(/usr/share/texmf-dist/tex/latex/algorithms/algorithm.sty
+Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
+nment
+
+(/usr/share/texmf-dist/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count87
+\float@exts=\toks15
+\float@box=\box26
+\@float@everytoks=\toks16
+\@floatcapt=\box27
+)
+(/usr/share/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
+)
+\@float@every@algorithm=\toks17
+\c@algorithm=\count88
+)
+(/usr/share/texmf-dist/tex/latex/algorithms/algorithmic.sty
+Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
+\c@ALC@unique=\count89
+\c@ALC@line=\count90
+\c@ALC@rem=\count91
+\c@ALC@depth=\count92
+\ALC@tlm=\skip44
+\algorithmicindent=\skip45
+)
+(/usr/share/texmf-dist/tex/latex/amscls/amsthm.sty
+Package: amsthm 2004/08/06 v2.20
+\thm@style=\toks18
+\thm@bodyfont=\toks19
+\thm@headfont=\toks20
+\thm@notefont=\toks21
+\thm@headpunct=\toks22
+\thm@preskip=\skip46
+\thm@postskip=\skip47
+\thm@headsep=\skip48
+\dth@everypar=\toks23
+)
+\c@lemma=\count93
+\c@definition=\count94
+
+(/usr/share/texmf-dist/tex/latex/amsfonts/amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\@emptytoks=\toks24
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)
+(/usr/share/texmf-dist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2013/01/14 v2.14 AMS math features
+\@mathmargin=\skip49
+
+For additional information on amsmath, use the `?' option.
+(/usr/share/texmf-dist/tex/latex/amsmath/amstext.sty
+Package: amstext 2000/06/29 v2.01
+
+(/usr/share/texmf-dist/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0
+\@emptytoks=\toks25
+\ex@=\dimen103
+))
+(/usr/share/texmf-dist/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d
+\pmbraise@=\dimen104
+)
+(/usr/share/texmf-dist/tex/latex/amsmath/amsopn.sty
+Package: amsopn 1999/12/14 v2.01 operator names
+)
+\inf@bad=\count95
+LaTeX Info: Redefining \frac on input line 210.
+\uproot@=\count96
+\leftroot@=\count97
+LaTeX Info: Redefining \overline on input line 306.
+\classnum@=\count98
+\DOTSCASE@=\count99
+LaTeX Info: Redefining \ldots on input line 378.
+LaTeX Info: Redefining \dots on input line 381.
+LaTeX Info: Redefining \cdots on input line 466.
+\Mathstrutbox@=\box28
+\strutbox@=\box29
+\big@size=\dimen105
+LaTeX Font Info:    Redeclaring font encoding OML on input line 566.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 567.
+\macc@depth=\count100
+\c@MaxMatrixCols=\count101
+\dotsspace@=\muskip10
+\c@parentequation=\count102
+\dspbrk@lvl=\count103
+\tag@help=\toks26
+\row@=\count104
+\column@=\count105
+\maxfields@=\count106
+\andhelp@=\toks27
+\eqnshift@=\dimen106
+\alignsep@=\dimen107
+\tagshift@=\dimen108
+\tagwidth@=\dimen109
+\totwidth@=\dimen110
+\lineht@=\dimen111
+\@envbody=\toks28
+\multlinegap=\skip50
+\multlinetaggap=\skip51
+\mathdisplay@stack=\toks29
+LaTeX Info: Redefining \[ on input line 2665.
+LaTeX Info: Redefining \] on input line 2666.
+)
+(/usr/share/texmf-dist/tex/latex/amsfonts/amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+)
+(/usr/share/texmf-dist/tex/latex/tools/verbatim.sty
+Package: verbatim 2003/08/22 v1.5q LaTeX2e package for verbatim enhancements
+\every@verbatim=\toks30
+\verbatim@line=\toks31
+\verbatim@in@stream=\read1
+)
+(/usr/share/texmf-dist/tex/latex/graphics/color.sty
+Package: color 2014/04/23 v1.1a Standard LaTeX Color (DPC)
+
+(/usr/share/texmf-dist/tex/latex/latexconfig/color.cfg
+File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
+)
+Package color Info: Driver file: pdftex.def on input line 137.
+
+(/usr/share/texmf-dist/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2011/05/27 v0.06d Graphics/color for pdfTeX
+
+(/usr/share/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+Package: infwarerr 2010/04/08 v1.3 Providing info/warning/error messages (HO)
+)
+(/usr/share/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
+Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
+)
+\Gread@gobject=\count107
+))
+(/usr/share/texmf-dist/tex/latex/mdframed/mdframed.sty
+Package: mdframed 2013/07/01 1.9b: mdframed
+
+(/usr/share/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2011/06/30 v3.11 Key value format for package options (HO)
+
+(/usr/share/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+Package: kvsetkeys 2012/04/25 v1.16 Key value parser (HO)
+
+(/usr/share/texmf-dist/tex/generic/oberdiek/etexcmds.sty
+Package: etexcmds 2011/02/16 v1.5 Avoid name clashes with e-TeX commands (HO)
+
+(/usr/share/texmf-dist/tex/generic/oberdiek/ifluatex.sty
+Package: ifluatex 2010/03/01 v1.3 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)))
+(/usr/share/texmf-dist/tex/latex/l3packages/xparse/xparse.sty
+(/usr/share/texmf-dist/tex/latex/l3kernel/expl3.sty
+Package: expl3 2014/05/20 v4814 L3 programming layer (loader) 
+
+(/usr/share/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in PDF mode is detected.
+)
+(/usr/share/texmf-dist/tex/latex/l3kernel/expl3-code.tex
+Package: expl3 2014/05/20 v4814 L3 programming layer (code) 
+L3 Module: l3bootstrap 2014/05/16 v4782 L3 Bootstrap code
+
+(/usr/share/texmf-dist/tex/latex/etex-pkg/etex.sty
+Package: etex 1998/03/26 v2.0 eTeX basic definition package (PEB)
+\et@xins=\count108
+)
+L3 Module: l3names 2014/05/04 v4728 L3 Namespace for primitives
+L3 Module: l3basics 2014/05/04 v4728 L3 Basic definitions
+L3 Module: l3expan 2014/04/30 v4712 L3 Argument expansion
+L3 Module: l3tl 2014/05/04 v4728 L3 Token lists
+L3 Module: l3seq 2014/04/30 v4712 L3 Sequences and stacks
+L3 Module: l3int 2014/05/16 v4776 L3 Integers
+\c_max_int=\count109
+\l_tmpa_int=\count110
+\l_tmpb_int=\count111
+\g_tmpa_int=\count112
+\g_tmpb_int=\count113
+L3 Module: l3quark 2014/05/04 v4728 L3 Quarks
+L3 Module: l3prg 2014/05/04 v4728 L3 Control structures
+\g__prg_map_int=\count114
+L3 Module: l3clist 2014/05/04 v4728 L3 Comma separated lists
+L3 Module: l3token 2014/05/04 v4728 L3 Experimental token manipulation
+L3 Module: l3prop 2014/04/30 v4712 L3 Property lists
+L3 Module: l3msg 2014/05/04 v4728 L3 Messages
+L3 Module: l3file 2014/05/05 v4737 L3 File and I/O operations
+\l_iow_line_count_int=\count115
+\l__iow_target_count_int=\count116
+\l__iow_current_line_int=\count117
+\l__iow_current_word_int=\count118
+\l__iow_current_indentation_int=\count119
+L3 Module: l3skip 2014/05/05 v4738 L3 Dimensions and skips
+\c_zero_dim=\dimen112
+\c_max_dim=\dimen113
+\l_tmpa_dim=\dimen114
+\l_tmpb_dim=\dimen115
+\g_tmpa_dim=\dimen116
+\g_tmpb_dim=\dimen117
+\c_zero_skip=\skip52
+\c_max_skip=\skip53
+\l_tmpa_skip=\skip54
+\l_tmpb_skip=\skip55
+\g_tmpa_skip=\skip56
+\g_tmpb_skip=\skip57
+\c_zero_muskip=\muskip11
+\c_max_muskip=\muskip12
+\l_tmpa_muskip=\muskip13
+\l_tmpb_muskip=\muskip14
+\g_tmpa_muskip=\muskip15
+\g_tmpb_muskip=\muskip16
+L3 Module: l3keys 2014/05/08 v4753 L3 Key-value interfaces
+\g__keyval_level_int=\count120
+\l_keys_choice_int=\count121
+L3 Module: l3fp 2014/04/30 v4712 L3 Floating points
+\c__fp_leading_shift_int=\count122
+\c__fp_middle_shift_int=\count123
+\c__fp_trailing_shift_int=\count124
+\c__fp_big_leading_shift_int=\count125
+\c__fp_big_middle_shift_int=\count126
+\c__fp_big_trailing_shift_int=\count127
+\c__fp_Bigg_leading_shift_int=\count128
+\c__fp_Bigg_middle_shift_int=\count129
+\c__fp_Bigg_trailing_shift_int=\count130
+L3 Module: l3box 2014/05/04 v4728 L3 Experimental boxes
+\c_empty_box=\box30
+\l_tmpa_box=\box31
+\l_tmpb_box=\box32
+\g_tmpa_box=\box33
+\g_tmpb_box=\box34
+L3 Module: l3coffins 2014/05/04 v4728 L3 Coffin code layer
+\l__coffin_internal_box=\box35
+\l__coffin_internal_dim=\dimen118
+\l__coffin_offset_x_dim=\dimen119
+\l__coffin_offset_y_dim=\dimen120
+\l__coffin_x_dim=\dimen121
+\l__coffin_y_dim=\dimen122
+\l__coffin_x_prime_dim=\dimen123
+\l__coffin_y_prime_dim=\dimen124
+\c_empty_coffin=\box36
+\l__coffin_aligned_coffin=\box37
+\l__coffin_aligned_internal_coffin=\box38
+\l_tmpa_coffin=\box39
+\l_tmpb_coffin=\box40
+\l__coffin_display_coffin=\box41
+\l__coffin_display_coord_coffin=\box42
+\l__coffin_display_pole_coffin=\box43
+\l__coffin_display_offset_dim=\dimen125
+\l__coffin_display_x_dim=\dimen126
+\l__coffin_display_y_dim=\dimen127
+L3 Module: l3color 2014/04/30 v4712 L3 Experimental color support
+L3 Module: l3luatex 2014/04/30 v4712 L3 Experimental LuaTeX-specific functions
+\g__cctab_allocate_int=\count131
+\g__cctab_stack_int=\count132
+L3 Module: l3candidates 2014/05/04 v4734 L3 Experimental additions to l3kernel
+\l__box_top_dim=\dimen128
+\l__box_bottom_dim=\dimen129
+\l__box_left_dim=\dimen130
+\l__box_right_dim=\dimen131
+\l__box_top_new_dim=\dimen132
+\l__box_bottom_new_dim=\dimen133
+\l__box_left_new_dim=\dimen134
+\l__box_right_new_dim=\dimen135
+\l__box_internal_box=\box44
+\l__coffin_bounding_shift_dim=\dimen136
+\l__coffin_left_corner_dim=\dimen137
+\l__coffin_right_corner_dim=\dimen138
+\l__coffin_bottom_corner_dim=\dimen139
+\l__coffin_top_corner_dim=\dimen140
+\l__coffin_scaled_total_height_dim=\dimen141
+\l__coffin_scaled_width_dim=\dimen142
+))
+Package: xparse 2014/05/05 v4740 L3 Experimental document command parser
+\l__xparse_current_arg_int=\count133
+\l__xparse_m_args_int=\count134
+\l__xparse_mandatory_args_int=\count135
+\l__xparse_processor_int=\count136
+\l__xparse_v_nesting_int=\count137
+)
+(/usr/share/texmf-dist/tex/latex/etoolbox/etoolbox.sty
+Package: etoolbox 2011/01/03 v2.1 e-TeX tools for LaTeX
+\etb@tempcnta=\count138
+)
+(/usr/share/texmf-dist/tex/latex/oberdiek/zref-abspage.sty
+Package: zref-abspage 2012/04/04 v2.24 Module abspage for zref (HO)
+
+(/usr/share/texmf-dist/tex/latex/oberdiek/zref-base.sty
+Package: zref-base 2012/04/04 v2.24 Module base for zref (HO)
+
+(/usr/share/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
+Package: kvdefinekeys 2011/04/07 v1.3 Define keys (HO)
+)
+(/usr/share/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+(/usr/share/texmf-dist/tex/latex/oberdiek/auxhook.sty
+Package: auxhook 2011/03/04 v1.3 Hooks for auxiliary files (HO)
+)
+Package zref Info: New property list: main on input line 759.
+Package zref Info: New property: default on input line 760.
+Package zref Info: New property: page on input line 761.
+)
+(/usr/share/texmf-dist/tex/generic/oberdiek/atbegshi.sty
+Package: atbegshi 2011/10/05 v1.16 At begin shipout hook (HO)
+)
+\c@abspage=\count139
+Package zref Info: New property: abspage on input line 62.
+)
+(/usr/share/texmf-dist/tex/latex/needspace/needspace.sty
+Package: needspace 2010/09/12 v1.3d reserve vertical space
+)
+\mdf@templength=\skip58
+\c@mdf@globalstyle@cnt=\count140
+\mdf@skipabove@length=\skip59
+\mdf@skipbelow@length=\skip60
+\mdf@leftmargin@length=\skip61
+\mdf@rightmargin@length=\skip62
+\mdf@innerleftmargin@length=\skip63
+\mdf@innerrightmargin@length=\skip64
+\mdf@innertopmargin@length=\skip65
+\mdf@innerbottommargin@length=\skip66
+\mdf@splittopskip@length=\skip67
+\mdf@splitbottomskip@length=\skip68
+\mdf@outermargin@length=\skip69
+\mdf@innermargin@length=\skip70
+\mdf@linewidth@length=\skip71
+\mdf@innerlinewidth@length=\skip72
+\mdf@middlelinewidth@length=\skip73
+\mdf@outerlinewidth@length=\skip74
+\mdf@roundcorner@length=\skip75
+\mdf@footenotedistance@length=\skip76
+\mdf@userdefinedwidth@length=\skip77
+\mdf@needspace@length=\skip78
+\mdf@frametitleaboveskip@length=\skip79
+\mdf@frametitlebelowskip@length=\skip80
+\mdf@frametitlerulewidth@length=\skip81
+\mdf@frametitleleftmargin@length=\skip82
+\mdf@frametitlerightmargin@length=\skip83
+\mdf@shadowsize@length=\skip84
+\mdf@extratopheight@length=\skip85
+\mdf@subtitleabovelinewidth@length=\skip86
+\mdf@subtitlebelowlinewidth@length=\skip87
+\mdf@subtitleaboveskip@length=\skip88
+\mdf@subtitlebelowskip@length=\skip89
+\mdf@subtitleinneraboveskip@length=\skip90
+\mdf@subtitleinnerbelowskip@length=\skip91
+\mdf@subsubtitleabovelinewidth@length=\skip92
+\mdf@subsubtitlebelowlinewidth@length=\skip93
+\mdf@subsubtitleaboveskip@length=\skip94
+\mdf@subsubtitlebelowskip@length=\skip95
+\mdf@subsubtitleinneraboveskip@length=\skip96
+\mdf@subsubtitleinnerbelowskip@length=\skip97
+
+(/usr/share/texmf-dist/tex/latex/mdframed/md-frame-0.mdf
+File: md-frame-0.mdf 2013/07/01\ 1.9b: md-frame-0
+)
+\mdf@frametitlebox=\box45
+\mdf@footnotebox=\box46
+\mdf@splitbox@one=\box47
+\mdf@splitbox@two=\box48
+\mdf@splitbox@save=\box49
+\mdfsplitboxwidth=\skip98
+\mdfsplitboxtotalwidth=\skip99
+\mdfsplitboxheight=\skip100
+\mdfsplitboxdepth=\skip101
+\mdfsplitboxtotalheight=\skip102
+\mdfframetitleboxwidth=\skip103
+\mdfframetitleboxtotalwidth=\skip104
+\mdfframetitleboxheight=\skip105
+\mdfframetitleboxdepth=\skip106
+\mdfframetitleboxtotalheight=\skip107
+\mdffootnoteboxwidth=\skip108
+\mdffootnoteboxtotalwidth=\skip109
+\mdffootnoteboxheight=\skip110
+\mdffootnoteboxdepth=\skip111
+\mdffootnoteboxtotalheight=\skip112
+\mdftotallinewidth=\skip113
+\mdfboundingboxwidth=\skip114
+\mdfboundingboxtotalwidth=\skip115
+\mdfboundingboxheight=\skip116
+\mdfboundingboxdepth=\skip117
+\mdfboundingboxtotalheight=\skip118
+\mdf@freevspace@length=\skip119
+\mdf@horizontalwidthofbox@length=\skip120
+\mdf@verticalmarginwhole@length=\skip121
+\mdf@horizontalspaceofbox=\skip122
+\mdfsubtitleheight=\skip123
+\mdfsubsubtitleheight=\skip124
+\c@mdfcountframes=\count141
+
+****** mdframed patching \endmdf@trivlist
+
+****** -- success******
+
+.................................................
+. LaTeX info: "xparse/define-command"
+. 
+. Defining document command \newmdtheoremenv with arg. spec. 'O{} m o m o ' on
+. line 601.
+.................................................
+.................................................
+. LaTeX info: "xparse/define-command"
+. 
+. Defining document command \mdtheorem with arg. spec. ' O{} m o m o ' on line
+. 701.
+.................................................
+\mdf@envdepth=\count142
+\c@mdf@env@i=\count143
+\c@mdf@env@ii=\count144
+\c@mdf@zref@counter=\count145
+Package zref Info: New property: mdf@pagevalue on input line 895.
+)
+\c@theorem=\count146
+
+(/usr/share/texmf-dist/tex/latex/booktabs/booktabs.sty
+Package: booktabs 2005/04/14 v1.61803 publication quality tables
+\heavyrulewidth=\dimen143
+\lightrulewidth=\dimen144
+\cmidrulewidth=\dimen145
+\belowrulesep=\dimen146
+\belowbottomsep=\dimen147
+\aboverulesep=\dimen148
+\abovetopsep=\dimen149
+\cmidrulesep=\dimen150
+\cmidrulekern=\dimen151
+\defaultaddspace=\dimen152
+\@cmidla=\count147
+\@cmidlb=\count148
+\@aboverulesep=\dimen153
+\@belowrulesep=\dimen154
+\@thisruleclass=\count149
+\@lastruleclass=\count150
+\@thisrulewidth=\dimen155
+)
+(/usr/share/texmf-dist/tex/latex/enumitem/enumitem.sty
+Package: enumitem 2011/09/28 v3.5.2 Customized lists
+\labelindent=\skip125
+\enit@outerparindent=\dimen156
+\enit@toks=\toks32
+\enit@inbox=\box50
+\enitdp@description=\count151
+)
+(/usr/share/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2014/04/25 v1.0g Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/usr/share/texmf-dist/tex/latex/latexconfig/graphics.cfg
+File: graphics.cfg 2010/04/23 v1.9 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: pdftex.def on input line 91.
+)
+\Gin@req@height=\dimen157
+\Gin@req@width=\dimen158
+)
+(./symGibbsAAAI16.aux)
+\openout1 = `symGibbsAAAI16.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 90.
+LaTeX Font Info:    ... okay on input line 90.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 90.
+LaTeX Font Info:    ... okay on input line 90.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 90.
+LaTeX Font Info:    ... okay on input line 90.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 90.
+LaTeX Font Info:    ... okay on input line 90.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 90.
+LaTeX Font Info:    ... okay on input line 90.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 90.
+LaTeX Font Info:    ... okay on input line 90.
+LaTeX Font Info:    Try loading font information for OT1+ptm on input line 90.
+ (/usr/share/texmf-dist/tex/latex/psnfss/ot1ptm.fd
+File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
+)
+(/usr/share/texmf-dist/tex/context/base/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count152
+\scratchdimen=\dimen159
+\scratchbox=\box51
+\nofMPsegments=\count153
+\nofMParguments=\count154
+\everyMPshowfont=\toks33
+\MPscratchCnt=\count155
+\MPscratchDim=\dimen160
+\MPnumerator=\count156
+\makeMPintoPDFobject=\count157
+\everyMPtoPDFconversion=\toks34
+)
+\AtBeginShipoutBox=\box52
+ (/usr/share/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+Package: epstopdf-base 2010/02/09 v2.5 Base part for package epstopdf
+
+(/usr/share/texmf-dist/tex/latex/oberdiek/grfext.sty
+Package: grfext 2010/08/19 v1.1 Manage graphics extensions (HO)
+)
+Package grfext Info: Graphics extension search list:
+(grfext)             [.png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 452.
+
+(/usr/share/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <14.4> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 114.
+LaTeX Font Info:    Try loading font information for U+msa on input line 114.
+
+(/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 114.
+
+(/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <12> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 114.
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 114.
+
+
+(/usr/share/texmf-dist/tex/latex/psnfss/ot1pcr.fd
+File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
+)
+LaTeX Font Info:    Try loading font information for OMS+ptm on input line 114.
+
+
+(/usr/share/texmf-dist/tex/latex/psnfss/omsptm.fd
+File: omsptm.fd 
+)
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <9> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 114.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 119.
+Missing character: There is no â in font ptmr7t!
+Missing character: There is no € in font ptmr7t!
+Missing character: There is no ” in font ptmr7t!
+
+Underfull \hbox (badness 1242) in paragraph at lines 121--126
+\OT1/ptm/m/n/9 straints are in-vert-ible, the model can be col-lapsed
+ []
+
+<../Figs/little-momentum1.pdf, id=1, 349.305pt x 258.7748pt>
+File: ../Figs/little-momentum1.pdf Graphic file (type pdf)
+
+<use ../Figs/little-momentum1.pdf>
+Package pdftex.def Info: ../Figs/little-momentum1.pdf used on input line 170.
+(pdftex.def)             Requested size: 75.8804pt x 56.21198pt.
+ [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
+
+
+
+ <../Figs/little-momentum1.pdf>]
+Missing character: There is no â in font ptmr7t!
+Missing character: There is no € in font ptmr7t!
+Missing character: There is no ™ in font ptmr7t!
+
+
+LaTeX Font Warning: Command \footnotesize invalid in math mode on input line 29
+4.
+
+
+LaTeX Font Warning: Command \footnotesize invalid in math mode on input line 31
+2.
+
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <9> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 314.
+LaTeX Font Info:    Calculating math sizes for size <> on input line 318.
+
+LaTeX Font Warning: Font shape `OT1/cmr/m/n' in size <> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Font shape `OT1/cmr/m/n' in size <0.7> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Font shape `OT1/cmr/m/n' in size <0.5> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Font shape `OML/cmm/m/it' in size <> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Font shape `OML/cmm/m/it' in size <0.7> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Font shape `OML/cmm/m/it' in size <0.5> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Font shape `OMS/cmsy/m/n' in size <> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Font shape `OMS/cmsy/m/n' in size <0.7> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Font shape `OMS/cmsy/m/n' in size <0.5> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Font shape `OT1/cmr/bx/n' in size <> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Font shape `OT1/cmr/bx/n' in size <0.7> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Font shape `OT1/cmr/bx/n' in size <0.5> not available
+(Font)              size <5> substituted on input line 318.
+
+
+LaTeX Font Warning: Command \footnotesize invalid in math mode on input line 33
+5.
+
+
+Underfull \hbox (badness 1655) in paragraph at lines 361--361
+[][]\OT1/ptm/m/n/9 This is to pre-vent the Borel-Kolmogorov para-dox ( Kol-
+ []
+
+[2]
+Underfull \hbox (badness 1675) in paragraph at lines 372--383
+\OT1/ptm/m/it/10 where $\OML/cmm/m/it/10 f\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 x[]
+; [] ; x[]\OT1/cmr/m/n/10 ) \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 z \OT1/cmr/m/
+n/10 = 0$ \OT1/ptm/m/it/10 has real and sim-ple
+ []
+
+
+LaTeX Font Warning: Command \footnotesize invalid in math mode on input line 38
+3.
+
+
+Overfull \hbox (1.20479pt too wide) detected at line 389
+\OML/cmm/m/it/9 p\OT1/cmr/m/n/9 (\OML/cmm/m/it/9 x[]; [] ; x[] \OMS/cmsy/m/n/9 
+j \OML/cmm/m/it/9 Z \OT1/cmr/m/n/9 = \OML/cmm/m/it/9 z\OT1/cmr/m/n/9 ) \OMS/cms
+y/m/n/9 / [] []
+ []
+
+<../Figs/col_m1_v1.png, id=39, 422.32782pt x 316.18124pt>
+File: ../Figs/col_m1_v1.png Graphic file (type png)
+
+<use ../Figs/col_m1_v1.png>
+Package pdftex.def Info: ../Figs/col_m1_v1.png used on input line 508.
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+<../Figs/col_m1v1_p3.png, id=40, 422.32782pt x 316.18124pt>
+File: ../Figs/col_m1v1_p3.png Graphic file (type png)
+
+<use ../Figs/col_m1v1_p3.png>
+Package pdftex.def Info: ../Figs/col_m1v1_p3.png used on input line 509.
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+<../Figs/col_m1v1_when_p_is_3_and_v2_is_0_dot_2.png, id=41, 422.32782pt x 316.1
+8124pt>
+File: ../Figs/col_m1v1_when_p_is_3_and_v2_is_0_dot_2.png Graphic file (type png
+)
+ <use ../Figs/col_m1v1_when_p_is_3_and_v2_is_0_dot_2.png>
+Package pdftex.def Info: ../Figs/col_m1v1_when_p_is_3_and_v2_is_0_dot_2.png use
+d on input line 510.
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+<../Figs/col_v1v2.png, id=42, 422.32782pt x 316.18124pt>
+File: ../Figs/col_v1v2.png Graphic file (type png)
+
+<use ../Figs/col_v1v2.png>
+Package pdftex.def Info: ../Figs/col_v1v2.png used on input line 511.
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+<../Figs/col_v1v2whenPis3.png, id=43, 422.32782pt x 316.18124pt>
+File: ../Figs/col_v1v2whenPis3.png Graphic file (type png)
+
+<use ../Figs/col_v1v2whenPis3.png>
+Package pdftex.def Info: ../Figs/col_v1v2whenPis3.png used on input line 512.
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+<../Figs/colV1V2givenPis3M1is2.png, id=44, 422.32782pt x 316.18124pt>
+File: ../Figs/colV1V2givenPis3M1is2.png Graphic file (type png)
+
+<use ../Figs/colV1V2givenPis3M1is2.png>
+Package pdftex.def Info: ../Figs/colV1V2givenPis3M1is2.png used on input line 5
+13.
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+Overfull \hbox (12.37004pt too wide) in paragraph at lines 507--524
+ [] 
+ []
+
+
+LaTeX Font Warning: Command \footnotesize invalid in math mode on input line 64
+0.
+
+[3]
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10.95> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 676.
+
+
+LaTeX Font Warning: Command \footnotesize invalid in math mode on input line 70
+5.
+
+
+LaTeX Font Warning: Command \footnotesize invalid in math mode on input line 79
+3.
+
+[4 <../Figs/col_m1_v1.png (PNG copy)> <../Figs/col_m1v1_p3.png (PNG copy)> <../
+Figs/col_m1v1_when_p_is_3_and_v2_is_0_dot_2.png (PNG copy)> <../Figs/col_v1v2.p
+ng (PNG copy)> <../Figs/col_v1v2whenPis3.png (PNG copy)> <../Figs/colV1V2givenP
+is3M1is2.png (PNG copy)>]
+<../Figs2/col_c_gibbs10000.png, id=57, 422.32782pt x 316.18124pt>
+File: ../Figs2/col_c_gibbs10000.png Graphic file (type png)
+
+<use ../Figs2/col_c_gibbs10000.png>
+Package pdftex.def Info: ../Figs2/col_c_gibbs10000.png used on input line 990.
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+<../Figs2/col-c-mh-10000_08.png, id=58, 422.32782pt x 316.18124pt>
+File: ../Figs2/col-c-mh-10000_08.png Graphic file (type png)
+
+<use ../Figs2/col-c-mh-10000_08.png>
+Package pdftex.def Info: ../Figs2/col-c-mh-10000_08.png used on input line 991.
+
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+<../Figs2/col_c_stan10000_02.png, id=59, 422.32782pt x 316.18124pt>
+File: ../Figs2/col_c_stan10000_02.png Graphic file (type png)
+
+<use ../Figs2/col_c_stan10000_02.png>
+Package pdftex.def Info: ../Figs2/col_c_stan10000_02.png used on input line 992
+.
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+<../Figs2/col_c_stan_10000_000001.png, id=60, 422.32782pt x 316.18124pt>
+File: ../Figs2/col_c_stan_10000_000001.png Graphic file (type png)
+
+<use ../Figs2/col_c_stan_10000_000001.png>
+Package pdftex.def Info: ../Figs2/col_c_stan_10000_000001.png used on input lin
+e 993.
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+<../Figs2/col_c_ang10000_02_001.png, id=61, 422.32782pt x 316.18124pt>
+File: ../Figs2/col_c_ang10000_02_001.png Graphic file (type png)
+
+<use ../Figs2/col_c_ang10000_02_001.png>
+Package pdftex.def Info: ../Figs2/col_c_ang10000_02_001.png used on input line 
+994.
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+<../Figs2/col_c_ang_10000_01_001.png, id=62, 422.32782pt x 316.18124pt>
+File: ../Figs2/col_c_ang_10000_01_001.png Graphic file (type png)
+
+<use ../Figs2/col_c_ang_10000_01_001.png>
+Package pdftex.def Info: ../Figs2/col_c_ang_10000_01_001.png used on input line
+ 995.
+(pdftex.def)             Requested size: 80.94424pt x 60.5961pt.
+
+Overfull \hbox (12.37004pt too wide) in paragraph at lines 976--1006
+ [] 
+ []
+
+
+Underfull \hbox (badness 1163) in paragraph at lines 1042--1055
+\OT1/ptm/m/n/10 van de Meent, and Mans-inghka 2014). SymGibbs and
+ []
+
+
+LaTeX Font Warning: Command \footnotesize invalid in math mode on input line 10
+99.
+
+
+<../plotsx/collisionx/err-vs-time__param5-shaded.pdf, id=63, 544.8355pt x 432.6
+1626pt>
+File: ../plotsx/collisionx/err-vs-time__param5-shaded.pdf Graphic file (type pd
+f)
+ <use ../plotsx/collisionx/err-vs-time__param5-shaded.pdf>
+Package pdftex.def Info: ../plotsx/collisionx/err-vs-time__param5-shaded.pdf us
+ed on input line 1124.
+(pdftex.def)             Requested size: 177.06458pt x 140.59201pt.
+
+<../plotsx/collisionx/err-vs-time__param15-shaded.pdf, id=64, 544.8355pt x 432.
+61626pt>
+File: ../plotsx/collisionx/err-vs-time__param15-shaded.pdf Graphic file (type p
+df)
+ <use ../plotsx/collisionx/err-vs-time__param15-shaded.pdf>
+Package pdftex.def Info: ../plotsx/collisionx/err-vs-time__param15-shaded.pdf u
+sed on input line 1125.
+(pdftex.def)             Requested size: 177.06458pt x 140.59201pt.
+
+<../plotsx/conductancex/err-vs-time__param10-shaded.pdf, id=65, 544.8355pt x 43
+2.61626pt>
+File: ../plotsx/conductancex/err-vs-time__param10-shaded.pdf Graphic file (type
+ pdf)
+ <use ../plotsx/conductancex/err-vs-time__param10-shaded.pdf>
+Package pdftex.def Info: ../plotsx/conductancex/err-vs-time__param10-shaded.pdf
+ used on input line 1149.
+(pdftex.def)             Requested size: 177.06458pt x 140.59201pt.
+
+<../plotsx/conductancex/err-vs-time__param30-shaded.pdf, id=66, 544.8355pt x 43
+2.61626pt>
+File: ../plotsx/conductancex/err-vs-time__param30-shaded.pdf Graphic file (type
+ pdf)
+ <use ../plotsx/conductancex/err-vs-time__param30-shaded.pdf>
+Package pdftex.def Info: ../plotsx/conductancex/err-vs-time__param30-shaded.pdf
+ used on input line 1150.
+(pdftex.def)             Requested size: 177.06458pt x 140.59201pt.
+
+
+LaTeX Font Warning: Command \footnotesize invalid in math mode on input line 11
+72.
+
+[5]
+
+LaTeX Font Warning: Command \footnotesize invalid in math mode on input line 12
+01.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [6 <../Figs2/col_c_gibbs10000.png (PNG copy)> <../Figs2/col-c-mh-10000_08.png 
+(PNG copy)> <../Figs2/col_c_stan10000_02.png (PNG copy)> <../Figs2/col_c_stan_1
+0000_000001.png (PNG copy)> <../Figs2/col_c_ang10000_02_001.png (PNG copy)> <..
+/Figs2/col_c_ang_10000_01_001.png (PNG copy)> <../plotsx/collisionx/err-vs-time
+__param5-shaded.pdf> <../plotsx/collisionx/err-vs-time__param15-shaded.pdf
+
+pdfTeX warning: pdflatex (file ../plotsx/collisionx/err-vs-time__param15-shaded
+.pdf): PDF inclusion: multiple pdfs with page group included in a single page
+> <../plotsx/conductancex/err-vs-time__param10-shaded.pdf
+
+pdfTeX warning: pdflatex (file ../plotsx/conductancex/err-vs-time__param10-shad
+ed.pdf): PDF inclusion: multiple pdfs with page group included in a single page
+
+> <../plotsx/conductancex/err-vs-time__param30-shaded.pdf
+
+pdfTeX warning: pdflatex (file ../plotsx/conductancex/err-vs-time__param30-shad
+ed.pdf): PDF inclusion: multiple pdfs with page group included in a single page
+
+>] (./symGibbsAAAI16.bbl) [7] (./symGibbsAAAI16.aux)
+
+LaTeX Font Warning: Size substitutions with differences
+(Font)              up to 4.5pt have occurred.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 9957 strings out of 493117
+ 178984 string characters out of 6141204
+ 253021 words of memory out of 5000000
+ 13240 multiletter control sequences out of 15000+600000
+ 45515 words of font info for 100 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 40i,16n,37p,10439b,360s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texmf-dist/fon
+ts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmbx5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mbx6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/
+share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-di
+st/fonts/type1/public/amsfonts/cmextra/cmex9.pfb></usr/share/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmmi5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6
+.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/shar
+e/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmr5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cm
+r6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/sha
+re/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmsy5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/
+cmsy6.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr
+/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texmf-di
+st/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texmf-dist/fonts/
+type1/public/amsfonts/symbols/msbm10.pfb></usr/share/texmf-dist/fonts/type1/urw
+/courier/ucrr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></u
+sr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf-dist/fon
+ts/type1/urw/times/utmri8a.pfb>
+Output written on symGibbsAAAI16.pdf (7 pages, 710022 bytes).
+PDF statistics:
+ 260 PDF objects out of 1000 (max. 8388607)
+ 163 compressed objects within 2 object streams
+ 0 named destinations out of 1000 (max. 500000)
+ 86 words of extra memory for PDF output out of 10000 (max. 10000000)
+

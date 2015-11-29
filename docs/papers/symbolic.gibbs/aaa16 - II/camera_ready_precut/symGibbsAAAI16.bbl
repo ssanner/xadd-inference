@@ -1,0 +1,160 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Andrieu, Doucet, and
+  Holenstein}{2010}]{andrieu2010particle}
+Andrieu, C.; Doucet, A.; and Holenstein, R.
+\newblock 2010.
+\newblock Particle {M}arkov chain {M}onte {C}arlo methods.
+\newblock {\em Journal of the Royal Statistical Society: Series B (Statistical
+  Methodology)} 72(3):269--342.
+
+\bibitem[\protect\citeauthoryear{Chin and Cooper}{1987}]{chin1987bayesian}
+Chin, H.~L., and Cooper, G.~F.
+\newblock 1987.
+\newblock Bayesian belief network inference using simulation.
+\newblock In {\em UAI},  129--148.
+
+\bibitem[\protect\citeauthoryear{Cobb and Shenoy}{2005}]{cobb2005nonlinear}
+Cobb, B.~R., and Shenoy, P.~P.
+\newblock 2005.
+\newblock Nonlinear deterministic relationships in {B}ayesian networks.
+\newblock In {\em Symbolic and Quantitative Approaches to Reasoning with
+  Uncertainty}. Springer.
+\newblock  27--38.
+
+\bibitem[\protect\citeauthoryear{Gel'fand and
+  Shilov}{1964}]{gel1964generalized}
+Gel'fand, I., and Shilov, G.
+\newblock 1964.
+\newblock Generalized functions. vol. 1: Properties and operations, fizmatgiz,
+  moscow, 1958.
+\newblock {\em English transl., Academic Press, New York}.
+
+\bibitem[\protect\citeauthoryear{Geman and Geman}{1984}]{geman1984stochastic}
+Geman, S., and Geman, D.
+\newblock 1984.
+\newblock Stochastic relaxation, {G}ibbs distributions, and the {B}ayesian
+  restoration of images.
+\newblock {\em Pattern Analysis and Machine Intelligence, IEEE Transactions on}
+  (6):721--741.
+
+\bibitem[\protect\citeauthoryear{Hammersley and
+  Handscomb}{1964}]{hammersley1964monte}
+Hammersley, J.~M., and Handscomb, D.~C.
+\newblock 1964.
+\newblock {\em Monte {C}arlo methods}, volume~1.
+\newblock Methuen London.
+
+\bibitem[\protect\citeauthoryear{Kolmogorov}{1950}]{kolmogorov1950foundations}
+Kolmogorov, A.~N.
+\newblock 1950.
+\newblock Foundations of the theory of probability.
+
+\bibitem[\protect\citeauthoryear{Kschischang, Frey, and
+  Loeliger}{2001}]{kschischang2001factor}
+Kschischang, F.~R.; Frey, B.~J.; and Loeliger, H.-A.
+\newblock 2001.
+\newblock Factor graphs and the sum-product algorithm.
+\newblock {\em Information Theory, IEEE Transactions on} 47(2):498--519.
+
+\bibitem[\protect\citeauthoryear{Li, Ramsundar, and
+  Russell}{2013}]{li2013dynamic}
+Li, L.; Ramsundar, B.; and Russell, S.
+\newblock 2013.
+\newblock Dynamic scaled sampling for deterministic constraints.
+\newblock In {\em Proceedings of the 16th International Conference on
+  Artificial Intelligence and Statistics}.
+
+\bibitem[\protect\citeauthoryear{Lunn \bgroup et al\mbox.\egroup
+  }{2009}]{lunn2009bugs}
+Lunn, D.; Spiegelhalter, D.; Thomas, A.; and Best, N.
+\newblock 2009.
+\newblock The {BUGS} project: Evolution, critique and future directions.
+\newblock {\em Statistics in medicine} 28(25):3049--3067.
+
+\bibitem[\protect\citeauthoryear{Neal}{2003}]{Neal2003}
+Neal, R.~M.
+\newblock 2003.
+\newblock Slice sampling.
+\newblock {\em Ann. Statist.} 31(3):705--767.
+
+\bibitem[\protect\citeauthoryear{Neal}{2011}]{neal2011mcmc}
+Neal, R.~M.
+\newblock 2011.
+\newblock {MCMC} using {H}amiltonian dynamics.
+\newblock {\em Handbook of Markov Chain Monte Carlo} 2.
+
+\bibitem[\protect\citeauthoryear{Patil, Huard, and
+  Fonnesbeck}{2010}]{patil2010pymc}
+Patil, A.; Huard, D.; and Fonnesbeck, C.~J.
+\newblock 2010.
+\newblock Py{MC}: {B}ayesian stochastic modelling in {P}ython.
+\newblock {\em Journal of statistical software} 35(4):1.
+
+\bibitem[\protect\citeauthoryear{Pearl}{1987}]{pearl1987evidential}
+Pearl, J.
+\newblock 1987.
+\newblock Evidential reasoning using stochastic simulation of causal models.
+\newblock {\em Artificial Intelligence} 32(2):245--257.
+
+\bibitem[\protect\citeauthoryear{Pennec}{2006}]{pennec2006intrinsic}
+Pennec, X.
+\newblock 2006.
+\newblock Intrinsic statistics on riemannian manifolds: Basic tools for
+  geometric measurements.
+\newblock {\em Journal of Mathematical Imaging and Vision} 25(1):127--154.
+
+\bibitem[\protect\citeauthoryear{Roberts \bgroup et al\mbox.\egroup
+  }{1997}]{roberts1997weak}
+Roberts, G.~O.; Gelman, A.; Gilks, W.~R.; et~al.
+\newblock 1997.
+\newblock Weak convergence and optimal scaling of random walk {M}etropolis
+  algorithms.
+\newblock {\em The annals of applied probability} 7(1):110--120.
+
+\bibitem[\protect\citeauthoryear{Sanner and Abbasnejad}{2012}]{Sanner:12}
+Sanner, S., and Abbasnejad, E.
+\newblock 2012.
+\newblock Symbolic variable elimination for discrete and continuous graphical
+  models.
+\newblock In {\em AAAI}.
+
+\bibitem[\protect\citeauthoryear{Shenoy and West}{2011}]{shenoy2011inference}
+Shenoy, P.~P., and West, J.~C.
+\newblock 2011.
+\newblock Inference in hybrid {B}ayesian networks using mixtures of
+  polynomials.
+\newblock {\em International Journal of Approximate Reasoning} 52(5):641--657.
+
+\bibitem[\protect\citeauthoryear{Shenoy}{2012}]{shenoy2012two}
+Shenoy, P.~P.
+\newblock 2012.
+\newblock Two issues in using mixtures of polynomials for inference in hybrid
+  {B}ayesian networks.
+\newblock {\em International Journal of Approximate Reasoning} 53(5):847--866.
+
+\bibitem[\protect\citeauthoryear{{Stan Development
+  Team}}{2014}]{stan-manual:2014}
+{Stan Development Team}.
+\newblock 2014.
+\newblock {\em Stan Modeling Language Users Guide and Reference Manual, Version
+  2.5.0}.
+
+\bibitem[\protect\citeauthoryear{Wingate, Stuhlmueller, and
+  Goodman}{2011}]{wingate2011lightweight}
+Wingate, D.; Stuhlmueller, A.; and Goodman, N.~D.
+\newblock 2011.
+\newblock Lightweight implementations of probabilistic programming languages
+  via transformational compilation.
+\newblock In {\em International Conference on Artificial Intelligence and
+  Statistics},  770--778.
+
+\bibitem[\protect\citeauthoryear{Wood, van~de Meent, and
+  Mansinghka}{2014}]{wood2014new}
+Wood, F.; van~de Meent, J.~W.; and Mansinghka, V.
+\newblock 2014.
+\newblock A new approach to probabilistic programming inference.
+\newblock In {\em Proceedings of the 17th International conference on
+  Artificial Intelligence and Statistics}.
+
+\end{thebibliography}

@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2014/Cygwin)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: symGibbsAAAI16.aux
+The style file: aaai.bst
+Database file #1: symGibbsUAI.bib
+Warning--there's a number but no volume in geman1984stochastic
+Warning--empty journal in kolmogorov1950foundations
+You've used 22 entries,
+            2568 wiz_defined-function locations,
+            708 strings with 8239 characters,
+and the built_in function-call counts, 8467 in all, are:
+= -- 923
+> -- 294
+< -- 4
++ -- 96
+- -- 94
+* -- 677
+:= -- 1372
+add.period$ -- 110
+call.type$ -- 22
+change.case$ -- 132
+chr.to.int$ -- 22
+cite$ -- 24
+duplicate$ -- 341
+empty$ -- 625
+format.name$ -- 135
+if$ -- 1735
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 22
+newline$ -- 134
+num.names$ -- 66
+pop$ -- 109
+preamble$ -- 1
+purify$ -- 156
+quote$ -- 0
+skip$ -- 266
+stack$ -- 0
+substring$ -- 459
+swap$ -- 70
+text.length$ -- 4
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 172
+warning$ -- 2
+while$ -- 74
+width$ -- 23
+write$ -- 302
+(There were 2 warnings)
