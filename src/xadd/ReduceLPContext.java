@@ -44,10 +44,8 @@ public class ReduceLPContext {
 
     private static final boolean ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP = false; //Add bounds as explicit constraints (should not be necessary)
     //Debug Flags
-    public final static boolean DEBUG_CONSTRAINTS = false;
+    public final static boolean DEBUG_CONSTRAINTS = true;
     public final static boolean TEST2_INCONSIST_QUIET = true;
-
-    
 
     //Implication Caches
     //ReduceLPv1
@@ -71,7 +69,7 @@ public class ReduceLPContext {
         return reduceLP(node_id, DEFAULT_CHECK_REDUNDANCY);
     }
 
-    public int reduceLP(int node_id, boolean redun) {
+    public int reduceLP(int node_id, boolean redun)  {
         LocalReduceLP RLP = new LocalReduceLP(node_id);
         return RLP.reduceLP(node_id, redun);
     }
@@ -137,7 +135,7 @@ public class ReduceLPContext {
         }
 
         // Consistency and Redundancy Checking - ReduceLP
-        public int reduceLP(int node_id, boolean performRedundancy) {
+        public int reduceLP(int node_id, boolean performRedundancy)  {
 
             if (USE_REDUCE_LPv2) {
                 node_id = reduceLPv2(node_id, new HashSet<Integer>(), performRedundancy);
@@ -152,7 +150,7 @@ public class ReduceLPContext {
 
         //ReduceLPVersion 1- Indirect Redundancy Check
         @SuppressWarnings("rawtypes")
-        private int reduceLPv1(int node_id, boolean performRedundancy) {
+        private int reduceLPv1(int node_id, boolean performRedundancy)  {
             ArrayList<Integer> test_var = new ArrayList<Integer>();
             ArrayList<Boolean> test_dec = new ArrayList<Boolean>();
             _mlImplicationsChild = new MapList();
@@ -254,7 +252,7 @@ public class ReduceLPContext {
             return ret;
         }
 
-        private int reduceLPv1(int node_id, ArrayList<Integer> test_var, ArrayList<Boolean> test_dec) {
+        private int reduceLPv1(int node_id, ArrayList<Integer> test_var, ArrayList<Boolean> test_dec)  {
 
             Integer ret = null;
             XADDNode n = context.getExistNode(node_id);
@@ -445,14 +443,11 @@ public class ReduceLPContext {
             f = f.concat(f_var + ")");
 
             //System.out.println(f + ": " + (kb.querySATSolver(f) ? "entailed" : "not entailed"));
-            if (kb.querySATSolver(f))
-                return true;
-            else
-                return false;
+            return kb.querySATSolver(f);
         }
 
         private boolean isTestImpliedv1(ArrayList<Integer> test_var,
-                                        ArrayList<Boolean> test_dec, int var_id, boolean dec) {
+                                        ArrayList<Boolean> test_dec, int var_id, boolean dec)  {
 
             if (test_var.size() == 0)
                 return false;
@@ -487,7 +482,6 @@ public class ReduceLPContext {
             // Solve and get decision
             silentSolvelp(lp);
 
-
             boolean implied = (lp._status == LpSolve.INFEASIBLE);
             if (DEBUG_CONSTRAINTS)
                 System.out.println("Solution: " + LP.PrintVector(lp._x));
@@ -502,7 +496,7 @@ public class ReduceLPContext {
         //ReduceLPVersion 2- Only direct Redundancy Check
 
         //ReduceLPVersion 2- Direct Redundancy Check
-        private int reduceLPv2(int node_id, HashSet<Integer> test_dec, boolean redundancy) {
+        private int reduceLPv2(int node_id, HashSet<Integer> test_dec, boolean redundancy)  {
             XADDNode n = context.getExistNode(node_id);
 
             // A terminal node should be reduced (and cannot be restricted)
@@ -567,7 +561,7 @@ public class ReduceLPContext {
         //Call to check if given the test_dec decisions subtree always reaches "goal", which means that
         // if the node above the subtree is chosing between subtree or goal, we can leave subtree in its place (it will reach still
         // reach goal whenever the first decision would take it to goal.
-        private boolean isResultImplied(HashSet<Integer> test_dec, int subtree, int goal) {
+        private boolean isResultImplied(HashSet<Integer> test_dec, int subtree, int goal)  {
 
             if (subtree == goal) return true;
 
@@ -607,7 +601,7 @@ public class ReduceLPContext {
             return false; //if TNode, only the == check can make it true
         }
 
-        private boolean isTestImpliedv2(HashSet<Integer> test_dec, int dec) {
+        private boolean isTestImpliedv2(HashSet<Integer> test_dec, int dec)  {
 
             if (!(context._alOrder.get(Math.abs(dec)) instanceof ExprDec)) return false;
 
@@ -621,10 +615,13 @@ public class ReduceLPContext {
                 System.out.println("===================\nisTestImpliedv2 " + "Checking if " + dec + " " + context._alOrder.get(Math.abs(dec)) + " = " + (dec > 0 ? "true" : "false") + " implied by:");
                 showDecList(test_dec);
             }
+
             if (!test_dec.add(-dec))
                 System.err.println("Warning: checking if decision implies its negation! - " + test_dec);
+
             boolean implied = isInfeasible(test_dec);
             test_dec.remove(-dec);
+
             if (implied) {
                 if (impliedSet == null) {
                     impliedSet = new HashSet<Integer>();
@@ -638,10 +635,11 @@ public class ReduceLPContext {
                 }
                 nonImpliedSet.add(dec);
             }
+
             return implied;
         }
 
-        private boolean isInfeasible(HashSet<Integer> test_dec) {
+        private boolean isInfeasible(HashSet<Integer> test_dec)  {
 
             boolean infeasible = false;
 
@@ -654,10 +652,12 @@ public class ReduceLPContext {
             // Setup LP
             for (int i = 0; i < nvars; i++) obj_coef[i] = 1;
             LP lp = new LP(nvars, assign2Local(context.lowerBounds, true), assign2Local(context.upperBounds, true), obj_coef, LP.MAXIMIZE);
+
             // Now add all constraints
             for (Integer decision : test_dec) {
                 addDecision(lp, decision);
             }
+
             //Adding box constraints
             addLocalBoundConstraints(lp);
 
@@ -699,10 +699,14 @@ public class ReduceLPContext {
 
                 Decision d = context._alOrder.get(Math.abs(decision));
                 if (!(d instanceof ExprDec)) continue;
-                CompExpr compar = (CompExpr) ((ExprDec) d)._expr;
+                CompExpr compar = ((ExprDec) d)._expr;
                 boolean greaterComp = compar.isGreater();  
-                ArithExpr exp = ((CompExpr) ((ExprDec) d)._expr)._lhs;
-                constC = setCoefficientsLocal(exp, constrCoef2);
+                ArithExpr exp = ((ExprDec) d)._expr._lhs;
+                try {
+                    constC = setCoefficientsLocal(exp, constrCoef2);
+                } catch (UnsupportedConstraintException e) {
+                    e.printStackTrace();
+                }
                 if ( (greaterComp && decision > 0) || (!greaterComp && decision < 0) ) {
                     constrCoef2[nvars] = -1; // c + f*x > 0 => f*x - S > -c
                     lp2.addGeqConstraint(constrCoef2, -constC);
