@@ -1,0 +1,68 @@
+cvariables (s i)
+min-values (0 0)
+max-values (1000 1000)
+bvariables (eps)
+nvariables ()
+ivariables ()
+
+action zero
+    s' (    eps'
+            ([s + 0.27])
+            ([s])
+        )
+    i' ([i])
+    eps' (eps ([0.5])([0.5]))
+reward
+        ([w1 * (0.0 * s)])
++
+        ([1 * (1.0 * s0 - 1.0 * s)])
+
+endaction
+
+action quarter
+    s' (    eps'
+            ([s + 0.165 * 0.25 + 0.27])
+            ([s + 0.165 * 0.25])
+        )
+    i' (    [i > 0]
+            (   [i - (i * 0.25)])
+            (   [i])
+        )
+    eps' (eps ([0.5])([0.5]))
+reward
+        ([w1 * (0.25 * s)])
++
+        ([1 * (0.25 * s0 - 0.25 * s)])
+endaction
+
+action half
+    s' (    eps'
+            ([s + 0.165 * 0.50 + 0.27])
+            ([s + 0.165 * 0.50])
+        )
+    i' (    [i > 0]
+            (   [i - (i * 0.5)])
+            (   [i])
+        )
+    eps' (eps ([0.5])([0.5]))
+reward
+        ([w1 * (0.5 * s)])
++
+        ([1 * (0.5 * s0 - 0.5 * s)])
+endaction
+
+action all
+    s' (    eps'
+            ([s + 0.165 * 1.0 + 0.27])
+            ([s + 0.165 * 1.0])
+        )
+    i' (    [0])
+    eps' (eps ([0.5])([0.5]))
+reward
+        ([w1 * (1.0 * s)])
++
+        ([1 * (1.0 * s0 - 1.0 * s)])
+endaction
+
+discount 0.95
+iterations 5

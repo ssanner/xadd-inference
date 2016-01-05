@@ -1,0 +1,58 @@
+cvariables (s i r)
+min-values (0.0 0 0)
+max-values (100 100 100)
+bvariables ()
+min-values ()
+max-values ()
+nvariables ()
+icvariables (eta)
+min-values (0.000165)
+max-values (0.000165)
+ibvariables ()
+min-values ()
+max-values ()
+avariables ()
+
+action zero
+    s' ([(-eta * s * i + c * r)])
+    i' ([((eta * s * i) + (b * i))])
+    r' ([(b * i) - (c * r)])
+reward
+    ([1.50 * 0])
++
+    ([0.5 * 1.10 * i])
+endaction
+
+action quarter
+    s' ([(-eta * s * i + c * r - (0.25 * s) )])
+    i' ([((eta * s * i) + (b * i))])
+    r' ([b * i - c * r])
+reward
+    ([1.50 * 0.25 * s])
++
+    ([0.5 * 1.10 * i])
+endaction
+
+action half
+    s' ([(-eta * s * i + c * r - (0.50 * s) )])
+    i' ([((eta * s * i) + (b * i))])
+    r' ([b * i - c * r])
+reward
+    ([1.50 * 0.50 * s])
++
+    ([0.5 * 1.10 * i])
+endaction
+
+action all
+    s' ([(-eta * s * i + c * r - (1.0 * s) )])
+    i' ([((eta * s * i) + (b * i))])
+    r' ([b * i - c * r])
+reward
+    ([1.50 * s])
++
+    ([0.5 * 1.10 * i])
+endaction
+
+discount 0.95
+InitialState (100.0 50.0 25.0) (eta)
+iterations 5
