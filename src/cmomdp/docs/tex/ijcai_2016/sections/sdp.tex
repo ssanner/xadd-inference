@@ -1,0 +1,80 @@
+\section{Symbolic Dynamic Programming for MOMDPs}
+\label{sec:sdp}
+
+Symbolic Dynamic Programming (SDP)~\parencite{Boutilier_IJCAI_2001} \ldots
+
+\subsection{Symbolic Case Calculus}
+
+%SDP assumes that all functions can be represented in case statement form \parencite{Boutilier_IJCAI_2001} as follows:
+%{\footnotesize 
+%    \abovedisplayskip=5pt
+%    \belowdisplayskip=0pt
+%    \begin{align*}
+%        f = 
+%        \begin{cases}
+%            \phi_1: & f_1 \\ 
+%            \vdots & \vdots\\ 
+%            \phi_k: & f_k \\ 
+%        \end{cases}
+%    \end{align*}
+%}%
+%
+%Here, the $\phi_i$ are logical formulae defined over the state $\vec{x}$ that can consist of arbitrary logical combinations of boolean variables and linear inequalities $\left( \geq, >, <, \leq \right)$ over continuous variables. We assume that the set of conditions $\left\lbrace \phi_1, \ldots, \phi_k \right\rbrace$
+%disjointly and exhaustively partition $\vec{x}$ such that $f$ is well-defined for all $\vec{x}$.  In this paper we restrict the $f_i$ to be either constant or linear functions of the state variable $\vec{x}$. Henceforth, we refer to functions with linear $\phi_i$ and piecewise constant $f_i$ as linear piecewise constant (LPWC) and functions with linear $\phi_i$ and piecewise linear $f_i$ as linear piecewise linear (LPWL) functions.
+%
+%Operations on case statements may be either unary or binary. All of the operations presented here are closed form for LPWC and LPWL functions. We refer the reader to \parencite{Sanner_UAI_2011,Zamani_AAAI_2012} for more thorough expositions of SDP for piecewise continuous functions.
+%
+%Unary operations on a single case statement \emph{f}, such as scalar multiplication $c \cdot f$ where $ c \in \mathbb{R} $, are applied to  each $f_i$ ($1 \leq i \leq k$). Binary operations such as addition, subtraction and multiplication are executed in two stages. Firstly, the cross-product of the logical partitions of each case statement is taken, producing paired partitions. Finally, the binary operation is applied to the resulting paired partitions. The ``cross-sum'' $\oplus$ operation can be performed on two cases in the following manner:
+%{\footnotesize 
+%    \abovedisplayskip=5pt
+%    \belowdisplayskip=0pt
+%    \begin{center}
+%        \begin{tabular}{r c c c l}
+%            $\begin{cases}
+%            \phi_1: \hspace{-1mm} & \hspace{-1mm} f_1  \\ 
+%            \phi_2: \hspace{-1mm} & \hspace{-1mm} f_2  \\ 
+%            \end{cases}$
+%            $\oplus$
+%            &
+%            \hspace{-4mm}
+%            $\begin{cases}
+%            \psi_1: \hspace{-1mm} & \hspace{-1mm} g_1  \\ 
+%            \psi_2: \hspace{-1mm} & \hspace{-1mm} g_2  \\ 
+%            \end{cases}$
+%            &
+%            \hspace{-4mm} 
+%            $ = $
+%            &
+%            \hspace{-4mm}
+%            $\begin{cases}
+%            \phi_1 \wedge \psi_1: & f_1 + g_1 \\
+%            \phi_1 \wedge \psi_2: & f_1 + g_2 \\
+%            \phi_2 \wedge \psi_1: & f_2 + g_1 \\
+%            \phi_2 \wedge \psi_2: & f_2 + g_2  \\
+%            \end{cases}$
+%        \end{tabular}
+%    \end{center}
+%}%
+%%\vspace{-4em}
+%
+%\noindent ``cross-subtraction'' $\ominus$ and ``cross-multiplication'' $\otimes$ are defined in a similar manner but with the addition operator replaced by the subtraction and multiplication operators, respectively. Some partitions resulting from case operators may be inconsistent and are thus removed.
+%
+%Substitution into case statements is performed via a set $\theta$ of variables and their substitutions e.g. $\theta = \left\{ x'_1/(x_1 + x_2) \right\}$, where the LHS of the / represents the substitution variable and the RHS of the / represents the expression that should be substituted in its place. $\theta$ can be applied to both non-case functions $f_i$ and case partitions $\phi_i$ as $f_i\theta$ and $\phi_i\theta$, respectively. Substitution into case statements can be written as:
+%{\footnotesize 
+%    \abovedisplayskip=5pt
+%    \belowdisplayskip=0pt
+%    \begin{align*}
+%        f\theta = 
+%        \begin{cases}
+%            \phi_1\theta: & f_1\theta \\ 
+%            \vdots & \vdots\\ 
+%            \phi_k\theta: & f_k\theta \\ 
+%        \end{cases}
+%    \end{align*}
+%}%
+%
+%Substitution is used when calculating integrals with respect to deterministic $\delta$ transitions~\parencite{Sanner_UAI_2011}.
+%
+%In principle, case statements can be used to represent all MOMDP components. In practice, case statements are implemented using a more compact representation known as Extended Algebraic Decision Diagrams (XADDs) \parencite{Sanner_UAI_2011}, which also support efficient versions of all of the aforementioned operations.
+
+\subsection{SDP for Continuous State MOMDPs}
