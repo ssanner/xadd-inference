@@ -1,11 +1,12 @@
-cvariables ( location )
-min-values ( 0.0 )
-max-values ( 100 )
+cvariables ( location w2)
+min-values ( 0.0 0)
+max-values ( 100 10000.0)
 bvariables ( )
 ivariables ( )
 
 action left
     location' ([location - 5.0])
+    w2' ([w2])
 reward
     (   [location < 10.0]
         (   [0] )
@@ -17,6 +18,7 @@ endaction
 
 action right
     location' ([location + 5.0])
+    w2' ([w2])
 reward
     (   [location < 10.0]
         (   [0] )
@@ -28,6 +30,7 @@ endaction
 
 action noop
     location' ([location])
+    w2' ([w2])
 reward
     (   [location < 10.0]
         (   [0] )
