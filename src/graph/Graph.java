@@ -23,6 +23,9 @@ import java.util.*;
 
 import util.*;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Graph {
 
     public static final String EMPTY_STR = "".intern();
@@ -434,7 +437,20 @@ public class Graph {
             // line-by-line... see how fis_reader is constructed).
             StringBuilder sb = new StringBuilder();
             String line = null;
+
+            Pattern pattern = Pattern.compile(".*=(\\d+\\.\\d+).*");
             while ((line = process_out.readLine()) != null) {
+
+                // Check if the line contains floats. If so, place quotes around the float
+                // NOTE: This is a hack to get around parse errors due to bare floats e.g. 2.00 instead of "2.00"
+                String line2 = line.replaceAll("(\\d+\\.\\d+)", "\"$1\"");
+
+                Matcher m = pattern.matcher(line);
+                if (m.matches()) {
+//                    System.out.println("\t Match: " + m.group(1) + " ");
+                    line = line2;
+                }
+
                 sb.append(line + "\n");
             }
             process_out.close();
@@ -1238,10 +1254,7 @@ public class Graph {
                 }
             }
         }
-        if (counter != vertices.size()) {
-            return true; // Cycle found
-        }
-        return false;
+        return counter != vertices.size();
     }
 
     public void setCount(HashMap<Object, Integer> obj2int, Object v, int val) {
@@ -1280,7 +1293,7 @@ public class Graph {
         g.addUniLink("b", "e");
         g.addUniLink("a", "f");
         g.addUniLink("c", "a");
-        g.addSameRank(Arrays.asList(new String[]{"f", "e", "c"}));
+        g.addSameRank(Arrays.asList("f", "e", "c"));
         g.setSuppressRank(false);
         g.genDotFile("graph_test.dot");
         g.launchViewer();
@@ -1328,7 +1341,7 @@ public class Graph {
         List order = g.computeBestOrder(); // g.greedyTWSort(true);
         System.out.println("\nOrder:        " + order);
         g.computeTreeWidth(order);
-        System.out.println("MAX Bin Size: " + g._df.format(g._dMaxBinaryWidth));
+        System.out.println("MAX Bin Size: " + _df.format(g._dMaxBinaryWidth));
         System.out.println("TW:           " + g._nTreeWidth + "\n");
         System.out.println("Has cycle: " + g.hasCycle());
         System.out.println("Strongly connected components: " + g.getStronglyConnectedComponents());
