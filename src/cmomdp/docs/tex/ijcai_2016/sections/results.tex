@@ -6,29 +6,30 @@ In this section we evaluate our novel SDP solution technique for continuous MOMD
 \subsection{1D Robot}
 \label{ref:robot}
 
+In this domain we consider a robot moving in 1 dimension e.g. along the Real line. The domain is specified as follows:
 \begin{itemize}
-    \item {\footnotesize $ \State = \left\langle l \right\rangle$ }, where $ l $ is the location of the robot
-    \item {\footnotesize $ \Action \in \left\lbrace -5.0, 0.0, 5.0 \right\rbrace $} is the amount by which robot moves
+    \item {\footnotesize $ \State = \left\langle location \right\rangle$}, where $ location $ is the location of the robot
+    \item {\footnotesize $ \Action \in \left\lbrace -5.0, 0.0, 5.0 \right\rbrace $} is the amount by which robot moves relative to its current position
     \item The transition function {\footnotesize \Transition} for each state variable in {\footnotesize \State} is given by:    
     {\footnotesize 
         \abovedisplayskip=5pt
         \belowdisplayskip=0pt
         \renewcommand{\arraystretch}{1.5}
         \begin{tabular}{ll}
-            $ \Transition\left( l' | l, a \right) =$ & $ \delta \left[ l' - (l + a) \right] $ \\
+            $ \Transition\left( location' | location, a \right) =$ & $ \delta \left[ location' - (location + a) \right] $ \\
         \end{tabular}
     }%
-    \item The reward function {\footnotesize \Reward}, is specified as {\footnotesize $ \Reward\left(\vec{w}, l, a \right) = w_1 \cdot \Reward_{\mathtt{location}} + w_2 \cdot \Reward_{\mathtt{movement}} $} where, \\
+    \item The reward function {\footnotesize \Reward}, is specified as {\footnotesize $ \Reward\left(\vec{w}, location, a \right) = w_1 \cdot \Reward_{\mathtt{region}} + w_2 \cdot \Reward_{\mathtt{movement}} $} where, \\
     {\footnotesize 
         \abovedisplayskip=10pt
         \belowdisplayskip=0pt
         \renewcommand{\arraystretch}{1.5}
         \begin{tabular}{ll}    
-            $ \Reward_{\mathtt{location}}(l', a) = \begin{cases}
-            (l' \geq 10.0) : & l' \\
+            $ \Reward_{\mathtt{region}}(location', a) = \begin{cases}
+            (location' \geq 10.0) : & location' \\
             \text{otherwise} : & 0.0 \\
             \end{cases} $ & $ $\\
-            $ \Reward_{\mathtt{movement}}(l', a) = -1.0 $ & $ $ \\                        
+            $ \Reward_{\mathtt{movement}}(location', a) = -1.0 $ & $ $ \\                        
         \end{tabular}
     }    
 \end{itemize} 
@@ -36,7 +37,7 @@ In this section we evaluate our novel SDP solution technique for continuous MOMD
 \begin{figure}[h!]
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/robot1d}}
-    \caption{1-Dimensional Robot. $ \Horizon = 20 $, $ location \in \left[ -20.0, 20.0 \right]$ is on the x-axis and $ w_2 \in \left[ 0.0, 40.0 \right]$ is on the y-axis. }
+    \caption{1-Dimensional Robot. $ \Horizon = 10 $, $ location \in \left[ -20.0, 20.0 \right]$ is on the x-axis and $ w_2 \in \left[ 0.0, 500.0 \right]$ is on the y-axis. }
     \label{fig:robot1d}
 \end{figure}
 
@@ -46,7 +47,7 @@ In this section we evaluate our novel SDP solution technique for continuous MOMD
 We can describe Influenza epidemics by an SIRS (Susceptible-Infective-Recovered-Susceptible) model. {\footnotesize $ S $} refer to the number of susceptibles, {\footnotesize $ I $} to number of infected and {\footnotesize $ R $} to the recovered. At each time step the population in each of the three populations is updated according to the following equations:
 \begin{align*}
     s_{t + 1} &= -\eta \cdot s_t \cdot i_t + c \cdot r_t - a_t \cdot s_t \\
-    i_{t + 1} &= \eta \cdot s_t \cdot i_t + b \cdot i_t \\
+    i_{t + 1} &= \eta \cdot s_t \cdot i_t - b \cdot i_t \\
     r_{t+1} &= b \cdot i_t - c \cdot r_t 
 %    d_{t+1} &= e \cdot i_t 
 \end{align*}
@@ -65,7 +66,7 @@ where {\footnotesize $ \eta \in [0, 1]$} is the rate of infection, {\footnotesiz
         \renewcommand{\arraystretch}{1.5}
         \begin{tabular}{ll}
             $ \Transition\left( s' | s, i, r, a \right) =$ & $ \delta \left[ s' - (- \eta \cdot s \cdot i + c \cdot r -a \cdot s) \right] $ \\
-            $ \Transition\left( i' | s, i, r, a \right) =$ & $ \delta \left[ i' - (\eta \cdot s \cdot i + b \cdot i) \right] $ \\
+            $ \Transition\left( i' | s, i, r, a \right) =$ & $ \delta \left[ i' - (\eta \cdot s \cdot i - b \cdot i) \right] $ \\
             $ \Transition\left( r' | s, i, r, a \right) =$ & $ \delta \left[ r' - (b \cdot i - c \cdot r) \right] $ \\            
         \end{tabular}
     }%
@@ -75,45 +76,51 @@ where {\footnotesize $ \eta \in [0, 1]$} is the rate of infection, {\footnotesiz
 \begin{figure}[h!]
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/sir_s_w1}}
-    \caption{Influenza Epidemiology. $ s \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ i = 50.0, r = 50.0 \eta = 1.65 \times 10^4, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$ and $w_2 = 1.0 $.}
+    \caption{Influenza Epidemiology. $ s \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ i = 50.0, r = 50.0 \eta = 1.65 \times 10^2, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$.}
     \label{fig:robot1d}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/sir_s_w2}}
-    \caption{Influenza Epidemiology. $ s \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ i = 50.0, r = 50.0 \eta = 1.65 \times 10^4, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$ and $w_1 = 1.0 $.}
+    \caption{Influenza Epidemiology. $ s \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ i = 50.0, r = 50.0 \eta = 1.65 \times 10^2, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$.}
     \label{fig:robot1d}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/sir_i_w1}}
-    \caption{Influenza Epidemiology. $ i \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ s = 50.0, r = 50.0 \eta = 1.65 \times 10^4, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$ and $w_2 = 1.0 $.}
+    \caption{Influenza Epidemiology. $ i \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ s = 50.0, r = 50.0 \eta = 1.65 \times 10^2, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$.}
     \label{fig:robot1d}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/sir_i_w2}}
-    \caption{Influenza Epidemiology. $ i \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ s = 50.0, r = 50.0 \eta = 1.65 \times 10^4, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$ and $w_1 = 1.0 $.}
+    \caption{Influenza Epidemiology. $ i \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ s = 50.0, r = 50.0 \eta = 1.65 \times 10^2, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$.}
     \label{fig:robot1d}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/sir_r_w1}}
-    \caption{Influenza Epidemiology. $ r \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ s = 50.0, i = 50.0 \eta = 1.65 \times 10^4, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$ and $w_2 = 1.0 $.}
+    \caption{Influenza Epidemiology. $ r \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ s = 50.0, i = 50.0 \eta = 1.65 \times 10^2, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$.}
     \label{fig:robot1d}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/sir_r_w2}}
-    \caption{Influenza Epidemiology. $ r \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ s = 50.0, i = 50.0 \eta = 1.65 \times 10^4, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$ and $w_1 = 1.0 $.}
+    \caption{Influenza Epidemiology. $ r \in \left[ 0.0, 100.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ s = 50.0, i = 50.0 \eta = 1.65 \times 10^2, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$.}
     \label{fig:robot1d}
 \end{figure}
 
+\begin{figure}[h!]
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{images/sir_infection_w2}}
+    \caption{Influenza Epidemiology. $ \eta \in \left[ 0.0, 1.0 \right]$ is on the x-axis and $ w_2 \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ s = 50.0, i = 50.0, r = 50.0, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$.}
+    \label{fig:robot1d}
+\end{figure}
 
 \subsection{Automated Market Making}
 \label{sec:results_mm}
@@ -210,7 +217,7 @@ where {\footnotesize $ s_t $ } is the price at the beginning of period {\footnot
             \end{cases} \right] $ & $ $\\
         \end{tabular}
     }%
-    \item The reward function {\footnotesize \Reward}, is specified as {\footnotesize $ \Reward\left(\vec{w}, s, i, n \right) = w_1 \cdot \Reward_{\mathtt{profit}} + w_2 \cdot \Reward_{\mathtt{shortfall}} $} where, \\
+    \item The reward function {\footnotesize \Reward}, is specified as {\footnotesize $ \Reward\left(\vec{w}, s, i, n \right) = w_1 \cdot \Reward_{\mathtt{profit}} - w_2 \cdot \Reward_{\mathtt{shortfall}} $} where, \\
     {\footnotesize 
         \abovedisplayskip=10pt
         \belowdisplayskip=0pt
@@ -223,7 +230,7 @@ where {\footnotesize $ s_t $ } is the price at the beginning of period {\footnot
             \end{cases} $ \\
             $ \Reward_{\mathtt{shortfall}}(s', i', n) = $ &  
             \qquad $ \begin{cases}
-            (n \geq 0) : & ns_0 - ns \\
+            (n \geq 0) : & n \cdot s_0 - n \cdot s \\
             \text{otherwise} : & 0 \\
             \end{cases} $ \\
         \end{tabular}
@@ -232,9 +239,16 @@ where {\footnotesize $ s_t $ } is the price at the beginning of period {\footnot
 
 The trader aims to maximise profit via {\footnotesize $ \Reward_{\mathtt{profit}} $} and minimise implementation shortfall via {\footnotesize $ \Reward_{\mathtt{shortfall}} $}.
 
-%\begin{figure}[h!]
-%    \centering
-%    \fbox{\includegraphics[width=\linewidth]{images/oe_w_25}}
-%    \caption{Optimal Execution. $ s \in \left[ 0.0, 200.0 \right]$ is on the x-axis and $ i \in \left[ 0.0, 100.0 \right]$ is on the y-axis. $ s_0 = 10.0, w_1 = 1.0$.}
-%    \label{fig:robot1d}
-%\end{figure}
+\begin{figure}[h!]
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{images/optimal_execution_w1}}
+    \caption{Optimal Execution. $ s \in \left[ 0.0, 20.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 2.0 \right]$ is on the y-axis. $ s_0 = 10.0, i = 50.0$.}
+    \label{fig:robot1d}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{images/optimal_execution_w2}}
+    \caption{Optimal Execution. $ s \in \left[ 0.0, 20.0 \right]$ is on the x-axis and $ w_2 \in \left[ 0.0, 2.0 \right]$ is on the y-axis. $ s_0 = 10.0, i = 50.0$.}
+    \label{fig:robot1d}
+\end{figure}
