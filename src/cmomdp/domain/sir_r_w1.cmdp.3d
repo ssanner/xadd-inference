@@ -1,5 +1,5 @@
 var r 0 0.5 100
-var w1 0 0.5 100
+var w1 0 0.005 1.0
 cassign w2 0.0
 cassign s 50.0
 cassign i 50.0

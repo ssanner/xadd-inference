@@ -1,5 +1,5 @@
-var irate 0 0.01 1
-var w2 0 1 100
+var irate 0 0.01 1.0
+var w 0 0.01 1.0
 cassign s 50.0
 cassign i 50.0
 cassign r 50.0
