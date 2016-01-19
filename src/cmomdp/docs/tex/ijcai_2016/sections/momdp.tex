@@ -23,7 +23,7 @@ In MOMDPs there can be multiple policies {\footnotesize $ \pi $} whose value {\f
 
 In the case of linear {\footnotesize $ f $}, a sufficient solution is the Convex Hull (CH), the set of all undominated policies under a linear scalarisation. It also suffices to compute a Convex Coverage Set (CCS), a lossless subset of CH which which contains at least one vector from CH that has the maximal scalarised value for each possible {\footnotesize $ \vec{w} $}. 
 
-In the case of non-linear {\footnotesize $ f $}, the Pareto Front (PF), a superset of CH, must be returned. The PF contains all policies for which no other policy has a value that is at least equal in all objectives and greater in at least one objective. Pareto-optimal policies can be found by using the linear programming approach of \parencite{Viswanathan_TIMS_1977}. An alternative approach to calculating the CCS using POMDPs was proposed by \parencite{White_LSS_1980}.
+In the case of non-linear {\footnotesize $ f $}, the Pareto Front (PF), a superset of CH, must be returned. The PF contains all policies for which no other policy has a value that is at least equal in all objectives and greater in at least one objective. Pareto-optimal policies can be found by using the linear programming approach of~\parencite{Viswanathan_TIMS_1977}. An alternative approach to calculating the CCS using POMDPs was proposed by~\parencite{White_LSS_1980}.
 
 \subsubsection{MDP Solution}
 
@@ -31,7 +31,7 @@ In the case of non-linear {\footnotesize $ f $}, the Pareto Front (PF), a supers
 
 \ldots~\parencite{Barrett_ICML_2008}.
 
-An alternate approach to solving discrete state MOMDPs is to incorporate the weight vector {\footnotesize $ \vec{w} $} as a free parameter into the standard MDP value function and Q function definitions. These parameterised functions can then be solved using Value iteration (VI) \parencite{Howard_MIT_1960} as follows:
+An alternate approach to solving discrete state MOMDPs is to incorporate the weight vector {\footnotesize $ \vec{w} $} as a free parameter into the standard MDP value function and Q function definitions. These parameterised functions can then be solved using Value iteration (VI)~\parencite{Howard_MIT_1960} as follows:
 {\footnotesize 
     \abovedisplayskip=0pt
     \belowdisplayskip=0pt
