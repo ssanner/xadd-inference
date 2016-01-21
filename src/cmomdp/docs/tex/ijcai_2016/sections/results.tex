@@ -106,7 +106,7 @@ where {\footnotesize $ \eta \in [0, 1]$} is the rate of infection and {\footnote
         \caption{$ w_2 \in \left[ 0.0, 100.0 \right]$}
         \label{fig:pt_execution_w2}
     \end{subfigure}  
-    \caption{Influenza S-D Epidemiology. $ \eta = 0.0165, d = 1.0, cost_{\mathtt{death}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$.}
+    \caption{Influenza S-D Epidemiology. $ \Horizon = 20 $, $ \eta = 0.0165, d = 1.0, cost_{\mathtt{death}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$.}
     \label{fig:pt_execution}
 \end{figure}
 %------------------------------------------------------------------------------
@@ -165,7 +165,7 @@ where {\footnotesize $ \eta \in [0, 1]$} is the rate of infection, {\footnotesiz
         \caption{$ r \in \left[ 0.0, 100.0 \right], w_1 \in \left[ 0.0, 100.0 \right], s = 50.0, i = 50.0$}
         \label{fig:sir_r_w1}
     \end{subfigure}      
-    \caption{Influenza S-I-R-S Epidemiology. $ \eta = 1.65 \times 10^2, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$.}
+    \caption{Influenza S-I-R-S Epidemiology. $ \Horizon = 15 $, $ \eta = 1.65 \times 10^2, b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0, cost_{\mathtt{vaccine}} = 33.0$.}
     \label{fig:sir}
 \end{figure}
 %------------------------------------------------------------------------------
@@ -322,7 +322,7 @@ where {\footnotesize $ s_t $ } is the price at the beginning of period {\footnot
         \begin{tabular}{ll}    
             $ \Reward_{\mathtt{inventory}}(price', inv', n) = $ &  $ $ \\
                 \qquad $ \begin{cases}
-                (inv \geq 0) : & -inv \cdot price \\
+                (inv \geq 0) : & -inv \\
                 \text{otherwise} : & 0 \\
                 \end{cases} $ & $ $ \\           
             $ \Reward_{\mathtt{shortfall}}(price', price_0, inv', n) = $ &  $ $ \\
@@ -354,7 +354,30 @@ The trader aims to liquidate inventory via {\footnotesize $ \Reward_{\mathtt{inv
         \caption{$ w_2 \in \left[ 0.0, 100.0 \right]$}
         \label{fig:pt_execution_w2}
     \end{subfigure}  
-    \caption{Optimal Execution. $ price \in \left[ 0.0, 20.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 2.0 \right]$ is on the y-axis. $ price_0 = 10.0, i = 50.0$.}
+    \caption{Optimal Execution. $ \Horizon = 5 $, $ price \in \left[ 0.0, 20.0 \right]$, $ price_0 = 10.0, i = 1.0$.}
     \label{fig:pt_execution}
 \end{figure}
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+%% Figure
+%\begin{figure}[t!]
+%    \centering
+%    \begin{subfigure}[b]{0.4\textwidth}    
+%        %        \centering
+%        \includegraphics[width=\linewidth, height=0.8\linewidth]{images/opt_execution_i_w1}
+%        \caption{$ w_1 \in \left[ 0.0, 100.0 \right]$}
+%        \label{fig:opt_execution_w1}
+%        \vspace{1em}
+%    \end{subfigure}
+%    
+%    \begin{subfigure}[b]{0.4\textwidth}    
+%        %        \centering
+%        \includegraphics[width=\linewidth, height=0.8\linewidth]{images/opt_execution_w2}
+%        \caption{$ w_2 \in \left[ 0.0, 100.0 \right]$}
+%        \label{fig:pt_execution_w2}
+%    \end{subfigure}  
+%    \caption{Optimal Execution. $ inventory \in \left[ 0.0, 50.0 \right]$ is on the x-axis and $ w_1 \in \left[ 0.0, 2.0 \right]$ is on the y-axis. $ price_0 = 10.0, price = 100.0$.}
+%    \label{fig:pt_execution}
+%\end{figure}
 %------------------------------------------------------------------------------
