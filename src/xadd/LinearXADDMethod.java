@@ -11,6 +11,7 @@
 
 package xadd;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,20 +53,29 @@ public class LinearXADDMethod {
     private static final boolean ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP = false; //Add bounds as explicit constraints (should not be necessary)
     private static final boolean WARN_INFEASIBLE_REGIONS = true; //Add bounds as explicit constraints (should not be necessary)
 
+    /**
+     *
+     * @param localRoot
+     * @param global
+     */
     public LinearXADDMethod(int localRoot, XADD global) {
+
         context = global;
         globalContinuousVarList = context.getContinuousVarList();
+
         XADDNode r = context.getExistNode(localRoot);
         HashSet<String> pruneVars = r.collectVars();
         pruneVars.removeAll(context._alBooleanVars);
+
         nLocalCVars = pruneVars.size();
         nContextCVars = context._cvar2ID.size();
         localID2cVarID = new int[nLocalCVars];
         cVarID2localID = new int[nContextCVars];
 
+        //Flag invalid Vars
         for (int k = 0; k < nContextCVars; k++) {
             cVarID2localID[k] = -1;
-        } //Flag invalid Vars
+        }
 
         int i = 0;
         for (String var : pruneVars) {
@@ -120,7 +130,14 @@ public class LinearXADDMethod {
      * Lp usage methods
      */
 
-    protected void addDecision(LP lp, int dec) {
+    /**
+     *
+     * @param lp
+     * @param dec
+     * @throws UnsupportedConstraintException
+     */
+    protected void addDecision(LP lp, int dec) throws UnsupportedConstraintException {
+
         if (dec > 0)
             addConstraint(lp, dec, true);
         else
@@ -132,8 +149,9 @@ public class LinearXADDMethod {
      * @param lp
      * @param constraint_id
      * @param dec
+     * @throws UnsupportedConstraintException
      */
-    protected void addConstraint(LP lp, int constraint_id, boolean dec) {
+    protected void addConstraint(LP lp, int constraint_id, boolean dec) throws UnsupportedConstraintException {
 
 //	      if (DEBUG_CONSTRAINTS)
 	          System.out.println("Adding constraint id [" + constraint_id+ "] = " + dec);
@@ -155,24 +173,21 @@ public class LinearXADDMethod {
             // From here we just need convert LHS to coefficients and construct
             // correct constraint from CompExpr type
             double[] coefs = new double[nLocalCVars];
-
-            // TODO: catch Exception, print out the constraint that causes the Exception to be thrown
             double const_coef = 0; // move to
+
             try {
                 const_coef = setCoefficientsLocal(e._expr._lhs, coefs);
-            } catch (UnsupportedConstraintException e1) {
-                System.out.println(e1.getMessage());
-                e1.printStackTrace();
-                return;
+            } catch (OperationTermException e1) {
+//                System.err.println(e1.getMessage());
+//                return;
+                throw new UnsupportedConstraintException(e1.getMessage());
             }
 
             // RHS => -
             CompOperation type = dec ? e._expr._type : CompExpr.flipCompOper(e._expr._type);
 
 //	          if (DEBUG_CONSTRAINTS){
-	              System.out.println("- adding "+type+" cons: " + const_coef + " + "
-	                      + LP.PrintVector(coefs) + " <=> "
-	                      + (dec ? "" : "!") + e._expr);
+              System.out.println("- adding "+type+" cons: " + const_coef + " + " + LP.PrintVector(coefs) + " <=> " + (dec ? "" : "!") + e._expr);
 //	          }
 
             switch (type) {
@@ -227,16 +242,14 @@ public class LinearXADDMethod {
         return soln;
     }
 
-    // Convert an expression to an array of coefficients and a constant
-    //Set Coefficients PrunVar
     /**
-     *
-     * @param e
-     * @param coefs
-     * @return
-     * @throws UnsupportedConstraintException
+     * Convert an expression to an array of coefficients and a constant
+     * @param e ArithExpr
+     * @param coefs Double Array
+     * @return constant in the ArithExpr
+     * @throws OperationTermException
      */
-    protected double setCoefficientsLocal(ArithExpr e, double[] coefs) throws UnsupportedConstraintException {
+    protected double setCoefficientsLocal(ArithExpr e, double[] coefs) throws OperationTermException {
         int error = 0;
         int index = 0;
         double accum = 0d;
@@ -248,21 +261,20 @@ public class LinearXADDMethod {
             // Currently only product and sum arithmetic operations are supported
             if (o._type == ArithOperation.PROD) {
 
-                // operations must have two terms
-                if (o._terms.size() != 2) {
+                if (o._terms.size() != 2) { // operations must have two terms
                     error = 1;
-                    String exceptionMessage = "WARNING: XADD.SetCoefPrunVar ERROR [" + error
-                            + "] -- unexpected LHS constraint term: " + e;
-                    throw new UnsupportedConstraintException(exceptionMessage);
+//                    String exceptionMessage = "Unexpected LHS constraint term: " + e;
+                    throw new OperationTermException(e.toString());
+//                    throw new UnsupportedConstraintException(exceptionMessage);
                 }
-                else {
+                else { // isolate the coefficient and the variable from the OperExpr
                     index = cVarID2localID[context.getCVarIndex(((VarExpr) o._terms.get(1))._sVarName)];
 
                     if (index < 0) {
                         System.err.println("WARNING: XADD.SetCoefPrunVar ERROR: Unexpected Variable " + ((VarExpr)
                                 o._terms.get(1))._sVarName + " in Expr " + e);
-                        System.err.print("Expected Vars: ");
 
+                        System.err.print("Expected Vars: ");
                         for (int k = 0; k < nLocalCVars; k++) {
                             System.err.print(globalContinuousVarList.get(localID2cVarID[k]) + " ");
                         }
@@ -274,21 +286,14 @@ public class LinearXADDMethod {
 
             } else if (o._type == ArithOperation.SUM) {
                 for (ArithExpr e2 : o._terms) {
-//                    try {
-                        accum += setCoefficientsLocal(e2, coefs);
-//                    } catch(UnsupportedConstraintException exc) {
-//                        exc.printStackTrace();
-//                    }
+                    accum += setCoefficientsLocal(e2, coefs);
                 }
             } else {
-                error = 2;
-                // TODO: throw an exception here for unhandled operation type
+                error = 2; // TODO: throw an exception here for unhandled operation type
             }
-
         } else if (e instanceof DoubleExpr) {
             accum += ((DoubleExpr) e)._dConstVal;
-        } else {
-            // TODO: throw an exception here for unhandled expression type
+        } else { // TODO: throw an exception here for unhandled expression type
             error = 3;
         }
 
@@ -433,7 +438,11 @@ public class LinearXADDMethod {
 
         //Now add all constraints
         for (Integer decision : domain) {
+            try {
                 addDecision(lp, decision);
+            } catch(UnsupportedConstraintException exc) {
+                System.err.println(exc);
+            }
         }
         addLocalBoundConstraints(lp);
 

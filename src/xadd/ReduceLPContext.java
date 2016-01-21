@@ -473,11 +473,20 @@ public class ReduceLPContext {
 
             // Now add all constraints
             for (Integer constraint_id : test_var) {
-                addConstraint(lp, constraint_id, test_dec.get(constraint_id));
+                try {
+                    addConstraint(lp, constraint_id, test_dec.get(constraint_id));
+                } catch(UnsupportedConstraintException exc) {
+                    System.err.println(exc);
+                }
             }
 
-            // Finally add the negated decision to test
-            addConstraint(lp, var_id, !dec);
+            try {
+                // Finally add the negated decision to test
+                addConstraint(lp, var_id, !dec);
+            } catch(UnsupportedConstraintException exc) {
+                System.err.println(exc);
+            }
+
             addLocalBoundConstraints(lp);
             // Solve and get decision
             silentSolvelp(lp);
@@ -494,9 +503,9 @@ public class ReduceLPContext {
         }
 
         //ReduceLPVersion 2- Only direct Redundancy Check
-
         //ReduceLPVersion 2- Direct Redundancy Check
         private int reduceLPv2(int node_id, HashSet<Integer> test_dec, boolean redundancy)  {
+
             XADDNode n = context.getExistNode(node_id);
 
             // A terminal node should be reduced (and cannot be restricted)
@@ -603,16 +612,20 @@ public class ReduceLPContext {
 
         private boolean isTestImpliedv2(HashSet<Integer> test_dec, int dec)  {
 
-            if (!(context._alOrder.get(Math.abs(dec)) instanceof ExprDec)) return false;
+            if (!(context._alOrder.get(Math.abs(dec)) instanceof ExprDec))
+                return false;
 
             HashSet<Integer> impliedSet = _hmImplications.get(test_dec);
-            if (impliedSet != null && impliedSet.contains(dec)) return true;
+            if (impliedSet != null && impliedSet.contains(dec))
+                return true;
 
             HashSet<Integer> nonImpliedSet = _hmNonImplications.get(test_dec);
-            if (nonImpliedSet != null && nonImpliedSet.contains(dec)) return false;
+            if (nonImpliedSet != null && nonImpliedSet.contains(dec))
+                return false;
 
             if (DEBUG_CONSTRAINTS) {
-                System.out.println("===================\nisTestImpliedv2 " + "Checking if " + dec + " " + context._alOrder.get(Math.abs(dec)) + " = " + (dec > 0 ? "true" : "false") + " implied by:");
+                System.out.println("===================\nisTestImpliedv2 " + "Checking if " + dec + " " +
+                        context._alOrder.get(Math.abs(dec)) + " = " + (dec > 0 ? "true" : "false") + " implied by:");
                 showDecList(test_dec);
             }
 
@@ -641,27 +654,149 @@ public class ReduceLPContext {
 
         private boolean isInfeasible(HashSet<Integer> test_dec)  {
 
-            boolean infeasible = false;
+            Boolean isInfeasible = infeasibilityTest1(test_dec);
+            return (isInfeasible || SKIP_TEST2) ? isInfeasible : infeasibilityTest2(test_dec);
 
+//            boolean infeasible = false;
+//            int nvars = nLocalCVars;
+//            double[] obj_coef = new double[nvars];
+//
+//            // Test 1:
+//            // Test 1 is unrealiable, somehow many reportedly feasible do not pass test 2
+//            //A => B iff A^~B is infeasible) -maximize arbitrary 1 function
+//
+//            // Setup LP
+//            for (int i = 0; i < nvars; i++)
+//                obj_coef[i] = 1;
+//
+//            LP lp = new LP(nvars, assign2Local(context.lowerBounds, true), assign2Local(context.upperBounds, true),
+//                    obj_coef, LP.MAXIMIZE);
+//
+//            // Now add all constraints
+//            for (Integer decision : test_dec) {
+//                addDecision(lp, decision);
+//            }
+//
+//            //Adding box constraints
+//            addLocalBoundConstraints(lp);
+//
+//            double soln[] = silentSolvelp(lp);
+//
+//            if (lp._status == LpSolve.INFEASIBLE) {
+//                if (DEBUG_CONSTRAINTS) {
+//                    System.out.println("Infeasible: " + test_dec);
+//                }
+//                infeasible = true;
+//            }
+//            lp.free();
+//
+//            if (infeasible || SKIP_TEST2) return infeasible;
+//
+//            //Test 2 - strict feasibility
+//            // for each constraint c + f*x > 0 the slack is the greatest value S>0 s.t. c + f*x - S >= 0
+//            // for each constraint c + f*x < 0 the slack is the greatest value S>0 s.t. c + f*x + S <= 0
+//            // set the objective as the smallest of the slacks from all constraints.
+//            double objCoef2[] = new double[nvars + 1];
+//            double lower2[] = new double[nvars + 1];
+//            double upper2[] = new double[nvars + 1];
+//
+//            for (int i = 0; i < nvars; i++) {
+//                objCoef2[i] = 0;
+//                lower2[i] = context.lowerBounds[localID2cVarID[i]];
+//                upper2[i] = context.upperBounds[localID2cVarID[i]];
+//            }
+//            objCoef2[nvars] = 1;
+//            lower2[nvars] = 0; //S >0
+//            upper2[nvars] = XADD.DEFAULT_UPPER_BOUND;
+//
+//            LP lp2 = new LP(nvars + 1, lower2, upper2, objCoef2, LP.MAXIMIZE);
+//
+//            double constrCoef2[] = new double[nvars + 1];
+//            double constC = 0d;
+//            for (Integer decision : test_dec) {
+//                for (int k = 0; k < nvars + 1; k++) constrCoef2[k] = 0d;
+//
+//                Decision d = context._alOrder.get(Math.abs(decision));
+//                if (!(d instanceof ExprDec)) continue;
+//                CompExpr compar = ((ExprDec) d)._expr;
+//                boolean greaterComp = compar.isGreater();
+//                ArithExpr exp = ((ExprDec) d)._expr._lhs;
+//                try {
+//                    constC = setCoefficientsLocal(exp, constrCoef2);
+//                } catch (UnsupportedConstraintException e) {
+//                    e.printStackTrace();
+//                }
+//                if ( (greaterComp && decision > 0) || (!greaterComp && decision < 0) ) {
+//                    constrCoef2[nvars] = -1; // c + f*x > 0 => f*x - S > -c
+//                    lp2.addGeqConstraint(constrCoef2, -constC);
+//                } else {
+//                    constrCoef2[nvars] = 1; // c + f*x < 0 => f*x + S < -c
+//                    lp2.addLeqConstraint(constrCoef2, -constC);
+//                }
+//            }
+//
+//            double soln2[] = new double[nvars + 1];
+//            soln2 = silentSolvelp(lp2);
+//            double maxSlack = lp2._dObjValue;
+//
+//
+//            if (lp2._status == LpSolve.INFEASIBLE) {
+//                if (!TEST2_INCONSIST_QUIET){
+//                	System.err.println("Infeasible at test 2? should have failed the first test!");
+//                	showDecListEval(test_dec, soln);
+//                }
+//                infeasible = true;
+//            } else if (lp2._status != LpSolve.UNBOUNDED && maxSlack < IMPLIED_PRECISION_T2) {
+//                if (DEBUG_CONSTRAINTS) {
+//                    System.out.println("Implied only by test 2: Slack = " + soln2[nvars]);
+//                    //remove slack from soln2 to be a local assign sol
+//                    double sol[] = new double[nvars];
+//                    for (int k = 0; k < nvars; k++) sol[k] = soln2[k];
+//                    showDecListEval(test_dec, sol);
+//                }
+//                infeasible = true;
+//            }
+//            lp2.free();
+//            return infeasible;
+        }
+
+        /**
+         *
+         * @param test_dec
+         * @return
+         */
+        private Boolean infeasibilityTest1( HashSet<Integer> test_dec) {
+            boolean infeasible = false;
             int nvars = nLocalCVars;
             double[] obj_coef = new double[nvars];
+
             //Test 1:
             // Test 1 is unrealiable, somehow many reportedly feasible do not pass test 2
-            //A => B iff A^~B is infeasible) -maximize arbitrary 1 function
+            // A => B iff A^~B is infeasible) -maximize arbitrary 1 function
 
             // Setup LP
-            for (int i = 0; i < nvars; i++) obj_coef[i] = 1;
-            LP lp = new LP(nvars, assign2Local(context.lowerBounds, true), assign2Local(context.upperBounds, true), obj_coef, LP.MAXIMIZE);
+            for (int i = 0; i < nvars; i++)
+                obj_coef[i] = 1;
+
+            LP lp = new LP(nvars,
+                            assign2Local(context.lowerBounds, true),
+                            assign2Local(context.upperBounds, true),
+                            obj_coef,
+                            LP.MAXIMIZE);
 
             // Now add all constraints
             for (Integer decision : test_dec) {
-                addDecision(lp, decision);
+                try {
+                    addDecision(lp, decision);
+                } catch(UnsupportedConstraintException exc) {
+                    System.err.println(exc);
+                }
             }
 
             //Adding box constraints
             addLocalBoundConstraints(lp);
 
-            double soln[] = silentSolvelp(lp);
+            double[] soln = silentSolvelp(lp);
 
             if (lp._status == LpSolve.INFEASIBLE) {
                 if (DEBUG_CONSTRAINTS) {
@@ -671,42 +806,59 @@ public class ReduceLPContext {
             }
             lp.free();
 
-            if (infeasible || SKIP_TEST2) return infeasible;
+            return infeasible;
+        }
 
-            //Test 2 - strict feasibility
-            // for each constraint c + f*x > 0 the slack is the greatest value S>0 s.t. c + f*x - S >= 0
-            // for each constraint c + f*x < 0 the slack is the greatest value S>0 s.t. c + f*x + S <= 0
-            // set the objective as the smallest of the slacks from all constraints.
+        /**
+         * Strict feasibility.
+            for each constraint c + f*x > 0 the slack is the greatest value S>0 s.t. c + f*x - S >= 0
+            for each constraint c + f*x < 0 the slack is the greatest value S>0 s.t. c + f*x + S <= 0
+            set the objective as the smallest of the slacks from all constraints.
+         * @param test_dec
+         * @return infeasible
+         */
+        private Boolean infeasibilityTest2(HashSet<Integer> test_dec) {
+            Boolean infeasible = false;
+            int nvars = nLocalCVars;
+            double[] obj_coef = new double[nvars];
             double objCoef2[] = new double[nvars + 1];
             double lower2[] = new double[nvars + 1];
             double upper2[] = new double[nvars + 1];
+            double constrCoef2[] = new double[nvars + 1];
+            double constC = 0d;
+            double soln2[] = new double[nvars + 1];
+            double maxSlack = 0d;
 
             for (int i = 0; i < nvars; i++) {
                 objCoef2[i] = 0;
                 lower2[i] = context.lowerBounds[localID2cVarID[i]];
                 upper2[i] = context.upperBounds[localID2cVarID[i]];
             }
+
             objCoef2[nvars] = 1;
             lower2[nvars] = 0; //S >0
             upper2[nvars] = XADD.DEFAULT_UPPER_BOUND;
 
             LP lp2 = new LP(nvars + 1, lower2, upper2, objCoef2, LP.MAXIMIZE);
 
-            double constrCoef2[] = new double[nvars + 1];
-            double constC = 0d;
             for (Integer decision : test_dec) {
-                for (int k = 0; k < nvars + 1; k++) constrCoef2[k] = 0d;
+                for (int k = 0; k < nvars + 1; k++)
+                    constrCoef2[k] = 0d;
 
                 Decision d = context._alOrder.get(Math.abs(decision));
-                if (!(d instanceof ExprDec)) continue;
+                if (!(d instanceof ExprDec))
+                    continue;
+
                 CompExpr compar = ((ExprDec) d)._expr;
-                boolean greaterComp = compar.isGreater();  
+                boolean greaterComp = compar.isGreater();
+
                 ArithExpr exp = ((ExprDec) d)._expr._lhs;
                 try {
                     constC = setCoefficientsLocal(exp, constrCoef2);
-                } catch (UnsupportedConstraintException e) {
-                    e.printStackTrace();
+                } catch (OperationTermException e) {
+                    System.err.println(e);
                 }
+
                 if ( (greaterComp && decision > 0) || (!greaterComp && decision < 0) ) {
                     constrCoef2[nvars] = -1; // c + f*x > 0 => f*x - S > -c
                     lp2.addGeqConstraint(constrCoef2, -constC);
@@ -716,29 +868,36 @@ public class ReduceLPContext {
                 }
             }
 
-            double soln2[] = new double[nvars + 1];
             soln2 = silentSolvelp(lp2);
-            double maxSlack = lp2._dObjValue;
+            maxSlack = lp2._dObjValue;
 
-            
             if (lp2._status == LpSolve.INFEASIBLE) {
                 if (!TEST2_INCONSIST_QUIET){
-                	System.err.println("Infeasible at test 2? should have failed the first test!");
-                	showDecListEval(test_dec, soln);
+                    System.err.println("Infeasible at test 2? should have failed the first test!");
+//                    showDecListEval(test_dec, soln);
                 }
+
                 infeasible = true;
             } else if (lp2._status != LpSolve.UNBOUNDED && maxSlack < IMPLIED_PRECISION_T2) {
+
                 if (DEBUG_CONSTRAINTS) {
                     System.out.println("Implied only by test 2: Slack = " + soln2[nvars]);
+
                     //remove slack from soln2 to be a local assign sol
                     double sol[] = new double[nvars];
-                    for (int k = 0; k < nvars; k++) sol[k] = soln2[k];
+
+                    for (int k = 0; k < nvars; k++)
+                        sol[k] = soln2[k];
+
                     showDecListEval(test_dec, sol);
                 }
+
                 infeasible = true;
             }
             lp2.free();
+
             return infeasible;
         }
     }
+
 }
