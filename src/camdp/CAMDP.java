@@ -363,9 +363,15 @@ public class CAMDP {
     }
 
     ////////// DD Property Tests /////////////////////////
-    public int standardizeDD(int dd){
-        if (XADD.ROUND_PRECISION!= null) {dd = _context.reduceRound(dd); checkRound(dd);}
-        dd = _context.makeCanonical(dd); checkCanon(dd);//Always use Canonization
+    public int standardizeDD(int dd) {
+
+        if (XADD.ROUND_PRECISION!= null) {
+            dd = _context.reduceRound(dd); checkRound(dd);
+        }
+
+        dd = _context.makeCanonical(dd);
+        checkCanon(dd);//Always use Canonization
+
         if (LINEAR_PROBLEM) {dd = _context.reduceLP(dd); while (!checkReduceLP(dd)) dd = _context.reduceLP(dd);}
         checkStandardDD(dd);
         return dd;

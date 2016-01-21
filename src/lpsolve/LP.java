@@ -15,8 +15,8 @@ import java.text.*;
 
 public class LP {
 
-    public static final boolean SHOW_ADDED_CONSTRAINTS = false;
-    public static final boolean SHOW_SOLVER_RESULT = false;
+    public static final boolean SHOW_ADDED_CONSTRAINTS = true;
+    public static final boolean SHOW_SOLVER_RESULT = true;
 
     public static final boolean USE_EPSILON_ON_INVERSION = false;
     public static final double EPSILON = 1e-6d;
@@ -61,7 +61,8 @@ public class LP {
             // Create a new Cplex object and get license
             _nVars = nvars;
             _solver = LpSolve.makeLp(0, nvars);
-            _solver.setVerbose(LpSolve.CRITICAL);
+//            _solver.setVerbose(LpSolve.CRITICAL);
+            _solver.setVerbose(LpSolve.IMPORTANT);
             _nConsAdded = 0;
 
             // Initialize the objective
@@ -201,8 +202,7 @@ public class LP {
         try {
             _status = _solver.solve();
             if (SHOW_SOLVER_RESULT)
-                System.out.println("Solver result [" + _status + "]: "
-                        + _solver.getStatustext(_status));
+                System.out.println("Solver result [" + _status + "]: " + _solver.getStatustext(_status));
 
             // Get solution
             _x = _solver.getPtrVariables();
@@ -344,6 +344,7 @@ public class LP {
         // Now solve and print values
         System.out.println("\n========================\n");
         double[] soln = lp.solve();
+
         double obj_val = 0.0d;
         for (int i = 0; i < soln.length; i++) {
 

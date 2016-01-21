@@ -320,6 +320,7 @@ public abstract class CAMDPsolver {
             temp_x += inc_x;
             alX.add(temp_x);
         }
+
         ArrayList<Float> alY = new ArrayList<Float>(nSamples);
         float temp_y = (float) low_y;
         for (int i = 0; i < nSamples; i++) {

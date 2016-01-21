@@ -1488,7 +1488,12 @@ public class XADD {
 
     // Consistency and Redundancy Checking - ReduceLP
     public int reduceLP(int node_id) {
-        return RLPContext.reduceLP(node_id);
+        // plot the node_id before the reduceLP call
+
+        Integer reducedNodeId = RLPContext.reduceLP(node_id);
+
+        return reducedNodeId;
+//        return RLPContext.reduceLP(node_id);
     }
 
     public int reduceLP(int node_id, boolean redun) {
