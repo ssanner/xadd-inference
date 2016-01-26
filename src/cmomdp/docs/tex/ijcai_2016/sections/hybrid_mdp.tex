@@ -1,0 +1,64 @@
+\section{Parameterized Hybrid MDPs}
+\label{sec:hybrid_mdps}
+
+In this Section we introduce Parameterized Hybrid Markov Decision Processes and review their finite horizon solution via dynamic programming.
+
+\subsection{Definition}
+
+An \textit{exact} Markov Decision Process (MDP) \parencite{Bellman_PU_1957} is defined by the tuple {\footnotesize \MDPTuple}. {\footnotesize \State} specifies a potentially infinite (e.g., continuous) set of states while {\footnotesize \Action} specifies a finite set of actions and observations. The transition function {\footnotesize \TransFunc } defines the effect of an action on the state. {\footnotesize \RewardFunc} is the reward function which encodes the preferences of the agent. {\footnotesize \Horizon} represents the number of decision steps until termination and the discount factor {\footnotesize $\gamma \in [0, 1)$} is used to geometrically discount future rewards.
+
+A policy $\pi : \State \rightarrow \Action$, specifies the action to take in every state. The value of a state $s \in \State$ under a given policy $\pi$ is given by:
+{\footnotesize 
+    \abovedisplayskip=0pt
+    \belowdisplayskip=0pt
+\begin{align}
+    \label{eq:mdp_vfunc}
+    V^{\pi}\left(s\right) &= \Exp{\sum\limits_{h = 0}^{\Horizon} \gamma^h \cdot r_{t + h} | s_t = s}.
+\end{align}
+}
+
+The state-action value function $Q : \State \times \Action \rightarrow \mathbb{R}$ is given by:
+{\footnotesize 
+    \abovedisplayskip=0pt
+    \belowdisplayskip=0pt
+\begin{align}
+    \label{eq:mdp_qfunc}
+    Q^{\pi}\left(s, a\right) = \Exp{\sum\limits_{h = 0}^{\Horizon} \gamma^h \cdot r_{t + h} | s_t = s, a_t = a}.
+\end{align}
+}
+For any policy $\pi$ and state $s$, the following consistency condition holds between the value of $s$ and the value of its possible successor states:
+{\footnotesize 
+    \abovedisplayskip=0pt
+    \belowdisplayskip=0pt
+\begin{align}
+    V^{\pi}\left(s\right)  &= \Exp{\sum\limits_{k = 0}^{\infty} \gamma^k \cdot r_{t + k} | s_t = s} \nonumber \\
+    &= \sum\limits_{s' \in \State}  \Transition\left(s, \pi\left(s\right), s' \right) \left[ \Reward\left(s, \pi(s), s'\right) + \gamma \cdot V^{\pi}(s')\right]. \label{eq:mdp_bellman_eq}
+\end{align}
+}
+Equation \eqref{eq:mdp_bellman_eq} is known as the Bellman equation for $V^{\pi}$. The optimal value function of policy $ \pi^{*}(s) $ satisfies
+{\footnotesize 
+    \abovedisplayskip=0pt
+    \belowdisplayskip=0pt
+    \begin{align}
+        V^{\pi^{*}}(s) &= \max_{a \in A} \left\{ Q^{\pi^{*}}(s, a) \right\} \label{eq:opt_vfunc}
+    \end{align}
+}%
+
+In this paper we denote a \textit{parameterized} MDP~\parencite{Dearden_UAI_1999} as a family of models $ \lbrace M_\theta \rbrace_{\theta \in \Theta} $ where $ \Theta $ is the parameter space. The components of each model depend on the parameter $ \theta \in \Theta $ i.e. 
+$ M_\theta = \langle \State_\theta, \Action_\theta, \Transition_\theta, \Reward_\theta \rangle $.
+
+\subsection{Solution Methods}
+
+Value iteration (VI)~\parencite{Bellman_PU_1957} is a general dynamic programming algorithm used to solve MDPs. The key idea of VI is to successively approximate {\footnotesize $V^{*}(s)$} and {\footnotesize $Q^{*}(s, a)$}
+by {\footnotesize $V^{h}(s)$} and {\footnotesize $Q^{h}(s, a)$}, respectively, at each horizon $h$. These two functions satisfy the following recursive relationship:
+
+{\footnotesize 
+    \abovedisplayskip=0pt
+    \belowdisplayskip=0pt
+    \begin{align}
+        Q^{h}(s, a; \theta) &= R(s, a; \theta) + \gamma \cdot \sum_{s' \in S} T(s, a, s'; \theta) \cdot V^{h-1}(s'; \theta) \label{eq:vi_qfunc}\\
+        V^{h}(s; \theta) &= \max_{a \in A} \left\{ Q^{h}(s, a; \theta) \right\} \label{eq:vi_vfunc}
+    \end{align}
+}%
+
+The algorithm can be executed by first initialising {\footnotesize $V^{0}(s; \theta)$}  to zero or the terminal reward. Then for each $h$, {\footnotesize $V^{h}(s; \theta)$} is calculated from {\footnotesize $V^{h-1}(s; \theta)$} via Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc}, until the intended  $h$-stage-to-go value function is computed. Value iteration converges linearly in the number of iterations to the true values of {\footnotesize $Q^{*}(s, a; \theta)$} and {\footnotesize $V^{*}(s; \theta)$}~\parencite{Bertsekas_1987}.

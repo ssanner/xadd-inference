@@ -14,9 +14,12 @@
 \newcommand{\Horizon}{\ensuremath{\mathcal{H}}\xspace}
 
 \newcommand{\Prob}{\ensuremath{\mathbb{P}}\xspace}
-\newcommand{\Exp}{\ensuremath{\mathbb{E}}\xspace}
+%\newcommand{\Exp}{\ensuremath{\mathbb{E}}\xspace}
 \newcommand{\Natural}{\ensuremath{\mathbb{N}}\xspace}
 \newcommand{\Real}{\ensuremath{\mathbb{R}}\xspace}
+
+% Expectation 
+\newcommand{\Exp}[1]{{\mathbb{E}\left[{#1}\right]}}
 
 % MDP Tuple
 \DeclareRobustCommand{\MDPTuple}{$\left\langle \State, \Action, \Transition, \Reward, \Horizon, \gamma \right\rangle$}
@@ -34,7 +37,7 @@
 \newcommand{\ObsFunc}{\ensuremath{\Omega : \Observation \times \Action \times \State \rightarrow [0, 1]}\xspace}
 
 % Reward Function
-\newcommand{\RewardFunc}{\ensuremath{\Reward : \State \times \Action \rightarrow \mathbb{R}^d}\xspace}
+\newcommand{\RewardFunc}{\ensuremath{\Reward : \State \times \Action \rightarrow \mathbb{R}}\xspace}
 
 % MO Reward Function
 \newcommand{\MORewardFunc}{\ensuremath{\Reward : \State \times \Action \rightarrow \mathbb{R}^d}\xspace}
