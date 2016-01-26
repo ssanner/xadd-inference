@@ -790,6 +790,7 @@ public class ReduceLPContext {
                     addDecision(lp, decision);
                 } catch(UnsupportedConstraintException exc) {
                     System.err.println(exc);
+                    return false;
                 }
             }
 
@@ -857,6 +858,7 @@ public class ReduceLPContext {
                     constC = setCoefficientsLocal(exp, constrCoef2);
                 } catch (OperationTermException e) {
                     System.err.println(e);
+                    return false;
                 }
 
                 if ( (greaterComp && decision > 0) || (!greaterComp && decision < 0) ) {
