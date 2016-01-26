@@ -788,8 +788,8 @@ public class ReduceLPContext {
             for (Integer decision : test_dec) {
                 try {
                     addDecision(lp, decision);
-                } catch(UnsupportedConstraintException exc) {
-                    System.err.println(exc);
+                } catch(UnsupportedConstraintException e) {
+                    System.err.println(e);
                     return false;
                 }
             }
