@@ -1,25 +1,21 @@
 \section{Introduction}
 \label{sec:introduction}
 
+Markov Decision Processes (MDPs)~\parencite{Howard_MIT_1960} are the de facto standard framework for decision theoretic
+planning in fully observable environments~\parencite{Boutilier_JAIR_1999}. MDPs occur in a wide range of real world domains such as game playing~\parencite{Szita_RL_2012}, power systems~\parencite{Reddy_IJCAI_2011}, ecology~\parencite{Williams_EM_2009} and patient admission scheduling~\parencite{Zhu_AIM_2014}. Traditional MDP solution techniques to assume that the parameters of the model are known. However, in practice, model parameters are usually estimated and uncertain. It is often critical in real world applications to investigate the trade-off between multi-objective reward criteria, sensitivity analyses of parameters and stability of policies.
+
+The difficulty of formalising MDPs in order to answer the aforementioned questions directly is that it leads to hybrid MDPs with non-linear or piecewise structure, for which no exact closed-form solutions exist. In this paper we make the following key contributions:
 \begin{itemize}
-    \item problem in MDPs is parameters and how to set them
-    \item trade-offs, sensitity to hyperparameters, stability under policies
-    \item problem is that formalization leads to hybrid MDPs with nonlinear and/or piecewise structure
-    \item recently the case calculus has provided tools and data structures for working in closed-form with symbolic nonlinear piecewise functions
-%    \item we extends this work to provide exact solutions for parameterized MDPs
+    \item We present a framework for parameterized hybrid MDPs which allows for multi-objective reward criterion, sensitivity analyses and policy stability \\
+    \item We provide an algorithm that solves this class of parameterized hybrid MDPs exactly and optimally using Symbolic Dynamic Programming~\parencite{Boutilier_IJCAI_2001}\\
 \end{itemize}
 
-In this paper we make the following key contributions:
-\begin{itemize}
-    \item we provide exact solutions for parameterized hybrid MDPs
-\end{itemize}
+This paper is organised as follows: In Section~\ref{sec:hybrid_mdps} we describe parameterized hybrid Markov Decision Processes (MDPs) and value iteration~\parencite{Bellman_PU_1957}, a widely used dynamic programming method for solving MDPs. Following this, in Section~\ref{sec:sdp}, we introduce Symbolic Dynamic Programming (SDP), and show how it can be used to calculate exact closed-form solutions to parameterized hybrid MDPs. In Section~\ref{sec:results} we calculate exact solutions to three empirical domains: (1) autonomous driving; (2) influenza epidemiology; and (3) optimal trade execution. We conclude in Section~\ref{sec:conclusion} and identify interesting directions for future research.
 
-\vdots
-
-\begin{itemize}
-    \item MOMDPs - Pareto front methods (approximate), convex hull algorithm (exact) -- works for discrete parameterized MDPs, but not for factored or hybrid case -- we want to look at parameterized hybrid, no exact work in this space
-    \item Sensitivity analysis of MDPs -- but none exact in hybrid case
-    \item Policy gradient -- everything is numerically oriented, never a closed-form exact solution as a function of parameter, e.g., to analyze stability
-\end{itemize}
-
-This paper is organised as follows: In Section~\ref{sec:hybrid_mdps} we describe parameterized hybrid Markov Decision Processes (MDPs) and value iteration~\parencite{Bellman_PU_1957}, a widely used dynamic programming method for solving MDPs. Following this, in Section~\ref{sec:sdp}, we introduce Symbolic Dynamic Programming (SDP), and show how it can be used to calculate exact solutions to continuous state parameterised hybrid MDPs. In Section~\ref{sec:results} we calculate exact solutions to three empirical domains: (1) autonomous driving; (2) Influenza epidemiology; and (3) Optimal trade execution. We conclude in Section~\ref{sec:conclusion} and identify interesting directions for future research.
+%\begin{itemize}
+%    \item problem in MDPs is parameters and how to set them
+%    \item trade-offs, sensitity to hyperparameters, stability under policies
+%    \item problem is that formalization leads to hybrid MDPs with nonlinear and/or piecewise structure
+%    \item recently the case calculus has provided tools and data structures for working in closed-form with symbolic nonlinear piecewise functions
+%%    \item we extends this work to provide exact solutions for parameterized MDPs
+%\end{itemize}
