@@ -1,3 +1,20 @@
-\section{Background}
+\section{Related Work}
 \label{sec:background}
 
+In this paper we present a framework for parameterized hybrid MDPs which subsumes the functionality of Multiobjective Markov Decision Processes (MOMDPs), sensitivity analysis of MDPs and also policy gradient analysis.
+
+%In the case of linear {\footnotesize $ f $}, a sufficient solution is the Convex Hull (CH), the set of all undominated policies under a linear scalarisation. In the case of non-linear {\footnotesize $ f $}, the Pareto Front (PF) must be returned. The PF contains all policies for which no other policy has a value that is at least equal in all objectives and greater in at least one objective. 
+
+Pareto-optimal policies can be found by using the linear programming approach of~\parencite{Viswanathan_TIMS_1977}. An alternative approach to calculating the CCS using POMDPs was proposed by~\parencite{White_LSS_1980}. Pareto front methods are approximate. Convex hull algorithm~\parencite{Barrett_ICML_2008} can be used to solve parameterized MDP, but not the factored case. In this paper we investigate parameterized hybrid MDPs, for which we are the first to provide exact closed-form solutions.
+
+Sensitivity analysis of MDPs has focussed on uncertainty within the specification the transition functions~\parencite{Kalyanasundaram_AJC_2004}, rewards~\parencite{Tan_JAP_2011, Hopp_JOTA_1988}, or both~\parencite{Givan_AI_2000} simultaneously. In this work we are the first to provide exact closed-form solutions for hybrid MDPs.
+
+Policy gradient~\parencite{Sutton_NIPS_1999} \ldots
+
+%\begin{itemize}
+%    \item MOMDPs - Pareto front methods (approximate), convex hull algorithm (exact) -- works for discrete parameterized MDPs, but not for factored or hybrid case -- we want to look at parameterized hybrid, no exact work in this space
+%    \item Sensitivity analysis of MDPs -- but none exact in hybrid case
+%    \item Policy gradient -- everything is numerically oriented, never a closed-form exact solution as a function of parameter, e.g., to analyze stability
+%\end{itemize}
+
+%In MOMDPs there can be multiple policies {\footnotesize $ \pi $} whose value {\footnotesize $ V^{\pi} $} are optimal for different preferences over the objectives. These preferences can be expressed by a scalarisation function {\footnotesize $ f\left( V, \vec{w} \right) $} that is parameterised by a parameter vector {\footnotesize $ \vec{w} $} and returns a scalarised value of {\footnotesize $ V $}. We assume that {\footnotesize $ \vec{w} $} is not known beforehand. A solution algorithm must therefore return a set of policies.

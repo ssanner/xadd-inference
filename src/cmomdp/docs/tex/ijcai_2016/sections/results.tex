@@ -1,17 +1,16 @@
 \section{Results}
 \label{sec:results}
 
-In this section we \ldots three continuous domains: (1) autonomous driving; (2) Influenza epidemiology; and (3) Optimal trade execution.
+In this section we demonstrate the utility of our novel framework on three hitherto uninvestigated questions: (i) an exact functional representation of the multi-objective trade-offs in a multi-objective navigation domain; (ii) exact sensitivity analysis of public health policies in epidemic models over the full range of infection rate parameters; and (iii) non-convex optimization of policy parameters applied to finance problems previously impossible with sample-based policy gradient techniques.
 
-\subsection{Autonomous Driving}
+\subsection{Multiobjective Navigation}
 \label{sec:autonomous_driving}
 
 In this domain we consider an autonomous vehicle moving along one dimension, e.g. along the real number line. At each stage the autonomous vehicle must trade-off between moving into a potentially higher reward region and a cost associated with movement. The domain is specified as follows:
 \begin{itemize}
     \item {\footnotesize $ \State = \left\langle loc \right\rangle$}, where $ loc $ is the location of the vehicle
     \item {\footnotesize $ \Action \in \left\lbrace -5.0, 0.0, 5.0 \right\rbrace $} is the amount by which vehicle moves relative to its current location
-    \item The transition function {\footnotesize \Transition} is given by:    \\
-    {\footnotesize 
+    \item {\footnotesize 
         \abovedisplayskip=5pt
         \belowdisplayskip=0pt
         \renewcommand{\arraystretch}{1.5}
@@ -19,7 +18,7 @@ In this domain we consider an autonomous vehicle moving along one dimension, e.g
             $ \Transition\left( loc' | loc, a \right) =$ & $ \delta \left[ loc' - (loc + a) \right] $ \\
         \end{tabular}
     }%
-    \item The reward function {\footnotesize \Reward}, is specified as {\footnotesize $ \Reward\left(\vec{w}, loc, a, \mathtt{threshold} \right) = w_1 \cdot \Reward_{\mathtt{location}} - w_2 \cdot \Reward_{\mathtt{movement}} $} where, \\
+    \item {\footnotesize $ \Reward\left(\vec{w}, loc, a, \mathtt{threshold} \right) = w_1 \cdot \Reward_{\mathtt{location}} + w_2 \cdot \Reward_{\mathtt{movement}} $} where, \\
     {\footnotesize 
         \abovedisplayskip=10pt
         \belowdisplayskip=0pt
@@ -30,27 +29,27 @@ In this domain we consider an autonomous vehicle moving along one dimension, e.g
                 (loc' \geq \mathtt{threshold}) : & loc' \\
                 \text{otherwise} : & 0.0 \\
                 \end{cases} $ & $ $\\
-            $ \Reward_{\mathtt{movement}}(loc', a) = cost_{\mathtt{movement}} $ & $ $ \\                        
+            $ \Reward_{\mathtt{movement}}(loc', a) = -cost_{\mathtt{movement}} $ & $ $ \\                        
         \end{tabular}
     }    
 \end{itemize} 
 
-In Figure~\ref{fig:vehicle1d} we present the optimal $ \Horizon = 10 $ Value Function for the Autonomous Driving domain. The $ \mathtt{threshold} $ was set to 10.0 and $ cost_{\mathtt{movement}} $ was set to -1.0.
+In Figure~\ref{fig:vehicle1d} we present the optimal $ \Horizon = 10 $ value function for the multiobjective navigation domain with $ \mathtt{threshold} = 10.0 $ and $ cost_{\mathtt{movement}} = -1.0 $.
 
 %------------------------------------------------------------------------------
 % Figure
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.9\linewidth, height=0.8\linewidth]{images/robot1d}
-    \caption{The Optimal $ \Horizon = 10 $ Value Function for the Autonomous Driving domain. }
+    \includegraphics[width=\linewidth, height=0.8\linewidth]{images/robot1d}
+    \caption{The optimal $ \Horizon = 10 $ value function for the multiobjective navigation domain. }
     \label{fig:vehicle1d}
 \end{figure}
 %------------------------------------------------------------------------------
 
-\subsection{Influenza Epidemiology}
-\label{sec:results_sd}
+\subsection{Influenza Public Health Policy}
+\label{sec:results_influenza}
 
-Compartmental models are widely used within epidemiology to investigate the spread of infection diseases. In this domain we investigate the sensitivity of two different Influenza models to an infection rate parameter. 
+Influenza viruses continuously challenge both human and avian posts with new variants causing complex epidemics. Compartmental models are widely used within epidemiology to investigate the spread of infection diseases. In this domain we investigate the sensitivity of two different Influenza models to an infection rate parameter. 
 
 \subsubsection{S-D Model}
 
@@ -59,8 +58,7 @@ The first model is defined as follows:
     s_{t + 1} &= - s_t \cdot ( \eta + a ) \\
     d_{t+1} &= \eta \cdot s_t 
 \end{align*}
-where {\footnotesize $ \eta \in [0, 1]$} is the rate of infection and {\footnotesize $ a_t \in \left\lbrace 0, \ldots, 1.0\right\rbrace $} is the proportion of susceptibles {\footnotesize $ s_t $} to be vaccinated. The SD model can be formulated as an MOMDP as follows:
-
+where {\footnotesize $ \eta \in [0, 1]$} is the rate of infection and {\footnotesize $ a_t \in \left\lbrace 0, \ldots, 1.0\right\rbrace $} is the proportion of susceptibles {\footnotesize $ s_t $} to be vaccinated. The model can be formulated as follows:
 \begin{itemize}
     \item {\footnotesize $ \State = \left\langle S, D \right\rangle$ }, where $ s $ and $ d $ are as defined above
     \item {\footnotesize $ \Action \in \left\lbrace 0, 0.25, 0.50, 1.0 \right\rbrace $} is the proportion of $ S $ to vaccinate
@@ -94,6 +92,18 @@ where {\footnotesize $ \eta \in [0, 1]$} is the rate of infection and {\footnote
     }    
 \end{itemize} 
 
+Figure~\ref{fig:influenza_sd} shows the optimal {\footnotesize$ \Horizon = 4 $} value function for the SD formulation of the influenza domain. The parameters of the models were set to $cost_{\mathtt{inf}} = 95.0$ and $cost_{\mathtt{vaccine}} = 33.0$.
+
+%------------------------------------------------------------------------------
+% Figure
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth, height=0.8\linewidth]{images/sd_infection_s}
+    \caption{Optimal $ \Horizon = 4 $ Influenza Epidemiology value under the S-D and S-D specification.}
+    \label{fig:influenza_sd}
+\end{figure}
+%------------------------------------------------------------------------------
+
 \subsubsection{S-I-R-S Model}
 
 An alternate Influenza can be defined as follows:
@@ -124,28 +134,14 @@ The Influenza SIR model can be formulated as an parameterized MDP as follows:
     \item {\footnotesize $ \Reward\left(\vec{w}, cost_{\mathtt{inf}}, s, i, r, a \right) = w_1 \cdot -cost_{\mathtt{inf}} \cdot i + w_2 \cdot -cost_{\mathtt{vaccine}} \cdot a $}, where {\footnotesize $ cost_{\mathtt{inf}} $} is the incident cost of infection and {\footnotesize $ cost_{\mathtt{vaccine}} $} is the unit cost of vaccination \\
 \end{itemize} 
 
-Figure~\ref{fig:epidemiology} shows the optimal {\footnotesize$ \Horizon = 4 $} value function for the Influenza Epidemiology domain. The parameters of the models were set to $b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0$ and $cost_{\mathtt{vaccine}} = 33.0$.
+Figure~\ref{fig:influenza_sirs} shows the optimal {\footnotesize$ \Horizon = 4 $} value function for the S-I-R-S formulation of the influenza domain. The parameters of the models were set to $b = 0.27, c = 0.23, cost_{\mathtt{inf}} = 95.0$ and $cost_{\mathtt{vaccine}} = 33.0$.
 
 %------------------------------------------------------------------------------
 % Figure
 \begin{figure}[t!]
-    \centering
-    \begin{subfigure}[b]{0.4\textwidth}
-%        \centering
-        \includegraphics[width=\linewidth, height=0.8\linewidth]{images/sd_infection_s.pdf}
-        \caption{S-D model.}
-        \label{fig:sd}
-        \vspace{1em}
-    \end{subfigure}
-    
-    \begin{subfigure}[b]{0.4\textwidth}
-%        \centering
-        \includegraphics[width=\linewidth, height=0.8\linewidth]{images/sir_infection_s}
-        \caption{S-I-R-S model.}
-        \label{fig:sirs}
-    \end{subfigure}  
-    \caption{Optimal $ \Horizon = 4 $ Influenza Epidemiology value functions under the S-D and S-I-R-S specifications.}
-    \label{fig:epidemiology}
+    \includegraphics[width=\linewidth, height=0.8\linewidth]{images/sir_infection_s}
+    \caption{Optimal $ \Horizon = 4 $ Influenza Epidemiology value under the S-D and S-I-R-S specification.}
+    \label{fig:influenza_sirs}
 \end{figure}
 %------------------------------------------------------------------------------
 
@@ -211,12 +207,9 @@ Figure~\ref{fig:epidemiology} shows the optimal {\footnotesize$ \Horizon = 4 $} 
 \subsection{Optimal Execution}
 \label{sec:results_oe}
 
-An investor wishes to buy or sell {\footnotesize $ X \in \mathbb{N} $} shares over {\footnotesize $ [0, T] $}, where {\footnotesize $ X $} and {\footnotesize $ T $} are fixed. Bertsimas and Lo~\parencite{Bertsimas_JFM_1998} formulated a price impact model as:
-\begin{align*}
-    price_{t+1} &= price_t + \theta \cdot n_{t + 1} + \sigma \cdot \epsilon_{t+1}
-\end{align*}
+Institutional investors often need to acquire or liquidate a number of shares within a given period of time. Indirect transaction costs are an important consideration for institutional investors who often want to transact a number of shares that exceeds the available liquidity i.e. there may not be counterparty or counterparties that wish to take the other side of the trade at the same volume. There is a clear trade-off between the market impact of transacting immediately and the volatility of slow execution. 
 
-where {\footnotesize $ s_t $ } is the price at the beginning of period {\footnotesize $ t $}, {\footnotesize $\sigma$} is the volatility, {\footnotesize $\epsilon_{t+1}$} is a Bernoulli distributed random variable, {\footnotesize $\theta \in \mathbb{R}^{+}$ } is the market impact parameter and {\footnotesize $n_{t + 1}$} is the trade size. The optimal execution problem can be formulated as an MOMDP as follows:
+In this domain we investigate the optimal execution problem using a price impact model inspired by Bertsimas and Lo~\parencite{Bertsimas_JFM_1998} as follows:
 \begin{itemize}
     \item {\footnotesize $ \State = \left\langle price, inv \right\rangle$}, where $ price $ is the price of the asset and $ inv $ is the inventory remaining 
     \item {\footnotesize $ \Action \in \left\lbrace 0, 0.25, 0.50, 1.0 \right\rbrace $} is the proportion of the remaining inventory sell
@@ -238,7 +231,7 @@ where {\footnotesize $ s_t $ } is the price at the beginning of period {\footnot
                 \end{cases} \right] $ & $ $\\
         \end{tabular}
     }%
-    \item The reward function {\footnotesize \Reward}, is specified as {\footnotesize $ \Reward\left(\vec{w}, price, price_0, inv, n \right) = w_1 \cdot \Reward_{\mathtt{inventory}} - w_2 \cdot \Reward_{\mathtt{shortfall}} $} where, \\
+    \item {\footnotesize $ \Reward\left(\vec{w}, price, price_0, inv, n \right) = w_1 \cdot \Reward_{\mathtt{inventory}} - w_2 \cdot \Reward_{\mathtt{shortfall}} $} where, \\
     {\footnotesize 
         \abovedisplayskip=10pt
         \belowdisplayskip=0pt
@@ -258,27 +251,28 @@ where {\footnotesize $ s_t $ } is the price at the beginning of period {\footnot
     }    
 \end{itemize}
 
-The trader aims to liquidate inventory via {\footnotesize $ \Reward_{\mathtt{inventory}} $} and minimise implementation shortfall via {\footnotesize $ \Reward_{\mathtt{shortfall}} $}.
+The investor aims to liquidate inventory via {\footnotesize $ \Reward_{\mathtt{inventory}} $} and minimise implementation shortfall via {\footnotesize $ \Reward_{\mathtt{shortfall}} $}. Implementation shortfall is defined as the difference
+between the theoretical benchmark price and the actual price received is the implementation shortfall~\parencite{Perold_JPM_1988}.
 
 %------------------------------------------------------------------------------
 % Figure
-%\begin{figure}[t!]
-%    \centering
-%    \begin{subfigure}[b]{0.4\textwidth}    
-%%        \centering
-%        \includegraphics[width=\linewidth, height=0.8\linewidth]{images/opt_execution_w1}
-%        \caption{$ w_1 \in \left[ 0.0, 100.0 \right]$}
-%        \label{fig:opt_execution_w1}
-%        \vspace{1em}
-%    \end{subfigure}
-%    
-%    \begin{subfigure}[b]{0.4\textwidth}    
-%%        \centering
-%        \includegraphics[width=\linewidth, height=0.8\linewidth]{images/opt_execution_w2}
-%        \caption{$ w_2 \in \left[ 0.0, 100.0 \right]$}
-%        \label{fig:pt_execution_w2}
-%    \end{subfigure}  
-%    \caption{Optimal Execution. $ \Horizon = 5 $, $ price \in \left[ 0.0, 20.0 \right]$, $ price_0 = 10.0, i = 1.0$.}
-%    \label{fig:pt_execution}
-%\end{figure}
+\begin{figure}[t!]
+    \centering
+    \begin{subfigure}[b]{0.4\textwidth}    
+%        \centering
+        \includegraphics[width=\linewidth, height=0.8\linewidth]{images/opt_execution_w1}
+        \caption{$ w_1 \in \left[ 0.0, 100.0 \right]$}
+        \label{fig:opt_execution_w1}
+        \vspace{1em}
+    \end{subfigure}
+    
+    \begin{subfigure}[b]{0.4\textwidth}    
+%        \centering
+        \includegraphics[width=\linewidth, height=0.8\linewidth]{images/opt_execution_w2}
+        \caption{$ w_2 \in \left[ 0.0, 100.0 \right]$}
+        \label{fig:pt_execution_w2}
+    \end{subfigure}  
+    \caption{Optimal Execution. $ \Horizon = 5 $, $ price \in \left[ 0.0, 20.0 \right]$, $ price_0 = 10.0, i = 1.0$.}
+    \label{fig:pt_execution}
+\end{figure}
 %------------------------------------------------------------------------------

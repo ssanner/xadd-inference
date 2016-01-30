@@ -21,7 +21,7 @@ SDP assumes that all functions can be represented in case statement form \parenc
     \end{align*}
 }%
 
-Here, the $\phi_i$ are logical formulae defined over the state $\vec{x}$ that can consist of arbitrary logical combinations of boolean variables and linear inequalities $\left( \geq, >, <, \leq \right)$ over continuous variables. We assume that the set of conditions $\left\lbrace \phi_1, \ldots, \phi_k \right\rbrace$ disjointly and exhaustively partition $\vec{x}$ such that $f$ is well-defined for all $\vec{x}$.  In this paper we restrict the $f_i$ to be either constant or linear functions of the state variable $\vec{x}$. Henceforth, we refer to functions with linear $\phi_i$ and piecewise constant $f_i$ as linear piecewise constant (LPWC) and functions with linear $\phi_i$ and piecewise linear $f_i$ as linear piecewise linear (LPWL) functions.
+Here, $ f_i $ are linear expressions over $ \vec{x} $ and $\phi_i$ are logical formulae defined over the state $( \vec{d}, \vec{x})$ that can consist of arbitrary logical combinations of boolean variables and linear inequalities $\left( \geq, >, <, \leq \right)$ over continuous variables. We assume that the set of conditions $\left\lbrace \phi_1, \ldots, \phi_k \right\rbrace$ disjointly and exhaustively partition $(\vec{d}, \vec{x})$ such that $f$ is well-defined for all $(\vec{d}, \vec{x})$. In this paper we restrict the $f_i$ to be either constant or linear functions of the state variable $\vec{x}$. Henceforth, we refer to functions with linear $\phi_i$ and piecewise constant $f_i$ as linear piecewise constant (LPWC) and functions with linear $\phi_i$ and piecewise linear $f_i$ as linear piecewise linear (LPWL) functions.
 
 Operations on case statements may be either unary or binary. All of the operations presented here are closed form for LPWC and LPWL functions. We refer the reader to \parencite{Sanner_UAI_2011,Zamani_AAAI_2012} for more thorough expositions of SDP for piecewise continuous functions.
 
@@ -112,30 +112,35 @@ Maximisation over cases, known as $\casemax$, is defined as:
     \end{center}
 }%
 
-$\casemax$ preserves the linearity of the constraints and the constant 
-or linear nature of the $f_i$ and $g_i$. If the $f_i$ or 
-$g_i$ are quadratic then the expressions $f_i > g_i$ or 
-$f_i \leq g_i$ will be at most univariate quadratic and any such 
-constraint can be linearised into a combination of at most two linear 
-inequalities by completing the square. 
+$\casemax$ preserves the linearity of the constraints and the constant or linear nature of the $f_i$ and $g_i$. If the $f_i$ or$g_i$ are quadratic then the expressions $f_i > g_i$ or $f_i \leq g_i$ will be at most univariate quadratic and any such constraint can be linearised into a combination of at most two linear inequalities by completing the square. 
 
 A case statement can be maximised with respect to a continuous parameter $y$ as {\small $ f_1(\vec{x}, y) = \contmax_{y}f_2(\vec{x}, y) $}. The continuous maximisation operation is a complex case operation whose explanation is beyond the scope of this paper. We refer the reader to~\parencite{Zamani_AAAI_2012} for further details.
 
 In principle, case statements can be used to represent all MDP components. In practice, case statements are implemented using a more compact representation known as Extended Algebraic Decision Diagrams (XADDs) \parencite{Sanner_UAI_2011}, which also support efficient versions of all of the aforementioned operations.
 
-\subsection{Parameterized SDP}
+\subsection{SDP for Parameterized Hybrid MDPs}
 
-To calculate the exact solution to parameterized MDPs we begin by replacing all functions and operations in Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc} by their case statement equivalents. That is, we exchange operations such as $+$, $\times$ and $\mathnormal{max}$, by their symbolic equivalents, $\oplus$, $\otimes$ and $\casemax$, respectively, and express {\small $R(\vec{x}, a)$},  {\small $T(\vec{x}, a, \vec{x}')$}, {\small $V^0(\vec{x})$} as case statements. The optimal solution to parameterized MDPs can now be described by the following recursive SDP equations:
+To calculate the exact solution to parameterized MDPs we begin by replacing all functions and operations in Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc} by their case statement equivalents. That is, we exchange operations such as $+$, $\times$ and $\mathnormal{max}$, by their symbolic equivalents, $\oplus$, $\otimes$ and $\casemax$, respectively, and express {\small $R(\vec{d}, \vec{x}, a)$},  {\small $T(\vec{d}, \vec{x}, a, \vec{d}' \vec{x}')$}, {\small $V^0(\vec{x})$} as case statements. The optimal solution to parameterized MDPs can now be described by the following recursive SDP equations:
+%{\footnotesize 
+%    \abovedisplayskip=0pt
+%    \belowdisplayskip=0pt
+%    \begin{align}
+%        Q^{h}(\vec{x}, a; \theta) &= \Reward(\vec{x}, a; \theta) \, \oplus \nonumber \\
+%        & \gamma \times \int \Transition(\vec{x}, a, \vec{x}'; \theta) \otimes V^{h-1}(\vec{x}'; \theta) d\vec{x}'\label{eq:qfunc}\\
+%        V^{h}(\vec{x}; \theta) &= \casemax_{a \in A} \left\{ Q^{h}(\vec{x}, a; \theta) \right\} \label{eq:vfunc}
+%    \end{align}
+%}%
+
 {\footnotesize 
     \abovedisplayskip=0pt
     \belowdisplayskip=0pt
     \begin{align}
-        Q^{h}(s, a; \theta) &= \Reward(s, a; \theta) \, \oplus \nonumber \\
-        & \gamma \times \int \Transition(s, a, s'; \theta) \otimes V^{h-1}(s'; \theta) ds'\label{eq:qfunc}\\
-        V^{h}(s; \theta) &= \casemax_{a \in A} \left\{ Q^{h}(s, a; \theta) \right\} \label{eq:vfunc}
+        Q^{h}(\vec{d}, \vec{x}, a; \theta) &= R(\vec{d}, \vec{x}, a; \theta) \oplus \gamma \cdot  \nonumber \\ 
+        & \sum_{\vec{d}'} \int_{\vec{x}'} \left( Equation~\eqref{eq:hmdp_tfunc} \right) \otimes V^{h-1}(\vec{d}, \vec{x}'; \theta) d\vec{x}' \label{eq:vi_qfunc} \\
+        V^{h}(\vec{d}, \vec{x}; \theta) &= \casemax_{a \in A} \left\{ Q^{h}(\vec{d}, \vec{x}, a; \theta) \right\} \label{eq:vi_vfunc}
     \end{align}
 }%
 
-It can be proved that all of the SDP operations used in Algorithm 1 are closed form for LPWC or LPWL functions~\parencite{Sanner_UAI_2011,Zamani_AAAI_2012}. \ldots
+It can be proved that all of the SDP operations used in Algorithm 1 are closed form for LPWC or LPWL functions~\parencite{Sanner_UAI_2011,Zamani_AAAI_2012}.
 
-In the next section we demonstrate how SDP can be used to compute exact solutions to a variety of parameterized MDPs.
+In the next section we demonstrate how SDP can be used to compute exact solutions to a variety of parameterized hybrid MDPs.
