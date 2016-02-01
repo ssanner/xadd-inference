@@ -31,6 +31,9 @@
 % POMDP Tuple
 \DeclareRobustCommand{\POMDPTuple}{$\left\langle \State, \Action, \Transition, \Reward, \Observation, \Omega, \Horizon, \gamma \right\rangle$}
 
+% PMDP Tuple
+\DeclareRobustCommand{\PMDPTuple}{$\left\langle \State, \Action, \Transition, \Reward, \Horizon, \gamma, \theta \right\rangle$}
+
 % Transition Function
 \newcommand{\TransFunc}{\ensuremath{\Transition : \State \times \Action \times \State \rightarrow [0, 1]}\xspace}
 
@@ -42,7 +45,6 @@
 
 % MO Reward Function
 \newcommand{\MORewardFunc}{\ensuremath{\Reward : \State \times \Action \rightarrow \mathbb{R}^d}\xspace}
-
 
 \newcommand{\casemax}{\ensuremath{\mathrm{casemax}}\xspace}
 

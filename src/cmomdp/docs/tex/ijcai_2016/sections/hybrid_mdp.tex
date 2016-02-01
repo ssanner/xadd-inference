@@ -1,81 +1,87 @@
 \section{Parameterized Hybrid MDPs}
 \label{sec:hybrid_mdps}
 
-In this Section we introduce Parameterized Hybrid Markov Decision Processes and review their finite horizon solution via dynamic programming.
+In this Section we introduce Parameterized Hybrid Markov Decision Processes (PHMDPs) and review their finite horizon solution via dynamic programming.
 
 \subsection{Definition}
 \label{sec:hybrid_mdps_def}
 
-An \textit{hybrid} Markov Decision Process (MDP) is defined by the tuple {\footnotesize \MDPTuple}. {\footnotesize \State} specifies a vector of states given by {\footnotesize $( \vec{d}, \vec{x}) = \left( d_1, \ldots, d_m, x_1, \ldots, x_n \right) $}, where each {\footnotesize $ d_i \in \left\lbrace 0, 1 \right\rbrace $} 
-is boolean and each $ x_j \in \Real $ is continuous. {\footnotesize \Action} specifies a finite set of actions. Hybrid MDPs
-are naturally factored~\parencite{Boutilier_JAIR_1999} in terms of the state variables $\vec{d}$, $\vec{x}$ and as such, the joint transition model can be written as:
+A Parameterized Hybrid Markov Decision Process (PHMDP) is defined by the tuple {\footnotesize \PMDPTuple}. {\footnotesize \State} specifies a vector of states given by {\footnotesize $( \vec{d}, \vec{x}) = \left( d_1, \ldots, d_m, x_1, \ldots, x_n \right) $}, where each {\footnotesize $ d_i \in \left\lbrace 0, 1 \right\rbrace $} 
+is boolean and each {\footnotesize$ x_j \in \Real $} is continuous. {\footnotesize \Action} specifies a finite set of actions. Hybrid MDPs
+are naturally factored~\parencite{Boutilier_JAIR_1999} in terms of the state variables {\footnotesize$\vec{d}$, $\vec{x}$} and as such, the joint transition model can be written as:
 {\footnotesize
 \abovedisplayskip=0pt
 \belowdisplayskip=0pt
 \begin{align}
     \label{eq:hmdp_tfunc}
-    \Transition : \ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a} &= \prod_{i=1}^{m} \ProbArg{d_i' | \vec{d}, \vec{x}, a} \prod_{j=1}^{n} \ProbArg{x_j' | \vec{d}, \vec{d}', \vec{x}, a}. 
+    \Transition :& \, \ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a, \theta} = \nonumber \\
+    & \prod_{i=1}^{m} \ProbArg{d_i' | \vec{d}, \vec{x}, a, \theta} \prod_{j=1}^{n} \ProbArg{x_j' | \vec{d}, \vec{d}', \vec{x}, a, \theta}.
 \end{align}   
 }
 
-{\footnotesize \RewardFunc} is the reward function which encodes the preferences of the agent. {\footnotesize \Horizon} represents the number of decision steps until termination and the discount factor {\footnotesize $\gamma \in [0, 1)$} is used to geometrically discount future rewards.
+{\footnotesize \RewardFunc} is the reward function which encodes the preferences of the agent. {\footnotesize \Horizon} represents the number of decision steps until termination and the discount factor {\footnotesize $\gamma \in [0, 1)$} is used to geometrically discount future rewards. {\footnotesize $\theta \in \Theta$} is a free parameter from the parameter space {\footnotesize $ \Theta $}.
 
-A policy $\pi : \State \rightarrow \Action$, specifies the action to take in every state. The value of a state $s \in \State$ under a given policy $\pi$ is given by:
+A policy {\footnotesize $\pi : \State \rightarrow \Action$}, specifies the action to take in every state. The value of a state {\footnotesize $s \in \State$} under a given policy {\footnotesize$\pi$} is given by:
 {\footnotesize 
     \abovedisplayskip=0pt
     \belowdisplayskip=0pt
 \begin{align*}
-    V^{\pi}\left( \vec{d}, \vec{x} \right) &= \Exp{\sum\limits_{h = 0}^{\Horizon} \gamma^h \cdot r^h | \vec{d}, \vec{x}} \nonumber  
+    V^{\pi}\left( \vec{d}, \vec{x}; \theta \right) &= \Exp{\sum\limits_{h = 0}^{\Horizon} \gamma^h \cdot r^h | \vec{d}, \vec{x}, \theta} \nonumber  
 %    &= \sum\limits_{s' \in \State}  \Transition\left(s, \pi\left(s\right), s' \right) \left[ \Reward\left(s, \pi(s), s'\right) + \gamma \cdot V^{\pi}(s')\right]. \label{eq:mdp_bellman_eq}
 \end{align*}
 }
 %Equation~\eqref{eq:mdp_bellman_eq} is known as the Bellman equation for $V^{\pi}$.
 
-The state-action value function $Q : \State \times \Action \rightarrow \mathbb{R}$ is given by:
+The state-action value function {\footnotesize$Q : \State \times \Action \rightarrow \mathbb{R}$} is given by:
 {\footnotesize 
     \abovedisplayskip=0pt
     \belowdisplayskip=0pt
 \begin{align*}
 %    \label{eq:mdp_qfunc}
-    Q^{\pi}\left(\vec{d}, \vec{x}, a\right) = \Exp{\sum\limits_{h = 0}^{\Horizon} \gamma^h \cdot r^h | \vec{d}, \vec{x}, a}.
+    Q^{\pi}\left(\vec{d}, \vec{x}, a; \theta\right) = \Exp{\sum\limits_{h = 0}^{\Horizon} \gamma^h \cdot r^h | \vec{d}, \vec{x}, a, \theta}.
 \end{align*}
 }
 
-The optimal value function of policy $ \pi^{*} $ satisfies
+The optimal value function of policy {\footnotesize$ \pi^{*} $} satisfies
 {\footnotesize 
 \abovedisplayskip=0pt
 \belowdisplayskip=0pt
 \begin{align}
     \label{eq:opt_vfunc}
-    V^{\pi^{*}}(\vec{d}, \vec{x}) &= \max_{a \in A} \left\{ Q^{\pi^{*}}(\vec{d}, \vec{x}, a) \right\}. 
+    V^{\pi^{*}}(\vec{d}, \vec{x}; \theta) &= \max_{a \in A} \left\{ Q^{\pi^{*}}(\vec{d}, \vec{x}, a; \theta) \right\}. 
 \end{align}
 }%
 
-%In this paper we denote a \textit{parameterized} MDP~\parencite{Dearden_UAI_1999} as a family of models $ \lbrace M_\theta \rbrace_{\theta \in \Theta} $ where $ \Theta $ is the parameter space. The components of each model depend on the parameter $ \theta \in \Theta $ i.e. 
-%$ M_\theta = \langle \State_\theta, \Action_\theta, \Transition_\theta, \Reward_\theta \rangle $.
-%
+We note that in our formulation of parameterized hybrid MDPs the parameters {\footnotesize $ \theta $} are not learnable, which is in contrast to the work of~\parencite{Dearden_UAI_1999}.
 
-Parameterized MDPS \ldots we note that in our formulation of parameterized hybrid MDPs the parameters are not learnable, which is in contrast to the work of~\parencite{Dearden_UAI_1999}. 
+In the subsequent Sections we demonstrate how the PHMDP framework can be specialised into models capable of investigating (i) multi-objective trade-offs; (ii) exact sensitivity analysis; and (iii) non-convex optimization of policy parameters.
 
-%\subsection{MOMDP as a Parameterised Hybrid MDP}
-%\subsection{Sensitivity as a Parameterised Hybrid MDP}
-%\subsection{Policy Gradient as a Parameterised Hybrid MDP}
+\subsubsection{Multi-objective PHMDPs}
+
+The PHMDP framework can be specialised into a multi-objective setting by specifying the reward as {\footnotesize \MORewardFunc} where {\footnotesize $ d $} is the dimension of the reward vector. In this formulation the parameter {\footnotesize $ \theta^{d} $}, specifies the preferences over the reward components.
+
+\subsubsection{Sensitivity Analysis for PHMDPs}
+
+Sensitivity analysis can be conducted within the PHMDP framework by specifying as value function as in Equation~\eqref{eq:opt_vfunc}. The value function can then be differentiated with respect to the parameter {\footnotesize $ \theta $}.
+
+\subsubsection{Policy Gradient Methods for PHMDPs}
+
+PHMDP policy parameters can be optimised by specifying the action {\footnotesize \Action} as {\footnotesize $ a(\theta) $}.
 
 \subsection{Solution Methods}
 
-Value iteration (VI)~\parencite{Bellman_PU_1957} is a general dynamic programming algorithm used to solve MDPs. We modify the algorithm to solve the parameterized hybrid MDP formulation presented in Section~\ref{sec:hybrid_mdps_def}. The key idea of VI is to successively approximate {\footnotesize $V^{\pi^{*}}(\vec{d}, \vec{x}; \theta)$} and {\footnotesize $Q^{\pi^{*}}(\vec{d}, \vec{x}, a; \theta)$}
-by {\footnotesize $V^{h}(\vec{d}, \vec{x}; \theta)$} and {\footnotesize $Q^{h}(\vec{d}, \vec{x}, a; \theta)$}, respectively, at each horizon $h$. These two functions satisfy the following recursive relationship:
+Value iteration (VI)~\parencite{Bellman_PU_1957} is a general dynamic programming algorithm used to solve MDPs. We modify the algorithm to solve the parameterized hybrid MDP formulation presented in Section~\ref{sec:hybrid_mdps_def}. The key idea of VI is to successively approximate {\footnotesize $V^{\pi^{*}}(\vec{d}, \vec{x}; \theta)$} and {\footnotesize $Q^{\pi^{*}}(\vec{d}, \vec{x}, a; \theta)$} by {\footnotesize $V^{h}(\vec{d}, \vec{x}; \theta)$} and {\footnotesize $Q^{h}(\vec{d}, \vec{x}, a; \theta)$}, respectively, at each horizon {\footnotesize$h$}. These two functions satisfy the following recursive relationship:
 
 {\footnotesize 
     \abovedisplayskip=0pt
     \belowdisplayskip=0pt
     \begin{align}
-        Q^{h}(\vec{d}, \vec{x}, a; \theta) &= R(\vec{d}, \vec{x}, a; \theta) + \gamma \cdot  \nonumber \\ 
-        & \sum_{\vec{d}'} \int_{\vec{x}'} \left( Equation~\eqref{eq:hmdp_tfunc} \right) \cdot V^{h-1}(\vec{d}, \vec{x}'; \theta) \label{eq:vi_qfunc} \\
+        Q^{h}(\vec{d}, \vec{x}, a; \theta) &= \Reward(\vec{d}, \vec{x}, a; \theta) + \gamma \cdot  \nonumber \\ 
+        & \sum_{\vec{d}'} \int_{\vec{x}'} \ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a} \cdot V^{h-1}(\vec{d}, \vec{x}; \theta) d\vec{x}' \label{eq:vi_qfunc} \\
         V^{h}(\vec{d}, \vec{x}; \theta) &= \max_{a \in A} \left\{ Q^{h}(\vec{d}, \vec{x}, a; \theta) \right\} \label{eq:vi_vfunc}
     \end{align}
 }%
 
-The algorithm can be executed by first initialising {\footnotesize $V^{0}(\vec{d}, \vec{x}; \theta)$}  to zero or the terminal reward. Then for each $h$, {\footnotesize $V^{h}(\vec{d}, \vec{x}; \theta)$} is calculated from {\footnotesize $V^{h-1}(\vec{d}, \vec{x}; \theta)$} via Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc}, until the intended $h$-stage-to-go value function is computed. 
+The algorithm can be executed by first initialising {\footnotesize $V^{0}(\vec{d}, \vec{x}; \theta)$}  to zero or the terminal reward. Then for each {\footnotesize$h$}, {\footnotesize $V^{h}(\vec{d}, \vec{x}; \theta)$} is calculated from {\footnotesize $V^{h-1}(\vec{d}, \vec{x}; \theta)$} via Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc}, until the intended $h$-stage-to-go value function is computed. 
 
 %Value iteration converges linearly in the number of iterations to the true values of {\footnotesize $Q^{\pi^{*}}(\vec{d}, \vec{x}, a; \theta)$} and {\footnotesize $V^{\pi^{*}}(\vec{d}, \vec{x}; \theta)$}~\parencite{Bertsekas_1987}.

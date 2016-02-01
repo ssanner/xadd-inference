@@ -1,0 +1,6 @@
+var inventory 0 1 200
+var a 0 0.005 1.0
+cassign price 20.0
+cassign s0 10.0
+cassign w1 1.0
+bassign eps true

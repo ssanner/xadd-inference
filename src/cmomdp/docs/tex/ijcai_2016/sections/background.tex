@@ -1,20 +1,21 @@
 \section{Related Work}
 \label{sec:background}
 
-In this paper we present a framework for parameterized hybrid MDPs which subsumes the functionality of Multiobjective Markov Decision Processes (MOMDPs), sensitivity analysis of MDPs and also policy gradient analysis.
-
-%In the case of linear {\footnotesize $ f $}, a sufficient solution is the Convex Hull (CH), the set of all undominated policies under a linear scalarisation. In the case of non-linear {\footnotesize $ f $}, the Pareto Front (PF) must be returned. The PF contains all policies for which no other policy has a value that is at least equal in all objectives and greater in at least one objective. 
-
-Pareto-optimal policies can be found by using the linear programming approach of~\parencite{Viswanathan_TIMS_1977}. An alternative approach to calculating the CCS using POMDPs was proposed by~\parencite{White_LSS_1980}. Pareto front methods are approximate. Convex hull algorithm~\parencite{Barrett_ICML_2008} can be used to solve parameterized MDP, but not the factored case. In this paper we investigate parameterized hybrid MDPs, for which we are the first to provide exact closed-form solutions.
-
-Sensitivity analysis of MDPs has focussed on uncertainty within the specification the transition functions~\parencite{Kalyanasundaram_AJC_2004}, rewards~\parencite{Tan_JAP_2011, Hopp_JOTA_1988}, or both~\parencite{Givan_AI_2000} simultaneously. In this work we are the first to provide exact closed-form solutions for hybrid MDPs.
-
-Policy gradient~\parencite{Sutton_NIPS_1999} \ldots
-
 %\begin{itemize}
 %    \item MOMDPs - Pareto front methods (approximate), convex hull algorithm (exact) -- works for discrete parameterized MDPs, but not for factored or hybrid case -- we want to look at parameterized hybrid, no exact work in this space
 %    \item Sensitivity analysis of MDPs -- but none exact in hybrid case
 %    \item Policy gradient -- everything is numerically oriented, never a closed-form exact solution as a function of parameter, e.g., to analyze stability
 %\end{itemize}
 
-%In MOMDPs there can be multiple policies {\footnotesize $ \pi $} whose value {\footnotesize $ V^{\pi} $} are optimal for different preferences over the objectives. These preferences can be expressed by a scalarisation function {\footnotesize $ f\left( V, \vec{w} \right) $} that is parameterised by a parameter vector {\footnotesize $ \vec{w} $} and returns a scalarised value of {\footnotesize $ V $}. We assume that {\footnotesize $ \vec{w} $} is not known beforehand. A solution algorithm must therefore return a set of policies.
+In this paper, we present parameterized hybrid MDPs as a unifying framework which allows for the representation of multi-objective trade-offs, exact sensitivity analysis and parametric policy gradient analysis. 
+
+Prior work on multi-objective MDPs can be broadly grouped into approaches which return either the Convex Hull or Pareto Front of a set of undominated policies~\parencite{Roijers_JAIR_2013}. The Convex hull algorithm~\parencite{Barrett_ICML_2008} can be used to learn optimal policies for all linear preference assignments. However, the algorithm is restricted to discrete parameterized MDPs. 
+%An alternative approach to calculating the CCS using POMDPs was proposed by~\parencite{White_LSS_1980}. 
+Pareto Front methods aim to return all policies that are not Pareto dominated, which can be prohibitively large. As are result, methods such as those of~\parencite{Chatterjee_STACS_2006} return an $\epsilon$-approximate Pareto front. A more recent advance has been to use the notion of Lorenz optimality~\parencite{Perny_AAAI_2013}, which uses a refinement of Pareto dominance, to further decrease the size of the optimal solution set for the Pareto front.In this work we calculate \textit{exact} closed-form solutions to the more general class of \textit{parameterized hybrid} MDPs with factored states. 
+
+Sensitivity analysis of MDPs has focussed on uncertainty within the specification the transition~\parencite{Kalyanasundaram_AJC_2004} function, reward~\parencite{Tan_JAP_2011, Hopp_JOTA_1988} function, or both~\parencite{Givan_AI_2000} simultaneously. In this work we are the first to provide exact closed-form solutions for parameterized hybrid MDPs.
+
+Policy gradient methods rely upon optimizing parameterized policies with respect to the expected return by gradient descent. The main concern of policy gradient methods is obtaining a good estimator of the policy gradient~\parencite{Peters_IRS_2006}. The most prominent approaches have been the finite-difference methods such as those of~\parencite{Ng_UAI_2000} and likelihood methods such as~\parencite{Baxter_ISCAS_2000}, both of which are numerically oriented and sample based. In this work as calculate closed-form exact solutions as a function of parameter.
+
+
+%~\parencite{Sutton_NIPS_1999} \ldots
