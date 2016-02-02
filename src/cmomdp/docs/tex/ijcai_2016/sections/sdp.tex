@@ -1,9 +1,7 @@
 \section{Parameterized Symbolic Dynamic Programming}
 \label{sec:sdp}
 
-Symbolic Dynamic Programming (SDP)~\parencite{Boutilier_IJCAI_2001} is the process of performing dynamic programming
-via symbolic manipulation. In the following sections we present a brief overview of SDP operations and also show
-how SDP can be used to solve parameterized MDPs.
+Symbolic Dynamic Programming (SDP)~\parencite{Boutilier_IJCAI_2001} is the process of performing dynamic programming via symbolic manipulation. In the following sections we present a brief overview of SDP operations and also show how SDP can be used to solve parameterized Hybrid MDPs.
 
 \subsection{Symbolic Case Calculus}
 
@@ -23,7 +21,7 @@ SDP assumes that all functions can be represented in case statement form \parenc
 
 Here, {\footnotesize$ f_i $} are linear expressions over {\footnotesize$ \vec{x} $} and {\footnotesize$\phi_i$} are logical formulae defined over the state {\footnotesize$( \vec{d}, \vec{x})$} that can consist of arbitrary logical combinations of boolean variables and linear inequalities {\footnotesize$\left( \geq, >, <, \leq \right)$} over continuous variables. We assume that the set of conditions {\footnotesize$\left\lbrace \phi_1, \ldots, \phi_k \right\rbrace$} disjointly and exhaustively partition {\footnotesize$(\vec{d}, \vec{x})$} such that {\footnotesize$f$} is well-defined for all {\footnotesize$(\vec{d}, \vec{x})$}. In this paper we restrict the {\footnotesize$f_i$} to be either constant or linear functions of the state variable {\footnotesize$\vec{x}$}. Henceforth, we refer to functions with linear {\footnotesize$\phi_i$} and piecewise constant {\footnotesize$f_i$} as linear piecewise constant (LPWC) and functions with linear {\footnotesize$\phi_i$} and piecewise linear {\footnotesize$f_i$} as linear piecewise linear (LPWL) functions.
 
-Operations on case statements may be either unary or binary. All of the operations presented here are closed form for LPWC and LPWL functions. We refer the reader to \parencite{Sanner_UAI_2011,Zamani_AAAI_2012} for more thorough expositions of SDP for piecewise continuous functions.
+Operations on case statements may be either unary or binary. All of the operations presented here are closed form for LPWC and LPWL functions. We refer the reader to~\parencite{Sanner_UAI_2011,Zamani_AAAI_2012} for more thorough expositions of SDP for piecewise continuous functions.
 
 Unary operations on a single case statement \emph{f}, such as scalar multiplication {\footnotesize$c \cdot f$} where {\footnotesize$ c \in \mathbb{R} $}, are applied to  each {\footnotesize$f_i \left(1 \leq i \leq k\right)$}. Binary operations such as addition, subtraction and multiplication are executed in two stages. Firstly, the cross-product of the logical partitions of each case statement is taken, producing paired partitions. Finally, the binary operation is applied to the resulting paired partitions. The ``cross-sum'' {\footnotesize$\oplus$} operation can be performed on two cases in the following manner:
 {\footnotesize 
@@ -116,11 +114,11 @@ $\casemax$ preserves the linearity of the constraints and the constant or linear
 
 A case statement can be maximised with respect to a continuous parameter {\footnotesize$y$} as {\footnotesize $ f_1(\vec{x}, y) = \contmax_{y}f_2(\vec{x}, y) $}. The continuous maximisation operation is a complex case operation whose explanation is beyond the scope of this paper. We refer the reader to~\parencite{Zamani_AAAI_2012} for further details.
 
-In principle, case statements can be used to represent all MDP components. In practice, case statements are implemented using a more compact representation known as Extended Algebraic Decision Diagrams (XADDs) \parencite{Sanner_UAI_2011}, which also support efficient versions of all of the aforementioned operations.
+In principle, case statements can be used to represent all MDP components. In practice, case statements are implemented using a more compact representation known as Extended Algebraic Decision Diagrams (XADDs)~\parencite{Sanner_UAI_2011}, which also support efficient versions of all of the aforementioned operations.
 
 \subsection{SDP for Parameterized Hybrid MDPs}
 
-To calculate the exact solution to PHMDPs we begin by replacing all functions and operations in Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc} by their case statement equivalents. That is, we exchange operations such as {\footnotesize$+$}, {\footnotesize$\times$} and {\footnotesize$\mathnormal{max}$}, by their symbolic equivalents, {\footnotesize$\oplus$}, {\footnotesize$\otimes$} and $\casemax$, respectively, and express {\footnotesize $\Reward(\vec{d}, \vec{x}, a)$},  {\footnotesize $\Transition(\vec{d}, \vec{x}, a, \vec{d}' \vec{x}')$}, {\footnotesize $V^0(\vec{x})$} as case statements. The optimal solution to parameterized MDPs can now be described by the following recursive SDP equations:
+To calculate the exact solution to PHMDPs we begin by replacing all functions and operations in Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc} by their case statement equivalents. That is, we exchange operations such as {\footnotesize$+$}, {\footnotesize$\times$} and {\footnotesize$\mathnormal{max}$}, by their symbolic equivalents, {\footnotesize$\oplus$}, {\footnotesize$\otimes$} and $\casemax$, respectively, and express {\footnotesize $\Reward(\vec{d}, \vec{x}, a; \theta)$},  {\footnotesize $\ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a, \theta}$}, {\footnotesize $V^0(\vec{d}, \vec{x}; \theta)$} as case statements. The optimal solution to PHMDPs can now be described by the following recursive SDP equations:
 %{\footnotesize 
 %    \abovedisplayskip=0pt
 %    \belowdisplayskip=0pt
@@ -136,7 +134,7 @@ To calculate the exact solution to PHMDPs we begin by replacing all functions an
     \belowdisplayskip=0pt
     \begin{align}
         Q^{h}(\vec{d}, \vec{x}, a; \theta) &= \Reward(\vec{d}, \vec{x}, a; \theta) \oplus \gamma \cdot  \nonumber \\ 
-        & \sum_{\vec{d}'} \int_{\vec{x}'} \ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a} \otimes V^{h-1}(\vec{d}, \vec{x}; \theta) d\vec{x}' \label{eq:vi_sdp_qfunc} \\
+        & \sum_{\vec{d}'} \int_{\vec{x}'} \ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a, \theta} \otimes V^{h-1}(\vec{d}, \vec{x}; \theta) d\vec{x}' \label{eq:vi_sdp_qfunc} \\
         V^{h}(\vec{d}, \vec{x}; \theta) &= \casemax_{a \in A} \left\{ Q^{h}(\vec{d}, \vec{x}, a; \theta) \right\} \label{eq:vi_sdp_vfunc}
     \end{align}
 }%
