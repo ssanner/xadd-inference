@@ -27,11 +27,11 @@ In this paper we make the following key contributions:
     \item We present the unifying framework of {\it parameterized hybrid
       MDPs} (PHMDPs) which enables the investigation of trade-offs between
       multi-objective reward criteria, parameter sensitivity analysis and
-      non-convex analysis and optimization of policy parameters.
+      non-convex analysis and optimization of policy parameters
     \item We provide an algorithm that solves this class of
       PHMDPs exactly and in closed-form by defining a Parameterized variant of 
       Symbolic Dynamic Programming (SDP)~\parencite{Boutilier_IJCAI_2001}
-      extended to hybrid MDPs~\cite{sanner_uai11}.
+      extended to hybrid MDPs~\parencite{Sanner_UAI_2011}
     \item We use our novel framework to explore, for the first time:
       (i) an exact functional representation of the multi-objective
       trade-offs for use in interactive decision maps; (ii) exact
@@ -41,6 +41,6 @@ In this paper we make the following key contributions:
 \end{itemize}
 We remark that prior to this paper, it was an open question as to whether
 all of the above use cases admitted closed-form solutions --- these questions
-are not resolved affirmatively through PHMDPs and SDP.
+are resolved affirmatively through PHMDPs and SDP.
 
 %This paper is organised as follows: In Section~\ref{sec:hybrid_mdps} we describe parameterized hybrid Markov Decision Processes (MDPs) and value iteration~\parencite{Bellman_PU_1957}, a widely used dynamic programming method for solving MDPs. Following this, in Section~\ref{sec:sdp}, we introduce Symbolic Dynamic Programming (SDP), and show how it can be used to calculate exact closed-form solutions to parameterized hybrid MDPs. In Section~\ref{sec:results} we calculate exact solutions to three empirical domains: (1) autonomous driving; (2) influenza epidemiology; and (3) optimal trade execution. We conclude in Section~\ref{sec:conclusion} and identify interesting directions for future research.

@@ -58,16 +58,16 @@ Unary operations on a single case statement \emph{f}, such as scalar multiplicat
 
 ``cross-subtraction'' {\footnotesize$\ominus$} and ``cross-multiplication'' {\footnotesize$\otimes$} are defined in a similar manner but with the addition operator replaced by the subtraction and multiplication operators, respectively. Some partitions resulting from case operators may be inconsistent and are thus removed.
 
-Substitution into case statements is performed via a set {\footnotesize$\theta$} of variables and their substitutions e.g. {\footnotesize$\theta = \left\{ x'_1/(x_1 + x_2) \right\}$}, where the LHS of the / represents the substitution variable and the RHS of the / represents the expression that should be substituted in its place. {\footnotesize$\theta$} can be applied to both non-case functions {\footnotesize$f_i$} and case partitions {\footnotesize$\phi_i$} as {\footnotesize$f_i\theta$} and {\footnotesize$\phi_i\theta$}, respectively. Substitution into case statements can be written as:
+Substitution into case statements is performed via a set {\footnotesize$\vartheta$} of variables and their substitutions e.g. {\footnotesize$\vartheta = \left\{ x'_1/(x_1 + x_2) \right\}$}, where the LHS of the / represents the substitution variable and the RHS of the / represents the expression that should be substituted in its place. {\footnotesize$\vartheta$} can be applied to both non-case functions {\footnotesize$f_i$} and case partitions {\footnotesize$\phi_i$} as {\footnotesize$f_i\vartheta$} and {\footnotesize$\phi_i\vartheta$}, respectively. Substitution into case statements can be written as:
 {\footnotesize 
     \abovedisplayskip=5pt
     \belowdisplayskip=0pt
     \begin{align*}
-        f\theta = 
+        f\vartheta = 
         \begin{cases}
-            \phi_1\theta: & f_1\theta \\ 
+            \phi_1\vartheta: & f_1\vartheta \\ 
             \vdots & \vdots\\ 
-            \phi_k\theta: & f_k\theta \\ 
+            \phi_k\vartheta: & f_k\vartheta \\ 
         \end{cases}
     \end{align*}
 }%
@@ -75,6 +75,7 @@ Substitution into case statements is performed via a set {\footnotesize$\theta$}
 Substitution is used when calculating integrals with respect to deterministic {\footnotesize$\delta$} transitions~\parencite{Sanner_UAI_2011}.
 
 Maximisation over cases, known as $\casemax$, is defined as:
+\vspace{-0.5em}
 {\footnotesize 
     \abovedisplayskip=0pt
     \belowdisplayskip=0pt
@@ -130,26 +131,24 @@ To calculate the exact solution to PHMDPs we begin by replacing all functions an
     \end{align}
 }%
 
-{\footnotesize $\ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a; \vec{\theta}}$ } is specified in Equation~\eqref{eq:hmdp_tfunc}. It can be proved that all of the SDP operations used in Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc} are closed form for LPWC or LPWL functions~\parencite{Sanner_UAI_2011,Zamani_AAAI_2012}. Given a LPWL {\footnotesize $V^{0}(\vec{d}, \vec{x}; \vec{\theta})$} and that SDP operations are closed form, the resulting {\footnotesize $V^{1}(\vec{d}, \vec{x}; \vec{\theta})$} is also LPWL. Therefore, by induction is {\footnotesize $V^{h+1}(\vec{d}, \vec{x}; \vec{\theta})$} LPWL for all horizons {\footnotesize $ \Horizon $}.
+{\footnotesize $\ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a; \vec{\theta}}$ } is specified in Equation~\eqref{eq:hmdp_tfunc}. We note that the parameters {\footnotesize $\vec{\theta}$} remain free variables during the backup operation, they are not regressed as are the continuous state parameters {\footnotesize $ \vec{x} $}. All operations including action maximization will automatically condition the value on these parameters, yielding the parameterized value function in Equation~\eqref{eq:vi_sdp_vfunc}.
+
+In the case of discrete {\footnotesize \Action} it can be proved that all of the SDP operations used in Equations~\eqref{eq:vi_sdp_qfunc} and~\eqref{eq:vi_sdp_vfunc} are closed form for non-linear piecewise non-linear (NPWN) functions~\parencite{Sanner_UAI_2011}. In the case of continuous {\footnotesize \Action} all of the operations are closed form for only LPWC or LPWL functions~\parencite{Zamani_AAAI_2012}.
+
+%It can be proved that all of the SDP operations used in Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc} are closed form for LPWC or LPWL functions~\parencite{Sanner_UAI_2011,Zamani_AAAI_2012}. Given a LPWL {\footnotesize $V^{0}(\vec{d}, \vec{x}; \vec{\theta})$} and that SDP operations are closed form, the resulting {\footnotesize $V^{1}(\vec{d}, \vec{x}; \vec{\theta})$} is also LPWL. Therefore, by induction is {\footnotesize $V^{h+1}(\vec{d}, \vec{x}; \vec{\theta})$} LPWL for all horizons {\footnotesize $ \Horizon $}. 
 
 \subsubsection{Multi-objective PHMDPs}
 
-Multi-objective {\footnotesize $\Reward$} trade-offs can be solved exactly and in closed-form by restricting the {\footnotesize $\Reward$} and {\footnotesize $\Transition$} functions to LPWL functions.
+PHMDPs with multi-objective {\footnotesize $\Reward$} and linear scalarization functions can be solved exactly and in closed-form by restricting the {\footnotesize $\Reward$} to LPWC functions and {\footnotesize $\Transition$} to LPWL functions. Given a LPWL {\footnotesize $V^{0}(\vec{d}, \vec{x}; \vec{\theta})$} and that SDP operations are closed form, the resulting {\footnotesize $V^{1}(\vec{d}, \vec{x}; \vec{\theta})$} is also LPWL. Therefore, by induction is {\footnotesize $V^{h+1}(\vec{d}, \vec{x}; \vec{\theta})$} LPWL for all horizons {\footnotesize $ \Horizon $}.
+
+Multi-objective PHMDPs with a non-linear scalarization function and NPWN {\footnotesize $\Reward$} and {\footnotesize $\Transition$} functions lead NPWN solutions which are exact, but not closed-form\parencite{Sanner_UAI_2011}.
 
 \subsubsection{Sensitivity Analysis for PHMDPs}
 
-Sensitivity analysis for PHMDPs can be conducted exactly and in closed-form by firstly imposing the same restrictions on the {\footnotesize $\Reward$} and {\footnotesize $\Transition$} as the previous Section and then differentiating the resulting value function with respect to the parameter {\footnotesize $\vec{\theta}$}: 
-
-{\footnotesize
-    \abovedisplayskip=0pt
-    \belowdisplayskip=0pt    
-    \begin{align*}
-        \bigtriangledown_{\vec{\theta}} V^{h}\left(\vec{d}, \vec{x}; \vec{\theta}\right)
-    \end{align*}
-}%
+Sensitivity analysis for PHMDPs can be conducted exactly and in closed-form by firstly imposing the same restrictions on the {\footnotesize $\Reward$} and {\footnotesize $\Transition$} as the previous section and then differentiating the resulting value function with respect to the parameter {\footnotesize $\vec{\theta}$} i.e. {\footnotesize $\bigtriangledown_{\vec{\theta}} V^{h}\left(\vec{d}, \vec{x}; \vec{\theta}\right)$ }.
 
 \subsubsection{Policy Gradient Methods for PHMDPs}
 
-Policy parameters for PHMDPs can be exactly and in closed-form analysed via SDP by calculating Equation~\eqref{eq:vi_sdp_qfunc} \textit{not} Equation~\eqref{eq:vi_sdp_vfunc}. This is due to their being only one policy, which leads to one {\footnotesize $ Q^{h}(\vec{d}, \vec{x}, a; \vec{\theta}) $}.
+Policy parameters for PHMDPs can be analysed exactly and in closed-form via SDP by calculating Equation~\eqref{eq:vi_sdp_qfunc} and \textit{not} Equation~\eqref{eq:vi_sdp_vfunc}. This is due to their being only one policy, which leads to one {\footnotesize $ Q^{h}(\vec{d}, \vec{x}, a; \vec{\theta}) $}. Because this function is parameteric, it is possible to take symbolic derivatives up to any order i.e. {\footnotesize $\bigtriangledown_{\vec{\theta}} Q^{h}(\vec{d}, \vec{x}, a; \vec{\theta})$ } and apply non-convex optimization tools, such as polynomial programming~\parencite{sherali1992global}, that exploit parametric knowledge of the function.
 
 In the next section we demonstrate how SDP can be used to compute exact solutions to a variety of parameterized hybrid MDPs.
