@@ -139,16 +139,18 @@ In the case of discrete {\footnotesize \Action} it can be proved that all of the
 
 \subsubsection{Multi-objective PHMDPs}
 
-PHMDPs with multi-objective {\footnotesize $\Reward$} and linear scalarization functions can be solved exactly and in closed-form by restricting the {\footnotesize $\Reward$} to LPWC functions and {\footnotesize $\Transition$} to LPWL functions. Given a LPWL {\footnotesize $V^{0}(\vec{d}, \vec{x}; \vec{\theta})$} and that SDP operations are closed form, the resulting {\footnotesize $V^{1}(\vec{d}, \vec{x}; \vec{\theta})$} is also LPWL. Therefore, by induction is {\footnotesize $V^{h+1}(\vec{d}, \vec{x}; \vec{\theta})$} LPWL for all horizons {\footnotesize $ \Horizon $}.
+PHMDPs with multi-objective {\footnotesize $\Reward$} and linear scalarization functions can be solved exactly and in closed-form by restricting the {\footnotesize $\Reward$} to LPWC functions and {\footnotesize $\Transition$} to LPWL functions. Given a LPWL {\footnotesize $V^{0}(\vec{d}, \vec{x}; \vec{\theta})$} and that SDP operations are closed form, the resulting {\footnotesize $V^{1}(\vec{d}, \vec{x}; \vec{\theta})$} is also LPWL. Therefore, by induction is {\footnotesize $V^{h+1}(\vec{d}, \vec{x}; \vec{\theta})$} LPWL for all horizons {\footnotesize $ h \in \Horizon $}.
 
 Multi-objective PHMDPs with a non-linear scalarization function and NPWN {\footnotesize $\Reward$} and {\footnotesize $\Transition$} functions lead NPWN solutions which are exact, but not closed-form\parencite{Sanner_UAI_2011}.
 
 \subsubsection{Sensitivity Analysis for PHMDPs}
 
-Sensitivity analysis for PHMDPs can be conducted exactly and in closed-form by firstly imposing the same restrictions on the {\footnotesize $\Reward$} and {\footnotesize $\Transition$} as the previous section and then differentiating the resulting value function with respect to the parameter {\footnotesize $\vec{\theta}$} i.e. {\footnotesize $\bigtriangledown_{\vec{\theta}} V^{h}\left(\vec{d}, \vec{x}; \vec{\theta}\right)$ }.
+%Sensitivity analysis for PHMDPs can be conducted exactly and in closed-form by firstly imposing the same restrictions on the {\footnotesize $\Reward$} and {\footnotesize $\Transition$} as the previous section and then differentiating the resulting value function with respect to the parameter {\footnotesize $\vec{\theta}$} i.e. {\footnotesize $\bigtriangledown_{\vec{\theta}} V^{h}\left(\vec{d}, \vec{x}; \vec{\theta}\right)$ }.
+
+Sensitivity analysis for PHMDPs can be analysed exactly and in closed-form via SDP by first calculating Equation~\eqref{eq:vi_sdp_vfunc} and then taking symbolic derivatives, up to any order, with respect to the parameter {\footnotesize $\vec{\theta}$} i.e. {\footnotesize $\bigtriangledown_{\vec{\theta}} V^{h}\left(\vec{d}, \vec{x}; \vec{\theta}\right)$}.
 
 \subsubsection{Policy Gradient Methods for PHMDPs}
 
-Policy parameters for PHMDPs can be analysed exactly and in closed-form via SDP by calculating Equation~\eqref{eq:vi_sdp_qfunc} and \textit{not} Equation~\eqref{eq:vi_sdp_vfunc}. This is due to their being only one policy, which leads to one {\footnotesize $ Q^{h}(\vec{d}, \vec{x}, a; \vec{\theta}) $}. Because this function is parameteric, it is possible to take symbolic derivatives up to any order i.e. {\footnotesize $\bigtriangledown_{\vec{\theta}} Q^{h}(\vec{d}, \vec{x}, a; \vec{\theta})$ } and apply non-convex optimization tools, such as polynomial programming~\parencite{sherali1992global}, that exploit parametric knowledge of the function.
+Policy parameters for PHMDPs can be analysed exactly and in closed-form via SDP by calculating Equation~\eqref{eq:vi_sdp_qfunc} and \textit{not} Equation~\eqref{eq:vi_sdp_vfunc}. This is due to their being only one policy, which leads to one {\footnotesize $ Q^{h}(\vec{d}, \vec{x}, a; \vec{\theta}) $}. Because this function is parametric, it is possible to take symbolic derivatives up to any order i.e. {\footnotesize $\bigtriangledown_{\vec{\theta}} Q^{h}(\vec{d}, \vec{x}, a; \vec{\theta})$ } and apply non-convex optimization tools, such as polynomial programming~\parencite{sherali1992global}, that exploit parametric knowledge of the function.
 
 In the next section we demonstrate how SDP can be used to compute exact solutions to a variety of parameterized hybrid MDPs.
