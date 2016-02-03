@@ -89,8 +89,8 @@ The S-I model can be formulated as a PHMDP as follows:
         \belowdisplayskip=0pt
         \renewcommand{\arraystretch}{1.5}
         \begin{tabular}{ll}
-            $ \Transition\left( s' | s, i, a \right) =$ & $ \delta \left[ s' - (- s \cdot (\eta + a)) \right] $ \\
-            $ \Transition\left( i' | s, i, a \right) =$ & $ \delta \left[ i' - (\eta \cdot s) \right] $ \\
+            $ \Transition\left( s' | s, i, a \right) =$ & $ \delta \left[ s' - (s - s \cdot (\eta + a)) \right] $ \\
+            $ \Transition\left( i' | s, i, a \right) =$ & $ \delta \left[ i' - (i + \eta \cdot s) \right] $ \\
         \end{tabular}
     }%
     \item {\footnotesize $ \Action \in \left\lbrace 0, 0.25, 0.50, 1.0 \right\rbrace $} is the proportion of $ s $ to vaccinate 
@@ -149,9 +149,9 @@ The S-I-R-S model can be formulated as a PHMDP as follows:
         \belowdisplayskip=0pt
         \renewcommand{\arraystretch}{1.5}
         \begin{tabular}{ll}
-            $ \Transition\left( s' | s, i, r, a \right) =$ & $ \delta \left[ s' - (- \eta \cdot s \cdot i + \lambda \cdot r -a \cdot s) \right] $ \\
-            $ \Transition\left( i' | s, i, r, a \right) =$ & $ \delta \left[ i' - (\eta \cdot s \cdot i - \beta \cdot i) \right] $ \\
-            $ \Transition\left( r' | s, i, r, a \right) =$ & $ \delta \left[ r' - (\beta \cdot i - \lambda \cdot r) \right] $ \\            
+            $ \Transition\left( s' | s, i, r, a \right) =$ & $ \delta \left[ s' - (s - \eta \cdot s \cdot i + \lambda \cdot r -a \cdot s) \right] $ \\
+            $ \Transition\left( i' | s, i, r, a \right) =$ & $ \delta \left[ i' - (i + \eta \cdot s \cdot i - \beta \cdot i) \right] $ \\
+            $ \Transition\left( r' | s, i, r, a \right) =$ & $ \delta \left[ r' - (r + \beta \cdot i - \lambda \cdot r) \right] $ \\            
         \end{tabular}
     }%
 %    \item {\footnotesize $ \Action \in \left\lbrace 0, 0.25, 0.50, 1.0 \right\rbrace $} is the proportion to vaccinate 
