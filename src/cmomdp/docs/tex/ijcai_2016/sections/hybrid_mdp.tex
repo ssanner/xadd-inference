@@ -92,30 +92,28 @@ parameters.
 The PHMDP framework can be specialised into a multi-objective setting
 by specifying the reward as {\footnotesize \MORewardFunc} where
 {\footnotesize $ d $} is the dimension of the reward vector. In this
-formulation the parameter {\footnotesize $ \theta^{d} $}, specifies
-the linear scalarization over the reward components (i.e, $\langle
-\Reward, \theta^{d} \rangle$) and the value function can be analysed
-
+formulation the parameter {\footnotesize $ \theta^{d} $} specifies the
+linear scalarization over the reward components (i.e, $\langle
+\Reward, \theta^{d} \rangle$) and the value function can be expressed
+as a function of all possible scalarizations.
 
 \subsubsection{Sensitivity Analysis for PHMDPs}
 
 In sensitivity analysis, we assume that $\theta^{d}$ are unknown
 parameters and we solve directly for the value function in
 Equation~\eqref{eq:opt_vfunc} as a parametric function
-$V^{\pi^{*}}(\vec{d}, \vec{x}; \theta^{d})$ of these parameters using
-the forthcoming technique of Parameterized Symbolic Dynamic
-Programming (PSDP).  The value function can then be directly analysed
-or displayed in an (Interactive) Decision Map (an example will be
-shown in Section~\ref{sec:sensitivity_results}), which allows a user
-to explore tradeoffs between parameters $\theta^{d}$ for the optimal
-policy as a function of other state variables $\vec{d},\vec{x}$.
+$V^{\pi^{*}}(\vec{d}, \vec{x}; \theta^{d})$ of these parameters.  This
+parametric value function can then be directly analysed or displayed in an
+(Interactive) Decision Map (an example will be shown in
+Section~\ref{sec:sensitivity_results}), which allows a user to explore
+tradeoffs between parameters $\theta^{d}$ for the optimal policy as a
+function of other state variables $\vec{d},\vec{x}$.
 
 \subsubsection{Policy Gradient Methods for PHMDPs}
 
 PHMDP policy parameters can be analysed and optimised by
 parameterizing a policy $\pi$ by action parameters $\theta^{d}$,
-symbolically substituting this policy in for the action $a$ during
-PSDP in place of the action maximization step (an example policy will
+and evaluating the value w.r.t. this parametric policy (an example policy will
 be given in Section~\ref{sec:policy_gradient_results}).  The resulting
 (non-convex) policy value as a function of $\theta^{d}$ can be
 analysed, and optimised using the parameteric form of
