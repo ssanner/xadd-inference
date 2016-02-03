@@ -114,32 +114,23 @@ $\casemax$ preserves the linearity of the constraints and the constant or linear
 
 A case statement can be maximised with respect to a continuous parameter {\footnotesize$y$} as {\footnotesize $ f_1(\vec{x}, y) = \contmax_{y}f_2(\vec{x}, y) $}. The continuous maximisation operation is a complex case operation whose explanation is beyond the scope of this paper. We refer the reader to~\parencite{Zamani_AAAI_2012} for further details.
 
-In principle, case statements can be used to represent all MDP components. In practice, case statements are implemented using a more compact representation known as Extended Algebraic Decision Diagrams (XADDs)~\parencite{Sanner_UAI_2011}, which also support efficient versions of all of the aforementioned operations.
+In principle, case statements can be used to represent all PHMDP components. In practice, case statements are implemented using a more compact representation known as Extended Algebraic Decision Diagrams (XADDs)~\parencite{Sanner_UAI_2011}, which also support efficient versions of all of the aforementioned operations.
 
 \subsection{SDP for Parameterized Hybrid MDPs}
 
-To calculate the exact solution to PHMDPs we begin by replacing all functions and operations in Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc} by their case statement equivalents. That is, we exchange operations such as {\footnotesize$+$}, {\footnotesize$\times$} and {\footnotesize$\mathnormal{max}$}, by their symbolic equivalents, {\footnotesize$\oplus$}, {\footnotesize$\otimes$} and $\casemax$, respectively, and express {\footnotesize $\Reward(\vec{d}, \vec{x}, a; \theta)$},  {\footnotesize $\ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a, \theta}$}, {\footnotesize $V^0(\vec{d}, \vec{x}; \theta)$} as case statements. The optimal solution to PHMDPs can now be described by the following recursive SDP equations:
-%{\footnotesize 
-%    \abovedisplayskip=0pt
-%    \belowdisplayskip=0pt
-%    \begin{align}
-%        Q^{h}(\vec{x}, a; \theta) &= \Reward(\vec{x}, a; \theta) \, \oplus \nonumber \\
-%        & \gamma \times \int \Transition(\vec{x}, a, \vec{x}'; \theta) \otimes V^{h-1}(\vec{x}'; \theta) d\vec{x}'\label{eq:qfunc}\\
-%        V^{h}(\vec{x}; \theta) &= \casemax_{a \in A} \left\{ Q^{h}(\vec{x}, a; \theta) \right\} \label{eq:vfunc}
-%    \end{align}
-%}%
+To calculate the exact solution to PHMDPs we begin by replacing all functions and operations in Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc} by their case statement equivalents. That is, we exchange operations such as {\footnotesize$+$}, {\footnotesize$\times$} and {\footnotesize$\max$}, by their symbolic equivalents, {\footnotesize$\oplus$}, {\footnotesize$\otimes$} and $\casemax$, respectively, and express {\footnotesize $\Reward(\vec{d}, \vec{x}, a; \theta)$},  {\footnotesize $\ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a, \theta}$}, {\footnotesize $V^0(\vec{d}, \vec{x}; \theta)$} as case statements. The optimal solution to PHMDPs can now be described by the following recursive SDP equations:
 
 {\footnotesize 
     \abovedisplayskip=0pt
     \belowdisplayskip=0pt
     \begin{align}
-        Q^{h}(\vec{d}, \vec{x}, a; \theta) &= \Reward(\vec{d}, \vec{x}, a; \theta) \oplus \gamma \cdot  \nonumber \\ 
-        & \sum_{\vec{d}'} \int_{\vec{x}'} \ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a, \theta} \otimes V^{h-1}(\vec{d}, \vec{x}; \theta) d\vec{x}' \label{eq:vi_sdp_qfunc} \\
-        V^{h}(\vec{d}, \vec{x}; \theta) &= \casemax_{a \in A} \left\{ Q^{h}(\vec{d}, \vec{x}, a; \theta) \right\} \label{eq:vi_sdp_vfunc}
+        Q^{h}(\vec{d}, \vec{x}, a; \theta) = \Reward(\vec{d}, \vec{x}, a; \theta) \oplus \gamma \, \cdot &  \nonumber \\ 
+        \sum_{\vec{d}'} \int_{\vec{x}'} \ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a; \theta} & \otimes V^{h-1}(\vec{d}, \vec{x}; \theta) \, d\vec{x}'  \label{eq:vi_sdp_qfunc} \\
+        V^{h}(\vec{d}, \vec{x}; \theta) = \casemax_{a \in A} & \left\{ Q^{h}(\vec{d}, \vec{x}, a; \theta) \right\} \label{eq:vi_sdp_vfunc}
     \end{align}
 }%
 
-It can be proved that all of the SDP operations used in Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc} are closed form for LPWC or LPWL functions~\parencite{Sanner_UAI_2011,Zamani_AAAI_2012}. Given a LPWL {\footnotesize $V^{0}(\vec{d}, \vec{x}; \theta)$} and that SDP operations are closed form, the resulting {\footnotesize $V^{1}(\vec{d}, \vec{x}; \theta)$} is also LPWL. Therefore, by induction is {\footnotesize $V^{h+1}(\vec{d}, \vec{x}; \theta)$} LPWL for all horizons {\footnotesize $ \Horizon $}.
+{\footnotesize $\ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a; \theta}$ } is specified in Equation~\eqref{eq:hmdp_tfunc}. It can be proved that all of the SDP operations used in Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc} are closed form for LPWC or LPWL functions~\parencite{Sanner_UAI_2011,Zamani_AAAI_2012}. Given a LPWL {\footnotesize $V^{0}(\vec{d}, \vec{x}; \theta)$} and that SDP operations are closed form, the resulting {\footnotesize $V^{1}(\vec{d}, \vec{x}; \theta)$} is also LPWL. Therefore, by induction is {\footnotesize $V^{h+1}(\vec{d}, \vec{x}; \theta)$} LPWL for all horizons {\footnotesize $ \Horizon $}.
 
 \subsubsection{Multi-objective PHMDPs}
 
@@ -161,3 +152,4 @@ Sensitivity analysis for PHMDPs can be conducted exactly and in closed-form by f
 
 Policy parameters for PHMDPs can be exactly and in closed-form analysed via SDP by calculating Equation~\eqref{eq:vi_sdp_qfunc} \textit{not} Equation~\eqref{eq:vi_sdp_vfunc}. This is due to their being only one policy, which leads to one {\footnotesize $ Q^{h}(\vec{d}, \vec{x}, a; \theta) $}.
 
+In the next section we demonstrate how SDP can be used to compute exact solutions to a variety of parameterized hybrid MDPs.
