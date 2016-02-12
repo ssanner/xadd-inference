@@ -2266,6 +2266,11 @@ public class XADD {
 
     }
 
+    public int computeDerivative(int xadd, String int_var) {
+        XADD.XADDLeafDerivative derivative = new XADD.XADDLeafDerivative(int_var);
+        return reduceProcessXADDLeaf(xadd, derivative, /* canonical_reorder */false);
+    }
+
     public class XADDLeafIndefIntegral extends XADDLeafOperation {
         String _integrationVar;
 
