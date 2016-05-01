@@ -1,0 +1,27 @@
+\scalebox{0.8}{
+\begin{tikzpicture}[auto]
+	% title node
+	\node [novertex] (N0) {$max_y~\{\phi_i(x,y) : f_i\}$};
+
+	% place nodes
+	\node [root, below of=N0, node distance=0.8cm]           (N1) {$d$};
+	\node [inode, below right of=N1, node distance=1.3cm]    (N2) {$x > 2$};
+	\node [inode, below right of=N2, node distance=1.3cm]    (N3) {$x > 16$};
+	\node [inode, below left of=N3, node distance=1.6cm]     (N4) {$3x > x+4$};
+	\node [terminal, below right of=N3, node distance=1.6cm] (N5) {$x+32$};
+    \node [terminal, below left of=N4, node distance=1.3cm]  (N6) {$3x$};
+    \node [terminal, below right of=N4, node distance=1.3cm] (N7) {$x+4$};
+    \node [terminal, left of=N6, node distance=2.0cm]        (N8) {$-\infty$};
+    
+	% draw edges
+    \path [high] (N1) -- (N2);
+    \path [high] (N2) -- (N3);
+    \path [high] (N3) -- (N4);
+    \path [low]  (N3) -- (N5);
+    \path [high] (N4) -- (N6);
+    \path [low]  (N4) -- (N7);
+    
+    \path [low] (N1) -- (N8);
+    \path [low] (N2) -- (N8);
+\end{tikzpicture}
+}

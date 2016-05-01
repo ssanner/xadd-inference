@@ -1,0 +1,203 @@
+\relax 
+\citation{Scarf_Karlin58}
+\citation{bresina02}
+\citation{Scarf_Karlin58}
+\citation{reservoir}
+\citation{feng04,li05}
+\citation{lqgc}
+\citation{Scarf_Karlin58}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}}
+\newlabel{Introduction}{{1}{1}}
+\citation{bitran,wusd10}
+\newlabel{eq:trans_inv}{{1}{2}}
+\newlabel{rew_inv}{{2}{2}}
+\citation{Scarf_Karlin58}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \relax \fontsize  {9}{11}\selectfont  \abovedisplayskip 8\p@ plus2\p@ minus4\p@ \abovedisplayshortskip \z@ plus\p@ \belowdisplayshortskip 4\p@ plus2\p@ minus2\p@ \def \leftmargin \leftmargini \parsep 4.5\p@ plus2\p@ minus\p@ \topsep 9\p@ plus3\p@ minus5\p@ \itemsep 4.5\p@ plus2\p@ minus\p@ {\leftmargin \leftmargini \topsep 4\p@ plus2\p@ minus2\p@ \parsep 2\p@ plus\p@ minus\p@ \itemsep \parsep }\belowdisplayskip \abovedisplayskip Optimal value function $V^2(x)$ for the CAIC problem represented as an extended algebraic decision diagram (XADD). Here the solid lines represent the $\mathit  {true}$ branch for the decision and the dashed lines the $\mathit  {false}$ branch. To evaluate $V^2(x)$ for any state $x$, one simply traverses the diagram in a decision-tree like fashion until a leaf is reached where the non-parenthetical expression provides the \emph  {optimal value} and the parenthetical expression provides the \emph  {optimal policy} ($a = \pi ^{*,2}(x)$) to achieve value $V^2(x)$ (Left); Simplified diagram for the optimal policy for the second iteration $\pi ^2$ consistent with Scarf's policy (Right).}}{3}}
+\newlabel{fig:inv_policy}{{1}{3}}
+\newlabel{eq:vfun_inv}{{3}{3}}
+\citation{fomdp}
+\citation{bahar93add}
+\citation{spudd}
+\citation{bellman}
+\citation{li05}
+\citation{boutilier99dt}
+\citation{dbn}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Hybrid MDPs (HMDPs)}{5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Factored Representation}{5}}
+\newlabel{sec:HMDPs}{{2.1}{5}}
+\newlabel{eq:vfun_def}{{4}{5}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces {\it  (left)} Network topology between state variables in the 2-item continuous action \textsc  {Inventory Control }(CAIC) problem; {\it  (middle)} DBN structure representing the transition and reward function; {\it  (right)} transition probabilities and reward function in terms of CPF and PLE for $x_1$. }}{6}}
+\newlabel{fig:dbn}{{2}{6}}
+\citation{feng04,hao09}
+\citation{feng04,li05,hao09}
+\citation{bellman}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Solution methods}{7}}
+\newlabel{sec:soln}{{2.2}{7}}
+\citation{fomdp}
+\citation{fomdp}
+\citation{fomdp}
+\newlabel{eq:qfun}{{5}{8}}
+\newlabel{eq:vfun}{{6}{8}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Symbolic Dynamic Programming}{8}}
+\newlabel{SDP}{{3}{8}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Case Representation}{8}}
+\newlabel{sec:caserep}{{3.1}{8}}
+\newlabel{defCase}{{3.1}{9}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Binary operations}{9}}
+\newlabel{symbolicMax}{{3.2}{10}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Unary Operations}{11}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.1}Scalar multiplication and Negation}{11}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.2}Restriction}{11}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.3}Substitution}{11}}
+\newlabel{SubEq}{{7}{11}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.4}Marginalization of Continuous Variables}{12}}
+\newlabel{MargContVar}{{3.3.4}{12}}
+\newlabel{eq:gen_int}{{8}{12}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.5}Continuous Maximization}{12}}
+\newlabel{contmax}{{3.3.5}{12}}
+\newlabel{eq:casemax_max}{{9}{13}}
+\@writefile{toc}{\contentsline {paragraph}{Maximum of a single partition.}{13}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Symbolic Value Iteration (SVI)}{14}}
+\newlabel{alg:vi}{{1}{15}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {1}{\ignorespaces \relax \fontsize  {9}{11}\selectfont  \abovedisplayskip 8\p@ plus2\p@ minus4\p@ \abovedisplayshortskip \z@ plus\p@ \belowdisplayshortskip 4\p@ plus2\p@ minus2\p@ \def \leftmargin \leftmargini \parsep 4.5\p@ plus2\p@ minus\p@ \topsep 9\p@ plus3\p@ minus5\p@ \itemsep 4.5\p@ plus2\p@ minus\p@ {\leftmargin \leftmargini \topsep 4\p@ plus2\p@ minus2\p@ \parsep 2\p@ plus\p@ minus\p@ \itemsep \parsep }\belowdisplayskip \abovedisplayskip \texttt  {SVI}(HMDP, $H$) $\DOTSB \relbar \joinrel \rightarrow $ $(V^h,\pi ^{*,h})$ }}{15}}
+\newlabel{alg:regress}{{2}{15}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {2}{\ignorespaces \relax \fontsize  {9}{11}\selectfont  \abovedisplayskip 8\p@ plus2\p@ minus4\p@ \abovedisplayshortskip \z@ plus\p@ \belowdisplayshortskip 4\p@ plus2\p@ minus2\p@ \def \leftmargin \leftmargini \parsep 4.5\p@ plus2\p@ minus\p@ \topsep 9\p@ plus3\p@ minus5\p@ \itemsep 4.5\p@ plus2\p@ minus\p@ {\leftmargin \leftmargini \topsep 4\p@ plus2\p@ minus2\p@ \parsep 2\p@ plus\p@ minus\p@ \itemsep \parsep }\belowdisplayskip \abovedisplayskip \texttt  {Regress}($V,a,\mathaccentV {vec}17E{y}$) $\DOTSB \relbar \joinrel \rightarrow $ $Q$ }}{15}}
+\newlabel{recent_q}{{10}{16}}
+\newlabel{alg:contMax}{{3}{18}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {3}{\ignorespaces \relax \fontsize  {9}{11}\selectfont  \abovedisplayskip 8\p@ plus2\p@ minus4\p@ \abovedisplayshortskip \z@ plus\p@ \belowdisplayshortskip 4\p@ plus2\p@ minus2\p@ \def \leftmargin \leftmargini \parsep 4.5\p@ plus2\p@ minus\p@ \topsep 9\p@ plus3\p@ minus5\p@ \itemsep 4.5\p@ plus2\p@ minus\p@ {\leftmargin \leftmargini \topsep 4\p@ plus2\p@ minus2\p@ \parsep 2\p@ plus\p@ minus\p@ \itemsep \parsep }\belowdisplayskip \abovedisplayskip \texttt  {Continuous Maximization}($y$, $f(\mathaccentV {vec}17E{b},\mathaccentV {vec}17E{x},y)$) $\DOTSB \relbar \joinrel \rightarrow (max_{y}f(\mathaccentV {vec}17E{b},\mathaccentV {vec}17E{x},y))$ }}{18}}
+\citation{spudd}
+\citation{bahar93add}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Extended Algebric Decision Diagrams (XADDs)}{19}}
+\newlabel{XADD}{{4}{19}}
+\citation{bryant}
+\citation{bahar93add}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Examples of decision diagrams: {\it  (left)} a BDD, {\it  (middle)} an ADD and {\it  (right)} an XADD.}}{20}}
+\newlabel{fig:bdd_add_xadd}{{3}{20}}
+\newlabel{def:csi}{{11}{21}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}XADD Formal Definitions}{21}}
+\newlabel{xaddformal}{{4.1}{21}}
+\newlabel{eq:function_xadd}{{12}{21}}
+\newlabel{Eq:canonical}{{13}{21}}
+\newlabel{Eq:canonicalpoly}{{14}{22}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Path formulas and case partitions in the XADD.}}{23}}
+\newlabel{fig:path}{{4}{23}}
+\newlabel{eq:path}{{15}{23}}
+\newlabel{eq:casePartition}{{16}{23}}
+\newlabel{algGetNode}{{4}{24}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {4}{\ignorespaces {\sc  GetNode}($F_{\mathit  {dec}}, F_h, F_l$) $\DOTSB \relbar \joinrel \rightarrow \delimiter "426830A F^r \delimiter "526930B $}}{24}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}XADD Operations}{24}}
+\newlabel{sec:xaddoperations}{{4.2}{24}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Reduce and GetNode}{24}}
+\newlabel{algReduceXADD}{{5}{25}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {5}{\ignorespaces {\sc  ReduceXADD}($F$) $\DOTSB \relbar \joinrel \rightarrow $ $\delimiter "426830A F^r \delimiter "526930B $ }}{25}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Unary XADD Operations}{25}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces {\it  (bottom left)} Example of restriction operation $F|_{b=true}$ and $F|_{b=false}$ on the XADD F (top). {\it  (bottom right)} The resulting XADD after marginalization $\DOTSB \sum@ \slimits@ _{b}F$.}}{26}}
+\newlabel{fig:restrict}{{5}{26}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Applying reorder on the XADD of Figure 3\hbox {} (right) with the new order of nodes given by: Order($x_1>=70$) $<$ Order($x_1>=50$) $<$ Order($b_1$). (a) The resulting reorder XADD $F_h$. (b) The resulting reorder XADD $F_l$. (c) The resulting reordered XADD $F^r$.}}{27}}
+\newlabel{fig:reorder}{{6}{27}}
+\newlabel{alg:reorder}{{6}{27}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {6}{\ignorespaces {\sc  Reorder}($F$) $\DOTSB \relbar \joinrel \rightarrow $ $\delimiter "426830A F^r \delimiter "526930B $ }}{27}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces XADD Continuous Maximization for one state partition: $\phi _i ( x,d,y): f_i$ such $ \phi _i = d \wedge ( y > 2 ) \wedge ( y < 16) \wedge ( y < x )$ and $f_i = x + 2y$.}}{28}}
+\newlabel{fig:xadd_max}{{7}{28}}
+\newlabel{algLinearize}{{7}{29}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {7}{\ignorespaces {\sc  ReduceLinearize}($F$)$\DOTSB \relbar \joinrel \rightarrow $ $\delimiter "426830A F^r \delimiter "526930B $ }}{29}}
+\newlabel{algChooseDecBranch}{{8}{29}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {8}{\ignorespaces {\sc  ChooseEarliestDec}($F^1,F^2$) $\DOTSB \relbar \joinrel \rightarrow $ $\delimiter "426830A \mathit  {F_{dec}} \delimiter "526930B $ }}{29}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces \emph  {ComputeResult} method: Special input cases and immediate results used in the algorithm \emph  {Apply} (Algorithm 9\hbox {}). }}{30}}
+\newlabel{tab:ComputeResultXADD}{{1}{30}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Binary XADD Operations: the Apply algorithm}{30}}
+\newlabel{algApply}{{9}{31}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {9}{\ignorespaces {\sc  Apply}($F^1,F^2,\mathit  {op}$) $\DOTSB \relbar \joinrel \rightarrow $ $\delimiter "426830A F^r \delimiter "526930B $ }}{31}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Inconsistent Path Formula and Redundant Node}{32}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces XADD with an Inconsistent Path Formula: {\it  (left)} Path definitions on each node in the XADD with an inconsistent path formula $\psi (n_1, n_2, n_4)$, i.e. $((x \geq -8) \wedge \neg (x \geq -10) \models  \perp )$; {\it  (right)} Pruned XADD after removing path $C=(n_1, n_2, n_4)$. Note that $n_4$ is unreachable and then removed; consequently $n_2$ is an unnecessary decision and it is also removed. }}{33}}
+\newlabel{fig:consistent_graph}{{8}{33}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces XADD with a Redundant Node: {\it  (left)} Path definitions on each node in the XADD with a redundant node $n_1$ ($x>=-8$). It is redundant since $n_2$ represents the same function as $n_1$; (right). The pruned XADD F without the redundant node $n_1$. Note that all leaf nodes have the same partition, i.e. $\phi (n) \equiv \phi '(n)$.}}{33}}
+\newlabel{fig:redundant_graph}{{9}{33}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces {\it  (left)} A counterexample for an XADD that is not canonical after applying consistency and redundancy checking; {\it  (right)} The minimal XADD which can not be derived from the left diagram.}}{34}}
+\newlabel{fig:canonical}{{10}{34}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Inconsistency Pruning Algorithm}{34}}
+\newlabel{algPrune}{{10}{35}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {10}{\ignorespaces {\sc  PruneInconsistent}($F$, $\psi $) $\DOTSB \relbar \joinrel \rightarrow $ $\delimiter "426830A F^r \delimiter "526930B $ }}{35}}
+\newlabel{algPruneRedundant}{{11}{35}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {11}{\ignorespaces {\sc  PruneRedundant}($F$, $\psi $) $\DOTSB \relbar \joinrel \rightarrow $ $\delimiter "426830A F^r \delimiter "526930B $ }}{35}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}Redundancy Pruning Algorithm}{36}}
+\newlabel{redundancyprunning}{{4.3.2}{36}}
+\citation{bryant}
+\newlabel{algRedundant}{{12}{37}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {12}{\ignorespaces {\sc  IsRedundant}($\psi $, $\mathit  {subtree}$, $\mathit  {goal}$) $\DOTSB \relbar \joinrel \rightarrow $ $\delimiter "426830A \mathit  {true}, \mathit  {false} \delimiter "526930B $ }}{37}}
+\newlabel{redu}{{17}{38}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experimental Results}{38}}
+\newlabel{results}{{5}{38}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Domains}{38}}
+\@writefile{toc}{\contentsline {paragraph}{\textsc  {Inventory Control }}{38}}
+\@writefile{toc}{\contentsline {paragraph}{\textsc  {Mars Rover }}{38}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces \relax \fontsize  {9}{11}\selectfont  \abovedisplayskip 8\p@ plus2\p@ minus4\p@ \abovedisplayshortskip \z@ plus\p@ \belowdisplayshortskip 4\p@ plus2\p@ minus2\p@ \def \leftmargin \leftmargini \parsep 4.5\p@ plus2\p@ minus\p@ \topsep 9\p@ plus3\p@ minus5\p@ \itemsep 4.5\p@ plus2\p@ minus\p@ {\leftmargin \leftmargini \topsep 4\p@ plus2\p@ minus2\p@ \parsep 2\p@ plus\p@ minus\p@ \itemsep \parsep }\belowdisplayskip \abovedisplayskip Optimal sum of rewards (value) $V^t(x)$ for $b = 0 \tmspace  +\thinmuskip {.1667em} (\mathit  {false})$ for time horizons (i.e., decision stages remaining) $t=0$, $t=1$, and $t=2$ on the \textsc  {Continuous Action} \textsc  {Mars Rover }\ problem. For $x \in [-2,2]$, the rover automatically takes a picture and receives a reward quadratic in $x$. We initialized $V^0(x,b) = R(x,b)$; for $V^1(x)$, the rover achieves non-zero value up to $x = \pm 12$ and for $V^2(x)$, up to $x = \pm 22$.}}{39}}
+\newlabel{fig:opt_graph}{{11}{39}}
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces \relax \fontsize  {9}{11}\selectfont  \abovedisplayskip 8\p@ plus2\p@ minus4\p@ \abovedisplayshortskip \z@ plus\p@ \belowdisplayshortskip 4\p@ plus2\p@ minus2\p@ \def \leftmargin \leftmargini \parsep 4.5\p@ plus2\p@ minus\p@ \topsep 9\p@ plus3\p@ minus5\p@ \itemsep 4.5\p@ plus2\p@ minus\p@ {\leftmargin \leftmargini \topsep 4\p@ plus2\p@ minus2\p@ \parsep 2\p@ plus\p@ minus\p@ \itemsep \parsep }\belowdisplayskip \abovedisplayskip Optimal value function $V^2(x)$ for the \textsc  {Continuous Action} \textsc  {Mars Rover }\ problem represented as an (XADD) equal to the second diagram on the left. To evaluate $V^2(x)$ for any state $x$, one simply traverses the diagram in a decision-tree like fashion until a leaf is reached where the non-parenthetical expression provides the \emph  {optimal value} and the parenthetical expression provides the \emph  {optimal policy} ($y = \pi ^{*,2}(x)$) to achieve value $V^2(x)$.}}{39}}
+\newlabel{fig:opt_val_pol}{{12}{39}}
+\citation{Mahootchi2009,Yeh1985}
+\@writefile{toc}{\contentsline {paragraph}{\textsc  {Reservoir Management }}{40}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Results}{40}}
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Space (\# XADD nodes in value function) and time for different iterations (horizons) of SDP on Nonlinear \textsc  {Continuous Action} \textsc  {Mars Rover }\ with 4 different results based on pruning techniques. Results are shown for the XADD with no pruning technique, with only consistency checking (using LP-solver) and with both the consistency and redundancy checking with a numerical precision heuristic.}}{41}}
+\newlabel{fig:roverTS}{{13}{41}}
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Space and elapsed time vs. horizon for a fixed discretization of 4 and 8 for the \textsc  {Mars Rover }domain. This demonstrates how the number of nodes and time increases for each horizon. }}{41}}
+\newlabel{fig:roverDisTS}{{14}{41}}
+\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces $V^3$ for different number of \textsc  {Discrete Actions} in the \textsc  {Mars Rover }\ problem. As the number of discrete actions increases, the value function more closely resembles the continuous action value of $V^3$ (defined in Figure \nobreakspace  {}12\hbox {}). }}{42}}
+\newlabel{fig:rover_discrete}{{15}{42}}
+\@writefile{lof}{\contentsline {figure}{\numberline {16}{\ignorespaces Space and elapsed time vs. horizon for a fixed horizon of 3 and different problem sizes for the \textsc  {Discrete Action} \textsc  {Mars Rover }\ and the \textsc  {Reservoir Management }. }}{42}}
+\newlabel{fig:roverDisSize}{{16}{42}}
+\@writefile{lof}{\contentsline {figure}{\numberline {17}{\ignorespaces Space and elapsed time vs. horizon for a fixed discritization of 4 and 8 for the discrete action \textsc  {Reservoir Management }. To compare the time and space of continuous action \textsc  {Reservoir Management }is given. }}{43}}
+\newlabel{fig:resDisTS}{{17}{43}}
+\@writefile{lof}{\contentsline {figure}{\numberline {18}{\ignorespaces Results for the \textsc  {Discrete Action} and \textsc  {Continuous Action} of the \textsc  {Reservoir Management }problem. {\it  (left)} 4, 7 and 10 \textsc  {Discrete Actions} of the \textsc  {Reservoir Management }problem for different water levels in iteration $V^3$. Each discretization draws the value closer to that of the continuous action \textsc  {Reservoir Management }on the right. {\it  (right)} Policy $\mathit  {no}$-$\mathit  {drain}(e)=\pi ^{3,*}(l_1,l_2)$ showing on the z-axis the elapsed time $e$ that should be executed for $\mathit  {no}$-$\mathit  {drain}$ conditioned on the states; followed by $V^3(l_1,l_2)$ and $V^6(l_1,l_2)$. }}{44}}
+\newlabel{fig:discreteplots}{{18}{44}}
+\@writefile{lof}{\contentsline {figure}{\numberline {19}{\ignorespaces \textsc  {Continuous Action} \textsc  {Inventory Control }: space and time vs. horizon. }}{45}}
+\newlabel{fig:invC}{{19}{45}}
+\@writefile{lof}{\contentsline {figure}{\numberline {20}{\ignorespaces \textsc  {Discrete Action} \textsc  {Inventory Control }: Space and time vs. horizon for 6 discrete actions. Results are shown for various continuous items in the inventory. }}{45}}
+\newlabel{fig:invD6}{{20}{45}}
+\@writefile{lof}{\contentsline {figure}{\numberline {21}{\ignorespaces Space and elapsed time vs. horizon for a fixed horizon of 3 and different problem sizes for the \textsc  {Discrete Action} \textsc  {Inventory Control }. }}{45}}
+\newlabel{fig:invH3}{{21}{45}}
+\citation{feng04}
+\citation{li05}
+\citation{hao09}
+\citation{feng04}
+\citation{penberthy94}
+\citation{boyan01}
+\citation{phase07}
+\citation{kveton06}
+\citation{munos02}
+\citation{lqgc}
+\citation{hao09}
+\citation{apricodd}
+\citation{munos02,kveton06,phase07}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Related Work}{46}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Concluding Remarks}{46}}
+\citation{hao09}
+\citation{li05}
+\citation{apricodd}
+\bibdata{exactsdp}
+\bibcite{Scarf_Karlin58}{\BCAY {Arrow, Karlin,\ \BBA\ Scarf}{Arrow et\nobreakspace  {}al.}{1958}}
+\bibcite{lqgc}{\BCAY {Athans}{Athans}{1971}}
+\bibcite{bahar93add}{\BCAY {Bahar, Frohm, Gaona, Hachtel, Macii, Pardo,\ \BBA\ Somenzi}{Bahar et\nobreakspace  {}al.}{1993}}
+\bibcite{bellman}{\BCAY {Bellman}{Bellman}{1957}}
+\bibcite{bitran}{\BCAY {Bitran\ \BBA\ Yanasse}{Bitran\ \BBA\ Yanasse}{1982}}
+\bibcite{boutilier99dt}{\BCAY {Boutilier, Dean,\ \BBA\ Hanks}{Boutilier et\nobreakspace  {}al.}{1999}}
+\bibcite{fomdp}{\BCAY {Boutilier, Reiter,\ \BBA\ Price}{Boutilier et\nobreakspace  {}al.}{2001}}
+\bibcite{boyan01}{\BCAY {Boyan\ \BBA\ Littman}{Boyan\ \BBA\ Littman}{2001}}
+\bibcite{bresina02}{\BCAY {Bresina, Dearden, Meuleau, Ramkrishnan, Smith,\ \BBA\ Washington}{Bresina et\nobreakspace  {}al.}{2002}}
+\bibcite{bryant}{\BCAY {Bryant}{Bryant}{1986}}
+\bibcite{dbn}{\BCAY {Dean\ \BBA\ Kanazawa}{Dean\ \BBA\ Kanazawa}{1989}}
+\bibcite{feng04}{\BCAY {Feng, Dearden, Meuleau,\ \BBA\ Washington}{Feng et\nobreakspace  {}al.}{2004}}
+\bibcite{spudd}{\BCAY {Hoey, St-Aubin, Hu,\ \BBA\ Boutilier}{Hoey et\nobreakspace  {}al.}{1999}}
+\bibcite{kveton06}{\BCAY {Kveton, Hauskrecht,\ \BBA\ Guestrin}{Kveton et\nobreakspace  {}al.}{2006}}
+\bibcite{reservoir}{\BCAY {Lamond\ \BBA\ Boukhtouta}{Lamond\ \BBA\ Boukhtouta}{2002}}
+\bibcite{li05}{\BCAY {Li\ \BBA\ Littman}{Li\ \BBA\ Littman}{2005}}
+\bibcite{Mahootchi2009}{\BCAY {Mahootchi}{Mahootchi}{2009}}
+\bibcite{phase07}{\BCAY {Marecki, Koenig,\ \BBA\ Tambe}{Marecki et\nobreakspace  {}al.}{2007}}
+\@writefile{toc}{\contentsline {section}{References}{48}}
+\bibcite{hao09}{\BCAY {Meuleau, Benazera, Brafman, Hansen,\ \BBA\ Mausam}{Meuleau et\nobreakspace  {}al.}{2009}}
+\bibcite{penberthy94}{\BCAY {Penberthy\ \BBA\ Weld}{Penberthy\ \BBA\ Weld}{1994}}
+\bibcite{munos02}{\BCAY {Remi\nobreakspace  {}Munos}{Remi\nobreakspace  {}Munos}{2002}}
+\bibcite{apricodd}{\BCAY {St-Aubin, Hoey,\ \BBA\ Boutilier}{St-Aubin et\nobreakspace  {}al.}{2000}}
+\bibcite{wusd10}{\BCAY {Wu, Shi,\ \BBA\ Duffie}{Wu et\nobreakspace  {}al.}{2010}}
+\bibcite{Yeh1985}{\BCAY {Yeh}{Yeh}{1985}}
+\bibstyle{theapa}

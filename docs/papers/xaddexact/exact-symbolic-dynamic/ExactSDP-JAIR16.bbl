@@ -1,0 +1,167 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\BCAY{Arrow, Karlin,\ \BBA\ Scarf}{Arrow
+  et~al.}{1958}]{Scarf_Karlin58}
+Arrow, K., Karlin, S., \BBA\ Scarf, H. \BBOP1958\BBCP.
+\newblock {\Bem Studies in the mathematical theory of inventory and
+  production}.
+\newblock Stanford University Press.
+
+\bibitem[\protect\BCAY{Athans}{Athans}{1971}]{lqgc}
+Athans, M. \BBOP1971\BBCP.
+\newblock \BBOQ The role and use of the stochastic linear-quadratic-gaussian
+  problem in control system design\BBCQ\
+\newblock {\Bem IEEE Transaction on Automatic Control}, {\Bem 16\/}(6),
+  529--552.
+
+\bibitem[\protect\BCAY{Bahar, Frohm, Gaona, Hachtel, Macii, Pardo,\ \BBA\
+  Somenzi}{Bahar et~al.}{1993}]{bahar93add}
+Bahar, R.~I., Frohm, E., Gaona, C., Hachtel, G., Macii, E., Pardo, A., \BBA\
+  Somenzi, F. \BBOP1993\BBCP.
+\newblock \BBOQ {A}lgebraic {D}ecision {D}iagrams and their applications\BBCQ\
+\newblock In {\Bem {IEEE} /{ACM} International Conference on {CAD}}.
+
+\bibitem[\protect\BCAY{Bellman}{Bellman}{1957}]{bellman}
+Bellman, R.~E. \BBOP1957\BBCP.
+\newblock {\Bem Dynamic Programming}.
+\newblock Princeton University Press, Princeton, NJ.
+
+\bibitem[\protect\BCAY{Bitran\ \BBA\ Yanasse}{Bitran\ \BBA\
+  Yanasse}{1982}]{bitran}
+Bitran, G.~R.\BBACOMMA\  \BBA\ Yanasse, H. \BBOP1982\BBCP.
+\newblock \BBOQ Computational complexity of the capacitated lot size
+  problem\BBCQ\
+\newblock {\Bem Management Science}, {\Bem 28\/}(10), 1271--81.
+
+\bibitem[\protect\BCAY{Boutilier, Dean,\ \BBA\ Hanks}{Boutilier
+  et~al.}{1999}]{boutilier99dt}
+Boutilier, C., Dean, T., \BBA\ Hanks, S. \BBOP1999\BBCP.
+\newblock \BBOQ Decision-theoretic planning: Structural assumptions and
+  computational leverage\BBCQ\
+\newblock {\Bem {JAIR}}, {\Bem 11}, 1--94.
+
+\bibitem[\protect\BCAY{Boutilier, Reiter,\ \BBA\ Price}{Boutilier
+  et~al.}{2001}]{fomdp}
+Boutilier, C., Reiter, R., \BBA\ Price, B. \BBOP2001\BBCP.
+\newblock \BBOQ Symbolic dynamic programming for first-order {MDPs}\BBCQ\
+\newblock In {\Bem {IJCAI-01}}, \BPGS\ 690--697, Seattle.
+
+\bibitem[\protect\BCAY{Boyan\ \BBA\ Littman}{Boyan\ \BBA\
+  Littman}{2001}]{boyan01}
+Boyan, J.\BBACOMMA\  \BBA\ Littman, M. \BBOP2001\BBCP.
+\newblock \BBOQ Exact solutions to time-dependent {MDPs}\BBCQ\
+\newblock In {\Bem Advances in Neural Information Processing Systems
+  {NIPS-00}}, \BPGS\ 1026--1032.
+
+\bibitem[\protect\BCAY{Bresina, Dearden, Meuleau, Ramkrishnan, Smith,\ \BBA\
+  Washington}{Bresina et~al.}{2002}]{bresina02}
+Bresina, J.~L., Dearden, R., Meuleau, N., Ramkrishnan, S., Smith, D.~E., \BBA\
+  Washington, R. \BBOP2002\BBCP.
+\newblock \BBOQ Planning under continuous time and resource uncertainty: A
+  challenge for ai\BBCQ\
+\newblock In {\Bem Uncertainty in Artificial Intelligence ({UAI-02})}, \BPGS\
+  77--84.
+
+\bibitem[\protect\BCAY{Bryant}{Bryant}{1986}]{bryant}
+Bryant, R.~E. \BBOP1986\BBCP.
+\newblock \BBOQ Graph-based {A}lgorithms for {B}oolean {F}unction
+  {M}anipulation\BBCQ\
+\newblock {\Bem {IEEE} Transactions on Computers}, {\Bem 35\/}(8), 677--691.
+
+\bibitem[\protect\BCAY{Dean\ \BBA\ Kanazawa}{Dean\ \BBA\ Kanazawa}{1989}]{dbn}
+Dean, T.\BBACOMMA\  \BBA\ Kanazawa, K. \BBOP1989\BBCP.
+\newblock \BBOQ A model for reasoning about persistence and causation\BBCQ\
+\newblock {\Bem Computational Intelligence}, {\Bem 5\/}(3), 142--150.
+
+\bibitem[\protect\BCAY{Feng, Dearden, Meuleau,\ \BBA\ Washington}{Feng
+  et~al.}{2004}]{feng04}
+Feng, Z., Dearden, R., Meuleau, N., \BBA\ Washington, R. \BBOP2004\BBCP.
+\newblock \BBOQ Dynamic programming for structured continuous markov decision
+  problems\BBCQ\
+\newblock In {\Bem Uncertainty in Artificial Intelligence ({UAI-04})}, \BPGS\
+  154--161.
+
+\bibitem[\protect\BCAY{Hoey, St-Aubin, Hu,\ \BBA\ Boutilier}{Hoey
+  et~al.}{1999}]{spudd}
+Hoey, J., St-Aubin, R., Hu, A., \BBA\ Boutilier, C. \BBOP1999\BBCP.
+\newblock \BBOQ {SPUDD}: Stochastic planning using decision diagrams\BBCQ\
+\newblock In {\Bem {UAI-99}}, \BPGS\ 279--288, Stockholm.
+
+\bibitem[\protect\BCAY{Kveton, Hauskrecht,\ \BBA\ Guestrin}{Kveton
+  et~al.}{2006}]{kveton06}
+Kveton, B., Hauskrecht, M., \BBA\ Guestrin, C. \BBOP2006\BBCP.
+\newblock \BBOQ Solving factored mdps with hybrid state and action
+  variables\BBCQ\
+\newblock {\Bem Journal Artificial Intelligence Research (JAIR)}, {\Bem 27},
+  153--201.
+
+\bibitem[\protect\BCAY{Lamond\ \BBA\ Boukhtouta}{Lamond\ \BBA\
+  Boukhtouta}{2002}]{reservoir}
+Lamond, B.\BBACOMMA\  \BBA\ Boukhtouta, A. \BBOP2002\BBCP.
+\newblock \BBOQ Water reservoir applications of markov decision processes\BBCQ\
+\newblock In {\Bem International Series in Operations Research and Management
+  Science, Springer}.
+
+\bibitem[\protect\BCAY{Li\ \BBA\ Littman}{Li\ \BBA\ Littman}{2005}]{li05}
+Li, L.\BBACOMMA\  \BBA\ Littman, M.~L. \BBOP2005\BBCP.
+\newblock \BBOQ Lazy approximation for solving continuous finite-horizon
+  mdps\BBCQ\
+\newblock In {\Bem National Conference on Artificial Intelligence {AAAI-05}},
+  \BPGS\ 1175--1180.
+
+\bibitem[\protect\BCAY{Mahootchi}{Mahootchi}{2009}]{Mahootchi2009}
+Mahootchi, M. \BBOP2009\BBCP.
+\newblock {\Bem Storage System Management Using Reinforcement Learning
+  Techniques and Nonlinear Models}.
+\newblock Ph.D.\ thesis, University of Waterloo,Canada.
+
+\bibitem[\protect\BCAY{Marecki, Koenig,\ \BBA\ Tambe}{Marecki
+  et~al.}{2007}]{phase07}
+Marecki, J., Koenig, S., \BBA\ Tambe, M. \BBOP2007\BBCP.
+\newblock \BBOQ A fast analytical algorithm for solving markov decision
+  processes with real-valued resources\BBCQ\
+\newblock In {\Bem International Conference on Uncertainty in Artificial
+  Intelligence {IJCAI}}, \BPGS\ 2536--2541.
+
+\bibitem[\protect\BCAY{Meuleau, Benazera, Brafman, Hansen,\ \BBA\
+  Mausam}{Meuleau et~al.}{2009}]{hao09}
+Meuleau, N., Benazera, E., Brafman, R.~I., Hansen, E.~A., \BBA\ Mausam
+  \BBOP2009\BBCP.
+\newblock \BBOQ A heuristic search approach to planning with continuous
+  resources in stochastic domains\BBCQ\
+\newblock {\Bem Journal Artificial Intelligence Research (JAIR)}, {\Bem 34},
+  27--59.
+
+\bibitem[\protect\BCAY{Penberthy\ \BBA\ Weld}{Penberthy\ \BBA\
+  Weld}{1994}]{penberthy94}
+Penberthy, J.~S.\BBACOMMA\  \BBA\ Weld, D.~S. \BBOP1994\BBCP.
+\newblock \BBOQ Temporal planning with continuous change\BBCQ\
+\newblock In {\Bem National Conference on Artificial Intelligence {AAAI}},
+  \BPGS\ 1010--1015.
+
+\bibitem[\protect\BCAY{Remi~Munos}{Remi~Munos}{2002}]{munos02}
+Remi~Munos, A.~M. \BBOP2002\BBCP.
+\newblock \BBOQ Variable resolution discretization in optimal control\BBCQ\
+\newblock {\Bem Machine Learning}, {\Bem 49, 2--3}, 291--323.
+
+\bibitem[\protect\BCAY{St-Aubin, Hoey,\ \BBA\ Boutilier}{St-Aubin
+  et~al.}{2000}]{apricodd}
+St-Aubin, R., Hoey, J., \BBA\ Boutilier, C. \BBOP2000\BBCP.
+\newblock \BBOQ {APRICODD}: Approximate policy construction using decision
+  diagrams\BBCQ\
+\newblock In {\Bem {NIPS-2000}}, \BPGS\ 1089--1095, Denver.
+
+\bibitem[\protect\BCAY{Wu, Shi,\ \BBA\ Duffie}{Wu et~al.}{2010}]{wusd10}
+Wu, T., Shi, L., \BBA\ Duffie, N.~A. \BBOP2010\BBCP.
+\newblock \BBOQ An hnp-mp approach for the capacitated multi-item lot sizing
+  problem with setup times\BBCQ\
+\newblock {\Bem IEEE T. Automation Science and Engineering}, {\Bem 7\/}(3),
+  500--511.
+
+\bibitem[\protect\BCAY{Yeh}{Yeh}{1985}]{Yeh1985}
+Yeh, W.~G. \BBOP1985\BBCP.
+\newblock \BBOQ Reservoir management and operations models: A state-of-the-art
+  review\BBCQ\
+\newblock {\Bem Water Resources research}, {\Bem 21,12}, 1797–1818.
+
+\end{thebibliography}

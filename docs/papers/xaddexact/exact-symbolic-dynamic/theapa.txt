@@ -1,0 +1,99 @@
+Citation with the theapa package
+
+The theapa package, based on the American Psychology Association standard,
+consists of two files, one for LaTeX2e (theapa.sty) and
+the other for BibTeX (theapa.bst).
+
+Your LaTeX2e document should look like
+
+	\documentclass[jair,11pt]{article}
+	\usepackage{theapa}
+
+	\begin{document}
+
+	...
+
+	\bibliography{your_biblopgraphy_file}
+	\bibliographystyle{theapa}
+	\end{document}
+
+Three citation commands are most frequently used:
+
+	Some learning methods such as instance-based learning \cite{Aha91}
+	produce ... On the other hand, \citeA{Altman68} suggested ...
+	While \citeS{Altman68} method has the advantage of ...
+
+results in
+
+	Some learning methods such as instance-based learning
+	(Aha, Kibler, & Albert, 1991) produce ... On the other
+	hand, Altman (1968) suggested ... While Altiman's (1968)
+	method has the advantage of ...
+
+Details of all citation commands are:
+
+   A1. \cite{Aha91,Altman68} produces
+       (Aha, Kibler, & Albert, 1991; Altman, 1968)
+
+   A2. \cite<e.g.,>{Aha91,Altman68} produces
+       (e.g., Aha, Kibler, & Albert, 1991; Altman, 1968)
+
+   A3. \cite[and others]{Altman68} produces
+       (Altman, 1968, and others)
+
+   A4. \cite<e.g.,>[and others]{Altman68} produces
+       (e.g., Altman, 1968, and others)
+
+   B1. \citeA{Altman68} produces
+       Altman (1968)
+
+   B2. \citeA[and others]{Altman68} produces
+       Altman (1968, and others)
+
+   C1. \citeR{Aha91,Altman68} produces
+       Aha, Kibler, & Albert, 1991; Altman, 1968
+
+   C2. \citeR<e.g.,>{Aha91,Altman68} produces
+       e.g., Aha, Kibler, & Albert, 1991; Altman, 1968
+
+   C3. \citeR[and others]{Altman68} produces
+       Altman, 1968, and others
+
+   C4. \citeR<e.g.,>[and others]{Altman68} produces
+       e.g., Altman, 1968, and others
+
+   D1. \citeS{Altman68} produces
+       Altman's (1968)
+
+   D2. \citeS[and others]{Altman68} produces
+       Altman's (1968, and others)
+
+   E1. \citeauthor{Altman68} produces
+       Altman
+
+   F1. \citeyear{Altman68} produces
+       (1968)
+
+   F2. \citeyear[and others]{Altman68} produces
+       (1968, and others)
+
+   G1. \citeyearR{Altman68} produces
+       1968
+
+   G2. \citeyearR[and others]{Altman68} produces
+       1968, and others
+
+These \citeXXX commands automatically switches from
+the long format to the short format when references
+are sited second or later time. That is,
+when there are 3 or more authors, the first cite
+gives (Aha, Kibler, & Albert, 1991); the second and further cites
+give (Aha et al, 1991).
+
+If you want to enforce the long cite format, use
+\fullcite instead of \cite;
+\fullciteA instead of \citeA; etc.
+
+If you want to enforce the short cite format, use
+\shortcite instead of \cite;
+\shortciteA instead of \citeA; etc.

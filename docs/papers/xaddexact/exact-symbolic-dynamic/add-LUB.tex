@@ -1,0 +1,15 @@
+\scalebox{0.8}{
+\begin{tikzpicture}[auto]
+	% title node
+	\node [novertex] (N0) {LUB};
+
+	% place nodes
+	\node [inode, below of=N0, node distance=0.8cm]          (N1) {$x < 16$};
+	\node [terminal, below left of=N1, node distance=1.3cm]  (N2) {$x$};
+	\node [terminal, below right of=N1, node distance=1.3cm] (N3) {$16$};
+
+	% draw edges
+    \path [high] (N1) -- (N2);
+    \path [low] (N1) -- (N3);
+\end{tikzpicture}
+}
