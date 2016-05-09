@@ -15,7 +15,7 @@
 \usetikzlibrary{shapes,shapes.geometric,shapes.arrows}
 \input{definitions.tex}
 
-
+\usepackage{lscape}
 
 \def\argmax{\operatornamewithlimits{arg\max}}
 \newcommand{\casemax}{\mathrm{casemax}}
@@ -70,7 +70,7 @@ Many real-world decision-theoretic planning problems can naturally be modeled us
 
 We define a Symbolic Dynamic Programming (SDP) approach using the \emph{case} calculus which provides a closed-form solution for all DP operations (e.g. continuous maximization and integration). Solutions are provided for discrete action Hybrid (i.e. discrete and continuous) state MDPs (HMDPs) using polynomial transitions with discrete noise and arbitrary reward functions. Solutions to continuous action HMDPs with piecewise linear (or univariate quadratic), discrete noise transition and reward functions are also derived. 
 
-Apart from the solution to general HMDPs, our other contribution is the compact representation of XADDs - a continuous variable extension of Algebraic decision diagrams (ADDs) - with related properties and algorithms. This allows us to empirically provide efficient results for HMDPs showing the \emph{first optimal automated solution} on various continuous domains. 
+Apart from the solution to general HMDPs, our other contribution is the compact representation of XADDs - a continuous variable extension of Algebraic Decision Diagrams (ADDs) - with related properties and algorithms. This allows us to empirically provide efficient results for HMDPs showing the \emph{first optimal automated solution} on various continuous domains. 
 \end{abstract}
 
 \section{Introduction}
@@ -389,7 +389,7 @@ we do not restrict the equations to be linear, but rather
 allow it to specify \emph{arbitrary} functions (e.g., nonlinear). 
 
 The reward function in DA-HMDPs is defined as \emph{arbitrary} function of the current state for each action $a \in A$. 
-While  empirical examples throughout the paper will demonstrate the full expressiveness of our symbolic dynamic programming approach, we note that there are computational advantages to be had when the reward and transition case conditions and functions can be restricted to linear polynomials.  
+While  empirical examples throughout the paper will demonstrate the full expressiveness of our symbolic dynamic programming approach, we note that there are computational advantages to be had when the reward and transition case conditions and functions can be restricted to linear expressions.  
 
 Due to the same restrictions, for CA-HMDPs the reward function $R(\vec{b},\vec{b'},\vec{x},\vec{x'}, a,\vec{y})$ is defined as either of the following:
 
@@ -448,12 +448,12 @@ function as previously defined is the objective of the symbolic
 dynamic programming algorithm that we define in the next section.
 
 \section{Symbolic Dynamic Programming} \label{SDP}
-As it's name suggests, symbolic dynamic programming (SDP) \cite{fomdp}
+As the name suggests, symbolic dynamic programming (SDP) \cite{fomdp}
 is simply the process of performing dynamic programming (in this case
-value iteration) via symbolic manipulation. Specifically SDP provides symbolic abstraction of all functions which allows building distinct logical partitions on the state space to represent the policy and value function. While SDP as defined
-in \cite{fomdp} was previously only used with piecewise
-constant functions, we now generalize the representation to work with
-general piecewise functions for HMDPs in this article. Using the \emph{mathematical} definitions of the previous section, we  
+value iteration) via symbolic manipulation. Specifically, SDP provides symbolic abstraction of all functions which allows building distinct logical partitions on the state space to represent the policy and value function. While SDP as defined
+in \cite{fomdp} was only used with piecewise
+constant functions, in this work we generalize the representation to solve HMDPs with
+general piecewise functions. Using the \emph{mathematical} definitions of the previous section, we  
 show how to \emph{compute} equations~\eqref{eq:qfun} and \eqref{eq:vfun} 
 symbolically.
 %Should all this be taken out?
@@ -464,7 +464,7 @@ case representation and symbolic case operators.
 
 \subsection{Case Representation}
 \label{sec:caserep}
-The case representation presented in this section, extends the SDP framework in \cite{fomdp}, which addresses piecewise constant functions. This representation allows an expressive representation of general piecewise functions.
+The case representation presented in this section allows an expressive representation of general piecewise functions. Using such case representation we can extend the SDP framework in \cite{fomdp}, which addresses only piecewise constant functions. This representation .
 
 \begin{mydef}(\textbf{Case representation}): 
 \label{defCase}
@@ -479,11 +479,13 @@ f =
 \end{cases}
 \end{align*}
 }
-where, $\phi_i$ is a logical formula over the hybrid state $(\vec{b},\vec{x}), \vec{b} \in \mathbb{B}^m, \vec{x} \in \mathbb{R}^n$ and is defined by arbitrary logical operations ($\land,\lor,\neg$) of: 
-(1) boolean variables in $\vec{b}$ and (2) 
-inequality relations ($\geq,>,\leq,<$) over continuous variables $\vec{x}$. 
-Each $\phi_i$ is disjoint from the other $\phi_j$ ($j \neq i$). However the $\phi_i$ may not exhaustively cover the state space. Hence $f$ may only be a partial function and undefined for some variable assignments. 
-In general $f_i$ can be defined as an arbitrary function. However, in this work, we assume $f_i$ to be either linear or quadratic on $\vec{x}$. Similarly we assume $\phi_i$ is defined over linear inequalities.
+where, $\phi_i: f_i$ is a case partition; $\phi_i$ is a logical formula and $f_i$ can be defined as an arbitrary function. The formula $\phi_i$ is defined by arbitrary logical operations ($\land,\lor,\neg$ over: 
+(I) boolean variables in $\vec{b}$ and (II) 
+inequalities ($\geq,>,\leq,<$) involving continuous variables $\vec{x}$. 
+Each $\phi_i$ is disjoint from the other $\phi_j$ ($j \neq i$). 
+
+However the $\phi_i$ may not exhaustively cover the state space, i.e., $f$ may only be a partial function and undefined for some variable assignments. 
+However, in this work, we assume $f_i$ to be either linear or univariate quadratic on $\vec{x}$. Similarly we assume $\phi_i$ is defined over linear inequalities.
 \end{mydef}
 
 The following example is a simple function in this case form: 
@@ -610,7 +612,7 @@ $ = $
 Some partitions resulting from
 these operators may be inconsistent, that is $\phi_i \wedge \psi_j \models \perp$. In this case such a partition is discarded since it is irrelevant to the function value.
 
-As explained in Section~\ref{sec:caserep} for CA-HMDPs, the functions $f_i$ and $g_i$ are restricted to be linear or quadratic in the continuous parameters. While $\oplus$ and $\ominus$ preserve this property (i.e. remain closed-form), for $\otimes$ the result could exceed the second order polynomial if either $f_i$ or $g_i$ are quadratic. In such cases we may only assume the other function is piecewise constant. Conveniently as we show in the SDP algorithm presented next that the cross-product only occurs for the multiplication of piecewise constants in piecewise linear or quadratic functions. Therefore it is safe to claim that all the binary operations defined above are closed-form.
+As in Section~\ref{sec:caserep} for CA-HMDPs, the functions $f_i$ and $g_i$ are restricted to be linear or univariate quadratic in the continuous parameters. While $\oplus$ and $\ominus$ preserve this property (i.e. remain closed-form), for $\otimes$ the result could exceed the second order polynomial if either $f_i$ or $g_i$ are quadratic. In such cases we may only assume the other function is piecewise constant. Conveniently, as we show in the SDP algorithm presented next, the cross-product only occurs for the multiplication of piecewise constants in piecewise linear or quadratic functions. Therefore it is safe to claim that all the binary operations defined above are closed-form.
 
 
 \subsubsection*{Symbolic maximization}
@@ -857,7 +859,7 @@ $\max_{y_1} \cdots \max_{y_{|\vec{y}|}}$, i.e.,
 $$\max_{\vec{y}}= \max_{y_{|\vec{y}|}} (\cdots (\max_{y_2}(\max_{y_1}));$$ hence is suffices to provide just the univariate $\max_{y}$ solution: $g(\vec{b},\vec{x}) := \max_{y}
 \, f(\vec{b},\vec{x},y)$.
 
-Also, as a consequence of the mutual disjointness of the partitions in $f$, we can rewrite $f(\vec{b},\vec{x},y)$ as: \footnote{The second line ensures that all illegal values are mapped to $-\infty$.}
+Also, as a consequence of the mutual disjointness of the case partitions in $f$, we can rewrite $f(\vec{b},\vec{x},y)$ as: \footnote{The second line ensures that all illegal values are mapped to $-\infty$.}
 
 {%\footnotesize
 \begin{center}
@@ -890,19 +892,18 @@ Also, as a consequence of the mutual disjointness of the partitions in $f$, we c
 \end{tabular}
 \end{center}
 }
-where $\casemax_{i=1,\cdots,k}$ denotes $\casemax$ for $1\leq i \leq k$; and since we have $\casemax(F, -\infty) = F$, a case statement 
+where $\casemax_{i=1,\cdots,k}$ denotes $\casemax$ for $1\leq i \leq k$; and since we have $\casemax(F, -\infty) = F$, a partition 
 $ \begin{cases}
     \phi_i: & f_i \\
     \neg \phi_i: & -\infty \\    
-  \end{cases}$ can be represented only by $\phi_i : f_i$.   
+  \end{cases}$ can be represented only by the case partition $\phi_i : f_i$.   
 
-Finally, we use these transformations to compute the $\max_y f(\vec{b},\vec{x},y)$:
+Finally, we use these transformations to compute the $\max_y f(\vec{b},\vec{x},y)$ as follows:
 
 \begin{align}
 \max_y f(\vec{b},\vec{x},y) & = 
-\max_y \casemax_{i=1,\cdots,k} \, \begin{cases}
+\max_y \casemax_{i=1,\cdots,k} \, 
 \phi_i(\vec{b},\vec{x},y) : f_i(\vec{b},\vec{x},y). \nonumber \\
-\end{cases} 
 \end{align} 
 
 Because 
@@ -911,19 +912,17 @@ we compute $\max_y$ for \emph{each case partition
 individually} as:  
 
 \begin{align}
-g(\vec{b},\vec{x}) = \max_y f(\vec{b},\vec{x},y)& = \casemax_i \, \fbox{$\max_y \begin{cases}
-\phi_i(\vec{b},\vec{x},y) : f_i(\vec{b},\vec{x},y). \\
-\end{cases}$} \label{eq:casemax_max}
+g(\vec{b},\vec{x}) = \max_y f(\vec{b},\vec{x},y)& = \casemax_i \, \fbox{$\max_y 
+\phi_i(\vec{b},\vec{x},y) : f_i(\vec{b},\vec{x},y).$} \label{eq:casemax_max}
 \end{align} 
 
 
-\paragraph{Maximum of a single partition.} We can now show how to (symbolically) compute the maximum for a single partition 
+\paragraph{Maximum of a single case partition.} We can now show how to (symbolically) compute the maximum for a single case partition 
 $\max_y \phi_i(\vec{b},\vec{x},y): f_i(\vec{b},\vec{x},y)$.
 
 We know that the maximum of a continuous function $f_i$ must occur at the critical points of the function --- 
 either the upper or lower bounds ($\UB$ and $\LB$) of $y$, 
-or in the nonlinear case, in the $\Root$ (i.e., zero) of $\frac{\partial}{\partial y} f_i$ 
-w.r.t.\ $y$.  Notice that each of $\UB$, $\LB$, and $\Root$
+or in the quadratic case, in the $\Root$ (i.e., zero) of $\frac{\partial}{\partial y} f_i$.  Notice that each of $\UB$, $\LB$, and $\Root$
 is a symbolic function of $\vec{b}$ and $\vec{x}$. 
 
 We observe that each constraint of the conjunction \footnote{As we have mentioned in the case representation definition (Section \ref{sec:caserep}), we can assume without loss of generality that partitions are only conjuntions.} $\phi_i$ serves one of
@@ -942,7 +941,7 @@ or exclusive ($<$ or $>$) since $f$ is required to be continuous
 and hence evaluating at the limit of the inclusive bound will
 match the evaluation for the exclusive bound.};
 \item if the constraints do not contain $y$
-and can be safely factored outside of the $\max_y$ then it belons to an \emph{independent set ($\IND$)}. 
+and can be safely factored outside of the $\max_y$ then it belongs to an \emph{independent set ($\IND$)}. 
 \end{itemize}
 
 Note that there can be multiple symbolic upper and lower
@@ -956,33 +955,36 @@ symbolic functions --- we must symbolically evaluate which yields the
 maximizing value $\Max$ for this case partition:
 \vspace{2mm}
 {%\footnotesize
-\begin{align*}
+\begin{align}
 \Max =  \sq \begin{cases}
-\mbox{$\exists \Root$}  \sq: \sq & \sqm \casemax( f_i \{ y / \Root \}, f_i \{ y / LUB \}, f_i \{ y / HLB \})\\
-\mbox{else}  \sq:  \sq & \sqm \casemax( f_i \{ y / \UB \}, f_i \{ y / \LB \})
+\mbox{$\exists \Root\ and\ HLB \leq \Root \leq LUB$}  \sq: \sq & \sqm \casemax( f_i \{ y / \Root \}, f_i \{ y / LUB \}, f_i \{ y / HLB \})\\
+\mbox{elseif}\ HLB \leq LUB \sq:  \sq & \sqm \casemax( f_i \{ y / \UB \}, f_i \{ y / \LB \})
 \end{cases}
-\end{align*}}
+\label{eq:maxhlblub}
+\end{align}}
 The 
-substitution operator $\{ y / f \}$ replaces $y$ with case statement $f$, as defined previously.
+substitution operator $\{ y / f \}$ replaces $y$ with case statement $f$, as we have previously defined. Additional constraints arise from the
+symbolic nature of the $LUB$, $HLB$, and $\Root$. Specifically, we need to ensure that indeed $HLB \leq \Root \leq LUB$
+(or if no root exists, then $HLB \leq LUB$)
 
 At this point, we have almost completed the computation
 of the $\max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y)$
 except for two issues: (i) the incorporation of the independent ($\IND$) constraints
-(factored out previously) and (ii) additional constraints that arise from the
-symbolic nature of the $LUB$, $HLB$, and $\Root$. Specifically for the latter, we need to ensure that indeed $HLB \leq \Root \leq LUB$
-(or if no root exists, then $HLB \leq LUB$) by building a set
-of constraints $\CONS$ that ensure these conditions hold; to do this,
-it suffices to ensure that for each possible expression $\alpha$ used to
-construct $\LB$ that $\alpha \leq \Root$ and similarly for the $Root$ and $\UB$.
-Now we express the final result as a single case partition:
-\begin{equation*}
+(factored out previously). 
+%by building a set
+%of constraints $\CONS$ that ensure these conditions hold; to do this,
+%it suffices to ensure that for each possible expression $\alpha$ used to
+%construct $\LB$ that $\alpha \leq \Root$ and similarly for the $Root$ and $\UB$.
+Finally, we express the final result as a single case partition:
+\begin{equation}
 \max_y \phi_i(\vec{b},\vec{x},y) f_i(\vec{b},\vec{x},y) \;\; = \;\;
-\left\{ \CONS \land \IND: \Max \right..
-\end{equation*}
+  \IND: \Max .
+\label{eq:maxcasepartition}
+\end{equation}
 Hence, to complete the maximization for an entire case statement $f$, we need only apply the above procedure to each case partition of $f$ and then perform a symbolic $\casemax$ on all of the results. In the next section we will illustrate these operations using the \InventoryControl example.  
 
 \subsection{Symbolic Value Iteration (SVI)}
-
+\label{section:SVI}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{.5em}
 \linesnumbered
@@ -1325,7 +1327,7 @@ A \emph{binary decision diagram} (BDD, \cite{bryant}) can represent propositiona
 %\subfigure{
 %\hspace{-20mm}
 %\vspace{-3mm}
-\includegraphics[width=1.0\textwidth]{FiguresSource/bddaddxadd.eps}
+\includegraphics[width=0.7\textwidth]{FiguresSource/bddaddxadd.eps}
 \vspace{-1mm}
 
 \caption{%\footnotesize
@@ -1354,10 +1356,10 @@ XADDs extend ADDs to allow representing functions with both boolean and continuo
 
 \subsection{XADD Formal Definitions}
 \label{xaddformal}
-An XADD is a function represented by a DAG involving variables $(\vec{b},\vec{x})$ where $b_i \in \{ 0,1 \}$ ($1 \leq i \leq m$) is boolean$\,$
-and $x_j \in \left[ x_j^{min}, x_j^{max}\right]$ is continuous with $1 \leq j \leq n; x_j^{min}, x_j^{max} \in \mathbb{R}; x_j^{min}< x_j^{max}$.
-An XADD structure consists of internal nodes (decision nodes) and leaf nodes (linear expressions).
-XADD allows an efficient implementation of piecewise functions represented in general case notation (Definition \ref{defCase}).
+An XADD is a function represented by a DAG involving variables $(\vec{b},\vec{x})$ where $b_i \in \{ 0,1 \}$ ($1 \leq i \leq m$) is a  boolean variable$\,$
+and $x_j \in \left[ x_j^{min}, x_j^{max}\right]$ is a continuous variable, with $1 \leq j \leq n; x_j^{min}, x_j^{max} \in \mathbb{R}; and  x_j^{min}< x_j^{max}$.
+An XADD structure consists of internal nodes (decision nodes) and leaf nodes (linear or nonlinear expressions).
+XADD allows an efficient implementation of piecewise functions represented in general case partition notation (Definition \ref{defCase}).
 {%\footnotesize 
 Given a piecewise function:
 \begin{align}
@@ -1369,10 +1371,9 @@ f =
 \end{cases} \label{eq:function_xadd}
 \end{align}
 }
-represented as an XADD, each $f_i$ is a leaf node and each $\phi_i(\vec{b},\vec{x})$ (a logical formula) corresponds to the paths of decision nodes from root leading to the leaf $f_i$. For example, the XADD in Figure \ref{fig:inv_policy} (left) corresponds to the case statement below it.
-Similar to ADDs, an XADD has a fixed ordering of decision tests from the root to a leaf where the low (l) or high (h) branch of each decision node determines the next node in the XADD.  
-
-Similar to case statements that allow arbitrary functions,  a general XADD allows arbitrary decision nodes and leaf expressions. However, in this paper, we restrict our functions to linear decisions and linear leaf expressions. This allows us to prune inconsistent linear constraints using an LP-solver, resulting, in general, in a more compact XADD. Next we provide the mathematical definition of \emph{linear XADDs}. %in the following: % Note that in the (or quadratic decisions that can be linearized). Also leaf expressions are assumed to be linear. 
+represented as an XADD $F$, each $f_i$ is a leaf node and each $\phi_i(\vec{b},\vec{x})$ (a logical formula) corresponds to a disjunction of the paths of decision nodes from root leading to the leaf $f_i$. For example, the XADD in Figure \ref{fig:inv_policy} (left) corresponds to the case statement of Equation \ref{eq:vfun_inv}.
+Similar to ADDs, an XADD has a fixed ordering of decision tests from the root to a leaf where the low (l) or high (h) branch of each decision node determines the next node in the XADD. Similar to case statements that allow arbitrary functions,  a general XADD allows arbitrary decision nodes and leaf expressions. 
+%However, in this paper, we restrict our functions to linear decisions and linear leaf expressions. This allows us to prune inconsistent linear constraints using an LP-solver, resulting, in general, in a more compact XADD. Next we provide the mathematical definition of \emph{linear XADDs}. %in the following: % Note that in the (or quadratic decisions that can be linearized). Also leaf expressions are assumed to be linear. 
 
 \begin{mydef}(\textbf{Linear Expression}):
 Giving a set of continuous variables $x_i$ and a set of constants $c_i$, a linear expression can be canonically defined  as the following:
@@ -1398,9 +1399,12 @@ b&::=& 0\hspace{1mm} |\hspace{1mm} 1
 \end{equation}
 \end{mydef}
 
-An XADD node $F$ is either a leaf node (also called terminal node) with a linear expression or a decision node (also called internal node) that contains a decision test $\mathit{F_{dec}}$ and two branches $F_h$ and $F_l$, (both of type F), also represented by the triple $\langle F_{\mathit{dec}}, F_h, F_l \rangle$. If  $\mathit{F_{dec}}$ is true, branch $F_h$ is taken and if $\mathit{dec}$ is false, $F_l$ is taken.
+A node $F$ of a Linear XADD is either a leaf node (also called terminal node) with a linear expression or a decision node (also called internal node) that contains a decision test $\mathit{F_{dec}}$ and two branches $F_h$ and $F_l$ (both of type F). When following an XADD path, if  $\mathit{F_{dec}}$ is true, branch $F_h$ is taken and if $\mathit{dec}$ is false, $F_l$ is taken. A decision node can be also represented by the triple $\langle F_{\mathit{dec}}, F_h, F_l \rangle$.
+%%We will need this triple $\langle F_{\mathit{dec}}, F_h, F_l \rangle$ for the further sections.
 
-The decision test $\mathit{F_{dec}}$ can be either a boolean variable $b\in \lbrace 0,1 \rbrace$ or a linear inequality over continuous variables $x_i$ \footnote {Note we assume continuous linear functions. Thus, in the boundary point (equality) of two expressions, they must have the same value. This continuous property allows us to replace $<$ ( $>$ ) with $\leq$ ( $\geq$ ).}. Figure~\ref{fig:bdd_add_xadd} (right) represents an XADD consisting of leaf nodes such as the node with the linear expression $0.9*x1$ or decision nodes such as the nodes with the decision tests $b_1$ and $x1 \geq 70$. 
+The decision test $\mathit{F_{dec}}$ can be either a boolean variable $b\in \lbrace 0,1 \rbrace$ or a linear inequality over continuous variables $x_i$ \footnote {Note we assume continuous functions. Thus, in the boundary point (equality) of two expressions, they must have the same value. This continuous property allows us to replace $<$ ( $>$ ) with $\leq$ ( $\geq$ ).}. Figure~\ref{fig:bdd_add_xadd} (right) represents an XADD consisting of leaf nodes such as the node with the linear expression $0.9*x_1$ or decision nodes such as the nodes with the decision tests $b_1$ and $x_1 \geq 70$. 
+
+We can also define a polynomial XADD involving polynomial Expressions defined next.
 
 \begin{mydef}(\textbf{Polynomial Expression}):
 Giving a set of continuous variables $x_i$ and a set of constants $c_i$, a polynomial  expression can be canonically defined  as the following:
@@ -1428,32 +1432,35 @@ b&::=& 0\hspace{1mm} |\hspace{1mm} 1
 \end{equation}
 \end{mydef}
 
-Note that a special case of polynomial XADD are the univariate quadratic XADDs, that are XADDs with linear constraints (since the univariate quadratic constraints can be linearized) and univariate quadratic values, i.e. the leaf node expressions are in the form of $c_0+ c_1 x_j^2 + \sum_{i} c_i x_i$  $(2 \leq i \leq n)$. 
+Note that a special case of polynomial XADD are the univariate quadratic XADDs, where the expressions are 
+in the form of $c_0+ c_1 x_j^2 + \sum_{i} c_i x_i$  $(2 \leq i \leq n)$. Since the univariate quadratic can be linearized, it can be transformed into a Linear XADD.
+
+As we can evaluate a piecewise function with a given variable assignment, an XADD (linear or polynomial) can be evaluated as we define next.
 
 \begin{mydef}(\textbf{XADD Evaluation}):
-Given an XADD F  that represents function of type $\lbrace 0,1 \rbrace^m \times \mathbb{R}^{n} \rightarrow \mathbb{R}$ and variable assignment $\vec{\rho} \in \lbrace \lbrace0,1 \rbrace^m,\mathbb{R}^n \rbrace$ to $(\vec{b},\vec{x})$, an XADD evaluation,  
+Given (linear or polynomial) XADD F  that represents functions of type $\lbrace 0,1 \rbrace^m \times \mathbb{R}^{n} \rightarrow \mathbb{R}$ and a variable assignment $\vec{\rho} \in \lbrace \lbrace0,1 \rbrace^m,\mathbb{R}^n \rbrace$ to $(\vec{b},\vec{x})$, an XADD evaluation,  
 $ Val(F,\vec{\rho})$, is a real value.  $ Val(F,\vec{\rho})$ can be computed recursively by:
 \begin{equation*}
 Val(F,\vec{\rho}) = \left\{
 \begin{array}{lll}
-\vec{\rho}(\mathit{F}),  &\textrm{if } F=\mathit{linearExpression}\\
+\vec{\rho}(\mathit{F}),  &\textrm{if } F=\mathit{Expression}\\
 \mathit{Val} (F_h,\vec{\rho}), &\textrm{if } F = \mathit{decisionNode} \langle F_{\mathit{dec}}, F_h, F_l \rangle \hspace{2mm}  \mathit{and} \hspace{2mm} \vec{\rho}(\mathit{F_{dec}})=\mathit{true}\\
  \mathit{Val} (F_l,\vec{\rho}), &\textrm{if } F = \mathit{decisionNode} \langle F_{\mathit{dec}}, F_h, F_l \rangle \hspace{2mm}  \mathit{and}  \hspace{2mm} \vec{\rho}(\mathit{F_{dec}})=\mathit{false},\\
 \end{array} \right. 
 \end{equation*}
-where $\vec{\rho}(\mathit{F}) \in \mathbb{R}$, for $ F=\mathit{linearExpression}$ is the value of $F$ in the variable assignment $\vec{\rho}$. $\vec{\rho}(\mathit{F_{dec}})$  (a relational expression) is the value of $\mathit{F_{dec}}$  in the variable assignment $\vec{\rho}$, that can be true or false.
+where $\vec{\rho}(\mathit{F}) \in \mathbb{R}$, for $ F=\mathit{Expression}$ is the value of $F$ in the variable assignment $\vec{\rho}$. $\vec{\rho}(\mathit{F_{dec}})$  (a relational expression) is the value of $\mathit{F_{dec}}$  in the variable assignment $\vec{\rho}$, that can be true or false.
 
 
 This recursive definition reflects the structural
 evaluation of $F$ starting at its root node and following
 the corresponding branch at each decision node according to $\vec{\rho}(F_\mathit{dec})$.
-The evaluation continue until a leaf node F is reached,
+The evaluation continues until a leaf node F has been reached,
 which then returns $\vec{\rho}(\mathit{F})$. As an example, in Figure~\ref{fig:bdd_add_xadd} (right), an assignment of $\vec{\rho} = \lbrace 1, 90\rbrace$ to $(b_1,x_1)$ yields to $Val(F,\vec{\rho})=8.1$.
 \end{mydef}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{mydef}(\textbf{Path Formula}):
-Let $C=(F^0,F^1,F^2 , \cdots, F^{\mathit{k}})$ be a path of nodes of an XADD $F$, from root to $F^k$. A path formula $\psi(C)$ is definided as:
+Let $C=(F^0,F^1,F^2 , \cdots, F^{\mathit{k}})$ be a path of nodes of an XADD $F$, from root to $F^k$ (where $F^k$ can be either a leaf node or a decision node). A path formula $\psi(C)$ is definided as:
 \begin{equation}
 \psi(C) \equiv \bigwedge_{i=0}^{\mathit{k}-1}
 \begin{cases}
@@ -1463,20 +1470,20 @@ Let $C=(F^0,F^1,F^2 , \cdots, F^{\mathit{k}})$ be a path of nodes of an XADD $F$
 \end{equation}
 \end{mydef}
 
-Figure~\ref{fig:path} shows an XADD with path formulas associated to each  decision node. For instance, the path $C=(n_1, n_2, n_3)$ defines a path formula $\psi(C)=\neg (x \geq -8) \wedge \neg (x \leq -12)$, associated to $n_3$.
+Figure~\ref{fig:path} shows an XADD with formulas associated to each path ending at a decision node or leaf node. For instance, the path $C=(n_1, n_2, n_3)$ defines a path formula $\psi(C)=\neg (x \geq -8) \wedge \neg (x \leq -12)$.
 
 \begin{figure}[t!]
 \centering
 %\subfigure{
 %\hspace{-20mm}
 %\vspace{-3mm}
-\includegraphics[width=0.9\textwidth]{FiguresSource/path.eps}
+\includegraphics[width=1\textwidth]{FiguresSource/path.eps}
 %\vspace{-3mm}
 %\hspace{1mm}
 %\includegraphics[width=0.18\textwidth]{xaddFig/counterexample.pdf}
 \vspace{-2mm}
 \caption{%\footnotesize 
-Path formulas and case partitions in the XADD.}
+Path formulas and case partitions in an XADD.}
 \label{fig:path}
 %\vspace{-4mm}
 \end{figure}
@@ -1484,24 +1491,83 @@ Path formulas and case partitions in the XADD.}
 Recall the leaf node $F^i$ has the value $f_i$ in the case representation of Equation~\ref{eq:function_xadd}. We can now formally define a \emph{case partition} 
 $\langle \phi_i(\vec{b},\vec{x}): f_i(\vec{x})\rangle$ using the path formula definition. 
 
-\begin{mydef}(\textbf{Case Partition}): Let $F^i$ be a leaf node of an XADD; and $\mathbb{C}= {C_1^i, \cdots, C_d^i} $ be all paths from the root to $F^i$. A case partition $\phi(F^i)$ is the disjunction of the path formula for each path in $\mathbb{C}$, i.e.: 
+\begin{mydef}(\textbf{Case Partition}): Let $F^i$ be a leaf node of an XADD; and $\mathbb{C}= \{C_1^i, \cdots, C_d^i\} $ be all paths from the root to $F^i$. A case partition $\phi(F^i)$ is the disjunction of the path formula for each path in $\mathbb{C}$, i.e.: 
 
 \begin{equation}
 \phi(F^i) \equiv \bigvee_{j=1}^{d} \psi(C_j^i), \label{eq:casePartition}
 \end{equation} 
 \end{mydef}
 i.e., a disjunction of all paths that leads to the node $F^i$.
-For example,  in Figure \ref{fig:path}, a case partition for the leaf node with value equal to 4 is $\phi=\{(x \geq -8) \vee (\neg (x \geq -8) \wedge \neg(x \leq -12) \wedge ( x\geq -10))\}$.
+For example,  in Figure \ref{fig:path}, a case partition for the leaf node with value equal to 4 $(n_6)$ is $\phi (n_6)=\{(x \geq -8) \vee (\neg (x \geq -8) \wedge \neg(x \leq -12) \wedge ( x\geq -10))\}$.
 
-\begin{mydef}(\textbf{XADD equivalency}): Let $f^1$ and $f^2$ be two piecewise functions represented by the XADDs $F^1$ and $F^2$, respectively. $F^1$ is equivalent to $F^2$ (denoted by $F^1 \equiv F^2$) if $f^1(\vec{b}, \vec{x}) = f^2(\vec{b}, \vec{x}), \forall \vec{b}, \vec{x}$.
+\begin{mydef}(\textbf{XADDs equivalency}): Let $f^1$ and $f^2$ be two piecewise functions represented by the XADDs $F^1$ and $F^2$, respectively. $F^1$ is equivalent to $F^2$ (denoted by $F^1 \equiv F^2$) if $f^1(\vec{b}, \vec{x}) = f^2(\vec{b}, \vec{x}), \forall (\vec{b}, \vec{x})$.
 \end{mydef}
+
+Another important aspect of an XADD is the introduction of redundant nodes or nodes that result in inconsistent path formula.
+
+\begin{mydef}(\textbf{Inconsistent path formula}):
+A path formula $\psi$ in XADD $F$ is inconsistent if $\psi \models \perp$.
+\end{mydef}
+The XADD of Figure~\ref{fig:inconsistent_XADD} has an inconsistent path formula for path $C=(n_1, n_2, n_4)$ on which the decision $\neg(x \geq -10)$ violates the previous constraint of $x\geq -8$ (in $n_1$), i.e.: $(x \geq -8) \wedge \neg(x \geq -10) \models\perp$.  
+
+\begin{mydef}(\textbf{Redundant node}):
+A redundant node occurs in an XADD where two nodes give the same function definition and removing one does not change any of the partitions of that function. A decision node $F$ is redundant if it can be replaced by one of its branches. That is, $F \equiv F_h$ or $F \equiv F_l$ (according with XADD equivalency definition). 
+\end{mydef}
+
+As an example, consider the XADD of Figure~\ref{fig:redundant_XADD} where removing node $n_1$ will not affect the XADD function: if $x < - 8$ then $f^{n_1}(x)=f^{n_2}(x)$, otherwise ($x >= - 8$) $f^{n_1}(x)=f^{n_2}(x)=4$. Therefore $F^{n_1} \equiv F^{n_1}_l$ and thus $n_1$ is redundant.  
+
+In the next  section we will present algorithms that can detect and prune inconsistent paths and redundant nodes of an XADD. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[t!]
+\centering
+%\subfigure{
+%\hspace{-20mm}
+%\vspace{-3mm}
+\includegraphics[width=0.8\textwidth]{FiguresSource/consistency.eps}
+% * <karinaval@gmail.com> 2016-04-18T13:42:42.245Z:
+%
+% > Prunning
+%
+% ^.
+%\vspace{-3mm}
+%\hspace{1mm}
+%\includegraphics[width=0.18\textwidth]{xaddFig/counterexample.pdf}
+\vspace{-2mm}
+\caption{%\footnotesize 
+XADD with an Inconsistent Path Formula $\psi(n_1, n_2, n_4)$, i.e. $((x \geq -8) \wedge \neg (x \geq -10) \models\perp)$. 
+}
+\label{fig:inconsistent_XADD}
+%\vspace{-4mm}
+\end{figure}
+
+
+\begin{figure}[t!]
+\centering
+%\subfigure{
+%\hspace{-20mm}
+%\vspace{-3mm}
+\includegraphics[width=0.5\textwidth]{FiguresSource/redundancy.eps}
+%\vspace{-3mm}
+%\hspace{1mm}
+%\includegraphics[width=0.18\textwidth]{xaddFig/counterexample.pdf}
+\vspace{-2mm}
+\caption{%\footnotesize 
+XADD with a Redundant Node $n_1$: it is redundant since $n_2$ represents the same function as $n_1$, i.e., $F^{n_1} \equiv F^{n_1}_l$.}
+\label{fig:redundant_XADD}
+%\vspace{-4mm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{XADD Operations}
 \label{sec:xaddoperations}
 
-One of the most important features of XADDs is to compactly represent a piecewise function $f$. There are two important functions used to make a more compact (reduced) representation of an XADD. A reduced XADD is an XADD where identical branches are merged. 
+One of the most important feature of XADDs is to compactly represent a piecewise function $f$. There are two main functions used to make a more compact (reduced) representation of an XADD: Reduce and GetNode. A reduced XADD is an XADD where identical branches are merged. The function Reduce calls GetNode to create a new XADD node or merge identical branches of a node. 
 
 
 \subsubsection{Reduce and GetNode}
@@ -1675,6 +1741,9 @@ As we have seen in Section \ref{MargContVar}, \emph{marginalizing a continuous v
 % Note that the XADD representation is used for both functions $f$ and $g$.
 
 
+The unary operation \emph{linearize} takes an XADD F with linear and univariate quadratic decision nodes and transforms into an XADD $F^r$ where all decision nodes are linear decisions.
+The Linearize algorithm (Algorithm~\ref{algLinearize}) similarly to other XADD algorithms uses a \emph{LinearCache} to avoid linearizing the same node. For each node in the XADD starting at the root node, the algorithm linearizes the decision node using \emph{LinearizeDecisionNode} that finds the roots of the non-linear function and creates new linear decisions with these roots. By recursively applying this algorithm on the low and high branches, all nodes of $F$ are linearized.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{0.5em}
 \linesnumbered
@@ -1709,6 +1778,171 @@ As we have seen in Section \ref{MargContVar}, \emph{marginalizing a continuous v
 \end{algorithm}
 \decmargin{.5em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
+
+Finally, the other operation required to solve CA-HMDPs using SDP is the \emph{continuous maximization} ($\max_{\vec{y}} f$) over continuous action parameters $\vec{y}$. As we have seen in Section \ref{contmax}, it suffices to provide just the univariate $\max_{y}$ solution, to be performed at each case partition and the max of each partition can be computed by Equation \ref{eq:casemax_max}. The operation of continuous maximization can also be defined using XADDs. As we have defined in Section \ref{xaddformal} each XADD path from root to leaf node is treated as a single case partition with conjunctive constraints. 
+
+An example of $\max_{\vec{y}} f$ for a single case partition is presented in Figures ~\ref{fig:step123:xadd_max}, \ref{fig:step4:xadd_max}, \ref{fig:step5:xadd_max} and \ref{fig:step6:xadd_max} using XADD representation. This example is more complex compared to the CAIC partition mentioned in Section \ref{section:SVI} since it involves a case partition with a quadratic expression leaf. The six steps  follows the procedure specified in Section \ref{contmax} for the maximum of a single case partition: (1) finding the sets UB,LB, Root, and Ind; (2) compute HLB and LUB; (3) apply the substitution operator $\{y/f\}$, with Root, HLB and LUB; (4) Compute the conditions $HLB \leq LUB$ and $HLB \leq \Root \leq LUB$ (5) compute $\casemax$ of the substitutions result; and (6) computing the final result as a new case partition Equation \ref{eq:maxcasepartition}.
+
+% TODO: Dont we need to specify an algorithm to continuous maximixation and SDP 
+% using XADDs? 
+
+%\begin{landscape}
+ \begin{figure}
+ \centering
+ \begin{minipage}{0.25\linewidth}
+ \centering
+  \input{add-fi.tex}
+  \end{minipage}
+ \begin{minipage}{0.7cm}
+ $\Longrightarrow$
+  \end{minipage}
+  \begin{minipage}{0.09\linewidth}
+ \centering
+ \input{bounds-box.tex}
+ \end{minipage}
+ \begin{minipage}{0.8cm}
+ \centering
+ %\rotatebox{45}{$\rightarrow$}
+
+ \hspace{14mm}
+ %\rotatebox{-45}{$\rightarrow$}
+ \end{minipage}
+ \begin{minipage}{0.12\linewidth}
+ \centering
+
+ \vspace{-15mm}
+
+ \input{add-LUB.tex}
+
+ \vspace{15mm}
+
+ \input{add-HLB.tex}
+ \vspace{15mm}
+
+ \input{add-Root.tex}
+  \end{minipage}
+\begin{minipage}{1.cm}
+ \centering
+ \small
+\vspace{-10mm}
+ \emph{subst}\\
+ $\Longrightarrow$
+
+ \vspace{25mm}
+
+ \emph{subst}\\
+ $\Longrightarrow$
+ \vspace{20mm}
+
+ \emph{subst}\\
+ $\Longrightarrow$
+
+\end{minipage}
+ \begin{minipage}{0.20\linewidth}
+ \centering
+ \vspace{-15mm}
+
+ \input{add-fi-subst-LUB.tex}
+
+ \vspace{15mm}
+
+ \input{add-fi-subst-HLB.tex}
+ 
+ \vspace{15mm}
+
+ \input{add-fi-subst-Root.tex}
+ 
+ 
+ \end{minipage}
+
+ \caption{Step 1, 2 and 3 of XADD Continuous Maximization for one case partition: $\phi_i ( x,d,y): f_i$ where $ \phi_i =  d \wedge ( y > 2 ) \wedge ( y < 16) \wedge ( y < x )$  
+ and  $f_i =  x -y^2+6y$. (1) Finding the sets UB,LB, Root, and Ind; (2) compute HLB and LUB; and (3) apply the substitution operator $\{y/f\}$, with Root, HLB and LUB.}
+ \label{fig:step123:xadd_max}
+ \end{figure}
+%%%%%%%%%%%%%%%%%%%%
+
+\begin{figure}
+% \begin{minipage}{1.0cm}
+ \centering
+% \rotatebox{-45}{$\rightarrow$}
+
+% \vspace{14mm}
+
+% \rotatebox{45}{$\rightarrow$}
+% \end{minipage}
+ \begin{minipage}{0.35\linewidth}
+ \centering
+ \input{add-conditions-LUB-HLB+Root_.tex}
+ \end{minipage}
+\begin{minipage}{0.35\linewidth}
+ \centering
+
+ \input{add-conditions-LUB-HLB+Root__2.tex}
+
+ \end{minipage}
+ \caption{Step 4 of XADD Continuous Maximization for one case partition: Compute the conditions $HLB \leq LUB$ and $HLB \leq \Root \leq LUB$.}
+\label{fig:step4:xadd_max}
+ \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}
+ %\begin{minipage}{1.0cm}
+ \centering
+ %\rotatebox{-45}{$\rightarrow$}
+
+ %\vspace{14mm}
+
+ %\rotatebox{45}{$\rightarrow$}
+ %\end{minipage}
+ \begin{minipage}{0.35\linewidth}
+ \centering
+ \input{add-max-LUB-HLB.tex}
+ \end{minipage}
+ \begin{minipage}{0.35\linewidth}
+ \centering
+ \input{add-max-LUB-HLB-Root.tex}
+ \end{minipage}
+ \caption{Step 5 of XADD Continuous Maximization for one case partition: Compute $\casemax$ of the substitutions result.}
+\label{fig:step5:xadd_max}
+ \end{figure}
+
+\begin{figure}
+ \centering
+ %\begin{minipage}{0.6cm}
+ %\centering
+ %\small
+% \emph{cons} \\ $+$ \\ \emph{ind} \\
+ %$\rightarrow$
+ %\end{minipage}
+ \begin{minipage}{0.30\linewidth}
+ \centering
+ \input{add-max-fi.tex}
+ \end{minipage}
+ \caption{Step 6 of XADD Continuous Maximization for one case partition: Computing the final result as a new case partition Equation \ref{eq:maxcasepartition}.}
+ \label{fig:step6:xadd_max}
+ \end{figure}
+%\end{landscape}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\vspace{10mm}
+%%\begin{figure}[t!]
+%\centering
+%\subfigure{
+%\hspace{-20mm}
+%\vspace{-15mm}
+%%\includegraphics[width=0.97 \textwidth]{pics/maximum_cont_action4.pdf}
+%\vspace{-40mm}
+
+%%\caption{%\footnotesize 
+%%XADD Continuous Maximization for one state partition:
+%%$\phi_i ( x,d,y): f_i$ such $ \phi_i =  d \wedge ( y > 2 ) \wedge ( y < 16) \wedge ( y < x )$  
+%%and  $f_i =  x + 2y$.}
+%The upper and lower bounds of action $y$ and the root is represented by XADDs and substituted inside the leaf node. The maximum of the upper and lower bound is then represented after linearizing the result. The final result takes the maximum of this and the root considering the constraints and independent decisions.}
+%%\label{fig:xadd_max}
+%%\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Binary XADD Operations: the Apply algorithm}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{0.5em}
 \linesnumbered
@@ -1773,9 +2007,9 @@ As we have seen in Section \ref{MargContVar}, \emph{marginalizing a continuous v
 	 \hline
           casemin$(F, -\infty)$ or casemin$(-\infty, F)$  & $-\infty$\\
            \hline
-          casemax $(F^1  , F^2)$, $F^1=Poly^1$ and $F^2=Poly^2$   &\hspace{3mm} \includegraphics[width=0.25\textwidth]{FiguresSource/max_result.eps}\\
+          casemax $(F^1  , F^2)$, $F^1=Poly^1$ and $F^2=Poly^2$   &\hspace{3mm} \includegraphics[width=0.20\textwidth]{FiguresSource/max_result.eps}\\
 	 \hline
-          casemin $(F^1, F^2)$, $F^1=Poly^1$ and $F^2=Poly^2$ &\hspace{3mm}  \includegraphics[width=0.25\textwidth]{FiguresSource/min_result.eps}\\
+          casemin $(F^1, F^2)$, $F^1=Poly^1$ and $F^2=Poly^2$ &\hspace{3mm}  \includegraphics[width=0.20\textwidth]{FiguresSource/min_result.eps}\\
 	 \hline
 	  other& $\mathit{null}$\\
          \hline
@@ -1786,144 +2020,13 @@ As we have seen in Section \ref{MargContVar}, \emph{marginalizing a continuous v
   \label{tab:ComputeResultXADD}
 \end{center}
 \end{table}
-The other operation required to solve CA-HMDPs is a \emph{continuous maximization} ($\max_{\vec{y}} f$) over continuous action parameters $\vec{y}$ (Section \ref{contmax}). 
-The operation of continuous maximization can also be defined using XADDs. As we have defined in Section \ref{xaddformal} each XADD path from root to
-leaf node is treated as a single case partition with conjunctive constraints. Thus $\max_y$ is performed at each case partition
-and the max of each partition can be computed by Equation \ref{eq:casemax_max}.
-
-% TODO: Checar se é preciso adicionar um algoritmo para continuous maximixation e SDP usando DDs.
-
- \begin{figure}
- \centering
- \begin{minipage}{0.15\linewidth}
- \centering
- \input{add-fi.tex}
- \end{minipage}
- \begin{minipage}{0.6cm}
- $\rightarrow$
- \end{minipage}
- \begin{minipage}{0.09\linewidth}
- \centering
- \input{bounds-box.tex}
- \end{minipage}
- \begin{minipage}{0.8cm}
- \centering
- \rotatebox{45}{$\rightarrow$}
-
- \vspace{14mm}
-
- \rotatebox{-45}{$\rightarrow$}
- \end{minipage}
- \begin{minipage}{0.09\linewidth}
- \centering
-
- \vspace{-15mm}
-
- \input{add-LUB.tex}
-
- \vspace{15mm}
-
- \input{add-HLB.tex}
- \end{minipage}
- \begin{minipage}{1.3cm}
- \centering
- \small
- \vspace{-10mm}
- \emph{subst}\\
- $\rightarrow$
-
- \vspace{20mm}
-
- \emph{subst}\\
- $\rightarrow$
- \end{minipage}
- \begin{minipage}{0.10\linewidth}
- \centering
-
- \vspace{-15mm}
-
- \input{add-fi-subst-LUB.tex}
-
- \vspace{15mm}
-
- \input{add-fi-subst-HLB.tex}
- \end{minipage}
- \begin{minipage}{1.0cm}
- \centering
- \rotatebox{-45}{$\rightarrow$}
-
- \vspace{14mm}
-
- \rotatebox{45}{$\rightarrow$}
- \end{minipage}
- \begin{minipage}{0.21\linewidth}
- \centering
- \input{add-max-LUB-HLB.tex}
- \end{minipage}
- \begin{minipage}{0.6cm}
- \centering
- \small
- \emph{cons} \\ $+$ \\ \emph{ind} \\
- $\rightarrow$
- \end{minipage}
- \begin{minipage}{0.10\linewidth}
- \centering
- \input{add-max-fi.tex}
- \end{minipage}
- \caption{XADD Continuous Maximization for one state partition: $\phi_i ( x,d,y): f_i$ such $ \phi_i =  d \wedge ( y > 2 ) \wedge ( y < 16) \wedge ( y < x )$  
- and  $f_i =  x + 2y$.}
- \label{fig:xadd_max}
- \end{figure}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\vspace{10mm}
-%%\begin{figure}[t!]
-%\centering
-%\subfigure{
-%\hspace{-20mm}
-%\vspace{-15mm}
-%%\includegraphics[width=0.97 \textwidth]{pics/maximum_cont_action4.pdf}
-%\vspace{-40mm}
-
-%%\caption{%\footnotesize 
-%%XADD Continuous Maximization for one state partition:
-%%$\phi_i ( x,d,y): f_i$ such $ \phi_i =  d \wedge ( y > 2 ) \wedge ( y < 16) \wedge ( y < x )$  
-%%and  $f_i =  x + 2y$.}
-%The upper and lower bounds of action $y$ and the root is represented by XADDs and substituted inside the leaf node. The maximum of the upper and lower bound is then represented after linearizing the result. The final result takes the maximum of this and the root considering the constraints and independent decisions.}
-%%\label{fig:xadd_max}
-%%\end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% TODO: O próximo parágrafo deve ser modificado para explicar o exemplo do  continuous maximization do Luis
-
-A single step of this algorithm is presented in Figure~\ref{fig:xadd_max}. This example is more complex compared to the CAIC partition mentioned above since it has to consider the function root XADD as well as the upper and lower bounds. The input to this illustrated step is the leaf node obtained after the regression step of Algorithm \ref{alg:regress} and decisions leading to this leaf (high or low branches).  The XADD representation is used to represent all intermediate results and also the final result. When there are no linear leaves, the continuous maximization often produces non-linear inequalities at the decision nodes. 
-
-The unary operation \emph{linearize} takes an XADD F with linear and univariate quadratic decision nodes and transforms into an XADD $F^r$ where all decision nodes are linear decisions.
-The Linearize algorithm (Algorithm~\ref{algLinearize}) similarly to other XADD algorithms uses a \emph{LinearCache} to avoid linearizing the same node. For each node in the XADD starting at the root node, the algorithm linearizes the decision node using \emph{LinearizeDecisionNode} that finds the roots of the non-linear function and creates new linear decisions with these roots. By recursively applying this algorithm on the low and high branches, all nodes of $F$ are linearized.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\vspace{10mm}
-%\begin{figure}[t!]
-%%\centering
-%%\subfigure{
-%\hspace{-20mm}
-%\vspace{-15mm}
-%\includegraphics[width=1.27\textwidth]{Figures1/diagrams/reorder.pdf}
-%\vspace{-40mm}
-%
-%\caption{\footnotesize reordering substitute and max.}
-%\vspace{-8mm}
-%\end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsubsection{Binary XADD Operations: the Apply algorithm}
 
 For \emph{all} binary operations, the function \emph{Apply}($F^1,F^2,\mathit{op}$) (Algorithm \ref{algApply}) computes the resulting XADD. 
 %Table \ref{tab:ComputeResultXADD} which is implemented as a function \emph{ComputeResult} defines the result of XADD operations in special cases to avoid unnecessary computation in \emph{Apply}.
 %Any operation with two XADDs, $F_1$ and $F_2$, results in a new canonical XADD $F_r$, with eventually a new root node $F^{var}_r$ and two new sub-diagrams $F_h$ and $F_l$.
-Two reduced XADD operands $F^1$ and $F^2$ and a binary operator $\mathit{op} \in \{ \oplus, \ominus, \otimes , \max , \min \} $ are the inputs to the \emph{Apply} algorithm. The output $F^r$ is a reduced XADD after applying the binary operation. 
+The inputs of the algorithm are: two reduced XADD operands $F^1$ and $F^2$ and a binary operator $\mathit{op} \in \{ \oplus, \ominus, \otimes , \max , \min \} $. The output $F^r$ is a reduced XADD after applying the binary operation. 
 
-If the input of Apply algorithm is one of the special cases described in Table  \ref{tab:ComputeResultXADD} (\emph{ComputeResult} method), the result can be immediately computed (without recursion). Otherwise it checks the \emph{ApplyCache} for any previously stored result (Line 6).  If there is not a cache hit, the earliest decision in the XADD ordering is chosen to branch according to Algorithm~\ref{algChooseDecBranch}. Two recursive \emph{Apply} calls are then made on the branches of this decision to compute $F_l$ and $F_h$. Finally \emph{GetNode} checks for any repeated branches in $F^r$ before storing it in the cache and returning the resulting XADD. 
+If the input of Apply algorithm is one of the special cases described in Table  \ref{tab:ComputeResultXADD} (\emph{ComputeResult} method), the result can be immediately computed (without recursion). Otherwise it checks the \emph{ApplyCache} for any previously stored result (Line 6).  If there is not a cache hit, the earliest decision in the XADD ordering is chosen to branch according to Algorithm~\ref{algChooseDecBranch}. Two recursive \emph{Apply} calls are then made on the branches of this decision to compute $F_l$ and $F_h$ (Line 26 and 27). Finally \emph{GetNode} checks for any repeated branches in $F^r$ before storing it in the cache and returning the resulting XADD. 
 This algorithm can be described in details using the following steps:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1992,15 +2095,15 @@ $F^r \leftarrow$ \computeResult{$F^1,F^2,\mathit{op}$} \\
 \end{algorithm}
 \decmargin{0.5em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{itemize}
+\item \textbf{Terminal computation}: 
+The function \emph{ComputeResult} called in Line 2 determines if the result can be computed without recursion using the pruning optimization described in Table \ref{tab:ComputeResultXADD}. For the discrete maximization (minimization) operation, for two leaf nodes $poly^1$ and $poly^2$ an additional decision node $poly^1 > poly^2$ ($poly^1 < poly^2$) is introduced to represent the maximum (minimum). Note that, this may cause out-of-order decisions which will be reordered by Algorithm~\ref{alg:reorder}. 
 
-\textbf{Terminal computation}: 
-The function \emph{ComputeResult} called in line 3 determines if the result of a computation can be computed without recursion using the pruning optimizations described in Table \ref{tab:ComputeResultXADD}. For the discrete maximization (minimization) operation, for two leaf nodes $poly^1$ and $poly^2g$ an additional decision node $poly^1 > poly^2$ ($poly^1 < poly^2$) is introduced to represent the maximum (minimum). Note that, this may cause out-of-order decisions which will be reordered by Algorithm~\ref{alg:reorder}. 
+\item \textbf{Caching}:
+If the result of \emph{ComputeResult} is null, we check the \emph{ApplyCache} in Line 6 for any previously computed operation using these operands and operation. To increase the chance of a match, all items stored in a cache are reduced XADDs.
 
-\textbf{Caching}:
-If the result of \emph{ComputeResult} is null, we check the \emph{ApplyCache} in line 6 for any previously computed operation using these operands and operation. To increase the chance of a match, all items stored in a cache are reduced XADDs.
-
-\textbf{Recursive computation}:
-If a call to Apply is unable to immediately compute a result or reuse a previously cached computation, we must recursively compute the result. Since the \emph{ComputeResult} takes care of the case when both operandas are terminal nodes, we know that at least one of the operands is a decision node so one of the following conditions applies: 
+\item \textbf{Recursive computation}:
+If a call to \emph{Apply} is unable to immediately compute a result or reuse a previously cached computation, we must recursively compute the result (Lines 10-28). Since the \emph{ComputeResult} takes care of the case when both operands are terminal nodes, we know that at least one of them is a decision node so one of the following conditions applies: 
 \begin{itemize}
 \item $F^1$ or $F^2$ is a terminal node or $\mathit{F^1_{dec}}\neq \mathit{F^2_{dec}} $: One of the decision nodes is chosen (e.g. $F^2$) by 
 \emph{ChooseEarliestDec} method and two recursive \emph{Apply} calls are performed using its corresponding branches ($F^2_{h}$ and 
@@ -2018,69 +2121,15 @@ F_l & \leftarrow Apply (F^1_{l} , F^2_{l},op)  \\
 F^r & \leftarrow GetNode (\mathit{F^1_{dec}} , F_h,F_l) 
 \end{align*}
 \end{itemize}
+\end{itemize}
 Finally the result is a reduced XADD returned by \emph{GetNode} where the decisions are ordered by algorithm \emph{Reorder} if the operation is op=casemax or op=casemin. 
 
-\subsection{Inconsistent Path Formula and Redundant Node}
+\subsection{Inconsistency and Redundancy Prunning}
 
+%\subsection{Inconsistent Path Formula and Redundant Node}
 
-One issue with applying operations on XADDs is the introduction of redundant nodes or nodes that result in inconsistent path formula. Therefore after applying any operation on the XADD, it should be checked for any sources of infeasibility so that inconsistent branches are removed and not expanded in later stages. Furthermore, there may be redundant structures in the XADD which result in unnecessary nodes.
-
-\begin{mydef}(\textbf{Inconsistent path formula}):
-A path formula $\psi$ in XADD $F$ is inconsistent if $\psi \models \perp$.
-\end{mydef}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure}[t!]
-\centering
-%\subfigure{
-%\hspace{-20mm}
-%\vspace{-3mm}
-\includegraphics[width=0.8\textwidth]{FiguresSource/consistencyPrunning.eps}
-% * <karinaval@gmail.com> 2016-04-18T13:42:42.245Z:
-%
-% > Prunning
-%
-% ^.
-%\vspace{-3mm}
-%\hspace{1mm}
-%\includegraphics[width=0.18\textwidth]{xaddFig/counterexample.pdf}
-\vspace{-2mm}
-\caption{%\footnotesize 
-XADD with an Inconsistent Path Formula:  {\it (left)} Path definitions on each node in the XADD with an inconsistent path formula $\psi(n_1, n_2, n_4)$, i.e. $((x \geq -8) \wedge \neg (x \geq -10) \models\perp)$; {\it (right)} Pruned XADD after removing path $C=(n_1, n_2, n_4)$. Note that $n_4$ is unreachable and then removed; consequently $n_2$ is an unnecessary decision and it is also removed. 
-}
-\label{fig:consistent_graph}
-%\vspace{-4mm}
-\end{figure}o caption da Figura 8 pode ser levadp para o texto que a explique. 
-
-%TODO: Rever se 
-
-\begin{figure}[t!]
-\centering
-%\subfigure{
-%\hspace{-20mm}
-%\vspace{-3mm}
-\includegraphics[width=1\textwidth]{FiguresSource/redundancyPrunning.eps}
-%\vspace{-3mm}
-%\hspace{1mm}
-%\includegraphics[width=0.18\textwidth]{xaddFig/counterexample.pdf}
-\vspace{-2mm}
-\caption{%\footnotesize 
-XADD with a Redundant Node:  {\it (left)} Path definitions on each node in the XADD with a redundant node $n_1$  ($x>=-8$). It is redundant since $n_2$ represents the same function as $n_1$; (right). The pruned XADD F without the redundant node $n_1$. Note that all leaf nodes have the same partition, i.e. $\phi(n) \equiv \phi'(n)$.}
-\label{fig:redundant_graph}
-%\vspace{-4mm}
-\end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-Figure~\ref{fig:consistent_graph} (left) has an inconsistent path formula for path $C=(n_1, n_2, n_4)$ on which the decision $\neg(x \geq -10)$ violates the previous constraint of $x\geq -8$ (in $n_1$), i.e.: $(x \geq -8) \wedge \neg(x \geq -10) \models\perp$.  
-
-\begin{mydef}(\textbf{Redundant node}):
-A redundant node occurs in an XADD where two nodes give the same function definition and removing one does not change any of the partitions of that function. A decision node $F$ is redundant if it can be replaced by one of its branches. That is, $F \equiv F_h$ or $F \equiv F_l$ (according with XADD equivalency definition). 
-\end{mydef}
-
-As an example consider the left diagram of Figure~\ref{fig:redundant_graph} where removing node $x>=-8$ will not affect the XADD function, as shown in the right side. In Figure \ref{fig:redundant_graph} (left) if $x < - 8$ then $f^{n_1}(x)=f^{n_2}(x)$, otherwise if $x >= - 8$ then $f^{n_1}(x)=4$ but also $f^{n_2}(x)=4$. Therefore  $f^{n_1}(x)=f^{n_2}(x), \forall x$ and thus $n_1$ is redundant.  
-
-Removing redundant nodes from the XADD is also a requirement for obtaining a minimal XADD representation. 
+One issue with applying operations on XADDs is the introduction of redundant nodes or nodes that result in inconsistent path formula (Section \ref{xaddformal}). Therefore after applying any operation on the XADD, it should be checked for any sources of infeasibility so that inconsistent branches are removed and not expanded in later stages. Furthermore, there may be redundant structures in the XADD which result in unnecessary nodes.
+Thus, removing redundant nodes from the XADD is also a requirement for obtaining a minimal XADD representation. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\vspace{10mm}
@@ -2102,7 +2151,7 @@ Removing redundant nodes from the XADD is also a requirement for obtaining a min
 %%%added after taking canonical proof out
 
 
-In the next section we use the definitions of inconsistency and redundancy to provide efficient algorithms to prune linear XADDs (currently we don't have efficient algorithms to prune XADDs with nonlinear decisions. 
+In this section we  provide efficient algorithms to prune linear XADDs (currently we don't have efficient algorithms to prune XADDs with nonlinear decisions). 
 
 %\subsection{Inconsistency and Redundancy Prunning Algorithms}
 %\label{sec:pruningAlg}
@@ -2177,36 +2226,122 @@ In the next section we use the definitions of inconsistency and redundancy to pr
     {\Return{\prune{$F_\mathit{h}$, $\psi$}}\;}
     //return the new XADD with the pruned branches\\
     $low \leftarrow$ \prune{$F_\mathit{l}$, $\psi \wedge \neg F_\mathit{dec}$} \;
-    $hight \leftarrow$ \prune{$F_\mathit{h}$, $\psi \wedge  F_\mathit{dec}$} \;
+    $high \leftarrow$ \prune{$F_\mathit{h}$, $\psi \wedge  F_\mathit{dec}$} \;
     \Return{\getNode{$F_\mathit{dec},high,low$}}\;
 }
 \caption{{\sc PruneRedundant}($F$, $\psi$) $\longrightarrow$ $\langle F^r \rangle$ \label{algPruneRedundant}}
 \end{algorithm}
 \decmargin{.5em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Figures used for the inconsistency and redundancy prunning algorithms  
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[t!]
+\centering
+%\subfigure{
+%\hspace{-20mm}
+%\vspace{-3mm}
+\includegraphics[width=0.8\textwidth]{FiguresSource/consistencyPrunning.eps}
+% * <karinaval@gmail.com> 2016-04-18T13:42:42.245Z:
+%
+% > Prunning
+%
+% ^.
+%\vspace{-3mm}
+%\hspace{1mm}
+%\includegraphics[width=0.18\textwidth]{xaddFig/counterexample.pdf}
+\vspace{-2mm}
+\caption{%\footnotesize 
+XADD with an Inconsistent Path Formula:  {\it (left)} Path definitions on each node in the XADD with an inconsistent path formula $\psi(n_1, n_2, n_4)$, i.e. $((x \geq -8) \wedge \neg (x \geq -10) \models\perp)$; {\it (right)} Pruned XADD after removing path $C=(n_1, n_2, n_4)$. Note that $n_4$ is unreachable and then removed; consequently $n_2$ is an unnecessary decision and it is also removed. 
+}
+\label{fig:consistent_graph}
+%\vspace{-4mm}
+\end{figure}
+
+
+\begin{figure}[t!]
+\centering
+%\subfigure{
+%\hspace{-20mm}
+%\vspace{-3mm}
+\includegraphics[width=1\textwidth]{FiguresSource/redundancyPrunning.eps}
+%\vspace{-3mm}
+%\hspace{1mm}
+%\includegraphics[width=0.18\textwidth]{xaddFig/counterexample.pdf}
+\vspace{-2mm}
+\caption{%\footnotesize 
+XADD with a Redundant Node:  {\it (left)} Path definitions on each node in the XADD with a redundant node $n_1$  ($x>=-8$). It is redundant since $n_2$ represents the same function as $n_1$; (right) The pruned XADD F without the redundant node $n_1$. Note that all leaf nodes $n_i$ have the same partition, i.e. $\phi(n_i) \equiv \phi'(n_i)$.}
+\label{fig:redundant_graph}
+%\vspace{-4mm}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \subsubsection{Inconsistency Pruning Algorithm}
 
-Given a linear XADD $F$ with possibly inconsistent paths and the set of decision constraints on a path $\psi$, the output of \emph{PruneInconsistent} (Algorithm~\ref{algPrune}) is a reduced XADD with canonical leaves, linear decisions and no unreachable nodes. Similar to Algorithm \emph{ReduceXADD}, this algorithm is of a recursive bottom-up nature. 
+Given a linear XADD $F$ with possibly inconsistent paths and the set of decision constraints on a path $\psi$, the output of \emph{PruneInconsistent} (Algorithm~\ref{algPrune}) is a reduced XADD with canonical leaves, linear decisions and no unreachable nodes. Similar to Algorithm \emph{Reduce-XADD}, this algorithm is of a recursive bottom-up nature. 
 
 Lines 3--4 of Algorithm~\ref{algPrune} return a canonical linear expression at the leaf if $F$ is a terminal node. Since $F$ does not require path consistency checking at a boolean decision node. Lines 6--9 recursively calls inconsistency pruning on the low and high branches. The final result is returned using Algorithm \emph{GetNode}.
 
 If the two mentioned conditions are false, then the current node of $F$ is a linear decision node. In this case, we check if the decision test of this node ($F_\mathit{dec}$) is consistent with the previous constraints on path $\psi$. 
-Algorithm~\ref{algPrune}, Lines 11 and 13 use the \emph{TestImplied} function that has a  path formula  $\psi$ and current decision test $F_\mathit{dec}$ as inputs. This function performs the following steps:
+Algorithm~\ref{algPrune}, Lines 11 and 13 use the \emph{TestImplied} function (Algorithm \ref{algTestImplied}) that has a  path formula  $\psi$ and current decision test $F_\mathit{dec}$ as inputs. This function performs the following steps:
 
 \begin{itemize}
 \item Check if the implication result of $\psi$ exists in an \emph{Implications} cache. This cache stores path formulas $\psi$ that are inconsistent. If there is a previous result which already contains the new decision constraint $F_\mathit{dec}$ then return $\mathit{true}$.
 \item Similarly check the \emph{non-Implications} cache for consistent path formulas $\psi$. If there is a previous result which already contains the new decision constraint $F_\mathit{dec}$ then return $\mathit{false}$.
-\item If there is no cache hit, then $F_\mathit{dec}$ is added to the path: $\psi \longleftarrow \psi \wedge F_\mathit{dec}$. This allows us to check for the infeasibility property.
+\item If there is no cache hit, then $F_\mathit{dec}$ is added to the path: $\psi \longleftarrow \psi \wedge \neg F_\mathit{dec}$. This allows us to check for the infeasibility property.
 \item The LP-solver is called on the set of decision constraints in $\psi$. The result of the LP-solver determines infeasibility with respect to the new decision just added to $\psi$. 
 \item The path $\psi$ is stored in its related cache according to the result of the LP-solver (i.e. $\mathit{true}$ or $\mathit{false}$). If the result is inconsistent then $\psi$ is added to \emph{Implications}, else it is added to \emph{non-Implications}.
 % \item The negation of $F_\mathit{dec}$ is removed from the path: $\psi \longleftarrow \psi \setminus \neg F_\mathit{dec}$.
 \item TestImplied returns the result of the LP-solver.
 \end{itemize}
-Line 11 checks if the true assignment of $F_\mathit{dec}$ is implied by $\phi$. If   \emph{TestImplied} is $\mathit{true}$, then the high branch is inconsistent and the algorithm returns the high branch as the result of this pruning (Line 12). Similarly in Line 13 $\neg F_\mathit{dec}$ is checked and if \emph{TestImplied} is $\mathit{true}$ then the low branch is inconsistent and it is returned after pruning (Line 14). 
 
-In case the current decision node is not on an inconsistent path, both low and high branches need to be checked for inconsistency. Line 16 adds the decision constraint $\neg F_\mathit{dec}$ to $\psi$ and call \emph{PruneInconsistent} for $F_l$. Line 17 performs the same for the high branch ($F_h$) adding $F_\mathit{dec}$. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\incmargin{.5em}
+\linesnumbered
+\begin{algorithm}[t!]
+\SetKwFunction{getNode}{{\sc GetNode}}
+\SetKwFunction{testImplied}{{\sc TestImplied}}
+\SetKwFunction{prune}{{\sc PruneInconsistent}}
+\SetKwFunction{pruneRedu}{{\sc PruneRedundant}}
+\SetKwFunction{isfeasible}{{\sc IsFeasible}}
+\SetKwInOut{Input}{input}
+\SetKwInOut{Output}{output}
+\dontprintsemicolon
+%\Output{$F_r$ (root node id for a consistent XADD)}
+\BlankLine
+\Begin{
+    $\psi \leftarrow \psi \wedge \neg F_{dec}$\;
+    inconsistent $\leftarrow$ ImplicationCache($\psi$)\;
+    \If{inconsistent $\neq$ null}
+   {
+    \Return{true}\;
+   }
+    consistent $\leftarrow$ NonImplicationCache($\psi$)\;
+    \If{consistent $\neq$ null}
+   {
+    \Return{false}\;
+   }
+    \eIf{LPSolve.\isfeasible{$\psi$}}
+   {
+    NonImplicationCache($\psi$) $\leftarrow$ true \; 
+    \Return{false}\;
+   }
+   {
+   ImplicationCache($\psi$) $\leftarrow$ true \; 
+    \Return{true}\;
+   }   
+}
+\caption{{\sc TestImplied}($\psi$, $F_{dec}$)  \label{algTestImplied}}
+\end{algorithm}
+\decmargin{.5em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-At this stage the current subtree with the computed low and high branches does not contain any inconsistent paths. Thus the algorithm returns a reduced node computed using \emph{GetNode} in Line 17. 
+
+Line 11 of Algorithm \ref{algPrune} checks if the true assignment of $F_\mathit{dec}$ is implied by $\phi$. If   \emph{TestImplied} is $\mathit{true}$, then the low branch is inconsistent and the algorithm returns the high branch as the result of this pruning (Line 12). Similarly in Line 13 $\neg F_\mathit{dec}$ is checked and if \emph{TestImplied} is $\mathit{true}$ then the high branch is inconsistent and the low branch returned after pruning (Line 14). 
+
+In case the current decision node is not an inconsistent path, both low and high branches need to be checked for inconsistency. Line 16 adds the decision constraint $\neg F_\mathit{dec}$ to $\psi$ and call \emph{PruneInconsistent} for $F_l$. Line 17 performs the same for the high branch ($F_h$) adding $F_\mathit{dec}$. At this stage the current subtree with the computed low and high branches does not contain any inconsistent paths. Thus the algorithm returns a reduced node computed using \emph{GetNode} in Line 19. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \incmargin{.5em}
 \linesnumbered
@@ -2259,20 +2394,20 @@ $\mathit{isImplied} \leftarrow$  \prune{$\psi \wedge \mathit{subtree}_{\mathit{d
 \subsubsection{Redundancy Pruning Algorithm}
 \label{redundancyprunning}
 
-The algorithm isRedundant directly checks if a node can replaced. It receives a path formula $\psi$ and two XADD nodes, \emph{subtree} and \emph{goal}, and checks if the node \emph{goal} is necessarily achieved in the XADD \emph{subtree} when $\psi$ is true. If the goal node is not achieved in some branch of subtree, then the replacement can not be done. 
+The algorithm \emph{isRedundant} directly checks if a node $F$ can be replaced by the \emph{subtree} branch. It receives a path formula $\psi$ and two XADD nodes, \emph{subtree} and \emph{goal}, and checks if the node \emph{goal} is necessarily achieved in the XADD \emph{subtree} when $\psi$ is true. If the goal node is not achieved in some branch of \emph{subtree}, then the replacement can not be done. 
 
-Initially lines 2-3 check if $\mathit{subtree}$ and $\mathit{goal}$ are equal, in this case $\mathit{goal}$ is redundant and it can be replaced by $\mathit{subtree}$, therefore the algorithm returns $\mathit{true}$. If the nodes are non-equal then $\mathit{goal}$ is not redundant and line 6 returns $\mathit{false}$. Next lines 7--10 check if both nodes are decision nodes but the $\mathit{goal}$ node appears before the $\mathit{subtree}$ in the variable ordering of the XADD, in which case the $\mathit{goal}$ can not be achieved in $\mathit{subtree}$. 
+Initially Lines 2-3 of Algorithm \ref{algRedundant} check if $\mathit{subtree}$ and $\mathit{goal}$ are equal, in this case the node $F$ is redundant and it can be replaced by $\mathit{subtree}$, therefore the algorithm returns $\mathit{true}$. If the nodes are different then the node $F$ is not redundant and Line 6 returns $\mathit{false}$. Next Lines 7--10 check if both nodes are decision nodes but the $\mathit{goal}$ node appears before the $\mathit{subtree}$ in the variable ordering of the XADD, in which case the $\mathit{goal}$ can not be achieved in $\mathit{subtree}$. 
 
-If neither of the above cases occur, the algorithm must search a goal node in the branches of $\mathit{subtree}$. In Lines 12-15 the method \emph{TestImplied} is used to check if the path formula $\psi$ implies $subtree_{dec}$ to perform the search in one of the branches.   
+If neither of the above cases occur, the algorithm must search a goal node in the branches of $\mathit{subtree}$. In Lines 12-16 the method \emph{TestImplied} is used to check if the path formula $\psi$ implies $subtree_{dec}$ to restrict the search in one of the branches.   
 
 Similar to Algorithm~\ref{algPrune}, if the result of \emph{TestImplied} is false, both low and high branches need to be checked for redundancy. Line 18 calls the method \emph{IsRedundant} for $\mathit{subtree}_l$ and the path formula $\psi \wedge \neg subtree_{dec}$. Similarly, Line 22 calls \emph{IsRedundant} for $\mathit{subtree}_h$ and the path formula $\psi \wedge subtree_{dec}$. If any of the branches along the way do not imply $\mathit{goal}$, then the node is not redundant and the algorithm returns false. 
 
-The method \emph{PruneRedundant} (Algorithm \ref{algPruneRedundant}) removes any redundant nodes from an XADD F and its corresponding path formula (the path from the root to node F). According to the definition, a node is redundant if it represents the same function as one of its branches. For a subtree be used to replace a father node, it mus contain it simbling node to achieve the same values in the corresponding regions. In Line 4 og Algorithm \ref{algPruneRedundant}, the method checks if the node $F_l$ can replace the node F. If \emph{isRedundant} returns true, \emph{PruneRedundant} returns the low branch, after a recursive pruning (Line 6); else we check if $F_h$ can replace the node F (Line 8) and, again, if successfully return a high branch after a recursive pruning (Line 10). If the current node is not redundant, we recursively prune both branches (Line 11-12) and return the new node (Line 13). 
+The method \emph{PruneRedundant} (Algorithm \ref{algPruneRedundant}) removes any redundant nodes from an XADD F and its corresponding path formula (the path from the root to node F). According to the definition, a node is redundant if it represents the same function as one of its branches. For a \emph{subtree} be used to replace a father node, it must contain it sibling node to achieve the same values in the corresponding regions. In Line 4 of Algorithm \ref{algPruneRedundant}, the method checks if the node $F_l$ can replace the node F. If \emph{isRedundant} returns true, \emph{PruneRedundant} returns the low branch, after a recursive pruning (Line 6); else we check if $F_h$ can replace the node F (Line 8) and, again, if successful returns a high branch after a recursive pruning (Line 10). If the current node is not redundant, we recursively prune both branches (Line 12-13) and return the new node (Line 14). 
 
-Figure~\ref{fig:redundant_graph}(right) shows that the node $x\geq -8$ in the left figure (where $n_2$ is the subtree and $n_6$ is the goal node in the successful call of the \emph{isRedundant} method) is redundant and can be removed from the original XADD. 
+Figure~\ref{fig:redundant_graph} shows that the node $x\geq -8$ in the left (where $n_2$ is the subtree and $n_6$ is the goal node in the successful call of the \emph{isRedundant} method) is redundant and can be removed from the original XADD. 
 
-It seems that using the two mentioned pruning techniques of inconsistency and redundncay checking removes all sources of infeasibility and therefore proof of canonicity is straightforward. Indeed for BDDs and ADDs proof of canonicity can be defined using the reduced diagrams \cite{bryant}. 
-As we have defined, reduced XADDs are derived from the result of the applying redundant branch pruning.  However unlike BDDs and ADDs a canonical XADD may not be produced after such pruning approaches. As a counterexample consider the simple XADD in  Figure~\ref{fig:canonical} (left) where the values are as below: 
+It seems that using the two mentioned pruning techniques of inconsistency and redundancy checking removes all sources of infeasibility and therefore proof of canonicity is straightforward. Indeed for BDDs and ADDs proof of canonicity can be defined using the reduced diagrams \cite{bryant}. 
+As we have defined, reduced XADDs are derived from the result of the applying redundant branch pruning.  However unlike BDDs and ADDs a canonical XADD may not be produced after such pruning approaches. As a counterexample consider the simple XADD in  Figure~\ref{fig:canonical} (left) where the values are as follows: 
 \begin{align}
 \label{redu}
 	\begin{cases}
@@ -2281,86 +2416,86 @@ As we have defined, reduced XADDs are derived from the result of the applying re
 		1<x<3 :& 2\\
 	\end{cases}
 \end{align}
-As the values suggest, there is no need to branch on $x<2$ in this function, i.e. it can be removed from the tree. According to the implication checks in both pruning techniques, this XADD is not inconsistent and further it can not be removed using the redundant technique which replaces a redundant node with one of its branches. This type of redundant node can be removed with the redundant technique by reordering the decisions in the XADD. For this reason, although consistency and redundancy checking takes care of most unwanted branches, there is no guarantee that a given XADD is minimal after applying the two pruning techniques. The right diagram of Figure~\ref{fig:canonical} is the minimal XADD  for the function described in Equation \ref{redu}. Thus a challenging open problem is the proof of XADD minimality with respect to a given order of the linear decisions. 
+As the values suggest, there is no need to branch on $x<2$ in this function, i.e. it can be removed from the tree. According to the implication checks in both pruning techniques, this XADD is not inconsistent and further the node $x<2$ can not be removed using the redundant technique which replaces a redundant node with one of its branches. This type of redundant node can be removed with the redundant technique by reordering the decisions in the XADD. For this reason, although consistency and redundancy checking takes care of most unwanted branches, there is no guarantee that a given XADD is minimal after applying the two pruning techniques. The right diagram of Figure~\ref{fig:canonical} is the minimal XADD  for the function described in Equation \ref{redu}. Thus a challenging open problem is the proof of XADD minimality with respect to a given order of the linear decisions. 
 
 %%%%%%%%%%%%%%%55
-Having defined the efficient representation of XADDs, next we show results from implementing an SDP algorithm using XDDs.
+Having defined the efficient representation of XADDs, next we show results from implementing an SDP algorithm using XADDs.
 
 \section{Experimental Results} \label{results}
 
-We implemented two versions of our proposed SVI algorithms using XADDs
---- one with the discrete setting and one with the continuous setting. 
+We implemented two versions of our proposed SVI algorithms using XADDs one for DA-HMDP and other for CA-HMDP.
 % we compare that does not prune nodes of the XADD and another that uses a linear programming solver to prune unreachable nodes (for problems with linear XADDs) and then performs a satisfiability check to prune redundant paths  --- and tested these algorithms on different problems.
-
-For CA-HMDPs we evaluated SVI on a didactic nonlinear
-\MarsRover\ example and two problems from Operations Research (OR) \InventoryControl\ defined in the introduction and \WaterReservoir  all of which are described below. For comparison purposes the DA-HMDPs example domains are discretized by their action space. \footnote{All Java source code and a human/machine readable file format for all domains needed to reproduce
+For CA-HMDPs we evaluated SVI on a didactic quadratic
+\MarsRover\ domain and two problems from the \InventoryControl\ domain defined in the introduction, and \WaterReservoir domain. For comparison purposes, these domains are discretized by their action space to generate DA-HMDP. \footnote{All Java source code and a human/machine readable file format for all domains needed to reproduce
 the results in this paper can be found online at
-\texttt{http://code.google.com/p/xadd-inference}.}
+\texttt{https://github.com/ssanner/xadd-inference}.}
 
 \subsection{Domains}
 
 \paragraph{\InventoryControl}
 The inventory problem mentioned in the introduction is revisited to compare 1-item, 2-item and 3-item inventories for both deterministic and stochastic customer demands. 
 \paragraph{\MarsRover}
-A \MarsRover state consists of its continuous position $x$ along a given route.  In a given time step, the rover may move a continuous distance $y \in [-10,10]$.  The rover receives its greatest reward for taking a picture at $x=0$, which quadratically decreases to zero at the boundaries of the range $x \in [-2,2]$.  The rover will
+A \MarsRover state consists of its continuous position $x$ along a given route.  In a given time step, the rover may move a continuous distance $\Delta x \in [-10,10]$.  The rover receives its greatest reward for taking a picture at $x=0$, which quadratically decreases to zero at the boundaries of the range $x \in [-2,2]$.  The rover will
 automatically take a picture when it starts a time step within the range $x \in [-2,2]$ and it only receives this reward once.
 
-Using boolean variable $b \in \{0,1\}$ to indicate if the picture has
-already been taken ($b=1$), $x'$ and $b'$ to denote 
+Using boolean variable $tp \in \{0,1\}$ to indicate if the picture has
+already been taken ($tp=1$), $x'$ and $tp'$ to denote 
 post-action state, and $R$ to denote reward, we 
 express the \MarsRover\ CA-HMDP using piecewise dynamics and reward:
 %\vspace{-4mm}
 \begin{align*} 
-\hspace{-2.8mm} P(b'\sq=\sq1|x,b) & = 
+\hspace{-2.8mm} P(tp'\sq=\sq1|x,tp) & = 
 \begin{cases}
-b \lor (x \geq -2 \land x \leq 2): & \sqm 1.0\\
-\neg b \land (x < -2 \lor x > 2):  & \sqm 0.0
+tp \lor (x \geq -2 \land x \leq 2): & \sqm 1.0\\
+\neg tp \land (x < -2 \lor x > 2):  & \sqm 0.0
 \end{cases}  \\
-\hspace{-2.8mm} P(x'|x,y) & = \delta \left( x' - \begin{cases}
-y \geq -10 \land y \leq 10 : & \hspace{-2mm} x + y \\
-y < -10 \lor y > 10 : & \hspace{-2mm} x
+\hspace{-2.8mm} P(x'|x,\Delta x) & = \delta \left( x' - \begin{cases}
+\Delta x \geq -10 \land \Delta x \leq 10 : & \hspace{-2mm} x + \Delta x \\
+\Delta x < -10 \lor \Delta x > 10 : & \hspace{-2mm} x
 \end{cases}
 \right)  \\
-\hspace{-2.8mm} R(x,b) & = \begin{cases}
-\neg b \land x \geq -2 \land x \leq 2 : & 4 - x^2 \\
-b \lor x < -2 \lor x > 2 : & 0
+\hspace{-2.8mm} R(x,tp) & = \begin{cases}
+\neg tp \land x \geq -2 \land x \leq 2 : & 40 - x^2 \\
+tp \lor x < -2 \lor x > 2 : & -1
 \end{cases} 
 \end{align*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%OBS: Figure 13: contrary to what is written in its caption, for V^2 the rover achieves nonzero value up to x=+-18 instead of x=+-22 (analogous for V^1
+
 \begin{figure}[t!]
-%\centering
-\begin{minipage}[b]{0.48\linewidth}
-\includegraphics[width=0.9\textwidth]{pics/v1_2d.pdf}\\
+\centering
+\begin{minipage}[b]{1\linewidth}
+\includegraphics[width=0.5\textwidth]{pics/v1_2d.pdf}
 %\vspace{-2mm}
-\includegraphics[width=0.9\textwidth]{pics/v2_2d.pdf}\\
+\includegraphics[width=0.5\textwidth]{pics/v2_2d.pdf}\\
 %\vspace{-2mm}
-\includegraphics[width=0.9\textwidth]{pics/v3_2d.pdf}
+\includegraphics[width=0.5\textwidth]{pics/v3_2d.pdf}
 %\vspace{-3mm}
 
 %\parbox{2.8in}{
-\caption{\footnotesize Optimal sum of rewards (value) 
-$V^t(x)$ for $b = 0 \, 
+\caption{Optimal sum of rewards (value) 
+$V^t(x)$ for $tp = 0 \, 
 (\false)$ for time horizons (i.e., decision stages remaining) $t=0$,
 $t=1$, and $t=2$ on the \textsc{Continuous Action}  \MarsRover\ problem.  For $x \in [-2,2]$, the
 rover automatically takes a picture and receives a reward quadratic in
-$x$.  We initialized $V^0(x,b) = R(x,b)$; for $V^1(x)$, the rover achieves
+$x$.  We initialized $V^0(x,tp) = R(x,tp)$; for $V^1(x)$, the rover achieves
 non-zero value up to $x = \pm 12$ and for 
 $V^2(x)$, up to $x = \pm 22$.}
 \label{fig:opt_graph}
 
 \end{minipage}
-%\end{figure}
+\end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{figure}[t!]
-%\centering
+\begin{figure}[t!]
+\centering
 %\subfigure{
 %\hspace{-1mm}
-\begin{minipage}[b]{0.48\linewidth}
-\includegraphics[width=1\textwidth]{pics/roverdot.pdf}
+%\begin{minipage}[b]{1\linewidth}
+\includegraphics[width=0.8\textwidth]{pics/roverdot.pdf}
 \vspace{6mm}
 
-\caption{\footnotesize Optimal value function $V^2(x)$ for the
+\caption{Optimal value function $V^2(x)$ for the
 \textsc{Continuous Action}  \MarsRover\ problem represented as an (XADD) equal to the second diagram on the left. 
 To evaluate
 $V^2(x)$ for any state $x$, one simply traverses the diagram in a
@@ -2370,7 +2505,7 @@ parenthetical expression provides the \emph{optimal policy}
 ($y = \pi^{*,2}(x)$) to achieve value $V^2(x)$.}
 \label{fig:opt_val_pol}
 \vspace{-5mm}
-\end{minipage}
+%\end{minipage}
 %\vspace{-5mm}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2379,6 +2514,9 @@ is defined as a function of state variables:
 {\footnotesize
 %\begin{tabular}{l}
 %$
+% OBS: We do not know what is the problem related to the value function V. It certainty does not correspond to the previous problem definition. 
+
+
 \begin{align*}
 V = \begin{cases}
 \neg \mathit{take\-pic}_1 \land \mathit{take\-pic}_2 \land (4 -x^2 -y^2\geq 0) \land 
@@ -2396,7 +2534,7 @@ else &: 0 \\
 \end{align*}
 }
 The value function is piecewise and non-linear, and contains non-rectangular decision
-boundaries like $4 -x^2 -y^2\geq 0$. Figure~\ref{fig:opt_val_pol} presents the  0-, 1-, and 2-step time horizon solution for this problem. Despite the intuitive and simple nature of this result, we are unaware of prior methods that can produce such exact solutions. 
+boundaries like $4 -x^2 -y^2\geq 0$. Figure~\ref{fig:opt_graph} presents the  0-step, 1-step, and 2-step time horizon solution for this problem. Despite the intuitive and simple nature of this result, we are unaware of prior methods that can produce such exact solutions. 
 
 \paragraph{\WaterReservoir} 
 Reservoir management is well-studied in
@@ -2455,7 +2593,7 @@ in terms of time and space cost while varying the horizon and problem size.
 \vspace{-3mm}
 \caption{%\footnotesize 
 Space (\# XADD nodes in value function) and
-time for different iterations (horizons) of SDP on Nonlinear \textsc{Continuous Action}  \MarsRover\ with 4 different results based on pruning techniques. Results are shown for  the XADD 
+time for different iterations (horizons) of SDP on quadratic \textsc{Continuous Action}  \MarsRover\ with 4 different results based on pruning techniques. Results are shown for  the XADD 
  with no pruning technique, with only consistency checking (using LP-solver) and with both the consistency and redundancy checking with a numerical precision heuristic.} %does it need more explaining? 
 \label{fig:roverTS}
 \end{figure*}
@@ -2487,6 +2625,8 @@ Hence we will present results for the \WaterReservoir and \InventoryControl prob
 Next we present the analysis of the \textsc{Discrete Action} \MarsRover\ domains. Figure~\ref{fig:roverDisTS} shows how time and space costs of different horizons increases for a fixed action discretization of 4 and 8.
 Note that one of the caveats of using a discrete setting is defining the actual discrete actions. In the continuous setting an action is defined between a large high and low range (e.g $a \in$ [$-1000000,1000000$]) allowing the SDP algorithm to choose the best possible action among all the answers. However for a discrete setting, choosing the range to discretize the action becomes very important. As an example in the rover description, allowing actions to be far from the center (e.g. $a \in$ [$-20,20$]) does not result in a converged solution. Finding this range is one of the drawbacks of using a discrete setting. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%OBS: The title in these figures must be "action" instead of "iteration".
+
 %figure5 : time-iteration and space-iteraton for 1d-2d-noPrune inventory
 \begin{figure}[tbp!]
 \vspace{-2mm}
@@ -2501,7 +2641,7 @@ Note that one of the caveats of using a discrete setting is defining the actual 
 %}
 \vspace{-2mm}
 \caption{%\footnotesize 
-$V^3$ for different number of \textsc{Discrete Actions} in the \MarsRover\ problem. As the number of discrete actions increases, the value function more closely resembles the continuous action value of $V^3$ (defined in Figure ~\ref{fig:opt_val_pol}).
+$V^3$ for different number of \textsc{Discrete Actions} in the \MarsRover\ problem. As the number of discrete actions increases, the value function more closely resembles the continuous action value of $V^2$ (defined in Figure ~\ref{fig:opt_val_pol}).
 }
 \label{fig:rover_discrete}
 \vspace{-1mm}
@@ -2522,7 +2662,7 @@ On the other hand, the level of discretization within this range is also very im
 %}
 \vspace{-2mm}
 \caption{%\footnotesize 
-Space and elapsed time vs. horizon for a fixed horizon of 3 and different problem sizes for the \textsc{Discrete Action} \MarsRover\ and the \WaterReservoir. 
+Space and elapsed time vs. number of discrete actions for a fixed horizon of 3  for  \MarsRover\ and the \WaterReservoir with discrete actions. 
 }
 \label{fig:roverDisSize}
 \vspace{-5mm}
@@ -2541,7 +2681,7 @@ Space and elapsed time vs. horizon for a fixed horizon of 3 and different proble
 %}
 \vspace{-2mm}
 \caption{%\footnotesize 
-Space and elapsed time vs. horizon for a fixed discritization of 4 and 8 for the discrete action \WaterReservoir. To compare the time and space of continuous action \WaterReservoir is given. }
+Space and elapsed time vs. horizon for a fixed discretization of 4 and 8 actions for the \WaterReservoir.}
 \label{fig:resDisTS}
 \vspace{-5mm}
 \end{figure}

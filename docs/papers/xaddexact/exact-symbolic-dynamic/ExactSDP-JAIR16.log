@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.4.19)  1 MAY 2016 10:01
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.4.19)  9 MAY 2016 12:39
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -701,10 +701,14 @@ File: pgflibraryshapes.multipart.code.tex 2010/01/07 v3.0.0 (rcs-revision 1.2)
 \pgfnodepartsixbox=\box77
 \pgfnodepartfivebox=\box78
 ))) (./definitions.tex)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/lscape.sty
+Package: lscape 2000/10/22 v3.01 Landscape Pages (DPC)
+)
 \c@theorem=\count149
 \c@corollary=\count150
 \c@lemma=\count151
- (./ExactSDP-JAIR16.aux)
+
+(./ExactSDP-JAIR16.aux)
 \openout1 = `ExactSDP-JAIR16.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 55.
@@ -839,7 +843,7 @@ Package pdftex.def Info: pics/probabilities_2.pdf used on input line 317.
 (pdftex.def)             Requested size: 225.48424pt x 109.44154pt.
  [5] [6 <./pics/dbn_state.pdf> <./pics/dbn_inv2.pdf> <./pics/probabilities_2.pd
 f>] [7] [8] [9] [10] [11]
-Overfull \hbox (11.70015pt too wide) in paragraph at lines 780--783
+Overfull \hbox (11.70015pt too wide) in paragraph at lines 782--785
 \OT1/cmr/m/n/10.95 Marginalization of a con-tin-u-ous vari-able $\OML/cmm/m/it/
 10.95 x[]$ \OT1/cmr/m/n/10.95 is per-formed by the in-te-gral $[][] \OML/cmm/m/
 it/10.95 f\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 x[]\OT1/cmr/m/n/10.95 )\OML/c
@@ -848,12 +852,12 @@ OML/cmm/m/it/10.95 dx[]$\OT1/cmr/m/n/10.95 .
  []
 
 [12]
-Overfull \hbox (33.5704pt too wide) in paragraph at lines 864--891
+Overfull \hbox (33.5704pt too wide) in paragraph at lines 866--893
  [] 
  []
 
 
-Overfull \hbox (11.20569pt too wide) in paragraph at lines 893--898
+Overfull \hbox (11.20569pt too wide) in paragraph at lines 895--900
 []\OT1/cmr/m/n/10.95 where $[][]$ de-notes $[]$ for $1 \OMS/cmsy/m/n/10.95 ^^T 
 \OML/cmm/m/it/10.95 i \OMS/cmsy/m/n/10.95 ^^T \OML/cmm/m/it/10.95 k$\OT1/cmr/m/
 n/10.95 ; and since we have $[](\OML/cmm/m/it/10.95 F; \OMS/cmsy/m/n/10.95 ^^@1
@@ -861,12 +865,17 @@ n/10.95 ; and since we have $[](\OML/cmm/m/it/10.95 F; \OMS/cmsy/m/n/10.95 ^^@1
  []
 
 [13]
-Underfull \hbox (badness 10000) detected at line 1019
+Overfull \hbox (0.85632pt too wide) in paragraph at lines 964--964
+[] 
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 1021
 [][]
  []
 
 
-Underfull \hbox (badness 10000) detected at line 1077
+Underfull \hbox (badness 10000) detected at line 1079
 [][]
  []
 
@@ -875,7 +884,7 @@ Underfull \hbox (badness 10000) detected at line 1077
 LaTeX Warning: Text page 15 contains only floats.
 
 [15] [16]
-Underfull \hbox (badness 10000) detected at line 1208
+Underfull \hbox (badness 10000) detected at line 1210
 [][]
  []
 
@@ -885,15 +894,15 @@ Underfull \vbox (badness 1859) has occurred while \output is active []
  [18]
 [19]
 Package epstopdf Info: Source file: <FiguresSource/bddaddxadd.eps>
-(epstopdf)                    date: 2016-05-01 09:49:43
+(epstopdf)                    date: 2016-05-07 01:03:55
 (epstopdf)                    size: 93904 bytes
 (epstopdf)             Output file: <FiguresSource/bddaddxadd-eps-converted-to.
 pdf>
-(epstopdf)                    date: 2016-05-01 09:49:48
+(epstopdf)                    date: 2016-05-07 01:04:02
 (epstopdf)                    size: 30688 bytes
 (epstopdf)             Command: <epstopdf --outfile=FiguresSource/bddaddxadd-ep
 s-converted-to.pdf FiguresSource/bddaddxadd.eps>
-(epstopdf)             \includegraphics on input line 1328.
+(epstopdf)             \includegraphics on input line 1330.
 Package epstopdf Info: Output file is already uptodate.
 
 <FiguresSource/bddaddxadd-eps-converted-to.pdf, id=1671, 469.755pt x 215.80624p
@@ -901,250 +910,233 @@ t>
 File: FiguresSource/bddaddxadd-eps-converted-to.pdf Graphic file (type pdf)
  <use FiguresSource/bddaddxadd-eps-converted-to.pdf>
 Package pdftex.def Info: FiguresSource/bddaddxadd-eps-converted-to.pdf used on 
-input line 1328.
-(pdftex.def)             Requested size: 433.62pt x 199.20602pt.
+input line 1330.
+(pdftex.def)             Requested size: 303.53267pt x 139.44257pt.
+
+Underfull \vbox (badness 1466) has occurred while \output is active []
+
  [20 <./FiguresSource/bddaddxadd-eps-converted-to.pdf>] [21] [22]
 Package epstopdf Info: Source file: <FiguresSource/path.eps>
-(epstopdf)                    date: 2016-05-01 09:49:42
-(epstopdf)                    size: 77287 bytes
+(epstopdf)                    date: 2016-05-07 01:03:53
+(epstopdf)                    size: 113974 bytes
 (epstopdf)             Output file: <FiguresSource/path-eps-converted-to.pdf>
-(epstopdf)                    date: 2016-05-01 09:49:48
-(epstopdf)                    size: 28092 bytes
+(epstopdf)                    date: 2016-05-07 01:04:02
+(epstopdf)                    size: 40631 bytes
 (epstopdf)             Command: <epstopdf --outfile=FiguresSource/path-eps-conv
 erted-to.pdf FiguresSource/path.eps>
-(epstopdf)             \includegraphics on input line 1473.
+(epstopdf)             \includegraphics on input line 1480.
 Package epstopdf Info: Output file is already uptodate.
 
-<FiguresSource/path-eps-converted-to.pdf, id=1683, 1057.9525pt x 445.665pt>
+<FiguresSource/path-eps-converted-to.pdf, id=1683, 1283.79625pt x 447.6725pt>
 File: FiguresSource/path-eps-converted-to.pdf Graphic file (type pdf)
 
 <use FiguresSource/path-eps-converted-to.pdf>
 Package pdftex.def Info: FiguresSource/path-eps-converted-to.pdf used on input 
-line 1473.
-(pdftex.def)             Requested size: 390.25534pt x 164.39705pt.
+line 1480.
+(pdftex.def)             Requested size: 433.62pt x 151.20248pt.
  [23 <./FiguresSource/path-eps-converted-to.pdf>]
-Underfull \hbox (badness 10000) detected at line 1533
+Package epstopdf Info: Source file: <FiguresSource/consistency.eps>
+(epstopdf)                    date: 2016-05-07 01:03:52
+(epstopdf)                    size: 54214 bytes
+(epstopdf)             Output file: <FiguresSource/consistency-eps-converted-to
+.pdf>
+(epstopdf)                    date: 2016-05-07 01:04:03
+(epstopdf)                    size: 20278 bytes
+(epstopdf)             Command: <epstopdf --outfile=FiguresSource/consistency-e
+ps-converted-to.pdf FiguresSource/consistency.eps>
+(epstopdf)             \includegraphics on input line 1528.
+Package epstopdf Info: Output file is already uptodate.
+
+<FiguresSource/consistency-eps-converted-to.pdf, id=1689, 469.755pt x 195.73125
+pt>
+File: FiguresSource/consistency-eps-converted-to.pdf Graphic file (type pdf)
+ <use FiguresSource/consistency-eps-converted-to.pdf>
+Package pdftex.def Info: FiguresSource/consistency-eps-converted-to.pdf used on
+ input line 1528.
+(pdftex.def)             Requested size: 346.89731pt x 144.54018pt.
+Package epstopdf Info: Source file: <FiguresSource/redundancy.eps>
+(epstopdf)                    date: 2016-05-07 01:03:52
+(epstopdf)                    size: 21141 bytes
+(epstopdf)             Output file: <FiguresSource/redundancy-eps-converted-to.
+pdf>
+(epstopdf)                    date: 2016-05-07 01:04:03
+(epstopdf)                    size: 9087 bytes
+(epstopdf)             Command: <epstopdf --outfile=FiguresSource/redundancy-ep
+s-converted-to.pdf FiguresSource/redundancy.eps>
+(epstopdf)             \includegraphics on input line 1551.
+Package epstopdf Info: Output file is already uptodate.
+
+<FiguresSource/redundancy-eps-converted-to.pdf, id=1690, 317.185pt x 253.94875p
+t>
+File: FiguresSource/redundancy-eps-converted-to.pdf Graphic file (type pdf)
+ <use FiguresSource/redundancy-eps-converted-to.pdf>
+Package pdftex.def Info: FiguresSource/redundancy-eps-converted-to.pdf used on 
+input line 1551.
+(pdftex.def)             Requested size: 216.81pt x 173.58958pt.
+ [24 <./FiguresSource/consistency-eps-converted-to.pdf>]
+Underfull \hbox (badness 10000) detected at line 1599
 [][]
  []
 
 
-Underfull \hbox (badness 10000) detected at line 1578
+Underfull \hbox (badness 10000) detected at line 1644
 [][]
  []
 
-[24]
+[25 <./FiguresSource/redundancy-eps-converted-to.pdf>]
 Package epstopdf Info: Source file: <FiguresSource/restriction.eps>
-(epstopdf)                    date: 2016-05-01 09:49:41
+(epstopdf)                    date: 2016-05-07 01:03:54
 (epstopdf)                    size: 92292 bytes
 (epstopdf)             Output file: <FiguresSource/restriction-eps-converted-to
 .pdf>
-(epstopdf)                    date: 2016-05-01 09:49:49
+(epstopdf)                    date: 2016-05-07 01:04:03
 (epstopdf)                    size: 31252 bytes
 (epstopdf)             Command: <epstopdf --outfile=FiguresSource/restriction-e
 ps-converted-to.pdf FiguresSource/restriction.eps>
-(epstopdf)             \includegraphics on input line 1597.
+(epstopdf)             \includegraphics on input line 1663.
 Package epstopdf Info: Output file is already uptodate.
 
-<FiguresSource/restriction-eps-converted-to.pdf, id=1692, 370.38374pt x 253.948
+<FiguresSource/restriction-eps-converted-to.pdf, id=1702, 370.38374pt x 253.948
 75pt>
 File: FiguresSource/restriction-eps-converted-to.pdf Graphic file (type pdf)
  <use FiguresSource/restriction-eps-converted-to.pdf>
 Package pdftex.def Info: FiguresSource/restriction-eps-converted-to.pdf used on
- input line 1597.
+ input line 1663.
 (pdftex.def)             Requested size: 433.62pt x 297.3087pt.
-
-Underfull \vbox (badness 1917) has occurred while \output is active []
-
- [25]
+ [26]
 Package epstopdf Info: Source file: <FiguresSource/reorder.eps>
-(epstopdf)                    date: 2016-05-01 09:49:42
+(epstopdf)                    date: 2016-05-07 01:03:55
 (epstopdf)                    size: 84946 bytes
 (epstopdf)             Output file: <FiguresSource/reorder-eps-converted-to.pdf
 >
-(epstopdf)                    date: 2016-05-01 09:49:49
+(epstopdf)                    date: 2016-05-07 01:04:04
 (epstopdf)                    size: 28892 bytes
 (epstopdf)             Command: <epstopdf --outfile=FiguresSource/reorder-eps-c
 onverted-to.pdf FiguresSource/reorder.eps>
-(epstopdf)             \includegraphics on input line 1628.
+(epstopdf)             \includegraphics on input line 1694.
 Package epstopdf Info: Output file is already uptodate.
 
-<FiguresSource/reorder-eps-converted-to.pdf, id=1697, 463.7325pt x 253.94875pt>
+<FiguresSource/reorder-eps-converted-to.pdf, id=1706, 463.7325pt x 253.94875pt>
 File: FiguresSource/reorder-eps-converted-to.pdf Graphic file (type pdf)
 <use FiguresSource/reorder-eps-converted-to.pdf>
 Package pdftex.def Info: FiguresSource/reorder-eps-converted-to.pdf used on inp
-ut line 1628.
+ut line 1694.
 (pdftex.def)             Requested size: 433.62pt x 237.46411pt.
-
-Underfull \hbox (badness 10000) detected at line 1670
-[][]
- []
-
-
-Underfull \hbox (badness 10000) detected at line 1709
-[][]
- []
-
-
-Underfull \hbox (badness 10000) detected at line 1741
-[][]
- []
-
-Package epstopdf Info: Source file: <FiguresSource/max_result.eps>
-(epstopdf)                    date: 2016-05-01 09:49:42
-(epstopdf)                    size: 13822 bytes
-(epstopdf)             Output file: <FiguresSource/max_result-eps-converted-to.
-pdf>
-(epstopdf)                    date: 2016-05-01 09:49:49
-(epstopdf)                    size: 6445 bytes
-(epstopdf)             Command: <epstopdf --outfile=FiguresSource/max_result-ep
-s-converted-to.pdf FiguresSource/max_result.eps>
-(epstopdf)             \includegraphics on input line 1776.
-Package epstopdf Info: Output file is already uptodate.
-
-<FiguresSource/max_result-eps-converted-to.pdf, id=1698, 224.84pt x 165.61874pt
->
-File: FiguresSource/max_result-eps-converted-to.pdf Graphic file (type pdf)
- <use FiguresSource/max_result-eps-converted-to.pdf>
-Package pdftex.def Info: FiguresSource/max_result-eps-converted-to.pdf used on 
-input line 1776.
-(pdftex.def)             Requested size: 108.405pt x 79.85242pt.
-Package epstopdf Info: Source file: <FiguresSource/min_result.eps>
-(epstopdf)                    date: 2016-05-01 09:49:42
-(epstopdf)                    size: 13916 bytes
-(epstopdf)             Output file: <FiguresSource/min_result-eps-converted-to.
-pdf>
-(epstopdf)                    date: 2016-05-01 09:49:49
-(epstopdf)                    size: 6455 bytes
-(epstopdf)             Command: <epstopdf --outfile=FiguresSource/min_result-ep
-s-converted-to.pdf FiguresSource/min_result.eps>
-(epstopdf)             \includegraphics on input line 1778.
-Package epstopdf Info: Output file is already uptodate.
-
-<FiguresSource/min_result-eps-converted-to.pdf, id=1699, 210.7875pt x 167.62625
-pt>
-File: FiguresSource/min_result-eps-converted-to.pdf Graphic file (type pdf)
- <use FiguresSource/min_result-eps-converted-to.pdf>
-Package pdftex.def Info: FiguresSource/min_result-eps-converted-to.pdf used on 
-input line 1778.
-(pdftex.def)             Requested size: 108.405pt x 86.20953pt.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-Overfull \hbox (1.31741pt too wide) in paragraph at lines 1789--1793
-[]\OT1/cmr/m/n/10.95 The other op-er-a-tion re-quired to solve CA-HMDPs is a \O
-T1/cmr/m/it/10.95 con-tin-u-ous max-i-miza-tion \OT1/cmr/m/n/10.95 ($[][] \OML/
-cmm/m/it/10.95 f$\OT1/cmr/m/n/10.95 )
- []
-
-[26 <./FiguresSource/restriction-eps-converted-to.pdf>] (./add-fi.tex)
-Overfull \hbox (60.51805pt too wide) in paragraph at lines 27--1801
- [][] 
- []
-
-(./bounds-box.tex)
-Overfull \hbox (30.75786pt too wide) in paragraph at lines 13--1808
- [][] 
- []
-
-(./add-LUB.tex)
-Overfull \hbox (21.7066pt too wide) in paragraph at lines 15--1823
- [][] 
- []
-
-(./add-HLB.tex) (./add-fi-subst-LUB.tex)
-Overfull \hbox (27.4128pt too wide) in paragraph at lines 15--1846
- [][] 
- []
-
-(./add-fi-subst-HLB.tex)
-Overfull \hbox (11.31805pt too wide) in paragraph at lines 12--1850
- [][] 
- []
-
-(./add-max-LUB-HLB.tex)
-Overfull \hbox (44.20688pt too wide) in paragraph at lines 19--1862
- [][] 
- []
-
-
-Overfull \hbox (2.65997pt too wide) in paragraph at lines 1866--1866
- []\OT1/cmr/m/it/10 cons 
- []
-
-(./add-max-fi.tex)
-Overfull \hbox (106.61215pt too wide) in paragraph at lines 27--1872
- [][] 
- []
-
-
-Underfull \vbox (badness 1490) has occurred while \output is active []
-
- [27 <./FiguresSource/reorder-eps-converted-to.pdf>] [28] [29] [30 <./FiguresSo
-urce/max_result-eps-converted-to.pdf> <./FiguresSource/min_result-eps-converted
--to.pdf>]
-Underfull \hbox (badness 10000) detected at line 1992
+ [27 <./FiguresSource/restriction-eps-converted-to.pdf>]
+Underfull \hbox (badness 10000) detected at line 1736
 [][]
  []
 
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [31]
-Package epstopdf Info: Source file: <FiguresSource/consistencyPrunning.eps>
-(epstopdf)                    date: 2016-05-01 09:49:43
-(epstopdf)                    size: 50508 bytes
-(epstopdf)             Output file: <FiguresSource/consistencyPrunning-eps-conv
-erted-to.pdf>
-(epstopdf)                    date: 2016-05-01 09:49:50
-(epstopdf)                    size: 19690 bytes
-(epstopdf)             Command: <epstopdf --outfile=FiguresSource/consistencyPr
-unning-eps-converted-to.pdf FiguresSource/consistencyPrunning.eps>
-(epstopdf)             \includegraphics on input line 2038.
+ [28 <./FiguresSource/reorder-eps-converted-to.pdf>]
+Underfull \hbox (badness 10000) detected at line 1778
+[][]
+ []
+
+(./add-fi.tex)
+Overfull \hbox (28.53455pt too wide) in paragraph at lines 27--1795
+ [][] 
+ []
+
+(./bounds-box.tex)
+Overfull \hbox (23.53088pt too wide) in paragraph at lines 13--1802
+ [][] 
+ []
+
+(./add-LUB.tex)
+Overfull \hbox (8.69853pt too wide) in paragraph at lines 15--1816
+ [][] 
+ []
+
+(./add-HLB.tex) (./add-Root.tex) (./add-fi-subst-LUB.tex)
+(./add-fi-subst-HLB.tex) (./add-fi-subst-Root.tex)
+(./add-conditions-LUB-HLB+Root_.tex) (./add-conditions-LUB-HLB+Root__2.tex)
+(./add-max-LUB-HLB.tex) (./add-max-LUB-HLB-Root.tex)
+Overfull \hbox (30.03198pt too wide) in paragraph at lines 19--1903
+ [][] 
+ []
+
+(./add-max-fi.tex)
+Overfull \hbox (6.09746pt too wide) in paragraph at lines 27--1919
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 1975
+[][]
+ []
+
+Package epstopdf Info: Source file: <FiguresSource/max_result.eps>
+(epstopdf)                    date: 2016-05-07 01:03:55
+(epstopdf)                    size: 13822 bytes
+(epstopdf)             Output file: <FiguresSource/max_result-eps-converted-to.
+pdf>
+(epstopdf)                    date: 2016-05-07 01:04:28
+(epstopdf)                    size: 6445 bytes
+(epstopdf)             Command: <epstopdf --outfile=FiguresSource/max_result-ep
+s-converted-to.pdf FiguresSource/max_result.eps>
+(epstopdf)             \includegraphics on input line 2010.
 Package epstopdf Info: Output file is already uptodate.
 
-<FiguresSource/consistencyPrunning-eps-converted-to.pdf, id=1727, 469.755pt x 1
-68.63pt>
-File: FiguresSource/consistencyPrunning-eps-converted-to.pdf Graphic file (type
- pdf)
- <use FiguresSource/consistencyPrunning-eps-converted-to.pdf>
-Package pdftex.def Info: FiguresSource/consistencyPrunning-eps-converted-to.pdf
- used on input line 2038.
-(pdftex.def)             Requested size: 346.89731pt x 124.52693pt.
-Package epstopdf Info: Source file: <FiguresSource/redundancyPrunning.eps>
-(epstopdf)                    date: 2016-05-01 09:49:42
-(epstopdf)                    size: 110299 bytes
-(epstopdf)             Output file: <FiguresSource/redundancyPrunning-eps-conve
-rted-to.pdf>
-(epstopdf)                    date: 2016-05-01 09:49:50
-(epstopdf)                    size: 39681 bytes
-(epstopdf)             Command: <epstopdf --outfile=FiguresSource/redundancyPru
-nning-eps-converted-to.pdf FiguresSource/redundancyPrunning.eps>
-(epstopdf)             \includegraphics on input line 2062.
+<FiguresSource/max_result-eps-converted-to.pdf, id=1717, 224.84pt x 165.61874pt
+>
+File: FiguresSource/max_result-eps-converted-to.pdf Graphic file (type pdf)
+ <use FiguresSource/max_result-eps-converted-to.pdf>
+Package pdftex.def Info: FiguresSource/max_result-eps-converted-to.pdf used on 
+input line 2010.
+(pdftex.def)             Requested size: 86.72267pt x 63.88092pt.
+Package epstopdf Info: Source file: <FiguresSource/min_result.eps>
+(epstopdf)                    date: 2016-05-07 01:03:55
+(epstopdf)                    size: 13916 bytes
+(epstopdf)             Output file: <FiguresSource/min_result-eps-converted-to.
+pdf>
+(epstopdf)                    date: 2016-05-07 01:04:28
+(epstopdf)                    size: 6455 bytes
+(epstopdf)             Command: <epstopdf --outfile=FiguresSource/min_result-ep
+s-converted-to.pdf FiguresSource/min_result.eps>
+(epstopdf)             \includegraphics on input line 2012.
 Package epstopdf Info: Output file is already uptodate.
 
-<FiguresSource/redundancyPrunning-eps-converted-to.pdf, id=1728, 469.755pt x 15
-3.57375pt>
-File: FiguresSource/redundancyPrunning-eps-converted-to.pdf Graphic file (type 
-pdf)
- <use FiguresSource/redundancyPrunning-eps-converted-to.pdf>
-Package pdftex.def Info: FiguresSource/redundancyPrunning-eps-converted-to.pdf 
-used on input line 2062.
-(pdftex.def)             Requested size: 433.62pt x 141.76056pt.
- [32]
-[33 <./FiguresSource/consistencyPrunning-eps-converted-to.pdf> <./FiguresSource
-/redundancyPrunning-eps-converted-to.pdf>]
+<FiguresSource/min_result-eps-converted-to.pdf, id=1718, 210.7875pt x 167.62625
+pt>
+File: FiguresSource/min_result-eps-converted-to.pdf Graphic file (type pdf)
+ <use FiguresSource/min_result-eps-converted-to.pdf>
+Package pdftex.def Info: FiguresSource/min_result-eps-converted-to.pdf used on 
+input line 2012.
+(pdftex.def)             Requested size: 86.72267pt x 68.96507pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [29]
+[30]
+Underfull \hbox (badness 10000) detected at line 2095
+[][]
+ []
+
+[31]
+Underfull \vbox (badness 2111) has occurred while \output is active []
+
+ [32 <./FiguresSource/max_result-eps-converted-to.pdf> <./FiguresSource/min_res
+ult-eps-converted-to.pdf>]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [33]
 Package epstopdf Info: Source file: <FiguresSource/counterExample.eps>
-(epstopdf)                    date: 2016-05-01 09:49:42
+(epstopdf)                    date: 2016-05-07 01:03:55
 (epstopdf)                    size: 20121 bytes
 (epstopdf)             Output file: <FiguresSource/counterExample-eps-converted
 -to.pdf>
-(epstopdf)                    date: 2016-05-01 09:49:50
+(epstopdf)                    date: 2016-05-07 01:04:04
 (epstopdf)                    size: 8056 bytes
 (epstopdf)             Command: <epstopdf --outfile=FiguresSource/counterExampl
 e-eps-converted-to.pdf FiguresSource/counterExample.eps>
-(epstopdf)             \includegraphics on input line 2092.
+(epstopdf)             \includegraphics on input line 2141.
 Package epstopdf Info: Output file is already uptodate.
 
 <FiguresSource/counterExample-eps-converted-to.pdf, id=1740, 469.755pt x 172.64
@@ -1153,244 +1145,299 @@ File: FiguresSource/counterExample-eps-converted-to.pdf Graphic file (type pdf)
 
  <use FiguresSource/counterExample-eps-converted-to.pdf>
 Package pdftex.def Info: FiguresSource/counterExample-eps-converted-to.pdf used
- on input line 2092.
+ on input line 2141.
 (pdftex.def)             Requested size: 260.17464pt x 95.61888pt.
 
-Underfull \hbox (badness 10000) detected at line 2151
+Underfull \hbox (badness 10000) detected at line 2200
 [][]
  []
 
 
-Underfull \hbox (badness 10000) detected at line 2184
+Underfull \hbox (badness 10000) detected at line 2233
 [][]
  []
 
-[34 <./FiguresSource/counterExample-eps-converted-to.pdf>]
+Package epstopdf Info: Source file: <FiguresSource/consistencyPrunning.eps>
+(epstopdf)                    date: 2016-05-07 01:03:52
+(epstopdf)                    size: 50508 bytes
+(epstopdf)             Output file: <FiguresSource/consistencyPrunning-eps-conv
+erted-to.pdf>
+(epstopdf)                    date: 2016-05-07 01:04:05
+(epstopdf)                    size: 19690 bytes
+(epstopdf)             Command: <epstopdf --outfile=FiguresSource/consistencyPr
+unning-eps-converted-to.pdf FiguresSource/consistencyPrunning.eps>
+(epstopdf)             \includegraphics on input line 2245.
+Package epstopdf Info: Output file is already uptodate.
+
+<FiguresSource/consistencyPrunning-eps-converted-to.pdf, id=1741, 469.755pt x 1
+68.63pt>
+File: FiguresSource/consistencyPrunning-eps-converted-to.pdf Graphic file (type
+ pdf)
+ <use FiguresSource/consistencyPrunning-eps-converted-to.pdf>
+Package pdftex.def Info: FiguresSource/consistencyPrunning-eps-converted-to.pdf
+ used on input line 2245.
+(pdftex.def)             Requested size: 346.89731pt x 124.52693pt.
+Package epstopdf Info: Source file: <FiguresSource/redundancyPrunning.eps>
+(epstopdf)                    date: 2016-05-07 01:03:51
+(epstopdf)                    size: 110785 bytes
+(epstopdf)             Output file: <FiguresSource/redundancyPrunning-eps-conve
+rted-to.pdf>
+(epstopdf)                    date: 2016-05-07 01:04:05
+(epstopdf)                    size: 39962 bytes
+(epstopdf)             Command: <epstopdf --outfile=FiguresSource/redundancyPru
+nning-eps-converted-to.pdf FiguresSource/redundancyPrunning.eps>
+(epstopdf)             \includegraphics on input line 2268.
+Package epstopdf Info: Output file is already uptodate.
+
+<FiguresSource/redundancyPrunning-eps-converted-to.pdf, id=1742, 469.755pt x 22
+0.825pt>
+File: FiguresSource/redundancyPrunning-eps-converted-to.pdf Graphic file (type 
+pdf)
+ <use FiguresSource/redundancyPrunning-eps-converted-to.pdf>
+Package pdftex.def Info: FiguresSource/redundancyPrunning-eps-converted-to.pdf 
+used on input line 2268.
+(pdftex.def)             Requested size: 433.62pt x 203.83871pt.
+ [34 <./FiguresSource/counterExample-eps-converted-to.pdf>]
 Underfull \vbox (badness 5652) has occurred while \output is active []
 
  [35]
-Underfull \hbox (badness 10000) detected at line 2256
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [36 <./FiguresSource/consistencyPrunning-eps-converted-to.pdf> <./FiguresSourc
+e/redundancyPrunning-eps-converted-to.pdf>]
+Underfull \hbox (badness 10000) detected at line 2337
 [][]
  []
 
-[36]
-Underfull \vbox (badness 10000) has occurred while \output is active []
+[37]
+Underfull \hbox (badness 10000) detected at line 2391
+[][]
+ []
 
- [37]
+
+Underfull \vbox (badness 2213) has occurred while \output is active []
+
+ [38]
+[39]
 
 LaTeX Font Warning: Font shape `OT1/cmr/bx/sc' undefined
-(Font)              using `OT1/cmr/bx/n' instead on input line 2303.
+(Font)              using `OT1/cmr/bx/n' instead on input line 2436.
 
-[38] <pics/v1_2d.pdf, id=1759, 429.605pt x 156.585pt>
+<pics/v1_2d.pdf, id=1768, 429.605pt x 156.585pt>
 File: pics/v1_2d.pdf Graphic file (type pdf)
  <use pics/v1_2d.pdf>
-Package pdftex.def Info: pics/v1_2d.pdf used on input line 2333.
-(pdftex.def)             Requested size: 187.32089pt x 68.27638pt.
+Package pdftex.def Info: pics/v1_2d.pdf used on input line 2468.
+(pdftex.def)             Requested size: 216.81pt x 79.0258pt.
 
-<pics/v2_2d.pdf, id=1760, 429.605pt x 156.585pt>
+<pics/v2_2d.pdf, id=1769, 429.605pt x 156.585pt>
 File: pics/v2_2d.pdf Graphic file (type pdf)
  <use pics/v2_2d.pdf>
-Package pdftex.def Info: pics/v2_2d.pdf used on input line 2335.
-(pdftex.def)             Requested size: 187.32089pt x 68.27638pt.
+Package pdftex.def Info: pics/v2_2d.pdf used on input line 2470.
+(pdftex.def)             Requested size: 216.81pt x 79.0258pt.
 
-<pics/v3_2d.pdf, id=1761, 429.605pt x 156.585pt>
+<pics/v3_2d.pdf, id=1770, 429.605pt x 156.585pt>
 File: pics/v3_2d.pdf Graphic file (type pdf)
  <use pics/v3_2d.pdf>
-Package pdftex.def Info: pics/v3_2d.pdf used on input line 2337.
-(pdftex.def)             Requested size: 187.32089pt x 68.27638pt.
+Package pdftex.def Info: pics/v3_2d.pdf used on input line 2472.
+(pdftex.def)             Requested size: 216.81pt x 79.0258pt.
 
-<pics/roverdot.pdf, id=1762, 542.025pt x 367.3725pt>
+Overfull \hbox (2.43333pt too wide) in paragraph at lines 2468--2474
+[][] [] 
+ []
+
+<pics/roverdot.pdf, id=1771, 542.025pt x 367.3725pt>
 File: pics/roverdot.pdf Graphic file (type pdf)
  <use pics/roverdot.pdf>
-Package pdftex.def Info: pics/roverdot.pdf used on input line 2360.
-(pdftex.def)             Requested size: 208.13574pt x 141.07167pt.
+Package pdftex.def Info: pics/roverdot.pdf used on input line 2495.
+(pdftex.def)             Requested size: 346.89731pt x 235.1288pt.
 
-[39 <./pics/v1_2d.pdf> <./pics/v2_2d.pdf> <./pics/v3_2d.pdf> <./pics/roverdot.p
-df>] <pics/contRoverNode2.pdf, id=1789, 596.2275pt x 393.47pt>
+Underfull \vbox (badness 1052) has occurred while \output is active []
+
+ [40]
+Underfull \vbox (badness 2111) has occurred while \output is active []
+
+ [41 <./pics/v1_2d.pdf> <./pics/v2_2d.pdf> <./pics/v3_2d.pdf>]
+<pics/contRoverNode2.pdf, id=1796, 596.2275pt x 393.47pt>
 File: pics/contRoverNode2.pdf Graphic file (type pdf)
 
 <use pics/contRoverNode2.pdf>
-Package pdftex.def Info: pics/contRoverNode2.pdf used on input line 2451.
+Package pdftex.def Info: pics/contRoverNode2.pdf used on input line 2589.
 (pdftex.def)             Requested size: 195.12767pt x 128.7708pt.
 
-<pics/contRoverTime2.pdf, id=1790, 596.2275pt x 393.47pt>
+<pics/contRoverTime2.pdf, id=1797, 596.2275pt x 393.47pt>
 File: pics/contRoverTime2.pdf Graphic file (type pdf)
 
 <use pics/contRoverTime2.pdf>
-Package pdftex.def Info: pics/contRoverTime2.pdf used on input line 2453.
+Package pdftex.def Info: pics/contRoverTime2.pdf used on input line 2591.
 (pdftex.def)             Requested size: 195.12767pt x 128.7708pt.
-
-<pics/DisRoverNode.pdf, id=1791, 456.70625pt x 313.17pt>
+ [42 <./pics/roverdot.pdf>]
+<pics/DisRoverNode.pdf, id=1806, 456.70625pt x 313.17pt>
 File: pics/DisRoverNode.pdf Graphic file (type pdf)
 
 <use pics/DisRoverNode.pdf>
-Package pdftex.def Info: pics/DisRoverNode.pdf used on input line 2470.
+Package pdftex.def Info: pics/DisRoverNode.pdf used on input line 2608.
 (pdftex.def)             Requested size: 195.12767pt x 133.80032pt.
 
-<pics/DisRoverTime.pdf, id=1792, 456.70625pt x 313.17pt>
+<pics/DisRoverTime.pdf, id=1807, 456.70625pt x 313.17pt>
 File: pics/DisRoverTime.pdf Graphic file (type pdf)
 
 <use pics/DisRoverTime.pdf>
-Package pdftex.def Info: pics/DisRoverTime.pdf used on input line 2472.
+Package pdftex.def Info: pics/DisRoverTime.pdf used on input line 2610.
 (pdftex.def)             Requested size: 195.12767pt x 133.80032pt.
 
 
-LaTeX Warning: Reference `sec:pruningAlg' on page 40 undefined on input line 24
-83.
+LaTeX Warning: Reference `sec:pruningAlg' on page 43 undefined on input line 26
+21.
 
-[40] <pics/rover2.pdf, id=1796, 449.68pt x 338.26375pt>
+[43 <./pics/contRoverNode2.pdf> <./pics/contRoverTime2.pdf> <./pics/DisRoverNod
+e.pdf> <./pics/DisRoverTime.pdf>]
+<pics/rover2.pdf, id=1832, 449.68pt x 338.26375pt>
 File: pics/rover2.pdf Graphic file (type pdf)
  <use pics/rover2.pdf>
-Package pdftex.def Info: pics/rover2.pdf used on input line 2495.
+Package pdftex.def Info: pics/rover2.pdf used on input line 2635.
 (pdftex.def)             Requested size: 78.04842pt x 58.7067pt.
 
-<pics/rover4.pdf, id=1797, 449.68pt x 338.26375pt>
+<pics/rover4.pdf, id=1833, 449.68pt x 338.26375pt>
 File: pics/rover4.pdf Graphic file (type pdf)
  <use pics/rover4.pdf>
-Package pdftex.def Info: pics/rover4.pdf used on input line 2496.
+Package pdftex.def Info: pics/rover4.pdf used on input line 2636.
 (pdftex.def)             Requested size: 78.04842pt x 58.7067pt.
 
-<pics/rover6.pdf, id=1798, 449.68pt x 338.26375pt>
+<pics/rover6.pdf, id=1834, 449.68pt x 338.26375pt>
 File: pics/rover6.pdf Graphic file (type pdf)
  <use pics/rover6.pdf>
-Package pdftex.def Info: pics/rover6.pdf used on input line 2497.
+Package pdftex.def Info: pics/rover6.pdf used on input line 2637.
 (pdftex.def)             Requested size: 78.04842pt x 58.7067pt.
 
-<pics/rover8.pdf, id=1799, 449.68pt x 338.26375pt>
+<pics/rover8.pdf, id=1835, 449.68pt x 338.26375pt>
 File: pics/rover8.pdf Graphic file (type pdf)
  <use pics/rover8.pdf>
-Package pdftex.def Info: pics/rover8.pdf used on input line 2498.
+Package pdftex.def Info: pics/rover8.pdf used on input line 2638.
 (pdftex.def)             Requested size: 78.04842pt x 58.7067pt.
 
-<pics/rover10.pdf, id=1800, 449.68pt x 338.26375pt>
+<pics/rover10.pdf, id=1836, 449.68pt x 338.26375pt>
 File: pics/rover10.pdf Graphic file (type pdf)
  <use pics/rover10.pdf>
-Package pdftex.def Info: pics/rover10.pdf used on input line 2499.
+Package pdftex.def Info: pics/rover10.pdf used on input line 2639.
 (pdftex.def)             Requested size: 78.04842pt x 58.7067pt.
 
-Underfull \vbox (badness 2057) has occurred while \output is active []
-
- [41 <./pics/contRoverNode2.pdf> <./pics/contRoverTime2.pdf> <./pics/DisRoverNo
-de.pdf> <./pics/DisRoverTime.pdf>]
-<pics/disRovResNode2.pdf, id=1824, 456.70625pt x 313.17pt>
+<pics/disRovResNode2.pdf, id=1837, 456.70625pt x 313.17pt>
 File: pics/disRovResNode2.pdf Graphic file (type pdf)
 
 <use pics/disRovResNode2.pdf>
-Package pdftex.def Info: pics/disRovResNode2.pdf used on input line 2519.
+Package pdftex.def Info: pics/disRovResNode2.pdf used on input line 2659.
 (pdftex.def)             Requested size: 195.12767pt x 133.80032pt.
 
-<pics/disRovResTime2.pdf, id=1825, 456.70625pt x 313.17pt>
+<pics/disRovResTime2.pdf, id=1838, 456.70625pt x 313.17pt>
 File: pics/disRovResTime2.pdf Graphic file (type pdf)
 
 <use pics/disRovResTime2.pdf>
-Package pdftex.def Info: pics/disRovResTime2.pdf used on input line 2521.
+Package pdftex.def Info: pics/disRovResTime2.pdf used on input line 2661.
 (pdftex.def)             Requested size: 195.12767pt x 133.80032pt.
 
-<pics/DisResNode2.pdf, id=1826, 456.70625pt x 313.17pt>
+<pics/DisResNode2.pdf, id=1839, 456.70625pt x 313.17pt>
 File: pics/DisResNode2.pdf Graphic file (type pdf)
 
 <use pics/DisResNode2.pdf>
-Package pdftex.def Info: pics/DisResNode2.pdf used on input line 2538.
+Package pdftex.def Info: pics/DisResNode2.pdf used on input line 2678.
 (pdftex.def)             Requested size: 195.12767pt x 133.80032pt.
 
-<pics/DisResTime2.pdf, id=1827, 456.70625pt x 313.17pt>
+<pics/DisResTime2.pdf, id=1840, 456.70625pt x 313.17pt>
 File: pics/DisResTime2.pdf Graphic file (type pdf)
 
 <use pics/DisResTime2.pdf>
-Package pdftex.def Info: pics/DisResTime2.pdf used on input line 2540.
+Package pdftex.def Info: pics/DisResTime2.pdf used on input line 2680.
 (pdftex.def)             Requested size: 195.12767pt x 133.80032pt.
- <pics/res3d4.pdf, id=1828, 437.635pt x 301.125pt>
+ [44 <./pics/rover2.pdf> <./pics/rover4.pdf> <./pics/rover6.pdf> <./pics/rover8
+.pdf> <./pics/rover10.pdf> <./pics/disRovResNode2.pdf> <./pics/disRovResTime2.p
+df>]
+<pics/res3d4.pdf, id=1884, 437.635pt x 301.125pt>
 File: pics/res3d4.pdf Graphic file (type pdf)
-
-<use pics/res3d4.pdf>
-Package pdftex.def Info: pics/res3d4.pdf used on input line 2557.
+ <use pics/res3d4.pdf>
+Package pdftex.def Info: pics/res3d4.pdf used on input line 2697.
 (pdftex.def)             Requested size: 208.13574pt x 143.21504pt.
- <pics/q3.pdf, id=1829, 521.95pt x 352.31625pt>
+
+<pics/q3.pdf, id=1885, 521.95pt x 352.31625pt>
 File: pics/q3.pdf Graphic file (type pdf)
-
-<use pics/q3.pdf>
-Package pdftex.def Info: pics/q3.pdf used on input line 2559.
+ <use pics/q3.pdf>
+Package pdftex.def Info: pics/q3.pdf used on input line 2699.
 (pdftex.def)             Requested size: 208.13574pt x 140.49393pt.
- <pics/res3d7.pdf, id=1830, 437.635pt x 301.125pt>
+
+<pics/res3d7.pdf, id=1886, 437.635pt x 301.125pt>
 File: pics/res3d7.pdf Graphic file (type pdf)
-
-<use pics/res3d7.pdf>
-Package pdftex.def Info: pics/res3d7.pdf used on input line 2561.
+ <use pics/res3d7.pdf>
+Package pdftex.def Info: pics/res3d7.pdf used on input line 2701.
 (pdftex.def)             Requested size: 208.13574pt x 143.21504pt.
- <pics/v3.pdf, id=1831, 521.95pt x 352.31625pt>
+
+<pics/v3.pdf, id=1887, 521.95pt x 352.31625pt>
 File: pics/v3.pdf Graphic file (type pdf)
-
-<use pics/v3.pdf>
-Package pdftex.def Info: pics/v3.pdf used on input line 2563.
+ <use pics/v3.pdf>
+Package pdftex.def Info: pics/v3.pdf used on input line 2703.
 (pdftex.def)             Requested size: 208.13574pt x 140.49393pt.
- <pics/res3d10.pdf, id=1832, 437.635pt x 301.125pt>
+
+<pics/res3d10.pdf, id=1888, 437.635pt x 301.125pt>
 File: pics/res3d10.pdf Graphic file (type pdf)
-
-<use pics/res3d10.pdf>
-Package pdftex.def Info: pics/res3d10.pdf used on input line 2565.
+ <use pics/res3d10.pdf>
+Package pdftex.def Info: pics/res3d10.pdf used on input line 2705.
 (pdftex.def)             Requested size: 208.13574pt x 143.21504pt.
- <pics/v6.pdf, id=1833, 521.95pt x 352.31625pt>
-File: pics/v6.pdf Graphic file (type pdf)
 
-<use pics/v6.pdf>
-Package pdftex.def Info: pics/v6.pdf used on input line 2567.
+<pics/v6.pdf, id=1889, 521.95pt x 352.31625pt>
+File: pics/v6.pdf Graphic file (type pdf)
+ <use pics/v6.pdf>
+Package pdftex.def Info: pics/v6.pdf used on input line 2707.
 (pdftex.def)             Requested size: 208.13574pt x 140.49393pt.
 
 
-LaTeX Warning: Float too large for page by 24.64589pt on input line 2576.
+LaTeX Warning: Float too large for page by 24.64589pt on input line 2716.
 
-[42 <./pics/rover2.pdf> <./pics/rover4.pdf> <./pics/rover6.pdf> <./pics/rover8.
-pdf> <./pics/rover10.pdf> <./pics/disRovResNode2.pdf> <./pics/disRovResTime2.pd
-f>] <pics/invCNode.pdf, id=1877, 445.665pt x 254.9525pt>
+<pics/invCNode.pdf, id=1890, 445.665pt x 254.9525pt>
 File: pics/invCNode.pdf Graphic file (type pdf)
-
-<use pics/invCNode.pdf>
-Package pdftex.def Info: pics/invCNode.pdf used on input line 2610.
+ <use pics/invCNode.pdf>
+Package pdftex.def Info: pics/invCNode.pdf used on input line 2750.
 (pdftex.def)             Requested size: 195.12767pt x 111.62701pt.
- <pics/invCTime.pdf, id=1878, 444.66125pt x 256.96pt>
+
+<pics/invCTime.pdf, id=1891, 444.66125pt x 256.96pt>
 File: pics/invCTime.pdf Graphic file (type pdf)
-
-<use pics/invCTime.pdf>
-Package pdftex.def Info: pics/invCTime.pdf used on input line 2612.
+ <use pics/invCTime.pdf>
+Package pdftex.def Info: pics/invCTime.pdf used on input line 2752.
 (pdftex.def)             Requested size: 195.12767pt x 112.76083pt.
- <pics/invD6Node.pdf, id=1879, 444.66125pt x 256.96pt>
+
+<pics/invD6Node.pdf, id=1892, 444.66125pt x 256.96pt>
 File: pics/invD6Node.pdf Graphic file (type pdf)
-
-<use pics/invD6Node.pdf>
-Package pdftex.def Info: pics/invD6Node.pdf used on input line 2631.
+ <use pics/invD6Node.pdf>
+Package pdftex.def Info: pics/invD6Node.pdf used on input line 2771.
 (pdftex.def)             Requested size: 195.12767pt x 112.76083pt.
- <pics/invD6Time.pdf, id=1880, 444.66125pt x 256.96pt>
+
+<pics/invD6Time.pdf, id=1893, 444.66125pt x 256.96pt>
 File: pics/invD6Time.pdf Graphic file (type pdf)
-
-<use pics/invD6Time.pdf>
-Package pdftex.def Info: pics/invD6Time.pdf used on input line 2633.
+ <use pics/invD6Time.pdf>
+Package pdftex.def Info: pics/invD6Time.pdf used on input line 2773.
 (pdftex.def)             Requested size: 195.12767pt x 112.76083pt.
- <pics/invH3Node.pdf, id=1881, 449.68pt x 299.1175pt>
-File: pics/invH3Node.pdf Graphic file (type pdf)
 
-<use pics/invH3Node.pdf>
-Package pdftex.def Info: pics/invH3Node.pdf used on input line 2652.
+<pics/invH3Node.pdf, id=1894, 449.68pt x 299.1175pt>
+File: pics/invH3Node.pdf Graphic file (type pdf)
+ <use pics/invH3Node.pdf>
+Package pdftex.def Info: pics/invH3Node.pdf used on input line 2792.
 (pdftex.def)             Requested size: 195.12767pt x 129.79556pt.
 
-<pics/invH3Time.pdf, id=1882, 450.68375pt x 301.125pt>
+<pics/invH3Time.pdf, id=1895, 450.68375pt x 301.125pt>
 File: pics/invH3Time.pdf Graphic file (type pdf)
 
 <use pics/invH3Time.pdf>
-Package pdftex.def Info: pics/invH3Time.pdf used on input line 2654.
+Package pdftex.def Info: pics/invH3Time.pdf used on input line 2794.
 (pdftex.def)             Requested size: 195.12767pt x 130.3772pt.
- [43 <./pics/DisResNode2.pdf> <./pics/DisResTime2.pdf>] [44 <./pics/res3d4.pdf>
+ [45 <./pics/DisResNode2.pdf> <./pics/DisResTime2.pdf>] [46 <./pics/res3d4.pdf>
  <./pics/q3.pdf> <./pics/res3d7.pdf> <./pics/v3.pdf> <./pics/res3d10.pdf> <./pi
-cs/v6.pdf>] [45 <./pics/invCNode.pdf> <./pics/invCTime.pdf> <./pics/invD6Node.p
-df> <./pics/invD6Time.pdf> <./pics/invH3Node.pdf> <./pics/invH3Time.pdf>] [46] 
-(./ExactSDP-JAIR16.bbl
-Underfull \vbox (badness 1838) has occurred while \output is active []
+cs/v6.pdf>] [47 <./pics/invCNode.pdf> <./pics/invCTime.pdf> <./pics/invD6Node.p
+df> <./pics/invD6Time.pdf> <./pics/invH3Node.pdf> <./pics/invH3Time.pdf>] [48]
+Underfull \vbox (badness 4108) has occurred while \output is active []
 
- [47]
-[48]
+ [49]
+(./ExactSDP-JAIR16.bbl [50]
 Missing character: There is no â in font cmr10!
 Missing character: There is no € in font cmr10!
 Missing character: There is no “ in font cmr10!
-) [49] (./ExactSDP-JAIR16.aux)
+) [51] (./ExactSDP-JAIR16.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
@@ -1399,11 +1446,11 @@ LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 22041 strings out of 493085
- 442724 string characters out of 6136917
- 523453 words of memory out of 5000000
- 25085 multiletter control sequences out of 15000+600000
- 25474 words of font info for 100 fonts, out of 8000000 for 9000
+ 22097 strings out of 493085
+ 444108 string characters out of 6136917
+ 536722 words of memory out of 5000000
+ 25121 multiletter control sequences out of 15000+600000
+ 25173 words of font info for 99 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  55i,22n,67p,10369b,726s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
@@ -1431,10 +1478,10 @@ mtt10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.p
 fb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pf
 b></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb
 >
-Output written on ExactSDP-JAIR16.pdf (49 pages, 2303797 bytes).
+Output written on ExactSDP-JAIR16.pdf (51 pages, 2345684 bytes).
 PDF statistics:
- 2070 PDF objects out of 2073 (max. 8388607)
- 1442 compressed objects within 15 object streams
+ 2082 PDF objects out of 2487 (max. 8388607)
+ 1450 compressed objects within 15 object streams
  0 named destinations out of 1000 (max. 500000)
- 228 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 238 words of extra memory for PDF output out of 10000 (max. 10000000)
 

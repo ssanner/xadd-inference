@@ -1,0 +1,19 @@
+\scalebox{0.8}{
+\begin{tikzpicture}[auto]
+	% title node
+    \node [novertex] (N20) {$HLB \leq LUB $};
+	\node [novertex, below of=N20] (N0) {$\Delta_2$};
+	% place nodes
+	\node [inode, below of=N0, node distance=0.8cm]          (N1) {$x < 16$};
+	\node [inode, below left of=N1, node distance=1.8cm]     (N2) {$x > 2$};
+    \node [terminal, below right of=N1, node distance=1.8cm]    (N3) {$1$};
+	\node [terminal, below left of=N2, node distance=1.5cm]  (N4) {$1$};
+	\node [terminal, below right of=N2, node distance=1.5cm] (N5) {$0$};
+
+	% draw edges
+    \path [high] (N1) -- (N2);
+    \path [low]  (N1) -- (N3);
+    \path [high] (N2) -- (N4);
+    \path [low]  (N2) -- (N5);
+\end{tikzpicture}
+}
