@@ -1,7 +1,7 @@
 function val = xadd_objective_func(args)
 
     <#list variables as variable>
-	${variable.symbol} = args(${variable.index})
+	${variable.symbol} = args(${variable.index});
     </#list>
 
     <#if constants??>

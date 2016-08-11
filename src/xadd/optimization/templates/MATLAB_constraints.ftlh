@@ -1,7 +1,7 @@
 function [c, ceq] = xadd_constraints(args)
 
 	<#list variables as variable>
-	${variable.symbol} = args(${variable.index})
+	${variable.symbol} = args(${variable.index});
 	</#list>
 
 	<#if constraints??>
