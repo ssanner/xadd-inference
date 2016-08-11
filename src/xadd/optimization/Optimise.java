@@ -1,6 +1,5 @@
 package xadd.optimization;
 
-import graph.Graph;
 import xadd.ExprLib;
 import xadd.XADD;
 
@@ -31,32 +30,56 @@ public class Optimise {
      * @param upperBounds
      * @return
      */
-    private static HashMap<IOptimisationTechnique, Double> RunOptimisationMethod(String objective, Set<String> variables,
-                                             Collection<String> constraints, Collection<String> lowerBounds,
+//    private static HashMap<IOptimisationTechnique, Double> RunOptimisationMethod(String objective, Set<String> variables,
+//                                             Collection<String> constraints, Collection<String> lowerBounds,
+//                                                                                 Collection<String> upperBounds) {
+//
+//        HashMap<IOptimisationTechnique, Double> resultsMap = new HashMap<IOptimisationTechnique, Double>();
+//
+//        double optimalValue;
+//        for(IOptimisationTechnique optimiser : Optimise.optimisers) {
+//
+//            optimalValue = optimiser.run(objective, variables, constraints, lowerBounds, upperBounds);
+//            resultsMap.put(optimiser, optimalValue);
+//
+//            System.out.println("optimalValue: " + optimalValue);
+//        }
+//
+//        return resultsMap;
+//    }
+
+    /**
+     *
+     * @param objective
+     * @param constraints
+     * @param lowerBounds
+     * @param upperBounds
+     * @return
+     */
+    private static Double RunOptimisationMethod(String objective, Set<String> variables,
+                                                 Collection<String> constraints, Collection<String> lowerBounds,
                                                                                  Collection<String> upperBounds) {
 
-        HashMap<IOptimisationTechnique, Double> resultsMap = new HashMap<IOptimisationTechnique, Double>();
-
-        double optimalValue;
+        Double optimalValue = null;
         for(IOptimisationTechnique optimiser : Optimise.optimisers) {
+
             optimalValue = optimiser.run(objective, variables, constraints, lowerBounds, upperBounds);
-
-            resultsMap.put(optimiser, optimalValue);
-
             System.out.println("optimalValue: " + optimalValue);
         }
 
-        return resultsMap;
+        return optimalValue;
     }
 
     /**
      *
      * @param context
      * @param xaddID
+     * @param varSet
      * @param constraintsMap
      * @return
      */
-    public static double optimisePaths(XADD context, Integer xaddID, HashMap<Integer, String> constraintsMap) {
+    public static double optimisePaths(XADD context, Integer xaddID, HashSet<String> varSet,
+                                       HashMap<Integer, String> constraintsMap) {
 
         double lowM = XADD.DEFAULT_LOWER_BOUND;;
         double highM = XADD.DEFAULT_LOWER_BOUND;;
@@ -64,6 +87,10 @@ public class Optimise {
         XADD.XADDNode rootNode = context.getExistNode(xaddID);
         if(constraintsMap == null) {
             constraintsMap = new HashMap<Integer, String>();
+        }
+
+        if(varSet == null) {
+            varSet = new HashSet<String>();
         }
 
         if(rootNode instanceof XADD.XADDTNode) {
@@ -80,45 +107,55 @@ public class Optimise {
 
             HashSet<String> lowerBounds = new HashSet<String>();
             HashSet<String> upperBounds = new HashSet<String>();
-            HashMap<IOptimisationTechnique, Double> resultsMap;
+//            HashMap<IOptimisationTechnique, Double> resultsMap;
 
+            // Convert the lower and upper bounds into "canonical" form i.e. c(x) > 0
             for(Map.Entry<String, Double> entry : context._hmMinVal.entrySet()) {
                 String var = entry.getKey();
 
-                upperBounds.add(var + " < " + entry.getValue().toString());
-                lowerBounds.add(var + " > " + context._hmMaxVal.get(var));
+                lowerBounds.add(var + " - " + " (" + entry.getValue().toString() + ")");
+                upperBounds.add("-1 * (" + var + " - " + context._hmMaxVal.get(var) + ")");
             }
-
 
             HashSet<String> vars = new HashSet<String>();
             expression.collectVars(vars);
+            expression.collectVars(varSet);
 
-            resultsMap = Optimise.RunOptimisationMethod(expression.toString(), vars, constraintsMap.values(),
+//            resultsMap = Optimise.RunOptimisationMethod(expression.toString(), varSet, constraintsMap.values(),
+//                    lowerBounds, upperBounds);
+
+            return Optimise.RunOptimisationMethod(expression.toString(), varSet, constraintsMap.values(),
                     lowerBounds, upperBounds);
-
-            return 0.0;
         } else {
             XADD.XADDINode iNode = (XADD.XADDINode) rootNode;
 
             int iNodeVar = iNode._var;
-            String iNodeDecisionStr = iNode.getDecision().toString();
+            XADD.Decision iNodeDecision = iNode.getDecision();
+            ExprLib.CompExpr compExpr = ((XADD.ExprDec) iNodeDecision)._expr;
+            String iNodeDecisionStr = null;
+
+            // Convert the comparison expression in the iNodeDecision into canonical form i.e. c(x) > 0
+            ExprLib.Expr tmp;
+            if(compExpr.isGreater()) {
+                tmp = compExpr.makeCanonical();
+                iNodeDecisionStr = ((ExprLib.CompExpr) tmp)._lhs.toString();
+            }
+
+            compExpr.collectVars(varSet);
 
             int iNodeLow = iNode._low;
             int iNodeHigh = iNode._high;
 
             if (context._alOrder.get(iNodeVar) instanceof XADD.ExprDec) {
 
-                // Comparison Expression Decision
-//                XADD.ExprDec exprDec = (XADD.ExprDec) context._alOrder.get(iNodeVar);
-
                 // Low branch
                 constraintsMap.put(iNodeVar, "-1 * " + iNodeDecisionStr);
-                lowM = Optimise.optimisePaths(context, iNodeLow, constraintsMap);
+                lowM = Optimise.optimisePaths(context, iNodeLow, varSet, constraintsMap);
                 constraintsMap.remove(iNodeVar);
 
                 // High branch
                 constraintsMap.put(iNodeVar, iNodeDecisionStr);
-                highM = Optimise.optimisePaths(context, iNodeHigh, constraintsMap);
+                highM = Optimise.optimisePaths(context, iNodeHigh, varSet, constraintsMap);
                 constraintsMap.remove(iNodeVar);
 
             } else {
@@ -134,17 +171,9 @@ public class Optimise {
         XADD xadd_context = new XADD();
 
         int ixadd = xadd_context.buildCanonicalXADDFromFile("./src/xadd/optimization/test6.xadd");
-        Graph g1 = xadd_context.getGraph(ixadd);
-        g1.launchViewer();
 
         // Register the MATLABNonLinear optimiser with the class
         Optimise.RegisterOptimisationMethod(new MATLABNonLinear());
-
-        HashSet<String> objective = new HashSet<String>();
-        HashMap<Integer, String> constraintsMap = new HashMap<Integer, String>();
-        HashSet<String> constraints = new HashSet<String>();
-        HashSet<String> bounds = new HashSet<String>();
-
-        double optimalValue = Optimise.optimisePaths(xadd_context, ixadd, null);
+        double optimalValue = Optimise.optimisePaths(xadd_context, ixadd, null, null);
     }
 }
