@@ -1488,7 +1488,12 @@ public class XADD {
 
     // Consistency and Redundancy Checking - ReduceLP
     public int reduceLP(int node_id) {
-        return RLPContext.reduceLP(node_id);
+        // plot the node_id before the reduceLP call
+
+        Integer reducedNodeId = RLPContext.reduceLP(node_id);
+
+        return reducedNodeId;
+//        return RLPContext.reduceLP(node_id);
     }
 
     public int reduceLP(int node_id, boolean redun) {
@@ -2259,6 +2264,11 @@ public class XADD {
             return getTermNode(ret_expr);
         }
 
+    }
+
+    public int computeDerivative(int xadd, String int_var) {
+        XADD.XADDLeafDerivative derivative = new XADD.XADDLeafDerivative(int_var);
+        return reduceProcessXADDLeaf(xadd, derivative, /* canonical_reorder */false);
     }
 
     public class XADDLeafIndefIntegral extends XADDLeafOperation {

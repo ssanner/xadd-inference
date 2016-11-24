@@ -1,0 +1,42 @@
+\section{Related Work}
+\label{sec:background}
+
+%\begin{itemize}
+%    \item MOMDPs - Pareto front methods (approximate), convex hull algorithm (exact) -- works for discrete parameterized MDPs, but not for factored or hybrid case -- we want to look at parameterized hybrid, no exact work in this space
+%    \item Sensitivity analysis of MDPs -- but none exact in hybrid case
+%    \item Policy gradient -- everything is numerically oriented, never a closed-form exact solution as a function of parameter, e.g., to analyze stability
+%\end{itemize}
+
+In this work, we present parameterized hybrid MDPs as a unifying framework which allows for multi-objective reasoning, exact
+sensitivity analysis and parametric policy gradient analysis and optimisation.  While there are no comparable frameworks which allow
+for the same breadth of functionality, we briefly survey prior art in each of these three areas and conclude with a discussion of alternate 
+uses of the term \emph{parameterized} in the MDP literature that contrast with our contributions in this work.
+%to establish the fundamental importance of each of these problems.
+
+The Multi-objective MDP (MOMDP) literature studies the solution and analysis of trade-offs in the presence of multiple reward criteria.
+The techniques used to solve MOMDPs with unknown preferences depend on the nature of the scalarization function used to weight each reward
+component~\parencite{Roijers_JAIR_2013}. If the scalarization function is linear, then methods such as the Convex Hull Value Iteration
+algorithm~\parencite{Barrett_ICML_2008}, which returns the optimal policy for discrete \emph{enumerated state} MOMDPs with any linear
+preference function, can be used. For non-linear scalarization functions the Pareto front of a set of undominated policies must be
+returned. The Pareto front can be prohibitively large and as a result solution techniques such as those of~\parencite{Chatterjee_STACS_2006}
+and~\parencite{Pirotta_AAAI_2015} have focussed on approximating the Pareto front, or using a refinement of Pareto dominance known as
+Lorenz optimality~\parencite{Perny_AAAI_2013} to further restrict the size of the solution set.  User-oriented tools like (Interactive)
+Decision Maps~\parencite{Lotov_IDM} allow one to visualise and analyse the reward trade-offs associated with all parameter settings.  In this work we present \textit{exact} \emph{factored hybrid} MOMDP solutions via the framework of PHMDPs and SDP.
+%multi-objective closed-form solutions to the more general class of
+%\textit{parameterized hybrid} MDPs with factored states.
+
+Sensitivity analysis of MDP parameters is a critical tool in understanding what parameters are most important to measure well and how MDP policies vary over a range of parameters.  To date, most work has focussed on uncertainty within the specification the transition function~\parencite{Kalyanasundaram_AJC_2004}, reward function~\parencite{Tan_JAP_2011, Hopp_JOTA_1988}, or a combination of both~\parencite{Givan_AI_2000}, in discrete MDPs. The framework that we introduce in this paper enables \textit{exact} sensitivity analysis
+for PHMDPs that allows it to be applied in continuous state settings and permits the derivation and analysis of the \emph{optimal} policy as a
+function of these parameters.
+
+Policy gradient methods rely upon optimizing parameterized policies with respect to the expected return by gradient descent. The main
+concern of such methods is obtaining a good estimator of the policy gradient~\parencite{Peters_IRS_2006}. Two of the most prominent
+approaches have been the finite-difference methods such as those of~\parencite{Ng_UAI_2000} and Monte Carlo methods such as~\parencite{Sutton_NIPS_1999,Baxter_ISCAS_2000}, both of which are numerically oriented and sample based. Our use of PHMDPs and SDP allows for us to solve for an \emph{exact} policy value as a parameterized function of policy parameters, hence permitting exact gradient analysis as well as the direct application of (non-)convex optimization to this parameteric value form.
+% Have to cite Sutton!  If anything, drop Baxter but try not to.
+% Also ``non-convex functions of parameters'', not ``non-convex parameters''
+
+Finally, as a point of differentiation from other uses of the term \emph{parameterized} in the MDP literature, we remark that other works~\parencite{Duff_UMA_2002,Dearden_UAI_1999,Gopalan_COLT_2015} have used Parameterized MDP to refer to MDPs with latent parameters whose
+beliefs can be updated by observing reward and transition samples. In contrast, in this work we assume strict uncertainty of continuous MDP
+parameters in models that are otherwise fully specified; in this way we can treat parameters simply as free variables that can be parametrically analysed via recent advances in symbolic solution methods.
+
+

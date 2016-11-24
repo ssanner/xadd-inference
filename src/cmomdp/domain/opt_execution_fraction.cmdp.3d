@@ -1,0 +1,5 @@
+var s 0 1 200
+var i 0 1 100
+cassign s0 10.0
+cassign w1 1.0
+bassign eps true

@@ -1,0 +1,104 @@
+\section{Multi-objective Markov Decision Processes}
+\label{sec:momdps}
+
+A multi-objective MDP (MOMDP) is defined by the tuple {\footnotesize \MDPTuple}. {\footnotesize \State} and {\footnotesize \Action} specifies a finite set of states and actions, respectively. The transition function {\footnotesize \TransFunc } defines the effect of an action on the state. {\footnotesize \MORewardFunc} is the reward function where $ d $ is the reward function giving $ d $-component reward vector {\footnotesize $ \vec{r}(s, a) $}. {\footnotesize \Horizon} represents the number of decision steps until termination and the discount factor {\footnotesize $\gamma \in [0, 1)$} is used to geometrically discount future rewards.
+
+A policy {\footnotesize $ \pi $} is the map {\footnotesize $ \State \rightarrow \Action $}, and the value function for any policy {\footnotesize $ \pi $} evaluated at some state {\footnotesize $ s_i $} is the vector
+{\footnotesize
+\begin{align}
+    \vec{V}^{\pi}\left( s_i \right) &= \mathbb{E}\left[ \vec{r}(s_i, a_i) + \gamma \vec{r}(s_{i + 1}, a_{i + 1}) + \ldots | \pi \right].
+\end{align}
+}
+The Q-function is the vector 
+{\footnotesize
+\begin{align}
+    \vec{Q}^{\pi}\left(s, a\right) &= \mathbb{E}\left[ \vec{r}(s_i, a_i) + \gamma \vec{V}^{\pi}\left(s' \right) \right].
+\end{align}
+}
+The optimal Q function for a weight {\footnotesize $ \vec{w} $} is {\footnotesize $ Q^{*}_{\vec{w}}\left( s, a\right) = sup_{\pi} \vec{w} \cdot \vec{Q}^{\pi}\left( s, a\right)$}.
+
+\subsection{Solution Techniques}
+
+In MOMDPs there can be multiple policies {\footnotesize $ \pi $} whose value {\footnotesize $ V^{\pi} $} are optimal for different preferences over the objectives. These preferences can be expressed by a scalarisation function {\footnotesize $ f\left( V, \vec{w} \right) $} that is parameterised by a parameter vector {\footnotesize $ \vec{w} $} and returns a scalarised value of {\footnotesize $ V $}. We assume that {\footnotesize $ \vec{w} $} is not known beforehand. A solution algorithm must therefore return a set of policies.
+
+In the case of linear {\footnotesize $ f $}, a sufficient solution is the Convex Hull (CH), the set of all undominated policies under a linear scalarisation. It also suffices to compute a Convex Coverage Set (CCS), a lossless subset of CH which which contains at least one vector from CH that has the maximal scalarised value for each possible {\footnotesize $ \vec{w} $}. 
+
+In the case of non-linear {\footnotesize $ f $}, the Pareto Front (PF), a superset of CH, must be returned. The PF contains all policies for which no other policy has a value that is at least equal in all objectives and greater in at least one objective. Pareto-optimal policies can be found by using the linear programming approach of~\parencite{Viswanathan_TIMS_1977}. An alternative approach to calculating the CCS using POMDPs was proposed by~\parencite{White_LSS_1980}.
+
+\subsubsection{MDP Solution}
+
+%A Markov Decision Process (MDP) \parencite{Bellman_PU_1957} is defined by the tuple {\footnotesize \MDPTuple}. {\footnotesize \State} specifies a potentially infinite (e.g., continuous) set of states while {\footnotesize \Action} specifies a finite set of actions and observations. The transition function {\footnotesize \TransFunc } defines the effect of an action on the state. {\footnotesize \RewardFunc} is the reward function which encodes the preferences of the agent. {\footnotesize \Horizon} represents the number of decision steps until termination and the discount factor {\footnotesize $\gamma \in [0, 1)$} is used to geometrically discount future rewards.
+
+\ldots~\parencite{Barrett_ICML_2008}.
+
+An alternate approach to solving discrete state MOMDPs is to incorporate the weight vector {\footnotesize $ \vec{w} $} as a free parameter into the standard MDP value function and Q function definitions. These parameterised functions can then be solved using Value iteration (VI)~\parencite{Howard_MIT_1960} as follows:
+{\footnotesize 
+    \abovedisplayskip=0pt
+    \belowdisplayskip=0pt
+    \begin{align}
+        Q^{h}(s, \vec{w}, a) &= \Reward(s, \vec{w}, a) + \nonumber \\
+        & \gamma \times \sum_{s' \in S} \Transition(s, \vec{w}, a, s', \vec{w}') \times V^{h-1}(s', \vec{w}') \label{eq:qfunc}\\
+        V^{h}(s, \vec{w}) &= \casemax_{a \in A} \left\{ Q^{h}(s, \vec{w}, a) \right\} \label{eq:vfunc}
+    \end{align}
+}%
+
+%\subsubsection{POMDP Solution}
+%
+%%A POMDP is defined by the tuple {\footnotesize \POMDPTuple} \parencite{Kaelbling_JoAIR_1998}. {\footnotesize \State} specifies a potentially infinite (e.g., continuous) set of states while {\footnotesize \Action} and {\footnotesize \Observation} respectively specify a finite set of actions and observations. The transition function {\footnotesize \TransFunc } defines the effect of an action on the state. {\footnotesize \ObsFunc } is the observation function which defines the probability of receiving an observation given that an agent has executed an action and reached a new state. {\footnotesize \RewardFunc} is the reward function which encodes the preferences of the agent. {\footnotesize \Horizon} represents the number of decision steps until termination and the discount factor {\footnotesize $\gamma \in [0, 1)$} is used to geometrically discount future rewards.
+%
+%An MOMDP can be formulated as a POMDP by defining {\footnotesize \State} as $ \left\langle m, j \right\rangle $ where $ m $ is the state of the original MOMDP and $ j \in \left\lbrace 1, \ldots, d \right\rbrace $ indicates which of the objectives the agent believes is the true objective. The observation set {\footnotesize \Observation} is set to the {\footnotesize \State} of the original MOMDP and {\footnotesize \ObsFunc} is encoded to identify $ m $ exactly, but gives no information about $ j $. The remaining components of the POMDP are the same as the original MOMDP. In this setting an agent maintains a belief $ \vec{b} $ over $ m $ and $ j $, where the latter belief is a vector of size $ n $ in which the i-th component specifies the probability that it is the true one. The vector of beliefs over $ j $ is equivalent to the weight vector $ \vec{w} $.
+%
+%Because $ \Reward $ is vector valued, each $ \alpha $-vector  is a matrix $ A^{|\State| \times d} $, where each row $ A(s) $ represents the multi-objective value vector for $ s $. 
+%
+%%Given a set of $ \alpha $-matrices $ \Lambda $, the scalar value given a belief $ b $ for every $ \vec{w} $:
+%%\vspace{1em}
+%%\begin{math}
+%%    V_{b}(\vec{w}) = \max_{A \in \Lambda} \vec{b} \cdot A \cdot \vec{w}
+%%\end{math}
+%%\vspace{1em}
+%
+%The POMDP formulation of the original MOMDP can be solved using approximate point-based POMDP solution methods such as Point Based Value Iteration (PBVI) \parencite{Pineau_IJCAI_2003}. PBVI for discrete and finite {\footnotesize \State},  {\footnotesize \Action} and {\footnotesize \Observation} POMDPs can be written solely in terms of the following case operations:
+%{\footnotesize 
+%    \abovedisplayskip=5pt
+%    \belowdisplayskip=0pt
+%    \begin{align}
+%        A^{a, o, h}_{i}  &= \Reward(s, a) \times \frac{1}{|\Observation|} + \nonumber \\ 
+%        & \gamma \times \sum_{s' \in \State} \Omega(o, a, s') \times \Transition(s, a, s') \times A_{i}(s') \nonumber \\ 
+%        & \quad \forall A_{i}(s')\in V^{h-1} \label{eq:spbvi_backup} \\
+%        \Gamma^{a, o, h}  &=   \bigcup_i \left\lbrace A^{a, o, h}_{i} \right\rbrace  \nonumber \\
+%        \Gamma^{a, h}_{b}  &= \sum \limits_{o \in \Observation} \argmax_{A \in \Gamma^{a, o, h}} \left( A \cdot b \right)  \nonumber \\  
+%        A^{h}_{b} &= \argmax_{\Gamma^{a, h}_{b}, a \in \Action} \left( \Gamma^{a, h}_{b} \cdot b \right), \, \forall b \in \Belief  \nonumber \\
+%        V^{h} &= \bigcup_{b \in \Belief} \left\{ A^{h}_{b} \right\}  \nonumber %\label{eq:spbvi_end} 
+%    \end{align}
+%}%
+
+\section{Continuous State MOMDPs}
+
+Continuous state MOMDPs are formally defined by the tuple {\footnotesize \MDPTuple}. {\footnotesize \State} specifies a potentially infinite (e.g., continuous) set of states. All other components are as previously defined in Section~\ref{sec:momdps}.
+
+Continuous state MOMDPs can be solved using VI as follows:
+
+{\footnotesize 
+    \abovedisplayskip=0pt
+    \belowdisplayskip=0pt
+    \begin{align}
+        Q^{h}(s, \vec{w}, a) &= \Reward(s, \vec{w}, a) + \nonumber \\
+        & \gamma \times \int \Transition(s, a, s', \vec{w}) \times V^{h-1}(s', \vec{w}') ds'\label{eq:qfunc}\\
+        V^{h}(s, \vec{w}) &= \casemax_{a \in A} \left\{ Q^{h}(s, \vec{w}, a) \right\} \label{eq:vfunc}
+    \end{align}
+}%
+
+This formulation can not be easily solved using existing techniques doe to two factors:
+\begin{enumerate}
+    \item there are infinitely many states in \State; and
+    \item \ldots
+\end{enumerate}
+
+The continuous state VI formulation can be solved by restricting \Reward to piecewise constant functions and \Transition to piecewise linear functions. These restrictions ensure a tractable solution to the problem. However, tractability comes at the cost of generalisability and expressiveness.
+
+\begin{itemize}
+    \item If \Reward is linear, then we end up with bilinear functions. 
+    \item This leads to a parameterised nonlinear program.
+    \item May be able to solve a subset of these problems by utilising McCormick relaxation \ldots 
+\end{itemize}
+

@@ -1,0 +1,20 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Markov Decision Processes (MDPs)~\parencite{Howard_MIT_1960} are the de facto standard framework for decision theoretic planning in fully
+observable environments~\parencite{Boutilier_JAIR_1999}. MDPs occur in a wide range of real world domains such as game playing~\parencite{Szita_RL_2012}, power systems~\parencite{Reddy_IJCAI_2011}, ecology~\parencite{Williams_EM_2009} and patient admission
+scheduling~\parencite{Zhu_AIM_2014}. Traditional MDP solution techniques often assume that the parameters of the model are
+known. However, in practice, model parameters are usually estimated from limited data or elicited from humans and hence are naturally uncertain.  This often raises a critical in real world applications to (i) investigate the trade-off between different reward criteria in a multi-objective setting; (ii) perform sensitivity analyses of policies to various parameter settings; and (iii) analyse and optimise policy performance as a function of policy parameters.  Formalising models to address each of the aforementioned use cases is often fraught, due to the
+specification leading to hybrid (mixed discrete and continuous state and/or action) MDPs with non-linear and/or piecewise structure that have been traditionally very difficult to solve.
+
+In this paper we make the following key contributions:
+\begin{itemize}
+\item We present the unifying framework of {\it parameterized hybrid MDPs} (PHMDPs) which enables the investigation of trade-offs between
+  multi-objective reward criteria, parameter sensitivity analysis and non-convex analysis and optimization of policy parameters
+\item We provide an algorithm that solves this class of PHMDPs exactly and in closed-form by defining a Parameterized variant of Symbolic Dynamic Programming (SDP)~\parencite{Boutilier_IJCAI_2001} extended to hybrid MDPs~\parencite{Sanner_UAI_2011}
+\item We use our novel framework to explore, for the first time: (i) an exact functional representation of the multi-objective
+  trade-offs for use in interactive decision maps; (ii) exact sensitivity analysis of public health policies in epidemic models; and (iii) non-convex optimization of policy parameters applied to the optimal execution problem in finance
+\end{itemize}
+We remark that prior to this paper, it was an open question as to whether all of the above use cases admitted closed-form solutions --- these questions are resolved affirmatively through PHMDPs and SDP.
+
+%This paper is organised as follows: In Section~\ref{sec:hybrid_mdps} we describe parameterized hybrid Markov Decision Processes (MDPs) and value iteration~\parencite{Bellman_PU_1957}, a widely used dynamic programming method for solving MDPs. Following this, in Section~\ref{sec:sdp}, we introduce Symbolic Dynamic Programming (SDP), and show how it can be used to calculate exact closed-form solutions to parameterized hybrid MDPs. In Section~\ref{sec:results} we calculate exact solutions to three empirical domains: (1) autonomous driving; (2) influenza epidemiology; and (3) optimal trade execution. We conclude in Section~\ref{sec:conclusion} and identify interesting directions for future research.

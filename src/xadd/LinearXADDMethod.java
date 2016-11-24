@@ -11,7 +11,7 @@
 
 package xadd;
 
-import java.io.PrintStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,7 +19,6 @@ import java.util.HashSet;
 import lpsolve.LP;
 import lpsolve.LpSolve;
 
-import util.DevNullPrintStream;
 import xadd.ExprLib.ArithExpr;
 import xadd.ExprLib.ArithOperation;
 import xadd.ExprLib.CompOperation;
@@ -36,30 +35,48 @@ import xadd.XADD.XADDTNode;
 public class LinearXADDMethod {
 
     protected XADD context = null;
-    //Local Variables Maintenance
+
+    /**
+     * Local Variables Maintenance
+     */
+
     protected int nLocalCVars = -1;
     protected int nContextCVars = -1;
     protected int localID2cVarID[];
     protected int cVarID2localID[];
     protected ArrayList<String> globalContinuousVarList = null;
 
-    //Linear Flags
+    /**
+     * Linear Flags
+     */
+
     private static final boolean ADD_EXPLICIT_BOUND_CONSTRAINTS_TO_LP = false; //Add bounds as explicit constraints (should not be necessary)
     private static final boolean WARN_INFEASIBLE_REGIONS = true; //Add bounds as explicit constraints (should not be necessary)
 
+    /**
+     *
+     * @param localRoot
+     * @param global
+     */
     public LinearXADDMethod(int localRoot, XADD global) {
+
         context = global;
         globalContinuousVarList = context.getContinuousVarList();
+
         XADDNode r = context.getExistNode(localRoot);
         HashSet<String> pruneVars = r.collectVars();
         pruneVars.removeAll(context._alBooleanVars);
+
         nLocalCVars = pruneVars.size();
         nContextCVars = context._cvar2ID.size();
         localID2cVarID = new int[nLocalCVars];
         cVarID2localID = new int[nContextCVars];
+
+        //Flag invalid Vars
         for (int k = 0; k < nContextCVars; k++) {
             cVarID2localID[k] = -1;
-        } //Flag invalid Vars
+        }
+
         int i = 0;
         for (String var : pruneVars) {
             localID2cVarID[i] = context._cvar2ID.get(var);
@@ -109,28 +126,45 @@ public class LinearXADDMethod {
         return e.evaluate(cont_assign);
     }
 
-    // Lp usage methods
-    protected void addDecision(LP lp, int dec) {
+    /**
+     * Lp usage methods
+     */
+
+    /**
+     *
+     * @param lp
+     * @param dec
+     * @throws UnsupportedConstraintException
+     */
+    protected void addDecision(LP lp, int dec) throws UnsupportedConstraintException {
+
         if (dec > 0)
             addConstraint(lp, dec, true);
         else
             addConstraint(lp, -dec, false);
     }
 
-    protected void addConstraint(LP lp, int constraint_id, boolean dec) {
+    /**
+     *
+     * @param lp
+     * @param constraint_id
+     * @param dec
+     * @throws UnsupportedConstraintException
+     */
+    protected void addConstraint(LP lp, int constraint_id, boolean dec) throws UnsupportedConstraintException {
 
 //	      if (DEBUG_CONSTRAINTS)
-//	          System.out.println("Adding constraint id [" + constraint_id+ "] = " + dec);
+	          System.out.println("Adding constraint id [" + constraint_id+ "] = " + dec);
 
         Decision d = context._alOrder.get(constraint_id);
         if (d instanceof ExprDec) {
             ExprDec e = (ExprDec) d;
-            if (!(e._expr._rhs instanceof DoubleExpr)
-                    || ((DoubleExpr) e._expr._rhs)._dConstVal != 0d) {
-                System.out.println("WARNING: Unexpected RHS constraint value: "
-                        + e._expr._rhs + " skipping...");
+
+            if (!(e._expr._rhs instanceof DoubleExpr) || ((DoubleExpr) e._expr._rhs)._dConstVal != 0d) {
+                System.out.println("WARNING: Unexpected RHS constraint value: " + e._expr._rhs + " skipping...");
                 return;
             }
+
             // take these out so it does not terminal upon bilinear
             // decisions
             // new Exception().printStackTrace(System.out);
@@ -139,15 +173,21 @@ public class LinearXADDMethod {
             // From here we just need convert LHS to coefficients and construct
             // correct constraint from CompExpr type
             double[] coefs = new double[nLocalCVars];
+            double const_coef = 0; // move to
 
-            double const_coef = setCoefficientsLocal(e._expr._lhs, coefs); // move to
+            try {
+                const_coef = setCoefficientsLocal(e._expr._lhs, coefs);
+            } catch (OperationTermException e1) {
+//                System.err.println(e1.getMessage());
+//                return;
+                throw new UnsupportedConstraintException(e1.getMessage());
+            }
+
             // RHS => -
             CompOperation type = dec ? e._expr._type : CompExpr.flipCompOper(e._expr._type);
 
 //	          if (DEBUG_CONSTRAINTS){
-//	              System.out.println("- adding "+type+" cons: " + const_coef + " + "
-//	                      + LP.PrintVector(coefs) + " <=> "
-//	                      + (dec ? "" : "!") + e._expr);
+              System.out.println("- adding "+type+" cons: " + const_coef + " + " + LP.PrintVector(coefs) + " <=> " + (dec ? "" : "!") + e._expr);
 //	          }
 
             switch (type) {
@@ -202,44 +242,67 @@ public class LinearXADDMethod {
         return soln;
     }
 
-    // Convert an expression to an array of coefficients and a constant
-    //Set Coefficients PrunVar
-    protected double setCoefficientsLocal(ArithExpr e, double[] coefs) {
+    /**
+     * Convert an expression to an array of coefficients and a constant
+     * @param e ArithExpr
+     * @param coefs Double Array
+     * @return constant in the ArithExpr
+     * @throws OperationTermException
+     */
+    protected double setCoefficientsLocal(ArithExpr e, double[] coefs) throws OperationTermException {
         int error = 0;
         int index = 0;
         double accum = 0d;
+
+        // Currently only OperExpr and DoubleExpr are handled
         if (e instanceof OperExpr) {
             OperExpr o = ((OperExpr) e);
+
+            // Currently only product and sum arithmetic operations are supported
             if (o._type == ArithOperation.PROD) {
-                if (o._terms.size() != 2)
+
+                if (o._terms.size() != 2) { // operations must have two terms
                     error = 1;
-                else {
+//                    String exceptionMessage = "Unexpected LHS constraint term: " + e;
+                    throw new OperationTermException(e.toString());
+//                    throw new UnsupportedConstraintException(exceptionMessage);
+                }
+                else { // isolate the coefficient and the variable from the OperExpr
                     index = cVarID2localID[context.getCVarIndex(((VarExpr) o._terms.get(1))._sVarName)];
+
                     if (index < 0) {
-                        System.err.println("WARNING: XADD.SetCoefPrunVar ERROR: Unexpected Variable " + ((VarExpr) o._terms.get(1))._sVarName + " in Expr " + e);
+                        System.err.println("WARNING: XADD.SetCoefPrunVar ERROR: Unexpected Variable " + ((VarExpr)
+                                o._terms.get(1))._sVarName + " in Expr " + e);
+
                         System.err.print("Expected Vars: ");
                         for (int k = 0; k < nLocalCVars; k++) {
                             System.err.print(globalContinuousVarList.get(localID2cVarID[k]) + " ");
                         }
                     }
+
+                    // set the coefficient of the operation expression in the coefs array
                     coefs[index] = ((DoubleExpr) o._terms.get(0))._dConstVal;
                 }
+
             } else if (o._type == ArithOperation.SUM) {
-                for (ArithExpr e2 : o._terms)
+                for (ArithExpr e2 : o._terms) {
                     accum += setCoefficientsLocal(e2, coefs);
-            } else
-                error = 2;
+                }
+            } else {
+                error = 2; // TODO: throw an exception here for unhandled operation type
+            }
         } else if (e instanceof DoubleExpr) {
             accum += ((DoubleExpr) e)._dConstVal;
-        } else
+        } else { // TODO: throw an exception here for unhandled expression type
             error = 3;
+        }
 
         // This error is really important to flag... should not disable.
         // If it occurs, the resulting constraint could be used improperly.
         if (error > 0) {
-            System.err.println("WARNING: XADD.SetCoefPrunVar ERROR [" + error + "] -- unexpected LHS constraint term: " + e);
+            System.err.println("WARNING: XADD.SetCoefPrunVar ERROR [" + error + "] -- unexpected LHS constraint term: "
+                    + e);
             System.err.println("BOGUS CONSTRAINT MAY BE RETURNED");
-            new Exception().printStackTrace(System.err);
         }
 
         return accum;
@@ -269,7 +332,7 @@ public class LinearXADDMethod {
         return linMaxMinVal(id, false);
     }
 
-    public double linMaxDiff(int id1, int id2) {
+    public double linMaxDiff(int id1, int id2) throws UnsupportedConstraintException {
         int dif1 = context.reduceLP(context.apply(id1, id2, XADD.MINUS));
         int dif2 = context.reduceLP(context.apply(id2, id1, XADD.MINUS));
         return Math.max(linMaxVal(dif1), linMaxVal(dif2));
@@ -350,11 +413,11 @@ public class LinearXADDMethod {
                 lowR = linMaxMinArgInt(node._low, domain, isMax);
                 highR = linMaxMinArgInt(node._high, domain, isMax);
             }
-            return isMax ? (lowR.sol_value >= highR.sol_value? lowR: highR): (lowR.sol_value >= highR.sol_value? highR:lowR);
+            return isMax ? (lowR.sol_value >= highR.sol_value? lowR: highR): (lowR.sol_value >= highR.sol_value ?
+                    highR : lowR);
         }
     }
-    
-    
+
     //Maximize a Linear function
     private OptimResult restrictedMax(ArithExpr e, HashSet<Integer> domain, boolean isMax) {
         double[] coefs = new double[nLocalCVars];
@@ -370,10 +433,16 @@ public class LinearXADDMethod {
 
     protected OptimResult restrictedMax(double f[], double c, HashSet<Integer> domain, boolean isMax) {
         int nvars = nLocalCVars;
-        LP lp = new LP(nvars, assign2Local(context.lowerBounds, true), assign2Local(context.upperBounds, true), f, isMax ? LP.MAXIMIZE : LP.MINIMIZE);
+        LP lp = new LP(nvars, assign2Local(context.lowerBounds, true), assign2Local(context.upperBounds, true), f,
+                isMax ? LP.MAXIMIZE : LP.MINIMIZE);
+
         //Now add all constraints
         for (Integer decision : domain) {
-            addDecision(lp, decision);
+            try {
+                addDecision(lp, decision);
+            } catch(UnsupportedConstraintException exc) {
+                System.err.println(exc);
+            }
         }
         addLocalBoundConstraints(lp);
 
@@ -399,8 +468,9 @@ public class LinearXADDMethod {
         return new OptimResult(opt_val + c, soln);
     }
 
-
-    //Decision and Contraint Debugging
+    /**
+     * Decision and Contraint Debugging
+     */
 
     private void showDec(int dec) {
         Decision temp = context._alOrder.get(Math.abs(dec));
@@ -449,7 +519,3 @@ public class LinearXADDMethod {
         }
     }
 }
-
-
-
-

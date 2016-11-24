@@ -1,0 +1,52 @@
+\ProvidesPackage{./definitions}
+
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\contmin}{\operatornamewithlimits{contmin}}
+\newcommand{\contmax}{\operatornamewithlimits{max}}
+
+\newcommand{\State}{\ensuremath{\mathcal{S}}\xspace}
+\newcommand{\Action}{\ensuremath{\mathcal{A}}\xspace}
+\newcommand{\Transition}{\ensuremath{\mathcal{T}}\xspace}
+\newcommand{\Reward}{\ensuremath{\mathcal{R}}\xspace}
+\newcommand{\Observation}{\ensuremath{\mathcal{O}}\xspace}
+\newcommand{\Belief}{\ensuremath{\mathcal{B}}\xspace}
+\newcommand{\Horizon}{\ensuremath{\mathcal{H}}\xspace}
+
+\newcommand{\Prob}{\ensuremath{\mathbb{P}}\xspace}
+%\newcommand{\Exp}{\ensuremath{\mathbb{E}}\xspace}
+\newcommand{\Natural}{\ensuremath{\mathbb{N}}\xspace}
+\newcommand{\Real}{\ensuremath{\mathbb{R}}\xspace}
+
+% Expectation 
+\newcommand{\Exp}[1]{{\mathbb{E}\left[{#1}\right]}}
+\newcommand{\ProbArg}[1]{\ensuremath{\mathbb{P}\left({#1}\right)}\xspace}
+
+% MDP Tuple
+\DeclareRobustCommand{\MDPTuple}{$\left\langle \State, \Action, \Transition, \Reward, \Horizon, \gamma \right\rangle$}
+
+% MOMDP Tuple
+\DeclareRobustCommand{\MOMDPTuple}{$\left\langle \State, \Action, \Transition, \Reward, \Horizon, \gamma \right\rangle$}
+
+% POMDP Tuple
+\DeclareRobustCommand{\POMDPTuple}{$\left\langle \State, \Action, \Transition, \Reward, \Observation, \Omega, \Horizon, \gamma \right\rangle$}
+
+% PMDP Tuple
+\DeclareRobustCommand{\PMDPTuple}{$\left\langle \State, \Action, \Transition, \Reward, \Horizon, \gamma, \theta \right\rangle$}
+
+% Transition Function
+\newcommand{\TransFunc}{\ensuremath{\Transition : \State \times \Action \times \State \rightarrow [0, 1]}\xspace}
+
+% Observation Function
+\newcommand{\ObsFunc}{\ensuremath{\Omega : \Observation \times \Action \times \State \rightarrow [0, 1]}\xspace}
+
+% Reward Function
+\newcommand{\RewardFunc}{\ensuremath{\Reward : \State \times \Action \rightarrow \mathbb{R}}\xspace}
+
+% MO Reward Function
+\newcommand{\MORewardFunc}{\ensuremath{\Reward : \State \times \Action \rightarrow \mathbb{R}^d}\xspace}
+
+\newcommand{\casemax}{\ensuremath{\mathrm{casemax}}\xspace}
+
+\newcommand{\bid}{$\mathit{bid}$\xspace}
+\newcommand{\ask}{$\mathit{ask}$\xspace}

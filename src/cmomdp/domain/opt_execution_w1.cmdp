@@ -1,0 +1,89 @@
+cvariables (price inventory w1)
+min-values (0 0 0)
+max-values (100 1000 100.0)
+bvariables (eps)
+nvariables ()
+ivariables ()
+
+action zero
+    eps' (  eps
+                ([0.5])
+                ([0.5])
+    )
+    price' (    eps
+            ([price + 0.27])
+            ([price - 0.27])
+    )
+    inventory' ([inventory])
+    w1' ([w1])
+reward
+    (   [inventory > 0.001]
+        (   [-w1 * inventory] )
+        (   [0] )
+    )
++
+    ([- 1 * ((0.0 * inventory) * price -  (inventory * s0))])
+endaction
+
+action quarter
+    eps' (  eps
+                ([0.5])
+                ([0.5])
+    )
+    price' (    eps
+            ([price + (0.165 * 0.25) + 0.27])
+            ([price + (0.165 * 0.25) - 0.27])
+        )
+    inventory' ([inventory - (inventory * 0.25)])
+    w1' ([w1])
+reward
+    (   [inventory > 0.001]
+        (   [-w1 * inventory] )
+        (   [0] )
+    )
++
+    ([- 1 * ((0.25 * inventory) * price - (inventory * s0))])
+endaction
+
+action half
+    eps' (  eps
+                ([0.5])
+                ([0.5])
+    )
+    price' (    eps
+            ([price + (0.165 * 0.50) + 0.27])
+            ([price + (0.165 * 0.50) - 0.27])
+        )
+    inventory' ([inventory - (inventory * 0.5)])
+    w1' ([w1])
+reward
+    (   [inventory > 0.001]
+        (   [-w1 * inventory] )
+        (   [0] )
+    )
++
+    ([- 1 * ((0.5 * inventory) * price - (inventory * s0))])
+endaction
+
+action all
+    eps' (  eps
+                ([0.5])
+                ([0.5])
+    )
+    price' (    eps
+            ([price + (0.165 * 1.0) + 0.27])
+            ([price + (0.165 * 1.0) - 0.27])
+        )
+    inventory' (    [0])
+    w1' ([w1])
+reward
+    (   [inventory > 0.001]
+        (   [-w1 * inventory] )
+        (   [0] )
+    )
++
+    ([- 1 * ((1.0 * inventory) * price - (inventory * s0))])
+endaction
+
+discount 0.95
+iterations 5

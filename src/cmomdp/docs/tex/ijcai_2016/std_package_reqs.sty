@@ -1,0 +1,41 @@
+\ProvidesPackage{./std_package_reqs}
+
+% MATHEMATICS
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[algoruled, titlenumbered, vlined]{algorithm2e}
+
+% BIBLIOGRAPHY MANAGEMENT
+\usepackage[utf8]{inputenc}    % utf8 support       %!!!!!!!!!!!!!!!!!!!!
+\usepackage[T1]{fontenc}       % code for pdf file  %!!!!!!!!!!!!!!!!!!!!
+\usepackage[
+backend=biber,
+bibstyle=authoryear-comp,
+citestyle=authoryear-comp,
+sorting=ynt,
+maxcitenames=1,
+sortcites=true,
+firstinits=false,
+doi=false,
+url=false,
+isbn=false,%
+hyperref=false
+]{biblatex}
+
+% CITATIONS
+\usepackage{hyperref}
+
+% SPACING
+\usepackage{xspace}
+\usepackage{enumitem}
+\setlist{nolistsep}
+
+% COMMENTS
+\usepackage{verbatim}
+
+% GRAPHICS
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+%\usepackage{subfig}

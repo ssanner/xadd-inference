@@ -1,0 +1,148 @@
+\section{Parameterized Hybrid MDPs}
+\label{sec:hybrid_mdps}
+
+In this section we introduce parameterized hybrid Markov Decision
+Processes (PHMDPs) and show how the framework can be specialized to
+address multi-objective reward criteria, investigate parameter
+sensitivity and optimize continuous non-convex policy parameters. We
+also review their finite horizon solution via dynamic programming.
+
+\subsection{Definition}
+\label{sec:hybrid_mdps_def}
+
+A parameterized hybrid Markov Decision Process (PHMDP) is defined by the tuple {\footnotesize \PMDPTuple}. {\footnotesize \State} specifies
+a vector of states given by {\footnotesize $(\vec{d}, \vec{x}) =  \left( d_1, \ldots, d_m, x_1, \ldots, x_n \right) $}, where each {\footnotesize $ d_i \in \left\lbrace 0, 1 \right\rbrace $} {\footnotesize $\left( 1 \leq i \leq m \right)$} is discrete and each
+{\footnotesize$ x_j \in \Real $} {\footnotesize $\left( 1 \leq j \leq   n \right)$} is continuous. {\footnotesize \Action} specifies a
+finite set of actions.  {\footnotesize $\vec{\theta} \in \Theta$} are free parameters from the parameter space {\footnotesize $ \Theta $}. PHMDPs are naturally factored~\parencite{Boutilier_JAIR_1999} in terms of the state variables {\footnotesize$\vec{d}$} and {\footnotesize
+$\vec{x}$}. Hence, the joint transition model can be written as:
+{\footnotesize
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align}
+    \label{eq:hmdp_tfunc}
+    \Transition :& \, \ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a, \vec{\theta}} = \nonumber \\
+    & \prod_{i=1}^{m} \ProbArg{d_i' | \vec{d}, \vec{x}, a, \vec{\theta}} \prod_{j=1}^{n} \ProbArg{x_j' | \vec{d}, \vec{d}', \vec{x}, a, \vec{\theta}}.
+\end{align}   
+}
+
+{\footnotesize \RewardFunc} is the reward function which encodes the preferences of the agent. {\footnotesize \Horizon} represents the
+number of decision steps until termination and the discount factor {\footnotesize $\gamma \in [0, 1)$} is used to geometrically discount
+future rewards.
+
+A policy {\footnotesize $\pi : \State \rightarrow \Action$}, specifies
+the action to take in every state. The value of a state {\footnotesize
+  $(\vec{d}, \vec{x}) \in \State$} under a given policy
+{\footnotesize$\pi$} is given by: {\footnotesize
+    \abovedisplayskip=0pt
+    \belowdisplayskip=0pt
+\begin{align*}
+    V^{\pi}\left( \vec{d}, \vec{x}; \vec{\theta} \right) &= \Exp{\sum\limits_{h = 0}^{\Horizon} \gamma^h \cdot r^h | \vec{d}, \vec{x}, \vec{\theta}} \nonumber  
+%    &= \sum\limits_{s' \in \State}  \Transition\left(s, \pi\left(s\right), s' \right) \left[ \Reward\left(s, \pi(s), s'\right) + \gamma \cdot V^{\pi}(s')\right]. \label{eq:mdp_bellman_eq}
+\end{align*}
+}
+%Equation~\eqref{eq:mdp_bellman_eq} is known as the Bellman equation for $V^{\pi}$.
+
+The state-action value function {\footnotesize$Q : \State \times \Action \rightarrow \mathbb{R}$} is given by:
+{\footnotesize 
+    \abovedisplayskip=0pt
+    \belowdisplayskip=0pt
+\begin{align}
+    \label{eq:mdp_qfunc}
+    Q^{\pi}\left(\vec{d}, \vec{x}, a; \vec{\theta}\right) = \Exp{\sum\limits_{h = 0}^{\Horizon} \gamma^h \cdot r^h | \vec{d}, \vec{x}, a, \vec{\theta}}. 
+\end{align}
+}
+
+The value function of the optimal policy {\footnotesize$ \pi^{*} $} satisfies:
+
+{\footnotesize 
+\abovedisplayskip=0pt
+\belowdisplayskip=0pt
+\begin{align}
+    \label{eq:opt_vfunc}
+    V^{\pi^{*}}(\vec{d}, \vec{x}; \vec{\theta}) &= \max_{a \in A} \left\{ Q^{\pi^{*}}(\vec{d}, \vec{x}, a; \vec{\theta}) \right\}. 
+\end{align}
+}%
+
+We again remark that in our formulation of PHMDPs the
+parameters {\footnotesize $ \vec{\theta} $} are free parameters and not
+learned from reward and transition samples as discussed in Related Work.
+We also remark that we are not assuming a (Bayesian) reinforcement learning setting,
+but rather a setting of strict uncertainty over {\footnotesize $ \vec{\theta} $} and
+a parameterized symbolic value iteration solution to solve it.
+
+In the subsequent sections we demonstrate how the PHMDP framework can
+be specialised into models capable of: (i) investigating
+multi-objective reward criteria; (ii) exact parameter sensitivity
+analysis; and (iii) optimization of continuous non-convex policy
+parameters.
+
+\subsubsection{Multi-objective PHMDPs}
+
+The PHMDP framework can be specialised into a multi-objective setting
+by specifying the reward as {\footnotesize \MORewardFunc} where
+{\footnotesize $ d $} is the dimension of the reward vector. In this
+formulation the parameter {\footnotesize $ \vec{\theta}^{d} $} specifies the
+linear scalarization over the reward components (i.e, {\footnotesize $\langle
+\Reward, \vec{\theta}^{d} \rangle$}) and the value function can be expressed
+as a function of all possible scalarizations.
+
+\subsubsection{Sensitivity Analysis for PHMDPs}
+
+In sensitivity analysis, we assume that {\footnotesize $\vec{\theta}^{d}$} are unknown
+parameters and we solve directly for the value function in
+Equation~\eqref{eq:opt_vfunc} as a parametric function
+{\footnotesize $V^{\pi^{*}}(\vec{d}, \vec{x}; \vec{\theta}^{d})$} of these parameters.  This
+parametric value function can then be directly analyzed or displayed in an
+(Interactive) Decision Map, an example of which is shown in
+section~\ref{sec:results_influenza}, which allows a user to explore
+trade-offs between parameters {\footnotesize $\vec{\theta}^{d}$ }for the optimal policy as a
+function of other state variables {\footnotesize $\vec{d},\vec{x}$}.
+
+\subsubsection{Policy Gradient Methods for PHMDPs}
+
+PHMDP policy parameters can be analyzed and optimised by parameterizing a policy {\footnotesize $\pi$} by action parameters {\footnotesize $\vec{\theta}^{d}$}, and evaluating the value w.r.t. this parametric policy, an example of which will be shown in section~\ref{sec:results_oe}. The resulting (non-convex) policy value as a function of {\footnotesize $\vec{\theta}^{d}$} can be
+analyzed, and optimised using the parameteric form of {\footnotesize $V^{\pi^{*}}(\vec{d}, \vec{x}; \vec{\theta}^{d})$} and all symbolic
+derivatives (up to any order) of this value function.
+
+\subsection{Solution Methods}
+
+Value iteration~\parencite{Bellman_PU_1957} is a general dynamic
+programming algorithm used to solve MDPs. We modify the algorithm to
+solve the parameterized hybrid MDP formulation presented in
+section~\ref{sec:hybrid_mdps_def}. The key idea of VI is to
+successively approximate {\footnotesize $V^{\pi^{*}}(\vec{d}, \vec{x};
+  \vec{\theta})$} and {\footnotesize $Q^{\pi^{*}}(\vec{d}, \vec{x}, a;
+  \vec{\theta})$} by {\footnotesize $V^{h}(\vec{d}, \vec{x}; \vec{\theta})$} and
+{\footnotesize $Q^{h}(\vec{d}, \vec{x}, a; \vec{\theta})$}, respectively, at
+each horizon {\footnotesize$h$}. These two functions satisfy the
+following recursive relationship:
+
+{\footnotesize 
+    \abovedisplayskip=0pt
+    \belowdisplayskip=0pt
+    \begin{align}
+        Q^{h}(\vec{d}, \vec{x}, a; \vec{\theta}) = \Reward(\vec{d}, \vec{x}, a; \vec{\theta}) + \gamma \, \cdot &  \nonumber \\ 
+        \sum_{\vec{d}'} \int_{\vec{x}'} \ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a; \vec{\theta}} & \cdot V^{h-1}(\vec{d}, \vec{x}; \vec{\theta}) \, d\vec{x}'  \label{eq:vi_qfunc} \\
+        V^{h}(\vec{d}, \vec{x}; \vec{\theta}) = \max_{a \in A} \left\{ Q^{h}(\vec{d}, \vec{x}, a; \vec{\theta}) \right\} & \label{eq:vi_vfunc}
+    \end{align}
+}%
+
+{\footnotesize $\ProbArg{\vec{d}', \vec{x}' | \vec{d}, \vec{x}, a;
+    \vec{\theta}}$ } is specified in Equation~\eqref{eq:hmdp_tfunc}. The
+algorithm can be executed by first initialising {\footnotesize
+  $V^{0}(\vec{d}, \vec{x}; \vec{\theta})$} to zero or the terminal
+reward. Then for each {\footnotesize$h$}, {\footnotesize
+  $V^{h}(\vec{d}, \vec{x}; \vec{\theta})$} is calculated from {\footnotesize
+  $V^{h-1}(\vec{d}, \vec{x}; \vec{\theta})$} via
+Equations~\eqref{eq:vi_qfunc} and~\eqref{eq:vi_vfunc}, until the
+intended $h$-stage-to-go value function is computed.
+
+A key challenge still remains, namely, dealing with infinitely many
+states in {\footnotesize $\vec{x}$} and {\footnotesize
+  $\vec{\theta}$}. Furthermore, we must determine restrictions on
+{\footnotesize $Q^{h}(\vec{d}, \vec{x}, a; \vec{\theta})$} and
+{\footnotesize $V^{h}(\vec{d}, \vec{x}; \vec{\theta})$} that guarantee
+tractable solutions. In the next section we show that a parameterized
+extension of symbolic dynamic programming can be used to address these
+concerns and optimally solve exactly and in closed-form PHMDPs for
+arbitrary horizons.

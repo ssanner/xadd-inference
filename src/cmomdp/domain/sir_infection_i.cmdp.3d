@@ -1,0 +1,6 @@
+var s 0 0.5 100
+var infection 0 0.0005 0.1
+cassign w1 0.5
+cassign w2 0.0
+cassign i 100.0
+cassign r 5.0

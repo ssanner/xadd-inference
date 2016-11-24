@@ -1,0 +1,52 @@
+\documentclass{article}
+
+% The file ijcai16.sty is the style file for IJCAI-16 (same as ijcai07.sty).
+\usepackage{ijcai16}
+
+% Packages
+\usepackage{./std_package_reqs}
+
+% Definitions
+\usepackage{./definitions}
+
+\usepackage{verbatim}
+
+% Graphics Path
+\graphicspath{{./images/}}
+
+\renewcommand*{\mkbibparens}[1]{{\ifcitation{\bibleftbracket#1\bibrightbracket}%
+        {\bibleftparen#1\bibrightparen}}}
+\renewcommand*{\bibopenparen}[1]{{\ifcitation{\bibleftbracket#1}{\bibleftparen#1}}}
+\renewcommand*{\bibcloseparen}{{\ifcitation{\bibrightbracket}{\bibrightparen}}}
+
+% Bibliography
+\addbibresource{references.bib}
+
+\begin{document}
+    
+%--------------------------------------------------------------------------------------------------
+% Front Matter
+%--------------------------------------------------------------------------------------------------
+
+    \input{./title}
+    \input{./sections/abstract}
+
+%--------------------------------------------------------------------------------------------------
+% Body
+%--------------------------------------------------------------------------------------------------
+
+    \input{./sections/introduction}
+    \input{./sections/background}
+    \input{./sections/hybrid_mdp}
+    \input{./sections/sdp}
+    \input{./sections/results}
+    \input{./sections/conclusion}
+
+%--------------------------------------------------------------------------------------------------
+% Bibliography
+%--------------------------------------------------------------------------------------------------
+\newpage
+{\small
+\printbibliography
+}
+\end{document}

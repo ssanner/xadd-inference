@@ -1,0 +1,8 @@
+\section{Conclusions and Future Work}
+\label{sec:conclusion}
+
+In this paper we introduced parameterized hybrid MDPs as a unifying framework which enables the investigation of trade-offs between multi-objective reward criteria, the examination of parameter sensitivity and the non-convex optimization of continuous policy parameters. 
+We have also presented a novel parametric extension of symbolic dynamic programming that be can be used to calculate exact solutions for domains modeled within this framework. The framework and algorithm were used to calculate the first known exact and closed-form solutions to sensitivity analysis of public health policies in epidemic models and the optimization of continuous non-convex policy parameters within the optimal execution problem in finance.
+
+There are a number of avenues for future research. Firstly, it is important to examine more general representations of the reward and transition functions while still guaranteeing exact solutions. Another direction of research lies within improving the scalability of the algorithm by either extending techniques for Algebraic Decision Diagrams~\parencite{Bahar_JoFMiSD_1993} from APRICODD~\parencite{St-Aubin_NIPS_2000} under the current restrictions on the reward and transition functions, bounded error compression for 
+XADDs~\parencite{Vianna_UAI_2013} for more expressive representations, or lazy approximation of value functions as piecewise linear XADDs~\parencite{Li_AAAI_2005}. The advances made within this paper open up a number of potential novel research paths which may be used to progress solutions to multi-objective MDPs, sensitivity analysis and optimization of policy parameters.

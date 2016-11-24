@@ -1,0 +1,733 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 2.5 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \sortlist{ynt}{ynt}
+    \entry{Bellman_PU_1957}{book}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,hash=46304b43d6f693021f6213d1d6834003}{Bellman}{B\bibinitperiod}{Richard\bibnamedelima E.}{R\bibinitperiod\bibinitdelim E\bibinitperiod}{}{}{}{}}%
+      }
+      \list{location}{1}{%
+        {Princeton, NJ}%
+      }
+      \list{publisher}{1}{%
+        {Princeton University Press}%
+      }
+      \strng{namehash}{46304b43d6f693021f6213d1d6834003}
+      \strng{fullhash}{46304b43d6f693021f6213d1d6834003}
+      \field{sortinit}{1}
+      \field{sortinithash}{53e85f4cf497d2a4e1d51786552bcbf1}
+      \field{labelyear}{1957}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Dynamic {Programming}}
+      \field{year}{1957}
+      \keyw{DP,Dynamic Programming}
+    \endentry
+    \entry{Howard_MIT_1960}{book}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,hash=8fb413d3bf1fa8d2d3f06d454155cbe5}{Howard}{H\bibinitperiod}{Ronald\bibnamedelima Arthur}{R\bibinitperiod\bibinitdelim A\bibinitperiod}{}{}{}{}}%
+      }
+      \list{location}{1}{%
+        {Cambridge, Massachusetts, USA}%
+      }
+      \list{publisher}{1}{%
+        {The MIT press}%
+      }
+      \strng{namehash}{8fb413d3bf1fa8d2d3f06d454155cbe5}
+      \strng{fullhash}{8fb413d3bf1fa8d2d3f06d454155cbe5}
+      \field{sortinit}{1}
+      \field{sortinithash}{53e85f4cf497d2a4e1d51786552bcbf1}
+      \field{labelyear}{1960}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{0-262-08009-5 978-0-262-08009-5}
+      \field{title}{Dynamic {Programming} and {Markov} {Processes}}
+      \field{year}{1960}
+      \keyw{DP,Dynamic Programming,MDP,Policy Iteration}
+    \endentry
+    \entry{Hopp_JOTA_1988}{article}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,hash=69517c7153f56df934c007058eec03ce}{Hopp}{H\bibinitperiod}{W.\bibnamedelimi J.}{W\bibinitperiod\bibinitdelim J\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{69517c7153f56df934c007058eec03ce}
+      \strng{fullhash}{69517c7153f56df934c007058eec03ce}
+      \field{sortinit}{1}
+      \field{sortinithash}{53e85f4cf497d2a4e1d51786552bcbf1}
+      \field{labelyear}{1988}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{1573-2878}
+      \field{journaltitle}{Journal of Optimization Theory and Applications}
+      \field{number}{2}
+      \field{title}{Sensitivity analysis in discrete dynamic programming}
+      \field{volume}{56}
+      \field{year}{1988}
+      \field{pages}{257\bibrangedash 269}
+      \range{pages}{13}
+      \verb{doi}
+      \verb 10.1007/BF00939411
+      \endverb
+      \verb{url}
+      \verb http://dx.doi.org/10.1007/BF00939411
+      \endverb
+    \endentry
+    \entry{Bahar_JoFMiSD_1993}{article}{}
+      \name{author}{7}{}{%
+        {{uniquename=0,hash=d948309fe592fff831426a0a4adc02bf}{Bahar}{B\bibinitperiod}{R.I.}{R\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=c27113042bb9e54ce1d2a758fa3bd1b4}{Frohm}{F\bibinitperiod}{E.A.}{E\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=675f19188f3164a3da5b981517cf0f5c}{Gaona}{G\bibinitperiod}{C.M.}{C\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=18ba171585b9fb439ef9dfb216395f58}{Hachtel}{H\bibinitperiod}{G.D.}{G\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=f3d5c10ac1bff612c5b253556119f69a}{Macii}{M\bibinitperiod}{E.}{E\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=af626c636aab8dc9b707bf6204307c93}{Pardo}{P\bibinitperiod}{A.}{A\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=44477109c89a307805774246b553606b}{Somenzi}{S\bibinitperiod}{F.}{F\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{aec1e31b7ad8c44c6a76cf1357dad602}
+      \strng{fullhash}{43c9fb11243de2cd19ee0aef817d835f}
+      \field{sortinit}{1}
+      \field{sortinithash}{53e85f4cf497d2a4e1d51786552bcbf1}
+      \field{labelyear}{1993}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Formal Methods in Systems Design}
+      \field{title}{Algebraic Decision Diagrams and Their Applications}
+      \field{urlday}{16}
+      \field{urlmonth}{09}
+      \field{urlyear}{2013}
+      \field{volume}{10}
+      \field{year}{1993}
+      \field{pages}{171\bibrangedash 206}
+      \range{pages}{36}
+      \verb{doi}
+      \verb 10.1109/ICCAD.1993.580054
+      \endverb
+      \verb{url}
+      \verb http://ieeexplore.ieee.org/lpdocs/epic03/wrapper.htm?arnumber=580054
+      \endverb
+      \keyw{{ADD},Boolean Algebra,{DAG},Data Structure,Decision Diagram,Directed Acyclic Graph}
+    \endentry
+    \entry{Bertsimas_JFM_1998}{article}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=5b57425178d5ae2d2835ef44cb330e42}{Bertsimas}{B\bibinitperiod}{Dimitris}{D\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=c525e67c6103a520aa138ce3ee668fc3}{Lo}{L\bibinitperiod}{Andrew}{A\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{1e8ba443b38e5dcfdd80f083de4447ca}
+      \strng{fullhash}{cf232cf78dd879951be4887fa7df28ba}
+      \field{sortinit}{1}
+      \field{sortinithash}{53e85f4cf497d2a4e1d51786552bcbf1}
+      \field{labelyear}{1998}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Financial Markets}
+      \field{number}{1}
+      \field{title}{Optimal control of execution costs}
+      \field{volume}{1}
+      \field{year}{1998}
+      \field{pages}{1\bibrangedash 50}
+      \range{pages}{50}
+    \endentry
+    \entry{Boutilier_JAIR_1999}{article}{}
+      \name{author}{3}{uniquelist=2}{%
+        {{uniquename=0,hash=049505423af7aff38a0e953619ee8317}{Boutilier}{B\bibinitperiod}{Craig}{C\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=263fdde04c287cc45c95fd7a59f56a18}{Dean}{D\bibinitperiod}{Thomas}{T\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=aa4ba537da71bea16d79716ca34435ae}{Hanks}{H\bibinitperiod}{Steve}{S\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{6ab127e0ee14db2644a5b47d36bbc087}
+      \strng{fullhash}{78ee05737604e191cb0ef501e6eac1a9}
+      \field{sortinit}{1}
+      \field{sortinithash}{53e85f4cf497d2a4e1d51786552bcbf1}
+      \field{labelyear}{1999}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{JAIR}
+      \field{title}{Decision-{Theoretic} {Planning}: {Structural} {Assumptions} and {Computational} {Leverage}}
+      \field{volume}{11}
+      \field{year}{1999}
+      \field{pages}{1\bibrangedash 94}
+      \range{pages}{94}
+      \keyw{DTP,MDP}
+    \endentry
+    \entry{Dearden_UAI_1999}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,hash=5eac58f71e450d96418f25079668603b}{Dearden}{D\bibinitperiod}{Richard}{R\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=987ee418ae32e261a8a5385e14cda479}{Friedman}{F\bibinitperiod}{Nir}{N\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=496d6dfc4f7ec86ca7e45b0be4f5e4cc}{Andre}{A\bibinitperiod}{David}{D\bibinitperiod}{}{}{}{}}%
+      }
+      \list{location}{1}{%
+        {Stockholm, Sweden}%
+      }
+      \list{publisher}{1}{%
+        {Morgan Kaufmann Publishers Inc.}%
+      }
+      \strng{namehash}{6d310e17699a36ec6e6f2aaf556d6f97}
+      \strng{fullhash}{0fb2935e2f749cd447f4f8f34fb1d36d}
+      \field{sortinit}{1}
+      \field{sortinithash}{53e85f4cf497d2a4e1d51786552bcbf1}
+      \field{labelyear}{1999}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{UAI}
+      \field{isbn}{1-55860-614-9}
+      \field{series}{UAI'99}
+      \field{title}{Model Based Bayesian Exploration}
+      \field{year}{1999}
+      \field{pages}{150\bibrangedash 159}
+      \range{pages}{10}
+      \verb{url}
+      \verb http://dl.acm.org/citation.cfm?id=2073796.2073814
+      \endverb
+    \endentry
+    \entry{St-Aubin_NIPS_2000}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,hash=7e953b9cfbfca56f24c7215d5f4d3112}{St-Aubin}{S\bibinithyphendelim A\bibinitperiod}{Robert}{R\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=faae719891a104bbd5fdd7089e6114d2}{Hoey}{H\bibinitperiod}{Jesse}{J\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=049505423af7aff38a0e953619ee8317}{Boutilier}{B\bibinitperiod}{Craig}{C\bibinitperiod}{}{}{}{}}%
+      }
+      \list{location}{1}{%
+        {Denver, Colorado, {USA}}%
+      }
+      \list{publisher}{1}{%
+        {{MIT} Press}%
+      }
+      \strng{namehash}{a94d6209d52376f3326ee36dd70a2c9f}
+      \strng{fullhash}{2b33f787c9de8d6a38359371226ca161}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2000}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{NIPS}
+      \field{series}{{NIPS}}
+      \field{title}{{APRICODD:} Approximate Policy Construction Using Decision Diagrams}
+      \field{year}{2000}
+      \field{pages}{1089\bibrangedash 1095}
+      \range{pages}{7}
+      \verb{url}
+      \verb http://dblp.uni-trier.de/db/conf/nips/nips2000.html#St-AubinHB00
+      \endverb
+      \keyw{{ADD},Algorithm,{MDP}}
+    \endentry
+    \entry{Baxter_ISCAS_2000}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=5f0575a363e95b28a935fc4c0fc0dfc5}{Baxter}{B\bibinitperiod}{Jonathan}{J\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=aeb661edff0d4c74424d799e6a59e08e}{Bartlett}{B\bibinitperiod}{Peter\bibnamedelima L}{P\bibinitperiod\bibinitdelim L\bibinitperiod}{}{}{}{}}%
+      }
+      \list{organization}{1}{%
+        {IEEE}%
+      }
+      \strng{namehash}{c716d40cb88d796f8cfffc96a7d7c719}
+      \strng{fullhash}{d2239972ef8c2cd1d66b0a24ecd961af}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2000}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Circuits and Systems.}
+      \field{title}{Direct gradient-based reinforcement learning}
+      \field{volume}{3}
+      \field{year}{2000}
+      \field{pages}{271\bibrangedash 274}
+      \range{pages}{4}
+    \endentry
+    \entry{Givan_AI_2000}{article}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,hash=15e6c2c22192d2b773c8c965c435b427}{Givan}{G\bibinitperiod}{Robert}{R\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=98e3122fb001237cf0d5b46e27158325}{Leach}{L\bibinitperiod}{Sonia}{S\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=263fdde04c287cc45c95fd7a59f56a18}{Dean}{D\bibinitperiod}{Thomas}{T\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{57b8833284b671cdd5a03f2d6667aa01}
+      \strng{fullhash}{e1dfd23421657909a3cfba45b659510c}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2000}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{0004-3702}
+      \field{journaltitle}{Artificial Intelligence}
+      \field{number}{1–2}
+      \field{title}{Bounded-parameter Markov decision processes}
+      \field{volume}{122}
+      \field{year}{2000}
+      \field{pages}{71\bibrangedash 109}
+      \range{pages}{39}
+      \verb{doi}
+      \verb http://dx.doi.org/10.1016/S0004-3702(00)00047-3
+      \endverb
+      \verb{url}
+      \verb http://www.sciencedirect.com/science/article/pii/S0004370200000473
+      \endverb
+      \keyw{Decision-theoretic planning}
+    \endentry
+    \entry{Ng_UAI_2000}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=3320a09219ceb40fed182eebd03b2512}{Ng}{N\bibinitperiod}{A.\bibnamedelimi Y.}{A\bibinitperiod\bibinitdelim Y\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=7fd484be47dd44e58daa3bbcc2f4dd16}{Jordan}{J\bibinitperiod}{M.}{M\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{a12ce284062b62265b9e029563daa7c4}
+      \strng{fullhash}{dcd4e5fffc2a4ed409b1fee53f3b88e2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2000}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{UAI}
+      \field{title}{PEGASUS: A policy search method for large MPDs and POMDPs}
+      \field{year}{2000}
+    \endentry
+    \entry{Boutilier_IJCAI_2001}{inproceedings}{}
+      \name{author}{3}{uniquelist=2}{%
+        {{uniquename=0,hash=049505423af7aff38a0e953619ee8317}{Boutilier}{B\bibinitperiod}{Craig}{C\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=c43148a6411a4c1d5513b4694e7673cc}{Reiter}{R\bibinitperiod}{Ray}{R\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=9e389e032dd8ccaad9bde7eabb2d8c24}{Price}{P\bibinitperiod}{Bob}{B\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{f5e92b4c29c2662d35d97701815243e7}
+      \strng{fullhash}{851d429769272f2b696710fdd08d67c9}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2001}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{IJCAI}
+      \field{title}{{Symbolic Dynamic Programming for First-order MDPs}}
+      \field{year}{2001}
+      \field{pages}{690\bibrangedash 697}
+      \range{pages}{8}
+    \endentry
+    \entry{Kalyanasundaram_AJC_2004}{article}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,hash=e3f88c4932f6c12bdfac97a2f3131c77}{Kalyanasundaram}{K\bibinitperiod}{Suresh}{S\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=fa92b5810a12ff87d5c86f194cedbee3}{Chong}{C\bibinitperiod}{Edwin\bibnamedelimb K.\bibnamedelimi P.}{E\bibinitperiod\bibinitdelim K\bibinitperiod\bibinitdelim P\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=cd396ee82a8d7e20bd792f27262e6ec9}{Shroff}{S\bibinitperiod}{Ness\bibnamedelima B.}{N\bibinitperiod\bibinitdelim B\bibinitperiod}{}{}{}{}}%
+      }
+      \list{publisher}{1}{%
+        {Blackwell Publishing Ltd}%
+      }
+      \strng{namehash}{90e9b39a1dffcf317774976a70fbed21}
+      \strng{fullhash}{6acab39c2f54e0e9156996f5329d2dab}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2004}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{1934-6093}
+      \field{journaltitle}{Asian Journal of Control}
+      \field{number}{2}
+      \field{title}{Markov decision processes with uncertain transition rates: sensitivity and max hyphen min control}
+      \field{volume}{6}
+      \field{year}{2004}
+      \field{pages}{253\bibrangedash 269}
+      \range{pages}{17}
+      \verb{doi}
+      \verb 10.1111/j.1934-6093.2004.tb00203.x
+      \endverb
+      \verb{url}
+      \verb http://dx.doi.org/10.1111/j.1934-6093.2004.tb00203.x
+      \endverb
+      \keyw{Markov decision processes,sensitivity,max-min control,call admission control,policy iteration}
+    \endentry
+    \entry{Li_AAAI_2005}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=09b19a7bef3ca63e5cf4af03d2b00ea0}{Li}{L\bibinitperiod}{Lihong}{L\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=f1339c61cae259302fb7026ec82176ee}{Littman}{L\bibinitperiod}{Michael\bibnamedelima L.}{M\bibinitperiod\bibinitdelim L\bibinitperiod}{}{}{}{}}%
+      }
+      \list{location}{1}{%
+        {Pittsburgh, Pennsylvania}%
+      }
+      \list{publisher}{1}{%
+        {AAAI Press}%
+      }
+      \strng{namehash}{dfdc0f28a3ae1801fbe41ec9dda0695a}
+      \strng{fullhash}{877026802c68b42d9b7df2827bdc60ef}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2005}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{AAAI}
+      \field{isbn}{1-57735-236-x}
+      \field{series}{AAAI}
+      \field{title}{Lazy Approximation for Solving Continuous Finite-horizon MDPs}
+      \field{volume}{3}
+      \field{year}{2005}
+      \field{pages}{1175\bibrangedash 1180}
+      \range{pages}{6}
+      \verb{url}
+      \verb http://dl.acm.org/citation.cfm?id=1619499.1619522
+      \endverb
+    \endentry
+    \entry{Chatterjee_STACS_2006}{incollection}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,hash=1a126fe7ca5387e01e1bebcd84f3c49b}{Chatterjee}{C\bibinitperiod}{Krishnendu}{K\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=78643650cab303170e95fbd8ac71e624}{Majumdar}{M\bibinitperiod}{Rupak}{R\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=f1b7ab6351df8e1f961098a0b96ac393}{Henzinger}{H\bibinitperiod}{Thomas\bibnamedelima A}{T\bibinitperiod\bibinitdelim A\bibinitperiod}{}{}{}{}}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{8a194eec51da8a390e0784902739c187}
+      \strng{fullhash}{1251a6436706b37194aee2c9f4663e3b}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2006}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{STACS 2006}
+      \field{title}{Markov decision processes with multiple objectives}
+      \field{year}{2006}
+      \field{pages}{325\bibrangedash 336}
+      \range{pages}{12}
+    \endentry
+    \entry{Peters_IRS_2006}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=c2cb77a864f65a21da0f69121b89835b}{Peters}{P\bibinitperiod}{Jan}{J\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=147fd8225f25d53a449425c4559622e5}{Schaal}{S\bibinitperiod}{Stefan}{S\bibinitperiod}{}{}{}{}}%
+      }
+      \list{organization}{1}{%
+        {IEEE}%
+      }
+      \strng{namehash}{f4b2343a81feb5e1b12b2d99c1f5772b}
+      \strng{fullhash}{9acc62323ebd2fe51e167a31871ed15d}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2006}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Intelligent Robots and Systems}
+      \field{title}{Policy gradient methods for robotics}
+      \field{year}{2006}
+      \field{pages}{2219\bibrangedash 2225}
+      \range{pages}{7}
+    \endentry
+    \entry{Barrett_ICML_2008}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=66b4286aad891033af950b3bf2435b25}{Barrett}{B\bibinitperiod}{Leon}{L\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=c639b72261d2b4956a18266edd940bef}{Narayanan}{N\bibinitperiod}{Srini}{S\bibinitperiod}{}{}{}{}}%
+      }
+      \list{location}{1}{%
+        {Helsinki, Finland}%
+      }
+      \list{publisher}{1}{%
+        {ACM}%
+      }
+      \strng{namehash}{fa3d6058ad68bb4065541c242869d1f1}
+      \strng{fullhash}{bab9c11c566542127f814b056af0e429}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2008}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{ICML}
+      \field{isbn}{978-1-60558-205-4}
+      \field{series}{ICML '08}
+      \field{title}{Learning All Optimal Policies with Multiple Criteria}
+      \field{year}{2008}
+      \field{pages}{41\bibrangedash 47}
+      \range{pages}{7}
+      \verb{doi}
+      \verb 10.1145/1390156.1390162
+      \endverb
+      \verb{url}
+      \verb http://doi.acm.org/10.1145/1390156.1390162
+      \endverb
+    \endentry
+    \entry{Williams_EM_2009}{article}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,hash=1e93b3b0d24f71176f16be2bb752c8c4}{Williams}{W\bibinitperiod}{Byron\bibnamedelima K.}{B\bibinitperiod\bibinitdelim K\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{1e93b3b0d24f71176f16be2bb752c8c4}
+      \strng{fullhash}{1e93b3b0d24f71176f16be2bb752c8c4}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2009}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{0304-3800}
+      \field{journaltitle}{Ecological Modelling}
+      \field{number}{6}
+      \field{title}{Markov decision processes in natural resources management: Observability and uncertainty}
+      \field{volume}{220}
+      \field{year}{2009}
+      \field{pages}{830\bibrangedash 840}
+      \range{pages}{11}
+      \verb{doi}
+      \verb http://dx.doi.org/10.1016/j.ecolmodel.2008.12.023
+      \endverb
+      \verb{url}
+      \verb http://www.sciencedirect.com/science/article/pii/S0304380009000246
+      \endverb
+      \keyw{Natural resources}
+    \endentry
+    \entry{Reddy_IJCAI_2011}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=d4ed1ec7444bde262d450788b5eab9d5}{Reddy}{R\bibinitperiod}{Prashant\bibnamedelima P}{P\bibinitperiod\bibinitdelim P\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=dfacacd6633022b489303123880a59f1}{Veloso}{V\bibinitperiod}{Manuela\bibnamedelima M}{M\bibinitperiod\bibinitdelim M\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{055d10b87cd90cd2b0ed7fb278e70673}
+      \strng{fullhash}{a6f1cf2125c73f0da9fd6420b681f1f3}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2011}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{IJCAI}
+      \field{number}{1}
+      \field{title}{Strategy learning for autonomous agents in smart grid markets}
+      \field{volume}{22}
+      \field{year}{2011}
+      \field{pages}{1446}
+      \range{pages}{1}
+    \endentry
+    \entry{Sanner_UAI_2011}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,hash=b9e05d93531c543fb71674dca5f7d9a2}{Sanner}{S\bibinitperiod}{Scott}{S\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=0b23f0f45a69fe359a2c60dd974fdd0b}{Delgado}{D\bibinitperiod}{Karina}{K\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=c7cd5580467fe9aa7f5b3ef25ef19feb}{Nunes\bibnamedelimb de\bibnamedelima Barros}{N\bibinitperiod\bibinitdelim d\bibinitperiod\bibinitdelim B\bibinitperiod}{Leliane}{L\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{38119a8ad5ec9012147bb1dd7ff38eac}
+      \strng{fullhash}{e3a4e8e5e80b4c2dc8ff5e024c8912d8}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2011}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{UAI}
+      \field{title}{{Symbolic Dynamic Programming for Discrete and Continuous State MDPs}}
+      \field{year}{2011}
+      \field{pages}{1\bibrangedash 10}
+      \range{pages}{10}
+    \endentry
+    \entry{Tan_JAP_2011}{article}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=b7f503df0deda28d4a710dac65ddb4cb}{Tan}{T\bibinitperiod}{Chin\bibnamedelima Hon}{C\bibinitperiod\bibinitdelim H\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=516678b3f56ca75a723f6231be6d437f}{Hartman}{H\bibinitperiod}{Joseph\bibnamedelima C.}{J\bibinitperiod\bibinitdelim C\bibinitperiod}{}{}{}{}}%
+      }
+      \list{publisher}{1}{%
+        {Applied Probability Trust}%
+      }
+      \strng{namehash}{aad080801e9f966e436af97ac406a797}
+      \strng{fullhash}{028837518168f876074164dff70a23f9}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2011}
+      \field{labelmonth}{12}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Applied Probability}
+      \field{month}{12}
+      \field{number}{4}
+      \field{title}{Sensitivity analysis in Markov decision processes with uncertain reward parameters}
+      \field{volume}{48}
+      \field{year}{2011}
+      \field{pages}{954\bibrangedash 967}
+      \range{pages}{14}
+      \verb{doi}
+      \verb 10.1239/jap/1324046012
+      \endverb
+      \verb{url}
+      \verb http://dx.doi.org/10.1239/jap/1324046012
+      \endverb
+    \endentry
+    \entry{Szita_RL_2012}{incollection}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,hash=e5c8079e33fb2da6d06bc29955bd5402}{Szita}{S\bibinitperiod}{István}{I\bibinitperiod}{}{}{}{}}%
+      }
+      \list{publisher}{1}{%
+        {Springer Berlin Heidelberg}%
+      }
+      \strng{namehash}{e5c8079e33fb2da6d06bc29955bd5402}
+      \strng{fullhash}{e5c8079e33fb2da6d06bc29955bd5402}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2012}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Reinforcement Learning}
+      \field{title}{Reinforcement learning in games}
+      \field{year}{2012}
+      \field{pages}{539\bibrangedash 577}
+      \range{pages}{39}
+    \endentry
+    \entry{Zamani_AAAI_2012}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{uniquename=0,hash=1a222623793743c3820266a6a7d8b4cc}{Zamani}{Z\bibinitperiod}{Zahra}{Z\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=b9e05d93531c543fb71674dca5f7d9a2}{Sanner}{S\bibinitperiod}{Scott}{S\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{7b78e4917c99d59231d1adc1255f838e}
+      \strng{fullhash}{0bf1bcaa73aea1f838aaa24e3804dbc6}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2012}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{AAAI}
+      \field{title}{Symbolic Dynamic Programming for Continuous State and Action MDPs}
+      \field{year}{2012}
+      \field{pages}{1\bibrangedash 7}
+      \range{pages}{7}
+    \endentry
+    \entry{Perny_AAAI_2013}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{uniquename=0,hash=55a731ad4a67cbcd6c2d08f5ed25322f}{Perny}{P\bibinitperiod}{Patrice}{P\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=0582ae613e13391e1824332cee901f87}{Weng}{W\bibinitperiod}{Paul}{P\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=ab7706774d4d3e0e02427f69115e9991}{Goldsmith}{G\bibinitperiod}{Judy}{J\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=0d5ea23dff2b1ad8f9e39b176f80a462}{Hanna}{H\bibinitperiod}{Josiah\bibnamedelima P}{J\bibinitperiod\bibinitdelim P\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{91ecba7be19a8e031595179ce415f77a}
+      \strng{fullhash}{2329b6ba3a77441fef03c1e13ea23fba}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2013}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Workshops at the Twenty Seventh AAAI Conference on Artificial Intelligence}
+      \field{journaltitle}{Workshops at the TwentySeventh AAAI Conference on Artificial Intelligence}
+      \field{title}{Approximation of Lorenz-Optimal Solutions in Multiobjective Markov Decision Processes}
+      \field{year}{2013}
+    \endentry
+    \entry{Roijers_JAIR_2013}{article}{}
+      \name{author}{4}{}{%
+        {{uniquename=0,hash=12c5f7a252f35697e60f7f0917bb2c60}{Roijers}{R\bibinitperiod}{Diederik\bibnamedelima M.}{D\bibinitperiod\bibinitdelim M\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=cfe292959018600afae3f889c34a5f10}{Vamplew}{V\bibinitperiod}{Peter}{P\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=0d05819cf2b4fe22ba972c9b2b5d8c9d}{Whiteson}{W\bibinitperiod}{Shimon}{S\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=763681d0ded12790c0ddb710e4dcceb7}{{Richard\bibnamedelimb Dazeley}}{R\bibinitperiod}{}{}{}{}{}{}}%
+      }
+      \strng{namehash}{cc70d5ee1b18dc891a831da58b6d8b2d}
+      \strng{fullhash}{df3b42a2129fd85e156e0a0c3e8015da}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2013}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{JAIR}
+      \field{title}{A {Survey} of {Multi}-{Objective} {Sequential} {Decision}-{Making}}
+      \field{volume}{48}
+      \field{year}{2013}
+      \field{pages}{67\bibrangedash 113}
+      \range{pages}{47}
+    \endentry
+    \entry{Vianna_UAI_2013}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,hash=14ba148186ec346d0a5e4214b5346978}{Vianna}{V\bibinitperiod}{Luis\bibnamedelimb Gustavo\bibnamedelima Rocha}{L\bibinitperiod\bibinitdelim G\bibinitperiod\bibinitdelim R\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=b9e05d93531c543fb71674dca5f7d9a2}{Sanner}{S\bibinitperiod}{Scott}{S\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=c7cd5580467fe9aa7f5b3ef25ef19feb}{Nunes\bibnamedelimb de\bibnamedelima Barros}{N\bibinitperiod\bibinitdelim d\bibinitperiod\bibinitdelim B\bibinitperiod}{Leliane}{L\bibinitperiod}{}{}{}{}}%
+      }
+      \list{location}{1}{%
+        {Bellevue, {USA}}%
+      }
+      \strng{namehash}{d9dce8626a451708e5f0f10341139d7b}
+      \strng{fullhash}{e4b5ffbcfdf25a5cd96597b10247e113}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2013}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{UAI}
+      \field{series}{{UAI}}
+      \field{title}{Bounded Approximate Symbolic Dynamic Programming for Hybrid {MDPs}}
+      \field{year}{2013}
+      \field{pages}{1\bibrangedash 9}
+      \range{pages}{9}
+      \verb{url}
+      \verb auai.org/uai2013/prints/papers/125.pdf
+      \endverb
+      \keyw{{MDP},{SDP},{XADD}}
+    \endentry
+    \entry{Zhu_AIM_2014}{article}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,hash=901e501a5746f9eefcd500e25bdb5a40}{Zhu}{Z\bibinitperiod}{George}{G\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=ef5b53963b60c8d7433e91e13a87cdfe}{Lizotte}{L\bibinitperiod}{Dan}{D\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=faae719891a104bbd5fdd7089e6114d2}{Hoey}{H\bibinitperiod}{Jesse}{J\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{49bcba831078067a6d6234c9f892949c}
+      \strng{fullhash}{1c48b46bd41829f2654c9e80d567b386}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2014}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{0933-3657}
+      \field{journaltitle}{Artificial Intelligence in Medicine}
+      \field{number}{1}
+      \field{title}{Scalable approximate policies for Markov decision process models of hospital elective admissions}
+      \field{volume}{61}
+      \field{year}{2014}
+      \field{pages}{21\bibrangedash 34}
+      \range{pages}{14}
+      \verb{doi}
+      \verb http://dx.doi.org/10.1016/j.artmed.2014.04.001
+      \endverb
+      \verb{url}
+      \verb http://www.sciencedirect.com/science/article/pii/S0933365714000372
+      \endverb
+      \keyw{Markov decision process}
+    \endentry
+    \entry{Pirotta_AAAI_2015}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,hash=e3a4b1c8e7a131a3420faa509b81381e}{Pirotta}{P\bibinitperiod}{Matteo}{M\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=f1b3c85f95ea6abf5159a596c86f57ad}{Parisi}{P\bibinitperiod}{Simone}{S\bibinitperiod}{}{}{}{}}%
+        {{uniquename=0,hash=af292b1dcd0b0c3efd61b01492fb5c74}{Restelli}{R\bibinitperiod}{Marcello}{M\bibinitperiod}{}{}{}{}}%
+      }
+      \strng{namehash}{9a8502001dada566eabb4a9ef2c7a530}
+      \strng{fullhash}{cf1f03474df96b3efd1a85952b9e4edc}
+      \field{sortinit}{2}
+      \field{sortinithash}{8343b463aacf48517c044b4d2c9c45ed}
+      \field{labelyear}{2015}
+      \field{datelabelsource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{AAAI}
+      \field{title}{Multi-Objective Reinforcement Learning with Continuous Pareto Frontier Approximation}
+      \field{year}{2015}
+      \field{pages}{2928\bibrangedash 2934}
+      \range{pages}{7}
+      \verb{url}
+      \verb http://www.aaai.org/ocs/index.php/AAAI/AAAI15/paper/view/9798
+      \endverb
+    \endentry
+  \endsortlist
+\endrefsection
+\endinput
+
